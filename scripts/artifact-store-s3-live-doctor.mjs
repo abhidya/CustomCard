@@ -180,10 +180,11 @@ class SigV4S3CompatibleArtifactClient {
       body: requestBody,
       headers
     });
+    const fetchBody = method === "GET" || method === "DELETE" || requestBody === "" ? undefined : requestBody;
     const response = await fetch(`${this.endpoint}${buildCanonicalUri(bucket, key)}`, {
       method,
       headers: requestHeaders,
-      body: method === "GET" || method === "DELETE" ? undefined : requestBody
+      body: fetchBody
     });
     const responseBody = await response.text();
     if (!expectedStatuses.includes(response.status)) {
