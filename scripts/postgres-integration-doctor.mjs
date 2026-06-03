@@ -30,7 +30,7 @@ const routes = [
 const customerToken = "live-postgres-customer-session-token";
 const adminToken = "live-postgres-admin-session-token";
 const doctorDatabase = `customcard_doctor_${process.pid}_${Date.now()}`.replace(/[^a-zA-Z0-9_]/g, "_");
-const adminUrl = buildDatabaseUrl(databaseUrl, "postgres");
+const adminUrl = databaseUrl;
 const doctorUrl = buildDatabaseUrl(databaseUrl, doctorDatabase);
 const adminPool = new pg.Pool(poolConfig(adminUrl));
 const blockers = [];
@@ -55,6 +55,10 @@ let exitCode = 0;
 let runtime;
 
 try {
+  await runCheck("connects to configured Postgres database", async () => {
+    await waitForPostgres(adminPool);
+  });
+
   await runCheck("creates isolated doctor database", async () => {
     await adminPool.query(`CREATE DATABASE ${quoteIdentifier(doctorDatabase)}`);
   });
@@ -385,6 +389,24 @@ async function dropDoctorDatabase(pool, databaseName) {
     [databaseName]
   );
   await pool.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
+}
+
+async function waitForPostgres(pool) {
+  let lastError;
+  for (let attempt = 1; attempt <= 12; attempt += 1) {
+    try {
+      await pool.query("SELECT 1");
+      return;
+    } catch (error) {
+      lastError = error;
+      await delay(Math.min(1000, attempt * 100));
+    }
+  }
+  throw lastError;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function printReport(status, runtime, persistence) {
