@@ -1,8 +1,11 @@
 import { apiRouteContracts, type ApiAudience, type ApiRouteContract } from "./apiContracts";
+import { accountAuthTableContracts } from "./accountAuth";
 
 export type PersistenceTableName =
   | "users"
   | "auth_sessions"
+  | "account_identities"
+  | "account_recovery_challenges"
   | "provider_connections"
   | "imported_events"
   | "card_opportunities"
@@ -68,6 +71,8 @@ export interface PersistenceReadinessSummary {
 export const requiredPersistenceTableNames: PersistenceTableName[] = [
   "users",
   "auth_sessions",
+  "account_identities",
+  "account_recovery_challenges",
   "provider_connections",
   "imported_events",
   "card_opportunities",
@@ -91,6 +96,9 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
     ["id", "user_id", "session_hash", "role", "expires_at", "revoked_at"],
     ["idx_auth_sessions_user", "idx_auth_sessions_hash"],
     false
+  ),
+  ...accountAuthTableContracts.map((contract) =>
+    table(contract.name, contract.requiredColumns, contract.indexes, true, false)
   ),
   table("provider_connections", ["id", "user_id", "provider", "status", "metadata_schema"], ["idx_provider_connections_user"], true),
   table("imported_events", ["id", "connection_id", "title", "starts_at", "source_evidence"], ["idx_imported_events_connection"], true),
@@ -132,9 +140,9 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
 export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("health", "none", "public", [], false, false, false),
   routePersistence("route-catalog", "none", "public", [], false, false, false),
-  routePersistence("customer-bootstrap", "read-only", "customer", ["users", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
-  routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
-  routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "provider_connections", "audit_log"], true, false, false),
+  routePersistence("customer-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
+  routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
+  routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "audit_log"], true, false, false),
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections"], true, false, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),
   routePersistence(
@@ -143,6 +151,8 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
     "admin",
     [
       "auth_sessions",
+      "account_identities",
+      "account_recovery_challenges",
       "idempotency_keys",
       "users",
       "provider_connections",
@@ -177,6 +187,15 @@ export const migrationRequiredSignals = [
   "expires_at TIMESTAMPTZ NOT NULL",
   "revoked_at TIMESTAMPTZ",
   "CREATE UNIQUE INDEX idx_auth_sessions_hash",
+  "CREATE TABLE account_identities",
+  "provider_subject TEXT NOT NULL",
+  "raw_profile_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_profile_stored = FALSE)",
+  "claims_schema JSONB NOT NULL",
+  "CREATE UNIQUE INDEX idx_account_identities_provider_subject",
+  "CREATE TABLE account_recovery_challenges",
+  "challenge_hash TEXT NOT NULL CHECK (char_length(challenge_hash) >= 32)",
+  "CHECK (expires_at > created_at)",
+  "CREATE UNIQUE INDEX idx_account_recovery_challenge_hash",
   "CREATE TABLE idempotency_keys",
   "UNIQUE (user_id, route_id, idempotency_key)",
   "request_hash TEXT NOT NULL",
@@ -250,6 +269,16 @@ export function validatePersistenceContracts(
     if (tableContract.name === "auth_sessions") {
       for (const column of ["user_id", "session_hash", "role", "expires_at", "revoked_at"]) {
         if (!tableContract.requiredColumns.includes(column)) issues.push("auth_sessions must include durable session columns.");
+      }
+    }
+    if (tableContract.name === "account_identities") {
+      for (const column of ["user_id", "provider", "provider_subject", "role", "raw_profile_stored", "claims_schema"]) {
+        if (!tableContract.requiredColumns.includes(column)) issues.push("account_identities must include hosted identity columns.");
+      }
+    }
+    if (tableContract.name === "account_recovery_challenges") {
+      for (const column of ["user_id", "channel", "challenge_hash", "expires_at", "used_at"]) {
+        if (!tableContract.requiredColumns.includes(column)) issues.push("account_recovery_challenges must include hashed recovery columns.");
       }
     }
     if (tableContract.name === "idempotency_keys") {

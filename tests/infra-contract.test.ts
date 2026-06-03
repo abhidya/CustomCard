@@ -12,6 +12,8 @@ describe("production infrastructure contract", () => {
     const requiredTables = [
       "users",
       "auth_sessions",
+      "account_identities",
+      "account_recovery_challenges",
       "provider_connections",
       "imported_events",
       "card_opportunities",
@@ -36,6 +38,11 @@ describe("production infrastructure contract", () => {
     expect(migration).toContain("session_hash TEXT NOT NULL");
     expect(migration).toContain("CHECK (char_length(session_hash) >= 32)");
     expect(migration).toContain("role TEXT NOT NULL CHECK (role IN ('customer', 'admin'))");
+    expect(migration).toContain("provider_subject TEXT NOT NULL");
+    expect(migration).toContain("raw_profile_stored BOOLEAN NOT NULL DEFAULT FALSE");
+    expect(migration).toContain("challenge_hash TEXT NOT NULL CHECK (char_length(challenge_hash) >= 32)");
+    expect(migration).toContain("CREATE UNIQUE INDEX idx_account_identities_provider_subject");
+    expect(migration).toContain("CREATE UNIQUE INDEX idx_account_recovery_challenge_hash");
     expect(migration).toContain("UNIQUE (user_id, route_id, idempotency_key)");
     expect(migration).toContain("CHECK (char_length(request_hash) >= 12)");
     expect(migration).toContain("idempotency_key_id TEXT REFERENCES idempotency_keys(id)");
@@ -284,6 +291,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run api:doctor:postgres:live");
+    expect(workflow).toContain("npm run account:doctor:live");
     expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");
@@ -410,7 +418,14 @@ describe("production infrastructure contract", () => {
     const report = JSON.parse(output) as {
       status: string;
       readiness: {
-        tables: { total: number; authSessions: boolean; idempotencyReplay: boolean; queueJobs: boolean };
+        tables: {
+          total: number;
+          authSessions: boolean;
+          accountIdentities: boolean;
+          accountRecoveryChallenges: boolean;
+          idempotencyReplay: boolean;
+          queueJobs: boolean;
+        };
         api: { statefulRoutes: number; idempotentMutations: number };
         safety: { rawContentStored: boolean; liveExternalCalls: boolean; realOrdersEnabled: boolean };
       };
@@ -420,8 +435,10 @@ describe("production infrastructure contract", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.tables).toMatchObject({
-      total: 16,
+      total: 18,
       authSessions: true,
+      accountIdentities: true,
+      accountRecoveryChallenges: true,
       idempotencyReplay: true,
       queueJobs: true
     });

@@ -58,9 +58,11 @@ const readiness = {
     rawContentStored: false
   },
   persistence: {
-    tables: 16,
+    tables: 18,
     schemaBackedRoutes: 11,
     authSessionTable: true,
+    accountIdentityTable: true,
+    accountRecoveryTable: true,
     idempotencyTable: true,
     appendOnlyAudit: true,
     renderPacketArtifacts: true,
@@ -275,6 +277,8 @@ function validateApiServerContract() {
   }
   if (readiness.providers.total < 87) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
+  if (!readiness.persistence.accountIdentityTable) blockers.push("API readiness is missing account identity persistence.");
+  if (!readiness.persistence.accountRecoveryTable) blockers.push("API readiness is missing account recovery persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");

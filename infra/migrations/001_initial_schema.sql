@@ -17,6 +17,32 @@ CREATE TABLE auth_sessions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE account_identities (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  provider TEXT NOT NULL,
+  provider_subject TEXT NOT NULL,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('customer', 'admin')),
+  raw_profile_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_profile_stored = FALSE),
+  claims_schema JSONB NOT NULL DEFAULT '{}'::jsonb,
+  verified_at TIMESTAMPTZ NOT NULL,
+  last_login_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (provider, provider_subject)
+);
+
+CREATE TABLE account_recovery_challenges (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  channel TEXT NOT NULL CHECK (channel IN ('email-link', 'admin-assisted')),
+  challenge_hash TEXT NOT NULL CHECK (char_length(challenge_hash) >= 32),
+  expires_at TIMESTAMPTZ NOT NULL,
+  used_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (expires_at > created_at)
+);
+
 CREATE TABLE provider_connections (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
@@ -213,6 +239,10 @@ CREATE TABLE audit_log (
 
 CREATE INDEX idx_auth_sessions_user ON auth_sessions(user_id);
 CREATE UNIQUE INDEX idx_auth_sessions_hash ON auth_sessions(session_hash);
+CREATE INDEX idx_account_identities_user ON account_identities(user_id);
+CREATE UNIQUE INDEX idx_account_identities_provider_subject ON account_identities(provider, provider_subject);
+CREATE INDEX idx_account_recovery_user ON account_recovery_challenges(user_id);
+CREATE UNIQUE INDEX idx_account_recovery_challenge_hash ON account_recovery_challenges(challenge_hash);
 CREATE INDEX idx_provider_connections_user ON provider_connections(user_id);
 CREATE INDEX idx_imported_events_connection ON imported_events(connection_id);
 CREATE INDEX idx_card_opportunities_event ON card_opportunities(event_id);

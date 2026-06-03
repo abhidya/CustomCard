@@ -80,8 +80,9 @@ environment configuration instead of static placeholders.
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
   isolated live Postgres auth/idempotency/audit/queue runtime checks, admin demo
   reset, and no live external calls.
-- Persistence contract/migration boundary for auth sessions, idempotency replay,
-  queue jobs, audit logs, and 11 schema-backed API routes.
+- Persistence contract/migration boundary for auth sessions, hosted account
+  identities, hashed recovery challenges, idempotency replay, queue jobs, audit
+  logs, and 11 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 
@@ -175,6 +176,7 @@ npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -183,10 +185,10 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 
 `npm run check` now runs the full test suite, contract coverage thresholds, the
 production build, and a high-severity dependency audit. The V8 coverage gate
-applies to `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
-`src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
-`src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
-`src/providerCatalog.ts`,
+applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
+`src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
+`src/domain.ts`, `src/freeMvp.ts`, `src/persistenceContracts.ts`,
+`src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
 verified through Chrome smoke tests.
 
@@ -196,9 +198,9 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
-contract doctor, live Postgres integration doctor, persistence doctor, demo
-reset doctor, worker readiness, and mobile doctor on pushes to `main` and pull
-requests.
+contract doctor, live Postgres integration doctor, account-auth storage/recovery
+doctor, persistence doctor, demo reset doctor, worker readiness, and mobile
+doctor on pushes to `main` and pull requests.
 
 ## Project Docs
 
@@ -220,10 +222,10 @@ requests.
 
 ## Honest Gaps
 
-The repo does not include production user auth, live OAuth, live AI/image
+The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
 retail-printer ordering, live telemetry ingestion/alerting, live object-storage
-uploads, deployed Postgres API integration, production account auth flows,
+uploads, deployed Postgres API integration, hosted account-token verification,
 native mobile builds, deployment evidence, legal/security review, or physical
 print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system

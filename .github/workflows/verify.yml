@@ -65,6 +65,9 @@ jobs:
       - name: Validate live Postgres migration/runtime integration
         run: npm run api:doctor:postgres:live
 
+      - name: Validate account auth storage/recovery integration
+        run: npm run account:doctor:live
+
       - name: Validate persistence readiness
         run: npm run persistence:doctor
 

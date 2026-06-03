@@ -123,10 +123,10 @@ export const providerCatalog: ProviderAdapter[] = [
     status: "contract-only",
     cost: "self-hosted",
     credentials: ["AUTH_SESSION_SECRET"],
-    safetyGates: ["HttpOnly sessions", "Password reset not shipped"],
+    safetyGates: ["HttpOnly sessions", "Hashed recovery challenges", "Revocation handling"],
     roleSurface: ["admin"],
     priority: 80,
-    detail: "Documents the future hosted auth boundary without enabling account creation."
+    detail: "Documents the self-hosted auth boundary while account identity and recovery storage are contract-tested."
   },
   {
     id: "auth0-oidc-auth",

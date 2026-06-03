@@ -47,9 +47,14 @@ it after each meaningful implementation pass.
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
   customer pricing preview, `X-Idempotency-Key` replay/conflict behavior,
   404/405 behavior, and the no-live-call/no-real-order posture.
+- Account-auth tests and `npm run account:doctor:live` cover hosted auth adapter
+  requirements, durable account identity storage, no raw provider profiles,
+  provider-subject uniqueness, hashed expiring recovery challenges, durable
+  sessions, and recovery audit rows.
 - Persistence-contract tests and `npm run persistence:doctor` cover auth-session
-  schema, idempotency replay state, queue job envelopes, append-only audit
-  contracts, demo reset mappings, and 11 schema-backed API route mappings.
+  schema, account identity/recovery schema, idempotency replay state, queue job
+  envelopes, append-only audit contracts, demo reset mappings, and 11
+  schema-backed API route mappings.
 - Demo seed tests and `npm run demo:doctor` cover deterministic reviewer reset
   fixtures, SQL preview, signed artifact handoff references, and no-live-call
   safety gates.
@@ -77,6 +82,7 @@ npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -93,10 +99,10 @@ npm run check
 
 Result: passed.
 
-- Vitest: 16 test files passed, 114 tests passed.
-- Coverage: 14 core/API/persistence/infra/mobile test files passed, 106 tests passed; V8 report measured
-  91.71% statements, 84.96% branches, 96.87% functions, and 95.52% lines across
-  `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
+- Vitest: 17 test files passed, 117 tests passed.
+- Coverage: 15 core/API/persistence/infra/mobile test files passed, 109 tests passed; V8 report measured
+  91.44% statements, 84.49% branches, 97.01% functions, and 95.25% lines across
+  `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
   `src/providerCatalog.ts`, `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -115,7 +121,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 13 routes, 6 idempotent mutation contracts,
-87 providers, 16 persistence tables, render-packet artifact manifests, signed
+87 providers, 18 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, contract runtime mode, no live external calls, no real
 vendor orders, no raw content storage, and no blockers.
 
@@ -125,7 +131,7 @@ npm run api:doctor:memory
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
 enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 87
-providers, 16 persistence tables, render-packet artifact manifests, signed
+providers, 18 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
 
@@ -152,13 +158,25 @@ and verified 1 idempotency record, 1 audit record, and 1 queued job before
 dropping the temporary database.
 
 ```text
+CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+```
+
+Result: passed. Account auth doctor created an isolated temporary database,
+applied `infra/migrations/001_initial_schema.sql`, stored a hosted account
+identity without raw provider profile data, enforced provider-subject uniqueness,
+created a hashed expiring recovery challenge, created a durable customer session,
+marked the recovery challenge used, appended an audit row, and dropped the
+temporary database.
+
+```text
 npm run persistence:doctor
 ```
 
-Result: passed. Persistence doctor reported 16 required tables, auth-session
-persistence, idempotency replay, queue jobs, render-packet artifact manifest
-signals, Postgres runtime SQL/doctor/integration signals, append-only audit
-coverage, 11 schema-backed API routes, and no blockers.
+Result: passed. Persistence doctor reported 18 required tables, auth-session
+persistence, account identity and recovery challenge persistence, idempotency
+replay, queue jobs, render-packet artifact manifest signals, Postgres runtime
+SQL/doctor/integration signals, account-auth contract/doctor signals,
+append-only audit coverage, 11 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -232,8 +250,9 @@ documentation claims found during the audit were corrected.
   dispute, tax, settlement, or payment-webhook test is claimed.
 - Observability providers are contract-only; no live telemetry ingestion, alert,
   retention, dashboard, or incident-response drill is claimed.
-- No production Postgres-backed API integration test or production account auth
-  flow; local/CI isolated Postgres integration is covered by doctor.
+- No deployed production Postgres API integration or live hosted account-token
+  verification; local/CI isolated Postgres and account-auth storage/recovery
+  integration are covered by doctors.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

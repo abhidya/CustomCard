@@ -16,6 +16,8 @@ describe("api server wrapper", () => {
         persistence: {
           tables: number;
           authSessionTable: boolean;
+          accountIdentityTable: boolean;
+          accountRecoveryTable: boolean;
           idempotencyTable: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
@@ -32,8 +34,10 @@ describe("api server wrapper", () => {
     expect(report.readiness.routes.total).toBe(13);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.persistence).toMatchObject({
-      tables: 16,
+      tables: 18,
       authSessionTable: true,
+      accountIdentityTable: true,
+      accountRecoveryTable: true,
       idempotencyTable: true,
       renderPacketArtifacts: true,
       signedArtifactUrls: true
@@ -90,9 +94,11 @@ describe("api server wrapper", () => {
 
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
-        tables: 16,
+        tables: 18,
         schemaBackedRoutes: 11,
         authSessionTable: true,
+        accountIdentityTable: true,
+        accountRecoveryTable: true,
         idempotencyTable: true,
         renderPacketArtifacts: true,
         signedArtifactUrls: true

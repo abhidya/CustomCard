@@ -4,6 +4,8 @@ const files = {
   apiContracts: "src/apiContracts.ts",
   apiRuntime: "scripts/api-runtime.mjs",
   apiServer: "scripts/api-server.mjs",
+  accountAuth: "src/accountAuth.ts",
+  accountAuthDoctor: "scripts/account-auth-doctor.mjs",
   postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
   postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
   migration: "infra/migrations/001_initial_schema.sql"
@@ -16,6 +18,8 @@ const contents = Object.fromEntries(
 const requiredTables = [
   "users",
   "auth_sessions",
+  "account_identities",
+  "account_recovery_challenges",
   "provider_connections",
   "imported_events",
   "card_opportunities",
@@ -40,6 +44,15 @@ const migrationSignals = [
   "expires_at TIMESTAMPTZ NOT NULL",
   "revoked_at TIMESTAMPTZ",
   "CREATE UNIQUE INDEX idx_auth_sessions_hash",
+  "CREATE TABLE account_identities",
+  "provider_subject TEXT NOT NULL",
+  "raw_profile_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_profile_stored = FALSE)",
+  "claims_schema JSONB NOT NULL",
+  "CREATE UNIQUE INDEX idx_account_identities_provider_subject",
+  "CREATE TABLE account_recovery_challenges",
+  "challenge_hash TEXT NOT NULL CHECK (char_length(challenge_hash) >= 32)",
+  "CHECK (expires_at > created_at)",
+  "CREATE UNIQUE INDEX idx_account_recovery_challenge_hash",
   "CREATE TABLE idempotency_keys",
   "UNIQUE (user_id, route_id, idempotency_key)",
   "request_hash TEXT NOT NULL",
@@ -66,6 +79,8 @@ const apiSignals = [
   "/api/admin/persistence-readiness",
   "schemaBackedRoutes",
   "authSessionTable: true",
+  "accountIdentityTable: true",
+  "accountRecoveryTable: true",
   "idempotencyTable: true",
   "appendOnlyAudit: true"
 ];
@@ -92,19 +107,39 @@ const postgresIntegrationSignals = [
   "DROP DATABASE IF EXISTS",
   "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
 ];
+const accountAuthSignals = [
+  "customcard-account-auth",
+  "account_identities",
+  "account_recovery_challenges",
+  "requiredHostedAuthAdapterIds",
+  "challenge_hash",
+  "rawProfileStored: false"
+];
+const accountAuthDoctorSignals = [
+  "customcard-account-auth-doctor",
+  "CREATE DATABASE",
+  "account_identities",
+  "account_recovery_challenges",
+  "raw_profile_stored = FALSE",
+  "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR"
+];
 const authSessionSignals = migrationSignals.slice(0, 7);
-const idempotencySignals = migrationSignals.slice(7, 12);
-const queueJobSignals = migrationSignals.slice(12, 16);
-const safetySignals = migrationSignals.slice(16);
+const accountStorageSignals = migrationSignals.slice(7, 16);
+const idempotencySignals = migrationSignals.slice(16, 21);
+const queueJobSignals = migrationSignals.slice(21, 25);
+const safetySignals = migrationSignals.slice(25);
 
 const checks = [
   checkIncludes("schema", "required-tables", contents.migration, requiredTables.map((table) => `CREATE TABLE ${table}`)),
   checkIncludes("schema", "auth-session-signals", contents.migration, authSessionSignals),
+  checkIncludes("schema", "account-auth-storage-signals", contents.migration, accountStorageSignals),
   checkIncludes("schema", "idempotency-signals", contents.migration, idempotencySignals),
   checkIncludes("schema", "queue-job-signals", contents.migration, queueJobSignals),
   checkIncludes("schema", "safety-signals", contents.migration, safetySignals),
   checkIncludes("api", "persistence-route-contract", contents.apiContracts, apiSignals.slice(0, 2)),
   checkIncludes("api", "server-persistence-readiness", contents.apiServer, apiSignals.slice(1)),
+  checkIncludes("api", "account-auth-contract", contents.accountAuth, accountAuthSignals),
+  checkIncludes("api", "account-auth-doctor", contents.accountAuthDoctor, accountAuthDoctorSignals),
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),
@@ -129,6 +164,8 @@ const report = {
     tables: {
       total: requiredTables.length,
       authSessions: true,
+      accountIdentities: true,
+      accountRecoveryChallenges: true,
       idempotencyReplay: true,
       queueJobs: true,
       auditLog: true

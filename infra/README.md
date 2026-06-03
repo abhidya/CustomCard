@@ -36,6 +36,7 @@ npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run persistence:doctor
 npm run demo:doctor
 ```
@@ -62,10 +63,16 @@ exercises the real `pg` runtime, and drops the temporary database before exiting
 CI runs that live doctor against a Postgres service; deployed production account
 auth remains unclaimed.
 
-The persistence boundary requires auth-session storage, idempotency replay,
-queue job envelopes, render-packet artifact manifests, signed URL expiry, and
-append-only audit signals in the migration before production Postgres handlers
-are claimed.
+`CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` uses the
+same isolated-database pattern to verify hosted account identity rows,
+provider-subject uniqueness, hashed recovery challenges, durable sessions, and
+account-recovery audit rows. CI runs it against the Postgres service; live hosted
+token verification remains unclaimed.
+
+The persistence boundary requires auth-session storage, account identity storage,
+hashed recovery challenges, idempotency replay, queue job envelopes,
+render-packet artifact manifests, signed URL expiry, and append-only audit
+signals in the migration before production Postgres handlers are claimed.
 
 The Kubernetes `Secret` in `k8s/app.yaml` is intentionally empty and annotated as
 pre-created by a secret manager. Production clusters should source the required

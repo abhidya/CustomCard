@@ -43,10 +43,16 @@ describe("persistence contracts", () => {
     const summary = buildPersistenceReadinessSummary();
 
     expect(summary.status).toBe("ready");
-    expect(summary.tables.total).toBe(16);
+    expect(summary.tables.total).toBe(18);
     expect(summary.tables.authSessionTable).toBe(true);
     expect(summary.tables.idempotencyTable).toBe(true);
     expect(summary.tables.jobTable).toBe(true);
+    expect(persistenceTableContracts.find((contract) => contract.name === "account_identities")?.requiredColumns).toEqual(
+      expect.arrayContaining(["provider_subject", "raw_profile_stored", "claims_schema"])
+    );
+    expect(persistenceTableContracts.find((contract) => contract.name === "account_recovery_challenges")?.requiredColumns).toEqual(
+      expect.arrayContaining(["challenge_hash", "expires_at", "used_at"])
+    );
     expect(summary.tables.rawContentAllowed).toBe(0);
     expect(persistenceTableContracts.find((contract) => contract.name === "render_packets")?.requiredColumns).toEqual(
       expect.arrayContaining(["artifact_manifest", "signed_url_expires_at", "external_share_approval_required", "real_orders_enabled"])
