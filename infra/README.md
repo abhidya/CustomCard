@@ -12,6 +12,8 @@ This directory is the deployable service skeleton for the production path.
   app from `dist`.
 - `../src/artifactHandoff.ts` defines the render-packet artifact manifest and
   HMAC-signed URL contract used by the API/schema gates.
+- `../src/artifactStore.ts` writes render-packet artifacts to a temporary local
+  filesystem object-store path and verifies readback without network calls.
 - `../scripts/persistence-doctor.mjs` validates auth-session, idempotency, queue
   job, and audit persistence signals.
 - `../scripts/demo-reset.mjs` validates the reviewer demo reset contract before
@@ -37,6 +39,7 @@ npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+npm run artifact:doctor
 npm run persistence:doctor
 npm run demo:doctor
 ```
@@ -68,6 +71,12 @@ same isolated-database pattern to verify hosted account identity rows,
 provider-subject uniqueness, hashed recovery challenges, durable sessions, and
 account-recovery audit rows. CI runs it against the Postgres service; live hosted
 token verification remains unclaimed.
+
+`npm run artifact:doctor` writes the sample render packet package to a
+temporary local filesystem object-store path, reads every artifact back, verifies
+checksums and byte lengths, stores the handoff manifest, and keeps network calls
+plus real orders disabled. Cloud S3/MinIO writes remain unclaimed until provider
+credentials, bucket policy, and deployment storage are tested.
 
 The persistence boundary requires auth-session storage, account identity storage,
 hashed recovery challenges, idempotency replay, queue job envelopes,

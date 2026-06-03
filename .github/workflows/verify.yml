@@ -68,6 +68,9 @@ jobs:
       - name: Validate account auth storage/recovery integration
         run: npm run account:doctor:live
 
+      - name: Validate artifact object-store writes
+        run: npm run artifact:doctor
+
       - name: Validate persistence readiness
         run: npm run persistence:doctor
 

@@ -16,6 +16,7 @@
     "api:doctor:postgres": "node scripts/postgres-runtime-doctor.mjs",
     "api:doctor:postgres:live": "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled node scripts/postgres-integration-doctor.mjs",
     "account:doctor:live": "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled node scripts/account-auth-doctor.mjs",
+    "artifact:doctor": "node scripts/artifact-store-doctor.mjs",
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "demo:doctor": "node scripts/demo-reset.mjs",

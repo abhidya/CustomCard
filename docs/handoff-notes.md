@@ -19,7 +19,8 @@ skeleton for the production path. It includes:
 - Local print package export with four SVG upload artifacts, a combined 5x7 PDF
   proof, and a checksum manifest for manual printer handoff.
 - Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
-  manifests, expiry checks, and object-store signing env gates.
+  manifests, expiry checks, object-store signing env gates, and local filesystem
+  write/read verification.
 - A tested customer mobile shell contract that mirrors the web customer panel at
   the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
@@ -51,8 +52,9 @@ skeleton for the production path. It includes:
   verification; fake-pool, isolated live Postgres, and account-auth doctors
   cover the current API persistence boundary.
 - No live AI text/image generation.
-- No live object-storage upload or cloud object-store integration for exported
-  artifacts; signed URL contracts and schema gates are covered.
+- No live S3/MinIO cloud object-store integration for exported artifacts;
+  signed URL contracts, schema gates, and temporary filesystem write/read
+  verification are covered.
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, pickup-window, or checkout availability
   verification for public printer prices.
@@ -79,11 +81,12 @@ skeleton for the production path. It includes:
 7. Run `npm run api:doctor:postgres`.
 8. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
 9. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-10. Run `npm run persistence:doctor`.
-11. Run `npm run demo:doctor`.
-12. Run the worker and mobile doctor commands in `docs/verification.md`.
-13. Inspect the app with `npm run dev`.
-14. In the app, start a local workspace, scan the sample invite, generate a card,
+10. Run `npm run artifact:doctor`.
+11. Run `npm run persistence:doctor`.
+12. Run `npm run demo:doctor`.
+13. Run the worker and mobile doctor commands in `docs/verification.md`.
+14. Inspect the app with `npm run dev`.
+15. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -95,21 +98,22 @@ card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, account
 identity/recovery storage, memory and Postgres auth/idempotency runtime behavior,
 public printer pricing research, local SVG/PDF print package export,
-provider-adapter readiness, domain boundaries, signed artifact handoff
-contracts, print contracts, order lifecycle, deployment shape, and safety gates
-with executable TypeScript, browser smoke tests, visual evidence, and
+temporary filesystem artifact-store write/read verification, provider-adapter
+readiness, domain boundaries, signed artifact handoff contracts, print
+contracts, order lifecycle, deployment shape, and safety gates with executable
+TypeScript, browser smoke tests, visual evidence, and
 infrastructure tests. Real external AI, OAuth, and ordering remain disabled
 until production credentials, consent flows, vendor terms, sandbox/live quote
 behavior, physical print certification, and security/legal review are complete.
 
 ## Next Build Slice
 
-The highest-leverage next slice is turning the account-auth storage doctor into
-live hosted-auth verification and repository-backed product routes:
+The highest-leverage next slice is turning local persistence doctors into hosted
+runtime verification and repository-backed product routes:
 
 - Hosted auth token verification and authenticated card-project routes.
 - Persistent event/opportunity/memory/order repositories.
-- Live render-packet artifact writing to object storage using the signed handoff
+- Live S3/MinIO render-packet artifact writing using the signed handoff
   contract.
 - Live seed execution against a deployed reviewer database.
 - CI-friendly Chrome smoke hardening.

@@ -42,7 +42,7 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
   Gemini image generation, Azure OpenAI, Amazon Bedrock, Stability AI, Hugging
   Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, local
-  print package export, and object-store render packets.
+  print package export, and local filesystem object-store render-packet writes.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
   and Office Depot live ordering blocked.
@@ -271,6 +271,9 @@ Implemented checks:
 - `src/artifactHandoff.test.ts` validates HMAC-signed artifact URLs,
   object-store URI construction, tamper detection, expiry policy, and unsafe
   config failures.
+- `src/artifactStore.test.ts` and `npm run artifact:doctor` validate local
+  filesystem object-store writes, readback verification, checksum/byte-length
+  matching, stored handoff manifests, no network calls, and no real orders.
 - `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior
   through an injected fake pool without requiring external database credentials.
 - `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
@@ -296,12 +299,13 @@ Implemented checks:
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
   contract API doctor, memory API doctor, Postgres runtime contract doctor, live
-  Postgres integration doctor, account-auth doctor, persistence doctor, demo
-  reset doctor, worker readiness, and mobile doctor for pushes to `main` and
-  pull requests.
+  Postgres integration doctor, account-auth doctor, artifact-store doctor,
+  persistence doctor, demo reset doctor, worker readiness, and mobile doctor for
+  pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  artifact-handoff, pricing, print-export, persistence, orchestration, and mobile contract
-  modules: 90% statements, 80% branches, 90% functions, and 90% lines.
+  artifact handoff/store, pricing, print-export, persistence, orchestration, and
+  mobile contract modules: 90% statements, 80% branches, 90% functions, and 90%
+  lines.
 
 Remaining high-risk work:
 
@@ -311,8 +315,8 @@ Remaining high-risk work:
 - No live observability ingestion, alert routing, retention enforcement, or
   incident-response drill.
 - No live printer tax, coupon, stock, or pickup-window integration.
-- No live object-store upload or cloud object-store integration; signed
-  render-packet URL contracts are covered.
+- No live S3/MinIO cloud object-store integration; signed render-packet URL
+  contracts and temporary filesystem write/read verification are covered.
 - No deployed production Postgres API integration or hosted account-token
   verification; isolated live Postgres migration/runtime integration and account
   identity/recovery storage are covered by doctors.

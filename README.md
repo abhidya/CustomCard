@@ -30,8 +30,9 @@ The service kernel still executes the critical backend contracts in code:
 metadata-only provider import, approved relationship memory, layout-safe 5x7
 rendering, explicit order lifecycle transitions, recovery paths,
 regional/vendor-share policy, and runtime readiness checks.
-Render-packet artifact handoff is modeled with checksum manifests and
-HMAC-signed URL contracts, while live object-store writes remain disabled.
+Render-packet artifact handoff is modeled with checksum manifests,
+HMAC-signed URL contracts, and local filesystem object-store write/read
+verification, while cloud S3/MinIO writes remain credential-gated.
 
 Real ordering is deliberately disabled. The
 `WalgreensFiveBySevenDoubleSidedCardAdapter` is represented as a hard-gated
@@ -177,6 +178,7 @@ npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+npm run artifact:doctor
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -187,10 +189,11 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
-`src/domain.ts`, `src/freeMvp.ts`, `src/persistenceContracts.ts`,
-`src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.ts`,
-`src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
-verified through Chrome smoke tests.
+`src/artifactStore.ts`, `src/domain.ts`, `src/freeMvp.ts`,
+`src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
+`src/providerCatalog.ts`, `src/providerRuntime.ts`, and
+`src/serviceKernel.ts`; browser UI behavior is verified through Chrome smoke
+tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
 cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
@@ -199,8 +202,8 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
 contract doctor, live Postgres integration doctor, account-auth storage/recovery
-doctor, persistence doctor, demo reset doctor, worker readiness, and mobile
-doctor on pushes to `main` and pull requests.
+doctor, artifact-store write/read doctor, persistence doctor, demo reset doctor,
+worker readiness, and mobile doctor on pushes to `main` and pull requests.
 
 ## Project Docs
 
@@ -224,8 +227,9 @@ doctor on pushes to `main` and pull requests.
 
 The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
-retail-printer ordering, live telemetry ingestion/alerting, live object-storage
-uploads, deployed Postgres API integration, hosted account-token verification,
+retail-printer ordering, live telemetry ingestion/alerting, live S3/MinIO cloud
+object-store writes, deployed Postgres API integration, hosted account-token
+verification,
 native mobile builds, deployment evidence, legal/security review, or physical
 print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system

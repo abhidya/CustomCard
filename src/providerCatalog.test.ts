@@ -204,7 +204,7 @@ describe("provider catalog", () => {
     expect(admin.deploymentAdapters.map((adapter) => adapter.label)).toContain("Cheap droplet compose");
     expect(providerCatalog.find((adapter) => adapter.id === "object-store-render-packets")).toMatchObject({
       credentials: expect.arrayContaining(["OBJECT_STORE_URL", "OBJECT_STORE_SIGNING_SECRET"]),
-      safetyGates: expect.arrayContaining(["HMAC signed URL contract", "No live upload in local MVP"])
+      safetyGates: expect.arrayContaining(["HMAC signed URL contract", "Local filesystem write doctor"])
     });
     expect(admin.blockedProviders.map((adapter) => adapter.label)).toEqual(
       expect.arrayContaining([

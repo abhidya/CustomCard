@@ -876,10 +876,10 @@ export const providerCatalog: ProviderAdapter[] = [
     status: "contract-only",
     cost: "self-hosted",
     credentials: ["OBJECT_STORE_URL", "OBJECT_STORE_BUCKET", "OBJECT_STORE_SIGNING_SECRET"],
-    safetyGates: ["Checksum required", "HMAC signed URL contract", "Retention policy required", "No live upload in local MVP"],
+    safetyGates: ["Checksum required", "HMAC signed URL contract", "Retention policy required", "Local filesystem write doctor"],
     roleSurface: ["admin"],
     priority: 65,
-    detail: "Models durable render-packet storage and expiring signed artifact URLs without enabling live uploads."
+    detail: "Writes render packets to the local filesystem object-store path and models S3/MinIO handoff without enabling cloud writes."
   },
   {
     id: "local-relationship-memory",

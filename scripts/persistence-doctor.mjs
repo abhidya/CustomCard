@@ -6,6 +6,8 @@ const files = {
   apiServer: "scripts/api-server.mjs",
   accountAuth: "src/accountAuth.ts",
   accountAuthDoctor: "scripts/account-auth-doctor.mjs",
+  artifactStore: "src/artifactStore.ts",
+  artifactStoreDoctor: "scripts/artifact-store-doctor.mjs",
   postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
   postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
   migration: "infra/migrations/001_initial_schema.sql"
@@ -123,6 +125,21 @@ const accountAuthDoctorSignals = [
   "raw_profile_stored = FALSE",
   "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR"
 ];
+const artifactStoreSignals = [
+  "customcard-artifact-store",
+  "writeFilesystemArtifactStore",
+  "readFile",
+  "writeFile",
+  "realOrdersEnabled: false",
+  "noNetwork: true"
+];
+const artifactStoreDoctorSignals = [
+  "customcard-artifact-store-doctor",
+  "writeFilesystemArtifactStore",
+  "buildArtifactHandoffContract",
+  "manifestStored",
+  "verifiedWrites"
+];
 const authSessionSignals = migrationSignals.slice(0, 7);
 const accountStorageSignals = migrationSignals.slice(7, 16);
 const idempotencySignals = migrationSignals.slice(16, 21);
@@ -140,6 +157,8 @@ const checks = [
   checkIncludes("api", "server-persistence-readiness", contents.apiServer, apiSignals.slice(1)),
   checkIncludes("api", "account-auth-contract", contents.accountAuth, accountAuthSignals),
   checkIncludes("api", "account-auth-doctor", contents.accountAuthDoctor, accountAuthDoctorSignals),
+  checkIncludes("api", "artifact-store-contract", contents.artifactStore, artifactStoreSignals),
+  checkIncludes("api", "artifact-store-doctor", contents.artifactStoreDoctor, artifactStoreDoctorSignals),
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),
@@ -166,6 +185,7 @@ const report = {
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
+      artifactStoreWrites: true,
       idempotencyReplay: true,
       queueJobs: true,
       auditLog: true

@@ -292,6 +292,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run api:doctor:postgres:live");
     expect(workflow).toContain("npm run account:doctor:live");
+    expect(workflow).toContain("npm run artifact:doctor");
     expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");

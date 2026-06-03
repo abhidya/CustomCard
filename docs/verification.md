@@ -30,6 +30,10 @@ it after each meaningful implementation pass.
   summary behavior.
 - Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
   config validation, expiry limits, and tamper detection.
+- Artifact-store tests and `npm run artifact:doctor` write every render-packet
+  artifact to a temporary local filesystem object-store path, read the files
+  back, verify byte lengths and content hashes, store the handoff manifest, and
+  keep network calls plus real orders disabled.
 - Provider adapter coverage currently includes 87 adapters: 16 ready-local, 56
   credential-gated, 9 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
@@ -61,8 +65,9 @@ it after each meaningful implementation pass.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
-- Coverage is measured for core, API, artifact handoff, pricing, print export, persistence, orchestration, and mobile
-  contract modules with V8 thresholds enforced by `npm run check`: 90%
+- Coverage is measured for core, API, artifact handoff/store, pricing, print
+  export, persistence, orchestration, and mobile contract modules with V8
+  thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
@@ -83,6 +88,7 @@ npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
+npm run artifact:doctor
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -99,13 +105,14 @@ npm run check
 
 Result: passed.
 
-- Vitest: 17 test files passed, 117 tests passed.
-- Coverage: 15 core/API/persistence/infra/mobile test files passed, 109 tests passed; V8 report measured
-  91.44% statements, 84.49% branches, 97.01% functions, and 95.25% lines across
+- Vitest: 18 test files passed, 119 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 111 tests passed; V8 report measured
+  91.07% statements, 83.93% branches, 97.10% functions, and 95.23% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
-  `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
-  `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
-  `src/providerCatalog.ts`, `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
+  `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
+  `src/domain.ts`, `src/freeMvp.ts`, `src/persistenceContracts.ts`,
+  `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.ts`,
+  `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -169,14 +176,24 @@ marked the recovery challenge used, appended an audit row, and dropped the
 temporary database.
 
 ```text
+npm run artifact:doctor
+```
+
+Result: passed. Artifact store doctor wrote all 6 render-packet artifacts to a
+temporary filesystem object-store path, read them back, verified all checksums
+and byte lengths, stored the handoff manifest, made no network calls, and kept
+real orders disabled.
+
+```text
 npm run persistence:doctor
 ```
 
 Result: passed. Persistence doctor reported 18 required tables, auth-session
 persistence, account identity and recovery challenge persistence, idempotency
-replay, queue jobs, render-packet artifact manifest signals, Postgres runtime
-SQL/doctor/integration signals, account-auth contract/doctor signals,
-append-only audit coverage, 11 schema-backed API routes, and no blockers.
+replay, queue jobs, render-packet artifact manifest signals, artifact-store
+write/read doctor signals, Postgres runtime SQL/doctor/integration signals,
+account-auth contract/doctor signals, append-only audit coverage, 11
+schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -241,9 +258,11 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No production/deployed Postgres migration run in this pass; isolated live
   Postgres migration/runtime integration is covered by doctor.
-- No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
-- Local SVG/PDF/manifest print package export and signed artifact handoff
-  contracts are covered, but no live object-store upload is claimed.
+- No live S3/MinIO cloud object-store, queue, droplet, cloud cluster, or vendor
+  sandbox test.
+- Local SVG/PDF/manifest print package export, signed artifact handoff contracts,
+  and temporary filesystem object-store write/read verification are covered, but
+  no cloud object-store write is claimed.
 - Public printer pricing is review-only and source-backed with freshness gates;
   no live quote, tax, coupon, stock, pickup-window, or checkout test is claimed.
 - Payment providers are sandbox-contract only; no live charge, capture, refund,
