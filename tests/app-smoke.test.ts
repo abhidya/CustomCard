@@ -23,8 +23,9 @@ describeWithChrome("CustomCard UI smoke", () => {
   let server: ViteDevServer;
   let baseUrl: string;
   let chrome: ChildProcess | undefined;
+  let chromeStartupLog = "";
   let userDataDir: string | undefined;
-  let ws: WebSocket;
+  let ws: WebSocket | undefined;
   let nextId = 1;
   const pending = new Map<number, PendingCommand>();
   const eventWaiters: EventWaiter[] = [];
@@ -54,17 +55,22 @@ describeWithChrome("CustomCard UI smoke", () => {
         "--headless",
         "--disable-gpu",
         "--no-sandbox",
+        "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
+        "--remote-debugging-address=127.0.0.1",
         `--remote-debugging-port=${debuggingPort}`,
         `--user-data-dir=${userDataDir}`,
         "--no-first-run",
         "--disable-extensions",
         "about:blank"
       ],
-      { stdio: "ignore" }
+      { stdio: ["ignore", "ignore", "pipe"] }
     );
+    chrome.stderr?.on("data", (chunk) => {
+      chromeStartupLog = `${chromeStartupLog}${String(chunk)}`.slice(-4000);
+    });
 
-    const version = await waitForDebuggingVersion(debuggingPort);
+    const version = await waitForDebuggingVersion(debuggingPort, chrome, () => chromeStartupLog);
     ws = new WebSocket(version.webSocketDebuggerUrl);
     ws.onmessage = (event) => {
       const message = JSON.parse(String(event.data));
@@ -88,10 +94,12 @@ describeWithChrome("CustomCard UI smoke", () => {
       ws.onopen = () => resolve();
       ws.onerror = () => reject(new Error("Chrome debugging WebSocket failed"));
     });
-  }, 30000);
+  }, 45000);
 
   afterAll(async () => {
-    await send("Browser.close").catch(() => undefined);
+    if (ws) {
+      await send("Browser.close").catch(() => undefined);
+    }
     ws?.close();
     await waitForChromeExit(chrome);
     await server?.close();
@@ -299,6 +307,9 @@ describeWithChrome("CustomCard UI smoke", () => {
   }
 
   function send(method: string, params: Record<string, unknown> = {}, sessionId?: string): Promise<any> {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      return Promise.reject(new Error("Chrome debugging WebSocket is not open"));
+    }
     const id = nextId;
     nextId += 1;
     ws.send(JSON.stringify({ id, method, params, sessionId }));
@@ -327,8 +338,12 @@ describeWithChrome("CustomCard UI smoke", () => {
   }
 });
 
-async function waitForDebuggingVersion(port: number): Promise<{ webSocketDebuggerUrl: string }> {
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+async function waitForDebuggingVersion(
+  port: number,
+  chrome?: ChildProcess,
+  getChromeLog: () => string = () => ""
+): Promise<{ webSocketDebuggerUrl: string }> {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
     try {
       const response = await fetch(`http://127.0.0.1:${port}/json/version`);
       if (response.ok) {
@@ -337,9 +352,12 @@ async function waitForDebuggingVersion(port: number): Promise<{ webSocketDebugge
     } catch {
       // Chrome is still starting.
     }
+    if (chrome && (chrome.exitCode !== null || chrome.signalCode !== null)) {
+      throw new Error(`Chrome exited before debugging port opened.${formatChromeLog(getChromeLog())}`);
+    }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  throw new Error("Chrome debugging port did not open");
+  throw new Error(`Chrome debugging port did not open.${formatChromeLog(getChromeLog())}`);
 }
 
 function resolveChromePath(): string {
@@ -385,4 +403,9 @@ async function waitForChromeExit(chrome: ChildProcess | undefined): Promise<void
       resolve();
     });
   });
+}
+
+function formatChromeLog(log: string): string {
+  const trimmed = log.trim();
+  return trimmed ? ` Chrome stderr: ${trimmed}` : "";
 }
