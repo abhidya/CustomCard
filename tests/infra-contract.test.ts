@@ -115,6 +115,7 @@ describe("production infrastructure contract", () => {
     const mobilePackage = read("apps/mobile/package.json");
     const appConfig = read("apps/mobile/app.config.js");
     const mobileApp = read("apps/mobile/src/App.tsx");
+    const mobileExperience = read("apps/mobile/src/customerExperience.ts");
 
     expect(mobilePackage).toContain("\"expo\"");
     expect(mobilePackage).toContain("\"react-native\"");
@@ -124,14 +125,19 @@ describe("production infrastructure contract", () => {
     expect(appConfig).toContain("realOrderKillSwitch");
     expect(mobileApp).toContain("CustomCard");
     expect(mobileApp).toContain("Customer mobile panel");
-    expect(mobileApp).toContain("Local scripted assistant");
-    expect(mobileApp).toContain("Manual");
-    expect(() =>
-      execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
-        env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "disabled" },
-        stdio: "pipe"
-      })
-    ).not.toThrow();
+    expect(mobileApp).toContain("Text interface");
+    expect(mobileApp).toContain("mobileChatTranscript");
+    expect(mobileApp).toContain("mobileRenderChoices");
+    expect(mobileApp).toContain("mobileHandoffSteps");
+    expect(mobileExperience).toContain("requiredMobileCapabilities");
+    expect(mobileExperience).toContain("validateMobileExperience");
+    expect(mobileExperience).toContain("Live AI and vendor orders stay off");
+    const doctorOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
+      encoding: "utf8",
+      env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "disabled" },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    expect(doctorOutput).toContain("customer experience contract");
   });
 
   it("emits a deployment readiness report for local, droplet, and cloud-native paths", () => {

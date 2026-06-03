@@ -1,33 +1,15 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  mobileChatTranscript,
+  mobileExperienceSections,
+  mobileHandoffSteps,
+  mobileRenderChoices,
+  mobileSafetyBanner,
+  summarizeMobileExperience
+} from "./customerExperience";
 
-const customerSections = [
-  {
-    title: "Card queue",
-    detail: "Sara and Ahmed anniversary card is ready from pasted ICS data.",
-    status: "Ready"
-  },
-  {
-    title: "Memory review",
-    detail: "Only approved relationship notes are eligible for reuse.",
-    status: "Approved"
-  },
-  {
-    title: "Customer chat",
-    detail: "Local scripted assistant explains event, memory, render, and handoff state.",
-    status: "Local"
-  },
-  {
-    title: "Image/render",
-    detail: "Browser SVG renderer is the free path; AI image providers require admin credentials.",
-    status: "Free"
-  },
-  {
-    title: "Handoff",
-    detail: "Manual upload stays active while Walgreens, CVS, and FedEx live orders are blocked.",
-    status: "Manual"
-  }
-];
+const experienceSummary = summarizeMobileExperience();
 
 export default function App() {
   return (
@@ -43,18 +25,71 @@ export default function App() {
         </View>
 
         <View style={styles.statusBand}>
-          <Text style={styles.statusLabel}>Real orders disabled</Text>
-          <Text style={styles.statusCopy}>Live provider, payment, and vendor APIs stay behind admin gates.</Text>
+          <Text style={styles.statusLabel}>{mobileSafetyBanner.label}</Text>
+          <Text style={styles.statusCopy}>{mobileSafetyBanner.detail}</Text>
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{experienceSummary.customerVisibleSections}</Text>
+              <Text style={styles.summaryLabel}>sections</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{experienceSummary.localChatMessages}</Text>
+              <Text style={styles.summaryLabel}>local replies</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{experienceSummary.freeRenderChoices}</Text>
+              <Text style={styles.summaryLabel}>free renderer</Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.sectionList}>
-          {customerSections.map((section) => (
+          {mobileExperienceSections.map((section) => (
             <View key={section.title} style={styles.card}>
               <View style={styles.cardTop}>
                 <Text style={styles.cardTitle}>{section.title}</Text>
                 <Text style={styles.pill}>{section.status}</Text>
               </View>
               <Text style={styles.cardCopy}>{section.detail}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Text interface</Text>
+          {mobileChatTranscript.map((message, index) => (
+            <View
+              key={`${message.speaker}-${index}`}
+              style={[styles.chatBubble, message.speaker === "customer" ? styles.customerBubble : styles.assistantBubble]}
+            >
+              <Text style={styles.chatSpeaker}>{message.speaker}</Text>
+              <Text style={styles.chatCopy}>{message.text}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Render choices</Text>
+          {mobileRenderChoices.map((choice) => (
+            <View key={choice.label} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{choice.label}</Text>
+                <Text style={styles.cardCopy}>{choice.detail}</Text>
+              </View>
+              <Text style={styles.modePill}>{choice.mode === "free-local" ? "Free" : "Gated"}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Manual handoff</Text>
+          {mobileHandoffSteps.map((step) => (
+            <View key={step.label} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{step.label}</Text>
+                <Text style={styles.cardCopy}>{step.detail}</Text>
+              </View>
+              <Text style={styles.modePill}>{step.realOrderState}</Text>
             </View>
           ))}
         </View>
@@ -109,6 +144,29 @@ const styles = StyleSheet.create({
     color: "#7d3a30",
     lineHeight: 21
   },
+  summaryRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12
+  },
+  summaryItem: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 7,
+    backgroundColor: "#ffffff"
+  },
+  summaryValue: {
+    color: "#172124",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  summaryLabel: {
+    marginTop: 2,
+    color: "#6f5550",
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
   sectionList: {
     gap: 10
   },
@@ -144,5 +202,67 @@ const styles = StyleSheet.create({
     marginTop: 8,
     color: "#4d5c61",
     lineHeight: 21
+  },
+  group: {
+    gap: 10,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    borderColor: "#d5dee0",
+    borderWidth: 1
+  },
+  groupTitle: {
+    color: "#172124",
+    fontSize: 18,
+    fontWeight: "900"
+  },
+  chatBubble: {
+    padding: 12,
+    borderRadius: 8
+  },
+  assistantBubble: {
+    backgroundColor: "#e8f3f0"
+  },
+  customerBubble: {
+    backgroundColor: "#eef0f4"
+  },
+  chatSpeaker: {
+    color: "#26373b",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase"
+  },
+  chatCopy: {
+    marginTop: 5,
+    color: "#30434a",
+    lineHeight: 20
+  },
+  compactRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+    paddingTop: 10,
+    borderTopColor: "#e5ebed",
+    borderTopWidth: 1
+  },
+  compactCopy: {
+    flex: 1
+  },
+  compactTitle: {
+    color: "#172124",
+    fontSize: 15,
+    fontWeight: "900"
+  },
+  modePill: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 7,
+    overflow: "hidden",
+    color: "#123a32",
+    backgroundColor: "#cde9df",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "capitalize"
   }
 });

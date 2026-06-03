@@ -38,7 +38,7 @@ order until physical print certification exists.
 
 The repo also includes a Postgres migration, worker and migration runners,
 dev/droplet/cloud deployment manifests, a static production server, and an Expo
-iOS/Android customer shell that resolves its API URL from environment
+iOS/Android customer shell contract that resolves its API URL from environment
 configuration instead of static placeholders.
 
 ## Free MVP Capabilities
@@ -60,6 +60,8 @@ configuration instead of static placeholders.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
+- Tested Expo customer shell contract for card queue, memory review, local chat,
+  render choices, manual handoff, and real-order kill-switch posture.
 
 ## Run
 
@@ -108,7 +110,7 @@ React free local MVP
   -> Postgres migration model
   -> worker/migration/runtime scripts
   -> Docker Compose or Kubernetes manifests
-  -> Expo customer mobile shell boundary
+  -> Expo customer mobile shell contract
 ```
 
 The service kernel models the critical backend contracts without pretending they
@@ -133,7 +135,8 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 the production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
-verified through Chrome smoke tests.
+verified through Chrome smoke tests, and the mobile customer shell is covered by
+root Vitest contract tests plus its package doctor.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
 cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
@@ -160,7 +163,7 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 
 The repo does not include production user auth, live OAuth, live AI/image
 generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
-ordering, deployment evidence, legal/security review, or physical print
-certification. Those paths are represented as contracts and hard gates so
-reviewers can inspect the system shape without mistaking the free local MVP for a
-certified production fulfillment service.
+ordering, native mobile builds, deployment evidence, legal/security review, or
+physical print certification. Those paths are represented as contracts and hard
+gates so reviewers can inspect the system shape without mistaking the free local
+MVP for a certified production fulfillment service.

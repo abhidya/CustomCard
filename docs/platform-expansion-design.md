@@ -102,10 +102,15 @@ reviewed, and certified.
 
 ## Mobile Customer App
 
-`apps/mobile/src/App.tsx` is now a customer app surface instead of a placeholder.
-It mirrors the web customer panel with card queue, memory review, local scripted
-chat, image/render status, and manual handoff. Native builds and platform
-signing remain outside the repo-local verification loop.
+`apps/mobile/src/customerExperience.ts` is the tested mobile customer contract.
+`apps/mobile/src/App.tsx` renders that contract as the Expo customer surface
+instead of a placeholder. It mirrors the web customer panel with card queue,
+memory review, local scripted chat, image/render status, manual handoff, and a
+real-order-disabled banner.
+
+The mobile doctor validates environment resolution, the contract source, and the
+repo-local real-order kill switch. Native rendering, emulator runs, builds, and
+platform signing remain outside the repo-local verification loop.
 
 ## Cheap Cloud Deployment Shape
 
@@ -140,7 +145,9 @@ Implemented checks:
   local fallbacks, and hard-blocked live vendor order adapters.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
-- Infra tests require provider env vars and mobile customer panel evidence.
+- Infra tests require provider env vars and mobile customer contract evidence.
+- Mobile contract tests validate the customer app sections, local/gated
+  chat-render-handoff posture, and doctor kill-switch behavior.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `npm run test:coverage` enforces V8 coverage thresholds for the core
@@ -152,6 +159,6 @@ Remaining high-risk work:
 - No live OAuth flow.
 - No live AI/image provider call.
 - No payment, quote, or live order adapter.
-- No native iOS/Android build artifact.
+- No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
 - No legal/security/privacy/accessibility audit.

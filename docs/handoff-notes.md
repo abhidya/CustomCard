@@ -12,15 +12,15 @@ skeleton for the production path. It includes:
 - A tested provider catalog covering local/free fallbacks plus credential-gated
   OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability, Replicate,
   notification, vendor, and cloud-runtime adapters.
-- A customer mobile shell that mirrors the web customer panel at the product
-  boundary.
+- A tested customer mobile shell contract that mirrors the web customer panel at
+  the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
 - Executable service-kernel contracts for provider import, approved memory,
   card-project creation, print validation, order recovery, and regional policy.
 - Postgres migration for users, providers, events, opportunities, memories,
   projects, render packets, orders, consent, data requests, and audit logs.
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration, static
-  server, and mobile-shell scaffolding.
+  server, and mobile-shell scaffolding plus mobile contract validation.
 - Tests that prove the current skeleton does not fake weak input, live ordering,
   raw-content import, or unsafe order-state transitions.
 - Chrome smoke tests that exercise the local auth -> import -> studio -> handoff
@@ -36,6 +36,8 @@ skeleton for the production path. It includes:
 - No PNG/PDF export pipeline for physical production.
 - No live Walgreens/CVS/FedEx/Shutterfly/vendor quote or order API.
 - No payment, refund, cancellation, or external order-confirmation integration.
+- No React Native render test, emulator run, native build, or signed mobile
+  artifact.
 - No physical print certification.
 - No legal or security review.
 - No deployment has been performed in this pass.

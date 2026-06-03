@@ -9,7 +9,8 @@
   `docs/brief-context.md`.
 - Current delivered outcome: a polished free local MVP plus customer/admin
   panels, a tested provider-adapter catalog and no-network runtime contracts, a
-  customer mobile shell, and a contract-first production skeleton.
+  tested customer mobile shell contract, and a contract-first production
+  skeleton.
 - Audience/reviewer: project reviewer, interview/client evaluator, or future
   implementer who needs to inspect the repo without reading chat history.
 
@@ -64,8 +65,9 @@
 - Provider runtime: readiness dry runs for every catalog adapter; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters.
-- Mobile customer shell: card queue, memory review, local chat, image/render
-  state, and manual handoff sections.
+- Mobile customer shell: tested Expo customer experience contract with card
+  queue, memory review, local chat, image/render state, manual handoff, and
+  real-order kill-switch validation.
 - Demo/seed data: sample anniversary `.ics` content and two approved local memory
   records in `src/freeMvp.ts`.
 - Config/env requirements: the local web MVP needs no provider or vendor
@@ -77,13 +79,13 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 7 test files, 57 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 8 test files, 60 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed core contract thresholds: 91.16% statements, 84.22% branches, 94.87% functions, 93.73% lines. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
-| Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration present. |
+| Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -96,7 +98,7 @@
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
 | Catalog broad text, image, integration, vendor, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `docs/platform-expansion-design.md`. | Covered as no-network contracts; live calls gated |
-| Add customer mobile app surface. | `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`. | Covered as shell; native build not covered |
+| Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
@@ -127,6 +129,8 @@
 - No PNG/PDF production export pipeline or object-storage upload.
 - No live vendor quote, order, payment, refund, or cancellation integration.
 - No real droplet or Kubernetes deployment execution evidence.
+- No React Native render test, emulator run, native build, or signed mobile
+  artifact.
 - No physical print certification.
 - No legal, security, privacy, or accessibility audit.
 - No browser UI unit-coverage instrumentation; UI remains covered by smoke and

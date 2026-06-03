@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "check": "npm run test -- --run && npm run test:coverage && npm run build && npm audit --audit-level=high",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage src/*.test.ts tests/infra-contract.test.ts",
+    "test:coverage": "vitest run --coverage src/*.test.ts tests/infra-contract.test.ts tests/mobile-contract.test.ts",
     "preview": "vite preview --host 127.0.0.1",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",

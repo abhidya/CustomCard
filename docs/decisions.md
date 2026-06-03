@@ -76,13 +76,16 @@ rewrite instead of a staged operational move.
 ## D007: Thin Mobile Shell For This Stage
 
 Decision: iOS/Android are represented by an Expo app-shell boundary that resolves
-the API URL from environment configuration.
+the API URL from environment configuration and renders a tested customer
+experience contract.
 
 Reason: cross-platform architecture is required, but signed native apps are not
-needed to prove the current service contracts.
+needed to prove the current service contracts. The repo-local proof is the pure
+mobile customer model, Expo screen wiring, contract tests, and mobile doctor.
 
 Rejected: claiming store-ready mobile releases. Signing, native build pipelines,
-push notifications, and mobile QA are outside this pass.
+push notifications, emulator/native render proof, and mobile QA are outside this
+pass.
 
 ## D008: Finish The Reviewable MVP With Free Local Substitutes
 

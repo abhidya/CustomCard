@@ -24,7 +24,10 @@ it after each meaningful implementation pass.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
-  env examples, runtime checks, and the mobile shell.
+  env examples, runtime checks, and the mobile shell/customer contract boundary.
+- Mobile contract tests cover the Expo customer experience model: card queue,
+  memory review, local chat, render choices, manual handoff, and real-order
+  kill-switch doctor behavior.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
@@ -57,8 +60,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 7 test files passed, 57 tests passed.
-- Coverage: 6 core/infra test files passed, 53 tests passed; V8 report measured
+- Vitest: 8 test files passed, 60 tests passed.
+- Coverage: 7 core/infra/mobile test files passed, 56 tests passed; V8 report measured
   91.16% statements, 84.22% branches, 94.87% functions, and 93.73% lines across
   `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -83,7 +86,8 @@ Result: passed. Worker reported queue readiness for `provider-sync`,
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
 
-Result: passed. Mobile shell configuration resolved from environment.
+Result: passed. Mobile shell configuration resolved from environment and the
+customer experience contract was present.
 
 ```text
 Visual inspection
@@ -125,8 +129,8 @@ documentation claims found during the audit were corrected.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.
-- No React Native render test, mobile native build, or signed iOS/Android
-  artifact.
+- No React Native render test, mobile emulator run, mobile native build, or
+  signed iOS/Android artifact.
 - Provider docs were checked at the contract/link level only; no vendor sandbox
   credentials or market/commercial terms were verified.
 - Browser UI smoke tests are not included in the V8 unit coverage percentages;
