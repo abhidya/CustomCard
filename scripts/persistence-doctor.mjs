@@ -97,7 +97,10 @@ const apiSignals = [
   "/api/vendor-handoff/manual",
   "orders",
   "order_events",
-  "consent_records"
+  "consent_records",
+  "dataRequestRepository: true",
+  "/api/data-requests",
+  "data_requests"
 ];
 const postgresRuntimeSignals = [
   "createPostgresApiRuntime",
@@ -110,6 +113,7 @@ const postgresRuntimeSignals = [
   "INSERT INTO orders",
   "INSERT INTO order_events",
   "INSERT INTO consent_records",
+  "INSERT INTO data_requests",
   "INSERT INTO idempotency_keys",
   "INSERT INTO audit_log",
   "INSERT INTO api_jobs"
@@ -129,6 +133,8 @@ const postgresDoctorSignals = [
   "orderEvents",
   "consentRecords",
   "persists repository-backed manual vendor handoff mutations",
+  "dataRequests",
+  "persists repository-backed data request mutations",
   "wrong-role"
 ];
 const postgresIntegrationSignals = [
@@ -146,6 +152,8 @@ const postgresIntegrationSignals = [
   "SELECT COUNT(*)::int AS count FROM orders",
   "SELECT COUNT(*)::int AS count FROM order_events",
   "SELECT COUNT(*)::int AS count FROM consent_records",
+  "persists real Postgres data request repository mutation",
+  "SELECT COUNT(*)::int AS count FROM data_requests",
   "DROP DATABASE IF EXISTS",
   "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
 ];
@@ -235,6 +243,7 @@ const report = {
       importPreviewRepository: true,
       cardProjectRepository: true,
       manualVendorHandoffRepository: true,
+      dataRequestRepository: true,
       idempotencyReplay: true,
       queueJobs: true,
       auditLog: true

@@ -81,13 +81,13 @@ environment configuration instead of static placeholders.
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
   isolated live Postgres auth/idempotency/audit/queue runtime checks,
-  repository-backed import-preview, card-project, and manual vendor handoff
-  mutation coverage, admin demo reset, and no live external calls.
+  repository-backed import-preview, card-project, manual vendor handoff, and
+  data-request mutation coverage, admin demo reset, and no live external calls.
 - Persistence contract/migration boundary for auth sessions, hosted account
   identities, hashed recovery challenges, idempotency replay, import-preview
   event/opportunity writes, card-project repository writes, manual handoff
-  order/consent/event writes, queue jobs, audit logs, and 11 schema-backed API
-  routes.
+  order/consent/event writes, data-request privacy/consent writes, queue jobs,
+  audit logs, and 11 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 

@@ -22,6 +22,7 @@ describe("api server wrapper", () => {
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
           manualVendorHandoffRepository: boolean;
+          dataRequestRepository: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
         };
@@ -36,6 +37,7 @@ describe("api server wrapper", () => {
           orderRecords: number | null;
           orderEventRecords: number | null;
           consentRecords: number | null;
+          dataRequestRecords: number | null;
         };
       };
       blockers: string[];
@@ -56,6 +58,7 @@ describe("api server wrapper", () => {
       importPreviewRepository: true,
       cardProjectRepository: true,
       manualVendorHandoffRepository: true,
+      dataRequestRepository: true,
       renderPacketArtifacts: true,
       signedArtifactUrls: true
     });
@@ -120,6 +123,7 @@ describe("api server wrapper", () => {
         importPreviewRepository: true,
         cardProjectRepository: true,
         manualVendorHandoffRepository: true,
+        dataRequestRepository: true,
         renderPacketArtifacts: true,
         signedArtifactUrls: true
       });
@@ -259,6 +263,44 @@ describe("api server wrapper", () => {
         realOrdersEnabled: false
       });
 
+      const dataRequest = await postJson(
+        port,
+        "/api/data-requests",
+        {
+          requestId: "data-request-contract-api",
+          requestType: "delete",
+          region: "US",
+          dueAt: "2030-01-31T00:00:00.000Z",
+          requestConfirmed: "true"
+        }
+      );
+      expect(dataRequest.status).toBe(202);
+      expect(await dataRequest.json()).toMatchObject({
+        status: "accepted-contract-only",
+        route: "data-requests",
+        dataRequestId: "data-request-contract-api",
+        requestType: "delete",
+        requestStatus: "pending_verification",
+        dueAt: "2030-01-31T00:00:00.000Z",
+        consentGranted: true,
+        privacyControls: {
+          region: "US",
+          rawContentStored: false,
+          verificationRequired: true,
+          deletionRequiresRetentionReview: true
+        },
+        repository: {
+          tables: ["data_requests", "consent_records"],
+          runtimeMode: "contract",
+          persisted: false,
+          rawContentStored: false
+        },
+        runtimeMode: "contract",
+        idempotencyPersisted: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false
+      });
+
       const demoReset = await fetch(`http://127.0.0.1:${port}/api/admin/demo-reset`, { method: "POST" });
       expect(demoReset.status).toBe(202);
       expect(await demoReset.json()).toMatchObject({
@@ -328,7 +370,8 @@ describe("api server wrapper", () => {
         cardProjectRecords: 0,
         orderRecords: 0,
         orderEventRecords: 0,
-        consentRecords: 0
+        consentRecords: 0,
+        dataRequestRecords: 0
       });
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
@@ -486,6 +529,47 @@ describe("api server wrapper", () => {
         persistedTables: expect.arrayContaining(["card_opportunities", "relationship_memories", "card_projects", "audit_log"])
       });
 
+      const dataRequestHeaders = {
+        ...bearer(customerToken),
+        "X-Idempotency-Key": "data-requests-0001"
+      };
+      const dataRequest = await postJson(
+        port,
+        "/api/data-requests",
+        {
+          requestId: "data-request-memory-api",
+          requestType: "delete",
+          region: "US",
+          dueAt: "2030-01-31T00:00:00.000Z",
+          requestConfirmed: true
+        },
+        dataRequestHeaders
+      );
+      expect(dataRequest.status).toBe(202);
+      expect(await dataRequest.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "user-demo",
+        repositoryPersisted: true,
+        dataRequestId: "data-request-memory-api",
+        requestType: "delete",
+        requestStatus: "pending_verification",
+        dueAt: "2030-01-31T00:00:00.000Z",
+        consentGranted: true,
+        privacyControls: {
+          region: "US",
+          rawContentStored: false,
+          verificationRequired: true,
+          deletionRequiresRetentionReview: true
+        },
+        repository: {
+          tables: ["data_requests", "consent_records"],
+          runtimeMode: "memory",
+          persisted: true,
+          rawContentStored: false
+        },
+        persistedTables: expect.arrayContaining(["data_requests", "consent_records", "audit_log"])
+      });
+
       const demoReset = await postJson(
         port,
         "/api/admin/demo-reset",
@@ -524,8 +608,8 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 5,
-        auditRecords: 5,
+        idempotencyRecords: 6,
+        auditRecords: 6,
         queuedJobs: 2,
         providerConnectionRecords: 1,
         importedEventRecords: 1,
@@ -533,7 +617,8 @@ describe("api server wrapper", () => {
         cardProjectRecords: 1,
         orderRecords: 1,
         orderEventRecords: 1,
-        consentRecords: 1
+        consentRecords: 2,
+        dataRequestRecords: 1
       });
     } finally {
       server.kill();

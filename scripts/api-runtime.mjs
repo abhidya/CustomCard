@@ -39,6 +39,7 @@ function createContractApiRuntime({ routes }) {
         orderRecords: 0,
         orderEventRecords: 0,
         consentRecords: 0,
+        dataRequestRecords: 0,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -100,6 +101,7 @@ function createMemoryApiRuntime({ env, routes }) {
   const orders = new Map();
   const orderEvents = new Map();
   const consentRecords = new Map();
+  const dataRequests = new Map();
 
   addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo");
   addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo");
@@ -123,6 +125,7 @@ function createMemoryApiRuntime({ env, routes }) {
         orderRecords: orders.size,
         orderEventRecords: orderEvents.size,
         consentRecords: consentRecords.size,
+        dataRequestRecords: dataRequests.size,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -150,7 +153,8 @@ function createMemoryApiRuntime({ env, routes }) {
           cardProjects,
           orders,
           orderEvents,
-          consentRecords
+          consentRecords,
+          dataRequests
         },
         route,
         authContext,
@@ -228,6 +232,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         orderRecords: null,
         orderEventRecords: null,
         consentRecords: null,
+        dataRequestRecords: null,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -495,6 +500,16 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
     };
   }
 
+  if (route.id === "data-requests") {
+    const record = buildDataRequestRecord({ authContext, bodyText });
+    repositories.dataRequests.set(record.dataRequest.id, record.dataRequest);
+    repositories.consentRecords.set(record.consentRecord.id, record.consentRecord);
+    return {
+      persisted: true,
+      payload: buildDataRequestRepositoryPayload(record, "memory")
+    };
+  }
+
   return undefined;
 }
 
@@ -619,6 +634,47 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     return {
       persisted: true,
       payload: buildManualVendorHandoffRepositoryPayload(record, "postgres")
+    };
+  }
+
+  if (route.id === "data-requests") {
+    const record = buildDataRequestRecord({ authContext, bodyText });
+    await client.query(
+      `INSERT INTO data_requests (id, user_id, request_type, status, due_at, completed_at)
+       VALUES ($1, $2, $3, $4, $5::timestamptz, NULL)
+       ON CONFLICT (id) DO UPDATE SET
+         request_type = EXCLUDED.request_type,
+         status = EXCLUDED.status,
+         due_at = EXCLUDED.due_at,
+         completed_at = EXCLUDED.completed_at`,
+      [
+        record.dataRequest.id,
+        authContext.userId,
+        record.dataRequest.requestType,
+        record.dataRequest.status,
+        record.dataRequest.dueAt
+      ]
+    );
+    await client.query(
+      `INSERT INTO consent_records (id, user_id, action, region, granted, controls)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+       ON CONFLICT (id) DO UPDATE SET
+         action = EXCLUDED.action,
+         region = EXCLUDED.region,
+         granted = EXCLUDED.granted,
+         controls = EXCLUDED.controls`,
+      [
+        record.consentRecord.id,
+        authContext.userId,
+        record.consentRecord.action,
+        record.consentRecord.region,
+        record.consentRecord.granted,
+        JSON.stringify(record.consentRecord.controls)
+      ]
+    );
+    return {
+      persisted: true,
+      payload: buildDataRequestRepositoryPayload(record, "postgres")
     };
   }
 
@@ -837,6 +893,69 @@ function buildManualVendorHandoffRepositoryPayload(record, runtimeMode) {
   };
 }
 
+function buildDataRequestRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const requestType = safeDataRequestType(body.requestType ?? body.type);
+  const requestId = safeId(body.requestId, stableRuntimeId("data-request", authContext.userId, requestType));
+  const region = safeText(body.region, "US").slice(0, 12);
+  const dueAt = safeTimestamp(body.dueAt ?? defaultDataRequestDueAt(requestType), defaultDataRequestDueAt(requestType));
+  const status = safeDataRequestStatus(body.status);
+  const granted = safeBoolean(body.consentGranted ?? body.requestConfirmed ?? true);
+  const controls = {
+    requestId,
+    requestType,
+    region,
+    dueAt,
+    rawContentStored: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    verificationRequired: true,
+    deletionRequiresRetentionReview: requestType === "delete"
+  };
+
+  return {
+    dataRequest: {
+      id: requestId,
+      userId: authContext.userId,
+      requestType,
+      status,
+      dueAt,
+      completedAt: null
+    },
+    consentRecord: {
+      id: safeId(body.consentRecordId, stableRuntimeId("consent", authContext.userId, requestId, "data-request")),
+      userId: authContext.userId,
+      action: `data_request:${requestType}`,
+      region,
+      granted,
+      controls
+    }
+  };
+}
+
+function buildDataRequestRepositoryPayload(record, runtimeMode) {
+  return {
+    dataRequestId: record.dataRequest.id,
+    requestType: record.dataRequest.requestType,
+    requestStatus: record.dataRequest.status,
+    dueAt: record.dataRequest.dueAt,
+    consentRecordId: record.consentRecord.id,
+    consentGranted: record.consentRecord.granted,
+    privacyControls: {
+      region: record.consentRecord.region,
+      rawContentStored: false,
+      verificationRequired: true,
+      deletionRequiresRetentionReview: record.dataRequest.requestType === "delete"
+    },
+    repository: {
+      tables: ["data_requests", "consent_records"],
+      runtimeMode,
+      persisted: true,
+      rawContentStored: false
+    }
+  };
+}
+
 function persistedTablesForRoute(route) {
   if (route.id === "render-packets") return ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "api_jobs", "audit_log"];
   if (route.id === "manual-vendor-handoff") {
@@ -936,6 +1055,21 @@ function safeBoolean(value) {
   if (value === false) return false;
   const text = String(value ?? "").trim().toLowerCase();
   return ["1", "true", "yes", "y", "approved", "granted"].includes(text);
+}
+
+function safeDataRequestType(value) {
+  const requestType = String(value ?? "export").trim().toLowerCase().replace(/[^a-z_:-]/g, "_");
+  return ["export", "delete", "correct", "revoke_consent", "access"].includes(requestType) ? requestType : "export";
+}
+
+function safeDataRequestStatus(value) {
+  const status = String(value ?? "pending_verification").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
+  return ["pending_verification", "received", "processing", "completed", "rejected"].includes(status) ? status : "pending_verification";
+}
+
+function defaultDataRequestDueAt(requestType) {
+  const days = requestType === "revoke_consent" ? 7 : 30;
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 function safeConfidence(value, fallback) {

@@ -60,13 +60,15 @@ validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
 `npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
 path and validates session lookup, wrong-role blocking, idempotency replay,
 conflict handling, repository-backed import-preview inserts, repository-backed
-card-project inserts, audit inserts, and queue-job inserts without external
+card-project inserts, manual handoff order/consent/event inserts, data-request
+privacy/consent inserts, audit inserts, and queue-job inserts without external
 credentials.
 `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run
 api:doctor:postgres:live` creates an isolated temporary database on the configured
 Postgres server, applies the committed migration, seeds customer/admin sessions
 and approved memory, exercises the real `pg` runtime for import-preview plus
-card-project persistence, and drops the temporary database before exiting.
+card-project, manual handoff, and data-request persistence, and drops the
+temporary database before exiting.
 CI runs that live doctor against a Postgres service; deployed production account
 auth remains unclaimed.
 

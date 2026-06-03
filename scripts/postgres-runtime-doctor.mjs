@@ -6,7 +6,8 @@ const routes = [
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" }
+  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
+  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
 ];
 
 const customerToken = "postgres-customer-session-token";
@@ -164,6 +165,36 @@ await runCheck("persists repository-backed manual vendor handoff mutations", asy
   expect(fakeDb.consentRecords.length === 1, "consent_records row should be inserted");
 });
 
+await runCheck("persists repository-backed data request mutations", async () => {
+  const result = await runtime.persistMutation({
+    route: route("data-requests"),
+    request: request({ token: customerToken, idempotencyKey: "data-requests-postgres-0001" }),
+    authContext: customerAuth,
+    bodyText: JSON.stringify({
+      requestId: "data-request-postgres-contract",
+      requestType: "delete",
+      region: "US",
+      dueAt: "2030-01-31T00:00:00.000Z",
+      requestConfirmed: true
+    }),
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: "data-requests",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    }
+  });
+
+  expect(result.statusCode === 202, "data-request mutation should be accepted");
+  expect(result.payload.runtimeMode === "postgres", "data-request mutation should report postgres runtime");
+  expect(result.payload.repositoryPersisted, "data-request should persist through repository path");
+  expect(result.payload.requestType === "delete", "data-request response should include request type");
+  expect(result.payload.privacyControls.deletionRequiresRetentionReview, "delete requests should require retention review");
+  expect(fakeDb.dataRequests.length === 1, "data_requests row should be inserted");
+  expect(fakeDb.consentRecords.length === 2, "data-request consent row should be inserted");
+});
+
 await runCheck("replays matching idempotent mutations", async () => {
   const result = await runtime.persistMutation({
     route: route("render-packets"),
@@ -175,7 +206,7 @@ await runCheck("replays matching idempotent mutations", async () => {
 
   expect(result.statusCode === 202, "replay should return accepted status");
   expect(result.payload.idempotencyReplayed, "replay should mark idempotencyReplayed");
-  expect(fakeDb.idempotencyRecords.size === 4, "replay must not insert another idempotency record");
+  expect(fakeDb.idempotencyRecords.size === 5, "replay must not insert another idempotency record");
 });
 
 await runCheck("rejects idempotency conflicts", async () => {
@@ -206,7 +237,8 @@ const report = {
     cardProjects: fakeDb.cardProjects.length,
     orders: fakeDb.orders.length,
     orderEvents: fakeDb.orderEvents.length,
-    consentRecords: fakeDb.consentRecords.length
+    consentRecords: fakeDb.consentRecords.length,
+    dataRequests: fakeDb.dataRequests.length
   },
   checks,
   blockers
@@ -282,6 +314,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
     orders: [],
     orderEvents: [],
     consentRecords: [],
+    dataRequests: [],
     authSessionQueries: 0,
     pool: undefined
   };
@@ -403,6 +436,17 @@ function createFakeClient(state) {
           orderId: params[0],
           eventType: params[1],
           payload: JSON.parse(params[2])
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO data_requests")) {
+        state.dataRequests.push({
+          id: params[0],
+          userId: params[1],
+          requestType: params[2],
+          status: params[3],
+          dueAt: params[4]
         });
         return { rows: [], rowCount: 1 };
       }

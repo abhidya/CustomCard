@@ -68,6 +68,7 @@ const readiness = {
     importPreviewRepository: true,
     cardProjectRepository: true,
     manualVendorHandoffRepository: true,
+    dataRequestRepository: true,
     renderPacketArtifacts: true,
     signedArtifactUrls: true
   }
@@ -261,7 +262,8 @@ function validateApiServerContract() {
     "/api/import-preview",
     "/api/card-projects",
     "/api/render-packets",
-    "/api/vendor-handoff/manual"
+    "/api/vendor-handoff/manual",
+    "/api/data-requests"
   ]);
   const routePaths = new Set(routes.map((route) => route.path));
 
@@ -290,6 +292,7 @@ function validateApiServerContract() {
   if (!readiness.persistence.manualVendorHandoffRepository) {
     blockers.push("API readiness is missing manual vendor handoff repository persistence.");
   }
+  if (!readiness.persistence.dataRequestRepository) blockers.push("API readiness is missing data-request repository persistence.");
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
   blockers.push(...apiRuntime.validate());
@@ -422,6 +425,34 @@ function buildMutationContractPayload(route, bodyText) {
     };
   }
 
+  if (route.id === "data-requests") {
+    const requestType = safeDataRequestType(requestBody.requestType ?? requestBody.type);
+    const dataRequestId = safeContractId(requestBody.requestId, `data-request-${stableContractHash(`${requestType}:contract`).slice(0, 8)}`);
+    const dueAt = safeTimestamp(requestBody.dueAt, "2030-01-31T00:00:00.000Z");
+    const region = safeContractText(requestBody.region, "US").slice(0, 12);
+    return {
+      ...basePayload,
+      dataRequestId,
+      requestType,
+      requestStatus: safeDataRequestStatus(requestBody.status),
+      dueAt,
+      consentRecordId: `consent-${stableContractHash(`${dataRequestId}:data-request`).slice(0, 8)}`,
+      consentGranted: safeBoolean(requestBody.consentGranted ?? requestBody.requestConfirmed ?? true),
+      privacyControls: {
+        region,
+        rawContentStored: false,
+        verificationRequired: true,
+        deletionRequiresRetentionReview: requestType === "delete"
+      },
+      repository: {
+        tables: ["data_requests", "consent_records"],
+        runtimeMode: "contract",
+        persisted: false,
+        rawContentStored: false
+      }
+    };
+  }
+
   if (route.id === "admin-demo-reset") {
     const resetKey = String(requestBody.resetKey ?? "demo-reset-contract");
     return {
@@ -502,6 +533,16 @@ function safeBoolean(value) {
   if (value === false) return false;
   const text = String(value ?? "").trim().toLowerCase();
   return ["1", "true", "yes", "y", "approved", "granted"].includes(text);
+}
+
+function safeDataRequestType(value) {
+  const requestType = String(value ?? "export").trim().toLowerCase().replace(/[^a-z_:-]/g, "_");
+  return ["export", "delete", "correct", "revoke_consent", "access"].includes(requestType) ? requestType : "export";
+}
+
+function safeDataRequestStatus(value) {
+  const status = String(value ?? "pending_verification").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
+  return ["pending_verification", "received", "processing", "completed", "rejected"].includes(status) ? status : "pending_verification";
 }
 
 function safeTimestamp(value, fallback) {
