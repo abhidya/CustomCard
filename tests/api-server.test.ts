@@ -1,6 +1,8 @@
 import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
+const shellDoctorTimeoutMs = 15_000;
+
 describe("api server wrapper", () => {
   it("passes its doctor contract", () => {
     const output = execFileSync("node", ["scripts/api-server.mjs", "--doctor"], {
@@ -19,6 +21,15 @@ describe("api server wrapper", () => {
           fallbackCovered: number;
           liveNetworkDefault: boolean;
           realOrdersEnabled: boolean;
+          blockers: unknown[];
+        };
+        localization: {
+          defaultLocale: string;
+          supportedLocales: number;
+          rtlLocales: number;
+          copyReviewRequired: number;
+          completeBundles: number;
+          liveTranslationProvider: boolean;
           blockers: unknown[];
         };
         routes: { total: number; mutations: number; idempotentMutations: number };
@@ -107,7 +118,7 @@ describe("api server wrapper", () => {
       authEnforced: false,
       idempotencyEnforced: false
     });
-  });
+  }, shellDoctorTimeoutMs);
 
   it("blocks unsupported API runtime modes in doctor output", () => {
     const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
@@ -162,6 +173,15 @@ describe("api server wrapper", () => {
         realOrdersEnabled: false,
         blockers: []
       });
+      expect(readiness.localization).toMatchObject({
+        defaultLocale: "en-US",
+        supportedLocales: 4,
+        rtlLocales: 2,
+        copyReviewRequired: 3,
+        completeBundles: 4,
+        liveTranslationProvider: false,
+        blockers: []
+      });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
         liveVendorOrders: false,
@@ -202,9 +222,12 @@ describe("api server wrapper", () => {
 
       const mobile = await getJson(port, "/api/mobile/bootstrap");
       expect(mobile.sections).toEqual(expect.arrayContaining(["card-queue", "text-chat", "handoff"]));
+      expect(mobile.localeOptions).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
+      expect(mobile.localization).toMatchObject({ supportedLocales: 4, rtlLocales: 2, liveTranslationProvider: false });
       expect(mobile.realOrdersEnabled).toBe(false);
 
       const customer = await getJson(port, "/api/customer/bootstrap");
+      expect(customer.localization).toMatchObject({ supportedLocales: 4, copyReviewRequired: 3, liveTranslationProvider: false });
       expect(customer.printerPricing).toMatchObject({
         selectedVendorId: "walgreens",
         liveQuote: false,
@@ -459,6 +482,7 @@ describe("api server wrapper", () => {
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
       expect(customerBootstrap.runtime).toMatchObject({ mode: "memory", authEnforced: true });
+      expect(customerBootstrap.localization).toMatchObject({ supportedLocales: 4, rtlLocales: 2, liveTranslationProvider: false });
       expect(customerBootstrap.printerPricing).toMatchObject({ liveQuote: false, knownPriceCount: 12, sourceCount: 7 });
 
       const missingAuth = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });

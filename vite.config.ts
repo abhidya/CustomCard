@@ -15,6 +15,7 @@ export default defineConfig({
         "src/demoSeed.ts",
         "src/domain.ts",
         "src/freeMvp.ts",
+        "src/localization.ts",
         "src/persistenceContracts.ts",
         "src/printerPricing.ts",
         "src/printExport.ts",

@@ -88,6 +88,18 @@ const readiness = {
     realOrdersEnabled: false,
     blockers: []
   },
+  localization: {
+    defaultLocale: "en-US",
+    supportedLocales: 4,
+    customerVisible: 4,
+    adminVisible: 4,
+    rtlLocales: 2,
+    copyReviewRequired: 3,
+    completeBundles: 4,
+    messageKeys: 9,
+    liveTranslationProvider: false,
+    blockers: []
+  },
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -242,6 +254,8 @@ async function serveApi(request, response, path) {
       safetyBanner: "Real orders disabled",
       sections: ["card-queue", "memory-review", "text-chat", "image-render", "handoff"],
       renderChoices: ["Browser SVG renderer", "Local print package export", "Credential-gated AI image providers"],
+      localeOptions: ["en-US", "es-US", "ur-PK", "ar-EG"],
+      localization: readiness.localization,
       realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
@@ -253,6 +267,7 @@ async function serveApi(request, response, path) {
       service: "customcard-api",
       primaryActions: ["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"],
       readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual vendor handoff"],
+      localization: readiness.localization,
       printerPricing: {
         selectedVendorId: "walgreens",
         liveQuote: false,
@@ -360,6 +375,17 @@ function validateApiServerContract() {
   if (readiness.providerGovernance.blockers.length > 0) blockers.push("Provider governance summary has blockers.");
   if (readiness.providerGovernance.liveNetworkDefault) blockers.push("Provider governance cannot default to live network calls.");
   if (readiness.providerGovernance.realOrdersEnabled) blockers.push("Provider governance cannot enable real orders.");
+  if (readiness.localization.defaultLocale !== "en-US") blockers.push("Localization default locale must stay en-US.");
+  if (readiness.localization.supportedLocales < 4) blockers.push("Localization must cover at least four launch locales.");
+  if (readiness.localization.completeBundles !== readiness.localization.supportedLocales) {
+    blockers.push("Localization bundles must cover every supported locale.");
+  }
+  if (readiness.localization.rtlLocales < 2) blockers.push("Localization must include RTL launch locale coverage.");
+  if (readiness.localization.copyReviewRequired < readiness.localization.rtlLocales) {
+    blockers.push("RTL localization must require human copy review.");
+  }
+  if (readiness.localization.liveTranslationProvider) blockers.push("Localization cannot require a live translation provider.");
+  if (readiness.localization.blockers.length > 0) blockers.push("Localization readiness summary has blockers.");
   if (readiness.security.headers < 7) blockers.push("API server must expose a complete security header baseline.");
   if (!readiness.security.cspFrameAncestors) blockers.push("API server CSP must block framed embedding.");
   if (!readiness.security.cspObjectBlocked) blockers.push("API server CSP must block object/plugin loads.");

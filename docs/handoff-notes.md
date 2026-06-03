@@ -16,6 +16,10 @@ skeleton for the production path. It includes:
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot, with 12 official-source observations,
   freshness reporting, and live quote/order claims kept separate.
+- Localization readiness for English (US), Spanish (US), Urdu, and Arabic across
+  customer/admin web panels, API payloads, and the mobile shell, with RTL layout
+  review and human copy-review gates before non-English or RTL copy is marked
+  ready.
 - Local print package export with four SVG upload artifacts, a combined 5x7 PDF
   proof, and a checksum manifest for manual printer handoff.
 - Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
@@ -64,6 +68,8 @@ skeleton for the production path. It includes:
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, pickup-window, or checkout availability
   verification for public printer prices.
+- No professional translation QA, live translation provider, or native RTL render
+  proof; non-English and RTL launch locales remain human-review gated.
 - No live payment charge/refund, cancellation, or external order-confirmation
   integration; payment provider coverage is sandbox-contract only.
 - No live observability ingestion, alert routing, retention enforcement, or
@@ -87,20 +93,21 @@ skeleton for the production path. It includes:
 5. Run `npm run api:doctor`.
 6. Run `npm run provider:governance:doctor`.
 7. Run `npm run printer:pricing:doctor`.
-8. Run `npm run api:doctor:memory`.
-9. Run `npm run api:doctor:postgres`.
-10. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-11. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-12. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-13. Run `npm run cloud:doctor`.
-14. Run `npm run artifact:doctor`.
-15. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-16. Run `npm run persistence:doctor`.
-17. Run `npm run demo:doctor`.
-18. Run the worker and mobile doctor commands in `docs/verification.md`.
-19. Run `npm run mobile:release:doctor`.
-20. Inspect the app with `npm run dev`.
-21. In the app, start a local workspace, scan the sample invite, generate a card,
+8. Run `npm run localization:doctor`.
+9. Run `npm run api:doctor:memory`.
+10. Run `npm run api:doctor:postgres`.
+11. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+12. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+13. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+14. Run `npm run cloud:doctor`.
+15. Run `npm run artifact:doctor`.
+16. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+17. Run `npm run persistence:doctor`.
+18. Run `npm run demo:doctor`.
+19. Run the worker and mobile doctor commands in `docs/verification.md`.
+20. Run `npm run mobile:release:doctor`.
+21. Inspect the app with `npm run dev`.
+22. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -114,12 +121,13 @@ surfaces, account identity/recovery storage, route-scoped Postgres
 auth/idempotency behavior, repository-backed customer mutations, source-backed
 printer pricing research, local SVG/PDF print package export, filesystem and
 S3-compatible artifact-store contracts, live MinIO doctor coverage,
-provider-adapter readiness, signed artifact handoff contracts, print contracts,
-order lifecycle, deployment shape, and safety gates with executable TypeScript,
-browser smoke tests, and infrastructure tests.
+provider-adapter readiness, localization readiness, signed artifact handoff
+contracts, print contracts, order lifecycle, deployment shape, and safety gates
+with executable TypeScript, browser smoke tests, and infrastructure tests.
 Real external AI, OAuth, and ordering remain disabled until production
-credentials, consent flows, vendor terms, sandbox/live quote behavior, physical
-print certification, and external security/legal review are complete.
+credentials, consent flows, vendor terms, sandbox/live quote behavior,
+professional translation QA, physical print certification, and external
+security/legal review are complete.
 
 ## Next Build Slice
 

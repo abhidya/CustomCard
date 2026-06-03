@@ -72,6 +72,15 @@ describe("api contracts", () => {
     expect(summary.governance.blockers).toEqual([]);
     expect(summary.governance.fallbackCovered).toBe(summary.providers.total);
     expect(summary.governance.liveNetworkDefault).toBe(false);
+    expect(summary.localization).toMatchObject({
+      defaultLocale: "en-US",
+      supportedLocales: 4,
+      rtlLocales: 2,
+      copyReviewRequired: 3,
+      completeBundles: 4,
+      liveTranslationProvider: false,
+      blockers: []
+    });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(5);
@@ -85,6 +94,12 @@ describe("api contracts", () => {
     );
     expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(87);
     expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
+    expect(payload.mobile.localeOptions.map((locale) => locale.locale)).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
+    expect(payload.localization.summary).toMatchObject({
+      supportedLocales: 4,
+      rtlLocales: 2,
+      blockers: []
+    });
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",

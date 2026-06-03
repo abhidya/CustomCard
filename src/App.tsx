@@ -6,6 +6,7 @@ import {
   Cloud,
   Download,
   FileDown,
+  Globe2,
   Heart,
   Image,
   KeyRound,
@@ -64,6 +65,14 @@ import {
   type ProviderAdapter,
   type ProviderCapability
 } from "./providerCatalog";
+import {
+  getSupportedLocale,
+  supportedLocales,
+  summarizeLocalizationReadiness,
+  type LocalizationReadinessSummary,
+  type SupportedLocale,
+  type SupportedLocaleCode
+} from "./localization";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import { buildPrinterPricingComparison, type PrinterPricingComparison } from "./printerPricing";
@@ -104,6 +113,7 @@ function App() {
   const [scanStatus, setScanStatus] = useState("Sample invite loaded");
   const [opportunityDecision, setOpportunityDecision] = useState<OpportunityDecision>("pending");
   const [vendorId, setVendorId] = useState<VendorId>("walgreens");
+  const [localeCode, setLocaleCode] = useState<SupportedLocaleCode>("en-US");
   const [memoryForm, setMemoryForm] = useState({ recipient: "Sara and Ahmed", note: "" });
   const [exportStatus, setExportStatus] = useState("Ready to export");
 
@@ -129,6 +139,8 @@ function App() {
   const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
   const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
+  const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
+  const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -175,6 +187,12 @@ function App() {
 
   function updateDraft<K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) {
     setDraftInput((current) => ({ ...current, [field]: value }));
+  }
+
+  function chooseLocale(nextLocaleCode: SupportedLocaleCode) {
+    const nextLocale = getSupportedLocale(nextLocaleCode);
+    setLocaleCode(nextLocale.locale);
+    setDraftInput((current) => ({ ...current, language: nextLocale.cardLanguage }));
   }
 
   function downloadPanel(panel: CardPanel) {
@@ -278,9 +296,12 @@ function App() {
             chatTranscript={customerTranscript}
             customerModel={customerPanelModel}
             handoff={handoff}
+            localizationSummary={localizationSummary}
+            onLocale={chooseLocale}
             onNavigate={setActiveView}
             opportunity={opportunity}
             panelCount={draft.panels.length}
+            selectedLocale={selectedLocale}
             workspace={workspace}
           />
         )}
@@ -400,6 +421,7 @@ function App() {
 
         {activeView === "admin" && (
           <AdminPanelView
+            localizationSummary={localizationSummary}
             model={adminPanelModel}
             providerGovernance={providerGovernance}
             runtimeReadiness={runtimeReadiness}
@@ -416,17 +438,23 @@ function CustomerPanelView({
   chatTranscript,
   customerModel,
   handoff,
+  localizationSummary,
+  onLocale,
   onNavigate,
   opportunity,
   panelCount,
+  selectedLocale,
   workspace
 }: {
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   customerModel: CustomerPanelModel;
   handoff: VendorHandoff;
+  localizationSummary: LocalizationReadinessSummary;
+  onLocale: (locale: SupportedLocaleCode) => void;
   onNavigate: (view: ViewId) => void;
   opportunity: CardOpportunity;
   panelCount: number;
+  selectedLocale: SupportedLocale;
   workspace: LocalWorkspace | undefined;
 }) {
   const targetByCapability: Partial<Record<ProviderCapability, ViewId>> = {
@@ -521,6 +549,28 @@ function CustomerPanelView({
             <Check size={18} />
           </div>
           <AdapterMiniList adapters={customerModel.readyFallbacks.slice(0, 6)} />
+        </article>
+
+        <article className="surfaceCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Locale</p>
+              <h3>Language readiness</h3>
+            </div>
+            <Globe2 size={18} />
+          </div>
+          <SegmentedControl
+            label="Locale"
+            options={supportedLocales.map((locale) => locale.locale)}
+            value={selectedLocale.locale}
+            onValue={(value) => onLocale(value as SupportedLocaleCode)}
+          />
+          <div className="runtimeGrid compactMetrics" aria-label="Customer localization readiness">
+            <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
+            <Metric label="RTL" value={selectedLocale.requiresRtlLayout ? "Review" : "No"} />
+            <Metric label="Copy" value={selectedLocale.reviewState === "ready" ? "Ready" : "Review"} />
+            <Metric label="Card language" value={selectedLocale.cardLanguage} />
+          </div>
         </article>
       </div>
     </section>
@@ -1007,10 +1057,12 @@ function HandoffView({
 }
 
 function AdminPanelView({
+  localizationSummary,
   model,
   providerGovernance,
   runtimeReadiness
 }: {
+  localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
   providerGovernance: ProviderGovernanceSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
@@ -1037,6 +1089,7 @@ function AdminPanelView({
         <Metric label="Contract only" value={`${model.coverage.contractOnly}`} />
         <Metric label="Blocked live" value={`${model.coverage.blocked}`} />
         <Metric label="Budget cap" value={formatCents(providerGovernance.monthlyBudgetCents)} />
+        <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
       </div>
 
       <div className="adminGrid">
@@ -1122,6 +1175,27 @@ function AdminPanelView({
           </div>
           <p className="panelNote">
             Every paid or gated adapter maps to a ready local fallback before live network calls can be enabled.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Localization</p>
+              <h3>Locale readiness</h3>
+            </div>
+            <StatusChip icon={Globe2} label="Copy gated" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="Admin localization readiness">
+            <Metric label="Supported" value={`${localizationSummary.supportedLocales}`} />
+            <Metric label="Customer visible" value={`${localizationSummary.customerVisible}`} />
+            <Metric label="RTL review" value={`${localizationSummary.rtlLocales}`} />
+            <Metric label="Copy review" value={`${localizationSummary.copyReviewRequired}`} />
+            <Metric label="Bundles" value={`${localizationSummary.completeBundles}`} />
+            <Metric label="Live translate" value={localizationSummary.liveTranslationProvider ? "On" : "Off"} />
+          </div>
+          <p className="panelNote">
+            Non-English and RTL card copy stays behind human review before any live translation provider is connected.
           </p>
         </article>
 

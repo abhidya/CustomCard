@@ -41,9 +41,12 @@ function inspectMobileSources() {
         "mobileChatTranscript",
         "mobileRenderChoices",
         "mobileHandoffSteps",
+        "mobileLocaleOptions",
         "validateMobileExperience",
         "Real orders disabled",
-        "Live AI and vendor orders stay off"
+        "Live AI and vendor orders stay off",
+        "ar-EG",
+        "ur-PK"
       ]
     },
     {
@@ -53,6 +56,8 @@ function inspectMobileSources() {
         "mobileChatTranscript",
         "mobileRenderChoices",
         "mobileHandoffSteps",
+        "mobileLocaleOptions",
+        "Locale readiness",
         "summarizeMobileExperience"
       ]
     }

@@ -4,6 +4,7 @@ import {
   mobileChatTranscript,
   mobileExperienceSections,
   mobileHandoffSteps,
+  mobileLocaleOptions,
   mobileRenderChoices,
   mobileSafetyBanner,
   summarizeMobileExperience
@@ -39,6 +40,10 @@ export default function App() {
             <View style={styles.summaryItem}>
               <Text style={styles.summaryValue}>{experienceSummary.freeRenderChoices}</Text>
               <Text style={styles.summaryLabel}>free renderer</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{experienceSummary.localeOptions}</Text>
+              <Text style={styles.summaryLabel}>locales</Text>
             </View>
           </View>
         </View>
@@ -90,6 +95,19 @@ export default function App() {
                 <Text style={styles.cardCopy}>{step.detail}</Text>
               </View>
               <Text style={styles.modePill}>{step.realOrderState}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Locale readiness</Text>
+          {mobileLocaleOptions.map((locale) => (
+            <View key={locale.locale} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{locale.label}</Text>
+                <Text style={styles.cardCopy}>{locale.cardLanguage} card copy</Text>
+              </View>
+              <Text style={styles.modePill}>{locale.copyReviewRequired ? "Review" : locale.writingDirection}</Text>
             </View>
           ))}
         </View>

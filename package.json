@@ -23,6 +23,7 @@
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "demo:doctor": "node scripts/demo-reset.mjs",
+    "localization:doctor": "node scripts/localization-doctor.mjs",
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",

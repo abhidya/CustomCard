@@ -220,12 +220,16 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.customerText).toContain("Text interface");
     expect(result.customerText).toContain("Render choices");
     expect(result.customerText).toContain("Manual vendor handoff");
+    expect(result.customerText).toContain("Language readiness");
+    expect(result.customerText).toContain("Ar EG");
     expect(result.quickActions).toBeGreaterThanOrEqual(5);
     expect(result.chatBubbles).toBeGreaterThanOrEqual(4);
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Required env");
     expect(result.adminText).toContain("No-network readiness");
     expect(result.adminText).toContain("Provider governance");
+    expect(result.adminText).toContain("Locale readiness");
+    expect(result.adminText).toContain("RTL review");
     expect(result.adminText).toContain("Budget capped");
     expect(result.adminText).toContain("Credential gaps");
     expect(result.adminText).toContain("OPENAI_API_KEY");

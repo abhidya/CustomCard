@@ -40,12 +40,22 @@ export interface MobileSafetyBanner {
   detail: string;
 }
 
+export interface MobileLocaleOption {
+  locale: "en-US" | "es-US" | "ur-PK" | "ar-EG";
+  label: string;
+  cardLanguage: "English" | "Spanish" | "Urdu" | "Arabic";
+  writingDirection: "ltr" | "rtl";
+  copyReviewRequired: boolean;
+  customerVisible: boolean;
+}
+
 export interface MobileExperienceModel {
   safetyBanner: MobileSafetyBanner;
   sections: MobileExperienceSection[];
   chatTranscript: MobileChatMessage[];
   renderChoices: MobileRenderChoice[];
   handoffSteps: MobileHandoffStep[];
+  localeOptions: MobileLocaleOption[];
 }
 
 export const mobileSafetyBanner = {
@@ -140,12 +150,48 @@ export const mobileHandoffSteps: MobileHandoffStep[] = [
   }
 ];
 
+export const mobileLocaleOptions: MobileLocaleOption[] = [
+  {
+    locale: "en-US",
+    label: "English (US)",
+    cardLanguage: "English",
+    writingDirection: "ltr",
+    copyReviewRequired: false,
+    customerVisible: true
+  },
+  {
+    locale: "es-US",
+    label: "Spanish (US)",
+    cardLanguage: "Spanish",
+    writingDirection: "ltr",
+    copyReviewRequired: true,
+    customerVisible: true
+  },
+  {
+    locale: "ur-PK",
+    label: "Urdu (RTL)",
+    cardLanguage: "Urdu",
+    writingDirection: "rtl",
+    copyReviewRequired: true,
+    customerVisible: true
+  },
+  {
+    locale: "ar-EG",
+    label: "Arabic (RTL)",
+    cardLanguage: "Arabic",
+    writingDirection: "rtl",
+    copyReviewRequired: true,
+    customerVisible: true
+  }
+];
+
 export const mobileExperience: MobileExperienceModel = {
   safetyBanner: mobileSafetyBanner,
   sections: mobileExperienceSections,
   chatTranscript: mobileChatTranscript,
   renderChoices: mobileRenderChoices,
-  handoffSteps: mobileHandoffSteps
+  handoffSteps: mobileHandoffSteps,
+  localeOptions: mobileLocaleOptions
 };
 
 export function summarizeMobileExperience(model: MobileExperienceModel = mobileExperience) {
@@ -154,7 +200,10 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
     customerVisibleSections: model.sections.filter((section) => section.customerVisible).length,
     localChatMessages: model.chatTranscript.filter((message) => message.source === "local-script").length,
     freeRenderChoices: model.renderChoices.filter((choice) => choice.mode === "free-local").length,
-    disabledHandoffSteps: model.handoffSteps.filter((step) => step.realOrderState === "disabled").length
+    disabledHandoffSteps: model.handoffSteps.filter((step) => step.realOrderState === "disabled").length,
+    localeOptions: model.localeOptions.length,
+    rtlLocales: model.localeOptions.filter((locale) => locale.writingDirection === "rtl").length,
+    copyReviewRequiredLocales: model.localeOptions.filter((locale) => locale.copyReviewRequired).length
   };
 }
 
@@ -204,6 +253,17 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
     issues.push("Mobile safety banner must keep real orders disabled.");
   }
 
+  const localeCodes = new Set(model.localeOptions.map((locale) => locale.locale));
+  for (const locale of ["en-US", "es-US", "ur-PK", "ar-EG"] as const) {
+    if (!localeCodes.has(locale)) issues.push(`Missing mobile locale option: ${locale}`);
+  }
+  if (model.localeOptions.some((locale) => !locale.customerVisible)) {
+    issues.push("Every mobile locale option must be customer-visible.");
+  }
+  if (model.localeOptions.some((locale) => locale.writingDirection === "rtl" && !locale.copyReviewRequired)) {
+    issues.push("RTL mobile locale options must require copy review.");
+  }
+
   for (const phrase of collectMobileExperienceText(model)) {
     if (/\b(live order ready|real orders enabled|payment active|vendor api connected|paid ai active)\b/i.test(phrase)) {
       issues.push(`Unsafe mobile live-provider claim: ${phrase}`);
@@ -220,6 +280,7 @@ function collectMobileExperienceText(model: MobileExperienceModel): string[] {
     ...model.sections.flatMap((section) => [section.title, section.detail, section.status]),
     ...model.chatTranscript.map((message) => message.text),
     ...model.renderChoices.flatMap((choice) => [choice.label, choice.detail, choice.mode]),
-    ...model.handoffSteps.flatMap((step) => [step.label, step.detail, step.realOrderState])
+    ...model.handoffSteps.flatMap((step) => [step.label, step.detail, step.realOrderState]),
+    ...model.localeOptions.flatMap((locale) => [locale.locale, locale.label, locale.cardLanguage, locale.writingDirection])
   ];
 }

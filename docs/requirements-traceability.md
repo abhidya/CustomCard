@@ -13,7 +13,7 @@ Requirement types:
 | R001 | Preserve the founder card-origin story and product wedge. | Explicit | Covered in docs and UI thesis. | `docs/brief-context.md`, `docs/product-brief.md`, `src/domain.ts` `oneLiner` and `sourceThesis`, README. |
 | R002 | Extract the messy context into storyboard chapters. | Explicit | Covered in domain contracts and docs; the current UI prioritizes the free MVP workflow. | `src/domain.ts` `storyboards`, `computeBlueprintCoverage`; `src/domain.test.ts` chapter coverage test; `docs/brief-context.md`. |
 | R003 | Show user paths for proactive, last-minute, recurring-memory, and high-care flows. | Explicit | Covered in the product workflow plus domain storyboards. | `src/App.tsx` opportunity/studio/memory/handoff views; `src/domain.ts` storyboard acceptance criteria. |
-| R004 | Support web, iOS, and Android as cross-platform product surfaces. | Explicit | Partially covered. Web is a runnable free MVP with customer/admin panels; mobile is a tested Expo customer shell/config boundary with a shared customer experience contract. | `src/App.tsx`; `apps/mobile/README.md`; `apps/mobile/app.config.js`; `apps/mobile/src/App.tsx`; `apps/mobile/src/customerExperience.ts`; `tests/infra-contract.test.ts`; `tests/mobile-contract.test.ts`. |
+| R004 | Support web, iOS, and Android as cross-platform product surfaces. | Explicit | Partially covered. Web is a runnable free MVP with customer/admin panels; mobile is a tested Expo customer shell/config boundary with a shared customer experience contract and locale options. | `src/App.tsx`; `apps/mobile/README.md`; `apps/mobile/app.config.js`; `apps/mobile/src/App.tsx`; `apps/mobile/src/customerExperience.ts`; `tests/infra-contract.test.ts`; `tests/mobile-contract.test.ts`. |
 | R005 | Model provider import for email/calendar with scoped access. | Explicit | Covered as free manual/ICS import, service contracts, cataloged Gmail/Google Calendar/Microsoft Graph/iCloud adapters, and no-network metadata-only request dry runs; not live OAuth. | `src/freeMvp.ts` `parseFreeImport`; `src/serviceKernel.ts` provider adapters; `src/providerCatalog.ts`; `src/providerRuntime.ts`; tests in `src/freeMvp.test.ts`, `src/serviceKernel.test.ts`, `src/providerCatalog.test.ts`, and `src/providerRuntime.test.ts`. |
 | R006 | Detect event opportunities and preserve user approval/rejection decisions. | Explicit | Covered in UI state and deterministic service slice. | `buildOpportunity`; `OpportunitiesView` approve/snooze/dismiss; `importEvents`, `decideOpportunity`; Chrome smoke test. |
 | R007 | Use relationship memory without hidden or creepy personalization. | Explicit | Covered as approved local UI memory and service repository with forget controls. | `addMemory`, `removeMemory`, Memory view; `InMemoryRelationshipMemoryRepository`, `approveRelationshipMemory`, memory tests. |
@@ -30,12 +30,13 @@ Requirement types:
 | R018 | Document architecture, decisions, run commands, and reviewer handoff. | Inferred | Covered by current docs package. | README, this file, `docs/free-mvp-plan.md`, `docs/platform-expansion-design.md`, `docs/decisions.md`, `docs/verification.md`, `docs/handoff-notes.md`. |
 | R019 | Keep AI/provider calls deterministic or mockable for tests. | Inferred | Covered by no live AI calls, deterministic extraction/rendering, and dry-run provider contracts that never call a network. | `src/freeMvp.ts`, `src/providerRuntime.ts`, `runOperationalExtraction`, `stableId`, tests for free import, SVG generation, provider dry runs, weak-input blocking, and checksums. |
 | R020 | Use production auth, real OAuth, vendor APIs, payment, live quotes, and physical certification. | Open | Partially modeled but not production-covered. Hosted auth adapters, durable account identity storage, hashed recovery challenges, route-scoped isolated Postgres session verification, and payment no-network sandbox request contracts exist, but production auth-provider token verification, OAuth, payment charges/refunds, vendor APIs, live quotes, and physical certification remain intentionally blocked. | README known gaps, `docs/free-mvp-plan.md`, `docs/handoff-notes.md`, `src/accountAuth.ts`, `scripts/account-auth-doctor.mjs`, adapter kill switch, `src/providerCatalog.ts` blocked live vendor adapters and payment sandbox adapters, `src/providerRuntime.ts` payment dry runs. |
-| R021 | Provide customer and admin panels. | Explicit | Covered in the web UI. Customer panel shows next-card state, local chat, image/render choices, and free fallbacks; admin panel shows provider coverage, dry-run runtime readiness, env gates, deployment readiness, and blocked vendors. | `src/App.tsx`, `src/styles.css`, `tests/app-smoke.test.ts`. |
+| R021 | Provide customer and admin panels. | Explicit | Covered in the web UI. Customer panel shows next-card state, local chat, image/render choices, locale readiness, and free fallbacks; admin panel shows provider coverage, localization readiness, dry-run runtime readiness, env gates, deployment readiness, and blocked vendors. | `src/App.tsx`, `src/styles.css`, `tests/app-smoke.test.ts`. |
 | R022 | Load broad service-provider adapters for image generation, integrations, and text chat. | Explicit | Covered as a tested 87-adapter catalog plus executable no-network dry-run contracts with free local fallbacks, hosted-auth readiness, contact/address-book import readiness, notification readiness for email/SMS/WhatsApp/push providers, payment sandbox readiness for Stripe/PayPal/Square/Adyen, observability readiness for error/product/trace/metric/log providers, public printer pricing research with 12 official-source observations and freshness rules, local print package export, filesystem, injected S3-compatible, and live MinIO/S3-compatible artifact-store write/read verification, 56 credential-gated external providers, and hard-blocked live vendors; live provider/vendor/payment calls are not implemented. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `scripts/printer-pricing-doctor.mjs`, `src/printExport.ts`, `src/artifactStore.ts`, `scripts/artifact-store-s3-live-doctor.mjs`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactStore.test.ts`, `infra/env/.env.example`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. |
 | R023 | Include a customer-facing text chat interface. | Explicit | Covered as deterministic local chat transcript in the customer panel and mobile shell, with dry-run request contracts for future model providers; live model providers remain gated. | `buildCustomerChatTranscript`, `buildTextChatRuntime`, `CustomerPanelView`, `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`, `tests/mobile-contract.test.ts`. |
 | R024 | Include image-generation/render provider readiness. | Explicit | Covered by free browser SVG renderer plus dry-run gated OpenAI, Azure OpenAI, Amazon Bedrock, Gemini, Stability, Hugging Face, Replicate, Together, Ideogram, Leonardo, fal, and Black Forest Labs request contracts; no live paid call. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `CustomerPanelView`, `AdminPanelView`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`. |
 | R025 | Keep the system cheap and cloud-deployment ready through tested IaC. | Explicit | Partially covered. Free local fallback, droplet compose, Kubernetes manifests, env contract, static AWS artifact bucket/IAM contract, object-store signing secret gates, filesystem/injected-S3/live-MinIO artifact-store write/read doctors, runtime doctor, contract API doctor, memory API doctor, Postgres runtime contract doctor, isolated live Postgres route-auth integration doctor, Postgres API HTTP doctor, account-auth storage/recovery doctor, persistence doctor, deployment doctor, cloud artifact IaC doctor, CI verification workflow, and infra tests exist; no real cloud deployment evidence. | `infra/docker-compose.dev.yml`, `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `infra/aws/artifact-store`, `infra/env/.env.example`, `.github/workflows/verify.yml`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/cloud-artifact-iac-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/persistence-doctor.mjs`, `scripts/deployment-readiness.mjs`, `src/artifactHandoff.ts`, `src/artifactStore.ts`, `tests/api-server.test.ts`, `tests/infra-contract.test.ts`, `docs/platform-expansion-design.md`. |
-| R026 | Treat test coverage as an explicit quality goal. | Explicit | Covered for core, API, persistence, orchestration, and mobile contract modules with V8 coverage thresholds in the standard check command; browser UI remains covered by smoke tests rather than unit coverage instrumentation. | `package.json` `test:coverage` and `check`; `vite.config.ts` coverage thresholds; `src/apiContracts.test.ts`; `src/persistenceContracts.test.ts`; `src/agentContracts.test.ts`; `tests/mobile-contract.test.ts`; `tests/infra-contract.test.ts`; `docs/verification.md`; `coverage/coverage-summary.json` generated by `npm run check`. |
+| R026 | Treat test coverage as an explicit quality goal. | Explicit | Covered for core, API, localization, persistence, orchestration, and mobile contract modules with V8 coverage thresholds in the standard check command; browser UI remains covered by smoke tests rather than unit coverage instrumentation. | `package.json` `test:coverage` and `check`; `vite.config.ts` coverage thresholds; `src/apiContracts.test.ts`; `src/localization.test.ts`; `src/persistenceContracts.test.ts`; `src/agentContracts.test.ts`; `tests/mobile-contract.test.ts`; `tests/infra-contract.test.ts`; `docs/verification.md`; `coverage/coverage-summary.json` generated by `npm run check`. |
+| R027 | Support multiple languages and regional readiness. | Explicit | Covered as a launch-locale readiness contract for English (US), Spanish (US), Urdu, and Arabic across customer/admin web panels, API bootstrap/readiness payloads, and the mobile customer shell. RTL locales require layout validation, non-English/RTL copy stays human-review-gated, and live translation providers are disabled. | `src/localization.ts`; `src/localization.test.ts`; `scripts/localization-doctor.mjs`; `src/App.tsx`; `src/apiContracts.ts`; `scripts/api-server.mjs`; `apps/mobile/src/customerExperience.ts`; `apps/mobile/src/App.tsx`; `tests/app-smoke.test.ts`; `tests/mobile-contract.test.ts`; `.github/workflows/verify.yml`. |
 
 ## Acceptance Criteria Covered By Tests
 
@@ -46,6 +47,9 @@ Requirement types:
 - Card projects are created only after explicit `generate` decisions.
 - Approved memories are filtered by recipient and can be forgotten.
 - RTL locales are marked layout-sensitive and mismatches are blocked.
+- Launch localization supports English (US), Spanish (US), Urdu, and Arabic on
+  web, API, and mobile surfaces with complete bundles, human copy-review gates,
+  and live translation disabled.
 - Order lifecycle rejects invalid transitions and models recovery paths.
 - Regional vendor-share policy blocks sharing without approval.
 - Runtime config separates cheap droplet/dev behavior from cloud/prod behavior.
@@ -56,8 +60,9 @@ Requirement types:
 - CI workflow runs full repository check, deployment doctor, contract API
   doctor, memory API doctor, Postgres runtime contract doctor, live Postgres
   integration doctor, Postgres API HTTP doctor, account-auth doctor, cloud
-  artifact IaC doctor, persistence doctor, worker readiness, mobile doctor, and
-  mobile release doctor on pushes to `main` and pull requests.
+  artifact IaC doctor, localization doctor, persistence doctor, worker
+  readiness, mobile doctor, and mobile release doctor on pushes to `main` and
+  pull requests.
 - API server exposes tested health, route catalog, customer/admin bootstrap,
   mobile bootstrap, provider readiness, and idempotent mutation contract
   endpoints with real orders and external calls disabled.
@@ -91,7 +96,7 @@ Requirement types:
   queue-job, and audit-log tables.
 - Mobile shell resolves API configuration from environment.
 - Mobile customer shell mirrors the customer panel with tested card queue,
-  memory, chat, render, and handoff sections.
+  memory, chat, render, locale readiness, and handoff sections.
 - Mobile doctor validates the customer experience contract and fails if the
   repo-local real-order kill switch is enabled.
 - Local demo auth works without external providers.
@@ -110,6 +115,8 @@ Requirement types:
   Walgreens/CVS/FedEx/Walmart/Staples/Office Depot observations, reports source
   freshness, keeps `liveQuote: false`, and requires checkout confirmation.
 - Customer/admin panels expose the local customer path and provider operations state.
+- Customer/admin panels expose localization readiness, including RTL and human
+  copy-review counts.
 - Adapter readiness shows free-ready substitutes, credential-gated providers, contract-only adapters, and blocked live vendor integrations.
 - Provider catalog covers 87 adapters: 16 ready-local, 56 credential-gated, 9
   contract-only, and 6 blocked.
@@ -120,9 +127,9 @@ Requirement types:
   payment provider requests only as sandbox/no-network contracts, prepare
   observability provider requests only as sampled/redacted no-network contracts,
   and never prepare live vendor order requests.
-- Core, API, persistence, orchestration, and mobile contract coverage thresholds
-  are enforced in `npm run check`: 90% statements, 80% branches, 90% functions,
-  and 90% lines.
+- Core, API, localization, persistence, orchestration, and mobile contract
+  coverage thresholds are enforced in `npm run check`: 90% statements, 80%
+  branches, 90% functions, and 90% lines.
 
 ## Remaining Gaps
 
@@ -144,6 +151,9 @@ Requirement types:
 - Public printer prices are review-only observations with a 30-day source
   freshness contract, not live quote, tax, coupon, stock, or pickup-window
   guarantees.
+- Non-English and RTL localization is readiness-gated only; professional
+  translation QA, native RTL render proof, and live translation providers are
+  not covered.
 - No external legal/security/privacy/accessibility audit; repo-local baseline
   doctor covers concrete security/privacy/accessibility signals only.
 - Browser UI smoke behavior is not included in the V8 unit coverage percentage.

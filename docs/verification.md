@@ -26,6 +26,10 @@ it after each meaningful implementation pass.
   observations, collection rules, 30-day freshness blocking, minimum quantity
   math, source URLs, manual confirmation, customer/API exposure, CI wiring, and
   `liveQuote: false`.
+- Localization tests and `npm run localization:doctor` cover English (US),
+  Spanish (US), Urdu, and Arabic customer/admin/API/mobile readiness, complete
+  message bundles, RTL layout-review gates, human copy-review gates, CI wiring,
+  and `liveTranslationProvider: false`.
 - Print-export tests cover local source SVG files, a combined 5x7 PDF proof,
   checksum manifest validation, preflight failure paths, and no-network/no-order
   summary behavior.
@@ -48,8 +52,8 @@ it after each meaningful implementation pass.
   env examples, runtime checks, CI workflow gates, coverage scope, and the
   mobile shell/customer contract boundary.
 - Mobile contract tests cover the Expo customer experience model: card queue,
-  memory review, local chat, render choices, manual handoff, and real-order
-  kill-switch doctor behavior.
+  memory review, local chat, render choices, locale readiness, manual handoff,
+  and real-order kill-switch doctor behavior.
 - Agent-contract tests cover the typed orchestration surface and fail-closed
   default policy.
 - API-contract and API-server tests cover `/api/health`, customer/admin
@@ -104,9 +108,9 @@ it after each meaningful implementation pass.
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
   production API endpoint.
-- Coverage is measured for core, API, artifact handoff/store, pricing, print
-  export, persistence, orchestration, and mobile contract modules with V8
-  thresholds enforced by `npm run check`: 90%
+- Coverage is measured for core, API, artifact handoff/store, localization,
+  pricing, print export, persistence, orchestration, and mobile contract modules
+  with V8 thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
@@ -127,6 +131,7 @@ npm run api:doctor
 npm run security:doctor
 npm run provider:governance:doctor
 npm run printer:pricing:doctor
+npm run localization:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -151,15 +156,15 @@ npm run check
 
 Result: passed.
 
-- Vitest: 19 test files passed, 133 tests passed.
-- Coverage: 17 core/API/persistence/infra/mobile test files passed, 125 tests passed; V8 report measured
-  90.95% statements, 84.01% branches, 97.07% functions, and 95.04% lines across
+- Vitest: 20 test files passed, 137 tests passed.
+- Coverage: 18 core/API/persistence/infra/mobile test files passed, 129 tests passed; V8 report measured
+  90.92% statements, 83.97% branches, 96.76% functions, and 95.12% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
-  `src/domain.ts`, `src/freeMvp.ts`, `src/persistenceContracts.ts`,
-  `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.ts`,
-  `src/providerGovernance.ts`, `src/providerRuntime.ts`, and
-  `src/serviceKernel.ts`.
+  `src/domain.ts`, `src/freeMvp.ts`, `src/localization.ts`,
+  `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
+  `src/providerCatalog.ts`, `src/providerGovernance.ts`,
+  `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -207,6 +212,15 @@ Result: passed. The JSON report marked catalog, safety, collection, tests,
 surfaces, docs, and CI lanes `ready`; it verified 12 official-source printer
 price observations, 9 collection rules, manual confirmation on every
 observation, UI/API exposure, CI wiring, and no live quote or real-order claims.
+
+```text
+npm run localization:doctor
+```
+
+Result: passed. The JSON report marked catalog, tests, surfaces, mobile, CI, and
+safety lanes `ready`; it verified 4 launch locales, 2 RTL locales, 3
+human-copy-review locales, 4 mobile locale options, web/API/mobile parity, no
+live translation provider, no real orders, and no blockers.
 
 ```text
 npm run api:doctor

@@ -1,5 +1,10 @@
 import { mobileExperience, summarizeMobileExperience, validateMobileExperience } from "../apps/mobile/src/customerExperience.ts";
 import {
+  summarizeLocalizationReadiness,
+  supportedLocales,
+  type LocalizationReadinessSummary
+} from "./localization.ts";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -45,6 +50,7 @@ export interface ApiReadinessSummary {
   };
   providers: ProviderCoverageSummary;
   governance: ProviderGovernanceSummary;
+  localization: LocalizationReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -59,6 +65,10 @@ export interface ApiBootstrapPayload {
   customer: ReturnType<typeof buildCustomerPanelModel>;
   admin: ReturnType<typeof buildAdminPanelModel>;
   mobile: typeof mobileExperience;
+  localization: {
+    locales: typeof supportedLocales;
+    summary: LocalizationReadinessSummary;
+  };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
 }
@@ -102,7 +112,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "durable-api",
     requestSchema: ["session"],
-    responseSchema: ["primaryActions", "readyFallbacks", "chatTranscript", "printerPricing"],
+    responseSchema: ["primaryActions", "readyFallbacks", "chatTranscript", "printerPricing", "localization"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -117,7 +127,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "durable-api",
     requestSchema: ["session", "platform"],
-    responseSchema: ["sections", "chatTranscript", "renderChoices", "handoffSteps", "safetyBanner"],
+    responseSchema: ["sections", "chatTranscript", "renderChoices", "handoffSteps", "safetyBanner", "localeOptions", "localization"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -132,7 +142,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "admin-session",
     runtimeMode: "durable-api",
     requestSchema: ["adminSession"],
-    responseSchema: ["coverage", "governance", "runtime", "blockedProviders", "requiredEnv"],
+    responseSchema: ["coverage", "governance", "localization", "runtime", "blockedProviders", "requiredEnv"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -308,6 +318,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     },
     providers: summarizeProviderCoverage(),
     governance: summarizeProviderGovernance(),
+    localization: summarizeLocalizationReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -319,6 +330,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     customer: buildCustomerPanelModel(),
     admin: buildAdminPanelModel(),
     mobile: mobileExperience,
+    localization: {
+      locales: supportedLocales,
+      summary: summarizeLocalizationReadiness()
+    },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
   };

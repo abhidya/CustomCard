@@ -5,17 +5,17 @@ Date: 2026-06-03
 ## Objective
 
 Expand the free CustomCard MVP toward the requested end state: broad provider
-adapter coverage, customer and admin panels, a customer mobile app surface,
-tested UI/UX, and cheap cloud-deployment readiness. This pass keeps the free
-local path runnable while making credential-gated provider work explicit and
-testable.
+adapter coverage, customer and admin panels, multi-language/regional readiness,
+a customer mobile app surface, tested UI/UX, and cheap cloud-deployment
+readiness. This pass keeps the free local path runnable while making
+credential-gated provider work explicit and testable.
 
 ## Design Before Build
 
 The system remains adapter-first:
 
 - Customer surfaces consume capability groups: event import, text chat,
-  image/render, memory, and handoff.
+  image/render, memory, localization, and handoff.
 - Admin surfaces consume the same adapter catalog to see readiness, required
   environment variables, safety gates, blocked live-order providers, and cloud
   runtime shape.
@@ -64,6 +64,28 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   and incident response remain unverified.
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
+
+## Localization Readiness
+
+`src/localization.ts` is the launch-locale readiness contract. It exposes
+English (US), Spanish (US), Urdu, and Arabic with customer/admin visibility,
+card-language mapping, number/date format hints, complete shell message bundles,
+and explicit writing direction.
+
+This is readiness, not a live translation system:
+
+- `en-US` is the default ready locale.
+- `es-US`, `ur-PK`, and `ar-EG` require human copy review.
+- `ur-PK` and `ar-EG` require RTL layout validation.
+- `liveTranslationProvider` remains `false`.
+- Unsafe claims such as live translation, active payments, or real orders are
+  blocked by validation.
+
+The web customer panel shows language readiness and maps the selected locale to
+the card-language control. The admin panel reports supported locales, RTL
+review, copy-review, bundle completeness, and live-translation posture. API
+bootstrap/readiness payloads expose the same summary, and the Expo shell mirrors
+the launch locale options so mobile cannot drift from web/API readiness.
 
 `src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
 It can evaluate readiness for every adapter, reject placeholder credentials,
@@ -136,7 +158,7 @@ Official documentation anchors used for the adapter contracts:
 The customer panel is the first web surface. It shows the current card
 opportunity, local workspace state, panel count, handoff vendor, quick actions
 for the free workflow, a deterministic customer chat transcript, image/render
-choices, and ready local fallbacks.
+choices, locale readiness, and ready local fallbacks.
 
 The customer path stays cheap:
 
@@ -145,6 +167,7 @@ The customer path stays cheap:
 - No provider OAuth required.
 - No real vendor order.
 - No live printer quote; public pricing research remains review-only.
+- No live translation provider; non-English and RTL copy remains review-gated.
 - SVG export, local PDF proof/manifest package export, and manual handoff remain
   the working path.
 
@@ -167,6 +190,8 @@ The admin panel turns the adapter catalog into an operations surface:
 - Public printer pricing research for manual Walgreens/CVS/FedEx/Walmart/
   Staples/Office Depot comparison, including 12 official-source observations,
   source-count, and freshness state.
+- Localization readiness for 4 launch locales, 2 RTL layout-review locales, 3
+  human-copy-review locales, complete bundles, and live translation disabled.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 
@@ -186,7 +211,8 @@ adapters remain zero-spend with real orders disabled.
 `apps/mobile/src/App.tsx` renders that contract as the Expo customer surface
 instead of a placeholder. It mirrors the web customer panel with card queue,
 memory review, local scripted chat, image/render status, manual handoff, and a
-real-order-disabled banner.
+real-order-disabled banner. The mobile contract also carries the same 4 launch
+locale options, including copy-review and RTL posture.
 
 The mobile doctor validates environment resolution, the contract source, and the
 repo-local real-order kill switch. Native rendering, emulator runs, builds, and
@@ -198,7 +224,8 @@ platform signing remain outside the repo-local verification loop.
 admin, and mobile clients. It covers health, route catalog, customer bootstrap,
 mobile bootstrap, admin readiness, provider catalog, admin demo reset, import
 preview, card project creation, render packets, manual vendor handoff, and data
-requests.
+requests. Customer, admin, and mobile bootstrap payloads include localization
+readiness so clients can render the same launch-locale state.
 
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,
@@ -261,6 +288,9 @@ The runtime remains fail-closed:
 - `npm run api:doctor` verifies the API/static server route map, provider
   summary, contract runtime, idempotent mutation contracts, and no-live-call
   posture.
+- `npm run localization:doctor` verifies launch locales, RTL/copy-review gates,
+  web/API/mobile surfaces, coverage/CI wiring, no live translation provider, and
+  no real orders.
 - `npm run api:doctor:memory` verifies Bearer session and idempotency enforcement
   in the executable memory runtime.
 - `npm run persistence:doctor` verifies auth-session schema, idempotency replay,
@@ -294,6 +324,10 @@ Implemented checks:
   source-backed public price observations, collection rules, freshness blocking,
   minimum-quantity totals, manual-confirmation requirements, UI/API exposure, CI
   wiring, and the no-live-quote boundary.
+- `src/localization.test.ts` and `npm run localization:doctor` validate the 4
+  launch locales, complete message bundles, RTL layout-review gates, human
+  copy-review gates, web/API/mobile parity, CI wiring, no live translation
+  provider, and no real orders.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.
@@ -331,7 +365,7 @@ Implemented checks:
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer contract evidence.
 - Mobile contract tests validate the customer app sections, local/gated
-  chat-render-handoff posture, and doctor kill-switch behavior.
+  chat-render-handoff posture, locale options, and doctor kill-switch behavior.
 - Agent contract tests validate the typed orchestration surface and fail-closed
   default policy.
 - API contract and server tests validate customer/admin/mobile API bootstrap,
@@ -347,14 +381,14 @@ Implemented checks:
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
   contract API doctor, memory API doctor, Postgres runtime contract doctor, live
   Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
-  cloud artifact IaC doctor, artifact-store doctor, live MinIO/S3-compatible
-  artifact doctor, persistence doctor, demo reset doctor, worker readiness,
-  mobile doctor, and mobile release doctor for pushes to `main` and pull
-  requests.
+  cloud artifact IaC doctor, localization doctor, artifact-store doctor, live
+  MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
+  worker readiness, mobile doctor, and mobile release doctor for pushes to
+  `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  artifact handoff/store, pricing, print-export, persistence, orchestration, and
-  mobile contract modules: 90% statements, 80% branches, 90% functions, and 90%
-  lines.
+  artifact handoff/store, localization, pricing, print-export, persistence,
+  orchestration, and mobile contract modules: 90% statements, 80% branches, 90%
+  functions, and 90% lines.
 
 Remaining high-risk work:
 
@@ -364,6 +398,8 @@ Remaining high-risk work:
 - No live observability ingestion, alert routing, retention enforcement, or
   incident-response drill.
 - No live printer tax, coupon, stock, or pickup-window integration.
+- No professional translation QA, live translation provider, or native RTL
+  render proof.
 - No live-applied production cloud object-store bucket policy/IAM verification;
   signed render-packet URL contracts, static AWS artifact-store IaC, temporary
   filesystem write/read verification, injected S3-compatible write/read

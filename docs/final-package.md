@@ -9,10 +9,11 @@
   `docs/brief-context.md`.
 - Current delivered outcome: a polished free local MVP plus customer/admin
   panels, a tested provider-adapter catalog and no-network runtime contracts, a
-  tested customer mobile shell contract, and a contract-first production
-  skeleton with API/static server, account identity/recovery storage contracts,
-  memory-mode auth/idempotency validation, fake-pool contract and isolated live
-  Postgres route-auth/migration/runtime validation, Postgres API HTTP
+  tested localization readiness catalog, a tested customer mobile shell
+  contract, and a contract-first production skeleton with API/static server,
+  account identity/recovery storage contracts, memory-mode auth/idempotency
+  validation, fake-pool contract and isolated live Postgres
+  route-auth/migration/runtime validation, Postgres API HTTP
   auth/idempotency/repository verification, and committed CI verification gates.
 - Audience/reviewer: project reviewer, interview/client evaluator, or future
   implementer who needs to inspect the repo without reading chat history.
@@ -38,7 +39,7 @@
   adapter readiness.
 - UX/polish: redesigned the app shell, responsive navigation, status gates,
   card-studio preview, handoff checklist, adapter matrix, customer/admin
-  operations surfaces, and mobile layout.
+  operations surfaces, locale readiness controls, and mobile layout.
 - Code/architecture: added `src/freeMvp.ts` for deterministic free-MVP auth,
   import, opportunity, card, SVG, memory, and handoff logic while preserving the
   existing domain and service-kernel contracts; added `src/providerCatalog.ts`
@@ -65,10 +66,10 @@
   inspect free-ready,
   credential-gated, contract-only, and blocked production adapters.
 - Customer panel: next-card state, deterministic local chat transcript,
-  image/render choices, and free fallback actions.
+  image/render choices, locale readiness, and free fallback actions.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
-  env vars, gated provider queue, cloud runtime adapters, and blocked live
-  vendors.
+  env vars, localization readiness, gated provider queue, cloud runtime
+  adapters, and blocked live vendors.
 - Provider runtime: readiness dry runs for all 87 catalog adapters; redacted
   no-network request contracts for gated chat, image, event, contact,
   hosted-auth, notification, payment, and observability providers; hard
@@ -82,14 +83,19 @@
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, admin demo reset, default contract mode,
   repository-backed relationship-memory, render-packet, import-preview,
-  card-project, manual vendor handoff, and data-request mutation handling, and
-  executable memory-mode Bearer auth plus `X-Idempotency-Key` replay/conflict
+  card-project, manual vendor handoff, data-request mutation handling,
+  localization readiness payloads, and executable memory-mode Bearer auth plus
+  `X-Idempotency-Key` replay/conflict
   behavior served by `scripts/api-server.mjs`; fake-pool and isolated live
   Postgres runtime coverage now exercise auth-session lookup, idempotency
   replay/conflict, migration application, provider/event/opportunity inserts,
   card-project inserts, relationship-memory inserts, render-packet inserts, audit
   insert, and queue-job insert, with a process-level HTTP doctor proving the
   same repository-backed routes through `scripts/api-server.mjs`.
+- Localization readiness: English (US), Spanish (US), Urdu, and Arabic are
+  exposed across web customer/admin panels, API bootstrap/readiness payloads, and
+  the mobile shell contract with complete message bundles, RTL layout-review
+  flags, human copy-review gates, and live translation disabled.
 - Persistence boundary: tested auth-session, account identity, hashed recovery
   challenge, idempotency replay, relationship-memory repository, render-packet
   repository, import-preview repository, card-project repository, queue-job,
@@ -102,12 +108,13 @@
   deployment doctor, contract API doctor, memory-runtime API doctor, Postgres
   runtime contract doctor, live Postgres integration doctor, Postgres API HTTP
   doctor, account-auth storage/recovery doctor, cloud artifact IaC doctor,
-  artifact-store write/read doctor, live MinIO/S3-compatible artifact doctor,
-  persistence doctor, demo reset doctor, worker readiness, mobile doctor, and
-  mobile release doctor on pushes to `main` and pull requests.
+  localization readiness doctor, artifact-store write/read doctor, live
+  MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
+  worker readiness, mobile doctor, and mobile release doctor on pushes to `main`
+  and pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
-  queue, memory review, local chat, image/render state, manual handoff, and
-  real-order kill-switch validation.
+  queue, memory review, local chat, image/render state, locale readiness, manual
+  handoff, and real-order kill-switch validation.
 - Demo/seed data: sample anniversary `.ics` content, two approved local memory
   records in `src/freeMvp.ts`, plus an admin-only demo reset contract covering
   14 reviewer fixture tables and 17 rows.
@@ -120,8 +127,8 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 19 test files, 133 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.95% statements, 84.01% branches, 97.07% functions, 95.04% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 20 test files, 137 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.92% statements, 83.97% branches, 96.76% functions, 95.12% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
@@ -129,6 +136,7 @@
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
 | Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 87 adapters, 39 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
 | Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
+| Localization readiness | `npm run localization:doctor` | Passed; verified 4 launch locales, 2 RTL locales, 3 human-copy-review locales, 4 mobile locale options, web/API/mobile surfaces, CI wiring, no live translation provider, and no real orders. |
 | API readiness | `npm run api:doctor` | Passed; 15 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, provider governance, 13 schema-backed routes, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
@@ -142,7 +150,7 @@
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, and mobile native release gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, localization readiness, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, and mobile native release gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -156,6 +164,7 @@
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
 | Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`, `scripts/artifact-store-s3-live-doctor.mjs`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactHandoff.test.ts`, `src/artifactStore.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations with source freshness, local export packages, signed artifact handoff contracts, temporary filesystem object-store write/read verification, injected S3-compatible write/read contract verification, and live MinIO/S3-compatible write/read doctor coverage; production cloud calls gated |
 | Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/eas.json`, `apps/mobile/scripts/release-doctor.mjs`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell plus native release profile contract; actual native build artifact not covered |
+| Add multi-language and regional readiness. | `src/localization.ts`, `src/localization.test.ts`, `scripts/localization-doctor.mjs`, `src/App.tsx`, `src/apiContracts.ts`, `scripts/api-server.mjs`, `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `tests/mobile-contract.test.ts`, `tests/app-smoke.test.ts`, `docs/platform-expansion-design.md`. | Covered as customer/admin/API/mobile readiness for English (US), Spanish (US), Urdu, and Arabic with RTL layout-review and human copy-review gates; professional translation QA and live translation providers remain open |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
@@ -177,19 +186,20 @@
 7. Run `npm run api:doctor`.
 8. Run `npm run provider:governance:doctor`.
 9. Run `npm run printer:pricing:doctor`.
-10. Run `npm run api:doctor:memory`.
-11. Run `npm run api:doctor:postgres`.
-12. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-13. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-14. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-15. Run `npm run artifact:doctor`.
-16. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
-17. Run `npm run persistence:doctor`.
-18. Run `npm run demo:doctor`.
-19. Run the worker and mobile doctor commands in `docs/verification.md`.
-20. Run `npm run mobile:release:doctor`.
-21. Inspect `.github/workflows/verify.yml`.
-22. Inspect screenshots in `docs/evidence/` and known gaps in
+10. Run `npm run localization:doctor`.
+11. Run `npm run api:doctor:memory`.
+12. Run `npm run api:doctor:postgres`.
+13. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+14. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+15. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+16. Run `npm run artifact:doctor`.
+17. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+18. Run `npm run persistence:doctor`.
+19. Run `npm run demo:doctor`.
+20. Run the worker and mobile doctor commands in `docs/verification.md`.
+21. Run `npm run mobile:release:doctor`.
+22. Inspect `.github/workflows/verify.yml`.
+23. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -215,6 +225,9 @@
   taxes, coupons, stock, pickup windows, and checkout availability are not
   live-verified. The current catalog has 12 official-source observations behind
   a no-network pricing doctor.
+- Non-English and RTL localization is readiness-gated only; professional
+  translation QA, native RTL render proof, and live translation providers are
+  not covered.
 - No real droplet or Kubernetes deployment execution evidence.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment execution evidence is claimed.
@@ -228,11 +241,12 @@
 ## Final Claim
 
 The repo is ready to be described as a polished, reviewable, free local
-CustomCard MVP plus a tested adapter-readiness/admin/customer expansion slice,
-with deterministic demo workflows, documented production boundaries, tests,
-visual evidence, and honest handoff notes.
+CustomCard MVP plus a tested adapter-readiness/admin/customer/localization
+expansion slice, with deterministic demo workflows, documented production
+boundaries, tests, visual evidence, and honest handoff notes.
 
 Not ready to claim: production SaaS, live OAuth integration, paid AI generation,
 direct retail-printer ordering, live charges/refunds, certified physical print
-quality, live observability operations, deployed service, native mobile release,
-or externally audited legally/security-reviewed product.
+quality, professional translation QA, live observability operations, deployed
+service, native mobile release, or externally audited legally/security-reviewed
+product.

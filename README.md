@@ -61,6 +61,9 @@ environment configuration instead of static placeholders.
 - Review-only public printer pricing comparison for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot manual handoff, with 12 official-source
   observations, freshness checks, and checkout confirmation still required.
+- Localization readiness for English (US), Spanish (US), Urdu, and Arabic
+  across customer, admin, API, and mobile surfaces, with RTL layout review and
+  human copy-review gates before non-English or RTL copy can be marked ready.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
@@ -86,8 +89,8 @@ environment configuration instead of static placeholders.
   isolated live Postgres route-scoped auth/idempotency/audit/queue runtime
   checks, process-level Postgres HTTP auth/idempotency/repository smoke,
   repository-backed relationship-memory, render-packet, import-preview,
-  card-project, manual vendor handoff, and data-request mutation coverage, admin
-  demo reset, and no live external calls.
+  card-project, manual vendor handoff, data-request mutation coverage, admin
+  demo reset, localization readiness payloads, and no live external calls.
 - Persistence contract/migration boundary for auth sessions, hosted account
   identities, hashed recovery challenges, idempotency replay, import-preview
   event/opportunity writes, relationship-memory repository writes, card-project
@@ -95,7 +98,8 @@ environment configuration instead of static placeholders.
   order/consent/event writes, data-request privacy/consent writes, queue jobs,
   audit logs, and 13 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
-  render choices, manual handoff, and real-order kill-switch posture.
+  render choices, locale readiness, manual handoff, and real-order kill-switch
+  posture.
 - Tested Expo/EAS native release contract for development, preview, and
   production iOS/Android build profiles with API URL supplied by environment
   and real orders disabled.
@@ -201,6 +205,7 @@ npm run api:doctor
 npm run security:doctor
 npm run provider:governance:doctor
 npm run printer:pricing:doctor
+npm run localization:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -220,10 +225,10 @@ production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
 `src/artifactStore.ts`, `src/domain.ts`, `src/freeMvp.ts`,
-`src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
-`src/providerCatalog.ts`, `src/providerGovernance.ts`, `src/providerRuntime.ts`, and
-`src/serviceKernel.ts`; browser UI behavior is verified through Chrome smoke
-tests.
+`src/localization.ts`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
+`src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
+`src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
+verified through Chrome smoke tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
 cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes. `npm run
@@ -235,10 +240,10 @@ deployment.
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
 accessibility baseline doctor, provider cost governance doctor, printer pricing
-research doctor, memory-runtime API doctor, Postgres runtime contract doctor,
-live Postgres integration doctor, Postgres API HTTP doctor, account-auth storage/recovery doctor,
-artifact-store filesystem plus
-S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
+research doctor, localization readiness doctor, memory-runtime API doctor,
+Postgres runtime contract doctor, live Postgres integration doctor, Postgres API
+HTTP doctor, account-auth storage/recovery doctor, artifact-store filesystem
+plus S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
 persistence doctor, demo reset doctor, worker readiness, mobile doctor, and
 mobile native release doctor on pushes to `main` and pull requests.
 
@@ -267,9 +272,10 @@ generation, live vendor quotes, live payment charges/refunds, direct
 retail-printer ordering, live telemetry ingestion/alerting, live-applied cloud
 bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
 deployed production Postgres API integration, production hosted account-token
-verification outside the isolated live Postgres doctors, a produced/signed
-native mobile artifact or emulator render proof, deployment evidence, external
-legal/security/privacy/accessibility audit, or physical print certification.
-Those paths are represented as contracts and hard gates so reviewers can inspect
-the system shape without mistaking the free local MVP for a certified production
+verification outside the isolated live Postgres doctors, professional
+translation QA or live translation providers, a produced/signed native mobile
+artifact or emulator render proof, deployment evidence, external legal/security/
+privacy/accessibility audit, or physical print certification. Those paths are
+represented as contracts and hard gates so reviewers can inspect the system
+shape without mistaking the free local MVP for a certified production
 fulfillment service.

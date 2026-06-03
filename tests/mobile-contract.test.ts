@@ -6,12 +6,15 @@ import {
   mobileExperience,
   mobileExperienceSections,
   mobileHandoffSteps,
+  mobileLocaleOptions,
   mobileRenderChoices,
   requiredMobileCapabilities,
   summarizeMobileExperience,
   validateMobileExperience,
   type MobileExperienceModel
 } from "../apps/mobile/src/customerExperience";
+
+const shellDoctorTimeoutMs = 15_000;
 
 describe("mobile customer experience contract", () => {
   it("covers the required customer app capabilities with visible sections", () => {
@@ -20,6 +23,9 @@ describe("mobile customer experience contract", () => {
     expect(validateMobileExperience()).toEqual([]);
     expect(summary.capabilityCount).toBe(requiredMobileCapabilities.length);
     expect(summary.customerVisibleSections).toBe(requiredMobileCapabilities.length);
+    expect(summary.localeOptions).toBe(4);
+    expect(summary.rtlLocales).toBe(2);
+    expect(summary.copyReviewRequiredLocales).toBe(3);
     expect(mobileExperienceSections.map((section) => section.id)).toEqual(
       expect.arrayContaining(requiredMobileCapabilities)
     );
@@ -39,6 +45,12 @@ describe("mobile customer experience contract", () => {
       expect.arrayContaining([
         expect.objectContaining({ label: "Download SVG set", realOrderState: "manual" }),
         expect.objectContaining({ label: "Confirm pickup manually", realOrderState: "disabled" })
+      ])
+    );
+    expect(mobileLocaleOptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ locale: "en-US", cardLanguage: "English", copyReviewRequired: false }),
+        expect.objectContaining({ locale: "ar-EG", cardLanguage: "Arabic", writingDirection: "rtl", copyReviewRequired: true })
       ])
     );
   });
@@ -62,7 +74,7 @@ describe("mobile customer experience contract", () => {
       stderr = String((error as { stderr?: string }).stderr);
     }
     expect(stderr).toContain("kill switch must resolve to disabled");
-  });
+  }, shellDoctorTimeoutMs);
 
   it("ships a native release profile gate without hardcoded production API endpoints", () => {
     const eas = JSON.parse(readFileSync("apps/mobile/eas.json", "utf8")) as {
@@ -120,7 +132,7 @@ describe("mobile customer experience contract", () => {
       realOrdersEnabled: false,
       blockers: []
     });
-  });
+  }, shellDoctorTimeoutMs);
 
   it("flags incomplete or unsafe mobile customer models before they reach the app", () => {
     const unsafeModel: MobileExperienceModel = {
@@ -155,6 +167,16 @@ describe("mobile customer experience contract", () => {
           detail: "vendor api connected",
           realOrderState: "disabled"
         }
+      ],
+      localeOptions: [
+        {
+          locale: "ar-EG",
+          label: "Arabic unsafe",
+          cardLanguage: "Arabic",
+          writingDirection: "rtl",
+          copyReviewRequired: false,
+          customerVisible: false
+        }
       ]
     };
 
@@ -172,6 +194,11 @@ describe("mobile customer experience contract", () => {
         "Mobile handoff must keep a manual upload path.",
         "Disabled mobile handoff steps must explain blocked live order APIs.",
         "Mobile safety banner must keep real orders disabled.",
+        "Missing mobile locale option: en-US",
+        "Missing mobile locale option: es-US",
+        "Missing mobile locale option: ur-PK",
+        "Every mobile locale option must be customer-visible.",
+        "RTL mobile locale options must require copy review.",
         "Unsafe mobile live-provider claim: Real orders enabled",
         "Unsafe mobile live-provider claim: payment active",
         "Unsafe mobile live-provider claim: live order ready",

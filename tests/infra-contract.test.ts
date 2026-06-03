@@ -301,6 +301,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
+    expect(packageJson).toContain("\"localization:doctor\": \"node scripts/localization-doctor.mjs\"");
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
@@ -311,6 +312,7 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/demoSeed.ts");
     expect(viteConfig).toContain("src/domain.ts");
     expect(viteConfig).toContain("src/freeMvp.ts");
+    expect(viteConfig).toContain("src/localization.ts");
     expect(viteConfig).toContain("src/persistenceContracts.ts");
     expect(viteConfig).toContain("src/printerPricing.ts");
     expect(viteConfig).toContain("src/printExport.ts");
@@ -360,6 +362,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run cloud:doctor");
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run security:doctor");
+    expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
     expect(workflow).toContain("npm run printer:pricing:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
@@ -626,6 +629,46 @@ describe("production infrastructure contract", () => {
       expect.arrayContaining([
         expect.objectContaining({ lane: "catalog", status: "ready" }),
         expect.objectContaining({ lane: "governance", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
+
+  it("emits a localization readiness report", () => {
+    const output = execFileSync("npm", ["run", "localization:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      localeCount: number;
+      rtlCount: number;
+      reviewRequiredCount: number;
+      mobileLocaleCount: number;
+      liveTranslationProvider: boolean;
+      realOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-localization-doctor",
+      status: "ready",
+      localeCount: 4,
+      rtlCount: 2,
+      reviewRequiredCount: expect.any(Number),
+      mobileLocaleCount: 4,
+      liveTranslationProvider: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.reviewRequiredCount).toBeGreaterThanOrEqual(3);
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "catalog", status: "ready" }),
+        expect.objectContaining({ lane: "mobile", status: "ready" }),
         expect.objectContaining({ lane: "surfaces", status: "ready" }),
         expect.objectContaining({ lane: "ci", status: "ready" })
       ])
