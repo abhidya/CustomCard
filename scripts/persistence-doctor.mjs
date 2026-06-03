@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 
 const files = {
   apiContracts: "src/apiContracts.ts",
+  apiRuntime: "scripts/api-runtime.mjs",
   apiServer: "scripts/api-server.mjs",
+  postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
   migration: "infra/migrations/001_initial_schema.sql"
 };
 
@@ -66,6 +68,21 @@ const apiSignals = [
   "idempotencyTable: true",
   "appendOnlyAudit: true"
 ];
+const postgresRuntimeSignals = [
+  "createPostgresApiRuntime",
+  "postgresPoolFactory",
+  "FROM auth_sessions",
+  "INSERT INTO idempotency_keys",
+  "INSERT INTO audit_log",
+  "INSERT INTO api_jobs"
+];
+const postgresDoctorSignals = [
+  "customcard-postgres-runtime-doctor",
+  "idempotencyReplayed",
+  "idempotency-conflict",
+  "queuedJobs",
+  "wrong-role"
+];
 const authSessionSignals = migrationSignals.slice(0, 7);
 const idempotencySignals = migrationSignals.slice(7, 12);
 const queueJobSignals = migrationSignals.slice(12, 16);
@@ -79,6 +96,8 @@ const checks = [
   checkIncludes("schema", "safety-signals", contents.migration, safetySignals),
   checkIncludes("api", "persistence-route-contract", contents.apiContracts, apiSignals.slice(0, 2)),
   checkIncludes("api", "server-persistence-readiness", contents.apiServer, apiSignals.slice(1)),
+  checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
+  checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkAbsent("schema", "no-raw-content-permission", contents.migration, ["raw_content_allowed", "raw_content_stored BOOLEAN NOT NULL DEFAULT TRUE"]),
   checkAbsent("api", "no-live-persistence-claims", `${contents.apiContracts}\n${contents.apiServer}`, ["realOrdersEnabled: true", "externalNetworkCalls: true"])
 ];

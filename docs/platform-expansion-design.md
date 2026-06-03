@@ -204,8 +204,11 @@ The server now has explicit runtime modes:
   mutations require `X-Idempotency-Key`, same-key replay returns the stored
   response, and same-key/different-body conflicts return `409`.
 - `postgres`: parameterized Postgres runtime path for auth sessions,
-  idempotency records, queue jobs, and audit rows. This path is not claimed as
-  live until a real database integration test and migration run exist.
+  idempotency records, queue jobs, and audit rows. `npm run
+  api:doctor:postgres` now exercises this path with an injected fake `pg` pool,
+  including wrong-role blocking, replay, conflict, audit, and queue-job inserts.
+  This path is still not claimed as live until a real database integration test
+  and migration run exist.
 
 ## Persistence Boundary
 
@@ -268,6 +271,8 @@ Implemented checks:
 - `src/artifactHandoff.test.ts` validates HMAC-signed artifact URLs,
   object-store URI construction, tamper detection, expiry policy, and unsafe
   config failures.
+- `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior
+  through an injected fake pool without requiring external database credentials.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer contract evidence.
@@ -283,8 +288,9 @@ Implemented checks:
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
-  contract API doctor, memory API doctor, persistence doctor, demo reset doctor,
-  worker readiness, and mobile doctor for pushes to `main` and pull requests.
+  contract API doctor, memory API doctor, Postgres runtime contract doctor,
+  persistence doctor, demo reset doctor, worker readiness, and mobile doctor for
+  pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact-handoff, pricing, print-export, persistence, orchestration, and mobile contract
   modules: 90% statements, 80% branches, 90% functions, and 90% lines.

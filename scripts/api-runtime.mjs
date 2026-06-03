@@ -2,12 +2,12 @@ import { createHash } from "node:crypto";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
 
-export function createApiRuntime({ env = process.env, routes = [] } = {}) {
+export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
   const requestedMode = env.CUSTOMCARD_API_RUNTIME ?? "contract";
   if (!runtimeModes.has(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes });
   const mode = requestedMode;
   if (mode === "memory") return createMemoryApiRuntime({ env, routes });
-  if (mode === "postgres") return createPostgresApiRuntime({ env, routes });
+  if (mode === "postgres") return createPostgresApiRuntime({ env, routes, postgresPoolFactory });
   return createContractApiRuntime({ routes });
 }
 
@@ -152,15 +152,17 @@ function createMemoryApiRuntime({ env, routes }) {
   };
 }
 
-function createPostgresApiRuntime({ env, routes }) {
+function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
   let poolPromise;
 
   async function getPool() {
     if (!poolPromise) {
-      poolPromise = import("pg").then(({ Pool }) => new Pool({
-        connectionString: env.DATABASE_URL,
-        ssl: env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
-      }));
+      poolPromise = postgresPoolFactory
+        ? Promise.resolve(postgresPoolFactory({ env }))
+        : import("pg").then(({ Pool }) => new Pool({
+            connectionString: env.DATABASE_URL,
+            ssl: env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
+          }));
     }
     return poolPromise;
   }

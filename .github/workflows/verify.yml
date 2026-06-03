@@ -45,6 +45,9 @@ jobs:
       - name: Validate API memory runtime
         run: npm run api:doctor:memory
 
+      - name: Validate API Postgres runtime contract
+        run: npm run api:doctor:postgres
+
       - name: Validate persistence readiness
         run: npm run persistence:doctor
 

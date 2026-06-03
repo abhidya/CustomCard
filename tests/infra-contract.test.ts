@@ -275,6 +275,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run deployment:doctor");
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
+    expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");
@@ -306,6 +307,37 @@ describe("production infrastructure contract", () => {
       rows: 17,
       signedArtifactUrls: true,
       realOrdersEnabled: false
+    });
+  });
+
+  it("exercises the Postgres API runtime contract without external database credentials", () => {
+    const output = execFileSync("npm", ["run", "api:doctor:postgres", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean; postgresConfigured: boolean };
+      persistence: { idempotencyRecords: number; auditRecords: number; queuedJobs: number };
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-postgres-runtime-doctor",
+      status: "ready",
+      runtime: {
+        mode: "postgres",
+        authEnforced: true,
+        idempotencyEnforced: true,
+        postgresConfigured: true
+      },
+      persistence: {
+        idempotencyRecords: 1,
+        auditRecords: 1,
+        queuedJobs: 1
+      },
+      blockers: []
     });
   });
 

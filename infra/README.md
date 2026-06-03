@@ -50,8 +50,11 @@ web bundle and the contract-first API endpoints.
 The API runtime defaults to `CUSTOMCARD_API_RUNTIME=contract` for reviewer/static
 serving. `npm run api:doctor:memory` sets test customer/admin session tokens and
 validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
-`CUSTOMCARD_API_RUNTIME=postgres` is reserved for live database integration
-testing and requires `DATABASE_URL`.
+`npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
+path and validates session lookup, wrong-role blocking, idempotency replay,
+conflict handling, audit inserts, and queue-job inserts without external
+credentials. `CUSTOMCARD_API_RUNTIME=postgres` with a real `DATABASE_URL` is
+still reserved for live database integration testing.
 
 The persistence boundary requires auth-session storage, idempotency replay,
 queue job envelopes, render-packet artifact manifests, signed URL expiry, and

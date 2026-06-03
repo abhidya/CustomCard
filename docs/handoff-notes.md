@@ -45,7 +45,8 @@ skeleton for the production path. It includes:
 
 - No production user auth or account recovery.
 - No real email/calendar OAuth flow.
-- No live Postgres API integration test or production account auth flow.
+- No live Postgres API integration test or production account auth flow; the
+  Postgres runtime is contract-tested through an injected fake pool only.
 - No live AI text/image generation.
 - No live object-storage upload or cloud object-store integration for exported
   artifacts; signed URL contracts and schema gates are covered.
@@ -97,8 +98,8 @@ security/legal review are complete.
 
 ## Next Build Slice
 
-The highest-leverage next slice is turning the memory/Postgres API runtime and
-persistence schema into live Postgres-backed authenticated handlers:
+The highest-leverage next slice is turning the fake-pool Postgres runtime
+contract into a real migrated Postgres integration test:
 
 - Production user auth and authenticated card-project routes.
 - Persistent event/opportunity/memory/order repositories.

@@ -75,6 +75,7 @@ npm run check
 npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
+npm run api:doctor:postgres
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -91,8 +92,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 16 test files passed, 113 tests passed.
-- Coverage: 14 core/API/persistence/infra/mobile test files passed, 105 tests passed; V8 report measured
+- Vitest: 16 test files passed, 114 tests passed.
+- Coverage: 14 core/API/persistence/infra/mobile test files passed, 106 tests passed; V8 report measured
   91.78% statements, 85.03% branches, 97.13% functions, and 95.6% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
@@ -128,13 +129,23 @@ artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
 
 ```text
+npm run api:doctor:postgres
+```
+
+Result: passed. Postgres runtime doctor used an injected fake `pg` pool to
+exercise auth-session lookup, wrong-role blocking, idempotent mutation insert,
+same-key replay, same-key/different-body conflict, audit-log insert, and
+queue-job insert. It reported 1 idempotency record, 1 audit record, 1 queued job,
+and no blockers.
+
+```text
 npm run persistence:doctor
 ```
 
 Result: passed. Persistence doctor reported 16 required tables, auth-session
 persistence, idempotency replay, queue jobs, render-packet artifact manifest
-signals, append-only audit coverage, 11 schema-backed API routes, and no
-blockers.
+signals, Postgres runtime SQL/doctor signals, append-only audit coverage, 11
+schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -208,7 +219,7 @@ documentation claims found during the audit were corrected.
 - Observability providers are contract-only; no live telemetry ingestion, alert,
   retention, dashboard, or incident-response drill is claimed.
 - No live Postgres-backed API integration test or production account auth flow;
-  memory runtime coverage proves the local auth/idempotency behavior only.
+  the Postgres runtime is contract-tested with an injected fake pool only.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

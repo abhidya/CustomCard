@@ -13,6 +13,7 @@
     "api:serve": "node scripts/api-server.mjs",
     "api:doctor": "node scripts/api-server.mjs --doctor",
     "api:doctor:memory": "CUSTOMCARD_API_RUNTIME=memory CUSTOMCARD_CUSTOMER_SESSION_TOKEN=test-customer-session-token CUSTOMCARD_ADMIN_SESSION_TOKEN=test-admin-session-token node scripts/api-server.mjs --doctor",
+    "api:doctor:postgres": "node scripts/postgres-runtime-doctor.mjs",
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "demo:doctor": "node scripts/demo-reset.mjs",
