@@ -157,7 +157,8 @@
 - Public printer pricing is observed research only; checkout confirmation,
   taxes, coupons, stock, and pickup windows are not live-verified.
 - No real droplet or Kubernetes deployment execution evidence.
-- No remote hosted CI run evidence beyond the committed workflow contract.
+- Hosted GitHub Actions verification exists for main pushes, but no real droplet
+  or Kubernetes deployment execution evidence is claimed.
 - No React Native render test, emulator run, native build, or signed mobile
   artifact.
 - No physical print certification.

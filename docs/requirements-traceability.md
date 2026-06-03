@@ -104,6 +104,7 @@ Requirement types:
 - No legal, security, privacy, or accessibility audit.
 - Browser UI smoke behavior is not included in the V8 unit coverage percentage.
 - No real droplet or Kubernetes deployment has been executed.
-- No remote hosted CI run is claimed beyond the committed workflow contract.
+- Hosted GitHub Actions verification exists for main pushes, but no real droplet
+  or Kubernetes deployment has been executed.
 - No React Native render test, emulator run, native build, or signed mobile
   artifact has been produced.

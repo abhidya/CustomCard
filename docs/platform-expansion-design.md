@@ -239,5 +239,6 @@ Remaining high-risk work:
   recovery.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
-- No remote hosted CI run is claimed in this repo-local pass.
+- Hosted GitHub Actions verification exists for main pushes, but there is still
+  no live deployment proof against a real cluster.
 - No legal/security/privacy/accessibility audit.

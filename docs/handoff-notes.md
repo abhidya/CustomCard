@@ -51,8 +51,8 @@ skeleton for the production path. It includes:
 - No physical print certification.
 - No legal or security review.
 - No deployment has been performed in this pass.
-- No remote hosted CI run evidence has been collected beyond the committed
-  workflow file.
+- Hosted GitHub Actions verification exists for main pushes; no production
+  deployment has been performed.
 
 ## Reviewer Path
 

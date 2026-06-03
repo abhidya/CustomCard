@@ -193,5 +193,5 @@ documentation claims found during the audit were corrected.
   credentials or market/commercial terms were verified.
 - Browser UI smoke tests are not included in the V8 unit coverage percentages;
   they remain covered by Chrome smoke assertions and visual evidence.
-- GitHub Actions workflow definition is contract-tested locally, but no remote
-  hosted CI run is claimed in this pass.
+- Hosted GitHub Actions verification exists for main pushes; no production
+  deployment evidence is claimed.
