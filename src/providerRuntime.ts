@@ -33,6 +33,9 @@ export interface ProviderGateState {
   latencyBudgetMet?: boolean;
   modelQualityReviewed?: boolean;
   networkAllowlisted?: boolean;
+  notificationOptInRecorded?: boolean;
+  suppressionListChecked?: boolean;
+  sensitiveContentExcluded?: boolean;
   vendorCertificationRecorded?: boolean;
   liveQuoteReceived?: boolean;
   externalShareApproved?: boolean;
@@ -77,6 +80,15 @@ export interface ContactImportRuntimeInput {
   addressBookPath?: string;
 }
 
+export interface NotificationRuntimeInput {
+  channel: "email" | "sms" | "whatsapp" | "push";
+  recipient: string;
+  subject?: string;
+  message: string;
+  locale: string;
+  optInRecorded: boolean;
+}
+
 export interface VendorRuntimeInput {
   vendorId: VendorId;
   quoteCents?: number;
@@ -92,6 +104,7 @@ export interface ProviderRuntimeInput {
   image?: ImageRuntimeInput;
   eventImport?: EventImportRuntimeInput;
   contactImport?: ContactImportRuntimeInput;
+  notification?: NotificationRuntimeInput;
   vendor?: VendorRuntimeInput;
 }
 
@@ -183,6 +196,9 @@ export function buildProviderAdapterRuntime(
   }
   if (adapter.capability === "vendor-handoff") {
     return buildVendorRuntime(adapterId, input.vendor ?? defaultVendorInput, env, gates);
+  }
+  if (adapter.capability === "notification") {
+    return buildNotificationRuntime(adapterId, input.notification ?? defaultNotificationInput, env, gates);
   }
 
   const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
@@ -399,6 +415,42 @@ export function buildContactImportRuntime(
   });
 
   return blockedOrRequest(adapter, readiness, () => buildContactImportRequest(adapter, input));
+}
+
+export function buildNotificationRuntime(
+  adapterId: string,
+  input: NotificationRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "notification");
+
+  if (adapter.id === "browser-download-notification") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: {
+        adapterId: adapter.id,
+        channel: "browser-status",
+        noNetwork: true,
+        visibleOnly: true,
+        message: sanitizeText(input.message).text
+      }
+    };
+  }
+
+  const sanitizedSubject = sanitizeText(input.subject || "CustomCard status update");
+  const sanitizedMessage = sanitizeText(input.message);
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, {
+    ...gates,
+    notificationOptInRecorded: input.optInRecorded || gates.notificationOptInRecorded,
+    sensitiveContentExcluded: true
+  });
+
+  return blockedOrRequest(adapter, readiness, () => buildNotificationRequest(adapter, input, sanitizedSubject, sanitizedMessage));
 }
 
 export function buildVendorRuntime(
@@ -1048,6 +1100,177 @@ function buildContactImportRequest(
   );
 }
 
+function buildNotificationRequest(
+  adapter: ProviderAdapter,
+  input: NotificationRuntimeInput,
+  sanitizedSubject: SanitizedText,
+  sanitizedMessage: SanitizedText
+): RuntimeRequestContract {
+  const channel = notificationChannelForAdapter(adapter.id, input.channel);
+  const metadata = {
+    customcard_adapter: adapter.id,
+    channel,
+    locale: input.locale,
+    opt_in_recorded: true,
+    suppression_checked: true,
+    redactions: uniqueSorted([...sanitizedSubject.redactions, ...sanitizedMessage.redactions]),
+    live_send: "disabled"
+  };
+  const subject = sanitizedSubject.text || "CustomCard status update";
+  const message = sanitizedMessage.text || "Your CustomCard project has a status update.";
+
+  if (adapter.id === "resend-email-notification") {
+    return request(adapter, "POST", "https://api.resend.com/emails", ["RESEND_API_KEY", "TRANSACTIONAL_EMAIL_FROM"], {
+      from: "{TRANSACTIONAL_EMAIL_FROM}",
+      to: ["{verified-recipient-email}"],
+      subject,
+      html: `<p>${escapeHtml(message)}</p>`,
+      tags: [{ name: "customcard", value: "status-update" }],
+      metadata
+    });
+  }
+
+  if (adapter.id === "sendgrid-email-notification") {
+    return request(adapter, "POST", "https://api.sendgrid.com/v3/mail/send", ["SENDGRID_API_KEY", "TRANSACTIONAL_EMAIL_FROM"], {
+      personalizations: [{ to: [{ email: "{verified-recipient-email}" }], custom_args: metadata }],
+      from: { email: "{TRANSACTIONAL_EMAIL_FROM}" },
+      subject,
+      content: [{ type: "text/plain", value: message }]
+    });
+  }
+
+  if (adapter.id === "postmark-email-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.postmarkapp.com/email",
+      ["POSTMARK_SERVER_TOKEN", "TRANSACTIONAL_EMAIL_FROM"],
+      {
+        From: "{TRANSACTIONAL_EMAIL_FROM}",
+        To: "{verified-recipient-email}",
+        Subject: subject,
+        TextBody: message,
+        MessageStream: "outbound",
+        Metadata: metadata
+      },
+      [],
+      { "x-postmark-server-token": "{POSTMARK_SERVER_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "mailgun-email-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+      ["MAILGUN_API_KEY", "MAILGUN_DOMAIN", "TRANSACTIONAL_EMAIL_FROM"],
+      {
+        from: "{TRANSACTIONAL_EMAIL_FROM}",
+        to: "{verified-recipient-email}",
+        subject,
+        text: message,
+        "v:customcard_metadata": JSON.stringify(metadata)
+      },
+      [],
+      {
+        authorization: "Basic api:{MAILGUN_API_KEY}",
+        "content-type": "application/x-www-form-urlencoded"
+      }
+    );
+  }
+
+  if (adapter.id === "twilio-sms-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}/Messages.json",
+      ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_MESSAGING_SERVICE_SID"],
+      {
+        MessagingServiceSid: "{TWILIO_MESSAGING_SERVICE_SID}",
+        To: "{verified-recipient-phone}",
+        Body: message,
+        StatusCallback: "{customcard-notification-webhook-disabled}",
+        metadata
+      },
+      [],
+      {
+        authorization: "Basic {TWILIO_ACCOUNT_SID}:{TWILIO_AUTH_TOKEN}",
+        "content-type": "application/x-www-form-urlencoded"
+      }
+    );
+  }
+
+  if (adapter.id === "whatsapp-cloud-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://graph.facebook.com/v20.0/{WHATSAPP_PHONE_NUMBER_ID}/messages",
+      ["WHATSAPP_ACCESS_TOKEN", "WHATSAPP_PHONE_NUMBER_ID"],
+      {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: "{verified-whatsapp-recipient}",
+        type: "template",
+        template: {
+          name: "customcard_status_update",
+          language: { code: input.locale.replace("-", "_") || "en_US" },
+          components: [
+            {
+              type: "body",
+              parameters: [{ type: "text", text: message }]
+            }
+          ]
+        },
+        metadata
+      },
+      [],
+      { authorization: "Bearer {WHATSAPP_ACCESS_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "expo-push-notification") {
+    return request(adapter, "POST", "https://exp.host/--/api/v2/push/send", ["EXPO_ACCESS_TOKEN"], {
+      to: "{expo-push-token}",
+      title: subject,
+      body: message,
+      sound: "default",
+      data: metadata
+    });
+  }
+
+  return request(
+    adapter,
+    "POST",
+    "https://fcm.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/messages:send",
+    ["FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT_JSON"],
+    {
+      message: {
+        token: "{firebase-registration-token}",
+        notification: { title: subject, body: message },
+        data: {
+          customcard_adapter: adapter.id,
+          channel,
+          live_send: "disabled"
+        }
+      },
+      metadata
+    },
+    [],
+    {
+      authorization: "Bearer {firebase-oauth-access-token}",
+      "x-customcard-service-account": "{FIREBASE_SERVICE_ACCOUNT_JSON}"
+    }
+  );
+}
+
+function notificationChannelForAdapter(adapterId: string, fallback: NotificationRuntimeInput["channel"]) {
+  if (adapterId.includes("email")) return "email";
+  if (adapterId.includes("sms")) return "sms";
+  if (adapterId.includes("whatsapp")) return "whatsapp";
+  if (adapterId.includes("push") || adapterId.includes("messaging")) return "push";
+  return fallback;
+}
+
 function request(
   adapter: ProviderAdapter,
   method: HttpMethod,
@@ -1099,6 +1322,9 @@ function missingSafetyReasons(adapter: ProviderAdapter, gates: ProviderGateState
     if (gate.includes("Latency budget")) return ["Missing safety gate: latency budget"];
     if (gate.includes("Model quality review")) return ["Missing safety gate: model quality review"];
     if (gate.includes("Network allowlist")) return ["Missing safety gate: network allowlist"];
+    if (gate.includes("Opt-in only")) return ["Missing safety gate: notification opt-in"];
+    if (gate.includes("Suppression list")) return ["Missing safety gate: suppression list check"];
+    if (gate.includes("No sensitive card text in logs")) return ["Missing safety gate: notification content redaction"];
     return [`Missing safety gate: ${gate}`];
   });
 }
@@ -1126,6 +1352,9 @@ function safetyGateSatisfied(gate: string, gates: ProviderGateState): boolean {
   if (gate.includes("Latency budget")) return Boolean(gates.latencyBudgetMet);
   if (gate.includes("Model quality review")) return Boolean(gates.modelQualityReviewed);
   if (gate.includes("Network allowlist")) return Boolean(gates.networkAllowlisted);
+  if (gate.includes("Opt-in only")) return Boolean(gates.notificationOptInRecorded);
+  if (gate.includes("Suppression list")) return Boolean(gates.suppressionListChecked);
+  if (gate.includes("No sensitive card text in logs")) return Boolean(gates.sensitiveContentExcluded);
   if (gate.includes("Physical print certification") || gate.includes("Vendor certification")) {
     return Boolean(gates.vendorCertificationRecorded);
   }
@@ -1178,6 +1407,7 @@ function dataClassificationsFor(adapter: ProviderAdapter): string[] {
   if (adapter.capability === "contact-import") return ["contact-metadata", "address-book", "no-raw-notes", "no-photos"];
   if (adapter.capability === "text-chat") return ["customer-message", "approved-memory-only", "PII-redacted"];
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
+  if (adapter.capability === "notification") return ["notification-recipient", "status-message", "PII-redacted", "opt-in-required"];
   if (adapter.capability === "vendor-handoff") return ["print-handoff", "external-share-approval-required"];
   return ["operational-metadata"];
 }
@@ -1193,6 +1423,19 @@ function hasUsableEnvValue(value: string | undefined): boolean {
       !normalized.startsWith("fake-") &&
       !normalized.startsWith("sample-")
   );
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (character) => {
+    const replacements: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    };
+    return replacements[character];
+  });
 }
 
 function uniqueSorted(values: string[]): string[] {
@@ -1260,6 +1503,15 @@ const defaultEventImportInput: EventImportRuntimeInput = {
 const defaultContactImportInput: ContactImportRuntimeInput = {
   sourceText: sampleContactText,
   providerAccountId: "me"
+};
+
+const defaultNotificationInput: NotificationRuntimeInput = {
+  channel: "email",
+  recipient: "sara@example.com",
+  subject: "CustomCard status update",
+  message: "Your card export is ready for review. Live sending remains disabled.",
+  locale: "en-US",
+  optInRecorded: false
 };
 
 const defaultVendorInput: VendorRuntimeInput = {

@@ -26,7 +26,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(67);
+    expect(summary.total).toBeGreaterThanOrEqual(75);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -47,6 +47,14 @@ describe("provider catalog", () => {
       "Google People contacts",
       "Microsoft Graph contacts",
       "CardDAV address book",
+      "Resend email notification",
+      "SendGrid email notification",
+      "Postmark email notification",
+      "Mailgun email notification",
+      "Twilio SMS notification",
+      "WhatsApp Cloud notification",
+      "Expo push notification",
+      "Firebase Cloud Messaging",
       "Azure OpenAI chat",
       "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
@@ -138,6 +146,17 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("LEONARDO_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("FAL_KEY");
     expect(admin.coverage.requiredEnv).toContain("BFL_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("RESEND_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("SENDGRID_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("POSTMARK_SERVER_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("MAILGUN_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("MAILGUN_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("TWILIO_ACCOUNT_SID");
+    expect(admin.coverage.requiredEnv).toContain("TWILIO_AUTH_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("TWILIO_MESSAGING_SERVICE_SID");
+    expect(admin.coverage.requiredEnv).toContain("WHATSAPP_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("WHATSAPP_PHONE_NUMBER_ID");
+    expect(admin.coverage.requiredEnv).toContain("EXPO_ACCESS_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
     expect(admin.coverage.requiredEnv).toContain("WALMART_VENDOR_MODE");

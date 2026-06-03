@@ -5,6 +5,7 @@ import {
   buildContactImportRuntime,
   buildEventImportRuntime,
   buildImageGenerationRuntime,
+  buildNotificationRuntime,
   buildProviderAdapterRuntime,
   buildTextChatRuntime,
   buildVendorRuntime,
@@ -47,6 +48,7 @@ const readyEnv: ProviderRuntimeEnv = {
   CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
   DEEPSEEK_API_KEY: "configured-deepseek-key",
+  EXPO_ACCESS_TOKEN: "configured-expo-access-token",
   FEDEX_VENDOR_MODE: "certification-configured-only",
   FAL_KEY: "configured-fal-key",
   FIREWORKS_API_KEY: "configured-fireworks-key",
@@ -64,16 +66,21 @@ const readyEnv: ProviderRuntimeEnv = {
   MICROSOFT_CLIENT_SECRET: "configured-microsoft-client-secret",
   MICROSOFT_TENANT_ID: "configured-microsoft-tenant-id",
   MISTRAL_API_KEY: "configured-mistral-key",
+  MAILGUN_API_KEY: "configured-mailgun-key",
+  MAILGUN_DOMAIN: "mg.customcard.test",
   OFFICE_DEPOT_VENDOR_MODE: "certification-configured-only",
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   OPENAI_API_KEY: "configured-openai-key",
   PERPLEXITY_API_KEY: "configured-perplexity-key",
+  POSTMARK_SERVER_TOKEN: "configured-postmark-server-token",
   POSTGRES_PASSWORD: "configured-postgres-password",
   QUEUE_URL: "redis://localhost:6379",
   REPLICATE_API_TOKEN: "configured-replicate-token",
+  RESEND_API_KEY: "configured-resend-key",
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
+  SENDGRID_API_KEY: "configured-sendgrid-key",
   STABILITY_API_KEY: "configured-stability-key",
   STAPLES_VENDOR_MODE: "certification-configured-only",
   SUPABASE_ANON_KEY: "configured-supabase-anon-key",
@@ -82,8 +89,13 @@ const readyEnv: ProviderRuntimeEnv = {
   TOGETHER_API_KEY: "configured-together-key",
   TRANSACTIONAL_EMAIL_API_KEY: "configured-email-key",
   TRANSACTIONAL_EMAIL_FROM: "cards@example.test",
+  TWILIO_ACCOUNT_SID: "configured-twilio-account-sid",
+  TWILIO_AUTH_TOKEN: "configured-twilio-auth-token",
+  TWILIO_MESSAGING_SERVICE_SID: "configured-twilio-messaging-service-sid",
   WALGREENS_VENDOR_MODE: "certification-configured-only",
   WALMART_VENDOR_MODE: "certification-configured-only",
+  WHATSAPP_ACCESS_TOKEN: "configured-whatsapp-token",
+  WHATSAPP_PHONE_NUMBER_ID: "configured-whatsapp-phone-number-id",
   XAI_API_KEY: "configured-xai-key"
 };
 
@@ -98,6 +110,7 @@ const openGates: ProviderGateState = {
   metadataSchemaValidated: true,
   modelQualityReviewed: true,
   networkAllowlisted: true,
+  notificationOptInRecorded: true,
   physicalPrintQaRecorded: true,
   piiMinimized: true,
   promptAuditApproved: true,
@@ -105,6 +118,8 @@ const openGates: ProviderGateState = {
   rawContentStorageDisabled: true,
   revocationHandlingReady: true,
   spendLimitCents: 100,
+  sensitiveContentExcluded: true,
+  suppressionListChecked: true,
   tenantReviewed: true,
   vendorCertificationRecorded: true
 };
@@ -142,6 +157,15 @@ const contactInput = {
     "END:VCARD"
   ].join("\n"),
   providerAccountId: "me"
+};
+
+const notificationInput = {
+  channel: "email" as const,
+  recipient: "sara@example.com",
+  subject: "CustomCard update for +1 212 555 0199",
+  message: "Sara's card for sara@example.com is ready. Call +1 212 555 0199 if blocked. Payment 4111 1111 1111 1111 should never leak.",
+  locale: "en-US",
+  optInRecorded: true
 };
 
 describe("provider runtime contracts", () => {
@@ -418,6 +442,82 @@ describe("provider runtime contracts", () => {
     });
   });
 
+  it("builds redacted no-network notification request contracts", () => {
+    const providerIds = [
+      "resend-email-notification",
+      "sendgrid-email-notification",
+      "postmark-email-notification",
+      "mailgun-email-notification",
+      "twilio-sms-notification",
+      "whatsapp-cloud-notification",
+      "expo-push-notification",
+      "firebase-cloud-messaging"
+    ];
+
+    for (const providerId of providerIds) {
+      const result = buildNotificationRuntime(providerId, notificationInput, readyEnv, openGates);
+      const serializedBody = JSON.stringify(result.request?.body);
+      const serializedHeaders = JSON.stringify(result.request?.headers);
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.method, providerId).toBe("POST");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["notification-recipient", "status-message", "PII-redacted", "opt-in-required"])
+      );
+      expect(serializedHeaders, providerId).not.toContain("configured-");
+      expect(serializedBody, providerId).toContain("[redacted-email]");
+      expect(serializedBody, providerId).toContain("[redacted-phone]");
+      expect(serializedBody, providerId).toContain("[redacted-payment]");
+      expect(serializedBody, providerId).not.toContain("sara@example.com");
+      expect(serializedBody, providerId).not.toContain("4111 1111 1111 1111");
+    }
+
+    expect(buildNotificationRuntime("resend-email-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.resend.com/emails"
+    );
+    expect(buildNotificationRuntime("sendgrid-email-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.sendgrid.com/v3/mail/send"
+    );
+    expect(buildNotificationRuntime("postmark-email-notification", notificationInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "x-postmark-server-token": "{POSTMARK_SERVER_TOKEN}"
+    });
+    expect(buildNotificationRuntime("mailgun-email-notification", notificationInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+      headers: expect.objectContaining({ authorization: "Basic api:{MAILGUN_API_KEY}" })
+    });
+    expect(buildNotificationRuntime("twilio-sms-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}/Messages.json"
+    );
+    expect(buildNotificationRuntime("whatsapp-cloud-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://graph.facebook.com/v20.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    );
+    expect(buildNotificationRuntime("expo-push-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://exp.host/--/api/v2/push/send"
+    );
+    expect(buildNotificationRuntime("firebase-cloud-messaging", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://fcm.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/messages:send"
+    );
+  });
+
+  it("blocks notification sends when opt-in and suppression gates are absent", () => {
+    const result = buildNotificationRuntime(
+      "resend-email-notification",
+      { ...notificationInput, optInRecorded: false },
+      readyEnv,
+      {
+        networkAllowlisted: true,
+        rateLimitHandlingReady: true
+      }
+    );
+
+    expect(result.mode).toBe("blocked");
+    expect(result.request).toBeUndefined();
+    expect(result.readiness.blockedReasons).toEqual(
+      expect.arrayContaining(["Missing safety gate: notification opt-in", "Missing safety gate: suppression list check"])
+    );
+  });
+
   it("blocks provider imports when consent and schema gates are absent", () => {
     const calendar = buildEventImportRuntime("google-calendar-events", importInput, readyEnv, {});
     const graphCalendar = buildEventImportRuntime("microsoft-graph-calendar", importInput, readyEnv, {
@@ -449,6 +549,7 @@ describe("provider runtime contracts", () => {
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
     const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
+    const notification = buildNotificationRuntime("browser-download-notification", notificationInput);
     const printPackage = buildProviderAdapterRuntime("local-print-package-export");
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
     const pricing = buildVendorRuntime("public-printer-pricing-research", { vendorId: "walgreens" });
@@ -466,6 +567,8 @@ describe("provider runtime contracts", () => {
     });
     expect(image.mode).toBe("local-result");
     expect(image.localResult?.width).toBe(1500);
+    expect(notification.mode).toBe("local-result");
+    expect(notification.localResult).toMatchObject({ noNetwork: true, visibleOnly: true });
     expect(printPackage.mode).toBe("local-result");
     expect(printPackage.localResult).toMatchObject({
       fileCount: 6,

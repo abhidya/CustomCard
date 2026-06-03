@@ -66,8 +66,9 @@
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, gated provider queue, cloud runtime adapters, and blocked live
   vendors.
-- Provider runtime: readiness dry runs for all 67 catalog adapters; redacted
-  no-network request contracts for gated chat, image, and event providers; hard
+- Provider runtime: readiness dry runs for all 75 catalog adapters; redacted
+  no-network request contracts for gated chat, image, event, contact,
+  hosted-auth, and notification providers; hard
   block for live vendor order adapters; hosted auth request contracts for
   common identity providers; metadata-only contact/address-book import
   contracts; local public printer pricing research
@@ -100,12 +101,12 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 16 test files, 105 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.17% statements, 84.11% branches, 97.45% functions, 95.36% lines across core, API, artifact handoff, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 16 test files, 107 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.45% statements, 84.44% branches, 97.5% functions, 95.45% lines across core, API, artifact handoff, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 67 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 75 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, append-only audit, demo reset mapping, and 11 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |

@@ -49,16 +49,18 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Printer pricing: public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot 5x7
   card observations ready for manual comparison; live quotes, taxes, coupons,
   stock, and pickup windows remain manual-confirmation work.
-- Notifications: local UI status ready; transactional email contract gated.
+- Notifications: local UI status ready; credential-gated Resend, SendGrid,
+  Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, and Firebase
+  Cloud Messaging contracts; generic transactional email contract gated.
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
 
 `src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
 It can evaluate readiness for every adapter, reject placeholder credentials,
-build redacted no-network request shapes for credential-gated text, image, and
-event providers, and keep live vendor adapters blocked even if test credentials
-and approval gates are present. These contracts intentionally stop before
-`fetch` or any SDK call.
+build redacted no-network request shapes for credential-gated text, image,
+event, contact, hosted-auth, and notification providers, and keep live vendor
+adapters blocked even if test credentials and approval gates are present. These
+contracts intentionally stop before `fetch` or any SDK call.
 
 Official documentation anchors used for the adapter contracts:
 
@@ -99,6 +101,14 @@ Official documentation anchors used for the adapter contracts:
 - Hugging Face Inference Providers: https://huggingface.co/docs/inference-providers/index
 - Stability image API: https://platform.stability.ai/docs/getting-started/stable-image
 - Replicate HTTP API: https://replicate.com/docs/reference/http
+- Resend send email API: https://resend.com/docs/api-reference/emails/send-email
+- Twilio SendGrid mail send API: https://www.twilio.com/docs/sendgrid/api-reference/mail-send/mail-send
+- Postmark email API: https://postmarkapp.com/developer/api/email-api#send-a-single-email
+- Mailgun messages API: https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/messages/post-v3--domain-name--messages
+- Twilio Messages API: https://www.twilio.com/docs/messaging/api/message-resource#create-a-message-resource
+- WhatsApp Cloud API message API: https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-phone-number/message-api
+- Expo push notification sending: https://docs.expo.dev/push-notifications/sending-notifications/
+- Firebase Cloud Messaging HTTP v1: https://firebase.google.com/docs/cloud-messaging/send/v1-api
 
 ## Customer Panel
 

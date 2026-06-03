@@ -166,7 +166,18 @@ const checks = [
     "LEONARDO_API_KEY=",
     "REPLICATE_API_TOKEN=",
     "FAL_KEY=",
-    "BFL_API_KEY="
+    "BFL_API_KEY=",
+    "RESEND_API_KEY=",
+    "SENDGRID_API_KEY=",
+    "POSTMARK_SERVER_TOKEN=",
+    "MAILGUN_API_KEY=",
+    "MAILGUN_DOMAIN=",
+    "TWILIO_ACCOUNT_SID=",
+    "TWILIO_AUTH_TOKEN=",
+    "TWILIO_MESSAGING_SERVICE_SID=",
+    "WHATSAPP_ACCESS_TOKEN=",
+    "WHATSAPP_PHONE_NUMBER_ID=",
+    "EXPO_ACCESS_TOKEN="
   ]),
   checkIncludes("data", "migration-critical-tables", contents.migration, [
     "CREATE TABLE users",
