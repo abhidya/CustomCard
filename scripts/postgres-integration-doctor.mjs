@@ -19,6 +19,7 @@ if (!databaseUrl) {
 const routes = [
   { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-demo" },
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" }
 ];
@@ -36,6 +37,9 @@ let finalPersistence = {
   idempotencyRecords: 0,
   auditRecords: 0,
   queuedJobs: 0,
+  providerConnections: 0,
+  importedEvents: 0,
+  cardOpportunities: 0,
   cardProjects: 0
 };
 let exitCode = 0;
@@ -57,7 +61,7 @@ try {
          WHERE table_schema = 'public' AND table_type = 'BASE TABLE'`
       );
       const tableNames = new Set(tables.rows.map((row) => row.table_name));
-      for (const requiredTable of ["users", "auth_sessions", "idempotency_keys", "api_jobs", "audit_log"]) {
+      for (const requiredTable of ["users", "auth_sessions", "provider_connections", "imported_events", "card_opportunities", "card_projects", "idempotency_keys", "api_jobs", "audit_log"]) {
         expect(tableNames.has(requiredTable), `Migration did not create ${requiredTable}.`);
       }
     });
@@ -78,27 +82,7 @@ try {
       );
     });
 
-    await runCheck("seeds card-project repository dependencies", async () => {
-      await doctorPool.query(
-        `INSERT INTO provider_connections
-           (id, user_id, provider, scopes, status, adapter_version, metadata_schema)
-         VALUES
-           ('connection-live-postgres', 'user-demo', 'manual-ics', ARRAY['calendar.metadata'], 'connected', 'manual-ics-v1', $1::jsonb)`,
-        [JSON.stringify({ rawContentStored: false })]
-      );
-      await doctorPool.query(
-        `INSERT INTO imported_events
-           (id, connection_id, title, starts_at, timezone, source_evidence, recipient_hint)
-         VALUES
-           ('event-live-postgres', 'connection-live-postgres', 'Anniversary dinner', NOW() + INTERVAL '10 days', 'America/New_York', 'metadata-only', 'Sara')`
-      );
-      await doctorPool.query(
-        `INSERT INTO card_opportunities
-           (id, event_id, recipient_name, lead_time_hours, confidence, decision, evidence)
-         VALUES
-           ('opportunity-live-postgres', 'event-live-postgres', 'Sara', 240, 0.960, 'generate', $1::jsonb)`,
-        [JSON.stringify({ source: "doctor", rawContentStored: false })]
-      );
+    await runCheck("seeds approved relationship memory", async () => {
       await doctorPool.query(
         `INSERT INTO relationship_memories
            (id, user_id, recipient_name, approved, sensitivity, locale, source, text)
@@ -146,6 +130,40 @@ try {
       expect(result.statusCode === 202, "First mutation should be accepted.");
       expect(result.payload.runtimeMode === "postgres", "Mutation should use postgres runtime.");
       expect(result.payload.idempotencyPersisted, "Mutation should persist idempotency.");
+    });
+
+    await runCheck("persists real Postgres import preview repository mutation", async () => {
+      const result = await runtime.persistMutation({
+        route: route("import-preview"),
+        request: request({ token: customerToken, idempotencyKey: "import-preview-live-postgres-0001" }),
+        authContext: customerAuth,
+        bodyText: JSON.stringify({
+          sourceKind: "manual-ics",
+          connectionId: "connection-live-postgres",
+          eventId: "event-live-postgres",
+          opportunityId: "opportunity-live-postgres",
+          metadataOnlyPayload: {
+            title: "Anniversary dinner",
+            recipientName: "Sara",
+            startsAt: "2030-06-03T18:00:00.000Z",
+            timezone: "America/New_York",
+            confidence: 0.96,
+            leadTimeHours: 240
+          }
+        }),
+        responsePayload: {
+          service: "customcard-api",
+          status: "accepted-contract-only",
+          route: "import-preview",
+          realOrdersEnabled: false,
+          externalNetworkCalls: false
+        }
+      });
+      expect(result.statusCode === 202, "Import-preview mutation should be accepted.");
+      expect(result.payload.runtimeMode === "postgres", "Import-preview mutation should use postgres runtime.");
+      expect(result.payload.repositoryPersisted, "Import-preview mutation should persist through repository path.");
+      expect(result.payload.rawContentStored === false, "Import-preview mutation must not store raw content.");
+      expect(result.payload.opportunities[0].opportunityId === "opportunity-live-postgres", "Import-preview response should return persisted opportunity id.");
     });
 
     await runCheck("persists real Postgres card project repository mutation", async () => {
@@ -198,9 +216,12 @@ try {
 
     const persistenceCounts = await readPersistenceCounts(doctorPool);
     await runCheck("records real Postgres audit and queue rows", async () => {
-      expect(persistenceCounts.idempotencyRecords === 2, "Expected two idempotency records.");
-      expect(persistenceCounts.auditRecords === 2, "Expected two audit records.");
+      expect(persistenceCounts.idempotencyRecords === 3, "Expected three idempotency records.");
+      expect(persistenceCounts.auditRecords === 3, "Expected three audit records.");
       expect(persistenceCounts.queuedJobs === 1, "Expected one queued job.");
+      expect(persistenceCounts.providerConnections === 1, "Expected one provider connection.");
+      expect(persistenceCounts.importedEvents === 1, "Expected one imported event.");
+      expect(persistenceCounts.cardOpportunities === 1, "Expected one card opportunity.");
       expect(persistenceCounts.cardProjects === 1, "Expected one card project.");
     });
 
@@ -229,16 +250,22 @@ try {
 }
 
 async function readPersistenceCounts(pool) {
-  const [idempotency, audit, jobs, cardProjects] = await Promise.all([
+  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, cardProjects] = await Promise.all([
     pool.query("SELECT COUNT(*)::int AS count FROM idempotency_keys"),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_log"),
     pool.query("SELECT COUNT(*)::int AS count FROM api_jobs"),
+    pool.query("SELECT COUNT(*)::int AS count FROM provider_connections"),
+    pool.query("SELECT COUNT(*)::int AS count FROM imported_events"),
+    pool.query("SELECT COUNT(*)::int AS count FROM card_opportunities"),
     pool.query("SELECT COUNT(*)::int AS count FROM card_projects")
   ]);
   return {
     idempotencyRecords: idempotency.rows[0].count,
     auditRecords: audit.rows[0].count,
     queuedJobs: jobs.rows[0].count,
+    providerConnections: providerConnections.rows[0].count,
+    importedEvents: importedEvents.rows[0].count,
+    cardOpportunities: cardOpportunities.rows[0].count,
     cardProjects: cardProjects.rows[0].count
   };
 }

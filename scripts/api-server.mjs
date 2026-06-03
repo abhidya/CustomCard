@@ -65,6 +65,7 @@ const readiness = {
     accountRecoveryTable: true,
     idempotencyTable: true,
     appendOnlyAudit: true,
+    importPreviewRepository: true,
     cardProjectRepository: true,
     renderPacketArtifacts: true,
     signedArtifactUrls: true
@@ -283,6 +284,7 @@ function validateApiServerContract() {
   if (!readiness.persistence.accountRecoveryTable) blockers.push("API readiness is missing account recovery persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
+  if (!readiness.persistence.importPreviewRepository) blockers.push("API readiness is missing import-preview repository persistence.");
   if (!readiness.persistence.cardProjectRepository) blockers.push("API readiness is missing card-project repository persistence.");
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
@@ -344,6 +346,41 @@ function buildMutationContractPayload(route, bodyText) {
         table: "card_projects",
         runtimeMode: "contract",
         persisted: false
+      }
+    };
+  }
+
+  if (route.id === "import-preview") {
+    const payload = typeof requestBody.metadataOnlyPayload === "object" && requestBody.metadataOnlyPayload !== null
+      ? requestBody.metadataOnlyPayload
+      : requestBody;
+    const sourceKind = safeContractId(requestBody.sourceKind ?? payload.sourceKind, "manual-ics");
+    const title = safeContractText(payload.title ?? requestBody.title, "Imported event");
+    const recipientName = safeContractText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint, "Recipient");
+    const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at ?? requestBody.startsAt, "2030-01-01T12:00:00.000Z");
+    const eventId = safeContractId(requestBody.eventId, `event-${stableContractHash(`${sourceKind}:${title}:${startsAt}`).slice(0, 8)}`);
+    const opportunityId = safeContractId(requestBody.opportunityId, `opportunity-${stableContractHash(`${eventId}:${recipientName}`).slice(0, 8)}`);
+    return {
+      ...basePayload,
+      rawContentStored: false,
+      warnings: [],
+      opportunities: [
+        {
+          opportunityId,
+          eventId,
+          recipientName,
+          title,
+          startsAt,
+          timezone: safeContractText(payload.timezone ?? requestBody.timezone, "UTC"),
+          confidence: safeConfidence(payload.confidence ?? requestBody.confidence, 0.92),
+          decision: safeDecision(payload.decision ?? requestBody.decision)
+        }
+      ],
+      repository: {
+        tables: ["provider_connections", "imported_events", "card_opportunities"],
+        runtimeMode: "contract",
+        persisted: false,
+        rawContentStored: false
       }
     };
   }
@@ -432,6 +469,27 @@ function safeContractId(value, fallback) {
 function safeLocale(value) {
   const text = String(value ?? "en-US").trim();
   return /^[a-z]{2,3}(-[A-Z]{2})?$/i.test(text) ? text : "en-US";
+}
+
+function safeContractText(value, fallback) {
+  const text = String(value ?? "").trim().replace(/\s+/g, " ");
+  return text.slice(0, 120) || fallback;
+}
+
+function safeTimestamp(value, fallback) {
+  const date = new Date(String(value ?? ""));
+  return Number.isNaN(date.getTime()) ? fallback : date.toISOString();
+}
+
+function safeConfidence(value, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(0, Math.min(1, Number(number.toFixed(3))));
+}
+
+function safeDecision(value) {
+  const decision = String(value ?? "generate").trim();
+  return ["pending", "generate", "reject", "snooze"].includes(decision) ? decision : "generate";
 }
 
 function readRequestBody(request) {

@@ -50,17 +50,18 @@ it after each meaningful implementation pass.
 - API-contract and API-server tests cover `/api/health`, customer/admin
   bootstrap, mobile bootstrap, provider readiness, idempotent mutation contracts,
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
-  repository-backed `/api/card-projects` mutation behavior, customer pricing
-  preview, `X-Idempotency-Key` replay/conflict behavior, 404/405 behavior, and
-  the no-live-call/no-real-order posture.
+  repository-backed `/api/import-preview` and `/api/card-projects` mutation
+  behavior, customer pricing preview, `X-Idempotency-Key` replay/conflict
+  behavior, 404/405 behavior, and the no-live-call/no-real-order posture.
 - Account-auth tests and `npm run account:doctor:live` cover hosted auth adapter
   requirements, durable account identity storage, no raw provider profiles,
   provider-subject uniqueness, hashed expiring recovery challenges, durable
   sessions, and recovery audit rows.
 - Persistence-contract tests and `npm run persistence:doctor` cover auth-session
   schema, account identity/recovery schema, idempotency replay state, queue job
-  envelopes, card-project repository signals, append-only audit contracts, demo
-  reset mappings, and 11 schema-backed API route mappings.
+  envelopes, import-preview event/opportunity repository signals, card-project
+  repository signals, append-only audit contracts, demo reset mappings, and 11
+  schema-backed API route mappings.
 - Demo seed tests and `npm run demo:doctor` cover deterministic reviewer reset
   fixtures, SQL preview, signed artifact handoff references, and no-live-call
   safety gates.
@@ -150,9 +151,11 @@ npm run api:doctor:postgres
 
 Result: passed. Postgres runtime doctor used an injected fake `pg` pool to
 exercise auth-session lookup, wrong-role blocking, idempotent mutation insert,
-repository-backed card-project insert, same-key replay, same-key/different-body
-conflict, audit-log insert, and queue-job insert. It reported 2 idempotency
-records, 2 audit records, 1 queued job, 1 card project, and no blockers.
+repository-backed import-preview insert, repository-backed card-project insert,
+same-key replay, same-key/different-body conflict, audit-log insert, and
+queue-job insert. It reported 3 idempotency records, 3 audit records, 1 queued
+job, 1 provider connection, 1 imported event, 1 card opportunity, 1 card project,
+and no blockers.
 
 ```text
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -160,12 +163,13 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 
 Result: passed. Live Postgres integration doctor created an isolated temporary
 database, applied `infra/migrations/001_initial_schema.sql`, seeded customer and
-admin auth sessions plus card-project dependencies, authorized the customer
+admin auth sessions plus approved relationship memory, authorized the customer
 through the real `pg` runtime, blocked a wrong-role admin request, persisted an
-idempotent queue-backed mutation, persisted a repository-backed card project,
-replayed the same idempotency key, rejected a changed-body conflict, and verified
-2 idempotency records, 2 audit records, 1 queued job, and 1 card project before
-dropping the temporary database.
+idempotent queue-backed mutation, persisted repository-backed import-preview and
+card-project mutations, replayed the same idempotency key, rejected a
+changed-body conflict, and verified 3 idempotency records, 3 audit records, 1
+queued job, 1 provider connection, 1 imported event, 1 card opportunity, and 1
+card project before dropping the temporary database.
 
 ```text
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
@@ -195,10 +199,11 @@ npm run persistence:doctor
 
 Result: passed. Persistence doctor reported 18 required tables, auth-session
 persistence, account identity and recovery challenge persistence, idempotency
-replay, card-project repository readiness, queue jobs, render-packet artifact
-manifest signals, artifact-store write/read doctor signals, Postgres runtime
-SQL/doctor/integration signals, account-auth contract/doctor signals,
-append-only audit coverage, 11 schema-backed API routes, and no blockers.
+replay, import-preview repository readiness, card-project repository readiness,
+queue jobs, render-packet artifact manifest signals, artifact-store write/read
+doctor signals, Postgres runtime SQL/doctor/integration signals, account-auth
+contract/doctor signals, append-only audit coverage, 11 schema-backed API
+routes, and no blockers.
 
 ```text
 npm run demo:doctor

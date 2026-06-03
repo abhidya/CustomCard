@@ -32,6 +32,9 @@ function createContractApiRuntime({ routes }) {
         idempotencyRecords: 0,
         auditRecords: 0,
         queuedJobs: 0,
+        providerConnectionRecords: 0,
+        importedEventRecords: 0,
+        cardOpportunityRecords: 0,
         cardProjectRecords: 0,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
@@ -87,6 +90,9 @@ function createMemoryApiRuntime({ env, routes }) {
   const idempotencyRecords = new Map();
   const auditRecords = [];
   const queuedJobs = [];
+  const providerConnections = new Map();
+  const importedEvents = new Map();
+  const cardOpportunities = new Map();
   const cardProjects = new Map();
 
   addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo");
@@ -104,6 +110,9 @@ function createMemoryApiRuntime({ env, routes }) {
         idempotencyRecords: idempotencyRecords.size,
         auditRecords: auditRecords.length,
         queuedJobs: queuedJobs.length,
+        providerConnectionRecords: providerConnections.size,
+        importedEventRecords: importedEvents.size,
+        cardOpportunityRecords: cardOpportunities.size,
         cardProjectRecords: cardProjects.size,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
@@ -125,7 +134,12 @@ function createMemoryApiRuntime({ env, routes }) {
       if (existing) return replayOrConflict(existing, prepared.requestHash);
 
       const routePersistence = persistMemoryRouteMutation({
-        cardProjects,
+        repositories: {
+          providerConnections,
+          importedEvents,
+          cardOpportunities,
+          cardProjects
+        },
         route,
         authContext,
         bodyText
@@ -195,6 +209,9 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         idempotencyRecords: null,
         auditRecords: null,
         queuedJobs: null,
+        providerConnectionRecords: null,
+        importedEventRecords: null,
+        cardOpportunityRecords: null,
         cardProjectRecords: null,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
@@ -431,17 +448,101 @@ function decorateMutationPayload({ route, authContext, responsePayload, runtimeM
   };
 }
 
-function persistMemoryRouteMutation({ cardProjects, route, authContext, bodyText }) {
-  if (route.id !== "card-projects") return undefined;
-  const record = buildCardProjectRecord({ authContext, bodyText });
-  cardProjects.set(record.projectId, record);
-  return {
-    persisted: true,
-    payload: buildCardProjectRepositoryPayload(record, "memory")
-  };
+function persistMemoryRouteMutation({ repositories, route, authContext, bodyText }) {
+  if (route.id === "import-preview") {
+    const record = buildImportPreviewRecord({ authContext, bodyText });
+    repositories.providerConnections.set(record.providerConnection.id, record.providerConnection);
+    repositories.importedEvents.set(record.importedEvent.id, record.importedEvent);
+    repositories.cardOpportunities.set(record.cardOpportunity.id, record.cardOpportunity);
+    return {
+      persisted: true,
+      payload: buildImportPreviewRepositoryPayload(record, "memory")
+    };
+  }
+
+  if (route.id === "card-projects") {
+    const record = buildCardProjectRecord({ authContext, bodyText });
+    repositories.cardProjects.set(record.projectId, record);
+    return {
+      persisted: true,
+      payload: buildCardProjectRepositoryPayload(record, "memory")
+    };
+  }
+
+  return undefined;
 }
 
 async function persistPostgresRouteMutation({ client, route, authContext, bodyText }) {
+  if (route.id === "import-preview") {
+    const record = buildImportPreviewRecord({ authContext, bodyText });
+    await client.query(
+      `INSERT INTO provider_connections
+         (id, user_id, provider, scopes, status, adapter_version, metadata_schema, raw_content_stored)
+       VALUES ($1, $2, $3, $4::text[], 'connected', $5, $6::jsonb, FALSE)
+       ON CONFLICT (id) DO UPDATE SET
+         provider = EXCLUDED.provider,
+         scopes = EXCLUDED.scopes,
+         status = EXCLUDED.status,
+         adapter_version = EXCLUDED.adapter_version,
+         metadata_schema = EXCLUDED.metadata_schema,
+         raw_content_stored = FALSE`,
+      [
+        record.providerConnection.id,
+        authContext.userId,
+        record.providerConnection.provider,
+        record.providerConnection.scopes,
+        record.providerConnection.adapterVersion,
+        JSON.stringify(record.providerConnection.metadataSchema)
+      ]
+    );
+    await client.query(
+      `INSERT INTO imported_events
+         (id, connection_id, title, starts_at, timezone, source_evidence, recipient_hint)
+       VALUES ($1, $2, $3, $4::timestamptz, $5, $6, $7)
+       ON CONFLICT (id) DO UPDATE SET
+         connection_id = EXCLUDED.connection_id,
+         title = EXCLUDED.title,
+         starts_at = EXCLUDED.starts_at,
+         timezone = EXCLUDED.timezone,
+         source_evidence = EXCLUDED.source_evidence,
+         recipient_hint = EXCLUDED.recipient_hint`,
+      [
+        record.importedEvent.id,
+        record.providerConnection.id,
+        record.importedEvent.title,
+        record.importedEvent.startsAt,
+        record.importedEvent.timezone,
+        record.importedEvent.sourceEvidence,
+        record.importedEvent.recipientHint
+      ]
+    );
+    await client.query(
+      `INSERT INTO card_opportunities
+         (id, event_id, recipient_name, lead_time_hours, confidence, decision, evidence)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+       ON CONFLICT (id) DO UPDATE SET
+         event_id = EXCLUDED.event_id,
+         recipient_name = EXCLUDED.recipient_name,
+         lead_time_hours = EXCLUDED.lead_time_hours,
+         confidence = EXCLUDED.confidence,
+         decision = EXCLUDED.decision,
+         evidence = EXCLUDED.evidence`,
+      [
+        record.cardOpportunity.id,
+        record.importedEvent.id,
+        record.cardOpportunity.recipientName,
+        record.cardOpportunity.leadTimeHours,
+        record.cardOpportunity.confidence,
+        record.cardOpportunity.decision,
+        JSON.stringify(record.cardOpportunity.evidence)
+      ]
+    );
+    return {
+      persisted: true,
+      payload: buildImportPreviewRepositoryPayload(record, "postgres")
+    };
+  }
+
   if (route.id !== "card-projects") return undefined;
   const record = buildCardProjectRecord({ authContext, bodyText });
   await client.query(
@@ -466,6 +567,83 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
   return {
     persisted: true,
     payload: buildCardProjectRepositoryPayload(record, "postgres")
+  };
+}
+
+function buildImportPreviewRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const payload = typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null
+    ? body.metadataOnlyPayload
+    : body;
+  const sourceKind = safeId(body.sourceKind ?? payload.sourceKind, "manual-ics");
+  const title = safeText(payload.title ?? body.title, "Imported event");
+  const recipientName = safeText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint ?? body.recipientName, "Recipient");
+  const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at ?? body.startsAt, "2030-01-01T12:00:00.000Z");
+  const timezone = safeText(payload.timezone ?? body.timezone, "UTC");
+  const sourceEvidence = safeText(payload.sourceEvidence ?? payload.source_evidence ?? `${sourceKind}:metadata-only`, "metadata-only");
+  const leadTimeHours = safeInteger(payload.leadTimeHours ?? body.leadTimeHours, 168, 0, 8760);
+  const confidence = safeConfidence(payload.confidence ?? body.confidence, 0.92);
+  const decision = safeDecision(payload.decision ?? body.decision);
+  const connectionId = safeId(body.connectionId, stableRuntimeId("connection", authContext.userId, sourceKind));
+  const eventId = safeId(body.eventId, stableRuntimeId("event", authContext.userId, sourceKind, title, startsAt));
+  const opportunityId = safeId(body.opportunityId, stableRuntimeId("opportunity", eventId, recipientName));
+  return {
+    providerConnection: {
+      id: connectionId,
+      provider: sourceKind,
+      scopes: ["calendar.metadata"],
+      adapterVersion: `${sourceKind}-v1`,
+      metadataSchema: {
+        sourceKind,
+        rawContentStored: false,
+        metadataOnly: true
+      }
+    },
+    importedEvent: {
+      id: eventId,
+      title,
+      startsAt,
+      timezone,
+      sourceEvidence,
+      recipientHint: recipientName
+    },
+    cardOpportunity: {
+      id: opportunityId,
+      recipientName,
+      leadTimeHours,
+      confidence,
+      decision,
+      evidence: {
+        sourceKind,
+        sourceEvidence,
+        rawContentStored: false
+      }
+    }
+  };
+}
+
+function buildImportPreviewRepositoryPayload(record, runtimeMode) {
+  return {
+    rawContentStored: false,
+    warnings: [],
+    opportunities: [
+      {
+        opportunityId: record.cardOpportunity.id,
+        eventId: record.importedEvent.id,
+        recipientName: record.cardOpportunity.recipientName,
+        title: record.importedEvent.title,
+        startsAt: record.importedEvent.startsAt,
+        timezone: record.importedEvent.timezone,
+        confidence: record.cardOpportunity.confidence,
+        decision: record.cardOpportunity.decision
+      }
+    ],
+    repository: {
+      tables: ["provider_connections", "imported_events", "card_opportunities"],
+      runtimeMode,
+      persisted: true,
+      rawContentStored: false
+    }
   };
 }
 
@@ -582,6 +760,28 @@ function safeLocale(value) {
 function safeText(value, fallback) {
   const text = String(value ?? "").trim().replace(/\s+/g, " ");
   return text.slice(0, 120) || fallback;
+}
+
+function safeTimestamp(value, fallback) {
+  const date = new Date(String(value ?? ""));
+  return Number.isNaN(date.getTime()) ? fallback : date.toISOString();
+}
+
+function safeInteger(value, fallback, min, max) {
+  const number = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(min, Math.min(max, number));
+}
+
+function safeConfidence(value, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(0, Math.min(1, Number(number.toFixed(3))));
+}
+
+function safeDecision(value) {
+  const decision = String(value ?? "generate").trim();
+  return ["pending", "generate", "reject", "snooze"].includes(decision) ? decision : "generate";
 }
 
 function normalizeJson(value) {

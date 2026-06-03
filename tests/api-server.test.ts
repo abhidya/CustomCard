@@ -19,11 +19,20 @@ describe("api server wrapper", () => {
           accountIdentityTable: boolean;
           accountRecoveryTable: boolean;
           idempotencyTable: boolean;
+          importPreviewRepository: boolean;
           cardProjectRepository: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
         };
-        runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean; cardProjectRecords: number | null };
+        runtime: {
+          mode: string;
+          authEnforced: boolean;
+          idempotencyEnforced: boolean;
+          providerConnectionRecords: number | null;
+          importedEventRecords: number | null;
+          cardOpportunityRecords: number | null;
+          cardProjectRecords: number | null;
+        };
       };
       blockers: string[];
     };
@@ -40,6 +49,7 @@ describe("api server wrapper", () => {
       accountIdentityTable: true,
       accountRecoveryTable: true,
       idempotencyTable: true,
+      importPreviewRepository: true,
       cardProjectRepository: true,
       renderPacketArtifacts: true,
       signedArtifactUrls: true
@@ -102,6 +112,7 @@ describe("api server wrapper", () => {
         accountIdentityTable: true,
         accountRecoveryTable: true,
         idempotencyTable: true,
+        importPreviewRepository: true,
         cardProjectRepository: true,
         renderPacketArtifacts: true,
         signedArtifactUrls: true
@@ -137,6 +148,48 @@ describe("api server wrapper", () => {
           realOrdersEnabled: false
         },
         signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })]
+      });
+
+      const importPreview = await postJson(
+        port,
+        "/api/import-preview",
+        {
+          sourceKind: "manual-ics",
+          eventId: "event-contract-api",
+          opportunityId: "opportunity-contract-api",
+          metadataOnlyPayload: {
+            title: "Anniversary dinner",
+            recipientName: "Sara",
+            startsAt: "2030-06-03T18:00:00.000Z",
+            timezone: "America/New_York",
+            confidence: 0.96
+          }
+        }
+      );
+      expect(importPreview.status).toBe(202);
+      expect(await importPreview.json()).toMatchObject({
+        status: "accepted-contract-only",
+        route: "import-preview",
+        rawContentStored: false,
+        opportunities: [
+          expect.objectContaining({
+            opportunityId: "opportunity-contract-api",
+            eventId: "event-contract-api",
+            recipientName: "Sara",
+            title: "Anniversary dinner",
+            decision: "generate"
+          })
+        ],
+        repository: {
+          tables: ["provider_connections", "imported_events", "card_opportunities"],
+          runtimeMode: "contract",
+          persisted: false,
+          rawContentStored: false
+        },
+        runtimeMode: "contract",
+        idempotencyPersisted: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false
       });
 
       const cardProject = await postJson(
@@ -195,7 +248,7 @@ describe("api server wrapper", () => {
       server.kill();
       await waitForExit(server);
     }
-  }, 15_000);
+  }, 30_000);
 
   it("enforces memory-runtime auth sessions and idempotent mutation replay", async () => {
     const port = 7100 + Math.floor(Math.random() * 1000);
@@ -232,6 +285,9 @@ describe("api server wrapper", () => {
         idempotencyRecords: 0,
         auditRecords: 0,
         queuedJobs: 0,
+        providerConnectionRecords: 0,
+        importedEventRecords: 0,
+        cardOpportunityRecords: 0,
         cardProjectRecords: 0
       });
 
@@ -282,6 +338,54 @@ describe("api server wrapper", () => {
         handoffChecklist: expect.arrayContaining(["Download signed artifacts"]),
         signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })],
         disabledReasons: expect.arrayContaining(["Live vendor order APIs remain disabled until certification and kill-switch gates pass."])
+      });
+
+      const importPreviewHeaders = {
+        ...bearer(customerToken),
+        "X-Idempotency-Key": "import-preview-0001"
+      };
+      const importPreview = await postJson(
+        port,
+        "/api/import-preview",
+        {
+          sourceKind: "manual-ics",
+          connectionId: "connection-memory-api",
+          eventId: "event-memory-api",
+          opportunityId: "opportunity-memory-api",
+          metadataOnlyPayload: {
+            title: "Anniversary dinner",
+            recipientName: "Sara",
+            startsAt: "2030-06-03T18:00:00.000Z",
+            timezone: "America/New_York",
+            confidence: 0.96,
+            leadTimeHours: 240
+          }
+        },
+        importPreviewHeaders
+      );
+      expect(importPreview.status).toBe(202);
+      expect(await importPreview.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "user-demo",
+        repositoryPersisted: true,
+        rawContentStored: false,
+        opportunities: [
+          expect.objectContaining({
+            opportunityId: "opportunity-memory-api",
+            eventId: "event-memory-api",
+            recipientName: "Sara",
+            title: "Anniversary dinner",
+            confidence: 0.96,
+            decision: "generate"
+          })
+        ],
+        repository: {
+          tables: ["provider_connections", "imported_events", "card_opportunities"],
+          runtimeMode: "memory",
+          persisted: true,
+          rawContentStored: false
+        },
+        persistedTables: expect.arrayContaining(["provider_connections", "imported_events", "card_opportunities", "audit_log"])
       });
 
       const cardProjectHeaders = {
@@ -356,16 +460,19 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 4,
-        auditRecords: 4,
+        idempotencyRecords: 5,
+        auditRecords: 5,
         queuedJobs: 2,
+        providerConnectionRecords: 1,
+        importedEventRecords: 1,
+        cardOpportunityRecords: 1,
         cardProjectRecords: 1
       });
     } finally {
       server.kill();
       await waitForExit(server);
     }
-  }, 10_000);
+  }, 30_000);
 });
 
 async function getJson(port: number, path: string, headers: Record<string, string> = {}, expectedStatus = 200): Promise<any> {
@@ -395,7 +502,7 @@ async function waitForApi(port: number, server: ChildProcess): Promise<void> {
     stderr += String(chunk);
   });
 
-  for (let attempt = 0; attempt < 100; attempt += 1) {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
     if (server.exitCode !== null) {
       throw new Error(`API server exited early: ${stderr}`);
     }

@@ -33,8 +33,8 @@ skeleton for the production path. It includes:
   jobs, and audit logs.
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration,
   API/static server with contract/memory/Postgres runtime validation, a
-  repository-backed card-project mutation path, and mobile-shell scaffolding plus
-  mobile contract validation.
+  repository-backed import-preview/card-project mutation path, and mobile-shell
+  scaffolding plus mobile contract validation.
 - Admin-only demo reset contract and script doctor for deterministic reviewer
   data across users, sessions, events, memories, projects, render packets,
   orders, consent, data requests, and audit rows.
@@ -100,24 +100,24 @@ into a free local MVP plus a contract-first production skeleton for an event-awa
 card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, account
 identity/recovery storage, memory and Postgres auth/idempotency runtime behavior,
-repository-backed card-project mutation coverage, public printer pricing
-research, local SVG/PDF print package export, temporary filesystem artifact-store
-write/read verification, injected S3-compatible artifact-store contract
-verification, provider-adapter readiness, domain boundaries, signed artifact
-handoff contracts, print contracts, order lifecycle, deployment shape, and safety
-gates with executable TypeScript, browser smoke tests, visual evidence, and
-infrastructure tests. Real external AI, OAuth, and ordering remain disabled
+repository-backed import-preview/card-project mutation coverage, public printer
+pricing research, local SVG/PDF print package export, temporary filesystem
+artifact-store write/read verification, injected S3-compatible artifact-store
+contract verification, provider-adapter readiness, domain boundaries, signed
+artifact handoff contracts, print contracts, order lifecycle, deployment shape,
+and safety gates with executable TypeScript, browser smoke tests, visual
+evidence, and infrastructure tests. Real external AI, OAuth, and ordering remain disabled
 until production credentials, consent flows, vendor terms, sandbox/live quote
 behavior, physical print certification, and security/legal review are complete.
 
 ## Next Build Slice
 
-The highest-leverage next slice is turning repository-backed route contracts into
-hosted runtime verification and broader product repositories:
+The highest-leverage next slice is turning the repository-backed route contracts
+into hosted runtime verification and broader product repositories:
 
-- Hosted auth token verification for the repository-backed card-project route.
-- Persistent event/opportunity/memory/order repositories behind the same runtime
-  pattern.
+- Hosted auth token verification for the repository-backed import-preview and
+  card-project routes.
+- Persistent memory/order repositories behind the same runtime pattern.
 - Live S3/MinIO render-packet artifact writing using the signed handoff
   contract.
 - Live seed execution against a deployed reviewer database.

@@ -205,23 +205,25 @@ The server now has explicit runtime modes:
   mutations require `X-Idempotency-Key`, same-key replay returns the stored
   response, and same-key/different-body conflicts return `409`.
 - `postgres`: parameterized Postgres runtime path for auth sessions,
-  idempotency records, card-project repository writes, queue jobs, and audit
-  rows. `npm run api:doctor:postgres` exercises this path with an injected fake
-  `pg` pool, including wrong-role blocking, replay, conflict, card-project
-  insert, audit, and queue-job inserts. The live doctor runs the same shape
-  against an isolated Postgres database; deployed production Postgres traffic is
-  still not claimed.
+  idempotency records, import-preview provider/event/opportunity writes,
+  card-project repository writes, queue jobs, and audit rows. `npm run
+  api:doctor:postgres` exercises this path with an injected fake `pg` pool,
+  including wrong-role blocking, replay, conflict, import-preview insert,
+  card-project insert, audit, and queue-job inserts. The live doctor runs the
+  same shape against an isolated Postgres database; deployed production Postgres
+  traffic is still not claimed.
 
 ## Persistence Boundary
 
 `src/persistenceContracts.ts` maps every API route to the Postgres tables it
 needs before live authenticated handlers are implemented. The current migration
 includes 18 durable tables, including `auth_sessions`, `idempotency_keys`,
+`provider_connections`, `imported_events`, `card_opportunities`,
 `card_projects`, `api_jobs`, and append-only audit/order event tables. This
 proves the schema shape for production auth sessions, idempotency replay,
-repository-backed card-project mutations, queue-backed rendering and handoff
-jobs, consent/data requests, and operational audit without claiming that
-deployed production DB handlers are serving traffic.
+repository-backed import-preview and card-project mutations, queue-backed
+rendering and handoff jobs, consent/data requests, and operational audit without
+claiming that deployed production DB handlers are serving traffic.
 Render packets also carry artifact manifests, storage-provider metadata, signed
 URL expiry, and external-share approval gates.
 
@@ -246,8 +248,8 @@ The runtime remains fail-closed:
 - `npm run api:doctor:memory` verifies Bearer session and idempotency enforcement
   in the executable memory runtime.
 - `npm run persistence:doctor` verifies auth-session schema, idempotency replay,
-  card-project repository signals, queue jobs, append-only audit coverage, and
-  11 schema-backed API route mappings.
+  import-preview repository signals, card-project repository signals, queue jobs,
+  append-only audit coverage, and 11 schema-backed API route mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, live observability provider verification, and managed secrets remain
@@ -279,11 +281,13 @@ Implemented checks:
   verification, checksum/byte-length matching, stored handoff manifests, no
   network calls, and no real orders.
 - `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior,
-  including repository-backed card-project mutation persistence, through an
-  injected fake pool without requiring external database credentials.
+  including repository-backed import-preview and card-project mutation
+  persistence, through an injected fake pool without requiring external database
+  credentials.
 - `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
-  validates the same auth/idempotency/card-project/audit/queue path against an
-  isolated live Postgres database after applying the committed migration.
+  validates the same auth/idempotency/import-preview/card-project/audit/queue
+  path against an isolated live Postgres database after applying the committed
+  migration.
 - `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` validates
   hosted account identity storage, hashed recovery challenges, durable sessions,
   uniqueness, and audit logging against an isolated live Postgres database.
@@ -296,8 +300,8 @@ Implemented checks:
   default policy.
 - API contract and server tests validate customer/admin/mobile API bootstrap,
   provider readiness, idempotent mutation contracts, `/api/health`,
-  repository-backed card-project mutations, and memory-runtime auth/idempotency
-  behavior.
+  repository-backed import-preview/card-project mutations, and memory-runtime
+  auth/idempotency behavior.
 - Persistence contract tests validate 18 table contracts, 11 schema-backed API
   routes, account identity/recovery storage, idempotency replay, queue-backed
   routes, and migration signals.
