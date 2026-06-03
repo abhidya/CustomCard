@@ -69,22 +69,22 @@ export const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 94,
-    readyLocal: 17,
-    credentialGated: 62,
+    total: 102,
+    readyLocal: 18,
+    credentialGated: 69,
     contractOnly: 9,
     blocked: 6
   },
   providerGovernance: {
-    total: 94,
-    zeroPlatformSpend: 19,
-    budgetCapped: 69,
+    total: 102,
+    zeroPlatformSpend: 20,
+    budgetCapped: 76,
     blockedZeroSpend: 6,
-    monthlyBudgetCents: 106600,
+    monthlyBudgetCents: 110800,
     maxPerRequestBudgetCents: 75,
-    rateLimited: 88,
-    queueRequired: 62,
-    fallbackCovered: 94,
+    rateLimited: 96,
+    queueRequired: 70,
+    fallbackCovered: 102,
     liveNetworkDefault: false,
     realOrdersEnabled: false,
     blockers: []
@@ -412,7 +412,7 @@ function validateApiServerContract() {
   if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
     blockers.push("Every mutation route must require idempotency.");
   }
-  if (readiness.providers.total < 94) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providers.total < 102) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (readiness.providerGovernance.total !== readiness.providers.total) {
     blockers.push("Provider governance summary must cover every adapter.");
   }

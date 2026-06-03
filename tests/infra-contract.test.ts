@@ -643,7 +643,7 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-provider-governance-doctor",
       status: "ready",
-      adapterCount: 94,
+      adapterCount: 102,
       usageBasedCount: expect.any(Number),
       blockedCount: 6,
       liveProviderCalls: false,

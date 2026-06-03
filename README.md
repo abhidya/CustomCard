@@ -71,8 +71,8 @@ environment configuration instead of static placeholders.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
-  CRM lifecycle readiness, production launch gates, cloud runtime readiness, and
-  blocked live-vendor adapters.
+  CRM and workflow integration readiness, production launch gates, cloud runtime
+  readiness, and blocked live-vendor adapters.
 - Adapter catalog covering free local paths plus gated Auth0, Clerk, Supabase
   Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
   Bedrock, Google, Google People, Microsoft Graph, CardDAV, Mistral, Cohere,
@@ -82,7 +82,8 @@ environment configuration instead of static placeholders.
   Messaging, Stripe Checkout, PayPal Orders, Square Payments, Adyen Checkout,
   Sentry, PostHog, OpenTelemetry OTLP, Grafana Cloud, Datadog Logs, Better
   Stack Logs, Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales,
-  Shopify Admin, and vendor contracts.
+  Shopify Admin, Zapier, Make, Slack, Microsoft Teams, Notion, Airtable, Google
+  Sheets, and vendor contracts.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
@@ -194,9 +195,11 @@ Provider credentials such as `AUTH0_DOMAIN`, `CLERK_SECRET_KEY`,
 `POSTHOG_PROJECT_API_KEY`, `OTEL_EXPORTER_OTLP_ENDPOINT`,
 `GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `BETTERSTACK_SOURCE_TOKEN`,
 Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, and Microsoft Graph
-keys are documented in `infra/env/.env.example`, but live OAuth, AI/image calls,
-notification sends, payment charges/refunds, telemetry ingestion, CRM sync, and
-vendor ordering are not implemented in this repo state.
+keys, plus Zapier, Make, Slack, Teams, Notion, Airtable, and Google Sheets
+workflow keys are documented in `infra/env/.env.example`, but live OAuth,
+AI/image calls, notification sends, payment charges/refunds, telemetry
+ingestion, CRM sync, workflow sends, and vendor ordering are not implemented in
+this repo state.
 
 ## Architecture
 
@@ -218,9 +221,10 @@ memory, deterministic 5x7 render validation, explicit order lifecycle recovery,
 regional/vendor-share controls, and readiness checks.
 
 The provider runtime adds a no-network execution boundary for the adapter
-catalog: future OAuth, text-chat, image-generation, notification, payment,
-observability, and vendor paths can be reviewed as redacted request contracts
-without placing API calls, charges, telemetry events, or orders.
+catalog: future OAuth, text-chat, image-generation, CRM, workflow integration,
+notification, payment, observability, and vendor paths can be reviewed as
+redacted request contracts without placing API calls, charges, telemetry events,
+workflow sends, or orders.
 
 Verification:
 
@@ -258,11 +262,11 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 verified through Chrome smoke tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
-cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes. `npm run
-cloud:doctor` focuses on `infra/aws/artifact-store` and statically verifies the
-production artifact bucket/IAM contract. These checks validate committed IaC
-shape only; they do not prove a real cloud cluster, AWS account, or droplet
-deployment.
+cheap-droplet, cloud-native, Vercel, cloud-storage, runtime, and data lanes.
+`npm run cloud:doctor` focuses on `infra/aws/artifact-store` and statically
+verifies the production artifact bucket/IAM contract. These checks validate
+committed IaC shape only; they do not prove a real cloud cluster, AWS account,
+or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/

@@ -12,6 +12,7 @@ import {
   buildProviderAdapterRuntime,
   buildTextChatRuntime,
   buildVendorRuntime,
+  buildWorkflowIntegrationRuntime,
   getProviderRuntimeReadiness,
   sanitizeText,
   validateRuntimeCoverage,
@@ -24,6 +25,9 @@ const readyEnv: ProviderRuntimeEnv = {
   ADYEN_API_KEY: "configured-adyen-api-key",
   ADYEN_HMAC_KEY: "configured-adyen-hmac-key",
   ADYEN_MERCHANT_ACCOUNT: "configured-adyen-merchant-account",
+  AIRTABLE_API_KEY: "configured-airtable-key",
+  AIRTABLE_BASE_ID: "configured-airtable-base",
+  AIRTABLE_TABLE_ID: "configured-airtable-table",
   AUTH_SESSION_SECRET: "configured-auth-secret",
   AUTH0_AUDIENCE: "https://api.customcard.test",
   AUTH0_CLIENT_ID: "configured-auth0-client-id",
@@ -74,6 +78,7 @@ const readyEnv: ProviderRuntimeEnv = {
   GOOGLE_GENERATIVE_AI_API_KEY: "configured-google-ai-key",
   GOOGLE_OAUTH_CLIENT_ID: "configured-google-client-id",
   GOOGLE_OAUTH_CLIENT_SECRET: "configured-google-client-secret",
+  GOOGLE_SHEETS_SPREADSHEET_ID: "configured-google-sheet-id",
   GRAFANA_OTLP_API_KEY: "configured-grafana-otlp-api-key",
   GRAFANA_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-east-0.grafana.net/otlp",
   GRAFANA_OTLP_INSTANCE_ID: "configured-grafana-instance-id",
@@ -83,15 +88,21 @@ const readyEnv: ProviderRuntimeEnv = {
   HUBSPOT_PRIVATE_APP_TOKEN: "configured-hubspot-token",
   IDEOGRAM_API_KEY: "configured-ideogram-key",
   LEONARDO_API_KEY: "configured-leonardo-key",
+  MAKE_SIGNING_SECRET: "configured-make-signing-secret",
+  MAKE_WEBHOOK_URL: "https://hook.make.com/customcard",
   MICROSOFT_CLIENT_ID: "configured-microsoft-client-id",
   MICROSOFT_CLIENT_SECRET: "configured-microsoft-client-secret",
   MICROSOFT_TENANT_ID: "configured-microsoft-tenant-id",
+  MICROSOFT_TEAMS_TENANT_ID: "configured-teams-tenant-id",
+  MICROSOFT_TEAMS_WEBHOOK_URL: "https://customcard.webhook.office.com/webhookb2/configured",
   MISTRAL_API_KEY: "configured-mistral-key",
   MAILGUN_API_KEY: "configured-mailgun-key",
   MAILGUN_DOMAIN: "mg.customcard.test",
   OFFICE_DEPOT_VENDOR_MODE: "certification-configured-only",
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
+  NOTION_API_KEY: "configured-notion-key",
+  NOTION_CUSTOMER_DATABASE_ID: "configured-notion-database",
   OPENAI_API_KEY: "configured-openai-key",
   OTEL_EXPORTER_OTLP_ENDPOINT: "https://otel-collector.customcard.test",
   OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Bearer configured-otel-token",
@@ -115,6 +126,9 @@ const readyEnv: ProviderRuntimeEnv = {
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   SENDGRID_API_KEY: "configured-sendgrid-key",
+  SLACK_BOT_TOKEN: "configured-slack-bot-token",
+  SLACK_CHANNEL_ID: "configured-slack-channel",
+  SLACK_SIGNING_SECRET: "configured-slack-signing-secret",
   SENTRY_DSN: "https://public@sentry.example/123",
   SENTRY_ENVIRONMENT: "contract",
   SENTRY_PROJECT_ID: "123",
@@ -141,6 +155,8 @@ const readyEnv: ProviderRuntimeEnv = {
   WHATSAPP_ACCESS_TOKEN: "configured-whatsapp-token",
   WHATSAPP_PHONE_NUMBER_ID: "configured-whatsapp-phone-number-id",
   XAI_API_KEY: "configured-xai-key",
+  ZAPIER_SIGNING_SECRET: "configured-zapier-signing-secret",
+  ZAPIER_WEBHOOK_URL: "https://hooks.zapier.com/hooks/catch/customcard",
   ZOHO_ACCOUNTS_DOMAIN: "https://accounts.zoho.com",
   ZOHO_API_DOMAIN: "https://www.zohoapis.com",
   ZOHO_CLIENT_ID: "configured-zoho-client-id",
@@ -149,6 +165,7 @@ const readyEnv: ProviderRuntimeEnv = {
 };
 
 const openGates: ProviderGateState = {
+  adminReviewedExport: true,
   externalConsentRecorded: true,
   externalShareApproved: true,
   humanApprovalBeforePrint: true,
@@ -229,6 +246,18 @@ const crmInput = {
     | "purchase-anniversary"
     | "warranty-anniversary"
   )[],
+  optInRecorded: true
+};
+
+const workflowInput = {
+  sourceText: [
+    "campaign_id,customer_id,email,first_name,lifecycle_kind,lifecycle_date,marketing_opt_in",
+    "campaign_2026_06,cust_123,sara@example.com,Sara,purchase-anniversary,2026-06-03,true"
+  ].join("\n"),
+  destination: "workspace-table" as const,
+  campaignId: "campaign-2026-06",
+  fromIso: "2026-06-01T00:00:00.000Z",
+  toIso: "2026-07-01T00:00:00.000Z",
   optInRecorded: true
 };
 
@@ -623,6 +652,83 @@ describe("provider runtime contracts", () => {
     );
   });
 
+  it("builds metadata-only no-network workflow integration request contracts", () => {
+    const providerIds = [
+      "zapier-webhook-workflow",
+      "make-webhook-workflow",
+      "slack-workflow-notification",
+      "teams-workflow-notification",
+      "notion-customer-database-sync",
+      "airtable-customer-base-sync",
+      "google-sheets-lifecycle-sync"
+    ];
+
+    for (const providerId of providerIds) {
+      const result = buildWorkflowIntegrationRuntime(providerId, workflowInput, readyEnv, openGates);
+      const serializedHeaders = JSON.stringify(result.request?.headers);
+      const serializedBody = JSON.stringify(result.request?.body ?? {});
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.method, providerId).toBe("POST");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["workflow-metadata", "lifecycle-campaign", "PII-redacted", "opt-in-required"])
+      );
+      expect(serializedHeaders, providerId).not.toContain("configured-");
+      expect(serializedBody, providerId).toContain('"redactions":["email","phone"]');
+      expect(serializedBody, providerId).toContain("live_workflow_send");
+      expect(serializedBody, providerId).not.toContain("sara@example.com");
+      expect(serializedBody, providerId).not.toContain("Sara");
+    }
+
+    expect(buildWorkflowIntegrationRuntime("zapier-webhook-workflow", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "{ZAPIER_WEBHOOK_URL}",
+      headers: expect.objectContaining({ "x-customcard-signature": "HMAC-SHA256 {ZAPIER_SIGNING_SECRET}" })
+    });
+    expect(buildWorkflowIntegrationRuntime("make-webhook-workflow", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "{MAKE_WEBHOOK_URL}",
+      headers: expect.objectContaining({ "x-customcard-signature": "HMAC-SHA256 {MAKE_SIGNING_SECRET}" })
+    });
+    expect(buildWorkflowIntegrationRuntime("slack-workflow-notification", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://slack.com/api/chat.postMessage",
+      headers: expect.objectContaining({ authorization: "Bearer {SLACK_BOT_TOKEN}" })
+    });
+    expect(buildWorkflowIntegrationRuntime("teams-workflow-notification", workflowInput, readyEnv, openGates).request?.url).toBe(
+      "{MICROSOFT_TEAMS_WEBHOOK_URL}"
+    );
+    expect(buildWorkflowIntegrationRuntime("notion-customer-database-sync", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.notion.com/v1/pages",
+      headers: expect.objectContaining({ "notion-version": "2022-06-28" })
+    });
+    expect(buildWorkflowIntegrationRuntime("airtable-customer-base-sync", workflowInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}"
+    );
+    expect(buildWorkflowIntegrationRuntime("google-sheets-lifecycle-sync", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_SPREADSHEET_ID}/values/CustomCardQueue!A:F:append?valueInputOption=USER_ENTERED",
+      headers: expect.objectContaining({ authorization: "Bearer {google-oauth-access-token}" })
+    });
+  });
+
+  it("blocks workflow integrations when opt-in and suppression gates are absent", () => {
+    const result = buildWorkflowIntegrationRuntime(
+      "zapier-webhook-workflow",
+      { ...workflowInput, optInRecorded: false },
+      readyEnv,
+      {
+        metadataOnly: true,
+        networkAllowlisted: true,
+        rateLimitHandlingReady: true,
+        rawContentStorageDisabled: true
+      }
+    );
+
+    expect(result.mode).toBe("blocked");
+    expect(result.request).toBeUndefined();
+    expect(result.readiness.blockedReasons).toEqual(
+      expect.arrayContaining(["Missing safety gate: notification opt-in", "Missing safety gate: suppression list check"])
+    );
+  });
+
   it("builds redacted no-network notification request contracts", () => {
     const providerIds = [
       "resend-email-notification",
@@ -874,6 +980,7 @@ describe("provider runtime contracts", () => {
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
     const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
     const crm = buildCrmRuntime("crm-csv-lifecycle-import", crmInput);
+    const workflow = buildWorkflowIntegrationRuntime("local-workflow-payload-export", workflowInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const notification = buildNotificationRuntime("browser-download-notification", notificationInput);
     const payment = buildPaymentRuntime("no-payment-checkout-gate", paymentInput);
@@ -902,6 +1009,16 @@ describe("provider runtime contracts", () => {
       optInSignals: true,
       rawNotesStored: false,
       metadataOnly: true,
+      noNetwork: true
+    });
+    expect(workflow.mode).toBe("local-result");
+    expect(workflow.localResult).toMatchObject({
+      exporter: "local-workflow-payload",
+      customerCount: 1,
+      lifecycleTriggers: expect.arrayContaining(["purchase-anniversary"]),
+      rawNotesStored: false,
+      metadataOnly: true,
+      liveWorkflowSend: false,
       noNetwork: true
     });
     expect(image.mode).toBe("local-result");

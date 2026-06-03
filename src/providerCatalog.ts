@@ -3,6 +3,7 @@ export type ProviderCapability =
   | "event-import"
   | "contact-import"
   | "crm-integration"
+  | "workflow-integration"
   | "text-chat"
   | "image-generation"
   | "render-export"
@@ -58,6 +59,7 @@ export interface ProviderCoverageSummary {
 export interface AdminPanelModel {
   coverage: ProviderCoverageSummary;
   deploymentAdapters: ProviderAdapter[];
+  integrationAdapters: ProviderAdapter[];
   gatedProviders: ProviderAdapter[];
   blockedProviders: ProviderAdapter[];
   readyLocalProviders: ProviderAdapter[];
@@ -90,6 +92,7 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
   "event-import": "Event import",
   "contact-import": "Contact import",
   "crm-integration": "CRM integration",
+  "workflow-integration": "Workflow integration",
   "text-chat": "Text chat",
   "image-generation": "Image generation",
   "render-export": "Render/export",
@@ -438,6 +441,186 @@ export const providerCatalog: ProviderAdapter[] = [
     priority: 39.6,
     detail: "Prepares Shopify customer and order metadata reads for purchase-anniversary and warranty-anniversary card campaigns.",
     docsUrl: "https://shopify.dev/docs/api/admin-graphql/latest/queries/customers"
+  },
+  {
+    id: "local-workflow-payload-export",
+    label: "Local workflow payload export",
+    provider: "CustomCard admin export",
+    capability: "workflow-integration",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["Admin reviewed export", "No external workflow send", "Metadata-only import"],
+    roleSurface: ["admin"],
+    priority: 39.7,
+    detail: "Builds reviewed JSON/CSV payloads for lifecycle campaigns without sending to automation platforms."
+  },
+  {
+    id: "zapier-webhook-workflow",
+    label: "Zapier webhook workflow",
+    provider: "Zapier",
+    capability: "workflow-integration",
+    lane: "Workflow automation",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["ZAPIER_WEBHOOK_URL", "ZAPIER_SIGNING_SECRET"],
+    safetyGates: [
+      "Admin reviewed export",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Rate limit handling",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.8,
+    detail: "Prepares outbound lifecycle campaign payloads for Zapier catch-hook workflows without firing the webhook.",
+    docsUrl: "https://help.zapier.com/hc/en-us/articles/8496288690317-Trigger-Zaps-from-webhooks"
+  },
+  {
+    id: "make-webhook-workflow",
+    label: "Make webhook workflow",
+    provider: "Make",
+    capability: "workflow-integration",
+    lane: "Workflow automation",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["MAKE_WEBHOOK_URL", "MAKE_SIGNING_SECRET"],
+    safetyGates: [
+      "Admin reviewed export",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Rate limit handling",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.81,
+    detail: "Prepares lifecycle campaign webhook contracts for Make scenarios with signature metadata and no live send.",
+    docsUrl: "https://help.make.com/webhooks"
+  },
+  {
+    id: "slack-workflow-notification",
+    label: "Slack workflow notification",
+    provider: "Slack",
+    capability: "workflow-integration",
+    lane: "Team workflow",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["SLACK_BOT_TOKEN", "SLACK_SIGNING_SECRET", "SLACK_CHANNEL_ID"],
+    safetyGates: [
+      "Admin reviewed export",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Rate limit handling",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.82,
+    detail: "Prepares internal Slack review messages for lifecycle card campaigns before any customer send or order.",
+    docsUrl: "https://docs.slack.dev/reference/methods/chat.postMessage/"
+  },
+  {
+    id: "teams-workflow-notification",
+    label: "Microsoft Teams workflow notification",
+    provider: "Microsoft Teams",
+    capability: "workflow-integration",
+    lane: "Team workflow",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["MICROSOFT_TEAMS_WEBHOOK_URL", "MICROSOFT_TEAMS_TENANT_ID"],
+    safetyGates: [
+      "Admin reviewed export",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Rate limit handling",
+      "Tenant review",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.83,
+    detail: "Prepares Teams workflow webhook cards for admin review queues without sending live notifications.",
+    docsUrl: "https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
+  },
+  {
+    id: "notion-customer-database-sync",
+    label: "Notion customer database sync",
+    provider: "Notion",
+    capability: "workflow-integration",
+    lane: "Business workspace",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["NOTION_API_KEY", "NOTION_CUSTOMER_DATABASE_ID"],
+    safetyGates: [
+      "Admin reviewed export",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Metadata schema validation",
+      "Revocation handling",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.84,
+    detail: "Prepares Notion database page contracts for lifecycle card queue review without storing raw CRM notes.",
+    docsUrl: "https://developers.notion.com/reference/post-page"
+  },
+  {
+    id: "airtable-customer-base-sync",
+    label: "Airtable customer base sync",
+    provider: "Airtable",
+    capability: "workflow-integration",
+    lane: "Business workspace",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["AIRTABLE_API_KEY", "AIRTABLE_BASE_ID", "AIRTABLE_TABLE_ID"],
+    safetyGates: [
+      "Admin reviewed export",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Metadata schema validation",
+      "Rate limit handling",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.85,
+    detail: "Prepares Airtable record-upsert contracts for opted-in lifecycle campaign queues.",
+    docsUrl: "https://airtable.com/developers/web/api/create-records"
+  },
+  {
+    id: "google-sheets-lifecycle-sync",
+    label: "Google Sheets lifecycle sync",
+    provider: "Google Sheets API",
+    capability: "workflow-integration",
+    lane: "Business workspace",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_SHEETS_SPREADSHEET_ID"],
+    safetyGates: [
+      "Admin reviewed export",
+      "OAuth consent required",
+      "Metadata-only import",
+      "No raw content storage",
+      "Opt-in only",
+      "Suppression list",
+      "Metadata schema validation",
+      "Revocation handling",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 39.86,
+    detail: "Prepares append-only Google Sheets rows for lifecycle card queues with scoped OAuth and no live send.",
+    docsUrl: "https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/append"
   },
   {
     id: "gmail-metadata-import",
@@ -1578,6 +1761,9 @@ export function buildAdminPanelModel(adapters: ProviderAdapter[] = providerCatal
   return {
     coverage: summarizeProviderCoverage(adapters),
     deploymentAdapters: sortByPriority(adapters.filter((adapter) => adapter.capability === "cloud-runtime")),
+    integrationAdapters: sortByPriority(
+      adapters.filter((adapter) => adapter.capability === "crm-integration" || adapter.capability === "workflow-integration")
+    ),
     gatedProviders: sortByPriority(adapters.filter((adapter) => adapter.status === "credential-gated")),
     blockedProviders: sortByPriority(adapters.filter((adapter) => adapter.status === "blocked")),
     readyLocalProviders: sortByPriority(adapters.filter((adapter) => adapter.status === "ready-local"))

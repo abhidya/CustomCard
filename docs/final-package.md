@@ -8,8 +8,8 @@
   an event-aware personal greeting-card CRM and print-production product; see
   `docs/brief-context.md`.
 - Current delivered outcome: a polished free local MVP plus customer/admin
-  panels, a tested 94-adapter catalog and no-network runtime contracts, admin
-  business CRM lifecycle contracts, a tested production launch-gate registry, a
+  panels, a tested 102-adapter catalog and no-network runtime contracts, admin
+  business CRM/workflow integration contracts, a tested production launch-gate registry, a
   tested localization readiness catalog, a tested customer mobile shell
   contract, and a contract-first production skeleton with API/static server,
   account identity/recovery storage contracts, memory-mode auth/idempotency
@@ -71,11 +71,11 @@
   image/render choices, locale readiness, and free fallback actions.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, localization readiness, production launch gates, gated provider
-  queue, cloud runtime adapters, CRM lifecycle adapters, and blocked live
-  vendors.
-- Provider runtime: readiness dry runs for all 94 catalog adapters; redacted
+  queue, cloud runtime adapters, CRM lifecycle adapters, workflow integrations,
+  and blocked live vendors.
+- Provider runtime: readiness dry runs for all 102 catalog adapters; redacted
   no-network request contracts for gated chat, image, event, contact,
-  CRM lifecycle, hosted-auth, notification, payment, and observability
+  CRM lifecycle, workflow integration, hosted-auth, notification, payment, and observability
   providers; hard
   block for live vendor order adapters; hosted auth request contracts for
   common identity providers; metadata-only contact/address-book import
@@ -132,17 +132,17 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 20 test files, 137 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.92% statements, 83.97% branches, 96.76% functions, 95.12% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 21 test files, 145 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.15% statements, 83.94% branches, 96.89% functions, 95.17% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
-| Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 87 adapters, 39 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
+| Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 102 adapters, 45 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
 | Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
 | Localization readiness | `npm run localization:doctor` | Passed; verified 4 launch locales, 2 RTL locales, 3 human-copy-review locales, 4 mobile locale options, web/API/mobile surfaces, CI wiring, no live translation provider, and no real orders. |
-| API readiness | `npm run api:doctor` | Passed; 15 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, provider governance, 13 schema-backed routes, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 15 routes, 7 idempotent mutation contracts, contract runtime mode, 102 providers, provider governance, 13 schema-backed routes, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
 | API live Postgres integration | `npm run api:doctor:postgres:live` | Passed against an isolated temporary database; migration applied, sessions seeded, real `pg` runtime authorized all 6 repository-backed customer routes, authorized the admin readiness route, blocked wrong-role access, persisted/replayed/conflicted idempotency, wrote one provider connection, imported event, card opportunity, relationship-memory row, card-project row, render-packet row, manual handoff order/consent/event row, data-request row, two consent rows, and audit plus queue rows. |

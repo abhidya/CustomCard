@@ -20,8 +20,8 @@ it after each meaningful implementation pass.
 - Provider-runtime tests cover every catalog adapter with no-network dry runs,
   placeholder-secret rejection, redacted chat/image/notification/payment/
   observability request contracts, metadata-only event/contact import contracts,
-  metadata-only CRM lifecycle contracts, free local fallbacks, and hard-blocked
-  live vendor ordering.
+  metadata-only CRM lifecycle and workflow-integration contracts, free local
+  fallbacks, and hard-blocked live vendor ordering.
 - Printer-pricing tests and `npm run printer:pricing:doctor` cover 12
   review-only public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot price
   observations, collection rules, 30-day freshness blocking, minimum quantity
@@ -45,7 +45,7 @@ it after each meaningful implementation pass.
   live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
   reads every object back, verifies checksums, writes the manifest, cleans up the
   isolated bucket, and keeps external vendor calls plus real orders disabled.
-- Provider adapter coverage currently includes 94 adapters: 17 ready-local, 62
+- Provider adapter coverage currently includes 102 adapters: 18 ready-local, 69
   credential-gated, 9 contract-only, and 6 blocked.
 - Production readiness tests cover 13 launch gates for live auth, OAuth,
   AI/image generation, vendor quotes, payments/refunds, direct retail ordering,
@@ -167,9 +167,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 20 test files passed, 137 tests passed.
-- Coverage: 18 core/API/persistence/infra/mobile test files passed, 129 tests passed; V8 report measured
-  90.92% statements, 83.97% branches, 96.76% functions, and 95.12% lines across
+- Vitest: 21 test files passed, 145 tests passed.
+- Coverage: 19 core/API/persistence/infra/mobile test files passed, 136 tests passed; V8 report measured
+  91.15% statements, 83.94% branches, 96.89% functions, and 95.17% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/localization.ts`,
@@ -211,7 +211,7 @@ npm run provider:governance:doctor
 ```
 
 Result: passed. The JSON report marked catalog, governance, tests, surfaces,
-CI, and safety lanes `ready`; it verified 94 adapters, 45 usage-based adapters,
+CI, and safety lanes `ready`; it verified 102 adapters, 45 usage-based adapters,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
 
@@ -238,7 +238,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 15 routes, 7 idempotent mutation contracts,
-94 providers, provider governance for all 94 adapters, 13 schema-backed routes,
+102 providers, provider governance for all 102 adapters, 13 schema-backed routes,
 relationship-memory repository readiness, render-packet artifact manifests,
 signed artifact URL contracts, contract runtime mode, no live external calls,
 no real vendor orders, no raw content storage, 13 production launch gates with
@@ -408,11 +408,11 @@ The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
 After the provider expansion, pricing-research, print-package, AI-provider,
-hosted-auth, contact-import, notification, payment, and observability catalog
-passes the catalog contains 16 ready-local, 56 credential-gated, 9
-contract-only, and 6 blocked adapters. The web mobile customer panel appears
-before the navigation rail with zero horizontal overflow at 1440px desktop and
-390px mobile widths.
+hosted-auth, contact-import, CRM, workflow-integration, notification, payment,
+and observability catalog passes the catalog contains 18 ready-local, 69
+credential-gated, 9 contract-only, and 6 blocked adapters. The web mobile
+customer panel appears before the navigation rail with zero horizontal overflow
+at 1440px desktop and 390px mobile widths.
 
 ```text
 Final package audit

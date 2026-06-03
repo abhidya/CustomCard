@@ -231,6 +231,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Provider governance");
     expect(result.adminText).toContain("Locale readiness");
     expect(result.adminText).toContain("Launch gates");
+    expect(result.adminText).toContain("CRM and workflow integrations");
     expect(result.adminText).toContain("Production user auth");
     expect(result.adminText).toContain("Live payment charges and refunds");
     expect(result.adminText).toContain("Vercel deployment and DB access");
@@ -243,6 +244,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("LEONARDO_API_KEY");
     expect(result.adminText).toContain("SALESFORCE_INSTANCE_URL");
     expect(result.adminText).toContain("HUBSPOT_PRIVATE_APP_TOKEN");
+    expect(result.adminText).toContain("ZAPIER_WEBHOOK_URL");
     expect(result.adminText).toContain("Walgreens live order");
     expect(result.metricCount).toBeGreaterThanOrEqual(6);
     expect(result.gatedRows).toBeGreaterThanOrEqual(8);
@@ -281,14 +283,18 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Microsoft Graph calendar");
     expect(result.text).toContain("Salesforce CRM lifecycle sync");
     expect(result.text).toContain("HubSpot CRM lifecycle sync");
+    expect(result.text).toContain("Zapier webhook workflow");
+    expect(result.text).toContain("Google Sheets lifecycle sync");
+    expect(result.text).toContain("Search adapters");
+    expect(result.text).toContain("All capabilities");
     expect(result.text).toContain("Walgreens live order");
     expect(result.text).toContain("Public printer pricing research");
     expect(result.text).toContain("Local print package export");
     expect(result.text).toContain("Dry run: local fallback ready");
     expect(result.text).toContain("Dry run: blocked by gates");
     expect(result.text).toContain("missing OPENAI_API_KEY");
-    expect(result.readyRows).toBeGreaterThanOrEqual(17);
-    expect(result.gatedRows).toBeGreaterThanOrEqual(62);
+    expect(result.readyRows).toBeGreaterThanOrEqual(18);
+    expect(result.gatedRows).toBeGreaterThanOrEqual(69);
     expect(result.contractRows).toBeGreaterThanOrEqual(6);
     expect(result.blockedRows).toBe(6);
     expect(result.scrollWidth).toBe(result.clientWidth);

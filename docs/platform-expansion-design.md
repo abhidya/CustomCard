@@ -94,8 +94,8 @@ the launch locale options so mobile cannot drift from web/API readiness.
 `src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
 It can evaluate readiness for every adapter, reject placeholder credentials,
 build redacted no-network request shapes for credential-gated text, image,
-event, contact, CRM lifecycle, hosted-auth, notification, payment, and
-observability providers, and keep live vendor adapters blocked even if test
+event, contact, CRM lifecycle, workflow integration, hosted-auth, notification,
+payment, and observability providers, and keep live vendor adapters blocked even if test
 credentials and approval gates are present. These contracts intentionally stop
 before `fetch` or any SDK call.
 
@@ -141,6 +141,13 @@ Official documentation anchors used for the adapter contracts:
 - Pipedrive Persons API: https://developers.pipedrive.com/docs/api/v1/Persons
 - Microsoft Dataverse Web API query: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query/overview
 - Shopify Admin GraphQL customers: https://shopify.dev/docs/api/admin-graphql/latest/queries/customers
+- Zapier Webhooks trigger: https://help.zapier.com/hc/en-us/articles/8496288690317-Trigger-Zaps-from-webhooks
+- Make webhooks: https://help.make.com/webhooks
+- Slack chat.postMessage: https://docs.slack.dev/reference/methods/chat.postMessage/
+- Microsoft Teams incoming webhooks: https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook
+- Notion create page: https://developers.notion.com/reference/post-page
+- Airtable create records: https://airtable.com/developers/web/api/create-records
+- Google Sheets append values: https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/append
 - Hugging Face Inference Providers: https://huggingface.co/docs/inference-providers/index
 - Stability image API: https://platform.stability.ai/docs/getting-started/stable-image
 - Replicate HTTP API: https://replicate.com/docs/reference/http
@@ -340,9 +347,9 @@ Implemented checks:
   visibility, API visibility, and CI wiring.
 - `src/providerRuntime.test.ts` validates executable readiness for every
   catalog adapter, redacted no-network request contracts for chat/image/
-  notification/payment/observability providers, metadata-only import and CRM
-  lifecycle contracts, placeholder-secret rejection, free local fallbacks, and
-  hard-blocked live vendor order adapters.
+  notification/payment/observability providers, metadata-only import, CRM
+  lifecycle and workflow integration contracts, placeholder-secret rejection,
+  free local fallbacks, and hard-blocked live vendor order adapters.
 - `src/productionReadiness.test.ts` validates the 13 production launch gates and
   keeps live production components disabled until external evidence is attached.
 - `src/printerPricing.test.ts` and `npm run printer:pricing:doctor` validate

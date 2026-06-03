@@ -86,12 +86,12 @@ describe("api server wrapper", () => {
     expect(report.service).toBe("customcard-api-doctor");
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
-    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(94);
+    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(102);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 94,
-      budgetCapped: 69,
+      total: 102,
+      budgetCapped: 76,
       blockedZeroSpend: 6,
-      fallbackCovered: 94,
+      fallbackCovered: 102,
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
@@ -200,11 +200,11 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 15, admin: 5, idempotentMutations: 7 });
-      expect(readiness.providers).toMatchObject({ total: 94, readyLocal: 17, credentialGated: 62, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 102, readyLocal: 18, credentialGated: 69, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 94,
-        fallbackCovered: 94,
-        budgetCapped: 69,
+        total: 102,
+        fallbackCovered: 102,
+        budgetCapped: 76,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -251,12 +251,12 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 94,
-        monthlyBudgetCents: 106600,
+        total: 102,
+        monthlyBudgetCents: 110800,
         maxPerRequestBudgetCents: 75,
-        rateLimited: 88,
-        queueRequired: 62,
-        fallbackCovered: 94,
+        rateLimited: 96,
+        queueRequired: 70,
+        fallbackCovered: 102,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []

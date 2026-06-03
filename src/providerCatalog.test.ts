@@ -17,6 +17,7 @@ describe("provider catalog", () => {
       "event-import",
       "contact-import",
       "crm-integration",
+      "workflow-integration",
       "text-chat",
       "image-generation",
       "render-export",
@@ -29,7 +30,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(94);
+    expect(summary.total).toBeGreaterThanOrEqual(102);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -56,6 +57,13 @@ describe("provider catalog", () => {
       "Pipedrive CRM lifecycle sync",
       "Dynamics 365 Sales lifecycle sync",
       "Shopify customer lifecycle sync",
+      "Zapier webhook workflow",
+      "Make webhook workflow",
+      "Slack workflow notification",
+      "Microsoft Teams workflow notification",
+      "Notion customer database sync",
+      "Airtable customer base sync",
+      "Google Sheets lifecycle sync",
       "Resend email notification",
       "SendGrid email notification",
       "Postmark email notification",
@@ -159,6 +167,21 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("DYNAMICS_CLIENT_SECRET");
     expect(admin.coverage.requiredEnv).toContain("SHOPIFY_SHOP_DOMAIN");
     expect(admin.coverage.requiredEnv).toContain("SHOPIFY_ADMIN_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("ZAPIER_WEBHOOK_URL");
+    expect(admin.coverage.requiredEnv).toContain("ZAPIER_SIGNING_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("MAKE_WEBHOOK_URL");
+    expect(admin.coverage.requiredEnv).toContain("MAKE_SIGNING_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("SLACK_BOT_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("SLACK_SIGNING_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("SLACK_CHANNEL_ID");
+    expect(admin.coverage.requiredEnv).toContain("MICROSOFT_TEAMS_WEBHOOK_URL");
+    expect(admin.coverage.requiredEnv).toContain("MICROSOFT_TEAMS_TENANT_ID");
+    expect(admin.coverage.requiredEnv).toContain("NOTION_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("NOTION_CUSTOMER_DATABASE_ID");
+    expect(admin.coverage.requiredEnv).toContain("AIRTABLE_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("AIRTABLE_BASE_ID");
+    expect(admin.coverage.requiredEnv).toContain("AIRTABLE_TABLE_ID");
+    expect(admin.coverage.requiredEnv).toContain("GOOGLE_SHEETS_SPREADSHEET_ID");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_ENDPOINT");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_CHAT_DEPLOYMENT");
@@ -246,7 +269,18 @@ describe("provider catalog", () => {
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Public printer pricing research");
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Local print package export");
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Business CRM CSV lifecycle import");
+    expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Local workflow payload export");
     expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Salesforce CRM lifecycle sync");
+    expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Zapier webhook workflow");
+    expect(admin.integrationAdapters.map((adapter) => adapter.label)).toEqual(
+      expect.arrayContaining([
+        "Business CRM CSV lifecycle import",
+        "Local workflow payload export",
+        "Salesforce CRM lifecycle sync",
+        "Zapier webhook workflow",
+        "Google Sheets lifecycle sync"
+      ])
+    );
   });
 
   it("builds a customer panel model from ready paths plus gated provider choices", () => {

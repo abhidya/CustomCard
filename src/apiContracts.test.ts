@@ -66,8 +66,8 @@ describe("api contracts", () => {
     expect(summary.status).toBe("ready");
     expect(summary.routes.total).toBe(apiRouteContracts.length);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
-    expect(summary.providers.total).toBeGreaterThanOrEqual(94);
-    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(62);
+    expect(summary.providers.total).toBeGreaterThanOrEqual(102);
+    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(69);
     expect(summary.governance.total).toBe(summary.providers.total);
     expect(summary.governance.blockers).toEqual([]);
     expect(summary.governance.fallbackCovered).toBe(summary.providers.total);
@@ -98,7 +98,7 @@ describe("api contracts", () => {
     expect(payload.customer.primaryActions.map((action) => action.capability)).toEqual(
       expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
     );
-    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(94);
+    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(102);
     expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
     expect(payload.mobile.localeOptions.map((locale) => locale.locale)).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
     expect(payload.localization.summary).toMatchObject({

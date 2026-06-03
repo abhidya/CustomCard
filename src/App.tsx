@@ -20,6 +20,7 @@ import {
   Settings,
   ShieldCheck,
   Store,
+  Search,
   Trash2,
   Upload,
   UserRound,
@@ -63,7 +64,8 @@ import {
   type AdminPanelModel,
   type CustomerPanelModel,
   type ProviderAdapter,
-  type ProviderCapability
+  type ProviderCapability,
+  type ProviderStatus
 } from "./providerCatalog";
 import {
   getSupportedLocale,
@@ -86,6 +88,8 @@ import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile,
 
 type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
+type AdapterStatusFilter = ProviderStatus | "all";
+type AdapterCapabilityFilter = ProviderCapability | "all";
 
 interface NavItem {
   id: ViewId;
@@ -1260,6 +1264,17 @@ function AdminPanelView({
         <article className="toolPanel adminWide">
           <div className="sectionHeader compact">
             <div>
+              <p className="eyebrow">Business systems</p>
+              <h3>CRM and workflow integrations</h3>
+            </div>
+            <StatusChip icon={RefreshCw} label={`${model.integrationAdapters.length} integrations`} tone="blue" />
+          </div>
+          <AdapterMiniList adapters={model.integrationAdapters.slice(0, 14)} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
               <p className="eyebrow">Deployment</p>
               <h3>Cloud readiness</h3>
             </div>
@@ -1284,9 +1299,25 @@ function AdminPanelView({
 }
 
 function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, RuntimeReadiness> }) {
-  const sortedAdapters = providerCatalog
-    .slice()
-    .sort((first, second) => first.priority - second.priority || first.label.localeCompare(second.label));
+  const [statusFilter, setStatusFilter] = useState<AdapterStatusFilter>("all");
+  const [capabilityFilter, setCapabilityFilter] = useState<AdapterCapabilityFilter>("all");
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const sortedAdapters = useMemo(
+    () =>
+      providerCatalog
+        .filter((adapter) => statusFilter === "all" || adapter.status === statusFilter)
+        .filter((adapter) => capabilityFilter === "all" || adapter.capability === capabilityFilter)
+        .filter((adapter) => {
+          if (!normalizedQuery) return true;
+          return [adapter.label, adapter.provider, adapter.detail, adapter.lane, capabilityLabels[adapter.capability]]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedQuery);
+        })
+        .sort((first, second) => first.priority - second.priority || first.label.localeCompare(second.label)),
+    [capabilityFilter, normalizedQuery, statusFilter]
+  );
 
   return (
     <section className="adaptersView">
@@ -1295,7 +1326,47 @@ function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, Runt
           <p className="eyebrow">Coverage</p>
           <h2>Adapter readiness</h2>
         </div>
-        <StatusChip icon={ShieldCheck} label={`${sortedAdapters.length} adapters`} tone="green" />
+        <StatusChip icon={ShieldCheck} label={`${providerCatalog.length} adapters`} tone="green" />
+      </div>
+
+      <div className="adapterToolbar" aria-label="Adapter filters">
+        <label className="searchField">
+          <Search size={16} />
+          <span>Search adapters</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Provider, capability, lane"
+          />
+        </label>
+        <label>
+          <span>Status</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as AdapterStatusFilter)}>
+            <option value="all">All statuses</option>
+            <option value="ready-local">Ready local</option>
+            <option value="credential-gated">Credential gated</option>
+            <option value="contract-only">Contract only</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </label>
+        <label>
+          <span>Capability</span>
+          <select
+            value={capabilityFilter}
+            onChange={(event) => setCapabilityFilter(event.target.value as AdapterCapabilityFilter)}
+          >
+            <option value="all">All capabilities</option>
+            {(Object.keys(capabilityLabels) as ProviderCapability[]).map((capability) => (
+              <option key={capability} value={capability}>
+                {capabilityLabels[capability]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="adapterToolbarCount">
+          <strong>{sortedAdapters.length}</strong>
+          <span>shown</span>
+        </div>
       </div>
 
       <div className="adapterMatrix">
@@ -1494,7 +1565,13 @@ function prioritizeAdminEnv(requiredEnv: string[]): string[] {
     "MICROSOFT_TENANT_ID",
     "SALESFORCE_INSTANCE_URL",
     "HUBSPOT_PRIVATE_APP_TOKEN",
-    "SHOPIFY_SHOP_DOMAIN"
+    "SHOPIFY_SHOP_DOMAIN",
+    "ZAPIER_WEBHOOK_URL",
+    "MAKE_WEBHOOK_URL",
+    "SLACK_BOT_TOKEN",
+    "NOTION_API_KEY",
+    "AIRTABLE_API_KEY",
+    "GOOGLE_SHEETS_SPREADSHEET_ID"
   ];
   const envSet = new Set(requiredEnv);
   const prioritized = priority.filter((envVar) => envSet.has(envVar));

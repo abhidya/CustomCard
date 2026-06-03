@@ -36,6 +36,7 @@ export interface ProviderGateState {
   notificationOptInRecorded?: boolean;
   suppressionListChecked?: boolean;
   sensitiveContentExcluded?: boolean;
+  adminReviewedExport?: boolean;
   paymentSandboxConfigured?: boolean;
   noCardDataStorage?: boolean;
   idempotencyKeyReady?: boolean;
@@ -102,6 +103,15 @@ export interface CrmRuntimeInput {
   optInRecorded: boolean;
 }
 
+export interface WorkflowIntegrationRuntimeInput {
+  sourceText: string;
+  destination: "webhook" | "team-channel" | "workspace-table" | "spreadsheet";
+  campaignId: string;
+  fromIso: string;
+  toIso: string;
+  optInRecorded: boolean;
+}
+
 export interface NotificationRuntimeInput {
   channel: "email" | "sms" | "whatsapp" | "push";
   recipient: string;
@@ -155,6 +165,7 @@ export interface ProviderRuntimeInput {
   eventImport?: EventImportRuntimeInput;
   contactImport?: ContactImportRuntimeInput;
   crm?: CrmRuntimeInput;
+  workflowIntegration?: WorkflowIntegrationRuntimeInput;
   notification?: NotificationRuntimeInput;
   payment?: PaymentRuntimeInput;
   observability?: ObservabilityRuntimeInput;
@@ -227,7 +238,14 @@ const providerScopes: Record<string, string[]> = {
   "zoho-crm-lifecycle": ["ZohoCRM.modules.contacts.READ", "ZohoCRM.modules.deals.READ"],
   "pipedrive-crm-lifecycle": ["persons:read", "deals:read"],
   "dynamics-crm-lifecycle": ["https://{DYNAMICS_RESOURCE_URL}/.default"],
-  "shopify-crm-lifecycle": ["read_customers", "read_orders"]
+  "shopify-crm-lifecycle": ["read_customers", "read_orders"],
+  "zapier-webhook-workflow": ["webhook:write"],
+  "make-webhook-workflow": ["webhook:write"],
+  "slack-workflow-notification": ["chat:write"],
+  "teams-workflow-notification": ["incoming-webhook"],
+  "notion-customer-database-sync": ["pages.write", "databases.read"],
+  "airtable-customer-base-sync": ["data.records:write"],
+  "google-sheets-lifecycle-sync": ["https://www.googleapis.com/auth/spreadsheets"]
 };
 
 export function buildProviderAdapterRuntime(
@@ -249,6 +267,9 @@ export function buildProviderAdapterRuntime(
   }
   if (adapter.capability === "crm-integration") {
     return buildCrmRuntime(adapterId, input.crm ?? defaultCrmInput, env, gates);
+  }
+  if (adapter.capability === "workflow-integration") {
+    return buildWorkflowIntegrationRuntime(adapterId, input.workflowIntegration ?? defaultWorkflowIntegrationInput, env, gates);
   }
   if (adapter.capability === "text-chat") {
     return buildTextChatRuntime(adapterId, input.textChat ?? defaultTextChatInput, env, gates);
@@ -514,6 +535,46 @@ export function buildCrmRuntime(
 
   return blockedOrRequest(adapter, readiness, () =>
     buildCrmRequest(adapter, { ...input, optInRecorded: Boolean(readinessGates.notificationOptInRecorded) })
+  );
+}
+
+export function buildWorkflowIntegrationRuntime(
+  adapterId: string,
+  input: WorkflowIntegrationRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "workflow-integration");
+
+  if (adapter.id === "local-workflow-payload-export") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, {
+      ...gates,
+      metadataOnly: true,
+      adminReviewedExport: true
+    });
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: buildLocalWorkflowPayload(input.sourceText || sampleWorkflowIntegrationText, input)
+    };
+  }
+
+  const sanitized = sanitizeText(input.sourceText);
+  const readinessGates = {
+    ...gates,
+    metadataOnly: true,
+    notificationOptInRecorded: input.optInRecorded || gates.notificationOptInRecorded,
+    rawContentStorageDisabled: true
+  };
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, readinessGates);
+
+  return blockedOrRequest(adapter, readiness, () =>
+    buildWorkflowIntegrationRequest(adapter, sanitized, {
+      ...input,
+      optInRecorded: Boolean(readinessGates.notificationOptInRecorded)
+    })
   );
 }
 
@@ -1381,6 +1442,189 @@ function buildCrmRequest(adapter: ProviderAdapter, input: CrmRuntimeInput): Runt
   );
 }
 
+function buildWorkflowIntegrationRequest(
+  adapter: ProviderAdapter,
+  sanitized: SanitizedText,
+  input: WorkflowIntegrationRuntimeInput
+): RuntimeRequestContract {
+  const scopes = providerScopes[adapter.id] ?? [];
+  const metadata = {
+    customcard_adapter: adapter.id,
+    campaign_id: normalizeReference(input.campaignId, "customcard-campaign"),
+    destination: input.destination,
+    from_iso: input.fromIso,
+    to_iso: input.toIso,
+    opt_in_recorded: input.optInRecorded,
+    suppression_checked: true,
+    redactions: sanitized.redactions,
+    raw_content_storage: "disabled",
+    live_workflow_send: "disabled"
+  };
+  const sourceSummary = summarizeWorkflowSource(sanitized.text);
+  const queuePayload = {
+    campaignId: metadata.campaign_id,
+    lifecycleWindow: { fromIso: input.fromIso, toIso: input.toIso },
+    summary: sourceSummary,
+    metadata
+  };
+
+  if (adapter.id === "zapier-webhook-workflow") {
+    return request(
+      adapter,
+      "POST",
+      "{ZAPIER_WEBHOOK_URL}",
+      ["ZAPIER_WEBHOOK_URL", "ZAPIER_SIGNING_SECRET"],
+      queuePayload,
+      scopes,
+      {
+        "x-customcard-signature": "HMAC-SHA256 {ZAPIER_SIGNING_SECRET}"
+      }
+    );
+  }
+
+  if (adapter.id === "make-webhook-workflow") {
+    return request(
+      adapter,
+      "POST",
+      "{MAKE_WEBHOOK_URL}",
+      ["MAKE_WEBHOOK_URL", "MAKE_SIGNING_SECRET"],
+      queuePayload,
+      scopes,
+      {
+        "x-customcard-signature": "HMAC-SHA256 {MAKE_SIGNING_SECRET}"
+      }
+    );
+  }
+
+  if (adapter.id === "slack-workflow-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://slack.com/api/chat.postMessage",
+      ["SLACK_BOT_TOKEN", "SLACK_SIGNING_SECRET", "SLACK_CHANNEL_ID"],
+      {
+        channel: "{SLACK_CHANNEL_ID}",
+        text: "CustomCard lifecycle campaign needs admin review.",
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*CustomCard lifecycle review*\\n${sourceSummary}`
+            }
+          }
+        ],
+        metadata
+      },
+      scopes,
+      {
+        authorization: "Bearer {SLACK_BOT_TOKEN}",
+        "x-slack-signature": "{SLACK_SIGNING_SECRET}"
+      }
+    );
+  }
+
+  if (adapter.id === "teams-workflow-notification") {
+    return request(
+      adapter,
+      "POST",
+      "{MICROSOFT_TEAMS_WEBHOOK_URL}",
+      ["MICROSOFT_TEAMS_WEBHOOK_URL", "MICROSOFT_TEAMS_TENANT_ID"],
+      {
+        type: "message",
+        attachments: [
+          {
+            contentType: "application/vnd.microsoft.card.adaptive",
+            content: {
+              type: "AdaptiveCard",
+              version: "1.5",
+              body: [
+                { type: "TextBlock", text: "CustomCard lifecycle review", weight: "Bolder" },
+                { type: "TextBlock", text: sourceSummary, wrap: true }
+              ],
+              metadata
+            }
+          }
+        ]
+      },
+      scopes,
+      {
+        "x-customcard-tenant": "{MICROSOFT_TEAMS_TENANT_ID}"
+      }
+    );
+  }
+
+  if (adapter.id === "notion-customer-database-sync") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.notion.com/v1/pages",
+      ["NOTION_API_KEY", "NOTION_CUSTOMER_DATABASE_ID"],
+      {
+        parent: { database_id: "{NOTION_CUSTOMER_DATABASE_ID}" },
+        properties: {
+          Campaign: { title: [{ text: { content: metadata.campaign_id } }] },
+          Status: { select: { name: "Needs review" } },
+          Window: { rich_text: [{ text: { content: `${input.fromIso} to ${input.toIso}` } }] }
+        },
+        children: [
+          {
+            object: "block",
+            type: "paragraph",
+            paragraph: { rich_text: [{ text: { content: sourceSummary } }] }
+          }
+        ],
+        metadata
+      },
+      scopes,
+      {
+        authorization: "Bearer {NOTION_API_KEY}",
+        "notion-version": "2022-06-28"
+      }
+    );
+  }
+
+  if (adapter.id === "airtable-customer-base-sync") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}",
+      ["AIRTABLE_API_KEY", "AIRTABLE_BASE_ID", "AIRTABLE_TABLE_ID"],
+      {
+        records: [
+          {
+            fields: {
+              Campaign: metadata.campaign_id,
+              Status: "Needs review",
+              WindowStart: input.fromIso,
+              WindowEnd: input.toIso,
+              Summary: sourceSummary
+            }
+          }
+        ],
+        typecast: false,
+        metadata
+      },
+      scopes
+    );
+  }
+
+  return request(
+    adapter,
+    "POST",
+    "https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_SPREADSHEET_ID}/values/CustomCardQueue!A:F:append?valueInputOption=USER_ENTERED",
+    ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_SHEETS_SPREADSHEET_ID"],
+    {
+      range: "CustomCardQueue!A:F",
+      majorDimension: "ROWS",
+      values: [[metadata.campaign_id, "Needs review", input.fromIso, input.toIso, sourceSummary, "live_send_disabled"]],
+      metadata
+    },
+    scopes,
+    { authorization: "Bearer {google-oauth-access-token}" }
+  );
+}
+
 function buildNotificationRequest(
   adapter: ProviderAdapter,
   input: NotificationRuntimeInput,
@@ -1912,6 +2156,7 @@ function missingSafetyReasons(adapter: ProviderAdapter, gates: ProviderGateState
     if (gate.includes("Opt-in only")) return ["Missing safety gate: notification opt-in"];
     if (gate.includes("Suppression list")) return ["Missing safety gate: suppression list check"];
     if (gate.includes("No sensitive card text in logs")) return ["Missing safety gate: notification content redaction"];
+    if (gate.includes("Admin reviewed export")) return ["Missing safety gate: admin reviewed export"];
     if (gate.includes("Payment sandbox")) return ["Missing safety gate: payment sandbox"];
     if (gate.includes("No card data storage") || gate.includes("No card data stored")) {
       return ["Missing safety gate: no card data storage"];
@@ -1953,6 +2198,8 @@ function safetyGateSatisfied(gate: string, gates: ProviderGateState): boolean {
   if (gate.includes("Opt-in only")) return Boolean(gates.notificationOptInRecorded);
   if (gate.includes("Suppression list")) return Boolean(gates.suppressionListChecked);
   if (gate.includes("No sensitive card text in logs")) return Boolean(gates.sensitiveContentExcluded);
+  if (gate.includes("Admin reviewed export")) return Boolean(gates.adminReviewedExport);
+  if (gate.includes("No external workflow send")) return true;
   if (gate.includes("Payment sandbox")) return Boolean(gates.paymentSandboxConfigured);
   if (gate.includes("No card data storage") || gate.includes("No card data stored")) {
     return Boolean(gates.noCardDataStorage);
@@ -2011,7 +2258,15 @@ function runtimeSupported(adapter: ProviderAdapter): boolean {
   if (adapter.capability === "notification") return true;
   if (adapter.capability === "payment") return true;
   if (adapter.capability === "observability") return true;
-  return ["event-import", "contact-import", "crm-integration", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
+  return [
+    "event-import",
+    "contact-import",
+    "crm-integration",
+    "workflow-integration",
+    "text-chat",
+    "image-generation",
+    "vendor-handoff"
+  ].includes(adapter.capability);
 }
 
 function dataClassificationsFor(adapter: ProviderAdapter): string[] {
@@ -2020,6 +2275,9 @@ function dataClassificationsFor(adapter: ProviderAdapter): string[] {
   if (adapter.capability === "contact-import") return ["contact-metadata", "address-book", "no-raw-notes", "no-photos"];
   if (adapter.capability === "crm-integration") {
     return ["crm-customer-metadata", "lifecycle-dates", "PII-redacted", "opt-in-required", "no-raw-notes"];
+  }
+  if (adapter.capability === "workflow-integration") {
+    return ["workflow-metadata", "lifecycle-campaign", "PII-redacted", "opt-in-required", "no-raw-notes"];
   }
   if (adapter.capability === "text-chat") return ["customer-message", "approved-memory-only", "PII-redacted"];
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
@@ -2144,6 +2402,33 @@ function parseCrmLifecycleImport(sourceText: string) {
   };
 }
 
+function buildLocalWorkflowPayload(sourceText: string, input: WorkflowIntegrationRuntimeInput) {
+  const parsed = parseCrmLifecycleImport(sourceText);
+  return {
+    exporter: "local-workflow-payload",
+    destination: input.destination,
+    campaignId: normalizeReference(input.campaignId, "customcard-campaign"),
+    lifecycleWindow: {
+      fromIso: input.fromIso,
+      toIso: input.toIso
+    },
+    customerCount: parsed.customerCount,
+    lifecycleTriggers: parsed.lifecycleTriggers,
+    optInRecorded: input.optInRecorded || parsed.optInSignals,
+    suppressionReviewRequired: true,
+    rawNotesStored: false,
+    metadataOnly: true,
+    liveWorkflowSend: false,
+    noNetwork: true
+  };
+}
+
+function summarizeWorkflowSource(sourceText: string): string {
+  const parsed = parseCrmLifecycleImport(sourceText);
+  const triggers = parsed.lifecycleTriggers.length > 0 ? parsed.lifecycleTriggers.join(", ") : "lifecycle review";
+  return `${parsed.customerCount} metadata rows queued for ${triggers}; raw customer fields withheld.`;
+}
+
 const sampleContactText = [
   "BEGIN:VCARD",
   "VERSION:3.0",
@@ -2157,6 +2442,11 @@ const sampleContactText = [
 const sampleCrmText = [
   "customer_id,email,first_name,last_name,birthday,last_purchase_date,warranty_end_date,marketing_opt_in",
   "cust_123,sara@example.com,Sara,Ahmed,1990-07-10,2025-06-03,2027-06-03,true"
+].join("\n");
+
+const sampleWorkflowIntegrationText = [
+  "campaign_id,customer_id,email,first_name,lifecycle_kind,lifecycle_date,marketing_opt_in",
+  "campaign_2026_06,cust_123,sara@example.com,Sara,purchase-anniversary,2026-06-03,true"
 ].join("\n");
 
 const defaultTextChatInput: TextChatRuntimeInput = {
@@ -2196,6 +2486,15 @@ const defaultCrmInput: CrmRuntimeInput = {
   fromIso: "2026-06-01T00:00:00.000Z",
   toIso: "2026-07-01T00:00:00.000Z",
   lifecycleKinds: ["birthday", "purchase-anniversary", "warranty-anniversary"],
+  optInRecorded: false
+};
+
+const defaultWorkflowIntegrationInput: WorkflowIntegrationRuntimeInput = {
+  sourceText: sampleWorkflowIntegrationText,
+  destination: "workspace-table",
+  campaignId: "campaign-2026-06",
+  fromIso: "2026-06-01T00:00:00.000Z",
+  toIso: "2026-07-01T00:00:00.000Z",
   optInRecorded: false
 };
 
