@@ -54,6 +54,10 @@ it after each meaningful implementation pass.
   `/api/import-preview`, and `/api/card-projects` mutation behavior, customer
   pricing preview, `X-Idempotency-Key` replay/conflict behavior, 404/405
   behavior, and the no-live-call/no-real-order posture.
+- `npm run api:doctor:postgres:live` covers route-scoped Postgres session
+  verification for all 6 repository-backed customer routes, admin readiness
+  authorization, wrong-role blocking, and the same idempotency/repository
+  mutation paths against an isolated real `pg` database.
 - Account-auth tests and `npm run account:doctor:live` cover hosted auth adapter
   requirements, durable account identity storage, no raw provider profiles,
   provider-subject uniqueness, hashed expiring recovery challenges, durable
@@ -110,8 +114,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 121 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 113 tests passed; V8 report measured
+- Vitest: 18 test files passed, 122 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 114 tests passed; V8 report measured
   90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -170,17 +174,17 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 
 Result: passed. Live Postgres integration doctor created an isolated temporary
 database, applied `infra/migrations/001_initial_schema.sql`, seeded customer and
-admin auth sessions, authorized the customer through the real `pg` runtime,
-blocked a wrong-role admin request, persisted an idempotent queue-backed
-render-packet mutation, persisted repository-backed import-preview,
-relationship-memory, and card-project mutations, persisted a repository-backed
-manual vendor handoff order/consent/event trail, persisted a repository-backed
-data-request privacy/consent trail, replayed the same idempotency key, rejected a
-changed-body conflict, and verified 6 idempotency records, 6 audit records, 2
-queued jobs, 1 provider connection, 1 imported event, 1 card opportunity, 1
-relationship memory, 1 card project, 1 render packet, 1 order, 1 order event, 2
-consent records, and 1 data request before dropping the
-temporary database.
+admin auth sessions, authorized all 6 repository-backed customer routes through
+the real `pg` runtime, authorized the admin readiness route, blocked a wrong-role
+admin request, persisted an idempotent queue-backed render-packet mutation,
+persisted repository-backed import-preview, relationship-memory, and
+card-project mutations, persisted a repository-backed manual vendor handoff
+order/consent/event trail, persisted a repository-backed data-request
+privacy/consent trail, replayed the same idempotency key, rejected a changed-body
+conflict, and verified 6 idempotency records, 6 audit records, 2 queued jobs, 1
+provider connection, 1 imported event, 1 card opportunity, 1 relationship memory,
+1 card project, 1 render packet, 1 order, 1 order event, 2 consent records, and
+1 data request before dropping the temporary database.
 
 ```text
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
@@ -294,9 +298,9 @@ documentation claims found during the audit were corrected.
   dispute, tax, settlement, or payment-webhook test is claimed.
 - Observability providers are contract-only; no live telemetry ingestion, alert,
   retention, dashboard, or incident-response drill is claimed.
-- No deployed production Postgres API integration or live hosted account-token
-  verification; local/CI isolated Postgres and account-auth storage/recovery
-  integration are covered by doctors.
+- No deployed production Postgres API integration or production hosted
+  account-token verification; local/CI isolated Postgres route-auth integration
+  and account-auth storage/recovery integration are covered by doctors.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

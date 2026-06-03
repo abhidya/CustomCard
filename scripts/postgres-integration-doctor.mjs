@@ -29,13 +29,26 @@ const routes = [
 
 const customerToken = "live-postgres-customer-session-token";
 const adminToken = "live-postgres-admin-session-token";
+const repositoryBackedCustomerRouteIds = [
+  "import-preview",
+  "relationship-memories",
+  "card-projects",
+  "render-packets",
+  "manual-vendor-handoff",
+  "data-requests"
+];
 const doctorDatabase = `customcard_doctor_${process.pid}_${Date.now()}`.replace(/[^a-zA-Z0-9_]/g, "_");
 const adminUrl = databaseUrl;
 const doctorUrl = buildDatabaseUrl(databaseUrl, doctorDatabase);
 const adminPool = new pg.Pool(poolConfig(adminUrl));
 const blockers = [];
 const checks = [];
+const customerAuthContexts = new Map();
+const verifiedCustomerRouteIds = new Set();
+const verifiedAdminRouteIds = new Set();
+let wrongRoleBlocked = false;
 let finalRuntime = { mode: "postgres", postgresConfigured: Boolean(databaseUrl) };
+let finalAuthVerification = buildAuthVerificationReport();
 let finalPersistence = {
   idempotencyRecords: 0,
   auditRecords: 0,
@@ -102,26 +115,38 @@ try {
       },
       routes
     });
-    let customerAuth;
 
-    await runCheck("authorizes real Postgres customer session", async () => {
-      const auth = await runtime.authorize(route("render-packets"), request({ token: customerToken }));
-      expect(auth.ok, "Customer session should authorize.");
-      expect(auth.userId === "user-demo", "Customer auth should return seeded user id.");
-      customerAuth = auth;
+    await runCheck("authorizes real Postgres customer sessions for every repository-backed route", async () => {
+      for (const routeId of repositoryBackedCustomerRouteIds) {
+        const auth = await runtime.authorize(route(routeId), request({ token: customerToken }));
+        expect(auth.ok, `Customer session should authorize ${routeId}.`);
+        expect(auth.userId === "user-demo", `Customer auth for ${routeId} should return seeded user id.`);
+        expect(auth.role === "customer", `Customer auth for ${routeId} should return customer role.`);
+        customerAuthContexts.set(routeId, auth);
+        verifiedCustomerRouteIds.add(routeId);
+      }
+    });
+
+    await runCheck("authorizes real Postgres admin session", async () => {
+      const auth = await runtime.authorize(route("admin-readiness"), request({ token: adminToken }));
+      expect(auth.ok, "Admin session should authorize admin readiness.");
+      expect(auth.userId === "admin-demo", "Admin auth should return seeded admin id.");
+      expect(auth.role === "admin", "Admin auth should return admin role.");
+      verifiedAdminRouteIds.add("admin-readiness");
     });
 
     await runCheck("blocks wrong-role real Postgres session", async () => {
       const auth = await runtime.authorize(route("admin-readiness"), request({ token: customerToken }));
       expect(!auth.ok, "Customer token must not authorize admin route.");
       expect(auth.statusCode === 403, "Wrong-role auth should return 403.");
+      wrongRoleBlocked = true;
     });
 
     await runCheck("persists real Postgres import preview repository mutation", async () => {
       const result = await runtime.persistMutation({
         route: route("import-preview"),
         request: request({ token: customerToken, idempotencyKey: "import-preview-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("import-preview"),
         bodyText: JSON.stringify({
           sourceKind: "manual-ics",
           connectionId: "connection-live-postgres",
@@ -155,7 +180,7 @@ try {
       const result = await runtime.persistMutation({
         route: route("relationship-memories"),
         request: request({ token: customerToken, idempotencyKey: "relationship-memories-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("relationship-memories"),
         bodyText: JSON.stringify({
           memoryId: "memory-live-postgres",
           recipientName: "Sara",
@@ -183,7 +208,7 @@ try {
       const result = await runtime.persistMutation({
         route: route("card-projects"),
         request: request({ token: customerToken, idempotencyKey: "card-projects-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("card-projects"),
         bodyText: JSON.stringify({
           projectId: "project-live-postgres",
           opportunityId: "opportunity-live-postgres",
@@ -214,7 +239,7 @@ try {
       const result = await runtime.persistMutation({
         route: route("render-packets"),
         request: request({ token: customerToken, idempotencyKey: "render-packets-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("render-packets"),
         bodyText: JSON.stringify(renderPacketBody),
         responsePayload: {
           service: "customcard-api",
@@ -235,7 +260,7 @@ try {
       const result = await runtime.persistMutation({
         route: route("manual-vendor-handoff"),
         request: request({ token: customerToken, idempotencyKey: "vendor-handoff-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("manual-vendor-handoff"),
         bodyText: JSON.stringify({
           projectId: "project-live-postgres",
           renderPacketId: "render-packet-live-postgres",
@@ -262,7 +287,7 @@ try {
       const result = await runtime.persistMutation({
         route: route("data-requests"),
         request: request({ token: customerToken, idempotencyKey: "data-requests-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("data-requests"),
         bodyText: JSON.stringify({
           requestId: "data-request-live-postgres",
           requestType: "delete",
@@ -289,7 +314,7 @@ try {
       const replay = await runtime.persistMutation({
         route: route("render-packets"),
         request: request({ token: customerToken, idempotencyKey: "render-packets-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("render-packets"),
         bodyText: JSON.stringify(renderPacketBody),
         responsePayload: { service: "customcard-api", status: "accepted-contract-only", route: "render-packets" }
       });
@@ -299,7 +324,7 @@ try {
       const conflict = await runtime.persistMutation({
         route: route("render-packets"),
         request: request({ token: customerToken, idempotencyKey: "render-packets-live-postgres-0001" }),
-        authContext: customerAuth,
+        authContext: authContextForRoute("render-packets"),
         bodyText: JSON.stringify({ projectId: "changed-live-postgres" }),
         responsePayload: { service: "customcard-api", status: "accepted-contract-only", route: "render-packets" }
       });
@@ -325,6 +350,7 @@ try {
     });
 
     finalRuntime = runtime.describe();
+    finalAuthVerification = buildAuthVerificationReport();
     finalPersistence = persistenceCounts;
   } finally {
     await doctorPool.end().catch(() => undefined);
@@ -409,6 +435,26 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function buildAuthVerificationReport() {
+  const customerRouteIds = [...verifiedCustomerRouteIds].sort();
+  const adminRouteIds = [...verifiedAdminRouteIds].sort();
+  return {
+    authSessionTable: true,
+    customerRepositoryRoutes: customerRouteIds.length,
+    expectedCustomerRepositoryRoutes: repositoryBackedCustomerRouteIds.length,
+    customerRepositoryRouteIds: customerRouteIds,
+    adminRoutes: adminRouteIds.length,
+    adminRouteIds,
+    wrongRoleBlocked
+  };
+}
+
+function authContextForRoute(routeId) {
+  const authContext = customerAuthContexts.get(routeId);
+  if (!authContext) throw new Error(`Missing authorized customer auth context for ${routeId}.`);
+  return authContext;
+}
+
 function printReport(status, runtime, persistence) {
   console.log(
     JSON.stringify(
@@ -420,6 +466,7 @@ function printReport(status, runtime, persistence) {
           migrationApplied: checks.some((check) => check.id === "applies initial migration to live Postgres" && check.passed)
         },
         runtime,
+        authVerification: finalAuthVerification,
         persistence,
         checks,
         blockers

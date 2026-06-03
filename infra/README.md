@@ -67,9 +67,10 @@ and queue-job inserts without external credentials.
 `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run
 api:doctor:postgres:live` creates an isolated temporary database on the configured
 Postgres server, applies the committed migration, seeds customer/admin sessions,
-exercises the real `pg` runtime for relationship-memory, render-packet,
-import-preview, card-project, manual handoff, and data-request persistence, and
-drops the temporary database before exiting.
+verifies all repository-backed customer routes plus admin readiness through the
+real `pg` runtime, exercises relationship-memory, render-packet, import-preview,
+card-project, manual handoff, and data-request persistence, and drops the
+temporary database before exiting.
 CI runs that live doctor against a Postgres service; deployed production account
 auth remains unclaimed.
 

@@ -293,10 +293,10 @@ Implemented checks:
   card-project, manual vendor handoff, and data-request mutation persistence,
   through an injected fake pool without requiring external database credentials.
 - `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
-  validates the same auth, idempotency, relationship-memory, render-packet,
-  import-preview, card-project, manual-handoff, data-request, audit, and queue
-  path against an isolated live Postgres database after applying the committed
-  migration.
+  validates route-scoped customer/admin auth, idempotency,
+  relationship-memory, render-packet, import-preview, card-project,
+  manual-handoff, data-request, audit, and queue paths against an isolated live
+  Postgres database after applying the committed migration.
 - `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` validates
   hosted account identity storage, hashed recovery challenges, durable sessions,
   uniqueness, and audit logging against an isolated live Postgres database.
@@ -338,9 +338,9 @@ Remaining high-risk work:
 - No live S3/MinIO cloud object-store integration; signed render-packet URL
   contracts, temporary filesystem write/read verification, and injected
   S3-compatible write/read contract verification are covered.
-- No deployed production Postgres API integration or hosted account-token
-  verification; isolated live Postgres migration/runtime integration and account
-  identity/recovery storage are covered by doctors.
+- No deployed production Postgres API integration or production hosted
+  account-token verification; isolated live Postgres route-auth/migration/runtime
+  integration and account identity/recovery storage are covered by doctors.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
 - Hosted GitHub Actions verification exists for main pushes, but there is still

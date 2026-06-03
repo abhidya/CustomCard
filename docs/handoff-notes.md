@@ -51,9 +51,9 @@ skeleton for the production path. It includes:
 - No live production user auth or delivered account recovery flow; durable
   account identity and hashed recovery challenge storage are covered by doctor.
 - No real email/calendar OAuth flow.
-- No deployed production Postgres API integration or hosted account-token
-  verification; fake-pool, isolated live Postgres, and account-auth doctors
-  cover the current API persistence boundary.
+- No deployed production Postgres API integration or production hosted
+  account-token verification outside the isolated live Postgres route-auth and
+  account-auth doctors.
 - No live AI text/image generation.
 - No live S3/MinIO cloud object-store integration for exported artifacts;
   signed URL contracts, schema gates, temporary filesystem write/read
@@ -100,7 +100,7 @@ CustomCard started from a last-minute physical wedding-card workflow and expande
 into a free local MVP plus a contract-first production skeleton for an event-aware
 card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, account
-identity/recovery storage, memory and Postgres auth/idempotency runtime behavior,
+identity/recovery storage, memory and route-scoped Postgres auth/idempotency runtime behavior,
 repository-backed relationship-memory, render-packet, import-preview,
 card-project, manual-vendor-handoff, and data-request mutation coverage, public
 printer pricing research, local SVG/PDF print package export, temporary
@@ -116,11 +116,12 @@ print certification, and security/legal review are complete.
 ## Next Build Slice
 
 The highest-leverage next slice is turning the repository-backed route contracts
-into hosted runtime verification and broader product repositories:
+into production-shaped HTTP/runtime verification and broader product repositories:
 
-- Hosted auth token verification for the repository-backed relationship-memory,
+- Postgres-mode API HTTP smoke for the repository-backed relationship-memory,
   render-packet, import-preview, card-project, manual-vendor-handoff, and
-  data-request routes.
+  data-request routes, building on the current route-scoped live Postgres auth
+  doctor.
 - Live S3/MinIO render-packet artifact writing using the signed handoff
   contract.
 - Live seed execution against a deployed reviewer database.

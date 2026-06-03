@@ -382,6 +382,22 @@ describe("production infrastructure contract", () => {
     });
   });
 
+  it("keeps the live Postgres integration doctor verifying route-scoped auth", () => {
+    const doctor = read("scripts/postgres-integration-doctor.mjs");
+
+    expect(doctor).toContain("repositoryBackedCustomerRouteIds");
+    expect(doctor).toContain("authorizes real Postgres customer sessions for every repository-backed route");
+    expect(doctor).toContain("authContextForRoute(\"import-preview\")");
+    expect(doctor).toContain("authContextForRoute(\"relationship-memories\")");
+    expect(doctor).toContain("authContextForRoute(\"card-projects\")");
+    expect(doctor).toContain("authContextForRoute(\"render-packets\")");
+    expect(doctor).toContain("authContextForRoute(\"manual-vendor-handoff\")");
+    expect(doctor).toContain("authContextForRoute(\"data-requests\")");
+    expect(doctor).toContain("authVerification");
+    expect(doctor).toContain("expectedCustomerRepositoryRoutes");
+    expect(doctor).toContain("wrongRoleBlocked");
+  });
+
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
     const mobilePackage = read("apps/mobile/package.json");
     const appConfig = read("apps/mobile/app.config.js");

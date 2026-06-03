@@ -80,7 +80,7 @@ environment configuration instead of static placeholders.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
-  isolated live Postgres auth/idempotency/audit/queue runtime checks,
+  isolated live Postgres route-scoped auth/idempotency/audit/queue runtime checks,
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, and data-request mutation coverage, admin
   demo reset, and no live external calls.
@@ -235,8 +235,8 @@ pushes to `main` and pull requests.
 The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
 retail-printer ordering, live telemetry ingestion/alerting, live S3/MinIO cloud
-object-store writes, deployed Postgres API integration, hosted account-token
-verification,
+object-store writes, deployed Postgres API integration, production hosted
+account-token verification outside the isolated live Postgres doctors,
 native mobile builds, deployment evidence, legal/security review, or physical
 print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system
