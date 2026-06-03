@@ -982,6 +982,7 @@ function HandoffView({
             <p>Local print shops still need a manual quote before upload.</p>
           )}
           <div className="pricingFreshnessGrid">
+            <Metric label="Prices" value={`${refreshReport.totalObservations}`} />
             <Metric label="Sources" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
             <Metric label="Max age" value={`${refreshReport.maxAgeDays} days`} />
             <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />

@@ -21,9 +21,10 @@ it after each meaningful implementation pass.
   placeholder-secret rejection, redacted chat/image/notification/payment/
   observability request contracts, metadata-only event/contact import contracts,
   free local fallbacks, and hard-blocked live vendor ordering.
-- Printer-pricing tests cover review-only public Walgreens/CVS/FedEx/Walmart/
-  Staples/Office Depot price observations, collection rules, 30-day freshness
-  blocking, minimum quantity math, source URLs, manual confirmation, and
+- Printer-pricing tests and `npm run printer:pricing:doctor` cover 12
+  review-only public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot price
+  observations, collection rules, 30-day freshness blocking, minimum quantity
+  math, source URLs, manual confirmation, customer/API exposure, CI wiring, and
   `liveQuote: false`.
 - Print-export tests cover local source SVG files, a combined 5x7 PDF proof,
   checksum manifest validation, preflight failure paths, and no-network/no-order
@@ -125,6 +126,7 @@ npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
 npm run provider:governance:doctor
+npm run printer:pricing:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -149,8 +151,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 19 test files passed, 132 tests passed.
-- Coverage: 17 core/API/persistence/infra/mobile test files passed, 124 tests passed; V8 report measured
+- Vitest: 19 test files passed, 133 tests passed.
+- Coverage: 17 core/API/persistence/infra/mobile test files passed, 125 tests passed; V8 report measured
   90.95% statements, 84.01% branches, 97.07% functions, and 95.04% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -196,6 +198,15 @@ Result: passed. The JSON report marked catalog, governance, tests, surfaces,
 CI, and safety lanes `ready`; it verified 87 adapters, 39 usage-based adapters,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
+
+```text
+npm run printer:pricing:doctor
+```
+
+Result: passed. The JSON report marked catalog, safety, collection, tests,
+surfaces, docs, and CI lanes `ready`; it verified 12 official-source printer
+price observations, 9 collection rules, manual confirmation on every
+observation, UI/API exposure, CI wiring, and no live quote or real-order claims.
 
 ```text
 npm run api:doctor

@@ -65,6 +65,9 @@ jobs:
       - name: Validate provider cost governance
         run: npm run provider:governance:doctor
 
+      - name: Validate printer pricing research
+        run: npm run printer:pricing:doctor
+
       - name: Validate API memory runtime
         run: npm run api:doctor:memory
 

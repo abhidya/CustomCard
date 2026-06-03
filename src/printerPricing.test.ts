@@ -15,7 +15,7 @@ const reviewedAt = new Date("2026-06-03T12:00:00.000Z");
 describe("printer pricing research", () => {
   it("keeps public printer pricing review-only and source-backed", () => {
     expect(validatePrinterPricingCatalog()).toEqual([]);
-    expect(printerPriceCatalog.length).toBeGreaterThanOrEqual(10);
+    expect(printerPriceCatalog.length).toBeGreaterThanOrEqual(12);
     expect(printerPriceCatalog.every((observation) => observation.liveQuote === false)).toBe(true);
     expect(printerPriceCatalog.every((observation) => observation.requiresManualConfirmation)).toBe(true);
     expect(printerPriceCatalog.every((observation) => observation.source.url.startsWith("https://"))).toBe(true);
@@ -26,16 +26,23 @@ describe("printer pricing research", () => {
 
   it("estimates subtotal using vendor minimum quantity rules", () => {
     const cvsDoubleSided = printerPriceCatalog.find((observation) => observation.id === "cvs-5x7-double-sided-cardstock");
+    const cvsPhotoCard = printerPriceCatalog.find((observation) => observation.id === "cvs-5x7-photo-card");
     const cvsPremium = printerPriceCatalog.find((observation) => observation.id === "cvs-5x7-premium-card");
     const walgreensSingle = printerPriceCatalog.find((observation) => observation.id === "walgreens-5x7-folded-card");
 
     expect(cvsDoubleSided).toBeDefined();
+    expect(cvsPhotoCard).toBeDefined();
     expect(cvsPremium).toBeDefined();
     expect(walgreensSingle).toBeDefined();
     expect(estimatePrinterSubtotal(cvsDoubleSided!, 1)).toMatchObject({
       pricedQuantity: 20,
       subtotalCents: 3980,
       subtotalLabel: "$39.80"
+    });
+    expect(estimatePrinterSubtotal(cvsPhotoCard!, 1)).toMatchObject({
+      pricedQuantity: 20,
+      subtotalCents: 2180,
+      subtotalLabel: "$21.80"
     });
     expect(estimatePrinterSubtotal(cvsPremium!, 1)).toMatchObject({
       pricedQuantity: 20,
@@ -81,6 +88,7 @@ describe("printer pricing research", () => {
   });
 
   it("keeps exact public package starts when vendors publish minimum bundles", () => {
+    const fedexQuickSingle = printerPriceCatalog.find((observation) => observation.id === "fedex-quick-5x7-single-sided-card");
     const fedexQuick = printerPriceCatalog.find((observation) => observation.id === "fedex-quick-5x7-double-sided-card");
     const fedexPremium = printerPriceCatalog.find((observation) => observation.id === "fedex-premium-5x7-folded-card");
     const staplesFolded = printerPriceCatalog.find((observation) => observation.id === "staples-5x7-folded-card-bundle");
@@ -89,11 +97,17 @@ describe("printer pricing research", () => {
       (observation) => observation.id === "office-depot-7x5-photo-holiday-card-bundle"
     );
 
+    expect(fedexQuickSingle).toBeDefined();
     expect(fedexQuick).toBeDefined();
     expect(fedexPremium).toBeDefined();
     expect(staplesFolded).toBeDefined();
     expect(staplesSameDay).toBeDefined();
     expect(officeDepotPhoto).toBeDefined();
+    expect(estimatePrinterSubtotal(fedexQuickSingle!, 1)).toMatchObject({
+      pricedQuantity: 10,
+      subtotalCents: 1399,
+      subtotalLabel: "$13.99"
+    });
     expect(estimatePrinterSubtotal(fedexQuick!, 1)).toMatchObject({
       pricedQuantity: 10,
       subtotalCents: 1799,
@@ -111,8 +125,8 @@ describe("printer pricing research", () => {
     });
     expect(estimatePrinterSubtotal(staplesSameDay!, 1)).toMatchObject({
       pricedQuantity: 25,
-      subtotalCents: 2999,
-      subtotalLabel: "$29.99"
+      subtotalCents: 4999,
+      subtotalLabel: "$49.99"
     });
     expect(estimatePrinterSubtotal(officeDepotPhoto!, 1)).toMatchObject({
       pricedQuantity: 25,
@@ -153,6 +167,7 @@ describe("printer pricing research", () => {
   it("filters pricing options by vendor", () => {
     expect(getPrinterPriceOptionsForVendor("cvs").map((observation) => observation.id)).toEqual([
       "cvs-5x7-double-sided-cardstock",
+      "cvs-5x7-photo-card",
       "cvs-5x7-premium-card",
       "cvs-5x7-folded-card"
     ]);

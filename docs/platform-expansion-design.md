@@ -165,7 +165,8 @@ The admin panel turns the adapter catalog into an operations surface:
 - Cloud runtime adapters.
 - Blocked live-order vendors.
 - Public printer pricing research for manual Walgreens/CVS/FedEx/Walmart/
-  Staples/Office Depot comparison, including source-count and freshness state.
+  Staples/Office Depot comparison, including 12 official-source observations,
+  source-count, and freshness state.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 
@@ -289,9 +290,10 @@ Implemented checks:
   notification/payment/observability providers, metadata-only import contracts,
   placeholder-secret rejection, free local fallbacks, and hard-blocked live
   vendor order adapters.
-- `src/printerPricing.test.ts` validates source-backed public price
-  observations, collection rules, freshness blocking, minimum-quantity totals,
-  manual-confirmation requirements, and the no-live-quote boundary.
+- `src/printerPricing.test.ts` and `npm run printer:pricing:doctor` validate
+  source-backed public price observations, collection rules, freshness blocking,
+  minimum-quantity totals, manual-confirmation requirements, UI/API exposure, CI
+  wiring, and the no-live-quote boundary.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.

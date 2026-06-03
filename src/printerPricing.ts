@@ -98,7 +98,7 @@ export const printerPricingSources = {
     label: "CVS Photo cards",
     url: "https://www.cvs.com/Photo/Cards",
     observedAtIso,
-    notes: "Official CVS cards page lists same-day 5x7 card starting prices and pickup availability counts."
+    notes: "Official CVS cards page lists same-day 5x7 photo, premium, folded, and double-sided card starting prices."
   },
   cvsDoubleSidedCards: {
     label: "CVS Photo double-sided cards",
@@ -116,7 +116,7 @@ export const printerPricingSources = {
     label: "FedEx Office greeting and holiday cards",
     url: "https://www.office.fedex.com/default/greeting-cards",
     observedAtIso,
-    notes: "Official FedEx Office page lists quick and premium 5x7 greeting card starting prices and production windows."
+    notes: "Official FedEx Office page lists quick single/double-sided and premium 5x7 greeting card starting prices and production windows."
   },
   walmartSameDayFolded: {
     label: "Walmart Photo same-day folded photo card",
@@ -134,7 +134,7 @@ export const printerPricingSources = {
     label: "Staples same-day cards",
     url: "https://www.staples.com/services/printing/cards-invitations-announcements/same-day-cards/",
     observedAtIso,
-    notes: "Official Staples same-day cards page lists a 5x7 25-card package; store pickup still requires checkout confirmation."
+    notes: "Official Staples same-day cards page lists a 5x7 25-card package; coupon prices are excluded until checkout confirmation."
   },
   officeDepotPhotoCards: {
     label: "Office Depot custom photo holiday cards",
@@ -161,7 +161,7 @@ export const printerPricingCollectionRules: PrinterPricingCollectionRule[] = [
     vendorIds: ["cvs"],
     mode: "official-public-page",
     maxAgeDays: 30,
-    extractHints: ["Same Day 5x7 Premium Cards", "5x7 Folded Cards", "starting price", "minimum quantity"],
+    extractHints: ["5x7 Photo Cards", "Same Day 5x7 Premium Cards", "5x7 Folded Cards", "starting price", "minimum quantity"],
     blockedFields: ["tax", "coupon", "store stock", "pickup window", "photo checkout availability"],
     noNetworkRuntime: true
   },
@@ -181,7 +181,7 @@ export const printerPricingCollectionRules: PrinterPricingCollectionRule[] = [
     vendorIds: ["fedex"],
     mode: "official-public-page",
     maxAgeDays: 30,
-    extractHints: ["Quick 5x7 double-sided greeting card", "Premium 5x7 folded greeting card", "package start"],
+    extractHints: ["Quick 5x7 single-sided greeting card", "Quick 5x7 double-sided greeting card", "Premium 5x7 folded greeting card", "package start"],
     blockedFields: ["tax", "coupon", "local pickup slot", "delivery date", "print QA result"],
     noNetworkRuntime: true
   },
@@ -261,6 +261,22 @@ export const printerPriceCatalog: PrinterPriceObservation[] = [
     source: printerPricingSources.cvsDoubleSidedCards
   },
   {
+    id: "cvs-5x7-photo-card",
+    vendorId: "cvs",
+    vendorName: "CVS Photo",
+    productName: "5x7 photo card",
+    productKind: "photo-card",
+    size: "5x7",
+    unitPriceCents: 109,
+    minimumQuantity: 20,
+    speed: "same-day",
+    pickupEligible: true,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-current",
+    source: printerPricingSources.cvsCards
+  },
+  {
     id: "cvs-5x7-premium-card",
     vendorId: "cvs",
     vendorName: "CVS Photo",
@@ -291,6 +307,23 @@ export const printerPriceCatalog: PrinterPriceObservation[] = [
     requiresManualConfirmation: true,
     confidence: "public-current",
     source: printerPricingSources.cvsCards
+  },
+  {
+    id: "fedex-quick-5x7-single-sided-card",
+    vendorId: "fedex",
+    vendorName: "FedEx Office",
+    productName: "Quick 5x7 single-sided greeting card",
+    productKind: "flat-card",
+    size: "5x7",
+    unitPriceCents: 140,
+    startingPackagePriceCents: 1399,
+    minimumQuantity: 10,
+    speed: "24-hour",
+    pickupEligible: true,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-current",
+    source: printerPricingSources.fedexGreetingCards
   },
   {
     id: "fedex-quick-5x7-double-sided-card",
@@ -366,8 +399,8 @@ export const printerPriceCatalog: PrinterPriceObservation[] = [
     productName: "5x7 same-day card bundle",
     productKind: "flat-card",
     size: "5x7",
-    unitPriceCents: 120,
-    startingPackagePriceCents: 2999,
+    unitPriceCents: 200,
+    startingPackagePriceCents: 4999,
     minimumQuantity: 25,
     speed: "same-day",
     pickupEligible: true,

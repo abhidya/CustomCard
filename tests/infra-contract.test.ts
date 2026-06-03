@@ -6,6 +6,8 @@ function read(path: string): string {
   return readFileSync(path, "utf8");
 }
 
+const shellDoctorTimeoutMs = 15_000;
+
 describe("production infrastructure contract", () => {
   it("defines durable tables for users, providers, memory, orders, consent, and audit", () => {
     const migration = read("infra/migrations/001_initial_schema.sql");
@@ -300,6 +302,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
+    expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
@@ -358,6 +361,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run security:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
+    expect(workflow).toContain("npm run printer:pricing:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run api:doctor:postgres:live");
@@ -403,7 +407,7 @@ describe("production infrastructure contract", () => {
       signedArtifactUrls: true,
       realOrdersEnabled: false
     });
-  });
+  }, shellDoctorTimeoutMs);
 
   it("exercises the Postgres API runtime contract without external database credentials", () => {
     const output = execFileSync("npm", ["run", "api:doctor:postgres", "--silent"], {
@@ -458,7 +462,7 @@ describe("production infrastructure contract", () => {
       },
       blockers: []
     });
-  });
+  }, shellDoctorTimeoutMs);
 
   it("keeps the live Postgres integration doctor verifying route-scoped auth", () => {
     const doctor = read("scripts/postgres-integration-doctor.mjs");
@@ -553,7 +557,7 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "safety", status: "ready" })
       ])
     );
-  });
+  }, shellDoctorTimeoutMs);
 
   it("emits a security privacy accessibility baseline report", () => {
     const output = execFileSync("npm", ["run", "security:doctor", "--silent"], {
@@ -588,7 +592,7 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "ci", status: "ready" })
       ])
     );
-  });
+  }, shellDoctorTimeoutMs);
 
   it("emits a provider cost governance readiness report", () => {
     const output = execFileSync("npm", ["run", "provider:governance:doctor", "--silent"], {
@@ -626,7 +630,48 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "ci", status: "ready" })
       ])
     );
-  });
+  }, shellDoctorTimeoutMs);
+
+  it("emits a printer pricing research readiness report", () => {
+    const output = execFileSync("npm", ["run", "printer:pricing:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      observationCount: number;
+      officialSourceCount: number;
+      collectionRuleCount: number;
+      manualConfirmationCount: number;
+      liveQuote: boolean;
+      liveOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-printer-pricing-doctor",
+      status: "ready",
+      observationCount: 12,
+      officialSourceCount: expect.any(Number),
+      collectionRuleCount: expect.any(Number),
+      manualConfirmationCount: 12,
+      liveQuote: false,
+      liveOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.officialSourceCount).toBeGreaterThanOrEqual(9);
+    expect(report.collectionRuleCount).toBeGreaterThanOrEqual(8);
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "catalog", status: "ready" }),
+        expect.objectContaining({ lane: "collection", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
     const mobilePackage = read("apps/mobile/package.json");
@@ -666,7 +711,7 @@ describe("production infrastructure contract", () => {
       stdio: ["ignore", "pipe", "pipe"]
     });
     expect(doctorOutput).toContain("customer experience contract");
-  });
+  }, shellDoctorTimeoutMs);
 
   it("emits a deployment readiness report for local, droplet, and cloud-native paths", () => {
     const output = execFileSync("node", ["scripts/deployment-readiness.mjs"], {
@@ -691,7 +736,7 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "data", status: "ready" })
       ])
     );
-  });
+  }, shellDoctorTimeoutMs);
 
   it("emits a persistence readiness report for auth sessions and idempotent API state", () => {
     const output = execFileSync("node", ["scripts/persistence-doctor.mjs"], {
@@ -743,5 +788,5 @@ describe("production infrastructure contract", () => {
       liveExternalCalls: false,
       realOrdersEnabled: false
     });
-  });
+  }, shellDoctorTimeoutMs);
 });

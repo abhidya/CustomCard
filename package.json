@@ -24,6 +24,7 @@
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "demo:doctor": "node scripts/demo-reset.mjs",
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
+    "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",

@@ -120,7 +120,7 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 19 test files, 132 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 19 test files, 133 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.95% statements, 84.01% branches, 97.07% functions, 95.04% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
@@ -128,6 +128,7 @@
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
 | Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 87 adapters, 39 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
+| Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
 | API readiness | `npm run api:doctor` | Passed; 15 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, provider governance, 13 schema-backed routes, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
@@ -175,19 +176,20 @@
 6. Run `npm run cloud:doctor`.
 7. Run `npm run api:doctor`.
 8. Run `npm run provider:governance:doctor`.
-9. Run `npm run api:doctor:memory`.
-10. Run `npm run api:doctor:postgres`.
-11. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-12. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-13. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-14. Run `npm run artifact:doctor`.
-15. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
-16. Run `npm run persistence:doctor`.
-17. Run `npm run demo:doctor`.
-18. Run the worker and mobile doctor commands in `docs/verification.md`.
-19. Run `npm run mobile:release:doctor`.
-20. Inspect `.github/workflows/verify.yml`.
-21. Inspect screenshots in `docs/evidence/` and known gaps in
+9. Run `npm run printer:pricing:doctor`.
+10. Run `npm run api:doctor:memory`.
+11. Run `npm run api:doctor:postgres`.
+12. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+13. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+14. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+15. Run `npm run artifact:doctor`.
+16. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+17. Run `npm run persistence:doctor`.
+18. Run `npm run demo:doctor`.
+19. Run the worker and mobile doctor commands in `docs/verification.md`.
+20. Run `npm run mobile:release:doctor`.
+21. Inspect `.github/workflows/verify.yml`.
+22. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -211,7 +213,8 @@
   incident-response drill; observability provider coverage is contract-only.
 - Public printer pricing is observed research only; checkout confirmation,
   taxes, coupons, stock, pickup windows, and checkout availability are not
-  live-verified.
+  live-verified. The current catalog has 12 official-source observations behind
+  a no-network pricing doctor.
 - No real droplet or Kubernetes deployment execution evidence.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment execution evidence is claimed.

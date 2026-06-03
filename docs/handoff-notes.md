@@ -14,8 +14,8 @@ skeleton for the production path. It includes:
   OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability, Replicate,
   notification, vendor, and cloud-runtime adapters.
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
-  Walmart, Staples, and Office Depot, with official-source freshness reporting
-  kept separate from live quote/order claims.
+  Walmart, Staples, and Office Depot, with 12 official-source observations,
+  freshness reporting, and live quote/order claims kept separate.
 - Local print package export with four SVG upload artifacts, a combined 5x7 PDF
   proof, and a checksum manifest for manual printer handoff.
 - Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
@@ -86,40 +86,37 @@ skeleton for the production path. It includes:
 4. Run `npm run check`.
 5. Run `npm run api:doctor`.
 6. Run `npm run provider:governance:doctor`.
-7. Run `npm run api:doctor:memory`.
-8. Run `npm run api:doctor:postgres`.
-9. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-10. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-11. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-12. Run `npm run cloud:doctor`.
-13. Run `npm run artifact:doctor`.
-14. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-15. Run `npm run persistence:doctor`.
-16. Run `npm run demo:doctor`.
-17. Run the worker and mobile doctor commands in `docs/verification.md`.
-18. Run `npm run mobile:release:doctor`.
-19. Inspect the app with `npm run dev`.
-19. In the app, start a local workspace, scan the sample invite, generate a card,
+7. Run `npm run printer:pricing:doctor`.
+8. Run `npm run api:doctor:memory`.
+9. Run `npm run api:doctor:postgres`.
+10. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+11. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+12. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+13. Run `npm run cloud:doctor`.
+14. Run `npm run artifact:doctor`.
+15. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+16. Run `npm run persistence:doctor`.
+17. Run `npm run demo:doctor`.
+18. Run the worker and mobile doctor commands in `docs/verification.md`.
+19. Run `npm run mobile:release:doctor`.
+20. Inspect the app with `npm run dev`.
+21. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
 ## Suggested Submission Note
 
-CustomCard started from a last-minute physical wedding-card workflow and expanded
-into a free local MVP plus a contract-first production skeleton for an event-aware
-card concierge. The current repo does not claim live production fulfillment. It
-proves the product workflow, customer/admin/API/persistence surfaces, account
-identity/recovery storage, memory and route-scoped Postgres auth/idempotency runtime behavior,
-process-level Postgres HTTP auth/idempotency/repository behavior,
-repository-backed relationship-memory, render-packet, import-preview,
-card-project, manual-vendor-handoff, and data-request mutation coverage, public
-printer pricing research, local SVG/PDF print package export, temporary
-filesystem artifact-store write/read verification, injected S3-compatible
-artifact-store contract verification, live MinIO/S3-compatible artifact-store
-doctor coverage, provider-adapter readiness, domain boundaries, signed artifact
-handoff contracts, print contracts, order lifecycle,
-deployment shape, and safety gates with executable TypeScript, browser smoke
-tests, visual evidence, and infrastructure tests.
+CustomCard started from a last-minute physical wedding-card workflow and
+expanded into a free local MVP plus a contract-first production skeleton for an
+event-aware card concierge. The current repo does not claim live production
+fulfillment. It proves the product workflow, customer/admin/API/persistence
+surfaces, account identity/recovery storage, route-scoped Postgres
+auth/idempotency behavior, repository-backed customer mutations, source-backed
+printer pricing research, local SVG/PDF print package export, filesystem and
+S3-compatible artifact-store contracts, live MinIO doctor coverage,
+provider-adapter readiness, signed artifact handoff contracts, print contracts,
+order lifecycle, deployment shape, and safety gates with executable TypeScript,
+browser smoke tests, and infrastructure tests.
 Real external AI, OAuth, and ordering remain disabled until production
 credentials, consent flows, vendor terms, sandbox/live quote behavior, physical
 print certification, and external security/legal review are complete.
