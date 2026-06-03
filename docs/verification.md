@@ -12,7 +12,11 @@ it after each meaningful implementation pass.
   creation, print validation, order lifecycle transitions, regional policy, and
   runtime config.
 - UI smoke tests exercise mobile horizontal overflow, the local auth -> import ->
-  studio -> handoff workflow, and adapter readiness when Chrome is available.
+  studio -> handoff workflow, customer/admin panels, and adapter readiness when
+  Chrome is available.
+- Provider-catalog tests cover adapter capability breadth, free local fallbacks,
+  external provider docs/env gates, admin/customer panel models, deterministic
+  local chat, and blocked live-vendor status.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
@@ -21,6 +25,8 @@ it after each meaningful implementation pass.
   variables.
 - Real ordering remains disabled.
 - Free local MVP workflow renders in desktop and mobile visual checks.
+- Customer/admin panels render without horizontal overflow in desktop and mobile
+  visual checks.
 
 ## Fresh Commands To Run
 
@@ -40,7 +46,7 @@ npm run check
 
 Result: passed.
 
-- Vitest: 5 test files passed, 40 tests passed.
+- Vitest: 6 test files passed, 46 tests passed.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -67,9 +73,19 @@ Result: passed with local rendered screenshots.
 - Mobile opportunity screen after responsive fix: `docs/evidence/customcard-mobile.png`.
 - Desktop card studio screen: `docs/evidence/customcard-studio.png`.
 - Desktop manual handoff screen: `docs/evidence/customcard-handoff.png`.
+- Desktop customer panel: `docs/evidence/customcard-customer-panel.png`.
+- Desktop admin panel: `docs/evidence/customcard-admin-panel.png`.
+- Mobile customer panel: `docs/evidence/customcard-customer-mobile-panel.png`.
 
 The visual pass caught and fixed two layout issues: mobile status-chip clipping
 and cramped four-across panel previews.
+
+The latest visual pass additionally verified the customer panel appears before
+workspace setup, the admin meters have accessible labels, the adapter matrix
+separates 10 ready-local, 13 credential-gated, 8 contract-only, and 3
+live-blocked rows, and the web mobile customer panel appears before the
+navigation rail with zero horizontal overflow at 1440px desktop and 390px mobile
+widths.
 
 ```text
 Final package audit
@@ -84,7 +100,10 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
 - No live object store, queue, or vendor sandbox test.
+- No live AI text-chat or image-generation provider test.
 - No physical print certification.
-- No mobile native build or signed iOS/Android artifact.
-- No current market or vendor API research verification.
+- No React Native render test, mobile native build, or signed iOS/Android
+  artifact.
+- Provider docs were checked at the contract/link level only; no vendor sandbox
+  credentials or market/commercial terms were verified.
 - No coverage threshold or coverage report.

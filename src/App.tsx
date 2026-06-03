@@ -3,11 +3,14 @@ import {
   Check,
   CircleCheck,
   ClipboardCheck,
+  Cloud,
   Download,
   FileDown,
   Heart,
+  Image,
   KeyRound,
   Lock,
+  MessageCircle,
   PackageCheck,
   PanelTop,
   Plus,
@@ -51,8 +54,20 @@ import {
   type VendorId,
   type VisualStyle
 } from "./freeMvp";
+import {
+  buildAdminPanelModel,
+  buildCustomerChatTranscript,
+  buildCustomerPanelModel,
+  capabilityLabels,
+  providerCatalog,
+  providerStatusLabel,
+  type AdminPanelModel,
+  type CustomerPanelModel,
+  type ProviderAdapter,
+  type ProviderCapability
+} from "./providerCatalog";
 
-type ViewId = "opportunities" | "studio" | "memory" | "handoff" | "adapters";
+type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
 
 interface NavItem {
@@ -65,10 +80,12 @@ const workspaceKey = "customcard-free-workspace-v1";
 const fixedReviewDate = new Date("2026-06-03T12:00:00.000Z");
 
 const navItems: NavItem[] = [
+  { id: "customer", label: "Customer panel", icon: UserRound },
   { id: "opportunities", label: "Opportunities", icon: Calendar },
   { id: "studio", label: "Card studio", icon: WandSparkles },
   { id: "memory", label: "Memory", icon: Heart },
   { id: "handoff", label: "Handoff", icon: Printer },
+  { id: "admin", label: "Admin panel", icon: ShieldCheck },
   { id: "adapters", label: "Adapters", icon: Settings }
 ];
 
@@ -77,20 +94,8 @@ const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"
 const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
 const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "local-print-shop"];
 
-const adapterRows = [
-  { label: "Local demo auth", status: "Ready", detail: "Browser workspace with localStorage only." },
-  { label: "ICS / invite paste", status: "Ready", detail: "Manual import path; no mailbox credentials." },
-  { label: "Relationship memory", status: "Ready", detail: "User-approved local memories with delete controls." },
-  { label: "Card generation", status: "Ready", detail: "Deterministic templates; no paid model call." },
-  { label: "SVG export", status: "Ready", detail: "Browser-generated 1500 x 2100 panel files." },
-  { label: "Manual vendor handoff", status: "Ready", detail: "Walgreens, CVS, FedEx, or local print shop checklist." },
-  { label: "Gmail / Google Calendar OAuth", status: "Blocked", detail: "Production OAuth is not implemented." },
-  { label: "Outlook / iCloud OAuth", status: "Blocked", detail: "Provider adapters remain contract-only." },
-  { label: "Live quote / payment / order APIs", status: "Blocked", detail: "Real orders stay disabled until certification." }
-];
-
 function App() {
-  const [activeView, setActiveView] = useState<ViewId>("opportunities");
+  const [activeView, setActiveView] = useState<ViewId>("customer");
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
   const [authForm, setAuthForm] = useState({ name: "Abdul Demo", email: "demo@customcard.local" });
   const [inviteText, setInviteText] = useState(sampleInviteText);
@@ -119,6 +124,12 @@ function App() {
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
   const validation = useMemo(() => validateCardDraft(draft), [draft]);
   const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
+  const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
+  const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
+  const customerTranscript = useMemo(
+    () => buildCustomerChatTranscript(opportunity.recipient),
+    [opportunity.recipient]
+  );
 
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
@@ -242,6 +253,18 @@ function App() {
           </div>
         </header>
 
+        {activeView === "customer" && (
+          <CustomerPanelView
+            chatTranscript={customerTranscript}
+            customerModel={customerPanelModel}
+            handoff={handoff}
+            onNavigate={setActiveView}
+            opportunity={opportunity}
+            panelCount={draft.panels.length}
+            workspace={workspace}
+          />
+        )}
+
         <section className="workspaceBand" aria-label="Workspace">
           <div className="workspaceIdentity">
             <div className="iconBadge">
@@ -352,9 +375,126 @@ function App() {
           />
         )}
 
+        {activeView === "admin" && <AdminPanelView model={adminPanelModel} />}
+
         {activeView === "adapters" && <AdaptersView />}
       </main>
     </div>
+  );
+}
+
+function CustomerPanelView({
+  chatTranscript,
+  customerModel,
+  handoff,
+  onNavigate,
+  opportunity,
+  panelCount,
+  workspace
+}: {
+  chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
+  customerModel: CustomerPanelModel;
+  handoff: VendorHandoff;
+  onNavigate: (view: ViewId) => void;
+  opportunity: CardOpportunity;
+  panelCount: number;
+  workspace: LocalWorkspace | undefined;
+}) {
+  const targetByCapability: Partial<Record<ProviderCapability, ViewId>> = {
+    "event-import": "opportunities",
+    "text-chat": "customer",
+    "image-generation": "studio",
+    "render-export": "handoff",
+    "vendor-handoff": "handoff",
+    memory: "memory"
+  };
+
+  return (
+    <section className="customerPanel">
+      <div className="sectionHeader">
+        <div>
+          <p className="eyebrow">Customer workspace</p>
+          <h2>Customer panel</h2>
+        </div>
+        <StatusChip icon={MessageCircle} label="Local assistant ready" tone="green" />
+      </div>
+
+      <div className="customerGrid">
+        <article className="surfaceCard wide">
+          <div className="sectionHeader">
+            <div>
+              <p className="eyebrow">Next card</p>
+              <h3>{opportunity.title}</h3>
+            </div>
+            <span className={opportunity.status === "ready" ? "statePill ready" : "statePill hold"}>
+              {opportunity.status === "ready" ? "Ready" : "Needs detail"}
+            </span>
+          </div>
+
+          <div className="metricStrip">
+            <Metric label="Workspace" value={workspace?.name ?? "Demo customer"} />
+            <Metric label="Date" value={opportunity.dateLabel} />
+            <Metric label="Panels" value={`${panelCount} SVG`} />
+            <Metric label="Handoff" value={handoff.vendorName} />
+          </div>
+
+          <div className="quickActionGrid">
+            {customerModel.primaryActions.map((action) => (
+              <button
+                className="quickAction"
+                key={action.adapterId}
+                onClick={() => onNavigate(targetByCapability[action.capability] ?? "customer")}
+                type="button"
+              >
+                {iconForCapability(action.capability)}
+                <span>{action.label}</span>
+                <small>{providerStatusLabel(action.status)}</small>
+              </button>
+            ))}
+          </div>
+        </article>
+
+        <article className="chatConsole">
+          <div className="sectionHeader">
+            <div>
+              <p className="eyebrow">Customer chat</p>
+              <h3>Text interface</h3>
+            </div>
+            <StatusChip icon={Lock} label="No live model call" tone="blue" />
+          </div>
+          <div className="chatLog">
+            {chatTranscript.map((message) => (
+              <div className={`chatBubble ${message.role}`} key={`${message.role}-${message.text}`}>
+                <strong>{message.role === "customer" ? "Customer" : "Assistant"}</strong>
+                <span>{message.text}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="surfaceCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Image path</p>
+              <h3>Render choices</h3>
+            </div>
+            <Image size={18} />
+          </div>
+          <AdapterMiniList adapters={customerModel.imageProviders.slice(0, 5)} />
+        </article>
+
+        <article className="surfaceCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Ready paths</p>
+              <h3>Free fallbacks</h3>
+            </div>
+            <Check size={18} />
+          </div>
+          <AdapterMiniList adapters={customerModel.readyFallbacks.slice(0, 6)} />
+        </article>
+      </div>
+    </section>
   );
 }
 
@@ -762,7 +902,113 @@ function HandoffView({
   );
 }
 
+function AdminPanelView({ model }: { model: AdminPanelModel }) {
+  return (
+    <section className="adminPanel">
+      <div className="sectionHeader">
+        <div>
+          <p className="eyebrow">Operations</p>
+          <h2>Admin panel</h2>
+        </div>
+        <StatusChip icon={ShieldCheck} label="Credential gates visible" tone="blue" />
+      </div>
+
+      <div className="adminSummaryGrid">
+        <Metric label="Adapters" value={`${model.coverage.total}`} />
+        <Metric label="Capabilities" value={`${model.coverage.capabilityCount}`} />
+        <Metric label="Ready local" value={`${model.coverage.readyLocal}`} />
+        <Metric label="Credential gated" value={`${model.coverage.credentialGated}`} />
+        <Metric label="Contract only" value={`${model.coverage.contractOnly}`} />
+        <Metric label="Blocked live" value={`${model.coverage.blocked}`} />
+      </div>
+
+      <div className="adminGrid">
+        <article className="toolPanel">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Coverage</p>
+              <h3>Capability matrix</h3>
+            </div>
+            <Cloud size={18} />
+          </div>
+          <div className="coverageList">
+            {model.coverage.capabilities.map((capability) => (
+              <div className="coverageLine" key={capability.capability}>
+                <div>
+                  <strong>{capability.label}</strong>
+                  <span>
+                    {capability.readyLocal} ready / {capability.total} total
+                  </span>
+                </div>
+                <meter
+                  aria-label={`${capability.label} ready-local adapter coverage`}
+                  max={Math.max(capability.total, 1)}
+                  min={0}
+                  title={`${capability.readyLocal} of ${capability.total} adapters ready locally`}
+                  value={capability.readyLocal}
+                />
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="toolPanel">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Secrets</p>
+              <h3>Required env</h3>
+            </div>
+            <KeyRound size={18} />
+          </div>
+          <div className="envChipGrid">
+            {model.coverage.requiredEnv.slice(0, 18).map((envVar) => (
+              <span key={envVar}>{envVar}</span>
+            ))}
+          </div>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Provider queue</p>
+              <h3>Gated adapters</h3>
+            </div>
+            <StatusChip icon={Lock} label={`${model.gatedProviders.length} gated`} tone="red" />
+          </div>
+          <AdapterMiniList adapters={model.gatedProviders.slice(0, 12)} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Deployment</p>
+              <h3>Cloud readiness</h3>
+            </div>
+            <StatusChip icon={Cloud} label="IaC present" tone="green" />
+          </div>
+          <AdapterMiniList adapters={model.deploymentAdapters} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Order safety</p>
+              <h3>Blocked live vendors</h3>
+            </div>
+            <StatusChip icon={XCircle} label="Real orders off" tone="red" />
+          </div>
+          <AdapterMiniList adapters={model.blockedProviders} />
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function AdaptersView() {
+  const sortedAdapters = providerCatalog
+    .slice()
+    .sort((first, second) => first.priority - second.priority || first.label.localeCompare(second.label));
+
   return (
     <section className="adaptersView">
       <div className="sectionHeader">
@@ -770,23 +1016,49 @@ function AdaptersView() {
           <p className="eyebrow">Coverage</p>
           <h2>Adapter readiness</h2>
         </div>
-        <StatusChip icon={ShieldCheck} label="Free-only boundary" tone="green" />
+        <StatusChip icon={ShieldCheck} label={`${sortedAdapters.length} adapters`} tone="green" />
       </div>
 
       <div className="adapterMatrix">
-        {adapterRows.map((row) => (
-          <article className={row.status === "Ready" ? "adapterRow ready" : "adapterRow blocked"} key={row.label}>
-            {row.status === "Ready" ? <CircleCheck size={19} /> : <XCircle size={19} />}
+        {sortedAdapters.map((adapter) => (
+          <article
+            className={`adapterRow ${adapter.status}`}
+            key={adapter.id}
+          >
+            {adapterIcon(adapter)}
             <div>
-              <strong>{row.label}</strong>
-              <span>{row.detail}</span>
+              <strong>{adapter.label}</strong>
+              <span>
+                {capabilityLabels[adapter.capability]} - {adapter.detail}
+              </span>
+              <small>{adapter.provider}</small>
             </div>
-            <em>{row.status}</em>
+            <em>{providerStatusLabel(adapter.status)}</em>
           </article>
         ))}
       </div>
     </section>
   );
+}
+
+function AdapterMiniList({ adapters }: { adapters: ProviderAdapter[] }) {
+  return (
+    <div className="adapterMiniList">
+      {adapters.map((adapter) => (
+        <div className={`adapterMini ${adapter.status}`} key={adapter.id}>
+          <span>{capabilityLabels[adapter.capability]}</span>
+          <strong>{adapter.label}</strong>
+          <small>{providerStatusLabel(adapter.status)}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function adapterIcon(adapter: ProviderAdapter) {
+  if (adapter.status === "ready-local") return <CircleCheck size={19} />;
+  if (adapter.status === "blocked") return <XCircle size={19} />;
+  return <Lock size={19} />;
 }
 
 function PanelPreview({ panel }: { panel: CardPanel }) {
@@ -851,6 +1123,18 @@ function Metric({ label, value }: { label: string; value: string }) {
       <strong>{value}</strong>
     </div>
   );
+}
+
+function iconForCapability(capability: ProviderCapability) {
+  const props = { size: 18 };
+  if (capability === "event-import") return <Calendar {...props} />;
+  if (capability === "text-chat") return <MessageCircle {...props} />;
+  if (capability === "image-generation") return <Image {...props} />;
+  if (capability === "render-export") return <FileDown {...props} />;
+  if (capability === "vendor-handoff") return <Printer {...props} />;
+  if (capability === "cloud-runtime") return <Cloud {...props} />;
+  if (capability === "memory") return <Heart {...props} />;
+  return <Settings {...props} />;
 }
 
 function decisionLabel(decision: OpportunityDecision): string {

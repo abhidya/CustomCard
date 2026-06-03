@@ -113,6 +113,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         };
 
         await clickByText("Start local workspace");
+        await clickByText("Opportunities");
         await clickByText("Scan free import");
         const opportunityText = document.body.textContent;
         await clickByText("Generate card");
@@ -162,11 +163,58 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(layout.h1).toBe("CustomCard");
+    expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
     expect(layout.scrollWidth).toBe(layout.clientWidth);
     expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
   }, 30000);
 
-  it("exposes ready free adapters and blocked production integrations", async () => {
+  it("exposes customer and admin panels without overflow", async () => {
+    const sessionId = await createPage(1280, 900);
+    const result = await evaluate(
+      sessionId,
+      `(async () => {
+        const clickByText = async (label) => {
+          const button = [...document.querySelectorAll("button")].find((node) =>
+            node.textContent.includes(label)
+          );
+          if (!button) throw new Error("Missing button: " + label);
+          button.click();
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        };
+
+        const customerText = document.body.textContent;
+        const quickActions = document.querySelectorAll(".quickAction").length;
+        const chatBubbles = document.querySelectorAll(".chatBubble").length;
+        await clickByText("Admin panel");
+        return {
+          customerText,
+          quickActions,
+          chatBubbles,
+          adminText: document.body.textContent,
+          metricCount: document.querySelectorAll(".adminSummaryGrid .metric").length,
+          gatedRows: document.querySelectorAll(".adapterMini.credential-gated").length,
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth
+        };
+      })()`
+    );
+
+    expect(result.customerText).toContain("Customer panel");
+    expect(result.customerText).toContain("Text interface");
+    expect(result.customerText).toContain("Render choices");
+    expect(result.customerText).toContain("Manual vendor handoff");
+    expect(result.quickActions).toBeGreaterThanOrEqual(5);
+    expect(result.chatBubbles).toBeGreaterThanOrEqual(4);
+    expect(result.adminText).toContain("Admin panel");
+    expect(result.adminText).toContain("Required env");
+    expect(result.adminText).toContain("OPENAI_API_KEY");
+    expect(result.adminText).toContain("Walgreens live order");
+    expect(result.metricCount).toBeGreaterThanOrEqual(6);
+    expect(result.gatedRows).toBeGreaterThanOrEqual(8);
+    expect(result.scrollWidth).toBe(result.clientWidth);
+  }, 30000);
+
+  it("exposes ready free adapters and gated production integrations", async () => {
     const sessionId = await createPage(1280, 900);
     const result = await evaluate(
       sessionId,
@@ -179,7 +227,9 @@ describeWithChrome("CustomCard UI smoke", () => {
         return {
           heading: document.querySelector("h2")?.textContent,
           text: document.body.textContent,
-          readyRows: [...document.querySelectorAll(".adapterRow.ready")].length,
+          readyRows: [...document.querySelectorAll(".adapterRow.ready-local")].length,
+          gatedRows: [...document.querySelectorAll(".adapterRow.credential-gated")].length,
+          contractRows: [...document.querySelectorAll(".adapterRow.contract-only")].length,
           blockedRows: [...document.querySelectorAll(".adapterRow.blocked")].length,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth
@@ -190,10 +240,15 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.heading).toContain("Adapter readiness");
     expect(result.text).toContain("Local demo auth");
     expect(result.text).toContain("ICS / invite paste");
-    expect(result.text).toContain("Gmail / Google Calendar OAuth");
-    expect(result.text).toContain("Live quote / payment / order APIs");
+    expect(result.text).toContain("OpenAI Responses chat");
+    expect(result.text).toContain("OpenAI Images");
+    expect(result.text).toContain("Gmail metadata adapter");
+    expect(result.text).toContain("Microsoft Graph calendar");
+    expect(result.text).toContain("Walgreens live order");
     expect(result.readyRows).toBeGreaterThanOrEqual(6);
-    expect(result.blockedRows).toBeGreaterThanOrEqual(3);
+    expect(result.gatedRows).toBeGreaterThanOrEqual(10);
+    expect(result.contractRows).toBeGreaterThanOrEqual(6);
+    expect(result.blockedRows).toBe(3);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 

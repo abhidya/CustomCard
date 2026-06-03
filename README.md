@@ -23,7 +23,8 @@ This repo now contains a runnable Vite, React, and TypeScript free local MVP plu
 a repo-local production skeleton. The web app opens on the actual reviewer
 workflow: local demo auth, manual/ICS event import, opportunity approval,
 relationship memory review, deterministic card generation, 5x7 SVG panel export,
-manual vendor handoff, and adapter readiness.
+manual vendor handoff, customer/admin panels, and catalog-driven adapter
+readiness.
 
 The service kernel still executes the critical backend contracts in code:
 metadata-only provider import, approved relationship memory, layout-safe 5x7
@@ -36,8 +37,8 @@ contract: 1500 x 2100 px, 300 DPI, four panels, live-quote inputs, and no extern
 order until physical print certification exists.
 
 The repo also includes a Postgres migration, worker and migration runners,
-dev/droplet/cloud deployment manifests, a static production server, and a thin
-Expo iOS/Android app-shell boundary that resolves its API URL from environment
+dev/droplet/cloud deployment manifests, a static production server, and an Expo
+iOS/Android customer shell that resolves its API URL from environment
 configuration instead of static placeholders.
 
 ## Free MVP Capabilities
@@ -49,8 +50,13 @@ configuration instead of static placeholders.
 - Deterministic card copy and visual directions with no paid AI calls.
 - Four 1500 x 2100 SVG panels for front, inside-left, inside-right, and back.
 - Manual handoff checklist for Walgreens, CVS, FedEx Office, or a local printer.
-- Adapter readiness view separating free-ready paths from blocked production
-  integrations.
+- Customer panel with local chat transcript, next-card state, render choices,
+  and free workflow actions.
+- Admin panel with provider coverage, env gates, cloud runtime readiness, and
+  blocked live-vendor adapters.
+- Adapter catalog covering free local paths plus gated OpenAI, Anthropic,
+  Google, Microsoft Graph, Hugging Face, Stability, Replicate, and vendor
+  contracts.
 
 ## Run
 
@@ -84,9 +90,11 @@ Mobile shell variable:
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173
 ```
 
-Provider credentials such as `GOOGLE_OAUTH_CLIENT_ID` and
-`GOOGLE_OAUTH_CLIENT_SECRET` are documented in `infra/env/.env.example`, but live
-OAuth is not implemented in this repo state.
+Provider credentials such as `GOOGLE_OAUTH_CLIENT_ID`, `OPENAI_API_KEY`,
+`ANTHROPIC_API_KEY`, `STABILITY_API_KEY`, `HUGGINGFACE_API_TOKEN`,
+`REPLICATE_API_TOKEN`, and Microsoft Graph keys are documented in
+`infra/env/.env.example`, but live OAuth, AI/image calls, and vendor ordering are
+not implemented in this repo state.
 
 ## Architecture
 
@@ -97,7 +105,7 @@ React free local MVP
   -> Postgres migration model
   -> worker/migration/runtime scripts
   -> Docker Compose or Kubernetes manifests
-  -> thin Expo mobile shell boundary
+  -> Expo customer mobile shell boundary
 ```
 
 The service kernel models the critical backend contracts without pretending they
@@ -121,6 +129,7 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 - [Requirements and traceability](docs/requirements-traceability.md)
 - [Decisions](docs/decisions.md)
 - [Delivery process](docs/delivery-process.md)
+- [Platform expansion design](docs/platform-expansion-design.md)
 - [Verification](docs/verification.md)
 - [Completion audit](docs/completion-audit.md)
 - [Final package](docs/final-package.md)
@@ -131,9 +140,9 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 
 ## Honest Gaps
 
-The repo does not include production user auth, live OAuth, live AI generation,
-live vendor quotes, payment handling, direct Walgreens/CVS ordering, deployment
-evidence, legal/security review, or physical print certification. Those paths are
-represented as contracts and hard gates so reviewers can inspect the system shape
-without mistaking the free local MVP for a certified production fulfillment
-service.
+The repo does not include production user auth, live OAuth, live AI/image
+generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
+ordering, deployment evidence, legal/security review, or physical print
+certification. Those paths are represented as contracts and hard gates so
+reviewers can inspect the system shape without mistaking the free local MVP for a
+certified production fulfillment service.

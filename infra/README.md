@@ -25,3 +25,25 @@ values, known placeholders, and any live-order kill switch value other than
 `disabled`.
 
 Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` until vendor sandbox tests and physical print certification are recorded.
+
+## Provider Adapter Secrets
+
+`env/.env.example` names the credential-gated adapters represented in
+`src/providerCatalog.ts`:
+
+- Google OAuth: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`.
+- Microsoft Graph: `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`,
+  `MICROSOFT_TENANT_ID`.
+- Text and image AI providers: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
+  `GOOGLE_GENERATIVE_AI_API_KEY`, `STABILITY_API_KEY`,
+  `HUGGINGFACE_API_TOKEN`, `REPLICATE_API_TOKEN`.
+- Self-hosted model fallback: `SELF_HOSTED_LLM_BASE_URL`,
+  `SELF_HOSTED_LLM_API_KEY`.
+- Notification contract: `TRANSACTIONAL_EMAIL_API_KEY`,
+  `TRANSACTIONAL_EMAIL_FROM`.
+- Live vendor adapters: `WALGREENS_VENDOR_MODE`, `CVS_VENDOR_MODE`,
+  `FEDEX_VENDOR_MODE`.
+
+These keys are documented for deployment readiness only. The current repo state
+does not make live provider calls, and vendor modes remain
+`disabled_until_certified` while `REAL_ORDER_KILL_SWITCH=disabled`.

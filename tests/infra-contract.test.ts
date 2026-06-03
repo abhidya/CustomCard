@@ -94,7 +94,20 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("OBJECT_STORE_URL=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_ID=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_SECRET=");
+    expect(env).toContain("MICROSOFT_CLIENT_ID=");
+    expect(env).toContain("MICROSOFT_CLIENT_SECRET=");
+    expect(env).toContain("OPENAI_API_KEY=");
+    expect(env).toContain("ANTHROPIC_API_KEY=");
+    expect(env).toContain("GOOGLE_GENERATIVE_AI_API_KEY=");
+    expect(env).toContain("STABILITY_API_KEY=");
+    expect(env).toContain("HUGGINGFACE_API_TOKEN=");
+    expect(env).toContain("REPLICATE_API_TOKEN=");
+    expect(env).toContain("SELF_HOSTED_LLM_BASE_URL=");
+    expect(env).toContain("TRANSACTIONAL_EMAIL_API_KEY=");
     expect(env).toContain("REAL_ORDER_KILL_SWITCH=disabled");
+    expect(env).toContain("WALGREENS_VENDOR_MODE=disabled_until_certified");
+    expect(env).toContain("CVS_VENDOR_MODE=disabled_until_certified");
+    expect(env).toContain("FEDEX_VENDOR_MODE=disabled_until_certified");
   });
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
@@ -109,6 +122,9 @@ describe("production infrastructure contract", () => {
     expect(appConfig).not.toContain("${CUSTOMCARD_API_BASE_URL}");
     expect(appConfig).toContain("realOrderKillSwitch");
     expect(mobileApp).toContain("CustomCard");
+    expect(mobileApp).toContain("Customer mobile panel");
+    expect(mobileApp).toContain("Local scripted assistant");
+    expect(mobileApp).toContain("Manual");
     expect(() =>
       execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
         env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "disabled" },

@@ -7,8 +7,9 @@
 - Original prompt or recovered promise: turn a last-minute physical card idea into
   an event-aware personal greeting-card CRM and print-production product; see
   `docs/brief-context.md`.
-- Current delivered outcome: a polished free local MVP plus a contract-first
-  production skeleton.
+- Current delivered outcome: a polished free local MVP plus customer/admin
+  panels, a tested provider-adapter catalog, a customer mobile shell, and a
+  contract-first production skeleton.
 - Audience/reviewer: project reviewer, interview/client evaluator, or future
   implementer who needs to inspect the repo without reading chat history.
 
@@ -22,23 +23,28 @@
   this repo state.
 - Unknown or unrecoverable: production provider credentials, vendor sandbox
   terms, payment processor decisions, deployment target, legal/security review
-  outcome, and physical print QA results.
+  outcome, live AI/image-provider cost behavior, and physical print QA results.
 
 ## What Changed
 
 - Product/workflow: the web app now opens on the usable workflow: local demo
   workspace, manual/ICS import, opportunity decision, card studio, memory review,
-  SVG export, manual handoff, and adapter readiness.
+  SVG export, manual handoff, customer panel, admin panel, and adapter readiness.
 - UX/polish: redesigned the app shell, responsive navigation, status gates,
-  card-studio preview, handoff checklist, adapter matrix, and mobile layout.
+  card-studio preview, handoff checklist, adapter matrix, customer/admin
+  operations surfaces, and mobile layout.
 - Code/architecture: added `src/freeMvp.ts` for deterministic free-MVP auth,
   import, opportunity, card, SVG, memory, and handoff logic while preserving the
-  existing domain and service-kernel contracts.
-- Tests/verification: added deterministic free-MVP tests and updated Chrome smoke
-  tests to exercise the real reviewer workflow.
-- Docs/handoff: added `docs/free-mvp-plan.md`, updated README, traceability,
-  decisions, delivery process, verification, completion audit, handoff notes, and
-  visual evidence under `docs/evidence/`.
+  existing domain and service-kernel contracts; added `src/providerCatalog.ts`
+  for provider capability, readiness, env, safety-gate, and role-surface
+  contracts.
+- Tests/verification: added deterministic free-MVP and provider-catalog tests and
+  updated Chrome smoke tests to exercise the real reviewer workflow plus
+  customer/admin panels.
+- Docs/handoff: added `docs/free-mvp-plan.md` and
+  `docs/platform-expansion-design.md`, updated README, traceability, decisions,
+  delivery process, verification, completion audit, handoff notes, and visual
+  evidence under `docs/evidence/`.
 
 ## Current Capabilities
 
@@ -47,7 +53,14 @@
   manual vendor handoff.
 - Supporting workflows: add/delete approved memories, snooze/dismiss
   opportunities, choose Walgreens/CVS/FedEx/local-printer handoff, copy checklist,
-  inspect free-ready and blocked production adapters.
+  inspect free-ready, credential-gated, contract-only, and blocked production
+  adapters.
+- Customer panel: next-card state, deterministic local chat transcript,
+  image/render choices, and free fallback actions.
+- Admin panel: provider coverage metrics, required env vars, gated provider
+  queue, cloud runtime adapters, and blocked live vendors.
+- Mobile customer shell: card queue, memory review, local chat, image/render
+  state, and manual handoff sections.
 - Demo/seed data: sample anniversary `.ics` content and two approved local memory
   records in `src/freeMvp.ts`.
 - Config/env requirements: the local web MVP needs no provider or vendor
@@ -59,9 +72,9 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 5 test files, 40 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 6 test files, 46 tests. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
-| Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; visual pass fixed mobile chip clipping and cramped preview panels. |
+| Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration present. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
@@ -74,6 +87,9 @@
 | Convert ambiguity into requirements and acceptance criteria. | `docs/requirements-traceability.md`. | Covered |
 | Record decisions and rejected alternatives. | `docs/decisions.md`, `docs/free-mvp-plan.md`. | Covered |
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
+| Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, `tests/app-smoke.test.ts`, screenshots. | Covered |
+| Catalog broad text, image, integration, vendor, and cloud adapters. | `src/providerCatalog.ts`, `src/providerCatalog.test.ts`, `docs/platform-expansion-design.md`. | Covered as contracts; live calls gated |
+| Add customer mobile app surface. | `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`. | Covered as shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
@@ -85,8 +101,9 @@
 
 1. Read `README.md`, `docs/brief-context.md`, and `docs/free-mvp-plan.md`.
 2. Run `npm install` if dependencies are not present, then `npm run dev`.
-3. In the app, start the local workspace, scan the sample invite, generate a card,
-   prepare handoff, and inspect adapter readiness.
+3. In the app, inspect the customer panel, start the local workspace, scan the
+   sample invite, generate a card, prepare handoff, inspect the admin panel, and
+   inspect adapter readiness.
 4. Run `npm run check`.
 5. Run the worker and mobile doctor commands in `docs/verification.md`.
 6. Inspect screenshots in `docs/evidence/` and known gaps in
@@ -107,10 +124,12 @@
 
 ## Final Claim
 
-The repo is ready to be described as a polished, reviewable, free local MVP for
-CustomCard, with deterministic demo workflows, documented production boundaries,
-tests, visual evidence, and honest handoff notes.
+The repo is ready to be described as a polished, reviewable, free local
+CustomCard MVP plus a tested adapter-readiness/admin/customer expansion slice,
+with deterministic demo workflows, documented production boundaries, tests,
+visual evidence, and honest handoff notes.
 
 Not ready to claim: production SaaS, live OAuth integration, paid AI generation,
 direct Walgreens/CVS/FedEx ordering, payment handling, certified physical print
-quality, deployed service, or legally/security-reviewed product.
+quality, deployed service, native mobile release, or legally/security-reviewed
+product.
