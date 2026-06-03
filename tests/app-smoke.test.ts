@@ -53,6 +53,8 @@ describeWithChrome("CustomCard UI smoke", () => {
       [
         "--headless",
         "--disable-gpu",
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
         `--remote-debugging-port=${debuggingPort}`,
         `--user-data-dir=${userDataDir}`,
         "--no-first-run",
