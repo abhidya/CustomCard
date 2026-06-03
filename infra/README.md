@@ -42,6 +42,7 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
+CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
 npm run persistence:doctor
 npm run demo:doctor
 ```
@@ -91,9 +92,14 @@ token verification remains unclaimed.
 `npm run artifact:doctor` writes the sample render packet package to a
 temporary local filesystem object-store path and an injected S3-compatible client
 contract, reads every artifact back, verifies checksums and byte lengths, stores
-both handoff manifests, and keeps network calls plus real orders disabled. Cloud
-S3/MinIO writes remain unclaimed until provider credentials, bucket policy, and
-deployment storage are tested.
+both handoff manifests, and keeps network calls plus real orders disabled.
+`CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled npm run artifact:doctor:s3:live` writes
+the same package to a live S3-compatible endpoint such as MinIO using path-style
+SigV4 requests, reads every object back, verifies checksums and byte lengths,
+stores the handoff manifest, reports `cloudWritesVerified: true`, cleans up the
+isolated bucket, and keeps external vendor calls plus real orders disabled. A
+production cloud bucket policy/IAM review remains separate from this CI/local
+MinIO proof.
 
 The persistence boundary requires auth-session storage, account identity storage,
 hashed recovery challenges, idempotency replay, queue job envelopes,
@@ -162,7 +168,9 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `GRAFANA_OTLP_ENDPOINT`, `GRAFANA_OTLP_INSTANCE_ID`,
   `GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `DATADOG_SITE`,
   `BETTERSTACK_SOURCE_TOKEN`, `BETTERSTACK_INGESTING_HOST`.
-- Object-store artifact signer: `OBJECT_STORE_SIGNING_SECRET`.
+- Object-store artifact signer and live S3-compatible doctor:
+  `OBJECT_STORE_SIGNING_SECRET`, `OBJECT_STORE_ACCESS_KEY_ID`,
+  `OBJECT_STORE_SECRET_ACCESS_KEY`, `OBJECT_STORE_REGION`.
 - Live vendor adapters: `WALGREENS_VENDOR_MODE`, `CVS_VENDOR_MODE`,
   `FEDEX_VENDOR_MODE`, `WALMART_VENDOR_MODE`, `STAPLES_VENDOR_MODE`,
   `OFFICE_DEPOT_VENDOR_MODE`.

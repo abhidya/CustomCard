@@ -8,6 +8,7 @@ const files = {
   accountAuthDoctor: "scripts/account-auth-doctor.mjs",
   artifactStore: "src/artifactStore.ts",
   artifactStoreDoctor: "scripts/artifact-store-doctor.mjs",
+  artifactStoreS3LiveDoctor: "scripts/artifact-store-s3-live-doctor.mjs",
   postgresApiHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
   postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
   postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
@@ -238,6 +239,23 @@ const artifactStoreDoctorSignals = [
   "manifestStored",
   "verifiedWrites"
 ];
+const artifactStoreS3LiveDoctorSignals = [
+  "customcard-artifact-store-s3-live-doctor",
+  "CUSTOMCARD_S3_ARTIFACT_DOCTOR",
+  "OBJECT_STORE_ACCESS_KEY_ID",
+  "OBJECT_STORE_SECRET_ACCESS_KEY",
+  "AWS4-HMAC-SHA256",
+  "x-amz-content-sha256",
+  "createBucket",
+  "writeS3CompatibleArtifactStore",
+  "putObject",
+  "getObjectText",
+  "deleteBucket",
+  "cloudWritesVerified",
+  "liveNetworkCalls: true",
+  "externalVendorCalls: false",
+  "realOrdersEnabled: false"
+];
 const authSessionSignals = migrationSignals.slice(0, 7);
 const accountStorageSignals = migrationSignals.slice(7, 16);
 const idempotencySignals = migrationSignals.slice(16, 21);
@@ -257,6 +275,7 @@ const checks = [
   checkIncludes("api", "account-auth-doctor", contents.accountAuthDoctor, accountAuthDoctorSignals),
   checkIncludes("api", "artifact-store-contract", contents.artifactStore, artifactStoreSignals),
   checkIncludes("api", "artifact-store-doctor", contents.artifactStoreDoctor, artifactStoreDoctorSignals),
+  checkIncludes("api", "artifact-store-s3-live-doctor", contents.artifactStoreS3LiveDoctor, artifactStoreS3LiveDoctorSignals),
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),

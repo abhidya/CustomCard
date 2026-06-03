@@ -21,7 +21,7 @@ skeleton for the production path. It includes:
 - Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
   manifests, expiry checks, object-store signing env gates, local filesystem
   write/read verification, and injected S3-compatible write/read contract
-  verification.
+  verification, plus a guarded live MinIO/S3-compatible write/read doctor.
 - A tested customer mobile shell contract that mirrors the web customer panel at
   the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
@@ -56,9 +56,10 @@ skeleton for the production path. It includes:
   account-token verification outside the isolated live Postgres route-auth,
   Postgres API HTTP, and account-auth doctors.
 - No live AI text/image generation.
-- No live S3/MinIO cloud object-store integration for exported artifacts;
-  signed URL contracts, schema gates, temporary filesystem write/read
-  verification, and injected S3-compatible write/read contract verification are
+- No production cloud object-store bucket is claimed outside the guarded
+  CI/local MinIO doctor; signed URL contracts, schema gates, temporary
+  filesystem write/read verification, injected S3-compatible write/read
+  contract verification, and live MinIO/S3-compatible doctor coverage are
   covered.
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, pickup-window, or checkout availability
@@ -88,11 +89,12 @@ skeleton for the production path. It includes:
 9. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
 10. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
 11. Run `npm run artifact:doctor`.
-12. Run `npm run persistence:doctor`.
-13. Run `npm run demo:doctor`.
-14. Run the worker and mobile doctor commands in `docs/verification.md`.
-15. Inspect the app with `npm run dev`.
-16. In the app, start a local workspace, scan the sample invite, generate a card,
+12. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+13. Run `npm run persistence:doctor`.
+14. Run `npm run demo:doctor`.
+15. Run the worker and mobile doctor commands in `docs/verification.md`.
+16. Inspect the app with `npm run dev`.
+17. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -108,8 +110,9 @@ repository-backed relationship-memory, render-packet, import-preview,
 card-project, manual-vendor-handoff, and data-request mutation coverage, public
 printer pricing research, local SVG/PDF print package export, temporary
 filesystem artifact-store write/read verification, injected S3-compatible
-artifact-store contract verification, provider-adapter readiness, domain
-boundaries, signed artifact handoff contracts, print contracts, order lifecycle,
+artifact-store contract verification, live MinIO/S3-compatible artifact-store
+doctor coverage, provider-adapter readiness, domain boundaries, signed artifact
+handoff contracts, print contracts, order lifecycle,
 deployment shape, and safety gates with executable TypeScript, browser smoke
 tests, visual evidence, and infrastructure tests.
 Real external AI, OAuth, and ordering remain disabled until production
@@ -119,9 +122,10 @@ print certification, and security/legal review are complete.
 ## Next Build Slice
 
 The highest-leverage next slice is broadening the remaining production-adjacent
-edges now that the repository-backed Postgres HTTP path is verified:
+edges now that the repository-backed Postgres HTTP path and live MinIO artifact
+path are verified:
 
-- Live S3/MinIO render-packet artifact writing using the signed handoff
-  contract.
 - Live seed execution against a deployed reviewer database.
 - CI-friendly Chrome smoke hardening.
+- Production cloud bucket policy/IAM verification outside the CI/local MinIO
+  doctor.

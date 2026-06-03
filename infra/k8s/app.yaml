@@ -22,7 +22,7 @@ metadata:
   name: customcard-secrets
   annotations:
     customcard.io/provisioning: "pre-created-by-secret-manager"
-    customcard.io/required-secret-keys: "DATABASE_URL,QUEUE_URL,OBJECT_STORE_SIGNING_SECRET,AUTH_SESSION_SECRET"
+    customcard.io/required-secret-keys: "DATABASE_URL,QUEUE_URL,OBJECT_STORE_ACCESS_KEY_ID,OBJECT_STORE_SECRET_ACCESS_KEY,OBJECT_STORE_SIGNING_SECRET,AUTH_SESSION_SECRET"
 type: Opaque
 data: {}
 ---

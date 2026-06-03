@@ -32,8 +32,8 @@ rendering, explicit order lifecycle transitions, recovery paths,
 regional/vendor-share policy, and runtime readiness checks.
 Render-packet artifact handoff is modeled with checksum manifests,
 HMAC-signed URL contracts, local filesystem write/read verification, and an
-injected S3-compatible client contract, while live cloud S3/MinIO writes remain
-credential-gated.
+injected S3-compatible client contract, plus a guarded live MinIO/S3-compatible
+write/read doctor for CI and local credentialed checks.
 
 Real ordering is deliberately disabled. The
 `WalgreensFiveBySevenDoubleSidedCardAdapter` is represented as a hard-gated
@@ -117,6 +117,10 @@ CUSTOMCARD_ENV=dev
 DATABASE_URL=postgres://customcard:customcard@postgres:5432/customcard_dev
 QUEUE_URL=redis://redis:6379/0
 OBJECT_STORE_URL=http://minio:9000
+OBJECT_STORE_BUCKET=customcard-dev
+OBJECT_STORE_ACCESS_KEY_ID=replace-me-do-not-commit-real-secret
+OBJECT_STORE_SECRET_ACCESS_KEY=replace-me-do-not-commit-real-secret
+OBJECT_STORE_REGION=us-east-1
 OBJECT_STORE_SIGNING_SECRET=replace-me-do-not-commit-real-secret
 ARTIFACT_SIGNED_URL_TTL_MINUTES=15
 CUSTOMCARD_API_RUNTIME=contract
@@ -187,6 +191,7 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
+CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -211,7 +216,7 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
 contract doctor, live Postgres integration doctor, Postgres API HTTP doctor,
 account-auth storage/recovery doctor, artifact-store filesystem plus
-S3-compatible contract doctor,
+S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
 persistence doctor, demo reset doctor, worker readiness, and mobile doctor on
 pushes to `main` and pull requests.
 
@@ -237,11 +242,11 @@ pushes to `main` and pull requests.
 
 The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
-retail-printer ordering, live telemetry ingestion/alerting, live S3/MinIO cloud
-object-store writes, deployed production Postgres API integration, production
-hosted account-token verification outside the isolated live Postgres doctors,
-native mobile builds, deployment evidence, legal/security review, or physical
-print certification. Those paths are
+retail-printer ordering, live telemetry ingestion/alerting, production cloud
+object-store bucket verification beyond the CI/local MinIO doctor, deployed
+production Postgres API integration, production hosted account-token
+verification outside the isolated live Postgres doctors, native mobile builds,
+deployment evidence, legal/security review, or physical print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system
 shape without mistaking the free local MVP for a certified production
 fulfillment service.

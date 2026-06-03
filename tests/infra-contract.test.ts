@@ -75,6 +75,10 @@ describe("production infrastructure contract", () => {
       expect(manifest).toContain("REAL_ORDER_KILL_SWITCH");
     }
     expect(devCompose).toContain("minio:");
+    expect(devCompose).toContain("MINIO_ROOT_USER: customcard");
+    expect(devCompose).toContain("MINIO_ROOT_PASSWORD: customcard-dev-only");
+    expect(devCompose).toContain("OBJECT_STORE_ACCESS_KEY_ID: customcard");
+    expect(devCompose).toContain("OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only");
     expect(dropletCompose).toContain("customcard_prod");
     expect(dropletCompose).toContain("${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}");
     expect(dropletCompose).toContain("SECRET_PROVIDER: managed_secret_store");
@@ -93,6 +97,7 @@ describe("production infrastructure contract", () => {
     expect(k8s).toContain("kind: ConfigMap");
     expect(k8s).toContain("kind: Secret");
     expect(k8s).toContain('customcard.io/provisioning: "pre-created-by-secret-manager"');
+    expect(k8s).toContain("OBJECT_STORE_ACCESS_KEY_ID,OBJECT_STORE_SECRET_ACCESS_KEY");
     expect(k8s).toContain("data: {}");
     expect(k8s).toContain("kind: Job");
     expect(k8s).toContain("name: customcard-migrate");
@@ -121,6 +126,10 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("POSTGRES_PASSWORD=");
     expect(env).toContain("QUEUE_URL=");
     expect(env).toContain("OBJECT_STORE_URL=");
+    expect(env).toContain("OBJECT_STORE_BUCKET=");
+    expect(env).toContain("OBJECT_STORE_ACCESS_KEY_ID=");
+    expect(env).toContain("OBJECT_STORE_SECRET_ACCESS_KEY=");
+    expect(env).toContain("OBJECT_STORE_REGION=");
     expect(env).toContain("CUSTOMCARD_API_RUNTIME=contract");
     expect(env).toContain("OBJECT_STORE_SIGNING_SECRET=");
     expect(env).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES=");
@@ -237,6 +246,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("tests/mobile-contract.test.ts");
     expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
+    expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
     expect(viteConfig).toContain("src/artifactHandoff.ts");
@@ -295,6 +305,11 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor:postgres:http");
     expect(workflow).toContain("npm run account:doctor:live");
     expect(workflow).toContain("npm run artifact:doctor");
+    expect(workflow).toContain("quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1 server /data");
+    expect(workflow).toContain("http://127.0.0.1:9000/minio/health/live");
+    expect(workflow).toContain("npm run artifact:doctor:s3:live");
+    expect(workflow).toContain("OBJECT_STORE_ACCESS_KEY_ID: customcard");
+    expect(workflow).toContain("OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only");
     expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");
@@ -422,6 +437,26 @@ describe("production infrastructure contract", () => {
     expect(doctor).toContain("SELECT COUNT(*)::int AS count FROM idempotency_keys");
     expect(doctor).toContain("SELECT COUNT(*)::int AS count FROM audit_log");
     expect(doctor).toContain("SELECT COUNT(*)::int AS count FROM api_jobs");
+  });
+
+  it("keeps the live S3-compatible artifact doctor verifying MinIO/S3 writes", () => {
+    const doctor = read("scripts/artifact-store-s3-live-doctor.mjs");
+
+    expect(doctor).toContain("customcard-artifact-store-s3-live-doctor");
+    expect(doctor).toContain("CUSTOMCARD_S3_ARTIFACT_DOCTOR");
+    expect(doctor).toContain("OBJECT_STORE_ACCESS_KEY_ID");
+    expect(doctor).toContain("OBJECT_STORE_SECRET_ACCESS_KEY");
+    expect(doctor).toContain("AWS4-HMAC-SHA256");
+    expect(doctor).toContain("x-amz-content-sha256");
+    expect(doctor).toContain("createBucket");
+    expect(doctor).toContain("writeS3CompatibleArtifactStore");
+    expect(doctor).toContain("putObject");
+    expect(doctor).toContain("getObjectText");
+    expect(doctor).toContain("deleteBucket");
+    expect(doctor).toContain("cloudWritesVerified");
+    expect(doctor).toContain("liveNetworkCalls: true");
+    expect(doctor).toContain("externalVendorCalls: false");
+    expect(doctor).toContain("realOrdersEnabled: false");
   });
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {

@@ -17,6 +17,13 @@ const checks = [
   checkIncludes("local-dev", "dev-compose-app", contents.devCompose, ["app:", "npm run dev", "5173:5173"]),
   checkIncludes("local-dev", "dev-compose-worker", contents.devCompose, ["worker:", "npm run worker"]),
   checkIncludes("local-dev", "dev-compose-services", contents.devCompose, ["postgres:", "redis:", "minio:"]),
+  checkIncludes("local-dev", "dev-compose-minio-artifact-credentials", contents.devCompose, [
+    "MINIO_ROOT_USER: customcard",
+    "MINIO_ROOT_PASSWORD: customcard-dev-only",
+    "OBJECT_STORE_ACCESS_KEY_ID: customcard",
+    "OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only",
+    "OBJECT_STORE_REGION: us-east-1"
+  ]),
   checkIncludes("local-dev", "dev-compose-kill-switch", contents.devCompose, [
     "REAL_ORDER_KILL_SWITCH: disabled",
     "WALGREENS_VENDOR_MODE: disabled_until_certified",
@@ -76,6 +83,8 @@ const checks = [
   checkIncludes("cloud-native", "k8s-runtime-env-gates", contents.k8s, [
     "secretRef:",
     "configMapRef:",
+    "OBJECT_STORE_ACCESS_KEY_ID",
+    "OBJECT_STORE_SECRET_ACCESS_KEY",
     "OBJECT_STORE_SIGNING_SECRET",
     "ARTIFACT_SIGNED_URL_TTL_MINUTES",
     "REAL_ORDER_KILL_SWITCH",
@@ -112,6 +121,10 @@ const checks = [
     "DATABASE_URL=",
     "QUEUE_URL=",
     "OBJECT_STORE_URL=",
+    "OBJECT_STORE_BUCKET=",
+    "OBJECT_STORE_ACCESS_KEY_ID=",
+    "OBJECT_STORE_SECRET_ACCESS_KEY=",
+    "OBJECT_STORE_REGION=",
     "OBJECT_STORE_SIGNING_SECRET=",
     "ARTIFACT_SIGNED_URL_TTL_MINUTES=",
     "CUSTOMCARD_API_RUNTIME=contract",

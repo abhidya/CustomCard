@@ -35,6 +35,10 @@ it after each meaningful implementation pass.
   S3-compatible client contract, read the files back, verify byte lengths and
   content hashes, store the handoff manifests, and keep network calls plus real
   orders disabled.
+- `npm run artifact:doctor:s3:live` writes the same render-packet package to a
+  live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
+  reads every object back, verifies checksums, writes the manifest, cleans up the
+  isolated bucket, and keeps external vendor calls plus real orders disabled.
 - Provider adapter coverage currently includes 87 adapters: 16 ready-local, 56
   credential-gated, 9 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
@@ -105,6 +109,7 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
+CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -121,8 +126,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 123 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 115 tests passed; V8 report measured
+- Vitest: 18 test files passed, 124 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 116 tests passed; V8 report measured
   90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -233,6 +238,18 @@ real orders disabled. The S3-compatible path recorded 7 put-object operations
 including the manifest and reported `cloudWritesVerified: false`.
 
 ```text
+CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live
+```
+
+Result: passed in CI against a MinIO service. Live S3-compatible artifact doctor
+started from the signed render-packet handoff, created an isolated bucket, used
+path-style SigV4 requests, wrote 6 print artifacts and 1 manifest, read all 7
+objects back, verified artifact checksums and byte lengths through the existing
+artifact-store contract, reported `cloudWritesVerified: true`, kept
+`externalVendorCalls: false` and `realOrdersEnabled: false`, then deleted the
+objects and bucket.
+
+```text
 npm run persistence:doctor
 ```
 
@@ -242,9 +259,10 @@ replay, relationship-memory repository readiness, render-packet repository
 readiness, import-preview repository readiness, card-project repository
 readiness, manual vendor handoff order/consent/event readiness, data-request
 privacy/consent readiness, queue jobs, render-packet artifact manifest signals,
-artifact-store write/read doctor signals, Postgres runtime SQL/doctor/integration
-signals, Postgres API HTTP doctor signals, account-auth contract/doctor signals,
-append-only audit coverage, 12 schema-backed API routes, and no blockers.
+artifact-store write/read doctor signals, live S3-compatible artifact doctor
+signals, Postgres runtime SQL/doctor/integration signals, Postgres API HTTP
+doctor signals, account-auth contract/doctor signals, append-only audit
+coverage, 12 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -310,12 +328,12 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No production/deployed Postgres migration run in this pass; isolated live
   Postgres migration/runtime integration is covered by doctor.
-- No live S3/MinIO cloud object-store, queue, droplet, cloud cluster, or vendor
-  sandbox test.
+- No live external queue, droplet, cloud cluster, or vendor sandbox test.
 - Local SVG/PDF/manifest print package export, signed artifact handoff contracts,
   temporary filesystem object-store write/read verification, and injected
-  S3-compatible write/read contract verification are covered, but no live cloud
-  object-store write is claimed.
+  S3-compatible write/read contract verification are covered. Live
+  S3-compatible writes are covered against CI/local MinIO, but no production
+  cloud bucket outside that doctor is claimed.
 - Public printer pricing is review-only and source-backed with freshness gates;
   no live quote, tax, coupon, stock, pickup-window, or checkout test is claimed.
 - Payment providers are sandbox-contract only; no live charge, capture, refund,

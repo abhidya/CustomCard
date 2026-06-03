@@ -74,6 +74,31 @@ jobs:
       - name: Validate artifact object-store writes
         run: npm run artifact:doctor
 
+      - name: Start MinIO artifact service
+        run: |
+          docker run -d --name customcard-minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=customcard \
+            -e MINIO_ROOT_PASSWORD=customcard-dev-only \
+            quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1 server /data --console-address ":9001"
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:9000/minio/health/live; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs customcard-minio
+          exit 1
+
+      - name: Validate live S3-compatible artifact writes
+        env:
+          OBJECT_STORE_URL: http://127.0.0.1:9000
+          OBJECT_STORE_BUCKET: customcard-ci-artifacts
+          OBJECT_STORE_ACCESS_KEY_ID: customcard
+          OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only
+          OBJECT_STORE_REGION: us-east-1
+        run: npm run artifact:doctor:s3:live
+
       - name: Validate persistence readiness
         run: npm run persistence:doctor
 

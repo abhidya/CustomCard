@@ -43,7 +43,7 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   Gemini image generation, Azure OpenAI, Amazon Bedrock, Stability AI, Hugging
   Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, local
   print package export, local filesystem object-store render-packet writes, and
-  injected S3-compatible render-packet write/read contracts.
+  injected plus live MinIO/S3-compatible render-packet write/read contracts.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
   and Office Depot live ordering blocked.
@@ -289,6 +289,11 @@ Implemented checks:
   filesystem object-store writes, injected S3-compatible client writes, readback
   verification, checksum/byte-length matching, stored handoff manifests, no
   network calls, and no real orders.
+- `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled npm run artifact:doctor:s3:live`
+  validates live S3-compatible object-store writes against MinIO or another
+  compatible endpoint using path-style SigV4 requests, isolated buckets,
+  readback verification, manifest storage, cleanup, no external vendor calls,
+  and no real orders.
 - `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior,
   including repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, and data-request mutation persistence,
@@ -327,8 +332,9 @@ Implemented checks:
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
   contract API doctor, memory API doctor, Postgres runtime contract doctor, live
   Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
-  artifact-store doctor, persistence doctor, demo reset doctor, worker
-  readiness, and mobile doctor for pushes to `main` and pull requests.
+  artifact-store doctor, live MinIO/S3-compatible artifact doctor, persistence
+  doctor, demo reset doctor, worker readiness, and mobile doctor for pushes to
+  `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact handoff/store, pricing, print-export, persistence, orchestration, and
   mobile contract modules: 90% statements, 80% branches, 90% functions, and 90%
@@ -342,9 +348,10 @@ Remaining high-risk work:
 - No live observability ingestion, alert routing, retention enforcement, or
   incident-response drill.
 - No live printer tax, coupon, stock, or pickup-window integration.
-- No live S3/MinIO cloud object-store integration; signed render-packet URL
-  contracts, temporary filesystem write/read verification, and injected
-  S3-compatible write/read contract verification are covered.
+- No production cloud object-store bucket policy/IAM verification; signed
+  render-packet URL contracts, temporary filesystem write/read verification,
+  injected S3-compatible write/read contract verification, and live CI/local
+  MinIO/S3-compatible write/read doctor coverage are covered.
 - No deployed production Postgres API integration or production hosted
   account-token verification; isolated live Postgres route-auth/migration/runtime
   integration, process-level API HTTP verification, and account identity/recovery

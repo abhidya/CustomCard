@@ -76,7 +76,8 @@
   contracts; local public printer pricing research
   for Walgreens/CVS/FedEx/Walmart/Staples/Office Depot manual handoff; local
   print package export for source SVGs, a combined 5x7 PDF proof, and a checksum
-  manifest; signed artifact handoff contracts for render packets.
+  manifest; signed artifact handoff contracts and live MinIO/S3-compatible
+  doctor coverage for render-packet artifacts.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, admin demo reset, default contract mode,
   repository-backed relationship-memory, render-packet, import-preview,
@@ -100,8 +101,9 @@
   deployment doctor, contract API doctor, memory-runtime API doctor, Postgres
   runtime contract doctor, live Postgres integration doctor, Postgres API HTTP
   doctor, account-auth storage/recovery doctor, artifact-store write/read
-  doctor, persistence doctor, demo reset doctor, worker readiness, and the
-  mobile doctor on pushes to `main` and pull requests.
+  doctor, live MinIO/S3-compatible artifact doctor, persistence doctor, demo
+  reset doctor, worker readiness, and the mobile doctor on pushes to `main` and
+  pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
   queue, memory review, local chat, image/render state, manual handoff, and
   real-order kill-switch validation.
@@ -117,7 +119,7 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 123 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 124 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 83.65% branches, 97.19% functions, 95.25% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
@@ -129,11 +131,12 @@
 | API Postgres HTTP integration | `npm run api:doctor:postgres:http` | Passed against an isolated temporary database; started `scripts/api-server.mjs` in Postgres mode, verified public health/routes, admin/customer Bearer auth, missing/wrong-role auth blocking, missing idempotency blocking, all 6 repository-backed customer HTTP mutations, replay/conflict behavior, repository rows, audit rows, and queue jobs. |
 | Account auth storage/recovery | `npm run account:doctor:live` | Passed against an isolated temporary database; migration applied, hosted identity stored without raw profile, provider-subject uniqueness enforced, hashed recovery challenge used, durable session created, and audit row appended. |
 | Artifact object-store writes | `npm run artifact:doctor` | Passed; wrote all 6 render-packet artifacts to a temporary filesystem object-store path and all 6 artifacts through an injected S3-compatible client contract, read them back, verified checksums and byte lengths, stored both manifests, made no network calls, kept real orders disabled, and reported `cloudWritesVerified: false`. |
-| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 12 schema-backed routes present. |
+| Live S3-compatible artifact writes | `npm run artifact:doctor:s3:live` | Passed in CI against MinIO; created an isolated bucket, wrote 6 render-packet artifacts plus 1 manifest through path-style SigV4 requests, read all 7 objects back, verified checksum/byte-length evidence, reported `cloudWritesVerified: true`, kept external vendor calls and real orders disabled, and cleaned up the bucket. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 12 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, persistence, demo reset, worker, and mobile gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -145,12 +148,12 @@
 | Record decisions and rejected alternatives. | `docs/decisions.md`, `docs/free-mvp-plan.md`. | Covered |
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
-| Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactHandoff.test.ts`, `src/artifactStore.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations with source freshness, local export packages, signed artifact handoff contracts, temporary filesystem object-store write/read verification, and injected S3-compatible write/read contract verification; live cloud calls gated |
+| Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`, `scripts/artifact-store-s3-live-doctor.mjs`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactHandoff.test.ts`, `src/artifactStore.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations with source freshness, local export packages, signed artifact handoff contracts, temporary filesystem object-store write/read verification, injected S3-compatible write/read contract verification, and live MinIO/S3-compatible write/read doctor coverage; production cloud calls gated |
 | Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and live cloud object-store writes are not covered |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, live MinIO/S3-compatible artifact write/read verification, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and production cloud bucket policy/IAM are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
 | Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
@@ -171,11 +174,12 @@
 10. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
 11. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
 12. Run `npm run artifact:doctor`.
-13. Run `npm run persistence:doctor`.
-14. Run `npm run demo:doctor`.
-15. Run the worker and mobile doctor commands in `docs/verification.md`.
-16. Inspect `.github/workflows/verify.yml`.
-17. Inspect screenshots in `docs/evidence/` and known gaps in
+13. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+14. Run `npm run persistence:doctor`.
+15. Run `npm run demo:doctor`.
+16. Run the worker and mobile doctor commands in `docs/verification.md`.
+17. Inspect `.github/workflows/verify.yml`.
+18. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -187,10 +191,11 @@
   verification; isolated live Postgres route-auth/migration/runtime integration
   and process-level API HTTP verification are covered by doctors.
 - No live AI text/image generation.
-- No live S3/MinIO cloud object-store write or physical printer certification;
-  local SVG/PDF/manifest package export, signed artifact handoff contracts,
-  temporary filesystem object-store write/read verification, and injected
-  S3-compatible write/read contract verification are covered.
+- No production cloud object-store bucket policy/IAM verification or physical
+  printer certification; local SVG/PDF/manifest package export, signed artifact
+  handoff contracts, temporary filesystem object-store write/read verification,
+  injected S3-compatible write/read contract verification, and live CI/local
+  MinIO/S3-compatible write/read doctor coverage are covered.
 - No live vendor quote, order, payment charge/refund, or cancellation
   integration; payment provider coverage is sandbox-contract only.
 - No live observability ingestion, alert routing, retention enforcement, or
