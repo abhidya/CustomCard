@@ -7,6 +7,13 @@ import {
   type CapacityProfile
 } from "./capacityPlan";
 import {
+  externalAuditReadinessItems,
+  summarizeExternalAuditReadiness,
+  validateExternalAuditReadiness,
+  type ExternalAuditReadinessItem,
+  type ExternalAuditReadinessSummary
+} from "./externalAuditReadiness";
+import {
   summarizeLocalizationReadiness,
   supportedLocales,
   type LocalizationReadinessSummary
@@ -64,6 +71,7 @@ export interface ApiReadinessSummary {
   governance: ProviderGovernanceSummary;
   localization: LocalizationReadinessSummary;
   production: ProductionReadinessSummary;
+  externalAudit: ExternalAuditReadinessSummary;
   capacity: CapacityPlanSummary;
   runtime: {
     localReady: number;
@@ -86,6 +94,10 @@ export interface ApiBootstrapPayload {
   production: {
     gates: typeof productionLaunchGates;
     summary: ProductionReadinessSummary;
+  };
+  externalAudit: {
+    items: ExternalAuditReadinessItem[];
+    summary: ExternalAuditReadinessSummary;
   };
   capacity: {
     profiles: CapacityProfile[];
@@ -181,6 +193,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "governance",
       "localization",
       "production",
+      "externalAudit",
       "capacity",
       "runtime",
       "blockedProviders",
@@ -363,6 +376,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     governance: summarizeProviderGovernance(),
     localization: summarizeLocalizationReadiness(),
     production: summarizeProductionReadiness(),
+    externalAudit: summarizeExternalAuditReadiness(),
     capacity: summarizeCapacityPlan(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
@@ -382,6 +396,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     production: {
       gates: productionLaunchGates,
       summary: summarizeProductionReadiness()
+    },
+    externalAudit: {
+      items: externalAuditReadinessItems,
+      summary: summarizeExternalAuditReadiness()
     },
     capacity: {
       profiles: capacityProfiles,
@@ -482,6 +500,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const capacityIssue of validateCapacityProfiles()) {
     issues.push(capacityIssue);
+  }
+  for (const externalAuditIssue of validateExternalAuditReadiness()) {
+    issues.push(externalAuditIssue);
   }
 
   return issues;

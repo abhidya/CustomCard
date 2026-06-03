@@ -345,6 +345,10 @@ The runtime remains fail-closed:
 - `npm run capacity:doctor` verifies Capacity profiles in
   `src/capacityPlan.ts`, admin/API exposure, CI wiring, and the "not measured
   production benchmarks" disclaimer while keeping live traffic disabled.
+- `npm run external:audit:doctor` verifies External audit readiness in
+  `src/externalAuditReadiness.ts`, production-launch-gate mappings, admin/API
+  exposure, CI wiring, and the "not an external audit report" disclaimer while
+  keeping public production claims and attached external artifact counts at zero.
 - `npm run api:doctor` verifies the API/static server route map, provider
   summary, contract runtime, idempotent mutation contracts, and no-live-call
   posture.
@@ -394,6 +398,14 @@ Implemented checks:
   profiles for local-dev, cheap-droplet, cloud-native, and SaaS-scale planning;
   queue/object-store posture; cost guardrails; admin/API visibility; CI wiring;
   and the no-live-provider/no-real-order safety contract.
+- `src/externalAuditReadiness.test.ts` and `npm run external:audit:doctor`
+  validate the External audit readiness register for 15 missing proof items:
+  legal, security, privacy, accessibility, hosted auth, OAuth, AI quality,
+  vendor quotes, payment/PCI/refunds, telemetry alerting, applied cloud IAM,
+  public hosted Postgres/Vercel DB proof, signed native mobile artifact, retail
+  partner certification, and physical print certification. This register is not
+  an external audit report; it is a launch evidence contract with every item
+  blocking production and `publicClaimAllowed=false`.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.

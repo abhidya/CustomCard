@@ -11,6 +11,8 @@ export default defineConfig({
         "src/apiContracts.ts",
         "src/capacityPlan.ts",
         "src/capacityPlanData.mjs",
+        "src/externalAuditReadiness.ts",
+        "src/externalAuditReadinessData.mjs",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",

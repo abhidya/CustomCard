@@ -25,6 +25,7 @@
     "demo:doctor": "node scripts/demo-reset.mjs",
     "localization:doctor": "node scripts/localization-doctor.mjs",
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
+    "external:audit:doctor": "node scripts/external-audit-readiness-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
     "capacity:doctor": "node scripts/capacity-plan-doctor.mjs",

@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
+import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
@@ -203,6 +204,7 @@ export const readiness = {
       "No physical sample or retailer certification has been recorded."
     ]
   },
+  externalAudit: summarizeExternalAuditReadiness(),
   capacity: summarizeCapacityPlan(),
   safety: {
     externalNetworkCalls: false,
@@ -485,6 +487,17 @@ function validateApiServerContract() {
   if (readiness.providerGovernance.realOrdersEnabled) blockers.push("Provider governance cannot enable real orders.");
   if (readiness.production.liveEnabled !== 0) blockers.push("Production readiness cannot enable live components by default.");
   if (readiness.production.total < 13) blockers.push("Production readiness must track every launch gate.");
+  if (readiness.externalAudit.total < 15) blockers.push("External audit readiness must track every external proof gap.");
+  if (readiness.externalAudit.productionBlocked !== readiness.externalAudit.total) {
+    blockers.push("Every external audit readiness item must block production until evidence is attached.");
+  }
+  if (readiness.externalAudit.publicClaimsAllowed !== 0) blockers.push("External audit readiness cannot allow public production claims.");
+  if (readiness.externalAudit.externalArtifactsAttached !== 0) {
+    blockers.push("External audit readiness cannot claim attached artifacts in the free local MVP.");
+  }
+  if (readiness.externalAudit.blockers.length < readiness.externalAudit.total) {
+    blockers.push("External audit readiness must expose blockers for every evidence item.");
+  }
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

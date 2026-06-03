@@ -40,6 +40,13 @@ describe("api server wrapper", () => {
           liveEnabled: number;
           blockers: string[];
         };
+        externalAudit: {
+          total: number;
+          productionBlocked: number;
+          publicClaimsAllowed: number;
+          externalArtifactsAttached: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -114,6 +121,12 @@ describe("api server wrapper", () => {
       blocked: 2,
       liveEnabled: 0
     });
+    expect(report.readiness.externalAudit).toMatchObject({
+      total: 15,
+      productionBlocked: 15,
+      publicClaimsAllowed: 0,
+      externalArtifactsAttached: 0
+    });
     expect(report.readiness.capacity).toMatchObject({
       total: 4,
       localProfiles: 1,
@@ -130,6 +143,13 @@ describe("api server wrapper", () => {
       expect.arrayContaining([
         "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
         "No physical sample or retailer certification has been recorded."
+      ])
+    );
+    expect(report.readiness.externalAudit.blockers).toEqual(
+      expect.arrayContaining([
+        "No external legal review report is attached.",
+        "Only internal security baseline evidence exists; no external security assessment is attached.",
+        "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
     expect(report.readiness.routes.total).toBe(15);
@@ -247,6 +267,12 @@ describe("api server wrapper", () => {
         evidenceMissing: 11,
         blocked: 2,
         liveEnabled: 0
+      });
+      expect(readiness.externalAudit).toMatchObject({
+        total: 15,
+        productionBlocked: 15,
+        publicClaimsAllowed: 0,
+        externalArtifactsAttached: 0
       });
       expect(readiness.capacity).toMatchObject({
         total: 4,

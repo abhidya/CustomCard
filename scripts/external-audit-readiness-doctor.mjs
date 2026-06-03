@@ -1,0 +1,178 @@
+import { readFileSync } from "node:fs";
+import {
+  externalAuditReadinessItems,
+  summarizeExternalAuditReadiness,
+  validateExternalAuditReadiness
+} from "../src/externalAuditReadinessData.mjs";
+
+const files = {
+  auditTest: "src/externalAuditReadiness.test.ts",
+  app: "src/App.tsx",
+  apiContracts: "src/apiContracts.ts",
+  apiServer: "scripts/api-server.mjs",
+  productionReadiness: "src/productionReadiness.ts",
+  packageJson: "package.json",
+  workflow: ".github/workflows/verify.yml",
+  docs: "docs/platform-expansion-design.md"
+};
+
+const contents = Object.fromEntries(
+  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
+);
+
+const summary = summarizeExternalAuditReadiness(externalAuditReadinessItems);
+const validationBlockers = validateExternalAuditReadiness(externalAuditReadinessItems);
+const relatedGateIds = Array.from(new Set(externalAuditReadinessItems.flatMap((item) => item.relatedProductionGateIds)));
+
+const checks = [
+  checkExact("register", "item-count", summary.total, 15),
+  checkExact("register", "production-blocked", summary.productionBlocked, summary.total),
+  checkExact("register", "public-claims-disabled", summary.publicClaimsAllowed, 0),
+  checkExact("register", "external-artifacts-not-claimed", summary.externalArtifactsAttached, 0),
+  checkNoBlockers("register", "executable-summary-and-validation", validationBlockers),
+  checkItemsShape("register", "item-contract-shape", externalAuditReadinessItems),
+  checkIncludes("launch-gates", "mapped-production-gates", contents.productionReadiness, relatedGateIds),
+  checkIncludes("tests", "external-audit-tests", contents.auditTest, [
+    "keeps external proof gaps explicit",
+    "maps every external evidence item back to production launch gates",
+    "flags unsafe audit claims"
+  ]),
+  checkIncludes("surfaces", "admin-api-audit-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+    "External audit readiness",
+    "summarizeExternalAuditReadiness",
+    "externalAudit",
+    "publicClaimsAllowed",
+    "externalArtifactsAttached"
+  ]),
+  checkIncludes("docs", "audit-docs", contents.docs, [
+    "External audit readiness",
+    "`src/externalAuditReadiness.ts`",
+    "`npm run external:audit:doctor`",
+    "not an external audit report"
+  ]),
+  checkIncludes("ci", "audit-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
+    '"external:audit:doctor": "node scripts/external-audit-readiness-doctor.mjs"',
+    "Validate external audit evidence readiness",
+    "npm run external:audit:doctor"
+  ]),
+  checkArrayIncludes("safety", "required-evidence-signals", summary.requiredEvidence, [
+    "Security assessment report",
+    "Privacy policy review",
+    "WCAG audit report",
+    "Retail partner certification",
+    "Printed 5x7 sample",
+    "Authenticated public route doctor"
+  ])
+];
+
+const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
+  const laneChecks = checks.filter((check) => check.lane === lane);
+  return {
+    lane,
+    passed: laneChecks.filter((check) => check.passed).length,
+    total: laneChecks.length,
+    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
+  };
+});
+
+const failed = checks.filter((check) => !check.passed);
+
+console.log(
+  JSON.stringify(
+    {
+      service: "customcard-external-audit-readiness-doctor",
+      status: failed.length === 0 ? "ready" : "blocked",
+      items: summary.total,
+      productionBlocked: summary.productionBlocked,
+      publicClaimsAllowed: summary.publicClaimsAllowed,
+      externalArtifactsAttached: summary.externalArtifactsAttached,
+      lanes,
+      checks,
+      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
+    },
+    null,
+    2
+  )
+);
+
+if (failed.length > 0) process.exit(1);
+
+function checkExact(lane, id, actual, expected) {
+  return {
+    id,
+    lane,
+    passed: actual === expected,
+    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
+  };
+}
+
+function checkNoBlockers(lane, id, blockers) {
+  return {
+    id,
+    lane,
+    passed: blockers.length === 0,
+    detail: blockers.length === 0 ? "Executable external audit readiness contract has no validation blockers." : blockers.join(" ")
+  };
+}
+
+function checkItemsShape(lane, id, items) {
+  const requiredKeys = [
+    "id",
+    "label",
+    "category",
+    "status",
+    "relatedProductionGateIds",
+    "requiredEvidence",
+    "currentEvidence",
+    "evidenceArtifactRefs",
+    "reviewer",
+    "cadence",
+    "externalReviewerRequired",
+    "blocksProduction",
+    "publicClaimAllowed",
+    "blocker"
+  ];
+  const missing = [];
+
+  for (const item of items) {
+    for (const key of requiredKeys) {
+      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
+    }
+  }
+
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `Validated ${items.length} executable audit readiness item shapes.`
+        : `Missing audit readiness fields: ${missing.join(", ")}`
+  };
+}
+
+function checkIncludes(lane, id, text, required) {
+  const missing = required.filter((needle) => !text.includes(needle));
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `Found ${required.length} required audit readiness signals.`
+        : `Missing audit readiness signals: ${missing.join(", ")}`
+  };
+}
+
+function checkArrayIncludes(lane, id, values, required) {
+  const missing = required.filter((needle) => !values.includes(needle));
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `Found ${required.length} required evidence signals.`
+        : `Missing evidence signals: ${missing.join(", ")}`
+  };
+}

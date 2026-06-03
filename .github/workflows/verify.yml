@@ -62,6 +62,9 @@ jobs:
       - name: Validate security privacy accessibility baseline
         run: npm run security:doctor
 
+      - name: Validate external audit evidence readiness
+        run: npm run external:audit:doctor
+
       - name: Validate localization readiness
         run: npm run localization:doctor
 

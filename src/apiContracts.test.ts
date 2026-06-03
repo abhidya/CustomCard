@@ -90,6 +90,12 @@ describe("api contracts", () => {
       blocked: 2,
       liveEnabled: 0
     });
+    expect(summary.externalAudit).toMatchObject({
+      total: 15,
+      productionBlocked: 15,
+      publicClaimsAllowed: 0,
+      externalArtifactsAttached: 0
+    });
     expect(summary.capacity).toMatchObject({
       total: 4,
       localProfiles: 1,
@@ -138,6 +144,14 @@ describe("api contracts", () => {
     });
     expect(payload.production.summary).toMatchObject({ total: 13, liveEnabled: 0 });
     expect(payload.production.gates.map((gate) => gate.id)).toContain("vercel-deployment-db-access");
+    expect(payload.externalAudit.summary).toMatchObject({
+      total: 15,
+      productionBlocked: 15,
+      publicClaimsAllowed: 0
+    });
+    expect(payload.externalAudit.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
+    );
     expect(payload.capacity.summary).toMatchObject({
       total: 4,
       maxDailyCards: 12000,
@@ -174,6 +188,11 @@ describe("api contracts", () => {
         total: 4,
         liveProviderCalls: 0,
         realOrdersEnabled: 0
+      },
+      externalAudit: {
+        total: 15,
+        publicClaimsAllowed: 0,
+        externalArtifactsAttached: 0
       }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({

@@ -72,7 +72,14 @@ environment configuration instead of static placeholders.
   and free workflow actions.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
-  profiles, cloud runtime readiness, and blocked live-vendor adapters.
+  profiles, external audit readiness, cloud runtime readiness, and blocked
+  live-vendor adapters.
+- External audit evidence register in `src/externalAuditReadiness.ts` and
+  `src/externalAuditReadinessData.mjs` for legal, security, privacy,
+  accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
+  cloud IAM, signed mobile artifact, retail certification, and physical print
+  certification gaps. `publicClaimAllowed` and attached external artifacts stay
+  at zero until real reports or certifications are attached.
 - Capacity profile planning for local-dev, cheap-droplet, cloud-native, and
   SaaS-scale runtime shapes through `src/capacityPlan.ts` and the shared
   executable data in `src/capacityPlanData.mjs`, with queue/object-store posture,
@@ -241,6 +248,7 @@ npm run deployment:doctor
 npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
+npm run external:audit:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -264,7 +272,8 @@ production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
 `src/artifactStore.ts`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
-`src/domain.ts`, `src/freeMvp.ts`,
+`src/domain.ts`, `src/externalAuditReadiness.ts`,
+`src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
 `src/localization.ts`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
 `src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
@@ -279,11 +288,16 @@ or droplet deployment.
 `npm run capacity:doctor` verifies the committed capacity profiles, admin/API
 surfaces, documentation, and CI wiring while keeping live provider calls and
 real orders disabled.
+`npm run external:audit:doctor` verifies the committed external audit readiness
+register, production-gate mappings, admin/API surfaces, documentation, CI
+wiring, and the no-public-claim/no-attached-external-artifact boundary. It is
+not an external audit report.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
-accessibility baseline doctor, provider cost governance doctor, capacity
-profile doctor, printer pricing research doctor, localization readiness doctor,
+accessibility baseline doctor, external audit readiness doctor, provider cost
+governance doctor, capacity profile doctor, printer pricing research doctor,
+localization readiness doctor,
 memory-runtime API doctor,
 Postgres runtime contract doctor, live Postgres integration doctor, Postgres API
 HTTP doctor, account-auth storage/recovery doctor, artifact-store filesystem
@@ -322,5 +336,6 @@ translation QA or live translation providers, a produced/signed native mobile
 artifact or emulator render proof, public Vercel DB-backed route proof, external
 legal/security/privacy/accessibility audit, or physical print certification.
 Those paths are represented in `src/productionReadiness.ts` as admin-visible
-contracts and hard gates so reviewers can inspect the system shape without
-mistaking the free local MVP for a certified production fulfillment service.
+contracts and in `src/externalAuditReadiness.ts` as explicit evidence-register
+items so reviewers can inspect the system shape without mistaking the free local
+MVP for a certified production fulfillment service.

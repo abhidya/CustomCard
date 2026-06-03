@@ -36,6 +36,12 @@ import {
   type CapacityProfile
 } from "./capacityPlan";
 import {
+  externalAuditReadinessItems,
+  summarizeExternalAuditReadiness,
+  type ExternalAuditReadinessItem,
+  type ExternalAuditReadinessSummary
+} from "./externalAuditReadiness";
+import {
   addMemory,
   buildOpportunity,
   buildVendorHandoff,
@@ -159,6 +165,7 @@ function App() {
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
+  const externalAuditSummary = useMemo(() => summarizeExternalAuditReadiness(), []);
   const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -442,6 +449,8 @@ function App() {
           <AdminPanelView
             capacityProfiles={capacityProfiles}
             capacitySummary={capacitySummary}
+            externalAuditItems={externalAuditReadinessItems}
+            externalAuditSummary={externalAuditSummary}
             localizationSummary={localizationSummary}
             model={adminPanelModel}
             providerGovernance={providerGovernance}
@@ -1099,6 +1108,8 @@ function HandoffView({
 function AdminPanelView({
   capacityProfiles,
   capacitySummary,
+  externalAuditItems,
+  externalAuditSummary,
   localizationSummary,
   model,
   providerGovernance,
@@ -1107,6 +1118,8 @@ function AdminPanelView({
 }: {
   capacityProfiles: CapacityProfile[];
   capacitySummary: CapacityPlanSummary;
+  externalAuditItems: ExternalAuditReadinessItem[];
+  externalAuditSummary: ExternalAuditReadinessSummary;
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
   providerGovernance: ProviderGovernanceSummary;
@@ -1137,7 +1150,9 @@ function AdminPanelView({
         <Metric label="Budget cap" value={formatCents(providerGovernance.monthlyBudgetCents)} />
         <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
         <Metric label="Launch gates" value={`${productionReadiness.total}`} />
+        <Metric label="External gaps" value={`${externalAuditSummary.productionBlocked}`} />
         <Metric label="Capacity profiles" value={`${capacitySummary.total}`} />
+        <Metric label="Public claims" value={`${externalAuditSummary.publicClaimsAllowed}`} />
         <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
       </div>
 
@@ -1263,6 +1278,28 @@ function AdminPanelView({
             <Metric label="Live enabled" value={`${productionReadiness.liveEnabled}`} />
           </div>
           <ProductionGateList gates={productionLaunchGates} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Review evidence</p>
+              <h3>External audit readiness</h3>
+            </div>
+            <StatusChip icon={ClipboardCheck} label="External proof missing" tone="red" />
+          </div>
+          <div className="runtimeGrid" aria-label="External audit readiness">
+            <Metric label="Items" value={`${externalAuditSummary.total}`} />
+            <Metric label="Internal baseline" value={`${externalAuditSummary.internalBaselineReady}`} />
+            <Metric label="Evidence missing" value={`${externalAuditSummary.externalEvidenceMissing}`} />
+            <Metric label="Cert blocked" value={`${externalAuditSummary.certificationBlocked}`} />
+            <Metric label="Public claims" value={`${externalAuditSummary.publicClaimsAllowed}`} />
+            <Metric label="Attached proof" value={`${externalAuditSummary.externalArtifactsAttached}`} />
+          </div>
+          <ExternalAuditList items={externalAuditItems} />
+          <p className="panelNote">
+            Internal doctors are readiness inputs only; external audit reports, signed native artifacts, public hosted DB proof, retail certification, and physical print certification are not attached.
+          </p>
         </article>
 
         <article className="toolPanel adminWide">
@@ -1478,6 +1515,26 @@ function ProductionGateList({ gates }: { gates: ProductionLaunchGate[] }) {
       ))}
     </div>
   );
+}
+
+function ExternalAuditList({ items }: { items: ExternalAuditReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${item.status === "certification-blocked" ? "blocked" : "credential-gated"}`} key={item.id}>
+          <span>{item.category}</span>
+          <strong>{item.label}</strong>
+          <small>{externalAuditStatusLabel(item.status)}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function externalAuditStatusLabel(status: ExternalAuditReadinessItem["status"]): string {
+  if (status === "internal-baseline-ready") return "Internal baseline only";
+  if (status === "certification-blocked") return "Certification blocked";
+  return "Evidence missing";
 }
 
 function adapterIcon(adapter: ProviderAdapter) {
