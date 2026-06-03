@@ -2,12 +2,16 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  mobileApprovalActions,
+  mobileCardQueueItems,
   mobileChatTranscript,
   mobileExperience,
   mobileExperienceSections,
   mobileHandoffSteps,
   mobileLocaleOptions,
+  mobilePricingPreviews,
   mobileRenderChoices,
+  mobileSyncState,
   requiredMobileCapabilities,
   summarizeMobileExperience,
   validateMobileExperience,
@@ -26,12 +30,30 @@ describe("mobile customer experience contract", () => {
     expect(summary.localeOptions).toBe(4);
     expect(summary.rtlLocales).toBe(2);
     expect(summary.copyReviewRequiredLocales).toBe(3);
+    expect(summary.queueItems).toBeGreaterThanOrEqual(2);
+    expect(summary.pendingApprovalItems).toBeGreaterThanOrEqual(1);
+    expect(summary.idempotentApprovalActions).toBe(mobileApprovalActions.length);
+    expect(summary.reviewOnlyPricingOptions).toBe(mobilePricingPreviews.length);
+    expect(summary.offlineMutationTypes).toBeGreaterThanOrEqual(5);
     expect(mobileExperienceSections.map((section) => section.id)).toEqual(
       expect.arrayContaining(requiredMobileCapabilities)
     );
   });
 
-  it("keeps mobile chat, render, and handoff paths local or gated", () => {
+  it("keeps mobile queue, approval, chat, render, pricing, and handoff paths local or gated", () => {
+    expect(mobileCardQueueItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ status: "needs-approval", panelCount: 4, customerVisible: true }),
+        expect.objectContaining({ status: "approved", panelCount: 4, customerVisible: true })
+      ])
+    );
+    expect(mobileApprovalActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "approve", mutationType: "approve-card", idempotencyRequired: true }),
+        expect.objectContaining({ kind: "dismiss", mutationType: "dismiss-card", idempotencyRequired: true }),
+        expect.objectContaining({ kind: "request-regeneration", networkMode: "local-only" })
+      ])
+    );
     expect(mobileChatTranscript.map((message) => message.text).join(" ")).toContain(
       "Live AI and vendor orders stay off"
     );
@@ -39,6 +61,12 @@ describe("mobile customer experience contract", () => {
       expect.arrayContaining([
         expect.objectContaining({ label: "Browser SVG renderer", mode: "free-local" }),
         expect.objectContaining({ label: "AI image providers", mode: "credential-gated" })
+      ])
+    );
+    expect(mobilePricingPreviews).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ vendor: "Walgreens", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false }),
+        expect.objectContaining({ vendor: "CVS", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false })
       ])
     );
     expect(mobileHandoffSteps).toEqual(
@@ -52,6 +80,19 @@ describe("mobile customer experience contract", () => {
         expect.objectContaining({ locale: "en-US", cardLanguage: "English", copyReviewRequired: false }),
         expect.objectContaining({ locale: "ar-EG", cardLanguage: "Arabic", writingDirection: "rtl", copyReviewRequired: true })
       ])
+    );
+    expect(mobileSyncState).toMatchObject({
+      apiBaseUrlRequired: true,
+      authMode: "customer-session",
+      offlineQueueEnabled: true,
+      idempotencyRequired: true,
+      retryPolicy: "exponential-backoff"
+    });
+    expect(mobileSyncState.pendingMutationTypes).toEqual(
+      expect.arrayContaining(["approve-card", "update-tone", "snooze-card", "dismiss-card", "prepare-handoff"])
+    );
+    expect(mobileSyncState.forbiddenMutationTypes).toEqual(
+      expect.arrayContaining(["submit-live-order", "charge-payment", "upload-raw-memory"])
     );
   });
 
@@ -147,6 +188,19 @@ describe("mobile customer experience contract", () => {
           detail: "live order ready"
         }
       ],
+      queueItems: [
+        {
+          ...mobileExperience.queueItems[0],
+          customerVisible: false,
+          panelCount: 2
+        }
+      ],
+      approvalActions: [
+        {
+          ...mobileExperience.approvalActions[0],
+          idempotencyRequired: false
+        }
+      ],
       chatTranscript: [
         {
           speaker: "assistant",
@@ -159,6 +213,13 @@ describe("mobile customer experience contract", () => {
           label: "AI only",
           detail: "paid ai active",
           mode: "credential-gated"
+        }
+      ],
+      pricingPreviews: [
+        {
+          ...mobileExperience.pricingPreviews[0],
+          liveQuote: true,
+          manualConfirmationRequired: false
         }
       ],
       handoffSteps: [
@@ -177,23 +238,44 @@ describe("mobile customer experience contract", () => {
           copyReviewRequired: false,
           customerVisible: false
         }
-      ]
+      ],
+      syncState: {
+        ...mobileExperience.syncState,
+        apiBaseUrlRequired: false,
+        offlineQueueEnabled: false,
+        idempotencyRequired: false,
+        forbiddenMutationTypes: ["submit-live-order"]
+      }
     };
 
     expect(validateMobileExperience(unsafeModel)).toEqual(
       expect.arrayContaining([
+        "Missing mobile customer capability: approval-controls",
         "Missing mobile customer capability: memory-review",
         "Missing mobile customer capability: text-chat",
         "Missing mobile customer capability: image-render",
+        "Missing mobile customer capability: pricing-preview",
         "Missing mobile customer capability: handoff",
+        "Missing mobile customer capability: offline-sync",
         "Every mobile experience section must be customer-visible.",
         "Mobile experience does not expose enough customer sections.",
+        "Every mobile card queue item must be customer-visible.",
+        "Every mobile card queue item must reference four 5x7 panels.",
+        "Missing mobile approval action: edit-tone",
+        "Missing mobile approval action: snooze",
+        "Missing mobile approval action: dismiss",
+        "Every mobile approval action must require idempotency.",
         "Mobile chat must identify the local scripted assistant path.",
         "Mobile chat must disclose that live AI and vendor orders are off.",
         "Mobile render choices must include the free browser SVG renderer.",
+        "Mobile pricing preview must expose multiple retail-printer choices.",
+        "Mobile pricing previews must stay review-only and manually confirmed.",
         "Mobile handoff must keep a manual upload path.",
         "Disabled mobile handoff steps must explain blocked live order APIs.",
         "Mobile safety banner must keep real orders disabled.",
+        "Mobile sync must require the configured API base URL and customer session auth.",
+        "Mobile sync must keep offline queueing and idempotency enabled.",
+        "Mobile sync must forbid live order, payment, and raw-memory mutations.",
         "Missing mobile locale option: en-US",
         "Missing mobile locale option: es-US",
         "Missing mobile locale option: ur-PK",

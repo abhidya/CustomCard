@@ -38,13 +38,19 @@ function inspectMobileSources() {
       patterns: [
         "requiredMobileCapabilities",
         "mobileExperienceSections",
+        "mobileCardQueueItems",
+        "mobileApprovalActions",
         "mobileChatTranscript",
         "mobileRenderChoices",
+        "mobilePricingPreviews",
         "mobileHandoffSteps",
         "mobileLocaleOptions",
+        "mobileSyncState",
         "validateMobileExperience",
         "Real orders disabled",
         "Live AI and vendor orders stay off",
+        "review-only-public-price",
+        "customer-session",
         "ar-EG",
         "ur-PK"
       ]
@@ -53,10 +59,18 @@ function inspectMobileSources() {
       path: "src/App.tsx",
       patterns: [
         "mobileExperienceSections",
+        "mobileCardQueueItems",
+        "mobileApprovalActions",
         "mobileChatTranscript",
         "mobileRenderChoices",
+        "mobilePricingPreviews",
         "mobileHandoffSteps",
         "mobileLocaleOptions",
+        "mobileSyncState",
+        "Card queue",
+        "Approval controls",
+        "Pricing preview",
+        "Offline API sync",
         "Locale readiness",
         "summarizeMobileExperience"
       ]

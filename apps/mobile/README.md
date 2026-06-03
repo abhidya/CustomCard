@@ -1,10 +1,12 @@
 # CustomCard Mobile Shell
 
-This is the iOS/Android customer app boundary. The current shell mirrors the web
-customer panel: card queue, approved memory review, local scripted chat, free SVG
-render path, locale readiness, and manual vendor handoff. The customer state lives in
-`src/customerExperience.ts`, a pure contract module tested by the root Vitest
-suite and inspected by the mobile doctor.
+This is the iOS/Android customer app boundary. The current app shell mirrors the
+web customer panel and adds a mobile-specific workflow contract: card queue
+items, customer approval controls, approved memory review, local scripted chat,
+free SVG render path, review-only retail printer pricing previews, offline
+idempotent API sync, locale readiness, and manual vendor handoff. The customer
+state lives in `src/customerExperience.ts`, a pure contract module tested by the
+root Vitest suite and inspected by the mobile doctor.
 
 It uses static demo state because the repo-local verification loop does not run a
 hosted API server, native emulator, or signed platform build.

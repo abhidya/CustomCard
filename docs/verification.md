@@ -57,9 +57,10 @@ it after each meaningful implementation pass.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, CI workflow gates, coverage scope, and the
   mobile shell/customer contract boundary.
-- Mobile contract tests cover the Expo customer experience model: card queue,
-  memory review, local chat, render choices, locale readiness, manual handoff,
-  and real-order kill-switch doctor behavior.
+- Mobile contract tests cover the Expo customer experience model: card queue
+  items, approval controls, memory review, local chat, render choices,
+  review-only printer pricing previews, offline idempotent API sync, locale
+  readiness, manual handoff, and real-order kill-switch doctor behavior.
 - Agent-contract tests cover the typed orchestration surface and fail-closed
   default policy.
 - API-contract and API-server tests cover `/api/health`, customer/admin
@@ -169,7 +170,7 @@ Result: passed.
 
 - Vitest: 21 test files passed, 145 tests passed.
 - Coverage: 19 core/API/persistence/infra/mobile test files passed, 136 tests passed; V8 report measured
-  91.15% statements, 83.94% branches, 96.89% functions, and 95.17% lines across
+  91.22% statements, 84.10% branches, 96.96% functions, and 95.15% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/localization.ts`,

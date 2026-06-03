@@ -10,7 +10,7 @@
 - Current delivered outcome: a polished free local MVP plus customer/admin
   panels, a tested 102-adapter catalog and no-network runtime contracts, admin
   business CRM/workflow integration contracts, a tested production launch-gate registry, a
-  tested localization readiness catalog, a tested customer mobile shell
+  tested localization readiness catalog, a tested customer mobile app
   contract, and a contract-first production skeleton with API/static server,
   account identity/recovery storage contracts, memory-mode auth/idempotency
   validation, fake-pool contract and isolated live Postgres
@@ -99,7 +99,7 @@
   repository-backed routes through `scripts/api-server.mjs`.
 - Localization readiness: English (US), Spanish (US), Urdu, and Arabic are
   exposed across web customer/admin panels, API bootstrap/readiness payloads, and
-  the mobile shell contract with complete message bundles, RTL layout-review
+  the mobile app contract with complete message bundles, RTL layout-review
   flags, human copy-review gates, and live translation disabled.
 - Persistence boundary: tested auth-session, account identity, hashed recovery
   challenge, idempotency replay, relationship-memory repository, render-packet
@@ -117,9 +117,10 @@
   MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
   worker readiness, mobile doctor, and mobile release doctor on pushes to `main`
   and pull requests.
-- Mobile customer shell: tested Expo customer experience contract with card
-  queue, memory review, local chat, image/render state, locale readiness, manual
-  handoff, and real-order kill-switch validation.
+- Mobile customer app: tested Expo customer experience contract with card queue
+  items, approval controls, memory review, local chat, image/render state,
+  review-only printer pricing previews, offline idempotent API sync, locale
+  readiness, manual handoff, and real-order kill-switch validation.
 - Demo/seed data: sample anniversary `.ics` content, two approved local memory
   records in `src/freeMvp.ts`, plus an admin-only demo reset contract covering
   14 reviewer fixture tables and 17 rows.
@@ -133,7 +134,7 @@
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
 | Tests | `npm run check` | Passed on 2026-06-03: 21 test files, 145 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.15% statements, 83.94% branches, 96.89% functions, 95.17% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.22% statements, 84.10% branches, 96.96% functions, 95.15% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
@@ -152,7 +153,7 @@
 | Live S3-compatible artifact writes | `npm run artifact:doctor:s3:live` | Passed in CI against MinIO; created an isolated bucket, wrote 6 render-packet artifacts plus 1 manifest through path-style SigV4 requests, read all 7 objects back, verified checksum/byte-length evidence, reported `cloudWritesVerified: true`, kept external vendor calls and real orders disabled, and cleaned up the bucket. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 13 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
-| Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
+| Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
 | CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, localization readiness, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, and mobile native release gates with safe repo-local env. |
@@ -168,7 +169,7 @@
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
 | Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`, `scripts/artifact-store-s3-live-doctor.mjs`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactHandoff.test.ts`, `src/artifactStore.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations with source freshness, local export packages, signed artifact handoff contracts, temporary filesystem object-store write/read verification, injected S3-compatible write/read contract verification, and live MinIO/S3-compatible write/read doctor coverage; production cloud calls gated |
-| Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/eas.json`, `apps/mobile/scripts/release-doctor.mjs`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell plus native release profile contract; actual native build artifact not covered |
+| Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/eas.json`, `apps/mobile/scripts/release-doctor.mjs`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested customer app shell plus native release profile contract; actual native build artifact not covered |
 | Add multi-language and regional readiness. | `src/localization.ts`, `src/localization.test.ts`, `scripts/localization-doctor.mjs`, `src/App.tsx`, `src/apiContracts.ts`, `scripts/api-server.mjs`, `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `tests/mobile-contract.test.ts`, `tests/app-smoke.test.ts`, `docs/platform-expansion-design.md`. | Covered as customer/admin/API/mobile readiness for English (US), Spanish (US), Urdu, and Arabic with RTL layout-review and human copy-review gates; professional translation QA and live translation providers remain open |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |

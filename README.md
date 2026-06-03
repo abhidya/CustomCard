@@ -104,9 +104,10 @@ environment configuration instead of static placeholders.
   repository writes, render-packet repository writes, manual handoff
   order/consent/event writes, data-request privacy/consent writes, queue jobs,
   audit logs, and 13 schema-backed API routes.
-- Tested Expo customer shell contract for card queue, memory review, local chat,
-  render choices, locale readiness, manual handoff, and real-order kill-switch
-  posture.
+- Tested Expo customer app contract for card queue items, approval controls,
+  memory review, local chat, render choices, review-only pricing previews,
+  offline idempotent API sync, locale readiness, manual handoff, and real-order
+  kill-switch posture.
 - Tested Expo/EAS native release contract for development, preview, and
   production iOS/Android build profiles with API URL supplied by environment
   and real orders disabled.
@@ -212,7 +213,7 @@ React free local MVP
   -> worker/migration/runtime scripts
   -> API/static production server
   -> Docker Compose or Kubernetes manifests
-  -> Expo customer mobile shell contract
+  -> Expo customer mobile app contract
 ```
 
 The service kernel models the critical backend contracts without pretending they

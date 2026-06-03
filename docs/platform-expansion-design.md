@@ -230,10 +230,11 @@ adapters remain zero-spend with real orders disabled.
 
 `apps/mobile/src/customerExperience.ts` is the tested mobile customer contract.
 `apps/mobile/src/App.tsx` renders that contract as the Expo customer surface
-instead of a placeholder. It mirrors the web customer panel with card queue,
-memory review, local scripted chat, image/render status, manual handoff, and a
-real-order-disabled banner. The mobile contract also carries the same 4 launch
-locale options, including copy-review and RTL posture.
+instead of a placeholder. It mirrors the web customer panel with card queue
+items, approval controls, memory review, local scripted chat, image/render
+status, review-only printer pricing previews, offline idempotent API sync,
+manual handoff, and a real-order-disabled banner. The mobile contract also
+carries the same 4 launch locale options, including copy-review and RTL posture.
 
 The mobile doctor validates environment resolution, the contract source, and the
 repo-local real-order kill switch. Native rendering, emulator runs, builds, and

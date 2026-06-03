@@ -106,8 +106,9 @@ Requirement types:
   repository, manual handoff order/consent/event, data-request privacy/consent,
   queue-job, and audit-log tables.
 - Mobile shell resolves API configuration from environment.
-- Mobile customer shell mirrors the customer panel with tested card queue,
-  memory, chat, render, locale readiness, and handoff sections.
+- Mobile customer app mirrors the customer panel with tested card queue items,
+  approval controls, memory, chat, render, review-only pricing, offline
+  idempotent API sync, locale readiness, and handoff sections.
 - Mobile doctor validates the customer experience contract and fails if the
   repo-local real-order kill switch is enabled.
 - Local demo auth works without external providers.

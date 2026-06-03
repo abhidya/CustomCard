@@ -1,12 +1,16 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
+  mobileApprovalActions,
+  mobileCardQueueItems,
   mobileChatTranscript,
   mobileExperienceSections,
   mobileHandoffSteps,
   mobileLocaleOptions,
+  mobilePricingPreviews,
   mobileRenderChoices,
   mobileSafetyBanner,
+  mobileSyncState,
   summarizeMobileExperience
 } from "./customerExperience";
 
@@ -34,16 +38,16 @@ export default function App() {
               <Text style={styles.summaryLabel}>sections</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.localChatMessages}</Text>
-              <Text style={styles.summaryLabel}>local replies</Text>
+              <Text style={styles.summaryValue}>{experienceSummary.queueItems}</Text>
+              <Text style={styles.summaryLabel}>cards</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.freeRenderChoices}</Text>
-              <Text style={styles.summaryLabel}>free renderer</Text>
+              <Text style={styles.summaryValue}>{experienceSummary.idempotentApprovalActions}</Text>
+              <Text style={styles.summaryLabel}>actions</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.localeOptions}</Text>
-              <Text style={styles.summaryLabel}>locales</Text>
+              <Text style={styles.summaryValue}>{experienceSummary.reviewOnlyPricingOptions}</Text>
+              <Text style={styles.summaryLabel}>prices</Text>
             </View>
           </View>
         </View>
@@ -56,6 +60,34 @@ export default function App() {
                 <Text style={styles.pill}>{section.status}</Text>
               </View>
               <Text style={styles.cardCopy}>{section.detail}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Card queue</Text>
+          {mobileCardQueueItems.map((item) => (
+            <View key={item.id} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{item.recipientLabel}</Text>
+                <Text style={styles.cardCopy}>
+                  {item.eventLabel} due {item.dueIso.slice(0, 10)} from {item.source}; {item.panelCount} panels ready.
+                </Text>
+              </View>
+              <Text style={styles.modePill}>{queueStatusLabel(item.status)}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Approval controls</Text>
+          {mobileApprovalActions.map((action) => (
+            <View key={action.kind} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{action.label}</Text>
+                <Text style={styles.cardCopy}>{action.detail}</Text>
+              </View>
+              <Text style={styles.modePill}>{action.networkMode === "local-only" ? "Local" : "API"}</Text>
             </View>
           ))}
         </View>
@@ -87,6 +119,21 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
+          <Text style={styles.groupTitle}>Pricing preview</Text>
+          {mobilePricingPreviews.map((preview) => (
+            <View key={preview.vendor} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{preview.vendor}</Text>
+                <Text style={styles.cardCopy}>
+                  {preview.product}; ${(preview.estimatedTotalCents / 100).toFixed(2)} review-only estimate.
+                </Text>
+              </View>
+              <Text style={styles.modePill}>{preview.liveQuote ? "Quote" : "Manual"}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
           <Text style={styles.groupTitle}>Manual handoff</Text>
           {mobileHandoffSteps.map((step) => (
             <View key={step.label} style={styles.compactRow}>
@@ -97,6 +144,21 @@ export default function App() {
               <Text style={styles.modePill}>{step.realOrderState}</Text>
             </View>
           ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Offline API sync</Text>
+          <View style={styles.compactRow}>
+            <View style={styles.compactCopy}>
+              <Text style={styles.compactTitle}>Customer session</Text>
+              <Text style={styles.cardCopy}>
+                API base URL required, {mobileSyncState.authMode} auth, {mobileSyncState.retryPolicy} retry, idempotency on.
+              </Text>
+            </View>
+            <Text style={styles.modePill}>{mobileSyncState.offlineQueueEnabled ? "Queued" : "Off"}</Text>
+          </View>
+          <Text style={styles.smallMeta}>Allowed mutations: {mobileSyncState.pendingMutationTypes.join(", ")}</Text>
+          <Text style={styles.smallMeta}>Forbidden mutations: {mobileSyncState.forbiddenMutationTypes.join(", ")}</Text>
         </View>
 
         <View style={styles.group}>
@@ -114,6 +176,12 @@ export default function App() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function queueStatusLabel(status: string): string {
+  if (status === "needs-approval") return "Review";
+  if (status === "ready-for-handoff") return "Handoff";
+  return "Approved";
 }
 
 const styles = StyleSheet.create({
@@ -273,6 +341,7 @@ const styles = StyleSheet.create({
     fontWeight: "900"
   },
   modePill: {
+    maxWidth: 92,
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 7,
@@ -282,5 +351,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
     textTransform: "capitalize"
+  },
+  smallMeta: {
+    color: "#5d6c72",
+    fontSize: 12,
+    lineHeight: 18
   }
 });

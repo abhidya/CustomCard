@@ -33,8 +33,9 @@ skeleton for the production path. It includes:
   manifests, expiry checks, object-store signing env gates, local filesystem
   write/read verification, and injected S3-compatible write/read contract
   verification, plus a guarded live MinIO/S3-compatible write/read doctor.
-- A tested customer mobile shell contract that mirrors the web customer panel at
-  the product boundary.
+- A tested customer mobile app contract that mirrors the web customer panel and
+  adds queue items, approval controls, review-only pricing previews, and offline
+  idempotent sync at the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
 - Executable service-kernel contracts for provider import, approved memory,
   card-project creation, print validation, order recovery, and regional policy.
@@ -47,7 +48,7 @@ skeleton for the production path. It includes:
   process-level Postgres API HTTP auth/idempotency/repository verification,
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual-vendor-handoff, and data-request mutation paths, and
-  mobile-shell scaffolding plus mobile contract validation.
+  mobile app scaffolding plus mobile contract validation.
 - Admin-only demo reset contract and script doctor for deterministic reviewer
   data across users, sessions, events, memories, projects, render packets,
   orders, consent, data requests, and audit rows.
@@ -139,8 +140,9 @@ auth/idempotency behavior, repository-backed customer mutations, source-backed
 printer pricing research, local SVG/PDF print package export, filesystem and
 S3-compatible artifact-store contracts, live MinIO doctor coverage,
 provider-adapter readiness, localization readiness, signed artifact handoff
-contracts, print contracts, order lifecycle, deployment shape, and safety gates
-with executable TypeScript, browser smoke tests, and infrastructure tests.
+contracts, mobile queue/approval/pricing/offline-sync contracts, print
+contracts, order lifecycle, deployment shape, and safety gates with executable
+TypeScript, browser smoke tests, and infrastructure tests.
 Real external AI, OAuth, and ordering remain disabled until production
 credentials, consent flows, vendor terms, sandbox/live quote behavior,
 professional translation QA, physical print certification, and external
