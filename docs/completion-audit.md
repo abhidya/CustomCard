@@ -13,7 +13,7 @@ listed as a gap instead of treated as complete.
 | Current repo state mapped to files, behavior, docs, and verification evidence. | Covered | `docs/requirements-traceability.md`, `docs/verification.md`, README. |
 | Interview/client constraints captured separately from product features. | Covered | `docs/brief-context.md` separates explicit requirements, inferences, assumptions, and unknowns; `docs/handoff-notes.md` captures reviewer/submission expectations. |
 | AI-assisted workflow captured as process, not vague marketing copy. | Covered | `docs/delivery-process.md`. |
-| Deliverable is a repo/state package, not only a brainstorm, plan, or history report. | Covered | Runnable app, typed service kernel, tests, infra, mobile shell, docs, and pushed git commits through `8563c4c`. |
+| Deliverable is a repo/state package, not only a brainstorm, plan, or history report. | Covered | Runnable app, typed service kernel, tests, infra, mobile shell, docs, and pushed `main` branch. |
 | Gaps are named plainly. | Covered | README Honest Gaps, `docs/handoff-notes.md`, `docs/verification.md`, `docs/requirements-traceability.md`. |
 
 ## Workflow Requirements
