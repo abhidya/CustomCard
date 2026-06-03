@@ -59,14 +59,15 @@ serving. `npm run api:doctor:memory` sets test customer/admin session tokens and
 validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
 `npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
 path and validates session lookup, wrong-role blocking, idempotency replay,
-conflict handling, repository-backed render-packet inserts, repository-backed
-import-preview inserts, repository-backed card-project inserts, manual handoff
+conflict handling, repository-backed relationship-memory inserts,
+repository-backed render-packet inserts, repository-backed import-preview
+inserts, repository-backed card-project inserts, manual handoff
 order/consent/event inserts, data-request privacy/consent inserts, audit inserts,
 and queue-job inserts without external credentials.
 `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run
 api:doctor:postgres:live` creates an isolated temporary database on the configured
-Postgres server, applies the committed migration, seeds customer/admin sessions
-and approved memory, exercises the real `pg` runtime for render-packet,
+Postgres server, applies the committed migration, seeds customer/admin sessions,
+exercises the real `pg` runtime for relationship-memory, render-packet,
 import-preview, card-project, manual handoff, and data-request persistence, and
 drops the temporary database before exiting.
 CI runs that live doctor against a Postgres service; deployed production account
@@ -87,9 +88,9 @@ deployment storage are tested.
 
 The persistence boundary requires auth-session storage, account identity storage,
 hashed recovery challenges, idempotency replay, queue job envelopes,
-render-packet repository writes, render-packet artifact manifests, signed URL
-expiry, and append-only audit signals in the migration before production Postgres
-handlers are claimed.
+relationship-memory repository writes, render-packet repository writes,
+render-packet artifact manifests, signed URL expiry, and append-only audit
+signals in the migration before production Postgres handlers are claimed.
 
 The Kubernetes `Secret` in `k8s/app.yaml` is intentionally empty and annotated as
 pre-created by a secret manager. Production clusters should source the required

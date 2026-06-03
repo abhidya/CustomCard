@@ -35,6 +35,7 @@ function createContractApiRuntime({ routes }) {
         providerConnectionRecords: 0,
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
+        relationshipMemoryRecords: 0,
         cardProjectRecords: 0,
         renderPacketRecords: 0,
         orderRecords: 0,
@@ -98,6 +99,7 @@ function createMemoryApiRuntime({ env, routes }) {
   const providerConnections = new Map();
   const importedEvents = new Map();
   const cardOpportunities = new Map();
+  const relationshipMemories = new Map();
   const cardProjects = new Map();
   const renderPackets = new Map();
   const orders = new Map();
@@ -123,6 +125,7 @@ function createMemoryApiRuntime({ env, routes }) {
         providerConnectionRecords: providerConnections.size,
         importedEventRecords: importedEvents.size,
         cardOpportunityRecords: cardOpportunities.size,
+        relationshipMemoryRecords: relationshipMemories.size,
         cardProjectRecords: cardProjects.size,
         renderPacketRecords: renderPackets.size,
         orderRecords: orders.size,
@@ -153,6 +156,7 @@ function createMemoryApiRuntime({ env, routes }) {
           providerConnections,
           importedEvents,
           cardOpportunities,
+          relationshipMemories,
           cardProjects,
           renderPackets,
           orders,
@@ -232,6 +236,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         providerConnectionRecords: null,
         importedEventRecords: null,
         cardOpportunityRecords: null,
+        relationshipMemoryRecords: null,
         cardProjectRecords: null,
         renderPacketRecords: null,
         orderRecords: null,
@@ -494,6 +499,15 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
     };
   }
 
+  if (route.id === "relationship-memories") {
+    const record = buildRelationshipMemoryRecord({ authContext, bodyText });
+    repositories.relationshipMemories.set(record.id, record);
+    return {
+      persisted: true,
+      payload: buildRelationshipMemoryRepositoryPayload(record, "memory")
+    };
+  }
+
   if (route.id === "render-packets") {
     const record = buildRenderPacketRecord({ authContext, bodyText });
     repositories.renderPackets.set(record.id, record);
@@ -692,6 +706,38 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     };
   }
 
+  if (route.id === "relationship-memories") {
+    const record = buildRelationshipMemoryRecord({ authContext, bodyText });
+    await client.query(
+      `INSERT INTO relationship_memories
+         (id, user_id, recipient_name, approved, sensitivity, locale, source, text, forgotten_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::timestamptz)
+       ON CONFLICT (id) DO UPDATE SET
+         recipient_name = EXCLUDED.recipient_name,
+         approved = EXCLUDED.approved,
+         sensitivity = EXCLUDED.sensitivity,
+         locale = EXCLUDED.locale,
+         source = EXCLUDED.source,
+         text = EXCLUDED.text,
+         forgotten_at = EXCLUDED.forgotten_at`,
+      [
+        record.id,
+        authContext.userId,
+        record.recipientName,
+        record.approved,
+        record.sensitivity,
+        record.locale,
+        record.source,
+        record.text,
+        record.forgottenAt
+      ]
+    );
+    return {
+      persisted: true,
+      payload: buildRelationshipMemoryRepositoryPayload(record, "postgres")
+    };
+  }
+
   if (route.id === "render-packets") {
     const record = buildRenderPacketRecord({ authContext, bodyText });
     await client.query(
@@ -877,6 +923,46 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
       table: "card_projects",
       runtimeMode,
       persisted: true
+    }
+  };
+}
+
+function buildRelationshipMemoryRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const recipientName = safeText(body.recipientName ?? body.recipient, "Recipient");
+  const text = safeMemoryText(body.text ?? body.note);
+  const decision = safeMemoryDecision(body.decision ?? (safeBoolean(body.forget) ? "forget" : "approve"));
+  const approved = decision === "approve";
+  return {
+    id: safeId(body.memoryId, stableRuntimeId("memory", authContext.userId, recipientName, text)),
+    userId: authContext.userId,
+    recipientName,
+    approved,
+    sensitivity: safeMemorySensitivity(body.sensitivity),
+    locale: safeLocale(body.locale),
+    source: safeMemorySource(body.source),
+    text,
+    forgottenAt: approved ? null : safeTimestamp(body.forgottenAt, new Date().toISOString())
+  };
+}
+
+function buildRelationshipMemoryRepositoryPayload(record, runtimeMode) {
+  return {
+    memoryId: record.id,
+    recipientName: record.recipientName,
+    approved: record.approved,
+    forgottenAt: record.forgottenAt,
+    memoryUseAllowed: record.approved && !record.forgottenAt,
+    privacyControls: {
+      customerApproved: record.approved,
+      rawProviderContentStored: false,
+      forgetSupported: true
+    },
+    repository: {
+      table: "relationship_memories",
+      runtimeMode,
+      persisted: true,
+      rawContentStored: false
     }
   };
 }
@@ -1099,6 +1185,7 @@ function buildDataRequestRepositoryPayload(record, runtimeMode) {
 }
 
 function persistedTablesForRoute(route) {
+  if (route.id === "relationship-memories") return ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"];
   if (route.id === "render-packets") return ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "api_jobs", "audit_log"];
   if (route.id === "manual-vendor-handoff") {
     return ["auth_sessions", "idempotency_keys", "render_packets", "orders", "order_events", "consent_records", "api_jobs", "audit_log"];
@@ -1198,6 +1285,26 @@ function safeArtifactUri(value, fallback) {
   const text = String(value ?? "").trim();
   if (/^(file|s3):\/\//.test(text)) return text.slice(0, 240);
   return fallback;
+}
+
+function safeMemoryText(value) {
+  const text = String(value ?? "").trim().replace(/\s+/g, " ");
+  return text.slice(0, 500) || "Customer-approved memory pending text review.";
+}
+
+function safeMemorySensitivity(value) {
+  const sensitivity = String(value ?? "normal").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
+  return ["normal", "sensitive", "restricted"].includes(sensitivity) ? sensitivity : "normal";
+}
+
+function safeMemorySource(value) {
+  const source = String(value ?? "customer-review").trim().toLowerCase().replace(/[^a-z0-9._:-]/g, "-");
+  return source.slice(0, 60) || "customer-review";
+}
+
+function safeMemoryDecision(value) {
+  const decision = String(value ?? "approve").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
+  return ["approve", "forget"].includes(decision) ? decision : "approve";
 }
 
 function safeText(value, fallback) {

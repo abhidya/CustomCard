@@ -5,6 +5,7 @@ const routes = [
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
@@ -142,6 +143,36 @@ await runCheck("persists repository-backed card project mutations", async () => 
   expect(fakeDb.cardProjects.length === 1, "card_projects row should be inserted");
 });
 
+await runCheck("persists repository-backed relationship memory mutations", async () => {
+  const result = await runtime.persistMutation({
+    route: route("relationship-memories"),
+    request: request({ token: customerToken, idempotencyKey: "relationship-memories-postgres-0001" }),
+    authContext: customerAuth,
+    bodyText: JSON.stringify({
+      memoryId: "memory-postgres-contract",
+      recipientName: "Sara",
+      text: "Sara keeps every handwritten note.",
+      sensitivity: "normal",
+      locale: "en-US",
+      decision: "approve"
+    }),
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: "relationship-memories",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    }
+  });
+
+  expect(result.statusCode === 202, "relationship memory mutation should be accepted");
+  expect(result.payload.runtimeMode === "postgres", "relationship memory mutation should report postgres runtime");
+  expect(result.payload.repositoryPersisted, "relationship memory should persist through repository path");
+  expect(result.payload.memoryId === "memory-postgres-contract", "relationship memory response should include persisted id");
+  expect(result.payload.memoryUseAllowed, "approved memory should be eligible for reuse");
+  expect(fakeDb.relationshipMemories.length === 1, "relationship_memories row should be inserted");
+});
+
 await runCheck("persists repository-backed manual vendor handoff mutations", async () => {
   const result = await runtime.persistMutation({
     route: route("manual-vendor-handoff"),
@@ -218,7 +249,7 @@ await runCheck("replays matching idempotent mutations", async () => {
 
   expect(result.statusCode === 202, "replay should return accepted status");
   expect(result.payload.idempotencyReplayed, "replay should mark idempotencyReplayed");
-  expect(fakeDb.idempotencyRecords.size === 5, "replay must not insert another idempotency record");
+  expect(fakeDb.idempotencyRecords.size === 6, "replay must not insert another idempotency record");
 });
 
 await runCheck("rejects idempotency conflicts", async () => {
@@ -246,6 +277,7 @@ const report = {
     providerConnections: fakeDb.providerConnections.length,
     importedEvents: fakeDb.importedEvents.length,
     cardOpportunities: fakeDb.cardOpportunities.length,
+    relationshipMemories: fakeDb.relationshipMemories.length,
     cardProjects: fakeDb.cardProjects.length,
     renderPackets: fakeDb.renderPackets.length,
     orders: fakeDb.orders.length,
@@ -323,6 +355,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
     providerConnections: [],
     importedEvents: [],
     cardOpportunities: [],
+    relationshipMemories: [],
     cardProjects: [],
     renderPackets: [],
     orders: [],
@@ -428,6 +461,21 @@ function createFakeClient(state) {
           locale: params[3],
           requiresRtlLayout: params[4],
           approvedMemoryIds: params[5]
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO relationship_memories")) {
+        state.relationshipMemories.push({
+          id: params[0],
+          userId: params[1],
+          recipientName: params[2],
+          approved: params[3],
+          sensitivity: params[4],
+          locale: params[5],
+          source: params[6],
+          text: params[7],
+          forgottenAt: params[8]
         });
         return { rows: [], rowCount: 1 };
       }

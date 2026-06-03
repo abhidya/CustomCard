@@ -33,9 +33,9 @@ skeleton for the production path. It includes:
   jobs, and audit logs.
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration,
   API/static server with contract/memory/Postgres runtime validation,
-  repository-backed render-packet, import-preview, card-project,
-  manual-vendor-handoff, and data-request mutation paths, and mobile-shell
-  scaffolding plus mobile contract validation.
+  repository-backed relationship-memory, render-packet, import-preview,
+  card-project, manual-vendor-handoff, and data-request mutation paths, and
+  mobile-shell scaffolding plus mobile contract validation.
 - Admin-only demo reset contract and script doctor for deterministic reviewer
   data across users, sessions, events, memories, projects, render packets,
   orders, consent, data requests, and audit rows.
@@ -101,25 +101,26 @@ into a free local MVP plus a contract-first production skeleton for an event-awa
 card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, account
 identity/recovery storage, memory and Postgres auth/idempotency runtime behavior,
-repository-backed render-packet, import-preview, card-project,
-manual-vendor-handoff, and data-request mutation coverage, public printer pricing
-research, local SVG/PDF print package export, temporary filesystem artifact-store
-write/read verification, injected S3-compatible artifact-store contract
-verification, provider-adapter readiness, domain boundaries, signed artifact
-handoff contracts, print contracts, order lifecycle, deployment shape, and safety
-gates with executable TypeScript, browser smoke tests, visual evidence, and
-infrastructure tests. Real external AI, OAuth, and ordering remain disabled
-until production credentials, consent flows, vendor terms, sandbox/live quote
-behavior, physical print certification, and security/legal review are complete.
+repository-backed relationship-memory, render-packet, import-preview,
+card-project, manual-vendor-handoff, and data-request mutation coverage, public
+printer pricing research, local SVG/PDF print package export, temporary
+filesystem artifact-store write/read verification, injected S3-compatible
+artifact-store contract verification, provider-adapter readiness, domain
+boundaries, signed artifact handoff contracts, print contracts, order lifecycle,
+deployment shape, and safety gates with executable TypeScript, browser smoke
+tests, visual evidence, and infrastructure tests.
+Real external AI, OAuth, and ordering remain disabled until production
+credentials, consent flows, vendor terms, sandbox/live quote behavior, physical
+print certification, and security/legal review are complete.
 
 ## Next Build Slice
 
 The highest-leverage next slice is turning the repository-backed route contracts
 into hosted runtime verification and broader product repositories:
 
-- Hosted auth token verification for the repository-backed render-packet,
-  import-preview, card-project, manual-vendor-handoff, and data-request routes.
-- Persistent relationship-memory repositories behind the same runtime pattern.
+- Hosted auth token verification for the repository-backed relationship-memory,
+  render-packet, import-preview, card-project, manual-vendor-handoff, and
+  data-request routes.
 - Live S3/MinIO render-packet artifact writing using the signed handoff
   contract.
 - Live seed execution against a deployed reviewer database.

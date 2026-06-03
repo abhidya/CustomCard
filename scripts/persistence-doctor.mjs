@@ -85,6 +85,9 @@ const apiSignals = [
   "accountRecoveryTable: true",
   "idempotencyTable: true",
   "appendOnlyAudit: true",
+  "relationshipMemoryRepository: true",
+  "/api/memories/review",
+  "relationship_memories",
   "renderPacketRepository: true",
   "/api/render-packets",
   "render_packets",
@@ -112,6 +115,7 @@ const postgresRuntimeSignals = [
   "INSERT INTO provider_connections",
   "INSERT INTO imported_events",
   "INSERT INTO card_opportunities",
+  "INSERT INTO relationship_memories",
   "INSERT INTO card_projects",
   "INSERT INTO render_packets",
   "INSERT INTO orders",
@@ -131,6 +135,8 @@ const postgresDoctorSignals = [
   "importedEvents",
   "cardOpportunities",
   "persists repository-backed import preview mutations",
+  "relationshipMemories",
+  "persists repository-backed relationship memory mutations",
   "cardProjects",
   "persists repository-backed card project mutations",
   "renderPackets",
@@ -152,6 +158,8 @@ const postgresIntegrationSignals = [
   "SELECT COUNT(*)::int AS count FROM provider_connections",
   "SELECT COUNT(*)::int AS count FROM imported_events",
   "SELECT COUNT(*)::int AS count FROM card_opportunities",
+  "persists real Postgres relationship memory repository mutation",
+  "SELECT COUNT(*)::int AS count FROM relationship_memories",
   "persists real Postgres card project repository mutation",
   "SELECT COUNT(*)::int AS count FROM card_projects",
   "persists real Postgres render packet repository mutation",
@@ -248,6 +256,7 @@ const report = {
       accountIdentities: true,
       accountRecoveryChallenges: true,
       artifactStoreWrites: true,
+      relationshipMemoryRepository: true,
       renderPacketRepository: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
@@ -258,9 +267,9 @@ const report = {
       auditLog: true
     },
     api: {
-      statefulRoutes: 11,
+      statefulRoutes: 12,
       adminPersistenceReadiness: true,
-      idempotentMutations: 6
+      idempotentMutations: 7
     },
     safety: {
       rawContentStored: false,

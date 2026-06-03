@@ -19,6 +19,7 @@ describe("api server wrapper", () => {
           accountIdentityTable: boolean;
           accountRecoveryTable: boolean;
           idempotencyTable: boolean;
+          relationshipMemoryRepository: boolean;
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
           manualVendorHandoffRepository: boolean;
@@ -34,6 +35,7 @@ describe("api server wrapper", () => {
           providerConnectionRecords: number | null;
           importedEventRecords: number | null;
           cardOpportunityRecords: number | null;
+          relationshipMemoryRecords: number | null;
           cardProjectRecords: number | null;
           renderPacketRecords: number | null;
           orderRecords: number | null;
@@ -49,7 +51,7 @@ describe("api server wrapper", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(87);
-    expect(report.readiness.routes.total).toBe(13);
+    expect(report.readiness.routes.total).toBe(14);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.persistence).toMatchObject({
       tables: 18,
@@ -57,6 +59,7 @@ describe("api server wrapper", () => {
       accountIdentityTable: true,
       accountRecoveryTable: true,
       idempotencyTable: true,
+      relationshipMemoryRepository: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
       manualVendorHandoffRepository: true,
@@ -107,7 +110,7 @@ describe("api server wrapper", () => {
       expect(health).toMatchObject({ service: "customcard-api", status: "ready", realOrdersEnabled: false });
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 13, admin: 4, idempotentMutations: 6 });
+      expect(readiness.routes).toMatchObject({ total: 14, admin: 4, idempotentMutations: 7 });
       expect(readiness.providers).toMatchObject({ total: 87, readyLocal: 16, credentialGated: 56, blocked: 6 });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
@@ -118,11 +121,12 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 18,
-        schemaBackedRoutes: 11,
+        schemaBackedRoutes: 12,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
         idempotencyTable: true,
+        relationshipMemoryRepository: true,
         importPreviewRepository: true,
         cardProjectRepository: true,
         manualVendorHandoffRepository: true,
@@ -380,6 +384,7 @@ describe("api server wrapper", () => {
         providerConnectionRecords: 0,
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
+        relationshipMemoryRecords: 0,
         cardProjectRecords: 0,
         renderPacketRecords: 0,
         orderRecords: 0,
@@ -529,6 +534,47 @@ describe("api server wrapper", () => {
         persistedTables: expect.arrayContaining(["provider_connections", "imported_events", "card_opportunities", "audit_log"])
       });
 
+      const memoryHeaders = {
+        ...bearer(customerToken),
+        "X-Idempotency-Key": "relationship-memories-0001"
+      };
+      const memoryReview = await postJson(
+        port,
+        "/api/memories/review",
+        {
+          memoryId: "memory-memory-api",
+          recipientName: "Sara",
+          text: "Sara keeps every handwritten note.",
+          sensitivity: "normal",
+          locale: "en-US",
+          decision: "approve"
+        },
+        memoryHeaders
+      );
+      expect(memoryReview.status).toBe(202);
+      expect(await memoryReview.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "user-demo",
+        repositoryPersisted: true,
+        memoryId: "memory-memory-api",
+        recipientName: "Sara",
+        approved: true,
+        forgottenAt: null,
+        memoryUseAllowed: true,
+        privacyControls: {
+          customerApproved: true,
+          rawProviderContentStored: false,
+          forgetSupported: true
+        },
+        repository: {
+          table: "relationship_memories",
+          runtimeMode: "memory",
+          persisted: true,
+          rawContentStored: false
+        },
+        persistedTables: expect.arrayContaining(["relationship_memories", "audit_log"])
+      });
+
       const cardProjectHeaders = {
         ...bearer(customerToken),
         "X-Idempotency-Key": "card-projects-0001"
@@ -642,12 +688,13 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 6,
-        auditRecords: 6,
+        idempotencyRecords: 7,
+        auditRecords: 7,
         queuedJobs: 2,
         providerConnectionRecords: 1,
         importedEventRecords: 1,
         cardOpportunityRecords: 1,
+        relationshipMemoryRecords: 1,
         cardProjectRecords: 1,
         renderPacketRecords: 1,
         orderRecords: 1,

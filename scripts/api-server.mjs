@@ -18,6 +18,7 @@ const routes = [
   { id: "admin-demo-reset", method: "POST", path: "/api/admin/demo-reset", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
@@ -59,12 +60,13 @@ const readiness = {
   },
   persistence: {
     tables: 18,
-    schemaBackedRoutes: 11,
+    schemaBackedRoutes: 12,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
     idempotencyTable: true,
     appendOnlyAudit: true,
+    relationshipMemoryRepository: true,
     importPreviewRepository: true,
     cardProjectRepository: true,
     manualVendorHandoffRepository: true,
@@ -262,6 +264,7 @@ function validateApiServerContract() {
     "/api/admin/demo-reset",
     "/api/import-preview",
     "/api/card-projects",
+    "/api/memories/review",
     "/api/render-packets",
     "/api/vendor-handoff/manual",
     "/api/data-requests"
@@ -288,6 +291,7 @@ function validateApiServerContract() {
   if (!readiness.persistence.accountRecoveryTable) blockers.push("API readiness is missing account recovery persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
+  if (!readiness.persistence.relationshipMemoryRepository) blockers.push("API readiness is missing relationship-memory repository persistence.");
   if (!readiness.persistence.importPreviewRepository) blockers.push("API readiness is missing import-preview repository persistence.");
   if (!readiness.persistence.cardProjectRepository) blockers.push("API readiness is missing card-project repository persistence.");
   if (!readiness.persistence.manualVendorHandoffRepository) {
@@ -369,6 +373,33 @@ function buildMutationContractPayload(route, bodyText) {
         table: "card_projects",
         runtimeMode: "contract",
         persisted: false
+      }
+    };
+  }
+
+  if (route.id === "relationship-memories") {
+    const recipientName = safeContractText(requestBody.recipientName, "Recipient");
+    const text = safeContractText(requestBody.text ?? requestBody.note, "Customer-approved memory");
+    const decision = safeMemoryDecision(requestBody.decision ?? (safeBoolean(requestBody.forget) ? "forget" : "approve"));
+    const memoryId = safeContractId(requestBody.memoryId, `memory-${stableContractHash(`${recipientName}:${text}`).slice(0, 8)}`);
+    const forgottenAt = decision === "forget" ? safeTimestamp(requestBody.forgottenAt, "2030-01-01T00:00:00.000Z") : null;
+    return {
+      ...basePayload,
+      memoryId,
+      recipientName,
+      approved: decision === "approve",
+      forgottenAt,
+      memoryUseAllowed: decision === "approve",
+      privacyControls: {
+        customerApproved: decision === "approve",
+        rawProviderContentStored: false,
+        forgetSupported: true
+      },
+      repository: {
+        table: "relationship_memories",
+        runtimeMode: "contract",
+        persisted: false,
+        rawContentStored: false
       }
     };
   }
@@ -559,6 +590,11 @@ function safeDataRequestType(value) {
 function safeDataRequestStatus(value) {
   const status = String(value ?? "pending_verification").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
   return ["pending_verification", "received", "processing", "completed", "rejected"].includes(status) ? status : "pending_verification";
+}
+
+function safeMemoryDecision(value) {
+  const decision = String(value ?? "approve").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
+  return ["approve", "forget"].includes(decision) ? decision : "approve";
 }
 
 function safeTimestamp(value, fallback) {

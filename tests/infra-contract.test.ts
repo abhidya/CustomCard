@@ -343,6 +343,7 @@ describe("production infrastructure contract", () => {
         providerConnections: number;
         importedEvents: number;
         cardOpportunities: number;
+        relationshipMemories: number;
         cardProjects: number;
         renderPackets: number;
         orders: number;
@@ -363,12 +364,13 @@ describe("production infrastructure contract", () => {
         postgresConfigured: true
       },
       persistence: {
-        idempotencyRecords: 5,
-        auditRecords: 5,
+        idempotencyRecords: 6,
+        auditRecords: 6,
         queuedJobs: 2,
         providerConnections: 1,
         importedEvents: 1,
         cardOpportunities: 1,
+        relationshipMemories: 1,
         cardProjects: 1,
         renderPackets: 1,
         orders: 1,
@@ -446,6 +448,7 @@ describe("production infrastructure contract", () => {
           authSessions: boolean;
           accountIdentities: boolean;
           accountRecoveryChallenges: boolean;
+          relationshipMemoryRepository: boolean;
           renderPacketRepository: boolean;
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
@@ -467,6 +470,7 @@ describe("production infrastructure contract", () => {
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
+      relationshipMemoryRepository: true,
       renderPacketRepository: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
@@ -475,7 +479,7 @@ describe("production infrastructure contract", () => {
       idempotencyReplay: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 11, idempotentMutations: 6 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 12, idempotentMutations: 7 });
     expect(report.readiness.safety).toMatchObject({
       rawContentStored: false,
       liveExternalCalls: false,

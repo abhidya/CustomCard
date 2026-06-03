@@ -21,6 +21,7 @@ const routes = [
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
@@ -42,6 +43,7 @@ let finalPersistence = {
   providerConnections: 0,
   importedEvents: 0,
   cardOpportunities: 0,
+  relationshipMemories: 0,
   cardProjects: 0,
   renderPackets: 0,
   orders: 0,
@@ -68,7 +70,7 @@ try {
          WHERE table_schema = 'public' AND table_type = 'BASE TABLE'`
       );
       const tableNames = new Set(tables.rows.map((row) => row.table_name));
-      for (const requiredTable of ["users", "auth_sessions", "provider_connections", "imported_events", "card_opportunities", "card_projects", "render_packets", "orders", "order_events", "consent_records", "data_requests", "idempotency_keys", "api_jobs", "audit_log"]) {
+      for (const requiredTable of ["users", "auth_sessions", "provider_connections", "imported_events", "card_opportunities", "relationship_memories", "card_projects", "render_packets", "orders", "order_events", "consent_records", "data_requests", "idempotency_keys", "api_jobs", "audit_log"]) {
         expect(tableNames.has(requiredTable), `Migration did not create ${requiredTable}.`);
       }
     });
@@ -86,15 +88,6 @@ try {
            ('session-user-demo', 'user-demo', $1, 'customer', NOW() + INTERVAL '1 hour'),
            ('session-admin-demo', 'admin-demo', $2, 'admin', NOW() + INTERVAL '1 hour')`,
         [hashSessionToken(customerToken), hashSessionToken(adminToken)]
-      );
-    });
-
-    await runCheck("seeds approved relationship memory", async () => {
-      await doctorPool.query(
-        `INSERT INTO relationship_memories
-           (id, user_id, recipient_name, approved, sensitivity, locale, source, text)
-         VALUES
-           ('memory-live-postgres', 'user-demo', 'Sara', TRUE, 'normal', 'en-US', 'doctor', 'Sara prefers quiet dinners.')`
       );
     });
 
@@ -152,6 +145,34 @@ try {
       expect(result.payload.repositoryPersisted, "Import-preview mutation should persist through repository path.");
       expect(result.payload.rawContentStored === false, "Import-preview mutation must not store raw content.");
       expect(result.payload.opportunities[0].opportunityId === "opportunity-live-postgres", "Import-preview response should return persisted opportunity id.");
+    });
+
+    await runCheck("persists real Postgres relationship memory repository mutation", async () => {
+      const result = await runtime.persistMutation({
+        route: route("relationship-memories"),
+        request: request({ token: customerToken, idempotencyKey: "relationship-memories-live-postgres-0001" }),
+        authContext: customerAuth,
+        bodyText: JSON.stringify({
+          memoryId: "memory-live-postgres",
+          recipientName: "Sara",
+          text: "Sara prefers quiet dinners.",
+          sensitivity: "normal",
+          locale: "en-US",
+          decision: "approve"
+        }),
+        responsePayload: {
+          service: "customcard-api",
+          status: "accepted-contract-only",
+          route: "relationship-memories",
+          realOrdersEnabled: false,
+          externalNetworkCalls: false
+        }
+      });
+      expect(result.statusCode === 202, "Relationship-memory mutation should be accepted.");
+      expect(result.payload.runtimeMode === "postgres", "Relationship-memory mutation should use postgres runtime.");
+      expect(result.payload.repositoryPersisted, "Relationship-memory mutation should persist through repository path.");
+      expect(result.payload.memoryId === "memory-live-postgres", "Relationship-memory response should return persisted id.");
+      expect(result.payload.memoryUseAllowed, "Approved relationship memory should be reusable.");
     });
 
     await runCheck("persists real Postgres card project repository mutation", async () => {
@@ -284,12 +305,13 @@ try {
 
     const persistenceCounts = await readPersistenceCounts(doctorPool);
     await runCheck("records real Postgres audit and queue rows", async () => {
-      expect(persistenceCounts.idempotencyRecords === 5, "Expected five idempotency records.");
-      expect(persistenceCounts.auditRecords === 5, "Expected five audit records.");
+      expect(persistenceCounts.idempotencyRecords === 6, "Expected six idempotency records.");
+      expect(persistenceCounts.auditRecords === 6, "Expected six audit records.");
       expect(persistenceCounts.queuedJobs === 2, "Expected two queued jobs.");
       expect(persistenceCounts.providerConnections === 1, "Expected one provider connection.");
       expect(persistenceCounts.importedEvents === 1, "Expected one imported event.");
       expect(persistenceCounts.cardOpportunities === 1, "Expected one card opportunity.");
+      expect(persistenceCounts.relationshipMemories === 1, "Expected one relationship memory.");
       expect(persistenceCounts.cardProjects === 1, "Expected one card project.");
       expect(persistenceCounts.renderPackets === 1, "Expected one render packet.");
       expect(persistenceCounts.orders === 1, "Expected one manual handoff order.");
@@ -323,13 +345,14 @@ try {
 }
 
 async function readPersistenceCounts(pool) {
-  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, cardProjects, renderPackets, orders, orderEvents, consentRecords, dataRequests] = await Promise.all([
+  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, relationshipMemories, cardProjects, renderPackets, orders, orderEvents, consentRecords, dataRequests] = await Promise.all([
     pool.query("SELECT COUNT(*)::int AS count FROM idempotency_keys"),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_log"),
     pool.query("SELECT COUNT(*)::int AS count FROM api_jobs"),
     pool.query("SELECT COUNT(*)::int AS count FROM provider_connections"),
     pool.query("SELECT COUNT(*)::int AS count FROM imported_events"),
     pool.query("SELECT COUNT(*)::int AS count FROM card_opportunities"),
+    pool.query("SELECT COUNT(*)::int AS count FROM relationship_memories"),
     pool.query("SELECT COUNT(*)::int AS count FROM card_projects"),
     pool.query("SELECT COUNT(*)::int AS count FROM render_packets"),
     pool.query("SELECT COUNT(*)::int AS count FROM orders"),
@@ -344,6 +367,7 @@ async function readPersistenceCounts(pool) {
     providerConnections: providerConnections.rows[0].count,
     importedEvents: importedEvents.rows[0].count,
     cardOpportunities: cardOpportunities.rows[0].count,
+    relationshipMemories: relationshipMemories.rows[0].count,
     cardProjects: cardProjects.rows[0].count,
     renderPackets: renderPackets.rows[0].count,
     orders: orders.rows[0].count,

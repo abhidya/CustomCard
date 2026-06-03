@@ -23,6 +23,7 @@ describe("api contracts", () => {
         "admin-demo-reset",
         "import-preview",
         "card-projects",
+        "relationship-memories",
         "render-packets",
         "manual-vendor-handoff",
         "data-requests"
@@ -37,6 +38,7 @@ describe("api contracts", () => {
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
     const adminDemoReset = apiRouteContracts.find((route) => route.id === "admin-demo-reset");
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
+    const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
@@ -52,6 +54,8 @@ describe("api contracts", () => {
     expect(adminDemoReset?.responseSchema).toEqual(expect.arrayContaining(["seedSummary", "signedArtifactUrls"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
+    expect(relationshipMemories?.path).toBe("/api/memories/review");
+    expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
   });
 

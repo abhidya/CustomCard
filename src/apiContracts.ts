@@ -213,6 +213,21 @@ export const apiRouteContracts: ApiRouteContract[] = [
     backedBy: ["createCardProject", "renderPrintPacket"]
   },
   {
+    id: "relationship-memories",
+    method: "POST",
+    path: "/api/memories/review",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "recipientName", "text", "decision"],
+    responseSchema: ["memoryId", "recipientName", "approved", "forgottenAt", "memoryUseAllowed"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Stores customer-approved relationship memory only; forget decision tombstones reuse.",
+    backedBy: ["approveRelationshipMemory", "forgetRelationshipMemory", "relationship_memories"]
+  },
+  {
     id: "render-packets",
     method: "POST",
     path: "/api/render-packets",
@@ -360,8 +375,11 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     "admin-persistence-readiness",
     "admin-demo-reset",
     "import-preview",
+    "card-projects",
+    "relationship-memories",
     "render-packets",
-    "manual-vendor-handoff"
+    "manual-vendor-handoff",
+    "data-requests"
   ]) {
     if (!ids.has(requiredRoute)) issues.push(`Missing API route contract: ${requiredRoute}`);
   }

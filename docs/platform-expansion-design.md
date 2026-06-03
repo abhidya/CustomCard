@@ -205,14 +205,15 @@ The server now has explicit runtime modes:
   mutations require `X-Idempotency-Key`, same-key replay returns the stored
   response, and same-key/different-body conflicts return `409`.
 - `postgres`: parameterized Postgres runtime path for auth sessions,
-  idempotency records, render-packet repository writes, import-preview
-  provider/event/opportunity writes, card-project repository writes, manual vendor
-  handoff order/consent/event writes, data-request privacy/consent writes, queue
-  jobs, and audit rows.
+  idempotency records, relationship-memory repository writes, render-packet
+  repository writes, import-preview provider/event/opportunity writes,
+  card-project repository writes, manual vendor handoff order/consent/event
+  writes, data-request privacy/consent writes, queue jobs, and audit rows.
   `npm run api:doctor:postgres` exercises this path with an injected fake `pg`
   pool, including wrong-role blocking, replay, conflict, render-packet insert,
-  import-preview insert, card-project insert, manual handoff insert, data-request
-  insert, audit, and queue-job inserts. The live doctor runs the
+  import-preview insert, relationship-memory insert, card-project insert, manual
+  handoff insert, data-request insert, audit, and queue-job inserts. The live
+  doctor runs the
   same shape against an isolated Postgres database; deployed production Postgres
   traffic is still not claimed.
 
@@ -224,10 +225,10 @@ includes 18 durable tables, including `auth_sessions`, `idempotency_keys`,
 `provider_connections`, `imported_events`, `card_opportunities`,
 `card_projects`, `api_jobs`, and append-only audit/order event tables. This
 proves the schema shape for production auth sessions, idempotency replay,
-repository-backed render-packet, import-preview, card-project, manual vendor
-handoff, and data-request mutations, queue-backed rendering and handoff jobs,
-consent/data requests, and operational audit without claiming that deployed
-production DB handlers are serving traffic.
+repository-backed relationship-memory, render-packet, import-preview,
+card-project, manual vendor handoff, and data-request mutations, queue-backed
+rendering and handoff jobs, consent/data requests, and operational audit without
+claiming that deployed production DB handlers are serving traffic.
 Render packets also carry artifact manifests, storage-provider metadata, signed
 URL expiry, and external-share approval gates.
 
@@ -252,10 +253,11 @@ The runtime remains fail-closed:
 - `npm run api:doctor:memory` verifies Bearer session and idempotency enforcement
   in the executable memory runtime.
 - `npm run persistence:doctor` verifies auth-session schema, idempotency replay,
-  render-packet repository signals, import-preview repository signals,
-  card-project repository signals, manual vendor handoff order/consent/event
-  repository signals, data-request privacy/consent repository signals, queue
-  jobs, append-only audit coverage, and 11 schema-backed API route mappings.
+  relationship-memory repository signals, render-packet repository signals,
+  import-preview repository signals, card-project repository signals, manual
+  vendor handoff order/consent/event repository signals, data-request
+  privacy/consent repository signals, queue jobs, append-only audit coverage, and
+  12 schema-backed API route mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, live observability provider verification, and managed secrets remain
@@ -287,13 +289,14 @@ Implemented checks:
   verification, checksum/byte-length matching, stored handoff manifests, no
   network calls, and no real orders.
 - `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior,
-  including repository-backed render-packet, import-preview, card-project, manual
-  vendor handoff, and data-request mutation persistence, through an injected fake
-  pool without requiring external database credentials.
+  including repository-backed relationship-memory, render-packet, import-preview,
+  card-project, manual vendor handoff, and data-request mutation persistence,
+  through an injected fake pool without requiring external database credentials.
 - `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
-  validates the same auth, idempotency, render-packet, import-preview,
-  card-project, manual-handoff, data-request, audit, and queue path against an
-  isolated live Postgres database after applying the committed migration.
+  validates the same auth, idempotency, relationship-memory, render-packet,
+  import-preview, card-project, manual-handoff, data-request, audit, and queue
+  path against an isolated live Postgres database after applying the committed
+  migration.
 - `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` validates
   hosted account identity storage, hashed recovery challenges, durable sessions,
   uniqueness, and audit logging against an isolated live Postgres database.
@@ -306,10 +309,10 @@ Implemented checks:
   default policy.
 - API contract and server tests validate customer/admin/mobile API bootstrap,
   provider readiness, idempotent mutation contracts, `/api/health`,
-  repository-backed render-packet, import-preview, card-project,
-  manual-vendor-handoff, and data-request mutations, and memory-runtime
-  auth/idempotency behavior.
-- Persistence contract tests validate 18 table contracts, 11 schema-backed API
+  repository-backed relationship-memory, render-packet, import-preview,
+  card-project, manual-vendor-handoff, and data-request mutations, and
+  memory-runtime auth/idempotency behavior.
+- Persistence contract tests validate 18 table contracts, 12 schema-backed API
   routes, account identity/recovery storage, idempotency replay, queue-backed
   routes, and migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
