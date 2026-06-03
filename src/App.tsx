@@ -223,6 +223,9 @@ function App() {
 
   return (
     <div className="appShell">
+      <a className="skipLink" href="#main-content">
+        Skip to main content
+      </a>
       <aside className="appRail" aria-label="CustomCard navigation">
         <div className="brandBlock">
           <span className="brandSigil">CC</span>
@@ -255,7 +258,7 @@ function App() {
         </div>
       </aside>
 
-      <main className="appMain">
+      <main className="appMain" id="main-content">
         <header className="topBar">
           <div>
             <p className="eyebrow">Runnable product workflow</p>

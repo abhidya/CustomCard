@@ -89,6 +89,12 @@ it after each meaningful implementation pass.
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
   app/worker writer IAM, safe defaults, and runtime env outputs without live
   cloud calls.
+- Security/privacy/accessibility baseline is checked by `npm run
+  security:doctor`, which statically verifies API security headers, CSP
+  no-frame/no-plugin/no-eval posture, non-root/container-hardened deployment
+  manifests, raw-content storage blocks, signed-artifact share controls, and
+  app-shell landmarks/skip-link behavior while reporting that no external audit
+  or legal review is claimed.
 - `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
@@ -113,6 +119,7 @@ npm run check
 npm run deployment:doctor
 npm run cloud:doctor
 npm run api:doctor
+npm run security:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -137,8 +144,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 127 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 119 tests passed; V8 report measured
+- Vitest: 18 test files passed, 128 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 120 tests passed; V8 report measured
   90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -163,6 +170,17 @@ npm run cloud:doctor
 Result: passed. The JSON report marked bucket, policy, IAM, inputs, outputs,
 and safety lanes `ready`; it verified the static AWS artifact-store module
 without live cloud calls or real orders.
+
+```text
+npm run security:doctor
+```
+
+Result: passed. The JSON report marked security, privacy, accessibility, and CI
+lanes `ready`; it verified the API security header/CSP baseline,
+non-root/container-hardened deployment manifests, raw-content storage blocks,
+signed-artifact share controls, app-shell landmarks, skip-link focus behavior,
+and no live provider calls or real orders. It explicitly reported no external
+audit or legal review claim.
 
 ```text
 npm run api:doctor
@@ -375,6 +393,7 @@ documentation claims found during the audit were corrected.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.
+- No external legal/security/privacy/accessibility audit.
 - No React Native render test, mobile emulator run, actual EAS/native build, or
   signed iOS/Android artifact; EAS profile and release-doctor contracts are
   covered.

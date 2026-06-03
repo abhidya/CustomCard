@@ -59,6 +59,9 @@ jobs:
       - name: Validate API contract readiness
         run: npm run api:doctor
 
+      - name: Validate security privacy accessibility baseline
+        run: npm run security:doctor
+
       - name: Validate API memory runtime
         run: npm run api:doctor:memory
 

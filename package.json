@@ -23,6 +23,7 @@
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "demo:doctor": "node scripts/demo-reset.mjs",
+    "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",
     "runtime:doctor": "node scripts/validate-runtime-env.mjs",

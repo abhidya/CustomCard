@@ -68,4 +68,4 @@ Local `.omx` logs show the repo moved through these phases:
 The current repo demonstrates a reviewable free local MVP and production
 skeleton. It does not demonstrate production auth, live OAuth, live AI
 generation, live vendor quote/order behavior, deployment, payment, legal
-approval, security review, or physical print certification.
+approval, external security review, or physical print certification.

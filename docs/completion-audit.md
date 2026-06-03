@@ -40,7 +40,7 @@ listed as a gap instead of treated as complete.
 | How do I run or inspect it? | README Run, Environment, and Verification sections. |
 | Which requirements are covered? | `docs/requirements-traceability.md`. |
 | What was verified? | `docs/verification.md`; latest recorded runs cover unit tests, coverage, build, Chrome smoke, contract API doctor, memory API doctor, Postgres runtime contract doctor, live Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor, artifact-store doctors including live MinIO/S3-compatible writes, persistence doctor, worker doctor, CI workflow contract, mobile contract tests, and mobile doctor. |
-| What remains risky or incomplete? | Live production account auth, deployed production Postgres integration, live OAuth, live AI generation, live vendor quotes/orders, live printer taxes/stock/pickup windows, payments, native mobile builds, deployment, legal/security review, and physical print certification. |
+| What remains risky or incomplete? | Live production account auth, deployed production Postgres integration, live OAuth, live AI generation, live vendor quotes/orders, live printer taxes/stock/pickup windows, payments, native mobile builds, deployment, external legal/security/privacy/accessibility audit, and physical print certification. |
 
 ## Current Audit Result
 
@@ -55,6 +55,6 @@ verification, and deployment-readiness expansion. The broader active production
 objective remains incomplete because deployed
 production Postgres integration, live production account auth, live OAuth, live
 AI/image providers, live vendor ordering, live-applied cloud deployment proof,
-physical print certification, and legal/security review are still missing. The
-repo is honest about the current stage and does not redefine missing external
-production capabilities as complete.
+physical print certification, and external legal/security/privacy/accessibility
+audit are still missing. The repo is honest about the current stage and does not
+redefine missing external production capabilities as complete.

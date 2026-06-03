@@ -13,6 +13,14 @@ describe("api server wrapper", () => {
       readiness: {
         providers: { total: number };
         routes: { total: number; mutations: number; idempotentMutations: number };
+        security: {
+          headers: number;
+          cspFrameAncestors: boolean;
+          cspObjectBlocked: boolean;
+          cspUnsafeEvalBlocked: boolean;
+          apiCachePolicy: string;
+          staticIndexCachePolicy: string;
+        };
         persistence: {
           tables: number;
           authSessionTable: boolean;
@@ -53,6 +61,14 @@ describe("api server wrapper", () => {
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(87);
     expect(report.readiness.routes.total).toBe(14);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
+    expect(report.readiness.security).toMatchObject({
+      headers: 7,
+      cspFrameAncestors: true,
+      cspObjectBlocked: true,
+      cspUnsafeEvalBlocked: true,
+      apiCachePolicy: "no-store",
+      staticIndexCachePolicy: "no-store"
+    });
     expect(report.readiness.persistence).toMatchObject({
       tables: 18,
       authSessionTable: true,
@@ -106,8 +122,16 @@ describe("api server wrapper", () => {
     try {
       await waitForApi(port, server);
 
-      const health = await getJson(port, "/api/health");
+      const healthResponse = await fetch(`http://127.0.0.1:${port}/api/health`);
+      expect(healthResponse.status).toBe(200);
+      expectSecurityHeaders(healthResponse);
+      expect(healthResponse.headers.get("cache-control")).toBe("no-store");
+      const health = await healthResponse.json();
       expect(health).toMatchObject({ service: "customcard-api", status: "ready", realOrdersEnabled: false });
+
+      const staticResponse = await fetch(`http://127.0.0.1:${port}/`);
+      expectSecurityHeaders(staticResponse);
+      expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 14, admin: 4, idempotentMutations: 7 });
@@ -728,6 +752,21 @@ function postJson(port: number, path: string, body: unknown, headers: Record<str
 
 function bearer(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
+}
+
+function expectSecurityHeaders(response: Response): void {
+  const csp = response.headers.get("content-security-policy");
+  expect(csp).toContain("default-src 'self'");
+  expect(csp).toContain("object-src 'none'");
+  expect(csp).toContain("frame-ancestors 'none'");
+  expect(csp).toContain("form-action 'self'");
+  expect(csp).not.toContain("'unsafe-eval'");
+  expect(response.headers.get("cross-origin-opener-policy")).toBe("same-origin");
+  expect(response.headers.get("cross-origin-resource-policy")).toBe("same-origin");
+  expect(response.headers.get("permissions-policy")).toContain("camera=()");
+  expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+  expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+  expect(response.headers.get("x-frame-options")).toBe("DENY");
 }
 
 async function waitForApi(port: number, server: ChildProcess): Promise<void> {

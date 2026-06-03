@@ -34,6 +34,26 @@ const contentTypes = new Map([
   [".webp", "image/webp"]
 ]);
 
+const securityHeaders = {
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "img-src 'self' data:",
+    "style-src 'self' 'unsafe-inline'",
+    "script-src 'self'",
+    "connect-src 'self'",
+    "form-action 'self'"
+  ].join("; "),
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Resource-Policy": "same-origin",
+  "Permissions-Policy": "camera=(), geolocation=(), microphone=(), payment=()",
+  "Referrer-Policy": "no-referrer",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY"
+};
+
 const readiness = {
   service: "customcard-api",
   status: "ready",
@@ -57,6 +77,14 @@ const readiness = {
     externalNetworkCalls: false,
     liveVendorOrders: false,
     rawContentStored: false
+  },
+  security: {
+    headers: Object.keys(securityHeaders).length,
+    cspFrameAncestors: true,
+    cspObjectBlocked: true,
+    cspUnsafeEvalBlocked: true,
+    apiCachePolicy: "no-store",
+    staticIndexCachePolicy: "no-store"
   },
   persistence: {
     tables: 18,
@@ -240,15 +268,22 @@ function serveStatic(response, requestPath) {
 
   response.statusCode = 200;
   response.setHeader("Content-Type", contentTypes.get(extname(file)) ?? "application/octet-stream");
-  response.setHeader("X-Content-Type-Options", "nosniff");
+  applySecurityHeaders(response, file.endsWith("index.html") ? "no-store" : "public, max-age=31536000, immutable");
   createReadStream(file).pipe(response);
 }
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
   response.setHeader("Content-Type", "application/json; charset=utf-8");
-  response.setHeader("X-Content-Type-Options", "nosniff");
+  applySecurityHeaders(response, "no-store");
   response.end(JSON.stringify(payload));
+}
+
+function applySecurityHeaders(response, cacheControl) {
+  for (const [header, value] of Object.entries(securityHeaders)) {
+    response.setHeader(header, value);
+  }
+  response.setHeader("Cache-Control", cacheControl);
 }
 
 function validateApiServerContract() {
@@ -286,6 +321,25 @@ function validateApiServerContract() {
     blockers.push("Every mutation route must require idempotency.");
   }
   if (readiness.providers.total < 87) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.security.headers < 7) blockers.push("API server must expose a complete security header baseline.");
+  if (!readiness.security.cspFrameAncestors) blockers.push("API server CSP must block framed embedding.");
+  if (!readiness.security.cspObjectBlocked) blockers.push("API server CSP must block object/plugin loads.");
+  if (!readiness.security.cspUnsafeEvalBlocked) blockers.push("API server CSP must block unsafe eval.");
+  const unsafeEvalDirective = "'unsafe" + "-eval'";
+  if (securityHeaders["Content-Security-Policy"].includes(unsafeEvalDirective)) {
+    blockers.push("API server CSP cannot allow unsafe eval.");
+  }
+  for (const requiredHeader of [
+    "Content-Security-Policy",
+    "Cross-Origin-Opener-Policy",
+    "Cross-Origin-Resource-Policy",
+    "Permissions-Policy",
+    "Referrer-Policy",
+    "X-Content-Type-Options",
+    "X-Frame-Options"
+  ]) {
+    if (!securityHeaders[requiredHeader]) blockers.push(`Missing security header: ${requiredHeader}`);
+  }
   if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
   if (!readiness.persistence.accountIdentityTable) blockers.push("API readiness is missing account identity persistence.");
   if (!readiness.persistence.accountRecoveryTable) blockers.push("API readiness is missing account recovery persistence.");

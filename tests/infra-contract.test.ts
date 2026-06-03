@@ -88,6 +88,7 @@ describe("production infrastructure contract", () => {
     expect(dockerfile).toContain("COPY src ./src");
     expect(dockerfile).toContain("COPY apps/mobile/src ./apps/mobile/src");
     expect(dockerfile).toContain("COPY infra ./infra");
+    expect(dockerfile).toContain("USER node");
     expect(dockerfile).not.toContain("vite preview");
   });
 
@@ -114,6 +115,13 @@ describe("production infrastructure contract", () => {
     expect(k8s).toContain("readinessProbe:");
     expect(k8s).toContain("livenessProbe:");
     expect(k8s).toContain("/api/health");
+    expect(k8s).toContain("seccompProfile:");
+    expect(k8s).toContain("type: RuntimeDefault");
+    expect(k8s).toContain("allowPrivilegeEscalation: false");
+    expect(k8s).toContain('drop: ["ALL"]');
+    expect(k8s).toContain("runAsGroup: 1000");
+    expect(k8s).toContain("runAsNonRoot: true");
+    expect(k8s).toContain("runAsUser: 1000");
     expect(k8s).not.toContain("replace-me");
     expect(k8s).not.toContain("ghcr.io/example");
     expect(k8s).not.toContain(":latest");
@@ -291,6 +299,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
+    expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
@@ -345,6 +354,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run deployment:doctor");
     expect(workflow).toContain("npm run cloud:doctor");
     expect(workflow).toContain("npm run api:doctor");
+    expect(workflow).toContain("npm run security:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run api:doctor:postgres:live");
@@ -537,6 +547,41 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "inputs", status: "ready" }),
         expect.objectContaining({ lane: "outputs", status: "ready" }),
         expect.objectContaining({ lane: "safety", status: "ready" })
+      ])
+    );
+  });
+
+  it("emits a security privacy accessibility baseline report", () => {
+    const output = execFileSync("npm", ["run", "security:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      externalAudit: boolean;
+      legalReview: boolean;
+      liveProviderCalls: boolean;
+      realOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-security-privacy-accessibility-doctor",
+      status: "ready",
+      externalAudit: false,
+      legalReview: false,
+      liveProviderCalls: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "security", status: "ready" }),
+        expect.objectContaining({ lane: "privacy", status: "ready" }),
+        expect.objectContaining({ lane: "accessibility", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
       ])
     );
   });

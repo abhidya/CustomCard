@@ -40,6 +40,23 @@ button:disabled {
   opacity: 0.55;
 }
 
+.skipLink {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 20;
+  transform: translateY(-150%);
+  padding: 10px 12px;
+  border-radius: 7px;
+  color: #ffffff;
+  background: #172927;
+  box-shadow: 0 10px 24px rgba(23, 41, 39, 0.24);
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
 input,
 select,
 textarea {

@@ -26,8 +26,9 @@
   no production OAuth, vendor, payment, or print-certification access exists in
   this repo state.
 - Unknown or unrecoverable: production provider credentials, vendor sandbox
-  terms, payment processor decisions, deployment target, legal/security review
-  outcome, live AI/image-provider cost behavior, and physical print QA results.
+  terms, payment processor decisions, deployment target, external legal/security
+  review outcome, live AI/image-provider cost behavior, and physical print QA
+  results.
 
 ## What Changed
 
@@ -119,12 +120,13 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 127 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 128 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 83.65% branches, 97.19% functions, 95.25% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
+| Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
 | API readiness | `npm run api:doctor` | Passed; 14 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, 18 persistence tables, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
@@ -214,7 +216,7 @@
 - No React Native render test, emulator run, actual EAS/native build, or signed
   mobile artifact; native release profiles and release doctor are covered.
 - No physical print certification.
-- No legal, security, privacy, or accessibility audit.
+- No external legal/security/privacy/accessibility audit.
 - No browser UI unit-coverage instrumentation; UI remains covered by smoke and
   visual checks.
 
@@ -228,4 +230,4 @@ visual evidence, and honest handoff notes.
 Not ready to claim: production SaaS, live OAuth integration, paid AI generation,
 direct retail-printer ordering, live charges/refunds, certified physical print
 quality, live observability operations, deployed service, native mobile release,
-or legally/security-reviewed product.
+or externally audited legally/security-reviewed product.

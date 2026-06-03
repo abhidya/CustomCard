@@ -60,10 +60,20 @@ spec:
       labels:
         app: customcard-web
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: assert-runtime-env
           image: ghcr.io/customcard/customcard:0.1.0
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
           command: ["npm", "run", "runtime:doctor"]
           envFrom:
             - secretRef:
@@ -74,6 +84,13 @@ spec:
         - name: web
           image: ghcr.io/customcard/customcard:0.1.0
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
           ports:
             - containerPort: 4173
           envFrom:
@@ -115,10 +132,20 @@ spec:
       labels:
         app: customcard-worker
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: worker
           image: ghcr.io/customcard/customcard:0.1.0
           imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
           command: ["sh", "-c", "npm run runtime:doctor && npm run worker"]
           envFrom:
             - secretRef:

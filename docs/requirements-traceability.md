@@ -144,7 +144,8 @@ Requirement types:
 - Public printer prices are review-only observations with a 30-day source
   freshness contract, not live quote, tax, coupon, stock, or pickup-window
   guarantees.
-- No legal, security, privacy, or accessibility audit.
+- No external legal/security/privacy/accessibility audit; repo-local baseline
+  doctor covers concrete security/privacy/accessibility signals only.
 - Browser UI smoke behavior is not included in the V8 unit coverage percentage.
 - No real droplet or Kubernetes deployment has been executed.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet

@@ -20,7 +20,8 @@ The system remains adapter-first:
   environment variables, safety gates, blocked live-order providers, and cloud
   runtime shape.
 - Provider adapters are data contracts first. Live network calls are not enabled
-  until credentials, consent, logging, cost controls, and security review exist.
+  until credentials, consent, logging, cost controls, and external security
+  review exist.
 - Each capability must have at least one free local fallback so review, tests,
   and demos do not require paid APIs.
 
@@ -363,4 +364,6 @@ Remaining high-risk work:
 - No cloud deployment proof against a real cluster.
 - Hosted GitHub Actions verification exists for main pushes, but there is still
   no live deployment proof against a real cluster.
-- No legal/security/privacy/accessibility audit.
+- No external legal/security/privacy/accessibility audit; the repo-local
+  baseline doctor verifies deploy headers, raw-content blocks, artifact-share
+  controls, container hardening, and app-shell accessibility signals.

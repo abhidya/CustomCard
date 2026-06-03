@@ -99,6 +99,9 @@ environment configuration instead of static placeholders.
 - Tested AWS artifact-store IaC contract for an encrypted, versioned,
   private-by-default S3 bucket, prefix-scoped app/worker IAM policy, lifecycle
   cleanup, and runtime env outputs.
+- Tested repo-local security/privacy/accessibility baseline for HTTP security
+  headers, raw-content storage blocks, signed-artifact share controls,
+  non-root/container-hardened deployment manifests, and app-shell landmarks.
 
 ## Run
 
@@ -192,6 +195,7 @@ npm run check
 npm run deployment:doctor
 npm run cloud:doctor
 npm run api:doctor
+npm run security:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -224,10 +228,10 @@ shape only; they do not prove a real cloud cluster, AWS account, or droplet
 deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
-doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
+doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
+accessibility baseline doctor, memory-runtime API doctor, Postgres runtime
 contract doctor, live Postgres integration doctor, Postgres API HTTP doctor,
-cloud artifact IaC doctor, account-auth storage/recovery doctor,
-artifact-store filesystem plus
+account-auth storage/recovery doctor, artifact-store filesystem plus
 S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
 persistence doctor, demo reset doctor, worker readiness, mobile doctor, and
 mobile native release doctor on pushes to `main` and pull requests.
@@ -258,8 +262,8 @@ retail-printer ordering, live telemetry ingestion/alerting, live-applied cloud
 bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
 deployed production Postgres API integration, production hosted account-token
 verification outside the isolated live Postgres doctors, a produced/signed
-native mobile artifact or emulator render proof, deployment evidence,
-legal/security review, or physical print certification. Those paths are
-represented as contracts and hard gates so reviewers can inspect the system
-shape without mistaking the free local MVP for a certified production
+native mobile artifact or emulator render proof, deployment evidence, external
+legal/security/privacy/accessibility audit, or physical print certification.
+Those paths are represented as contracts and hard gates so reviewers can inspect
+the system shape without mistaking the free local MVP for a certified production
 fulfillment service.

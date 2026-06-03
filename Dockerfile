@@ -17,5 +17,6 @@ COPY scripts ./scripts
 COPY src ./src
 COPY apps/mobile/src ./apps/mobile/src
 COPY infra ./infra
+USER node
 EXPOSE 4173
 CMD ["node", "scripts/api-server.mjs"]

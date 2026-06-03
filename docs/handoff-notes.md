@@ -71,7 +71,9 @@ skeleton for the production path. It includes:
 - No React Native render test, emulator run, actual EAS/native build, or signed
   mobile artifact; EAS profiles and release doctor are covered.
 - No physical print certification.
-- No legal or security review.
+- No external legal/security/privacy/accessibility audit; repo-local baseline
+  checks cover deploy headers, privacy storage blocks, artifact-share controls,
+  container hardening, and app-shell accessibility signals.
 - No deployment has been performed in this pass.
 - Hosted GitHub Actions verification exists for main pushes; no production
   deployment has been performed.
@@ -119,7 +121,7 @@ deployment shape, and safety gates with executable TypeScript, browser smoke
 tests, visual evidence, and infrastructure tests.
 Real external AI, OAuth, and ordering remain disabled until production
 credentials, consent flows, vendor terms, sandbox/live quote behavior, physical
-print certification, and security/legal review are complete.
+print certification, and external security/legal review are complete.
 
 ## Next Build Slice
 

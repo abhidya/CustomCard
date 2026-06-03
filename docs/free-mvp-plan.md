@@ -23,7 +23,7 @@ preserving the production integration gates from the earlier service skeleton.
 - Live vendor quotes, taxes, coupons, stock, pickup-window checks, payments,
   refunds, or real order placement.
 - Physical print certification.
-- Legal, privacy, security, accessibility, and deployment audits.
+- External legal, privacy, security, accessibility, and deployment audits.
 
 ## Design Direction
 
