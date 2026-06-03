@@ -6,6 +6,7 @@ import {
   buildEventImportRuntime,
   buildImageGenerationRuntime,
   buildNotificationRuntime,
+  buildPaymentRuntime,
   buildProviderAdapterRuntime,
   buildTextChatRuntime,
   buildVendorRuntime,
@@ -18,6 +19,9 @@ import {
 
 const readyEnv: ProviderRuntimeEnv = {
   ANTHROPIC_API_KEY: "configured-anthropic-key",
+  ADYEN_API_KEY: "configured-adyen-api-key",
+  ADYEN_HMAC_KEY: "configured-adyen-hmac-key",
+  ADYEN_MERCHANT_ACCOUNT: "configured-adyen-merchant-account",
   AUTH_SESSION_SECRET: "configured-auth-secret",
   AUTH0_AUDIENCE: "https://api.customcard.test",
   AUTH0_CLIENT_ID: "configured-auth0-client-id",
@@ -45,6 +49,8 @@ const readyEnv: ProviderRuntimeEnv = {
   COGNITO_DOMAIN: "customcard-auth",
   COGNITO_USER_POOL_ID: "us-east-1_customcard",
   CUSTOMCARD_AUTH_CALLBACK_URL: "https://customcard.test/auth/callback",
+  CUSTOMCARD_PAYMENT_CANCEL_URL: "https://customcard.test/payment/cancel",
+  CUSTOMCARD_PAYMENT_SUCCESS_URL: "https://customcard.test/payment/success",
   CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
   DEEPSEEK_API_KEY: "configured-deepseek-key",
@@ -72,6 +78,9 @@ const readyEnv: ProviderRuntimeEnv = {
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   OPENAI_API_KEY: "configured-openai-key",
+  PAYPAL_CLIENT_ID: "configured-paypal-client-id",
+  PAYPAL_CLIENT_SECRET: "configured-paypal-client-secret",
+  PAYPAL_WEBHOOK_ID: "configured-paypal-webhook-id",
   PERPLEXITY_API_KEY: "configured-perplexity-key",
   POSTMARK_SERVER_TOKEN: "configured-postmark-server-token",
   POSTGRES_PASSWORD: "configured-postgres-password",
@@ -81,11 +90,16 @@ const readyEnv: ProviderRuntimeEnv = {
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   SENDGRID_API_KEY: "configured-sendgrid-key",
+  SQUARE_ACCESS_TOKEN: "configured-square-access-token",
+  SQUARE_LOCATION_ID: "configured-square-location-id",
+  SQUARE_WEBHOOK_SIGNATURE_KEY: "configured-square-webhook-signature-key",
   STABILITY_API_KEY: "configured-stability-key",
   STAPLES_VENDOR_MODE: "certification-configured-only",
   SUPABASE_ANON_KEY: "configured-supabase-anon-key",
   SUPABASE_SERVICE_ROLE_KEY: "configured-supabase-service-role-key",
   SUPABASE_URL: "https://customcard-test.supabase.co",
+  STRIPE_SECRET_KEY: "configured-stripe-secret-key",
+  STRIPE_WEBHOOK_SECRET: "configured-stripe-webhook-secret",
   TOGETHER_API_KEY: "configured-together-key",
   TRANSACTIONAL_EMAIL_API_KEY: "configured-email-key",
   TRANSACTIONAL_EMAIL_FROM: "cards@example.test",
@@ -110,7 +124,10 @@ const openGates: ProviderGateState = {
   metadataSchemaValidated: true,
   modelQualityReviewed: true,
   networkAllowlisted: true,
+  noCardDataStorage: true,
   notificationOptInRecorded: true,
+  idempotencyKeyReady: true,
+  paymentSandboxConfigured: true,
   physicalPrintQaRecorded: true,
   piiMinimized: true,
   promptAuditApproved: true,
@@ -118,10 +135,12 @@ const openGates: ProviderGateState = {
   rawContentStorageDisabled: true,
   revocationHandlingReady: true,
   spendLimitCents: 100,
+  refundPathDocumented: true,
   sensitiveContentExcluded: true,
   suppressionListChecked: true,
   tenantReviewed: true,
-  vendorCertificationRecorded: true
+  vendorCertificationRecorded: true,
+  webhookSignatureVerified: true
 };
 
 const textInput = {
@@ -166,6 +185,19 @@ const notificationInput = {
   message: "Sara's card for sara@example.com is ready. Call +1 212 555 0199 if blocked. Payment 4111 1111 1111 1111 should never leak.",
   locale: "en-US",
   optInRecorded: true
+};
+
+const paymentInput = {
+  amountCents: 699,
+  currency: "USD",
+  projectId: "card-project-123",
+  customerId: "sara@example.com",
+  description: "Custom card checkout for sara@example.com with card 4111 1111 1111 1111 hidden.",
+  successPath: "/customer/payment/success",
+  cancelPath: "/customer/payment/cancel",
+  sandboxMode: true,
+  idempotencyKey: "payment-idempotency-key",
+  refundPathDocumented: true
 };
 
 describe("provider runtime contracts", () => {
@@ -518,6 +550,77 @@ describe("provider runtime contracts", () => {
     );
   });
 
+  it("builds sandbox-only no-network payment request contracts", () => {
+    const providerIds = [
+      "stripe-checkout-payment",
+      "paypal-orders-payment",
+      "square-payments-sandbox",
+      "adyen-checkout-payment"
+    ];
+
+    for (const providerId of providerIds) {
+      const result = buildPaymentRuntime(providerId, paymentInput, readyEnv, openGates);
+      const serializedBody = JSON.stringify(result.request?.body);
+      const serializedHeaders = JSON.stringify(result.request?.headers);
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.method, providerId).toBe("POST");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["payment-intent", "no-card-data-storage", "idempotent-mutation", "sandbox-only"])
+      );
+      expect(serializedHeaders, providerId).not.toContain("configured-");
+      expect(serializedBody, providerId).toContain("[redacted-email]");
+      expect(serializedBody, providerId).toContain("[redacted-payment]");
+      expect(serializedBody, providerId).toContain("real_charges_enabled");
+      expect(serializedBody, providerId).not.toContain("sara@example.com");
+      expect(serializedBody, providerId).not.toContain("4111 1111 1111 1111");
+    }
+
+    expect(buildPaymentRuntime("stripe-checkout-payment", paymentInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.stripe.com/v1/checkout/sessions",
+      headers: expect.objectContaining({
+        authorization: "Bearer {STRIPE_SECRET_KEY}",
+        "idempotency-key": "{CUSTOMCARD_IDEMPOTENCY_KEY}"
+      })
+    });
+    expect(buildPaymentRuntime("paypal-orders-payment", paymentInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api-m.sandbox.paypal.com/v2/checkout/orders",
+      headers: expect.objectContaining({
+        authorization: "Bearer {paypal-oauth-access-token}",
+        "paypal-request-id": "{CUSTOMCARD_IDEMPOTENCY_KEY}"
+      })
+    });
+    expect(buildPaymentRuntime("square-payments-sandbox", paymentInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://connect.squareupsandbox.com/v2/payments",
+      headers: expect.objectContaining({ authorization: "Bearer {SQUARE_ACCESS_TOKEN}" })
+    });
+    expect(buildPaymentRuntime("adyen-checkout-payment", paymentInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://checkout-test.adyen.com/v71/payments",
+      headers: expect.objectContaining({ "x-api-key": "{ADYEN_API_KEY}" })
+    });
+  });
+
+  it("blocks payment providers without sandbox, idempotency, refund, and webhook gates", () => {
+    const result = buildPaymentRuntime(
+      "stripe-checkout-payment",
+      { ...paymentInput, sandboxMode: false, idempotencyKey: undefined, refundPathDocumented: false },
+      readyEnv,
+      { networkAllowlisted: true }
+    );
+
+    expect(result.mode).toBe("blocked");
+    expect(result.request).toBeUndefined();
+    expect(result.readiness.blockedReasons).toEqual(
+      expect.arrayContaining([
+        "Missing safety gate: payment sandbox",
+        "Missing safety gate: payment idempotency key",
+        "Missing safety gate: refund path documented",
+        "Missing safety gate: webhook signature verification"
+      ])
+    );
+  });
+
   it("blocks provider imports when consent and schema gates are absent", () => {
     const calendar = buildEventImportRuntime("google-calendar-events", importInput, readyEnv, {});
     const graphCalendar = buildEventImportRuntime("microsoft-graph-calendar", importInput, readyEnv, {
@@ -550,6 +653,7 @@ describe("provider runtime contracts", () => {
     const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const notification = buildNotificationRuntime("browser-download-notification", notificationInput);
+    const payment = buildPaymentRuntime("no-payment-checkout-gate", paymentInput);
     const printPackage = buildProviderAdapterRuntime("local-print-package-export");
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
     const pricing = buildVendorRuntime("public-printer-pricing-research", { vendorId: "walgreens" });
@@ -569,6 +673,8 @@ describe("provider runtime contracts", () => {
     expect(image.localResult?.width).toBe(1500);
     expect(notification.mode).toBe("local-result");
     expect(notification.localResult).toMatchObject({ noNetwork: true, visibleOnly: true });
+    expect(payment.mode).toBe("local-result");
+    expect(payment.localResult).toMatchObject({ noNetwork: true, realChargesEnabled: false, cardDataStored: false });
     expect(printPackage.mode).toBe("local-result");
     expect(printPackage.localResult).toMatchObject({
       fileCount: 6,

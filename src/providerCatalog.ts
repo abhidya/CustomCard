@@ -8,7 +8,8 @@ export type ProviderCapability =
   | "memory"
   | "vendor-handoff"
   | "cloud-runtime"
-  | "notification";
+  | "notification"
+  | "payment";
 
 export type ProviderStatus = "ready-local" | "credential-gated" | "contract-only" | "blocked";
 export type ProviderCost = "free-local" | "free-tier" | "usage-based" | "self-hosted" | "manual";
@@ -92,7 +93,8 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
   memory: "Memory",
   "vendor-handoff": "Vendor handoff",
   "cloud-runtime": "Cloud runtime",
-  notification: "Notification"
+  notification: "Notification",
+  payment: "Payment"
 };
 
 export const providerCatalog: ProviderAdapter[] = [
@@ -1166,6 +1168,119 @@ export const providerCatalog: ProviderAdapter[] = [
     detail: "Documents a future notification adapter without selecting a paid provider."
   },
   {
+    id: "no-payment-checkout-gate",
+    label: "No-payment checkout gate",
+    provider: "Local UI",
+    capability: "payment",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["No card data stored", "Real charges disabled"],
+    roleSurface: ["customer", "admin"],
+    priority: 9.9,
+    detail: "Keeps the free MVP in manual handoff mode with no card collection or live charge."
+  },
+  {
+    id: "stripe-checkout-payment",
+    label: "Stripe Checkout payment",
+    provider: "Stripe",
+    capability: "payment",
+    lane: "Payment sandbox",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: [
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "CUSTOMCARD_PAYMENT_SUCCESS_URL",
+      "CUSTOMCARD_PAYMENT_CANCEL_URL"
+    ],
+    safetyGates: [
+      "Payment sandbox",
+      "No card data storage",
+      "Idempotency key",
+      "Refund path documented",
+      "Webhook signature verification",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 9.91,
+    detail: "Prepares Stripe Checkout Session contracts without collecting card data or creating live charges.",
+    docsUrl: "https://docs.stripe.com/api/checkout/sessions/create"
+  },
+  {
+    id: "paypal-orders-payment",
+    label: "PayPal Orders payment",
+    provider: "PayPal",
+    capability: "payment",
+    lane: "Payment sandbox",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: [
+      "PAYPAL_CLIENT_ID",
+      "PAYPAL_CLIENT_SECRET",
+      "PAYPAL_WEBHOOK_ID",
+      "CUSTOMCARD_PAYMENT_SUCCESS_URL",
+      "CUSTOMCARD_PAYMENT_CANCEL_URL"
+    ],
+    safetyGates: [
+      "Payment sandbox",
+      "No card data storage",
+      "Idempotency key",
+      "Refund path documented",
+      "Webhook signature verification",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 9.92,
+    detail: "Prepares PayPal Orders v2 sandbox contracts while keeping capture and refunds disabled.",
+    docsUrl: "https://developer.paypal.com/docs/api/orders/v2/#orders_create"
+  },
+  {
+    id: "square-payments-sandbox",
+    label: "Square Payments sandbox",
+    provider: "Square",
+    capability: "payment",
+    lane: "Payment sandbox",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["SQUARE_ACCESS_TOKEN", "SQUARE_LOCATION_ID", "SQUARE_WEBHOOK_SIGNATURE_KEY"],
+    safetyGates: [
+      "Payment sandbox",
+      "No card data storage",
+      "Idempotency key",
+      "Refund path documented",
+      "Webhook signature verification",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 9.93,
+    detail: "Prepares Square Payments API sandbox contracts with nonce-only source handling.",
+    docsUrl: "https://developer.squareup.com/docs/payments-api/take-payments"
+  },
+  {
+    id: "adyen-checkout-payment",
+    label: "Adyen Checkout payment",
+    provider: "Adyen",
+    capability: "payment",
+    lane: "Payment sandbox",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["ADYEN_API_KEY", "ADYEN_MERCHANT_ACCOUNT", "ADYEN_HMAC_KEY", "CUSTOMCARD_PAYMENT_SUCCESS_URL"],
+    safetyGates: [
+      "Payment sandbox",
+      "No card data storage",
+      "Idempotency key",
+      "Refund path documented",
+      "Webhook signature verification",
+      "Network allowlist"
+    ],
+    roleSurface: ["admin"],
+    priority: 9.94,
+    detail: "Prepares Adyen Checkout API sandbox payment contracts with tokenized client-side payment data only.",
+    docsUrl: "https://docs.adyen.com/api-explorer/Checkout/latest/post/payments"
+  },
+  {
     id: "docker-compose-dev",
     label: "Docker Compose dev",
     provider: "Docker",
@@ -1267,6 +1382,7 @@ export function buildCustomerPanelModel(adapters: ProviderAdapter[] = providerCa
     firstReady("text-chat"),
     firstReady("image-generation"),
     firstReady("render-export"),
+    firstReady("payment"),
     firstReady("vendor-handoff")
   ]
     .filter((adapter): adapter is ProviderAdapter => Boolean(adapter))

@@ -52,15 +52,18 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Notifications: local UI status ready; credential-gated Resend, SendGrid,
   Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, and Firebase
   Cloud Messaging contracts; generic transactional email contract gated.
+- Payments: local no-payment gate ready; credential-gated Stripe Checkout,
+  PayPal Orders, Square Payments, and Adyen Checkout sandbox contracts. Live
+  charges, captures, refunds, disputes, taxes, and settlement remain unverified.
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
 
 `src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
 It can evaluate readiness for every adapter, reject placeholder credentials,
 build redacted no-network request shapes for credential-gated text, image,
-event, contact, hosted-auth, and notification providers, and keep live vendor
-adapters blocked even if test credentials and approval gates are present. These
-contracts intentionally stop before `fetch` or any SDK call.
+event, contact, hosted-auth, notification, and payment providers, and keep live
+vendor adapters blocked even if test credentials and approval gates are present.
+These contracts intentionally stop before `fetch` or any SDK call.
 
 Official documentation anchors used for the adapter contracts:
 
@@ -109,6 +112,10 @@ Official documentation anchors used for the adapter contracts:
 - WhatsApp Cloud API message API: https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-phone-number/message-api
 - Expo push notification sending: https://docs.expo.dev/push-notifications/sending-notifications/
 - Firebase Cloud Messaging HTTP v1: https://firebase.google.com/docs/cloud-messaging/send/v1-api
+- Stripe Checkout Session creation: https://docs.stripe.com/api/checkout/sessions/create
+- PayPal Orders API create order: https://developer.paypal.com/docs/api/orders/v2/#orders_create
+- Square Payments API overview: https://developer.squareup.com/docs/payments-api/take-payments
+- Adyen Checkout payments API: https://docs.adyen.com/api-explorer/Checkout/latest/post/payments
 
 ## Customer Panel
 
@@ -236,9 +243,10 @@ Implemented checks:
   external provider docs/env gates, admin model, customer model, and blocked
   vendor status.
 - `src/providerRuntime.test.ts` validates executable readiness for every
-  catalog adapter, redacted no-network request contracts for chat/image
-  providers, metadata-only import contracts, placeholder-secret rejection, free
-  local fallbacks, and hard-blocked live vendor order adapters.
+  catalog adapter, redacted no-network request contracts for chat/image/
+  notification/payment providers, metadata-only import contracts,
+  placeholder-secret rejection, free local fallbacks, and hard-blocked live
+  vendor order adapters.
 - `src/printerPricing.test.ts` validates source-backed public price
   observations, minimum-quantity totals, manual-confirmation requirements, and
   the no-live-quote boundary.
@@ -273,7 +281,7 @@ Remaining high-risk work:
 
 - No live OAuth flow.
 - No live AI/image provider call.
-- No payment, live quote, or live order adapter.
+- No live payment charge/refund, live quote, or live order adapter.
 - No live printer tax, coupon, stock, or pickup-window integration.
 - No live object-store upload or cloud object-store integration; signed
   render-packet URL contracts are covered.

@@ -36,6 +36,11 @@ export interface ProviderGateState {
   notificationOptInRecorded?: boolean;
   suppressionListChecked?: boolean;
   sensitiveContentExcluded?: boolean;
+  paymentSandboxConfigured?: boolean;
+  noCardDataStorage?: boolean;
+  idempotencyKeyReady?: boolean;
+  refundPathDocumented?: boolean;
+  webhookSignatureVerified?: boolean;
   vendorCertificationRecorded?: boolean;
   liveQuoteReceived?: boolean;
   externalShareApproved?: boolean;
@@ -89,6 +94,19 @@ export interface NotificationRuntimeInput {
   optInRecorded: boolean;
 }
 
+export interface PaymentRuntimeInput {
+  amountCents: number;
+  currency: string;
+  projectId: string;
+  customerId: string;
+  description: string;
+  successPath: string;
+  cancelPath: string;
+  sandboxMode: boolean;
+  idempotencyKey?: string;
+  refundPathDocumented?: boolean;
+}
+
 export interface VendorRuntimeInput {
   vendorId: VendorId;
   quoteCents?: number;
@@ -105,6 +123,7 @@ export interface ProviderRuntimeInput {
   eventImport?: EventImportRuntimeInput;
   contactImport?: ContactImportRuntimeInput;
   notification?: NotificationRuntimeInput;
+  payment?: PaymentRuntimeInput;
   vendor?: VendorRuntimeInput;
 }
 
@@ -199,6 +218,9 @@ export function buildProviderAdapterRuntime(
   }
   if (adapter.capability === "notification") {
     return buildNotificationRuntime(adapterId, input.notification ?? defaultNotificationInput, env, gates);
+  }
+  if (adapter.capability === "payment") {
+    return buildPaymentRuntime(adapterId, input.payment ?? defaultPaymentInput, env, gates);
   }
 
   const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
@@ -451,6 +473,42 @@ export function buildNotificationRuntime(
   });
 
   return blockedOrRequest(adapter, readiness, () => buildNotificationRequest(adapter, input, sanitizedSubject, sanitizedMessage));
+}
+
+export function buildPaymentRuntime(
+  adapterId: string,
+  input: PaymentRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "payment");
+
+  if (adapter.id === "no-payment-checkout-gate") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: {
+        adapterId: adapter.id,
+        noNetwork: true,
+        realChargesEnabled: false,
+        cardDataStored: false,
+        checkoutMode: "manual-handoff"
+      }
+    };
+  }
+
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, {
+    ...gates,
+    paymentSandboxConfigured: input.sandboxMode || gates.paymentSandboxConfigured,
+    noCardDataStorage: true,
+    idempotencyKeyReady: Boolean(input.idempotencyKey) || gates.idempotencyKeyReady,
+    refundPathDocumented: input.refundPathDocumented || gates.refundPathDocumented
+  });
+
+  return blockedOrRequest(adapter, readiness, () => buildPaymentRequest(adapter, input));
 }
 
 export function buildVendorRuntime(
@@ -1271,6 +1329,153 @@ function notificationChannelForAdapter(adapterId: string, fallback: Notification
   return fallback;
 }
 
+function buildPaymentRequest(adapter: ProviderAdapter, input: PaymentRuntimeInput): RuntimeRequestContract {
+  const amountCents = normalizePaymentAmountCents(input.amountCents);
+  const currency = normalizeCurrency(input.currency);
+  const amountDecimal = (amountCents / 100).toFixed(2);
+  const description = sanitizeText(input.description || "CustomCard print package").text || "CustomCard print package";
+  const metadata = {
+    customcard_adapter: adapter.id,
+    customcard_project: normalizeReference(input.projectId, "{customcard-project-id}"),
+    customer_reference: "{customcard-customer-reference}",
+    checkout_description: description,
+    real_charges_enabled: "false",
+    card_data_storage: "disabled",
+    sandbox_only: "true"
+  };
+
+  if (adapter.id === "stripe-checkout-payment") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.stripe.com/v1/checkout/sessions",
+      [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "CUSTOMCARD_PAYMENT_SUCCESS_URL",
+        "CUSTOMCARD_PAYMENT_CANCEL_URL"
+      ],
+      {
+        mode: "payment",
+        success_url: "{CUSTOMCARD_PAYMENT_SUCCESS_URL}",
+        cancel_url: "{CUSTOMCARD_PAYMENT_CANCEL_URL}",
+        client_reference_id: "{customcard-project-id}",
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: currency.toLowerCase(),
+              unit_amount: amountCents,
+              product_data: {
+                name: "CustomCard print package",
+                description,
+                metadata
+              }
+            }
+          }
+        ],
+        payment_intent_data: {
+          metadata,
+          capture_method: "automatic"
+        }
+      },
+      [],
+      {
+        authorization: "Bearer {STRIPE_SECRET_KEY}",
+        "idempotency-key": "{CUSTOMCARD_IDEMPOTENCY_KEY}"
+      }
+    );
+  }
+
+  if (adapter.id === "paypal-orders-payment") {
+    return request(
+      adapter,
+      "POST",
+      "https://api-m.sandbox.paypal.com/v2/checkout/orders",
+      [
+        "PAYPAL_CLIENT_ID",
+        "PAYPAL_CLIENT_SECRET",
+        "PAYPAL_WEBHOOK_ID",
+        "CUSTOMCARD_PAYMENT_SUCCESS_URL",
+        "CUSTOMCARD_PAYMENT_CANCEL_URL"
+      ],
+      {
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            reference_id: "{customcard-project-id}",
+            custom_id: "{customcard-project-id}",
+            description,
+            amount: {
+              currency_code: currency,
+              value: amountDecimal
+            }
+          }
+        ],
+        payment_source: {
+          paypal: {
+            experience_context: {
+              return_url: "{CUSTOMCARD_PAYMENT_SUCCESS_URL}",
+              cancel_url: "{CUSTOMCARD_PAYMENT_CANCEL_URL}",
+              shipping_preference: "NO_SHIPPING"
+            }
+          }
+        },
+        metadata
+      },
+      [],
+      {
+        authorization: "Bearer {paypal-oauth-access-token}",
+        "paypal-request-id": "{CUSTOMCARD_IDEMPOTENCY_KEY}"
+      }
+    );
+  }
+
+  if (adapter.id === "square-payments-sandbox") {
+    return request(
+      adapter,
+      "POST",
+      "https://connect.squareupsandbox.com/v2/payments",
+      ["SQUARE_ACCESS_TOKEN", "SQUARE_LOCATION_ID", "SQUARE_WEBHOOK_SIGNATURE_KEY"],
+      {
+        source_id: "{square-web-payments-sdk-sandbox-token}",
+        idempotency_key: "{CUSTOMCARD_IDEMPOTENCY_KEY}",
+        amount_money: { amount: amountCents, currency },
+        location_id: "{SQUARE_LOCATION_ID}",
+        reference_id: "{customcard-project-id}",
+        note: description,
+        autocomplete: false,
+        metadata
+      },
+      [],
+      {
+        authorization: "Bearer {SQUARE_ACCESS_TOKEN}",
+        "Square-Version": "2026-05-20"
+      }
+    );
+  }
+
+  return request(
+    adapter,
+    "POST",
+    "https://checkout-test.adyen.com/v71/payments",
+    ["ADYEN_API_KEY", "ADYEN_MERCHANT_ACCOUNT", "ADYEN_HMAC_KEY", "CUSTOMCARD_PAYMENT_SUCCESS_URL"],
+    {
+      merchantAccount: "{ADYEN_MERCHANT_ACCOUNT}",
+      reference: "{customcard-project-id}",
+      amount: { currency, value: amountCents },
+      returnUrl: "{CUSTOMCARD_PAYMENT_SUCCESS_URL}",
+      paymentMethod: "{adyen-client-side-tokenized-payment-method}",
+      shopperReference: "{customcard-customer-reference}",
+      shopperInteraction: "Ecommerce",
+      recurringProcessingModel: "UnscheduledCardOnFile",
+      metadata
+    },
+    [],
+    { "x-api-key": "{ADYEN_API_KEY}" }
+  );
+}
+
 function request(
   adapter: ProviderAdapter,
   method: HttpMethod,
@@ -1325,6 +1530,13 @@ function missingSafetyReasons(adapter: ProviderAdapter, gates: ProviderGateState
     if (gate.includes("Opt-in only")) return ["Missing safety gate: notification opt-in"];
     if (gate.includes("Suppression list")) return ["Missing safety gate: suppression list check"];
     if (gate.includes("No sensitive card text in logs")) return ["Missing safety gate: notification content redaction"];
+    if (gate.includes("Payment sandbox")) return ["Missing safety gate: payment sandbox"];
+    if (gate.includes("No card data storage") || gate.includes("No card data stored")) {
+      return ["Missing safety gate: no card data storage"];
+    }
+    if (gate.includes("Idempotency key")) return ["Missing safety gate: payment idempotency key"];
+    if (gate.includes("Refund path documented")) return ["Missing safety gate: refund path documented"];
+    if (gate.includes("Webhook signature verification")) return ["Missing safety gate: webhook signature verification"];
     return [`Missing safety gate: ${gate}`];
   });
 }
@@ -1355,6 +1567,14 @@ function safetyGateSatisfied(gate: string, gates: ProviderGateState): boolean {
   if (gate.includes("Opt-in only")) return Boolean(gates.notificationOptInRecorded);
   if (gate.includes("Suppression list")) return Boolean(gates.suppressionListChecked);
   if (gate.includes("No sensitive card text in logs")) return Boolean(gates.sensitiveContentExcluded);
+  if (gate.includes("Payment sandbox")) return Boolean(gates.paymentSandboxConfigured);
+  if (gate.includes("No card data storage") || gate.includes("No card data stored")) {
+    return Boolean(gates.noCardDataStorage);
+  }
+  if (gate.includes("Real charges disabled")) return true;
+  if (gate.includes("Idempotency key")) return Boolean(gates.idempotencyKeyReady);
+  if (gate.includes("Refund path documented")) return Boolean(gates.refundPathDocumented);
+  if (gate.includes("Webhook signature verification")) return Boolean(gates.webhookSignatureVerified);
   if (gate.includes("Physical print certification") || gate.includes("Vendor certification")) {
     return Boolean(gates.vendorCertificationRecorded);
   }
@@ -1398,6 +1618,7 @@ function runtimeSupported(adapter: ProviderAdapter): boolean {
   if (adapter.capability === "memory") return true;
   if (adapter.capability === "render-export") return true;
   if (adapter.capability === "notification") return true;
+  if (adapter.capability === "payment") return true;
   return ["event-import", "contact-import", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
 }
 
@@ -1408,6 +1629,7 @@ function dataClassificationsFor(adapter: ProviderAdapter): string[] {
   if (adapter.capability === "text-chat") return ["customer-message", "approved-memory-only", "PII-redacted"];
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
   if (adapter.capability === "notification") return ["notification-recipient", "status-message", "PII-redacted", "opt-in-required"];
+  if (adapter.capability === "payment") return ["payment-intent", "no-card-data-storage", "idempotent-mutation", "sandbox-only"];
   if (adapter.capability === "vendor-handoff") return ["print-handoff", "external-share-approval-required"];
   return ["operational-metadata"];
 }
@@ -1436,6 +1658,21 @@ function escapeHtml(text: string): string {
     };
     return replacements[character];
   });
+}
+
+function normalizePaymentAmountCents(amountCents: number): number {
+  if (!Number.isFinite(amountCents)) return 699;
+  return Math.min(50000, Math.max(50, Math.round(amountCents)));
+}
+
+function normalizeCurrency(currency: string): string {
+  const normalized = currency.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(normalized) ? normalized : "USD";
+}
+
+function normalizeReference(value: string, fallback: string): string {
+  const normalized = value.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+  return normalized || fallback;
 }
 
 function uniqueSorted(values: string[]): string[] {
@@ -1512,6 +1749,19 @@ const defaultNotificationInput: NotificationRuntimeInput = {
   message: "Your card export is ready for review. Live sending remains disabled.",
   locale: "en-US",
   optInRecorded: false
+};
+
+const defaultPaymentInput: PaymentRuntimeInput = {
+  amountCents: 699,
+  currency: "USD",
+  projectId: "project-contract",
+  customerId: "customer-contract",
+  description: "CustomCard print package",
+  successPath: "/customer/payment/success",
+  cancelPath: "/customer/payment/cancel",
+  sandboxMode: false,
+  idempotencyKey: undefined,
+  refundPathDocumented: false
 };
 
 const defaultVendorInput: VendorRuntimeInput = {

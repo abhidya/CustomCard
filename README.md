@@ -69,7 +69,8 @@ environment configuration instead of static placeholders.
   Perplexity, xAI, Together, Groq, DeepSeek, Fireworks, Hugging Face, Stability,
   Replicate, Ideogram, Leonardo, fal, Black Forest Labs, Resend, SendGrid,
   Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, Firebase Cloud
-  Messaging, and vendor contracts.
+  Messaging, Stripe Checkout, PayPal Orders, Square Payments, Adyen Checkout,
+  and vendor contracts.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
@@ -131,9 +132,11 @@ Provider credentials such as `AUTH0_DOMAIN`, `CLERK_SECRET_KEY`,
 `REPLICATE_API_TOKEN`, `IDEOGRAM_API_KEY`, `LEONARDO_API_KEY`, `FAL_KEY`,
 `BFL_API_KEY`, `RESEND_API_KEY`, `SENDGRID_API_KEY`,
 `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `TWILIO_ACCOUNT_SID`,
-`WHATSAPP_ACCESS_TOKEN`, `EXPO_ACCESS_TOKEN`, and Microsoft Graph keys are
-documented in `infra/env/.env.example`, but live OAuth, AI/image calls,
-notification sends, and vendor ordering are not implemented in this repo state.
+`WHATSAPP_ACCESS_TOKEN`, `EXPO_ACCESS_TOKEN`, `STRIPE_SECRET_KEY`,
+`PAYPAL_CLIENT_ID`, `SQUARE_ACCESS_TOKEN`, `ADYEN_API_KEY`, and Microsoft Graph
+keys are documented in `infra/env/.env.example`, but live OAuth, AI/image calls,
+notification sends, payment charges/refunds, and vendor ordering are not
+implemented in this repo state.
 
 ## Architecture
 
@@ -155,9 +158,9 @@ memory, deterministic 5x7 render validation, explicit order lifecycle recovery,
 regional/vendor-share controls, and readiness checks.
 
 The provider runtime adds a no-network execution boundary for the adapter
-catalog: future OAuth, text-chat, image-generation, notification, and vendor
-paths can be reviewed as redacted request contracts without placing API calls or
-orders.
+catalog: future OAuth, text-chat, image-generation, notification, payment, and
+vendor paths can be reviewed as redacted request contracts without placing API
+calls, charges, or orders.
 
 Verification:
 
@@ -211,7 +214,7 @@ pull requests.
 ## Honest Gaps
 
 The repo does not include production user auth, live OAuth, live AI/image
-generation, live vendor quotes, payment handling, direct retail-printer
+generation, live vendor quotes, live payment charges/refunds, direct retail-printer
 ordering, live object-storage uploads, live Postgres API integration
 tests, production account auth flows, native mobile builds, deployment evidence,
 legal/security review, or physical print certification. Those paths are

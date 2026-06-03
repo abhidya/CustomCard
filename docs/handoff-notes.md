@@ -52,7 +52,8 @@ skeleton for the production path. It includes:
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, or pickup-window verification for public printer
   prices.
-- No payment, refund, cancellation, or external order-confirmation integration.
+- No live payment charge/refund, cancellation, or external order-confirmation
+  integration; payment provider coverage is sandbox-contract only.
 - No React Native render test, emulator run, native build, or signed mobile
   artifact.
 - No physical print certification.

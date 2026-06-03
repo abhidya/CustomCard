@@ -18,7 +18,7 @@ it after each meaningful implementation pass.
   external provider docs/env gates, admin/customer panel models, deterministic
   local chat, and blocked live-vendor status.
 - Provider-runtime tests cover every catalog adapter with no-network dry runs,
-  placeholder-secret rejection, redacted chat/image/notification request
+  placeholder-secret rejection, redacted chat/image/notification/payment request
   contracts, metadata-only event/contact import contracts, free local fallbacks,
   and hard-blocked live vendor ordering.
 - Printer-pricing tests cover review-only public Walgreens/CVS/FedEx/Walmart/
@@ -29,7 +29,7 @@ it after each meaningful implementation pass.
   summary behavior.
 - Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
   config validation, expiry limits, and tamper detection.
-- Provider adapter coverage currently includes 75 adapters: 14 ready-local, 46
+- Provider adapter coverage currently includes 80 adapters: 15 ready-local, 50
   credential-gated, 9 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
@@ -90,9 +90,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 16 test files passed, 107 tests passed.
-- Coverage: 14 core/API/persistence/infra/mobile test files passed, 99 tests passed; V8 report measured
-  91.45% statements, 84.44% branches, 97.5% functions, and 95.45% lines across
+- Vitest: 16 test files passed, 109 tests passed.
+- Coverage: 14 core/API/persistence/infra/mobile test files passed, 101 tests passed; V8 report measured
+  91.7% statements, 84.79% branches, 97.54% functions, and 95.6% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -112,7 +112,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 13 routes, 6 idempotent mutation contracts,
-75 providers, 16 persistence tables, render-packet artifact manifests, signed
+80 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, contract runtime mode, no live external calls, no real
 vendor orders, no raw content storage, and no blockers.
 
@@ -121,7 +121,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 75
+enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 80
 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
@@ -179,10 +179,10 @@ The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
 After the provider expansion, pricing-research, print-package, AI-provider,
-hosted-auth, contact-import, and notification catalog passes the catalog
-contains 14 ready-local, 46 credential-gated, 9 contract-only, and 6 blocked
-adapters. The web mobile customer panel appears before the navigation rail with
-zero horizontal overflow at 1440px desktop and 390px mobile widths.
+hosted-auth, contact-import, notification, and payment catalog passes the
+catalog contains 15 ready-local, 50 credential-gated, 9 contract-only, and 6
+blocked adapters. The web mobile customer panel appears before the navigation
+rail with zero horizontal overflow at 1440px desktop and 390px mobile widths.
 
 ```text
 Final package audit
@@ -201,6 +201,8 @@ documentation claims found during the audit were corrected.
   contracts are covered, but no live object-store upload is claimed.
 - Public printer pricing is review-only and source-backed; no live quote, tax,
   coupon, stock, pickup-window, or checkout test is claimed.
+- Payment providers are sandbox-contract only; no live charge, capture, refund,
+  dispute, tax, settlement, or payment-webhook test is claimed.
 - No live Postgres-backed API integration test or production account auth flow;
   memory runtime coverage proves the local auth/idempotency behavior only.
 - No live AI text-chat or image-generation provider test; provider runtime

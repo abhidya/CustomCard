@@ -22,11 +22,12 @@ describe("provider catalog", () => {
       "memory",
       "vendor-handoff",
       "cloud-runtime",
-      "notification"
+      "notification",
+      "payment"
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(75);
+    expect(summary.total).toBeGreaterThanOrEqual(80);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -55,6 +56,10 @@ describe("provider catalog", () => {
       "WhatsApp Cloud notification",
       "Expo push notification",
       "Firebase Cloud Messaging",
+      "Stripe Checkout payment",
+      "PayPal Orders payment",
+      "Square Payments sandbox",
+      "Adyen Checkout payment",
       "Azure OpenAI chat",
       "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
@@ -157,6 +162,19 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("WHATSAPP_ACCESS_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("WHATSAPP_PHONE_NUMBER_ID");
     expect(admin.coverage.requiredEnv).toContain("EXPO_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("STRIPE_SECRET_KEY");
+    expect(admin.coverage.requiredEnv).toContain("STRIPE_WEBHOOK_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("CUSTOMCARD_PAYMENT_SUCCESS_URL");
+    expect(admin.coverage.requiredEnv).toContain("CUSTOMCARD_PAYMENT_CANCEL_URL");
+    expect(admin.coverage.requiredEnv).toContain("PAYPAL_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("PAYPAL_CLIENT_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("PAYPAL_WEBHOOK_ID");
+    expect(admin.coverage.requiredEnv).toContain("SQUARE_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("SQUARE_LOCATION_ID");
+    expect(admin.coverage.requiredEnv).toContain("SQUARE_WEBHOOK_SIGNATURE_KEY");
+    expect(admin.coverage.requiredEnv).toContain("ADYEN_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("ADYEN_MERCHANT_ACCOUNT");
+    expect(admin.coverage.requiredEnv).toContain("ADYEN_HMAC_KEY");
     expect(admin.coverage.requiredEnv).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
     expect(admin.coverage.requiredEnv).toContain("WALMART_VENDOR_MODE");
@@ -187,7 +205,7 @@ describe("provider catalog", () => {
     const transcript = buildCustomerChatTranscript("Sara and Ahmed");
 
     expect(customer.primaryActions.map((action) => action.capability)).toEqual(
-      expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
+      expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "payment", "vendor-handoff"])
     );
     expect(customer.readyFallbacks.map((adapter) => adapter.label)).toEqual(
       expect.arrayContaining([
@@ -196,7 +214,8 @@ describe("provider catalog", () => {
         "Local print package export",
         "Manual vendor handoff",
         "Public printer pricing research",
-        "vCard contact import"
+        "vCard contact import",
+        "No-payment checkout gate"
       ])
     );
     expect(customer.importProviders.map((adapter) => adapter.label)).toEqual(
