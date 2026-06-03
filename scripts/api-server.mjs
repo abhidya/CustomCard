@@ -68,22 +68,22 @@ const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 87,
-    readyLocal: 16,
-    credentialGated: 56,
+    total: 94,
+    readyLocal: 17,
+    credentialGated: 62,
     contractOnly: 9,
     blocked: 6
   },
   providerGovernance: {
-    total: 87,
-    zeroPlatformSpend: 18,
-    budgetCapped: 63,
+    total: 94,
+    zeroPlatformSpend: 19,
+    budgetCapped: 69,
     blockedZeroSpend: 6,
-    monthlyBudgetCents: 101800,
+    monthlyBudgetCents: 106600,
     maxPerRequestBudgetCents: 75,
-    rateLimited: 81,
-    queueRequired: 56,
-    fallbackCovered: 87,
+    rateLimited: 88,
+    queueRequired: 62,
+    fallbackCovered: 94,
     liveNetworkDefault: false,
     realOrdersEnabled: false,
     blockers: []

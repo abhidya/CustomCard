@@ -89,6 +89,19 @@ export interface ContactImportRuntimeInput {
   addressBookPath?: string;
 }
 
+export type CrmLifecycleKind = "birthday" | "purchase-anniversary" | "warranty-anniversary";
+
+export interface CrmRuntimeInput {
+  sourceText: string;
+  providerAccountId?: string;
+  listId?: string;
+  pipelineId?: string;
+  fromIso: string;
+  toIso: string;
+  lifecycleKinds: CrmLifecycleKind[];
+  optInRecorded: boolean;
+}
+
 export interface NotificationRuntimeInput {
   channel: "email" | "sms" | "whatsapp" | "push";
   recipient: string;
@@ -141,6 +154,7 @@ export interface ProviderRuntimeInput {
   image?: ImageRuntimeInput;
   eventImport?: EventImportRuntimeInput;
   contactImport?: ContactImportRuntimeInput;
+  crm?: CrmRuntimeInput;
   notification?: NotificationRuntimeInput;
   payment?: PaymentRuntimeInput;
   observability?: ObservabilityRuntimeInput;
@@ -207,7 +221,13 @@ const providerScopes: Record<string, string[]> = {
   "google-people-contacts": ["contacts.readonly"],
   "microsoft-graph-mail": ["Mail.ReadBasic"],
   "microsoft-graph-calendar": ["Calendars.ReadBasic"],
-  "microsoft-graph-contacts": ["Contacts.Read"]
+  "microsoft-graph-contacts": ["Contacts.Read"],
+  "salesforce-crm-lifecycle": ["api", "refresh_token"],
+  "hubspot-crm-lifecycle": ["crm.objects.contacts.read", "crm.objects.deals.read"],
+  "zoho-crm-lifecycle": ["ZohoCRM.modules.contacts.READ", "ZohoCRM.modules.deals.READ"],
+  "pipedrive-crm-lifecycle": ["persons:read", "deals:read"],
+  "dynamics-crm-lifecycle": ["https://{DYNAMICS_RESOURCE_URL}/.default"],
+  "shopify-crm-lifecycle": ["read_customers", "read_orders"]
 };
 
 export function buildProviderAdapterRuntime(
@@ -226,6 +246,9 @@ export function buildProviderAdapterRuntime(
   }
   if (adapter.capability === "contact-import") {
     return buildContactImportRuntime(adapterId, input.contactImport ?? defaultContactImportInput, env, gates);
+  }
+  if (adapter.capability === "crm-integration") {
+    return buildCrmRuntime(adapterId, input.crm ?? defaultCrmInput, env, gates);
   }
   if (adapter.capability === "text-chat") {
     return buildTextChatRuntime(adapterId, input.textChat ?? defaultTextChatInput, env, gates);
@@ -460,6 +483,38 @@ export function buildContactImportRuntime(
   });
 
   return blockedOrRequest(adapter, readiness, () => buildContactImportRequest(adapter, input));
+}
+
+export function buildCrmRuntime(
+  adapterId: string,
+  input: CrmRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "crm-integration");
+
+  if (adapter.id === "crm-csv-lifecycle-import") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: parseCrmLifecycleImport(input.sourceText || sampleCrmText)
+    };
+  }
+
+  const readinessGates = {
+    ...gates,
+    metadataOnly: true,
+    notificationOptInRecorded: input.optInRecorded || gates.notificationOptInRecorded,
+    rawContentStorageDisabled: true
+  };
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, readinessGates);
+
+  return blockedOrRequest(adapter, readiness, () =>
+    buildCrmRequest(adapter, { ...input, optInRecorded: Boolean(readinessGates.notificationOptInRecorded) })
+  );
 }
 
 export function buildNotificationRuntime(
@@ -1218,6 +1273,114 @@ function buildContactImportRequest(
   );
 }
 
+function buildCrmRequest(adapter: ProviderAdapter, input: CrmRuntimeInput): RuntimeRequestContract {
+  const scopes = providerScopes[adapter.id] ?? [];
+  const lifecycleKinds = input.lifecycleKinds.length > 0 ? input.lifecycleKinds : defaultCrmInput.lifecycleKinds;
+  const lifecycleMetadata = {
+    lifecycle_kinds: lifecycleKinds,
+    from_iso: input.fromIso,
+    to_iso: input.toIso,
+    opt_in_recorded: input.optInRecorded,
+    suppression_checked: true,
+    no_raw_notes_storage: true,
+    live_crm_write: "disabled"
+  };
+
+  if (adapter.id === "salesforce-crm-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "{SALESFORCE_INSTANCE_URL}/services/data/v61.0/query?q=SELECT%20Id%2CName%2CEmail%2CBirthdate%2CLastPurchaseDate__c%2CWarrantyEndDate__c%2CDoNotContact__c%20FROM%20Contact%20WHERE%20Email%20%21%3D%20null",
+      ["SALESFORCE_INSTANCE_URL", "SALESFORCE_CLIENT_ID", "SALESFORCE_CLIENT_SECRET", "SALESFORCE_REFRESH_TOKEN"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {salesforce-oauth-access-token}" }
+    );
+  }
+
+  if (adapter.id === "hubspot-crm-lifecycle") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.hubapi.com/crm/v3/objects/contacts/search",
+      ["HUBSPOT_PRIVATE_APP_TOKEN", "HUBSPOT_PORTAL_ID"],
+      {
+        properties: [
+          "email",
+          "firstname",
+          "lastname",
+          "date_of_birth",
+          "last_purchase_date",
+          "warranty_expiration_date",
+          "hs_email_optout"
+        ],
+        filterGroups: [
+          {
+            filters: [{ propertyName: "lastmodifieddate", operator: "BETWEEN", value: input.fromIso, highValue: input.toIso }]
+          }
+        ],
+        sorts: ["lastmodifieddate"],
+        limit: 100,
+        metadata: lifecycleMetadata
+      },
+      scopes
+    );
+  }
+
+  if (adapter.id === "zoho-crm-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "{ZOHO_API_DOMAIN}/crm/v6/Contacts?fields=Full_Name,Email,Date_of_Birth,Last_Purchase_Date,Warranty_End_Date,Email_Opt_Out&per_page=100",
+      ["ZOHO_ACCOUNTS_DOMAIN", "ZOHO_API_DOMAIN", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN"],
+      undefined,
+      scopes,
+      { authorization: "Zoho-oauthtoken {zoho-oauth-access-token}" }
+    );
+  }
+
+  if (adapter.id === "pipedrive-crm-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "https://{PIPEDRIVE_COMPANY_DOMAIN}.pipedrive.com/api/v1/persons?start=0&limit=100",
+      ["PIPEDRIVE_COMPANY_DOMAIN", "PIPEDRIVE_API_TOKEN"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {PIPEDRIVE_API_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "dynamics-crm-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "{DYNAMICS_RESOURCE_URL}/api/data/v9.2/contacts?$select=contactid,fullname,emailaddress1,birthdate,customcard_lastpurchaseon,customcard_warrantyendon,donotemail",
+      ["DYNAMICS_RESOURCE_URL", "DYNAMICS_TENANT_ID", "DYNAMICS_CLIENT_ID", "DYNAMICS_CLIENT_SECRET"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {microsoft-dataverse-access-token}" }
+    );
+  }
+
+  return request(
+    adapter,
+    "POST",
+    "https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2026-04/graphql.json",
+    ["SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ADMIN_ACCESS_TOKEN"],
+    {
+      query:
+        "query CustomCardCustomerLifecycle($query: String!) { customers(first: 100, query: $query) { nodes { id displayName email emailMarketingConsent { marketingState } orders(first: 10, sortKey: PROCESSED_AT, reverse: true) { nodes { id processedAt warrantyEndDate: metafield(namespace: \"customcard\", key: \"warranty_end_date\") { value } } } } } }",
+      variables: {
+        query: `updated_at:>=${input.fromIso} updated_at:<=${input.toIso}`
+      },
+      metadata: lifecycleMetadata
+    },
+    scopes,
+    { "x-shopify-access-token": "{SHOPIFY_ADMIN_ACCESS_TOKEN}" }
+  );
+}
+
 function buildNotificationRequest(
   adapter: ProviderAdapter,
   input: NotificationRuntimeInput,
@@ -1848,13 +2011,16 @@ function runtimeSupported(adapter: ProviderAdapter): boolean {
   if (adapter.capability === "notification") return true;
   if (adapter.capability === "payment") return true;
   if (adapter.capability === "observability") return true;
-  return ["event-import", "contact-import", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
+  return ["event-import", "contact-import", "crm-integration", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
 }
 
 function dataClassificationsFor(adapter: ProviderAdapter): string[] {
   if (adapter.capability === "auth") return ["auth-session", "OIDC-token-metadata", "no-password-storage"];
   if (adapter.capability === "event-import") return ["metadata-only", "no-raw-content"];
   if (adapter.capability === "contact-import") return ["contact-metadata", "address-book", "no-raw-notes", "no-photos"];
+  if (adapter.capability === "crm-integration") {
+    return ["crm-customer-metadata", "lifecycle-dates", "PII-redacted", "opt-in-required", "no-raw-notes"];
+  }
   if (adapter.capability === "text-chat") return ["customer-message", "approved-memory-only", "PII-redacted"];
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
   if (adapter.capability === "notification") return ["notification-recipient", "status-message", "PII-redacted", "opt-in-required"];
@@ -1947,6 +2113,37 @@ function parseContactImport(sourceText: string) {
   };
 }
 
+function parseCrmLifecycleImport(sourceText: string) {
+  const text = sourceText.trim();
+  const rows = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const dataRowCount = rows.length > 1 ? rows.length - 1 : rows.length > 0 ? 1 : 0;
+  const birthdaySignals = /birth(day|date)|dob/i.test(text);
+  const purchaseAnniversarySignals = /purchase|order|first_order|last_purchase|anniversary/i.test(text);
+  const warrantyAnniversarySignals = /warranty|renewal|service_plan/i.test(text);
+  const optInSignals = /opt.?in|marketing.?consent|subscribed/i.test(text);
+
+  return {
+    parser: "crm-csv-lifecycle",
+    customerCount: dataRowCount,
+    lifecycleTriggers: [
+      ...(birthdaySignals ? ["birthday"] : []),
+      ...(purchaseAnniversarySignals ? ["purchase-anniversary"] : []),
+      ...(warrantyAnniversarySignals ? ["warranty-anniversary"] : [])
+    ],
+    birthdaySignals,
+    purchaseAnniversarySignals,
+    warrantyAnniversarySignals,
+    optInSignals,
+    rawNotesStored: false,
+    metadataOnly: true,
+    noNetwork: true,
+    needsSuppressionReview: true
+  };
+}
+
 const sampleContactText = [
   "BEGIN:VCARD",
   "VERSION:3.0",
@@ -1955,6 +2152,11 @@ const sampleContactText = [
   "ADR:;;123 Garden St;Brooklyn;NY;11201;US",
   "BDAY:1990-07-10",
   "END:VCARD"
+].join("\n");
+
+const sampleCrmText = [
+  "customer_id,email,first_name,last_name,birthday,last_purchase_date,warranty_end_date,marketing_opt_in",
+  "cust_123,sara@example.com,Sara,Ahmed,1990-07-10,2025-06-03,2027-06-03,true"
 ].join("\n");
 
 const defaultTextChatInput: TextChatRuntimeInput = {
@@ -1987,6 +2189,14 @@ const defaultEventImportInput: EventImportRuntimeInput = {
 const defaultContactImportInput: ContactImportRuntimeInput = {
   sourceText: sampleContactText,
   providerAccountId: "me"
+};
+
+const defaultCrmInput: CrmRuntimeInput = {
+  sourceText: sampleCrmText,
+  fromIso: "2026-06-01T00:00:00.000Z",
+  toIso: "2026-07-01T00:00:00.000Z",
+  lifecycleKinds: ["birthday", "purchase-anniversary", "warranty-anniversary"],
+  optInRecorded: false
 };
 
 const defaultNotificationInput: NotificationRuntimeInput = {

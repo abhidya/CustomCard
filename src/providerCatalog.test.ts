@@ -16,6 +16,7 @@ describe("provider catalog", () => {
       "auth",
       "event-import",
       "contact-import",
+      "crm-integration",
       "text-chat",
       "image-generation",
       "render-export",
@@ -28,7 +29,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(87);
+    expect(summary.total).toBeGreaterThanOrEqual(94);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -49,6 +50,12 @@ describe("provider catalog", () => {
       "Google People contacts",
       "Microsoft Graph contacts",
       "CardDAV address book",
+      "Salesforce CRM lifecycle sync",
+      "HubSpot CRM lifecycle sync",
+      "Zoho CRM lifecycle sync",
+      "Pipedrive CRM lifecycle sync",
+      "Dynamics 365 Sales lifecycle sync",
+      "Shopify customer lifecycle sync",
       "Resend email notification",
       "SendGrid email notification",
       "Postmark email notification",
@@ -133,6 +140,25 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("CARDDAV_USERNAME");
     expect(admin.coverage.requiredEnv).toContain("CARDDAV_APP_PASSWORD");
     expect(admin.coverage.requiredEnv).toContain("CARDDAV_ADDRESSBOOK_PATH");
+    expect(admin.coverage.requiredEnv).toContain("SALESFORCE_INSTANCE_URL");
+    expect(admin.coverage.requiredEnv).toContain("SALESFORCE_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("SALESFORCE_CLIENT_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("SALESFORCE_REFRESH_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("HUBSPOT_PRIVATE_APP_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("HUBSPOT_PORTAL_ID");
+    expect(admin.coverage.requiredEnv).toContain("ZOHO_ACCOUNTS_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("ZOHO_API_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("ZOHO_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("ZOHO_CLIENT_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("ZOHO_REFRESH_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("PIPEDRIVE_COMPANY_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("PIPEDRIVE_API_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("DYNAMICS_RESOURCE_URL");
+    expect(admin.coverage.requiredEnv).toContain("DYNAMICS_TENANT_ID");
+    expect(admin.coverage.requiredEnv).toContain("DYNAMICS_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("DYNAMICS_CLIENT_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("SHOPIFY_SHOP_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("SHOPIFY_ADMIN_ACCESS_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_ENDPOINT");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_CHAT_DEPLOYMENT");
@@ -219,6 +245,8 @@ describe("provider catalog", () => {
     expect(admin.blockedProviders.every((adapter) => adapter.status === "blocked")).toBe(true);
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Public printer pricing research");
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Local print package export");
+    expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Business CRM CSV lifecycle import");
+    expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Salesforce CRM lifecycle sync");
   });
 
   it("builds a customer panel model from ready paths plus gated provider choices", () => {
@@ -242,6 +270,7 @@ describe("provider catalog", () => {
     expect(customer.importProviders.map((adapter) => adapter.label)).toEqual(
       expect.arrayContaining(["ICS / invite paste", "vCard contact import", "Google People contacts"])
     );
+    expect(customer.importProviders.map((adapter) => adapter.label)).not.toContain("Salesforce CRM lifecycle sync");
     expect(customer.chatProviders.length).toBeGreaterThanOrEqual(15);
     expect(customer.imageProviders.length).toBeGreaterThanOrEqual(14);
     expect(transcript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");

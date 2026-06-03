@@ -2,6 +2,7 @@ export type ProviderCapability =
   | "auth"
   | "event-import"
   | "contact-import"
+  | "crm-integration"
   | "text-chat"
   | "image-generation"
   | "render-export"
@@ -88,6 +89,7 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
   auth: "Auth",
   "event-import": "Event import",
   "contact-import": "Contact import",
+  "crm-integration": "CRM integration",
   "text-chat": "Text chat",
   "image-generation": "Image generation",
   "render-export": "Render/export",
@@ -332,6 +334,110 @@ export const providerCatalog: ProviderAdapter[] = [
     priority: 38,
     detail: "Supports customer-exported iCloud vCards while live Apple account access stays out of scope.",
     docsUrl: "https://support.apple.com/en-kw/108306"
+  },
+  {
+    id: "crm-csv-lifecycle-import",
+    label: "Business CRM CSV lifecycle import",
+    provider: "Local business export",
+    capability: "crm-integration",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["User supplied export", "Metadata-only import", "No raw content storage", "Suppression list"],
+    roleSurface: ["admin"],
+    priority: 3.4,
+    detail: "Parses exported CRM customer rows for birthdays, purchase anniversaries, and warranty anniversaries without connecting a live CRM."
+  },
+  {
+    id: "salesforce-crm-lifecycle",
+    label: "Salesforce CRM lifecycle sync",
+    provider: "Salesforce",
+    capability: "crm-integration",
+    lane: "Business CRM",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["SALESFORCE_INSTANCE_URL", "SALESFORCE_CLIENT_ID", "SALESFORCE_CLIENT_SECRET", "SALESFORCE_REFRESH_TOKEN"],
+    safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Metadata schema validation", "Opt-in only", "Suppression list", "Tenant review", "Revocation handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 39.1,
+    detail: "Prepares Salesforce Contact/Account lifecycle metadata reads for birthday, purchase-anniversary, and warranty-anniversary card campaigns.",
+    docsUrl: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_query.htm"
+  },
+  {
+    id: "hubspot-crm-lifecycle",
+    label: "HubSpot CRM lifecycle sync",
+    provider: "HubSpot",
+    capability: "crm-integration",
+    lane: "Business CRM",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["HUBSPOT_PRIVATE_APP_TOKEN", "HUBSPOT_PORTAL_ID"],
+    safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Metadata schema validation", "Opt-in only", "Suppression list", "Tenant review", "Revocation handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 39.2,
+    detail: "Prepares HubSpot contact/deal lifecycle search contracts for customer birthday and purchase-anniversary card triggers.",
+    docsUrl: "https://developers.hubspot.com/docs/api-reference/latest/crm/search-the-crm"
+  },
+  {
+    id: "zoho-crm-lifecycle",
+    label: "Zoho CRM lifecycle sync",
+    provider: "Zoho CRM",
+    capability: "crm-integration",
+    lane: "Business CRM",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["ZOHO_ACCOUNTS_DOMAIN", "ZOHO_API_DOMAIN", "ZOHO_CLIENT_ID", "ZOHO_CLIENT_SECRET", "ZOHO_REFRESH_TOKEN"],
+    safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Metadata schema validation", "Opt-in only", "Suppression list", "Tenant review", "Revocation handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 39.3,
+    detail: "Prepares Zoho CRM Contacts and Deals metadata reads for customer lifecycle card campaigns.",
+    docsUrl: "https://www.zoho.com/crm/developer/docs/api/v6/get-records.html"
+  },
+  {
+    id: "pipedrive-crm-lifecycle",
+    label: "Pipedrive CRM lifecycle sync",
+    provider: "Pipedrive",
+    capability: "crm-integration",
+    lane: "Business CRM",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["PIPEDRIVE_COMPANY_DOMAIN", "PIPEDRIVE_API_TOKEN"],
+    safetyGates: ["Metadata-only import", "No raw content storage", "Metadata schema validation", "Opt-in only", "Suppression list", "Tenant review", "Revocation handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 39.4,
+    detail: "Prepares Pipedrive person/deal metadata reads for birthday, purchase, and warranty anniversary triggers.",
+    docsUrl: "https://developers.pipedrive.com/docs/api/v1/Persons"
+  },
+  {
+    id: "dynamics-crm-lifecycle",
+    label: "Dynamics 365 Sales lifecycle sync",
+    provider: "Microsoft Dynamics 365 Sales",
+    capability: "crm-integration",
+    lane: "Business CRM",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["DYNAMICS_RESOURCE_URL", "DYNAMICS_TENANT_ID", "DYNAMICS_CLIENT_ID", "DYNAMICS_CLIENT_SECRET"],
+    safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Metadata schema validation", "Opt-in only", "Suppression list", "Tenant review", "Revocation handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 39.5,
+    detail: "Prepares Dataverse contact/account lifecycle metadata reads for Dynamics 365 customer card campaigns.",
+    docsUrl: "https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query/overview"
+  },
+  {
+    id: "shopify-crm-lifecycle",
+    label: "Shopify customer lifecycle sync",
+    provider: "Shopify Admin",
+    capability: "crm-integration",
+    lane: "Commerce CRM",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ADMIN_ACCESS_TOKEN"],
+    safetyGates: ["Metadata-only import", "No raw content storage", "Metadata schema validation", "Opt-in only", "Suppression list", "Tenant review", "Revocation handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 39.6,
+    detail: "Prepares Shopify customer and order metadata reads for purchase-anniversary and warranty-anniversary card campaigns.",
+    docsUrl: "https://shopify.dev/docs/api/admin-graphql/latest/queries/customers"
   },
   {
     id: "gmail-metadata-import",
@@ -1507,7 +1613,7 @@ export function buildCustomerPanelModel(adapters: ProviderAdapter[] = providerCa
       adapters.filter((adapter) => adapter.capability === "image-generation" || adapter.capability === "render-export")
     ),
     importProviders: sortByPriority(
-      adapters.filter((adapter) => adapter.capability === "event-import" || adapter.capability === "contact-import")
+      customerAdapters.filter((adapter) => ["event-import", "contact-import"].includes(adapter.capability))
     ),
     handoffProviders: sortByPriority(adapters.filter((adapter) => adapter.capability === "vendor-handoff")),
     readyFallbacks: sortByPriority(customerAdapters.filter((adapter) => adapter.status === "ready-local"))

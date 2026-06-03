@@ -21,7 +21,7 @@ const usageBasedCount = countMatches(catalogText, /cost: "usage-based"/g);
 const blockedCount = countMatches(catalogText, /status: "blocked"/g);
 
 const checks = [
-  checkMinimum("catalog", "expanded-adapter-catalog", adapterCount, 87),
+  checkMinimum("catalog", "expanded-adapter-catalog", adapterCount, 94),
   checkMinimum("catalog", "usage-based-adapters-present", usageBasedCount, 30),
   checkExact("catalog", "blocked-live-vendor-count", blockedCount, 6),
   checkIncludes("governance", "budget-rate-fallback-policy", contents.governance, [
@@ -37,6 +37,7 @@ const checks = [
   checkIncludes("governance", "ready-local-fallbacks", contents.governance, [
     'auth: "local-demo-auth"',
     '"text-chat": "deterministic-customer-chat"',
+    '"crm-integration": "crm-csv-lifecycle-import"',
     '"image-generation": "browser-svg-renderer"',
     '"vendor-handoff": "manual-vendor-handoff"',
     'payment: "no-payment-checkout-gate"',

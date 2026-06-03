@@ -78,12 +78,12 @@ describe("api server wrapper", () => {
     expect(report.service).toBe("customcard-api-doctor");
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
-    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(87);
+    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(94);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 87,
-      budgetCapped: 63,
+      total: 94,
+      budgetCapped: 69,
       blockedZeroSpend: 6,
-      fallbackCovered: 87,
+      fallbackCovered: 94,
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
@@ -164,11 +164,11 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 15, admin: 5, idempotentMutations: 7 });
-      expect(readiness.providers).toMatchObject({ total: 87, readyLocal: 16, credentialGated: 56, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 94, readyLocal: 17, credentialGated: 62, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 87,
-        fallbackCovered: 87,
-        budgetCapped: 63,
+        total: 94,
+        fallbackCovered: 94,
+        budgetCapped: 69,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -209,12 +209,12 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 87,
-        monthlyBudgetCents: 101800,
+        total: 94,
+        monthlyBudgetCents: 106600,
         maxPerRequestBudgetCents: 75,
-        rateLimited: 81,
-        queueRequired: 56,
-        fallbackCovered: 87,
+        rateLimited: 88,
+        queueRequired: 62,
+        fallbackCovered: 94,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []

@@ -44,6 +44,15 @@ describe("provider governance", () => {
       monthlyBudgetCents: 2500,
       fallbackAdapterId: "docker-compose-dev"
     });
+    expect(summary.policies.find((policy) => policy.adapterId === "salesforce-crm-lifecycle")).toMatchObject({
+      spendTier: "budget-capped",
+      monthlyBudgetCents: 800,
+      perRequestBudgetCents: 1,
+      rateLimitPerMinute: 20,
+      fallbackAdapterId: "crm-csv-lifecycle-import",
+      queueRequired: true,
+      liveNetworkDefault: false
+    });
   });
 
   it("keeps blocked live vendor adapters at zero spend with manual handoff fallback", () => {

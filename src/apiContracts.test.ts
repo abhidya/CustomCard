@@ -66,8 +66,8 @@ describe("api contracts", () => {
     expect(summary.status).toBe("ready");
     expect(summary.routes.total).toBe(apiRouteContracts.length);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
-    expect(summary.providers.total).toBeGreaterThanOrEqual(87);
-    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(56);
+    expect(summary.providers.total).toBeGreaterThanOrEqual(94);
+    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(62);
     expect(summary.governance.total).toBe(summary.providers.total);
     expect(summary.governance.blockers).toEqual([]);
     expect(summary.governance.fallbackCovered).toBe(summary.providers.total);

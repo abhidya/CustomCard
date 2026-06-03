@@ -3,6 +3,7 @@ import { providerCatalog } from "./providerCatalog";
 import {
   buildAuthRuntime,
   buildContactImportRuntime,
+  buildCrmRuntime,
   buildEventImportRuntime,
   buildImageGenerationRuntime,
   buildNotificationRuntime,
@@ -59,6 +60,10 @@ const readyEnv: ProviderRuntimeEnv = {
   DATADOG_API_KEY: "configured-datadog-api-key",
   DATADOG_SITE: "datadoghq.com",
   DEEPSEEK_API_KEY: "configured-deepseek-key",
+  DYNAMICS_CLIENT_ID: "configured-dynamics-client-id",
+  DYNAMICS_CLIENT_SECRET: "configured-dynamics-client-secret",
+  DYNAMICS_RESOURCE_URL: "https://customcard.crm.dynamics.com",
+  DYNAMICS_TENANT_ID: "configured-dynamics-tenant-id",
   EXPO_ACCESS_TOKEN: "configured-expo-access-token",
   FEDEX_VENDOR_MODE: "certification-configured-only",
   FAL_KEY: "configured-fal-key",
@@ -74,6 +79,8 @@ const readyEnv: ProviderRuntimeEnv = {
   GRAFANA_OTLP_INSTANCE_ID: "configured-grafana-instance-id",
   GROQ_API_KEY: "configured-groq-key",
   HUGGINGFACE_API_TOKEN: "configured-huggingface-token",
+  HUBSPOT_PORTAL_ID: "configured-hubspot-portal-id",
+  HUBSPOT_PRIVATE_APP_TOKEN: "configured-hubspot-token",
   IDEOGRAM_API_KEY: "configured-ideogram-key",
   LEONARDO_API_KEY: "configured-leonardo-key",
   MICROSOFT_CLIENT_ID: "configured-microsoft-client-id",
@@ -92,6 +99,8 @@ const readyEnv: ProviderRuntimeEnv = {
   PAYPAL_CLIENT_SECRET: "configured-paypal-client-secret",
   PAYPAL_WEBHOOK_ID: "configured-paypal-webhook-id",
   PERPLEXITY_API_KEY: "configured-perplexity-key",
+  PIPEDRIVE_API_TOKEN: "configured-pipedrive-token",
+  PIPEDRIVE_COMPANY_DOMAIN: "customcard-test",
   POSTMARK_SERVER_TOKEN: "configured-postmark-server-token",
   POSTHOG_HOST: "https://us.i.posthog.com",
   POSTHOG_PROJECT_API_KEY: "configured-posthog-project-api-key",
@@ -99,6 +108,10 @@ const readyEnv: ProviderRuntimeEnv = {
   QUEUE_URL: "redis://localhost:6379",
   REPLICATE_API_TOKEN: "configured-replicate-token",
   RESEND_API_KEY: "configured-resend-key",
+  SALESFORCE_CLIENT_ID: "configured-salesforce-client-id",
+  SALESFORCE_CLIENT_SECRET: "configured-salesforce-client-secret",
+  SALESFORCE_INSTANCE_URL: "https://customcard.my.salesforce.com",
+  SALESFORCE_REFRESH_TOKEN: "configured-salesforce-refresh-token",
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   SENDGRID_API_KEY: "configured-sendgrid-key",
@@ -110,6 +123,8 @@ const readyEnv: ProviderRuntimeEnv = {
   SQUARE_WEBHOOK_SIGNATURE_KEY: "configured-square-webhook-signature-key",
   STABILITY_API_KEY: "configured-stability-key",
   STAPLES_VENDOR_MODE: "certification-configured-only",
+  SHOPIFY_ADMIN_ACCESS_TOKEN: "configured-shopify-token",
+  SHOPIFY_SHOP_DOMAIN: "customcard-test.myshopify.com",
   SUPABASE_ANON_KEY: "configured-supabase-anon-key",
   SUPABASE_SERVICE_ROLE_KEY: "configured-supabase-service-role-key",
   SUPABASE_URL: "https://customcard-test.supabase.co",
@@ -125,7 +140,12 @@ const readyEnv: ProviderRuntimeEnv = {
   WALMART_VENDOR_MODE: "certification-configured-only",
   WHATSAPP_ACCESS_TOKEN: "configured-whatsapp-token",
   WHATSAPP_PHONE_NUMBER_ID: "configured-whatsapp-phone-number-id",
-  XAI_API_KEY: "configured-xai-key"
+  XAI_API_KEY: "configured-xai-key",
+  ZOHO_ACCOUNTS_DOMAIN: "https://accounts.zoho.com",
+  ZOHO_API_DOMAIN: "https://www.zohoapis.com",
+  ZOHO_CLIENT_ID: "configured-zoho-client-id",
+  ZOHO_CLIENT_SECRET: "configured-zoho-client-secret",
+  ZOHO_REFRESH_TOKEN: "configured-zoho-refresh-token"
 };
 
 const openGates: ProviderGateState = {
@@ -195,6 +215,21 @@ const contactInput = {
     "END:VCARD"
   ].join("\n"),
   providerAccountId: "me"
+};
+
+const crmInput = {
+  sourceText: [
+    "customer_id,email,first_name,last_name,birthday,last_purchase_date,warranty_end_date,marketing_opt_in",
+    "cust_123,sara@example.com,Sara,Ahmed,1990-07-10,2025-06-03,2027-06-03,true"
+  ].join("\n"),
+  fromIso: "2026-06-01T00:00:00.000Z",
+  toIso: "2026-07-01T00:00:00.000Z",
+  lifecycleKinds: ["birthday", "purchase-anniversary", "warranty-anniversary"] as (
+    | "birthday"
+    | "purchase-anniversary"
+    | "warranty-anniversary"
+  )[],
+  optInRecorded: true
 };
 
 const notificationInput = {
@@ -508,6 +543,86 @@ describe("provider runtime contracts", () => {
     });
   });
 
+  it("builds metadata-only no-network CRM lifecycle request contracts", () => {
+    const providerIds = [
+      "salesforce-crm-lifecycle",
+      "hubspot-crm-lifecycle",
+      "zoho-crm-lifecycle",
+      "pipedrive-crm-lifecycle",
+      "dynamics-crm-lifecycle",
+      "shopify-crm-lifecycle"
+    ];
+
+    for (const providerId of providerIds) {
+      const result = buildCrmRuntime(providerId, crmInput, readyEnv, openGates);
+      const serializedHeaders = JSON.stringify(result.request?.headers);
+      const serializedBody = JSON.stringify(result.request?.body ?? {});
+      const serializedUrl = result.request?.url ?? "";
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["crm-customer-metadata", "lifecycle-dates", "opt-in-required"])
+      );
+      expect(serializedHeaders, providerId).not.toContain("configured-");
+      expect(serializedBody, providerId).not.toContain("sara@example.com");
+      expect(serializedUrl, providerId).not.toContain("sara@example.com");
+      expect(serializedBody, providerId).not.toContain("Sara");
+    }
+
+    expect(buildCrmRuntime("salesforce-crm-lifecycle", crmInput, readyEnv, openGates).request?.url).toContain(
+      "/services/data/v61.0/query"
+    );
+    expect(buildCrmRuntime("hubspot-crm-lifecycle", crmInput, readyEnv, openGates).request).toMatchObject({
+      method: "POST",
+      url: "https://api.hubapi.com/crm/v3/objects/contacts/search",
+      credentialRefs: expect.arrayContaining(["HUBSPOT_PRIVATE_APP_TOKEN", "HUBSPOT_PORTAL_ID"])
+    });
+    expect(buildCrmRuntime("hubspot-crm-lifecycle", crmInput, readyEnv, openGates).request?.body).toMatchObject({
+      metadata: expect.objectContaining({
+        lifecycle_kinds: expect.arrayContaining(["birthday", "purchase-anniversary", "warranty-anniversary"]),
+        opt_in_recorded: true,
+        live_crm_write: "disabled"
+      })
+    });
+    expect(buildCrmRuntime("zoho-crm-lifecycle", crmInput, readyEnv, openGates).request?.headers).toMatchObject({
+      authorization: "Zoho-oauthtoken {zoho-oauth-access-token}"
+    });
+    expect(buildCrmRuntime("pipedrive-crm-lifecycle", crmInput, readyEnv, openGates).request?.url).toBe(
+      "https://{PIPEDRIVE_COMPANY_DOMAIN}.pipedrive.com/api/v1/persons?start=0&limit=100"
+    );
+    expect(buildCrmRuntime("dynamics-crm-lifecycle", crmInput, readyEnv, openGates).request?.url).toContain(
+      "/api/data/v9.2/contacts"
+    );
+    expect(buildCrmRuntime("shopify-crm-lifecycle", crmInput, readyEnv, openGates).request).toMatchObject({
+      method: "POST",
+      url: "https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2026-04/graphql.json",
+      headers: expect.objectContaining({ "x-shopify-access-token": "{SHOPIFY_ADMIN_ACCESS_TOKEN}" })
+    });
+  });
+
+  it("blocks CRM lifecycle sync when opt-in and review gates are absent", () => {
+    const result = buildCrmRuntime(
+      "salesforce-crm-lifecycle",
+      { ...crmInput, optInRecorded: false },
+      readyEnv,
+      { networkAllowlisted: true }
+    );
+
+    expect(result.mode).toBe("blocked");
+    expect(result.request).toBeUndefined();
+    expect(result.readiness.blockedReasons).toEqual(
+      expect.arrayContaining([
+        "Missing safety gate: OAuth consent",
+        "Missing safety gate: metadata schema validation",
+        "Missing safety gate: notification opt-in",
+        "Missing safety gate: suppression list check",
+        "Missing safety gate: tenant review",
+        "Missing safety gate: revocation handling"
+      ])
+    );
+  });
+
   it("builds redacted no-network notification request contracts", () => {
     const providerIds = [
       "resend-email-notification",
@@ -758,6 +873,7 @@ describe("provider runtime contracts", () => {
     const chat = buildTextChatRuntime("deterministic-customer-chat", textInput);
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
     const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
+    const crm = buildCrmRuntime("crm-csv-lifecycle-import", crmInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const notification = buildNotificationRuntime("browser-download-notification", notificationInput);
     const payment = buildPaymentRuntime("no-payment-checkout-gate", paymentInput);
@@ -775,6 +891,17 @@ describe("provider runtime contracts", () => {
       addressSignals: true,
       rawNotesStored: false,
       photosStored: false,
+      noNetwork: true
+    });
+    expect(crm.mode).toBe("local-result");
+    expect(crm.localResult).toMatchObject({
+      customerCount: 1,
+      birthdaySignals: true,
+      purchaseAnniversarySignals: true,
+      warrantyAnniversarySignals: true,
+      optInSignals: true,
+      rawNotesStored: false,
+      metadataOnly: true,
       noNetwork: true
     });
     expect(image.mode).toBe("local-result");
