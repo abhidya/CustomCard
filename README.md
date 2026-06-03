@@ -123,6 +123,7 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 - [Delivery process](docs/delivery-process.md)
 - [Verification](docs/verification.md)
 - [Completion audit](docs/completion-audit.md)
+- [Final package](docs/final-package.md)
 - [Handoff notes](docs/handoff-notes.md)
 - [System design prompt](docs/system-design-prompt.md)
 - [Implementation roadmap](docs/implementation-roadmap.md)

@@ -11,7 +11,7 @@ Requirement types:
 | ID | Requirement | Type | Current coverage | Evidence |
 | --- | --- | --- | --- | --- |
 | R001 | Preserve the founder card-origin story and product wedge. | Explicit | Covered in docs and UI thesis. | `docs/brief-context.md`, `docs/product-brief.md`, `src/domain.ts` `oneLiner` and `sourceThesis`, README. |
-| R002 | Extract the messy context into storyboard chapters. | Explicit | Covered. | `src/domain.ts` `storyboards`, `computeBlueprintCoverage`; `src/domain.test.ts` chapter coverage test; UI Storyboard section. |
+| R002 | Extract the messy context into storyboard chapters. | Explicit | Covered in domain contracts and docs; the current UI prioritizes the free MVP workflow. | `src/domain.ts` `storyboards`, `computeBlueprintCoverage`; `src/domain.test.ts` chapter coverage test; `docs/brief-context.md`. |
 | R003 | Show user paths for proactive, last-minute, recurring-memory, and high-care flows. | Explicit | Covered in the product workflow plus domain storyboards. | `src/App.tsx` opportunity/studio/memory/handoff views; `src/domain.ts` storyboard acceptance criteria. |
 | R004 | Support web, iOS, and Android as cross-platform product surfaces. | Explicit | Partially covered. Web is a runnable free MVP; mobile is a thin shell/config boundary. | `src/App.tsx`; `apps/mobile/README.md`; `apps/mobile/app.config.js`; `apps/mobile/src/App.tsx`; `tests/infra-contract.test.ts`. |
 | R005 | Model provider import for email/calendar with scoped access. | Explicit | Covered as free manual/ICS import in the MVP and service contracts for future OAuth; not live OAuth. | `src/freeMvp.ts` `parseFreeImport`; `src/serviceKernel.ts` provider adapters; tests in `src/freeMvp.test.ts` and `src/serviceKernel.test.ts`. |

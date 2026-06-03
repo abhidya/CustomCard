@@ -11,9 +11,10 @@ it after each meaningful implementation pass.
 - Service-kernel tests cover metadata-only imports, approved memory, card-project
   creation, print validation, order lifecycle transitions, regional policy, and
   runtime config.
-- UI smoke tests exercise source extraction, weak-input blocking, mobile
-  horizontal overflow, the local auth -> import -> studio -> handoff workflow,
-  and adapter readiness when Chrome is available.
+- UI smoke tests exercise mobile horizontal overflow, the local auth -> import ->
+  studio -> handoff workflow, and adapter readiness when Chrome is available.
+- Domain and service tests exercise source extraction, weak-input blocking, raw
+  content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, and the mobile shell.
 - Runtime doctor fails closed on missing or placeholder required environment
@@ -69,6 +70,14 @@ Result: passed with local rendered screenshots.
 
 The visual pass caught and fixed two layout issues: mobile status-chip clipping
 and cramped four-across panel previews.
+
+```text
+Final package audit
+```
+
+Result: passed. `docs/final-package.md` was added from the
+`deliver-ambiguous-brief` final package template, README links it, and stale
+documentation claims found during the audit were corrected.
 
 ## Known Verification Gaps
 

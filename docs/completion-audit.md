@@ -10,12 +10,12 @@ listed as a gap instead of treated as complete.
 | --- | --- | --- |
 | Tiny prompt recovered or marked unrecoverable. | Covered | `docs/brief-context.md` records the recovered attachment paths, verbatim product-driving excerpts, and deidentification boundary. |
 | Relevant project chat/session histories inspected. | Covered | `docs/delivery-process.md` records inspection of `.omx` history and Codex attachment history; `.omx` remains local/ignored. |
-| Current repo state mapped to files, behavior, docs, and verification evidence. | Covered | `docs/requirements-traceability.md`, `docs/free-mvp-plan.md`, `docs/verification.md`, README. |
+| Current repo state mapped to files, behavior, docs, and verification evidence. | Covered | `docs/requirements-traceability.md`, `docs/free-mvp-plan.md`, `docs/final-package.md`, `docs/verification.md`, README. |
 | Rough or half-finished repo state understood before polishing. | Covered | `docs/delivery-process.md` records the rejected generic prototype, rebuilt workbench, and service-kernel rescue path. |
 | Interview/client constraints captured separately from product features. | Covered | `docs/brief-context.md` separates explicit requirements, inferences, assumptions, and unknowns; `docs/handoff-notes.md` captures reviewer/submission expectations. |
 | AI-assisted workflow captured as process, not vague marketing copy. | Covered | `docs/delivery-process.md`. |
 | Deliverable is a repo/state package, not only a brainstorm, plan, or history report. | Covered | Runnable app, typed service kernel, tests, infra, mobile shell, docs, and pushed `main` branch. |
-| Coherent, usable, maintainable, verified project package. | Covered | README front door, free local MVP UX, typed domain/service kernel, infra docs, mobile shell boundary, and verification evidence in `docs/verification.md`. |
+| Coherent, usable, maintainable, verified project package. | Covered | README front door, `docs/final-package.md`, free local MVP UX, typed domain/service kernel, infra docs, mobile shell boundary, and verification evidence in `docs/verification.md`. |
 | Gaps are named plainly. | Covered | README Honest Gaps, `docs/handoff-notes.md`, `docs/verification.md`, `docs/requirements-traceability.md`. |
 
 ## Workflow Requirements
