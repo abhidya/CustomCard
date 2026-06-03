@@ -68,6 +68,9 @@ jobs:
       - name: Validate end-to-end coverage readiness
         run: npm run e2e:coverage:doctor
 
+      - name: Validate observability readiness
+        run: npm run observability:doctor
+
       - name: Validate localization readiness
         run: npm run localization:doctor
 

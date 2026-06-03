@@ -142,15 +142,16 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 24 test files, 158 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.21% statements, 84.31% branches, 97.22% functions, 94.97% lines across account auth, core, API, artifact handoff/store, demo seed, E2E coverage, external audit readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 25 test files, 162 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.26% statements, 84.5% branches, 97.29% functions, 94.9% lines across account auth, core, API, artifact handoff/store, demo seed, E2E coverage, external audit readiness, observability readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
 | External audit readiness | `npm run external:audit:doctor` | Passed; verified 15 production-blocking external evidence items, production-gate mappings, admin/API surfaces, CI wiring, documentation, zero public production claims, and zero attached external audit artifacts. |
-| End-to-end coverage readiness | `npm run e2e:coverage:doctor` | Passed; verified 20 repo-local reviewer journeys, 100% repo-local coverage, 20 CI-gated coverage items, admin/API surfaces, backing browser/API/mobile/infra tests, zero live production proofs, zero real orders, and zero live external network requirements. |
+| End-to-end coverage readiness | `npm run e2e:coverage:doctor` | Passed; verified 21 repo-local reviewer journeys, 100% repo-local coverage, 21 CI-gated coverage items, admin/API surfaces, backing browser/API/mobile/infra tests, zero live production proofs, zero real orders, and zero live external network requirements. |
+| Observability readiness | `npm run observability:doctor` | Passed; verified 7 telemetry/alerting readiness items, 6 observability provider contracts, 4 alert-route-required controls, admin/API surfaces, docs, CI wiring, zero live ingestion, zero production alerts, and zero live external network requirements. |
 | Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 102 adapters, 45 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
 | Capacity planning | `npm run capacity:doctor` | Passed; verified 4 local/cheap/cloud/SaaS profiles, finite daily card/image limits, admin/API surfaces, CI wiring, documentation, and no live provider calls or real orders. |
 | Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
@@ -188,7 +189,7 @@
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
 | Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/cloud-artifact-iac-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, live MinIO/S3-compatible artifact write/read verification, static AWS artifact-store bucket/IAM contract, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and live-applied cloud IAM are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
-| Enforce coverage as a quality gate. | `npm run test:coverage`, `npm run e2e:coverage:doctor`, `vite.config.ts`, `src/e2eCoverage.test.ts`, `src/capacityPlan.test.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, E2E matrix, capacity planning, persistence, orchestration, and mobile contracts; UI covered by smoke |
+| Enforce coverage as a quality gate. | `npm run test:coverage`, `npm run e2e:coverage:doctor`, `vite.config.ts`, `src/e2eCoverage.test.ts`, `src/capacityPlan.test.ts`, `src/observabilityReadiness.test.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, E2E matrix, capacity planning, observability readiness, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
 
 ## Reviewer Path
@@ -241,8 +242,10 @@
   write/read doctor coverage are covered.
 - No live vendor quote, order, payment charge/refund, or cancellation
   integration; payment provider coverage is sandbox-contract only.
-- No live observability ingestion, alert routing, retention enforcement, or
-  incident-response drill; observability provider coverage is contract-only.
+- Observability readiness is covered as repo-local telemetry schema, redaction,
+  sampling, retention, provider-contract, alert-route, and incident-review
+  gates; no live observability ingestion, alert delivery, retention enforcement,
+  or incident-response drill is claimed.
 - No measured production capacity benchmark, live autoscaler report, hosted
   database throughput proof, or provider spend report; capacity profiles remain
   planning contracts.

@@ -26,6 +26,13 @@ import {
   type LocalizationReadinessSummary
 } from "./localization.ts";
 import {
+  observabilityReadinessItems,
+  summarizeObservabilityReadiness,
+  validateObservabilityReadiness,
+  type ObservabilityReadinessItem,
+  type ObservabilityReadinessSummary
+} from "./observabilityReadiness";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -81,6 +88,7 @@ export interface ApiReadinessSummary {
   externalAudit: ExternalAuditReadinessSummary;
   e2eCoverage: E2eCoverageSummary;
   capacity: CapacityPlanSummary;
+  observability: ObservabilityReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -114,6 +122,10 @@ export interface ApiBootstrapPayload {
   capacity: {
     profiles: CapacityProfile[];
     summary: CapacityPlanSummary;
+  };
+  observability: {
+    items: ObservabilityReadinessItem[];
+    summary: ObservabilityReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -211,6 +223,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "externalAudit",
       "e2eCoverage",
       "capacity",
+      "observability",
       "runtime",
       "blockedProviders",
       "requiredEnv"
@@ -395,6 +408,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     externalAudit: summarizeExternalAuditReadiness(),
     e2eCoverage: summarizeE2eCoverage(),
     capacity: summarizeCapacityPlan(),
+    observability: summarizeObservabilityReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -425,6 +439,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     capacity: {
       profiles: capacityProfiles,
       summary: summarizeCapacityPlan()
+    },
+    observability: {
+      items: observabilityReadinessItems,
+      summary: summarizeObservabilityReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -527,6 +545,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const e2eCoverageIssue of validateE2eCoverage()) {
     issues.push(e2eCoverageIssue);
+  }
+  for (const observabilityIssue of validateObservabilityReadiness()) {
+    issues.push(observabilityIssue);
   }
 
   return issues;

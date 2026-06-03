@@ -72,16 +72,21 @@ environment configuration instead of static placeholders.
   and free workflow actions.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
-  profiles, external audit readiness, cloud runtime readiness, and blocked
-  live-vendor adapters.
+  profiles, external audit readiness, observability readiness, cloud runtime
+  readiness, and blocked live-vendor adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
   cloud IAM, signed mobile artifact, retail certification, and physical print
   certification gaps. `publicClaimAllowed` and attached external artifacts stay
   at zero until real reports or certifications are attached.
+- Observability readiness register in `src/observabilityReadiness.ts` and
+  `src/observabilityReadinessData.mjs` for telemetry schema, PII redaction,
+  sampling, retention, alert-route drill, provider request contracts, and
+  incident-review evidence while keeping live ingestion and production alerts
+  disabled.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 20 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 21 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -303,11 +308,16 @@ not an external audit report.
 `npm run e2e:coverage:doctor` verifies the committed end-to-end coverage
 matrix, admin/API surfaces, backing test files, documentation, CI wiring, and
 the no-live-production-proof/no-real-order/no-live-network boundary.
+`npm run observability:doctor` verifies the committed telemetry and alerting
+readiness register, provider runtime contracts, admin/API surfaces,
+documentation, and CI wiring. It is not live telemetry ingestion or alert
+delivery proof.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
 accessibility baseline doctor, external audit readiness doctor, provider cost
-governance doctor, end-to-end coverage doctor, capacity profile doctor, printer pricing research doctor,
+governance doctor, end-to-end coverage doctor, observability readiness doctor,
+capacity profile doctor, printer pricing research doctor,
 localization readiness doctor,
 memory-runtime API doctor,
 Postgres runtime contract doctor, live Postgres integration doctor, Postgres API

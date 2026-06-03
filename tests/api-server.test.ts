@@ -57,6 +57,17 @@ describe("api server wrapper", () => {
           externalNetworkCalls: number;
           blockers: string[];
         };
+        observability: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          providerContracts: number;
+          alertRoutesRequired: number;
+          liveIngestionEnabled: number;
+          externalNetworkCalls: number;
+          productionAlertsEnabled: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -138,13 +149,24 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 20,
-      covered: 20,
+      total: 21,
+      covered: 21,
       repoLocalCoveragePercent: 100,
-      ciGated: 20,
+      ciGated: 21,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
+      blockers: []
+    });
+    expect(report.readiness.observability).toMatchObject({
+      total: 7,
+      repoLocalReady: 4,
+      evidenceMissing: 3,
+      providerContracts: 6,
+      alertRoutesRequired: 4,
+      liveIngestionEnabled: 0,
+      externalNetworkCalls: 0,
+      productionAlertsEnabled: 0,
       blockers: []
     });
     expect(report.readiness.capacity).toMatchObject({
@@ -295,12 +317,23 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 20,
-        covered: 20,
+        total: 21,
+        covered: 21,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
         externalNetworkCalls: 0
+      });
+      expect(readiness.observability).toMatchObject({
+        total: 7,
+        repoLocalReady: 4,
+        evidenceMissing: 3,
+        providerContracts: 6,
+        alertRoutesRequired: 4,
+        liveIngestionEnabled: 0,
+        externalNetworkCalls: 0,
+        productionAlertsEnabled: 0,
+        blockers: []
       });
       expect(readiness.capacity).toMatchObject({
         total: 4,

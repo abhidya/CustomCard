@@ -22,6 +22,10 @@ it after each meaningful implementation pass.
   observability request contracts, metadata-only event/contact import contracts,
   metadata-only CRM lifecycle and workflow-integration contracts, free local
   fallbacks, and hard-blocked live vendor ordering.
+- Observability readiness tests and `npm run observability:doctor` cover
+  telemetry schema, PII redaction, sampling, retention, alert-route drill
+  tracking, provider request contracts, admin/API exposure, docs, CI wiring,
+  and live ingestion plus production alerts held at zero.
 - Printer-pricing tests and `npm run printer:pricing:doctor` cover 12
   review-only public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot price
   observations, collection rules, 30-day freshness blocking, minimum quantity
@@ -130,9 +134,13 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 20-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 21-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
+- Observability readiness is checked by `npm run observability:doctor`, which
+  verifies the 7-item telemetry and alerting readiness register, provider
+  runtime contracts, admin/API surfaces, docs, CI wiring, and zero live
+  ingestion, production alerts, or live external network requirements.
 - `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
@@ -188,15 +196,16 @@ npm run check
 
 Result: passed.
 
-- Vitest: 24 test files passed, 158 tests passed.
-- Coverage: 22 core/API/persistence/infra/mobile test files passed, 149 tests passed; V8 report measured
-  91.21% statements, 84.31% branches, 97.22% functions, and 94.97% lines across
+- Vitest: 25 test files passed, 162 tests passed.
+- Coverage: 23 core/API/persistence/infra/mobile test files passed, 153 tests passed; V8 report measured
+  91.26% statements, 84.5% branches, 97.29% functions, and 94.9% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
   `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
-  `src/freeMvp.ts`, `src/localization.ts`,
+  `src/freeMvp.ts`, `src/localization.ts`, `src/observabilityReadiness.ts`,
+  `src/observabilityReadinessData.mjs`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
   `src/providerCatalog.ts`, `src/providerGovernance.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -245,10 +254,20 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 20 repo-local journeys, 100% repo-local
-coverage, 20 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 21 repo-local journeys, 100% repo-local
+coverage, 21 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
+
+```text
+npm run observability:doctor
+```
+
+Result: passed. The JSON report marked register, provider-runtime, surfaces,
+docs, CI, and evidence lanes `ready`; it verified 7 telemetry/alerting readiness
+items, 6 observability provider contracts, 4 alert-route-required controls, zero
+live ingestion, zero production alerts, and zero live external network
+requirements.
 
 ```text
 npm run provider:governance:doctor

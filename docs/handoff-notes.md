@@ -91,8 +91,10 @@ skeleton for the production path. It includes:
 - Vercel deployment exists but public route checks return deployment-protection
   401 responses, and no hosted DB env vars are configured; the admin launch-gate
   registry tracks the remaining env sync and DB doctor evidence.
-- No live observability ingestion, alert routing, retention enforcement, or
-  incident-response drill; observability provider coverage is contract-only.
+- Observability readiness is covered as repo-local telemetry schema, redaction,
+  sampling, retention, provider-contract, alert-route, and incident-review
+  gates; no live observability ingestion, alert delivery, retention enforcement,
+  or incident-response drill is claimed.
 - No React Native render test, emulator run, actual EAS/native build, or signed
   mobile artifact; EAS profiles and release doctor are covered.
 - No physical print certification.

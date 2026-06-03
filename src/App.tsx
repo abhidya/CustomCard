@@ -93,6 +93,12 @@ import {
   type SupportedLocale,
   type SupportedLocaleCode
 } from "./localization";
+import {
+  observabilityReadinessItems,
+  summarizeObservabilityReadiness,
+  type ObservabilityReadinessItem,
+  type ObservabilityReadinessSummary
+} from "./observabilityReadiness";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -174,6 +180,7 @@ function App() {
   const externalAuditSummary = useMemo(() => summarizeExternalAuditReadiness(), []);
   const e2eCoverageSummary = useMemo(() => summarizeE2eCoverage(), []);
   const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
+  const observabilitySummary = useMemo(() => summarizeObservabilityReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -462,6 +469,8 @@ function App() {
             externalAuditSummary={externalAuditSummary}
             localizationSummary={localizationSummary}
             model={adminPanelModel}
+            observabilityItems={observabilityReadinessItems}
+            observabilitySummary={observabilitySummary}
             providerGovernance={providerGovernance}
             productionReadiness={productionReadiness}
             runtimeReadiness={runtimeReadiness}
@@ -1123,6 +1132,8 @@ function AdminPanelView({
   externalAuditSummary,
   localizationSummary,
   model,
+  observabilityItems,
+  observabilitySummary,
   providerGovernance,
   productionReadiness,
   runtimeReadiness
@@ -1135,6 +1146,8 @@ function AdminPanelView({
   externalAuditSummary: ExternalAuditReadinessSummary;
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
+  observabilityItems: ObservabilityReadinessItem[];
+  observabilitySummary: ObservabilityReadinessSummary;
   providerGovernance: ProviderGovernanceSummary;
   productionReadiness: ProductionReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
@@ -1168,6 +1181,8 @@ function AdminPanelView({
         <Metric label="Capacity profiles" value={`${capacitySummary.total}`} />
         <Metric label="Public claims" value={`${externalAuditSummary.publicClaimsAllowed}`} />
         <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
+        <Metric label="Alert routes" value={`${observabilitySummary.alertRoutesRequired}`} />
+        <Metric label="Live telemetry" value={`${observabilitySummary.liveIngestionEnabled}`} />
       </div>
 
       <div className="adminGrid">
@@ -1313,6 +1328,31 @@ function AdminPanelView({
           <E2eCoverageList items={e2eCoverageItems} />
           <p className="panelNote">
             The 100% figure is limited to repo-local reviewer workflows and CI-gated doctors; live production auth, real payments, direct printer orders, signed native artifacts, and external audits remain outside this proof.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Operations</p>
+              <h3>Observability readiness</h3>
+            </div>
+            <StatusChip icon={Cloud} label="Live ingestion off" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="Observability telemetry and alerting readiness">
+            <Metric label="Items" value={`${observabilitySummary.total}`} />
+            <Metric label="Repo-local" value={`${observabilitySummary.repoLocalReady}`} />
+            <Metric label="Evidence gaps" value={`${observabilitySummary.evidenceMissing}`} />
+            <Metric label="Providers" value={`${observabilitySummary.providerContracts}`} />
+            <Metric label="Alert routes" value={`${observabilitySummary.alertRoutesRequired}`} />
+            <Metric label="PII redacted" value={`${observabilitySummary.piiRedacted}`} />
+            <Metric label="Max retention" value={`${observabilitySummary.maxRetentionDays}d`} />
+            <Metric label="Live ingestion" value={`${observabilitySummary.liveIngestionEnabled}`} />
+          </div>
+          <ObservabilityReadinessList items={observabilityItems} />
+          <p className="panelNote">
+            These are schema, redaction, sampling, retention, provider, and alert-route contracts; no live telemetry
+            ingestion or production alert delivery is claimed.
           </p>
         </article>
 
@@ -1575,6 +1615,20 @@ function E2eCoverageList({ items }: { items: E2eCoverageItem[] }) {
           <span>{item.surface}</span>
           <strong>{item.label}</strong>
           <small>{e2eAutomationLabel(item.automationType)}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ObservabilityReadinessList({ items }: { items: ObservabilityReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${item.status === "repo-local-ready" ? "ready-local" : "credential-gated"}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.liveIngestionEnabled ? "Live ingestion" : "Live ingestion off"}</small>
         </div>
       ))}
     </div>

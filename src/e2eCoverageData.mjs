@@ -15,6 +15,7 @@ const requiredCoverageIds = [
   "deployment-iac-readiness",
   "security-privacy-accessibility",
   "external-audit-evidence-register",
+  "observability-alerting-readiness",
   "capacity-cost-readiness",
   "localization-rtl-readiness",
   "printer-pricing-research",
@@ -229,6 +230,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run external:audit:doctor", "npm run check"],
     evidence: ["15 evidence gaps tracked", "Production-gate mappings verified", "Public production claims disabled", "Attached external artifacts not claimed"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "observability-alerting-readiness",
+    label: "Observability and alerting readiness",
+    surface: "governance",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run observability:doctor", "npm run test -- --run src/observabilityReadiness.test.ts", "npm run check"],
+    evidence: ["Telemetry schema covered", "PII redaction required", "Alert route drill tracked", "Live ingestion disabled"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

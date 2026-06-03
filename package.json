@@ -27,6 +27,7 @@
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
     "external:audit:doctor": "node scripts/external-audit-readiness-doctor.mjs",
     "e2e:coverage:doctor": "node scripts/e2e-coverage-doctor.mjs",
+    "observability:doctor": "node scripts/observability-readiness-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
     "capacity:doctor": "node scripts/capacity-plan-doctor.mjs",

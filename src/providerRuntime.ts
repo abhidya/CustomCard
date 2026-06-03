@@ -2086,20 +2086,24 @@ function buildObservabilityRequest(
     );
   }
 
-  return request(
-    adapter,
-    "POST",
-    "https://{BETTERSTACK_INGESTING_HOST}/",
-    ["BETTERSTACK_SOURCE_TOKEN", "BETTERSTACK_INGESTING_HOST"],
-    {
-      dt: "{contract-timestamp}",
-      level: input.severity,
-      message: sanitized.text,
-      customcard: metadata
-    },
-    [],
-    { authorization: "Bearer {BETTERSTACK_SOURCE_TOKEN}" }
-  );
+  if (adapter.id === "betterstack-logs-observability") {
+    return request(
+      adapter,
+      "POST",
+      "https://{BETTERSTACK_INGESTING_HOST}/",
+      ["BETTERSTACK_SOURCE_TOKEN", "BETTERSTACK_INGESTING_HOST"],
+      {
+        dt: "{contract-timestamp}",
+        level: input.severity,
+        message: sanitized.text,
+        customcard: metadata
+      },
+      [],
+      { authorization: "Bearer {BETTERSTACK_SOURCE_TOKEN}" }
+    );
+  }
+
+  throw new Error(`Unsupported observability adapter: ${adapter.id}`);
 }
 
 function request(

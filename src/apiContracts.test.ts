@@ -97,10 +97,10 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 20,
-      covered: 20,
+      total: 21,
+      covered: 21,
       repoLocalCoveragePercent: 100,
-      ciGated: 20,
+      ciGated: 21,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
@@ -117,6 +117,15 @@ describe("api contracts", () => {
     });
     expect(summary.capacity.maxDailyCards).toBe(12000);
     expect(summary.capacity.maxDailyImageGenerations).toBe(1000);
+    expect(summary.observability).toMatchObject({
+      total: 7,
+      providerContracts: 6,
+      alertRoutesRequired: 4,
+      liveIngestionEnabled: 0,
+      externalNetworkCalls: 0,
+      productionAlertsEnabled: 0,
+      blockers: []
+    });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(8);
@@ -174,12 +183,17 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 20,
+      total: 21,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
     expect(payload.e2eCoverage.items.map((item) => item.id)).toEqual(
-      expect.arrayContaining(["customer-workspace-to-handoff", "admin-panel-readiness", "mobile-customer-shell"])
+      expect.arrayContaining([
+        "customer-workspace-to-handoff",
+        "admin-panel-readiness",
+        "mobile-customer-shell",
+        "observability-alerting-readiness"
+      ])
     );
     expect(payload.capacity.summary).toMatchObject({
       total: 4,
@@ -194,6 +208,15 @@ describe("api contracts", () => {
       "saas-scale"
     ]);
     expect(payload.capacity.profiles.every((profile) => !profile.liveProviderCalls && !profile.realOrdersEnabled)).toBe(true);
+    expect(payload.observability.summary).toMatchObject({
+      total: 7,
+      providerContracts: 6,
+      liveIngestionEnabled: 0,
+      productionAlertsEnabled: 0
+    });
+    expect(payload.observability.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["telemetry-event-schema", "alert-routing-drill", "observability-provider-contracts"])
+    );
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
@@ -224,9 +247,14 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 20,
+        total: 21,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
+      },
+      observability: {
+        total: 7,
+        liveIngestionEnabled: 0,
+        productionAlertsEnabled: 0
       }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({

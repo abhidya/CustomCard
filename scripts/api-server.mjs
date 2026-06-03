@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
+import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
@@ -276,6 +277,7 @@ export const readiness = {
   externalAudit: summarizeExternalAuditReadiness(),
   e2eCoverage: summarizeE2eCoverage(),
   capacity: summarizeCapacityPlan(),
+  observability: summarizeObservabilityReadiness(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -578,6 +580,19 @@ function validateApiServerContract() {
   if (readiness.e2eCoverage.realOrdersEnabled !== 0) blockers.push("E2E coverage cannot enable real orders.");
   if (readiness.e2eCoverage.externalNetworkCalls !== 0) blockers.push("E2E coverage cannot require live external network calls.");
   if (readiness.e2eCoverage.blockers.length > 0) blockers.push("E2E coverage summary has blockers.");
+  if (readiness.observability.total < 7) blockers.push("Observability readiness must track telemetry and alerting evidence.");
+  if (readiness.observability.providerContracts < 6) {
+    blockers.push("Observability readiness must cover all observability provider contracts.");
+  }
+  if (readiness.observability.alertRoutesRequired < 4) blockers.push("Observability readiness must track alert route drills.");
+  if (readiness.observability.liveIngestionEnabled !== 0) blockers.push("Observability readiness cannot enable live ingestion.");
+  if (readiness.observability.externalNetworkCalls !== 0) {
+    blockers.push("Observability readiness cannot require live external network calls.");
+  }
+  if (readiness.observability.productionAlertsEnabled !== 0) {
+    blockers.push("Observability readiness cannot enable production alerts.");
+  }
+  if (readiness.observability.blockers.length > 0) blockers.push("Observability readiness summary has blockers.");
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");
