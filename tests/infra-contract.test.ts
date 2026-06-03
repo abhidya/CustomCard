@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlan";
 
 function read(path: string): string {
   return readFileSync(path, "utf8");
@@ -407,11 +408,10 @@ describe("production infrastructure contract", () => {
       lanes: Array<{ lane: string; status: string }>;
       blockers: unknown[];
     };
-    const capacityPlan = read("src/capacityPlan.ts");
-    const capacityPlanData = read("src/capacityPlanData.mjs");
     const app = read("src/App.tsx");
     const apiContracts = read("src/apiContracts.ts");
     const apiServer = read("scripts/api-server.mjs");
+    const summary = summarizeCapacityPlan();
 
     expect(report).toMatchObject({
       service: "customcard-capacity-plan-doctor",
@@ -426,10 +426,20 @@ describe("production infrastructure contract", () => {
     expect(report.lanes.map((lane) => lane.lane)).toEqual(
       expect.arrayContaining(["profiles", "surfaces", "ci", "safety"])
     );
-    expect(`${capacityPlan}\n${capacityPlanData}`).toContain("cheap-droplet");
-    expect(`${capacityPlan}\n${capacityPlanData}`).toContain("queueMode");
-    expect(capacityPlan).toContain("capacityPlanData.mjs");
-    expect(capacityPlan).toContain("validateCapacityProfiles");
+    expect(validateCapacityProfiles()).toEqual([]);
+    expect(capacityProfiles.map((profile) => profile.id)).toEqual([
+      "local-dev",
+      "cheap-droplet",
+      "cloud-native",
+      "saas-scale"
+    ]);
+    expect(summary).toMatchObject({
+      total: 4,
+      maxDailyCards: 12000,
+      maxDailyImageGenerations: 1000,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0
+    });
     expect(`${app}\n${apiContracts}\n${apiServer}`).toContain("Capacity profiles");
     expect(`${app}\n${apiContracts}\n${apiServer}`).toContain("summarizeCapacityPlan");
   }, shellDoctorTimeoutMs);

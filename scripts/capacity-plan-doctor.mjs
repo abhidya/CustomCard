@@ -2,8 +2,6 @@ import { readFileSync } from "node:fs";
 import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlanData.mjs";
 
 const files = {
-  capacityPlanInterface: "src/capacityPlan.ts",
-  capacityPlanData: "src/capacityPlanData.mjs",
   capacityTest: "src/capacityPlan.test.ts",
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
@@ -27,17 +25,7 @@ const checks = [
   checkMinimum("profiles", "max-daily-image-budget", summary.maxDailyImageGenerations, 1000),
   checkArrayIncludes("profiles", "required-profile-ids", profileIds, ["local-dev", "cheap-droplet", "cloud-native", "saas-scale"]),
   checkNoBlockers("profiles", "executable-summary-and-validation", validationBlockers),
-  checkIncludes("profiles", "typed-interface-and-shared-data", `${contents.capacityPlanInterface}\n${contents.capacityPlanData}`, [
-    "capacityPlanData.mjs",
-    "CapacityProfile",
-    "capacityProfiles",
-    "summarizeCapacityPlan",
-    "validateCapacityProfiles",
-    "Provider budget caps",
-    "Queue concurrency limit",
-    "Artifact retention window",
-    "Real-order kill switch"
-  ]),
+  checkProfilesShape("profiles", "profile-contract-shape", capacityProfiles),
   checkIncludes("tests", "capacity-tests", contents.capacityTest, [
     "defines finite cheap-to-scale profiles",
     "keeps droplet, cloud, and SaaS shapes honest",
@@ -62,12 +50,8 @@ const checks = [
     "Validate capacity plan readiness",
     "npm run capacity:doctor"
   ]),
-  checkAbsent("safety", "no-live-capacity-claims", `${contents.capacityPlanData}\n${contents.apiServer}`, [
-    "realOrdersEnabled: true",
-    "liveProviderCalls: true",
-    "real orders enabled",
-    "live provider calls enabled"
-  ])
+  checkExact("safety", "no-live-provider-calls", summary.liveProviderCalls, 0),
+  checkExact("safety", "no-real-orders", summary.realOrdersEnabled, 0)
 ];
 
 const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
@@ -142,6 +126,41 @@ function checkNoBlockers(lane, id, blockers) {
   };
 }
 
+function checkProfilesShape(lane, id, profiles) {
+  const requiredKeys = [
+    "id",
+    "label",
+    "lane",
+    "runtimeShape",
+    "dailyCardCapacity",
+    "dailyImageGenerationBudget",
+    "databaseMode",
+    "queueMode",
+    "objectStoreMode",
+    "costGuardrails",
+    "requiredEvidence",
+    "scalingSignals",
+    "tradeoffs"
+  ];
+  const missing = [];
+
+  for (const profile of profiles) {
+    for (const key of requiredKeys) {
+      if (!(key in profile)) missing.push(`${profile.id ?? "unknown"}.${key}`);
+    }
+  }
+
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `Validated ${profiles.length} executable capacity profile shapes.`
+        : `Missing capacity profile fields: ${missing.join(", ")}`
+  };
+}
+
 function checkIncludes(lane, id, text, required) {
   const missing = required.filter((needle) => !text.includes(needle));
   return {
@@ -152,15 +171,5 @@ function checkIncludes(lane, id, text, required) {
       missing.length === 0
         ? `Found ${required.length} required capacity signals.`
         : `Missing capacity signals: ${missing.join(", ")}`
-  };
-}
-
-function checkAbsent(lane, id, text, forbidden) {
-  const present = forbidden.filter((needle) => text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: present.length === 0,
-    detail: present.length === 0 ? "No forbidden live capacity claims found." : `Forbidden claims present: ${present.join(", ")}`
   };
 }
