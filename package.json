@@ -12,6 +12,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "api:serve": "node scripts/api-server.mjs",
     "api:doctor": "node scripts/api-server.mjs --doctor",
+    "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",

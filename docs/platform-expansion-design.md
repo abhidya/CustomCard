@@ -130,9 +130,19 @@ project creation, render packets, manual vendor handoff, and data requests.
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts. It serves `/api/health`, `/api/routes`, `/api/customer/bootstrap`,
 `/api/mobile/bootstrap`, `/api/admin/readiness`, and
-`/api/admin/provider-catalog`, accepts mutation routes as contract-only
-idempotent responses, keeps live external calls disabled, and also serves the
-built web app from `dist`.
+`/api/admin/provider-catalog`, exposes `/api/admin/persistence-readiness`,
+accepts mutation routes as contract-only idempotent responses, keeps live
+external calls disabled, and also serves the built web app from `dist`.
+
+## Persistence Boundary
+
+`src/persistenceContracts.ts` maps every API route to the Postgres tables it
+needs before live authenticated handlers are implemented. The current migration
+includes 16 durable tables, including `auth_sessions`, `idempotency_keys`,
+`api_jobs`, and append-only audit/order event tables. This proves the schema
+shape for production auth sessions, idempotency replay, queue-backed rendering
+and handoff jobs, consent/data requests, and operational audit without claiming
+that live DB handlers are running in the static server.
 
 ## Cheap Cloud Deployment Shape
 
@@ -151,6 +161,8 @@ The runtime remains fail-closed:
   disappear.
 - `npm run api:doctor` verifies the API/static server route map, provider
   summary, idempotent mutation contracts, and no-live-call posture.
+- `npm run persistence:doctor` verifies auth-session schema, idempotency replay,
+  queue jobs, append-only audit coverage, and schema-backed API route mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, observability, and managed secrets remain required before production
@@ -176,21 +188,23 @@ Implemented checks:
   default policy.
 - API contract and server tests validate customer/admin/mobile API bootstrap,
   provider readiness, idempotent mutation contracts, and `/api/health`.
+- Persistence contract tests validate 16 table contracts, 10 schema-backed API
+  routes, idempotency replay, queue-backed routes, and migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
-  API doctor, worker readiness, and mobile doctor for pushes to `main` and pull
-  requests.
+  API doctor, persistence doctor, worker readiness, and mobile doctor for pushes
+  to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  orchestration, and mobile contract modules: 90% statements, 80% branches, 90%
-  functions, and 90% lines.
+  persistence, orchestration, and mobile contract modules: 90% statements, 80%
+  branches, 90% functions, and 90% lines.
 
 Remaining high-risk work:
 
 - No live OAuth flow.
 - No live AI/image provider call.
 - No payment, quote, or live order adapter.
-- No DB-backed authenticated API persistence.
+- No live DB-backed authenticated API handlers or account recovery.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
 - No remote hosted CI run is claimed in this repo-local pass.

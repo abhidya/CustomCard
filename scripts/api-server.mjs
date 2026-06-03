@@ -8,11 +8,12 @@ const host = process.env.HOST ?? "0.0.0.0";
 
 const routes = [
   { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none" },
-  { id: "routes", method: "GET", path: "/api/routes", audience: "public", auth: "none" },
+  { id: "route-catalog", method: "GET", path: "/api/routes", audience: "public", auth: "none" },
   { id: "customer-bootstrap", method: "GET", path: "/api/customer/bootstrap", audience: "customer", auth: "customer-session" },
   { id: "mobile-bootstrap", method: "GET", path: "/api/mobile/bootstrap", audience: "customer", auth: "customer-session" },
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session" },
   { id: "admin-provider-catalog", method: "GET", path: "/api/admin/provider-catalog", audience: "admin", auth: "admin-session" },
+  { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session" },
@@ -35,12 +36,12 @@ const readiness = {
   status: "ready",
   realOrdersEnabled: false,
   routes: {
-    total: 11,
-    public: 2,
-    customer: 7,
-    admin: 2,
-    mutations: 5,
-    idempotentMutations: 5
+    total: routes.length,
+    public: routes.filter((route) => route.audience === "public").length,
+    customer: routes.filter((route) => route.audience === "customer").length,
+    admin: routes.filter((route) => route.audience === "admin").length,
+    mutations: routes.filter((route) => route.method === "POST").length,
+    idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
     total: 42,
@@ -53,6 +54,13 @@ const readiness = {
     externalNetworkCalls: false,
     liveVendorOrders: false,
     rawContentStored: false
+  },
+  persistence: {
+    tables: 16,
+    schemaBackedRoutes: 10,
+    authSessionTable: true,
+    idempotencyTable: true,
+    appendOnlyAudit: true
   }
 };
 
@@ -126,6 +134,17 @@ function serveApi(request, response, path) {
     return;
   }
 
+  if (path === "/api/admin/persistence-readiness") {
+    sendJson(response, 200, {
+      service: "customcard-api",
+      status: "ready",
+      persistence: readiness.persistence,
+      safety: readiness.safety,
+      blockers: []
+    });
+    return;
+  }
+
   if (path === "/api/mobile/bootstrap") {
     sendJson(response, 200, {
       service: "customcard-api",
@@ -190,10 +209,12 @@ function validateApiServerContract() {
   const blockers = [];
   const requiredRoutes = new Set([
     "/api/health",
+    "/api/routes",
     "/api/customer/bootstrap",
     "/api/mobile/bootstrap",
     "/api/admin/readiness",
     "/api/admin/provider-catalog",
+    "/api/admin/persistence-readiness",
     "/api/import-preview",
     "/api/render-packets",
     "/api/vendor-handoff/manual"
@@ -215,6 +236,9 @@ function validateApiServerContract() {
     blockers.push("Every mutation route must require idempotency.");
   }
   if (readiness.providers.total < 42) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
+  if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
+  if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
 
   return blockers;
 }

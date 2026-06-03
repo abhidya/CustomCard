@@ -7,6 +7,16 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE auth_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  session_hash TEXT NOT NULL CHECK (char_length(session_hash) >= 32),
+  role TEXT NOT NULL CHECK (role IN ('customer', 'admin')),
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE provider_connections (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
@@ -158,6 +168,31 @@ CREATE TABLE data_requests (
   completed_at TIMESTAMPTZ
 );
 
+CREATE TABLE idempotency_keys (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  route_id TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL CHECK (char_length(idempotency_key) >= 12),
+  request_hash TEXT NOT NULL CHECK (char_length(request_hash) >= 12),
+  response_body JSONB NOT NULL DEFAULT '{}'::jsonb,
+  status TEXT NOT NULL CHECK (status IN ('processing', 'completed', 'failed')),
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, route_id, idempotency_key)
+);
+
+CREATE TABLE api_jobs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  route_id TEXT NOT NULL,
+  idempotency_key_id TEXT REFERENCES idempotency_keys(id),
+  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')),
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  result JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE audit_log (
   id BIGSERIAL PRIMARY KEY,
   subject_type TEXT NOT NULL,
@@ -168,8 +203,19 @@ CREATE TABLE audit_log (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_auth_sessions_user ON auth_sessions(user_id);
+CREATE UNIQUE INDEX idx_auth_sessions_hash ON auth_sessions(session_hash);
 CREATE INDEX idx_provider_connections_user ON provider_connections(user_id);
+CREATE INDEX idx_imported_events_connection ON imported_events(connection_id);
 CREATE INDEX idx_card_opportunities_event ON card_opportunities(event_id);
 CREATE INDEX idx_relationship_memories_recipient ON relationship_memories(user_id, recipient_name);
+CREATE INDEX idx_card_projects_opportunity ON card_projects(opportunity_id);
+CREATE INDEX idx_render_packets_project ON render_packets(project_id);
 CREATE INDEX idx_orders_project ON orders(project_id);
+CREATE INDEX idx_order_events_order ON order_events(order_id);
+CREATE INDEX idx_vendor_quotes_order ON vendor_quotes(order_id);
+CREATE INDEX idx_consent_records_user ON consent_records(user_id);
+CREATE INDEX idx_data_requests_user ON data_requests(user_id);
+CREATE INDEX idx_idempotency_keys_user_route ON idempotency_keys(user_id, route_id);
+CREATE INDEX idx_api_jobs_user_status ON api_jobs(user_id, status);
 CREATE INDEX idx_audit_subject ON audit_log(subject_type, subject_id);

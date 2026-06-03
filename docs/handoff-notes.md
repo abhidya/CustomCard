@@ -18,7 +18,8 @@ skeleton for the production path. It includes:
 - Executable service-kernel contracts for provider import, approved memory,
   card-project creation, print validation, order recovery, and regional policy.
 - Postgres migration for users, providers, events, opportunities, memories,
-  projects, render packets, orders, consent, data requests, and audit logs.
+  projects, render packets, orders, consent, data requests, auth sessions,
+  idempotency keys, API jobs, and audit logs.
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration,
   API/static server, and mobile-shell scaffolding plus mobile contract
   validation.
@@ -33,7 +34,8 @@ skeleton for the production path. It includes:
 
 - No production user auth or account recovery.
 - No real email/calendar OAuth flow.
-- No DB-backed production API with authenticated server-side sessions.
+- No live DB-backed production API handlers with authenticated server-side
+  sessions.
 - No live AI text/image generation.
 - No PNG/PDF export pipeline for physical production.
 - No live Walgreens/CVS/FedEx/Shutterfly/vendor quote or order API.
@@ -53,9 +55,10 @@ skeleton for the production path. It includes:
 3. Read `docs/requirements-traceability.md` to see what is covered and open.
 4. Run `npm run check`.
 5. Run `npm run api:doctor`.
-6. Run the worker and mobile doctor commands in `docs/verification.md`.
-7. Inspect the app with `npm run dev`.
-8. In the app, start a local workspace, scan the sample invite, generate a card,
+6. Run `npm run persistence:doctor`.
+7. Run the worker and mobile doctor commands in `docs/verification.md`.
+8. Inspect the app with `npm run dev`.
+9. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -64,18 +67,18 @@ skeleton for the production path. It includes:
 CustomCard started from a last-minute physical wedding-card workflow and expanded
 into a free local MVP plus a contract-first production skeleton for an event-aware
 card concierge. The current repo does not claim live production fulfillment. It
-proves the product workflow, customer/admin/API surfaces, provider-adapter
-readiness, domain boundaries, print contracts, order lifecycle, deployment
-shape, and safety gates with executable TypeScript, browser smoke tests, visual
-evidence, and infrastructure tests. Real external AI, OAuth, and ordering remain
-disabled until production credentials, consent flows, vendor terms, sandbox/live
-quote behavior, physical print certification, and security/legal review are
-complete.
+proves the product workflow, customer/admin/API/persistence surfaces,
+provider-adapter readiness, domain boundaries, print contracts, order lifecycle,
+deployment shape, and safety gates with executable TypeScript, browser smoke
+tests, visual evidence, and infrastructure tests. Real external AI, OAuth, and
+ordering remain disabled until production credentials, consent flows, vendor
+terms, sandbox/live quote behavior, physical print certification, and
+security/legal review are complete.
 
 ## Next Build Slice
 
-The highest-leverage next slice is turning the contract API into a persistent,
-Postgres-backed authenticated service:
+The highest-leverage next slice is turning the contract API and persistence
+schema into live Postgres-backed authenticated handlers:
 
 - Production user auth and authenticated card-project routes.
 - Persistent event/opportunity/memory/order repositories.

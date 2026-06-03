@@ -11,6 +11,7 @@ export default defineConfig({
         "src/agentContracts.ts",
         "src/domain.ts",
         "src/freeMvp.ts",
+        "src/persistenceContracts.ts",
         "src/providerCatalog.ts",
         "src/providerRuntime.ts",
         "src/serviceKernel.ts"

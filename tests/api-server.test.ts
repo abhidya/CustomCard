@@ -10,7 +10,11 @@ describe("api server wrapper", () => {
     const report = JSON.parse(output) as {
       service: string;
       status: string;
-      readiness: { providers: { total: number }; routes: { mutations: number; idempotentMutations: number } };
+      readiness: {
+        providers: { total: number };
+        routes: { total: number; mutations: number; idempotentMutations: number };
+        persistence: { tables: number; authSessionTable: boolean; idempotencyTable: boolean };
+      };
       blockers: string[];
     };
 
@@ -18,7 +22,13 @@ describe("api server wrapper", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(42);
+    expect(report.readiness.routes.total).toBe(12);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
+    expect(report.readiness.persistence).toMatchObject({
+      tables: 16,
+      authSessionTable: true,
+      idempotencyTable: true
+    });
   });
 
   it("serves API readiness, bootstrap, and contract-only mutation responses", async () => {
@@ -35,12 +45,22 @@ describe("api server wrapper", () => {
       expect(health).toMatchObject({ service: "customcard-api", status: "ready", realOrdersEnabled: false });
 
       const readiness = await getJson(port, "/api/admin/readiness");
+      expect(readiness.routes).toMatchObject({ total: 12, admin: 3, idempotentMutations: 5 });
       expect(readiness.providers).toMatchObject({ total: 42, credentialGated: 21, blocked: 3 });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
         liveVendorOrders: false,
         rawContentStored: false
       });
+
+      const persistence = await getJson(port, "/api/admin/persistence-readiness");
+      expect(persistence.persistence).toMatchObject({
+        tables: 16,
+        schemaBackedRoutes: 10,
+        authSessionTable: true,
+        idempotencyTable: true
+      });
+      expect(persistence.blockers).toEqual([]);
 
       const mobile = await getJson(port, "/api/mobile/bootstrap");
       expect(mobile.sections).toEqual(expect.arrayContaining(["card-queue", "text-chat", "handoff"]));

@@ -1,0 +1,87 @@
+import { describe, expect, it } from "vitest";
+import { apiRouteContracts } from "./apiContracts";
+import {
+  apiPersistenceRouteContracts,
+  buildPersistenceReadinessSummary,
+  migrationRequiredSignals,
+  persistenceTableContracts,
+  validatePersistenceContracts,
+  validatePersistenceMigration,
+  type ApiRoutePersistenceContract,
+  type PersistenceTableContract
+} from "./persistenceContracts";
+
+describe("persistence contracts", () => {
+  it("maps every API route to durable auth, idempotency, and schema contracts", () => {
+    expect(validatePersistenceContracts()).toEqual([]);
+    expect(apiPersistenceRouteContracts.map((contract) => contract.routeId)).toEqual(
+      apiRouteContracts.map((route) => route.id)
+    );
+
+    const nonPublicRoutes = apiPersistenceRouteContracts.filter((contract) => contract.requiredRole !== "public");
+    expect(nonPublicRoutes.every((contract) => contract.sessionRequired)).toBe(true);
+    expect(nonPublicRoutes.every((contract) => contract.persistedTables.includes("auth_sessions"))).toBe(true);
+  });
+
+  it("keeps mutation routes idempotent, audited, and queue-backed where required", () => {
+    const mutationRoutes = apiRouteContracts.filter((route) => route.method === "POST");
+    const mutationContracts = apiPersistenceRouteContracts.filter((contract) => contract.mode === "mutation");
+    const queueBackedRouteIds = apiRouteContracts.filter((route) => route.runtimeMode === "queue-backed").map((route) => route.id);
+
+    expect(mutationContracts).toHaveLength(mutationRoutes.length);
+    expect(mutationContracts.every((contract) => contract.idempotencyReplayRequired)).toBe(true);
+    expect(mutationContracts.every((contract) => contract.persistedTables.includes("idempotency_keys"))).toBe(true);
+    expect(mutationContracts.every((contract) => contract.persistedTables.includes("audit_log"))).toBe(true);
+    for (const routeId of queueBackedRouteIds) {
+      const contract = apiPersistenceRouteContracts.find((candidate) => candidate.routeId === routeId);
+      expect(contract?.queueBacked).toBe(true);
+      expect(contract?.persistedTables).toContain("api_jobs");
+    }
+  });
+
+  it("summarizes persistence readiness without claiming live production auth", () => {
+    const summary = buildPersistenceReadinessSummary();
+
+    expect(summary.status).toBe("ready");
+    expect(summary.tables.total).toBe(16);
+    expect(summary.tables.authSessionTable).toBe(true);
+    expect(summary.tables.idempotencyTable).toBe(true);
+    expect(summary.tables.jobTable).toBe(true);
+    expect(summary.tables.rawContentAllowed).toBe(0);
+    expect(summary.routes.schemaBacked).toBe(10);
+    expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
+    expect(summary.blockers).toEqual([]);
+  });
+
+  it("validates required migration signals without filesystem access", () => {
+    expect(validatePersistenceMigration(migrationRequiredSignals.join("\n"))).toEqual([]);
+    expect(validatePersistenceMigration("CREATE TABLE users")).toEqual(
+      expect.arrayContaining(["Migration missing required persistence signal: CREATE TABLE auth_sessions"])
+    );
+  });
+
+  it("flags unsafe persistence edits before implementation", () => {
+    const unsafeTables: PersistenceTableContract[] = persistenceTableContracts.map((contract) =>
+      contract.name === "audit_log" ? { ...contract, appendOnly: false } : contract
+    );
+    const unsafeRouteContracts: ApiRoutePersistenceContract[] = apiPersistenceRouteContracts.map((contract) =>
+      contract.routeId === "card-projects"
+        ? {
+            ...contract,
+            idempotencyReplayRequired: false,
+            auditRequired: false,
+            persistedTables: ["auth_sessions", "card_projects"]
+          }
+        : contract
+    );
+
+    expect(validatePersistenceContracts(apiRouteContracts, unsafeTables, unsafeRouteContracts)).toEqual(
+      expect.arrayContaining([
+        "audit_log must be append-only.",
+        "Mutation route card-projects must persist idempotency replay state.",
+        "Mutation route card-projects must use idempotency_keys.",
+        "Mutation route card-projects must write audit_log."
+      ])
+    );
+  });
+});

@@ -24,8 +24,8 @@ Requirement types:
 | R012 | Model wrong-store, vendor rejection, event moved up, one-hour pickup, cancellation, and terminal states. | Explicit | Covered as state machine. | `OrderStatus`, `allowedOrderTransitions`, `transitionOrder`, `src/serviceKernel.test.ts`. |
 | R013 | Separate dev/test/prod configuration and runtime readiness. | Explicit | Covered as config contracts and runtime doctor. | `getRuntimeConfig`, `validateRuntimeReadiness`, `scripts/validate-runtime-env.mjs`, Docker/Kubernetes manifests. |
 | R014 | Provide cheap droplet and cloud-native deployment shapes. | Explicit | Covered as locally validated scaffolding, not deployed. The deployment doctor verifies local-dev, cheap-droplet, cloud-native, runtime, and data lanes, and the production image now serves API plus static web. | `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `Dockerfile`, `scripts/api-server.mjs`, `scripts/deployment-readiness.mjs`, `infra/README.md`, `tests/infra-contract.test.ts`. |
-| R015 | Provide durable database schema for users, providers, events, cards, memories, render packets, orders, consent, and audit. | Explicit | Covered as Postgres migration. | `infra/migrations/001_initial_schema.sql`, `tests/infra-contract.test.ts`. |
-| R016 | Include queues, workers, object storage, migrations, and static production serving. | Explicit | Covered as skeleton plus tested API/static server boundary. | `scripts/worker.mjs`, `scripts/migrate.mjs`, `scripts/api-server.mjs`, `scripts/serve-dist.mjs`, Docker Compose, Kubernetes manifests, `tests/api-server.test.ts`. |
+| R015 | Provide durable database schema for users, providers, events, cards, memories, render packets, orders, consent, and audit. | Explicit | Covered as Postgres migration plus tested persistence contracts for auth sessions, idempotency replay, queue jobs, and append-only audit. | `infra/migrations/001_initial_schema.sql`, `src/persistenceContracts.ts`, `src/persistenceContracts.test.ts`, `scripts/persistence-doctor.mjs`, `tests/infra-contract.test.ts`. |
+| R016 | Include queues, workers, object storage, migrations, and static production serving. | Explicit | Covered as skeleton plus tested API/static server and persistence-readiness boundary. | `scripts/worker.mjs`, `scripts/migrate.mjs`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `scripts/serve-dist.mjs`, Docker Compose, Kubernetes manifests, `tests/api-server.test.ts`. |
 | R017 | Include regulatory, regional, consent, deletion, and vendor-sharing controls. | Explicit | Covered as decision contracts, not legal review. | `regionRequirements`, `evaluateRegulatoryDecision`, SQL `consent_records`, `data_requests`, tests. |
 | R018 | Document architecture, decisions, run commands, and reviewer handoff. | Inferred | Covered by current docs package. | README, this file, `docs/free-mvp-plan.md`, `docs/platform-expansion-design.md`, `docs/decisions.md`, `docs/verification.md`, `docs/handoff-notes.md`. |
 | R019 | Keep AI/provider calls deterministic or mockable for tests. | Inferred | Covered by no live AI calls, deterministic extraction/rendering, and dry-run provider contracts that never call a network. | `src/freeMvp.ts`, `src/providerRuntime.ts`, `runOperationalExtraction`, `stableId`, tests for free import, SVG generation, provider dry runs, weak-input blocking, and checksums. |
@@ -34,8 +34,8 @@ Requirement types:
 | R022 | Load broad service-provider adapters for image generation, integrations, and text chat. | Explicit | Covered as a tested 42-adapter catalog plus executable no-network dry-run contracts with free local fallbacks, 21 credential-gated external providers, and hard-blocked live vendors; live network calls are not implemented. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `infra/env/.env.example`, `docs/platform-expansion-design.md`. |
 | R023 | Include a customer-facing text chat interface. | Explicit | Covered as deterministic local chat transcript in the customer panel and mobile shell, with dry-run request contracts for future model providers; live model providers remain gated. | `buildCustomerChatTranscript`, `buildTextChatRuntime`, `CustomerPanelView`, `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`, `tests/mobile-contract.test.ts`. |
 | R024 | Include image-generation/render provider readiness. | Explicit | Covered by free browser SVG renderer plus dry-run gated OpenAI, Gemini, Stability, Hugging Face, Replicate, Together, Ideogram, and Leonardo request contracts; no live paid call. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `CustomerPanelView`, `AdminPanelView`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`. |
-| R025 | Keep the system cheap and cloud-deployment ready through tested IaC. | Explicit | Partially covered. Free local fallback, droplet compose, Kubernetes manifests, env contract, runtime doctor, API doctor, deployment doctor, CI verification workflow, and infra tests exist; no real cloud deployment evidence. | `infra/docker-compose.dev.yml`, `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `infra/env/.env.example`, `.github/workflows/verify.yml`, `scripts/api-server.mjs`, `scripts/deployment-readiness.mjs`, `tests/api-server.test.ts`, `tests/infra-contract.test.ts`, `docs/platform-expansion-design.md`. |
-| R026 | Treat test coverage as an explicit quality goal. | Explicit | Covered for core, API, orchestration, and mobile contract modules with V8 coverage thresholds in the standard check command; browser UI remains covered by smoke tests rather than unit coverage instrumentation. | `package.json` `test:coverage` and `check`; `vite.config.ts` coverage thresholds; `src/apiContracts.test.ts`; `src/agentContracts.test.ts`; `tests/mobile-contract.test.ts`; `tests/infra-contract.test.ts`; `docs/verification.md`; `coverage/coverage-summary.json` generated by `npm run check`. |
+| R025 | Keep the system cheap and cloud-deployment ready through tested IaC. | Explicit | Partially covered. Free local fallback, droplet compose, Kubernetes manifests, env contract, runtime doctor, API doctor, persistence doctor, deployment doctor, CI verification workflow, and infra tests exist; no real cloud deployment evidence. | `infra/docker-compose.dev.yml`, `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `infra/env/.env.example`, `.github/workflows/verify.yml`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `scripts/deployment-readiness.mjs`, `tests/api-server.test.ts`, `tests/infra-contract.test.ts`, `docs/platform-expansion-design.md`. |
+| R026 | Treat test coverage as an explicit quality goal. | Explicit | Covered for core, API, persistence, orchestration, and mobile contract modules with V8 coverage thresholds in the standard check command; browser UI remains covered by smoke tests rather than unit coverage instrumentation. | `package.json` `test:coverage` and `check`; `vite.config.ts` coverage thresholds; `src/apiContracts.test.ts`; `src/persistenceContracts.test.ts`; `src/agentContracts.test.ts`; `tests/mobile-contract.test.ts`; `tests/infra-contract.test.ts`; `docs/verification.md`; `coverage/coverage-summary.json` generated by `npm run check`. |
 
 ## Acceptance Criteria Covered By Tests
 
@@ -52,11 +52,14 @@ Requirement types:
 - Infra manifests include app, worker, database, queue, storage, migrations, probes, and kill-switch controls.
 - Deployment doctor reports local-dev, cheap-droplet, cloud-native, runtime, and
   data lanes ready, and the droplet app/worker share persistent object storage.
-- CI workflow runs full repository check, deployment doctor, worker readiness,
-  API doctor, and mobile doctor on pushes to `main` and pull requests.
+- CI workflow runs full repository check, deployment doctor, API doctor,
+  persistence doctor, worker readiness, and mobile doctor on pushes to `main`
+  and pull requests.
 - API server exposes tested health, route catalog, customer/admin bootstrap,
   mobile bootstrap, provider readiness, and idempotent mutation contract
   endpoints with real orders and external calls disabled.
+- Persistence contracts map 10 schema-backed API routes to auth-session,
+  idempotency, queue-job, and audit-log tables.
 - Mobile shell resolves API configuration from environment.
 - Mobile customer shell mirrors the customer panel with tested card queue,
   memory, chat, render, and handoff sections.
@@ -75,15 +78,15 @@ Requirement types:
 - Provider runtime dry runs cover every catalog adapter, redact contact/payment
   data before external provider contracts, keep imports metadata-only, and never
   prepare live vendor order requests.
-- Core, API, orchestration, and mobile contract coverage thresholds are enforced
-  in `npm run check`: 90% statements, 80% branches, 90% functions, and 90%
-  lines.
+- Core, API, persistence, orchestration, and mobile contract coverage thresholds
+  are enforced in `npm run check`: 90% statements, 80% branches, 90% functions,
+  and 90% lines.
 
 ## Remaining Gaps
 
 - No production user auth or account recovery.
 - No live OAuth consent flow.
-- No DB-backed authenticated production API persistence.
+- No live DB-backed authenticated production API handlers or account recovery.
 - No production object-storage upload or signed URL implementation.
 - No actual image generation, print PNG/PDF export, or physical print QA.
 - No live text-chat model call.

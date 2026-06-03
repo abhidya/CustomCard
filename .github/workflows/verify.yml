@@ -10,12 +10,13 @@ jobs:
   repo-check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      CUSTOMCARD_ENV: dev
-      DATABASE_URL: postgres://x
-      QUEUE_URL: redis://x
-      OBJECT_STORE_URL: file:///tmp/customcard-objects
-      REAL_ORDER_KILL_SWITCH: disabled
+      env:
+        CUSTOMCARD_ENV: dev
+        DATABASE_URL: postgres://x
+        QUEUE_URL: redis://x
+        OBJECT_STORE_URL: file:///tmp/customcard-objects
+        AUTH_SESSION_SECRET: test-session-secret
+        REAL_ORDER_KILL_SWITCH: disabled
       CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173
     steps:
       - name: Check out repository
@@ -38,6 +39,9 @@ jobs:
 
       - name: Validate API contract readiness
         run: npm run api:doctor
+
+      - name: Validate persistence readiness
+        run: npm run persistence:doctor
 
       - name: Validate worker readiness
         run: npm run worker

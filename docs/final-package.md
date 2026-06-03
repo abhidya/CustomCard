@@ -69,9 +69,12 @@
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, and idempotent mutation contract endpoints
   served by `scripts/api-server.mjs`.
+- Persistence boundary: tested auth-session, idempotency replay, queue-job,
+  schema-backed route, and audit contracts served by
+  `src/persistenceContracts.ts` and `scripts/persistence-doctor.mjs`.
 - CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
-  deployment doctor, API doctor, worker readiness, and the mobile doctor on
-  pushes to `main` and pull requests.
+  deployment doctor, API doctor, persistence doctor, worker readiness, and the
+  mobile doctor on pushes to `main` and pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
   queue, memory review, local chat, image/render state, manual handoff, and
   real-order kill-switch validation.
@@ -86,15 +89,16 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 11 test files, 74 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.33% statements, 84.73% branches, 95.65% functions, 94.03% lines across core, API, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 12 test files, 80 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.92% statements, 84.59% branches, 96.01% functions, 93.96% lines across core, API, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 11 routes, 5 idempotent mutation contracts, 42 providers, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 12 routes, 5 idempotent mutation contracts, 42 providers, 16 persistence tables, no live calls or real orders. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, append-only audit, and 10 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, API, worker, and mobile gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, API, persistence, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -111,9 +115,9 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `src/apiContracts.ts`, `scripts/api-server.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; API contract/server boundary exists; DB-backed auth/API persistence not covered |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; API and persistence contract boundaries exist; live DB-backed auth handlers not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
-| Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, orchestration, and mobile contracts; UI covered by smoke |
+| Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
 
 ## Reviewer Path
@@ -126,17 +130,18 @@
 4. Run `npm run check`.
 5. Run `npm run deployment:doctor`.
 6. Run `npm run api:doctor`.
-7. Run the worker and mobile doctor commands in `docs/verification.md`.
-8. Inspect `.github/workflows/verify.yml`.
-9. Inspect screenshots in `docs/evidence/` and known gaps in
+7. Run `npm run persistence:doctor`.
+8. Run the worker and mobile doctor commands in `docs/verification.md`.
+9. Inspect `.github/workflows/verify.yml`.
+10. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
 
 - No production user auth or account recovery.
 - No live Gmail, Google Calendar, Outlook, or iCloud OAuth flow.
-- No DB-backed production API with authenticated sessions or persisted
-  request/response state.
+- No live DB-backed production API handlers with authenticated sessions or
+  persisted request/response state.
 - No live AI text/image generation.
 - No PNG/PDF production export pipeline or object-storage upload.
 - No live vendor quote, order, payment, refund, or cancellation integration.

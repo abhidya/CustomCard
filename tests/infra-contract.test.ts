@@ -11,6 +11,7 @@ describe("production infrastructure contract", () => {
     const migration = read("infra/migrations/001_initial_schema.sql");
     const requiredTables = [
       "users",
+      "auth_sessions",
       "provider_connections",
       "imported_events",
       "card_opportunities",
@@ -22,6 +23,8 @@ describe("production infrastructure contract", () => {
       "vendor_quotes",
       "consent_records",
       "data_requests",
+      "idempotency_keys",
+      "api_jobs",
       "audit_log"
     ];
 
@@ -30,6 +33,12 @@ describe("production infrastructure contract", () => {
     }
     expect(migration).toContain("raw_content_stored BOOLEAN NOT NULL DEFAULT FALSE");
     expect(migration).toContain("CHECK (raw_content_stored = FALSE)");
+    expect(migration).toContain("session_hash TEXT NOT NULL");
+    expect(migration).toContain("CHECK (char_length(session_hash) >= 32)");
+    expect(migration).toContain("role TEXT NOT NULL CHECK (role IN ('customer', 'admin'))");
+    expect(migration).toContain("UNIQUE (user_id, route_id, idempotency_key)");
+    expect(migration).toContain("CHECK (char_length(request_hash) >= 12)");
+    expect(migration).toContain("idempotency_key_id TEXT REFERENCES idempotency_keys(id)");
     expect(migration).toContain("adapter_version TEXT NOT NULL");
     expect(migration).toContain("metadata_schema JSONB NOT NULL");
     expect(migration).toContain("status IN (");
@@ -96,6 +105,8 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("POSTGRES_PASSWORD=");
     expect(env).toContain("QUEUE_URL=");
     expect(env).toContain("OBJECT_STORE_URL=");
+    expect(env).toContain("AUTH_SESSION_SECRET=");
+    expect(env).toContain("IDEMPOTENCY_KEY_TTL_HOURS=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_ID=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_SECRET=");
     expect(env).toContain("MICROSOFT_CLIENT_ID=");
@@ -131,6 +142,7 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/agentContracts.ts");
     expect(viteConfig).toContain("src/domain.ts");
     expect(viteConfig).toContain("src/freeMvp.ts");
+    expect(viteConfig).toContain("src/persistenceContracts.ts");
     expect(viteConfig).toContain("src/providerCatalog.ts");
     expect(viteConfig).toContain("src/providerRuntime.ts");
     expect(viteConfig).toContain("src/serviceKernel.ts");
@@ -156,6 +168,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run check");
     expect(workflow).toContain("npm run deployment:doctor");
     expect(workflow).toContain("npm run api:doctor");
+    expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");
     expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");
@@ -213,5 +226,36 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "data", status: "ready" })
       ])
     );
+  });
+
+  it("emits a persistence readiness report for auth sessions and idempotent API state", () => {
+    const output = execFileSync("node", ["scripts/persistence-doctor.mjs"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      status: string;
+      readiness: {
+        tables: { total: number; authSessions: boolean; idempotencyReplay: boolean; queueJobs: boolean };
+        api: { statefulRoutes: number; idempotentMutations: number };
+        safety: { rawContentStored: boolean; liveExternalCalls: boolean; realOrdersEnabled: boolean };
+      };
+      blockers: unknown[];
+    };
+
+    expect(report.status).toBe("ready");
+    expect(report.blockers).toEqual([]);
+    expect(report.readiness.tables).toMatchObject({
+      total: 16,
+      authSessions: true,
+      idempotencyReplay: true,
+      queueJobs: true
+    });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 10, idempotentMutations: 5 });
+    expect(report.readiness.safety).toMatchObject({
+      rawContentStored: false,
+      liveExternalCalls: false,
+      realOrdersEnabled: false
+    });
   });
 });

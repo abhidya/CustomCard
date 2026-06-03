@@ -92,6 +92,8 @@ const checks = [
     "DATABASE_URL=",
     "QUEUE_URL=",
     "OBJECT_STORE_URL=",
+    "AUTH_SESSION_SECRET=",
+    "IDEMPOTENCY_KEY_TTL_HOURS=",
     "REAL_ORDER_KILL_SWITCH=disabled",
     "WALGREENS_VENDOR_MODE=disabled_until_certified",
     "OPENAI_API_KEY=",
@@ -103,16 +105,21 @@ const checks = [
   ]),
   checkIncludes("data", "migration-critical-tables", contents.migration, [
     "CREATE TABLE users",
+    "CREATE TABLE auth_sessions",
     "CREATE TABLE provider_connections",
     "CREATE TABLE render_packets",
     "CREATE TABLE orders",
+    "CREATE TABLE idempotency_keys",
+    "CREATE TABLE api_jobs",
     "CREATE TABLE audit_log"
   ]),
   checkIncludes("data", "migration-safety-constraints", contents.migration, [
     "CHECK (raw_content_stored = FALSE)",
     "CHECK (width = 1500)",
     "CHECK (dpi = 300)",
-    "checksum TEXT NOT NULL"
+    "checksum TEXT NOT NULL",
+    "UNIQUE (user_id, route_id, idempotency_key)",
+    "CREATE UNIQUE INDEX idx_auth_sessions_hash"
   ])
 ];
 

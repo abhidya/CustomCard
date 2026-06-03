@@ -76,6 +76,21 @@ export const apiRouteContracts: ApiRouteContract[] = [
     backedBy: ["runtime doctor", "kill switch"]
   },
   {
+    id: "route-catalog",
+    method: "GET",
+    path: "/api/routes",
+    audience: "public",
+    auth: "none",
+    runtimeMode: "local-demo",
+    requestSchema: [],
+    responseSchema: ["routes"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Public route metadata only; no customer data returned.",
+    backedBy: ["apiRouteContracts"]
+  },
+  {
     id: "customer-bootstrap",
     method: "GET",
     path: "/api/customer/bootstrap",
@@ -134,6 +149,21 @@ export const apiRouteContracts: ApiRouteContract[] = [
     realOrdersEnabled: false,
     piiPolicy: "Adapter metadata only.",
     backedBy: ["providerCatalog", "summarizeProviderCoverage"]
+  },
+  {
+    id: "admin-persistence-readiness",
+    method: "GET",
+    path: "/api/admin/persistence-readiness",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession"],
+    responseSchema: ["tables", "auth", "idempotency", "blockers"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Persistence metadata only; no customer content.",
+    backedBy: ["persistence contracts", "migration doctor"]
   },
   {
     id: "import-preview",
@@ -304,10 +334,12 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
 
   for (const requiredRoute of [
     "health",
+    "route-catalog",
     "customer-bootstrap",
     "mobile-bootstrap",
     "admin-readiness",
     "admin-provider-catalog",
+    "admin-persistence-readiness",
     "import-preview",
     "render-packets",
     "manual-vendor-handoff"

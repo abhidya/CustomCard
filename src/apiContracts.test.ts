@@ -14,10 +14,12 @@ describe("api contracts", () => {
     expect(apiRouteContracts.map((route) => route.id)).toEqual(
       expect.arrayContaining([
         "health",
+        "route-catalog",
         "customer-bootstrap",
         "mobile-bootstrap",
         "admin-readiness",
         "admin-provider-catalog",
+        "admin-persistence-readiness",
         "import-preview",
         "card-projects",
         "render-packets",
@@ -73,6 +75,7 @@ describe("api contracts", () => {
       service: "customcard-api",
       status: "ready"
     });
+    expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();
   });
 

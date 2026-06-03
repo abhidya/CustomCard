@@ -63,6 +63,8 @@ environment configuration instead of static placeholders.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, idempotent mutation contracts, and no
   live external calls.
+- Persistence contract/migration boundary for auth sessions, idempotency replay,
+  queue jobs, audit logs, and 10 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 
@@ -89,6 +91,8 @@ CUSTOMCARD_ENV=dev
 DATABASE_URL=postgres://customcard:customcard@postgres:5432/customcard_dev
 QUEUE_URL=redis://redis:6379/0
 OBJECT_STORE_URL=http://minio:9000
+AUTH_SESSION_SECRET=replace-me-do-not-commit-real-secret
+IDEMPOTENCY_KEY_TTL_HOURS=24
 REAL_ORDER_KILL_SWITCH=disabled
 ```
 
@@ -112,6 +116,7 @@ not implemented in this repo state.
 React free local MVP
   -> typed domain contracts
   -> executable service kernel
+  -> API and persistence contracts
   -> Postgres migration model
   -> worker/migration/runtime scripts
   -> API/static production server
@@ -134,6 +139,7 @@ Verification:
 npm run check
 npm run deployment:doctor
 npm run api:doctor
+npm run persistence:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -142,17 +148,17 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
 `src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
-`src/providerCatalog.ts`, `src/providerRuntime.ts`, and
-`src/serviceKernel.ts`; browser UI behavior is verified through Chrome smoke
-tests.
+`src/persistenceContracts.ts`, `src/providerCatalog.ts`,
+`src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
+verified through Chrome smoke tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
 cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
 shape only; it does not prove a real cloud cluster or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
-doctor, API doctor, worker readiness, and mobile doctor on pushes to `main` and
-pull requests.
+doctor, API doctor, persistence doctor, worker readiness, and mobile doctor on
+pushes to `main` and pull requests.
 
 ## Project Docs
 
@@ -175,7 +181,7 @@ pull requests.
 
 The repo does not include production user auth, live OAuth, live AI/image
 generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
-ordering, DB-backed authenticated API persistence, native mobile builds,
+ordering, live DB-backed authenticated API handlers, native mobile builds,
 deployment evidence, legal/security review, or physical print certification.
 Those paths are represented as contracts and hard gates so reviewers can inspect
 the system shape without mistaking the free local MVP for a certified production
