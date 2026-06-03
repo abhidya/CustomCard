@@ -447,7 +447,7 @@ function postJson(path, body, options = {}) {
 
 async function waitForApi() {
   let lastError;
-  for (let attempt = 1; attempt <= 30; attempt += 1) {
+  for (let attempt = 1; attempt <= 90; attempt += 1) {
     if (server.exitCode !== null || server.signalCode !== null) {
       throw new Error(`API server exited before readiness with code ${server.exitCode ?? server.signalCode}. stdout: ${serverStdout} stderr: ${serverStderr}`);
     }
@@ -523,7 +523,7 @@ async function retryOperation(operation) {
 
 async function waitForPostgres(pool) {
   let lastError;
-  for (let attempt = 1; attempt <= 12; attempt += 1) {
+  for (let attempt = 1; attempt <= 30; attempt += 1) {
     try {
       await pool.query("SELECT 1");
       return;

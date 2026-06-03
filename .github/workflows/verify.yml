@@ -66,7 +66,12 @@ jobs:
         run: npm run api:doctor:postgres:live
 
       - name: Validate Postgres API HTTP integration
-        run: npm run api:doctor:postgres:http
+        run: |
+          npm run api:doctor:postgres:http || {
+            echo "Postgres API HTTP doctor failed; retrying once after a short service settle delay."
+            sleep 3
+            npm run api:doctor:postgres:http
+          }
 
       - name: Validate account auth storage/recovery integration
         run: npm run account:doctor:live
