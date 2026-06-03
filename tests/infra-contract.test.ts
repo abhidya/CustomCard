@@ -344,6 +344,9 @@ describe("production infrastructure contract", () => {
         importedEvents: number;
         cardOpportunities: number;
         cardProjects: number;
+        orders: number;
+        orderEvents: number;
+        consentRecords: number;
       };
       blockers: unknown[];
     };
@@ -358,13 +361,16 @@ describe("production infrastructure contract", () => {
         postgresConfigured: true
       },
       persistence: {
-        idempotencyRecords: 3,
-        auditRecords: 3,
-        queuedJobs: 1,
+        idempotencyRecords: 4,
+        auditRecords: 4,
+        queuedJobs: 2,
         providerConnections: 1,
         importedEvents: 1,
         cardOpportunities: 1,
-        cardProjects: 1
+        cardProjects: 1,
+        orders: 1,
+        orderEvents: 1,
+        consentRecords: 1
       },
       blockers: []
     });
@@ -438,6 +444,7 @@ describe("production infrastructure contract", () => {
           accountRecoveryChallenges: boolean;
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
+          manualVendorHandoffRepository: boolean;
           idempotencyReplay: boolean;
           queueJobs: boolean;
         };
@@ -456,6 +463,7 @@ describe("production infrastructure contract", () => {
       accountRecoveryChallenges: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
+      manualVendorHandoffRepository: true,
       idempotencyReplay: true,
       queueJobs: true
     });

@@ -36,6 +36,9 @@ function createContractApiRuntime({ routes }) {
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
         cardProjectRecords: 0,
+        orderRecords: 0,
+        orderEventRecords: 0,
+        consentRecords: 0,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -94,6 +97,9 @@ function createMemoryApiRuntime({ env, routes }) {
   const importedEvents = new Map();
   const cardOpportunities = new Map();
   const cardProjects = new Map();
+  const orders = new Map();
+  const orderEvents = new Map();
+  const consentRecords = new Map();
 
   addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo");
   addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo");
@@ -114,6 +120,9 @@ function createMemoryApiRuntime({ env, routes }) {
         importedEventRecords: importedEvents.size,
         cardOpportunityRecords: cardOpportunities.size,
         cardProjectRecords: cardProjects.size,
+        orderRecords: orders.size,
+        orderEventRecords: orderEvents.size,
+        consentRecords: consentRecords.size,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -138,7 +147,10 @@ function createMemoryApiRuntime({ env, routes }) {
           providerConnections,
           importedEvents,
           cardOpportunities,
-          cardProjects
+          cardProjects,
+          orders,
+          orderEvents,
+          consentRecords
         },
         route,
         authContext,
@@ -213,6 +225,9 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         importedEventRecords: null,
         cardOpportunityRecords: null,
         cardProjectRecords: null,
+        orderRecords: null,
+        orderEventRecords: null,
+        consentRecords: null,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -469,6 +484,17 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
     };
   }
 
+  if (route.id === "manual-vendor-handoff") {
+    const record = buildManualVendorHandoffRecord({ authContext, bodyText });
+    repositories.orders.set(record.order.id, record.order);
+    repositories.orderEvents.set(record.orderEvent.id, record.orderEvent);
+    repositories.consentRecords.set(record.consentRecord.id, record.consentRecord);
+    return {
+      persisted: true,
+      payload: buildManualVendorHandoffRepositoryPayload(record, "memory")
+    };
+  }
+
   return undefined;
 }
 
@@ -540,6 +566,59 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     return {
       persisted: true,
       payload: buildImportPreviewRepositoryPayload(record, "postgres")
+    };
+  }
+
+  if (route.id === "manual-vendor-handoff") {
+    const record = buildManualVendorHandoffRecord({ authContext, bodyText });
+    await client.query(
+      `INSERT INTO orders
+         (id, project_id, status, store_id, quote_cents, pickup_window_minutes, certification_recorded, recovery_actions)
+       VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7::jsonb)
+       ON CONFLICT (id) DO UPDATE SET
+         project_id = EXCLUDED.project_id,
+         status = EXCLUDED.status,
+         store_id = EXCLUDED.store_id,
+         quote_cents = EXCLUDED.quote_cents,
+         pickup_window_minutes = EXCLUDED.pickup_window_minutes,
+         certification_recorded = FALSE,
+         recovery_actions = EXCLUDED.recovery_actions,
+         updated_at = NOW()`,
+      [
+        record.order.id,
+        record.order.projectId,
+        record.order.status,
+        record.order.storeId,
+        record.order.quoteCents,
+        record.order.pickupWindowMinutes,
+        JSON.stringify(record.order.recoveryActions)
+      ]
+    );
+    await client.query(
+      `INSERT INTO order_events (order_id, event_type, payload)
+       VALUES ($1, $2, $3::jsonb)`,
+      [record.order.id, record.orderEvent.eventType, JSON.stringify(record.orderEvent.payload)]
+    );
+    await client.query(
+      `INSERT INTO consent_records (id, user_id, action, region, granted, controls)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+       ON CONFLICT (id) DO UPDATE SET
+         action = EXCLUDED.action,
+         region = EXCLUDED.region,
+         granted = EXCLUDED.granted,
+         controls = EXCLUDED.controls`,
+      [
+        record.consentRecord.id,
+        authContext.userId,
+        record.consentRecord.action,
+        record.consentRecord.region,
+        record.consentRecord.granted,
+        JSON.stringify(record.consentRecord.controls)
+      ]
+    );
+    return {
+      persisted: true,
+      payload: buildManualVendorHandoffRepositoryPayload(record, "postgres")
     };
   }
 
@@ -679,6 +758,85 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
   };
 }
 
+function buildManualVendorHandoffRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const projectId = safeId(body.projectId ?? body.cardProjectId, "project-demo");
+  const renderPacketId = safeId(body.renderPacketId, stableRuntimeId("render-packet", authContext.userId, projectId));
+  const orderId = safeId(body.orderId, stableRuntimeId("order", authContext.userId, projectId, renderPacketId));
+  const storeId = safeId(body.storeId ?? body.vendorId ?? body.selectedVendorId, "manual-printer");
+  const region = safeText(body.region, "US").slice(0, 12);
+  const externalShareApproval = safeBoolean(body.externalShareApproval ?? body.externalShareApproved ?? body.consentGranted);
+  const status = externalShareApproval ? "vendor_handoff_ready" : "vendor_handoff_blocked";
+  const recoveryActions = externalShareApproval
+    ? ["manual_upload_only", "live_vendor_api_disabled"]
+    : ["external_share_approval_required", "manual_upload_only", "live_vendor_api_disabled"];
+  const controls = {
+    orderId,
+    projectId,
+    renderPacketId,
+    storeId,
+    manualUploadOnly: true,
+    liveVendorApisDisabled: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false
+  };
+
+  return {
+    order: {
+      id: orderId,
+      projectId,
+      status,
+      storeId,
+      quoteCents: null,
+      pickupWindowMinutes: null,
+      recoveryActions
+    },
+    orderEvent: {
+      id: stableRuntimeId("order-event", orderId, "attempt_vendor_handoff"),
+      orderId,
+      eventType: "attempt_vendor_handoff",
+      payload: {
+        ...controls,
+        externalShareApproval,
+        recoveryActions
+      }
+    },
+    consentRecord: {
+      id: safeId(body.consentRecordId, stableRuntimeId("consent", authContext.userId, orderId, "external-share")),
+      userId: authContext.userId,
+      action: "external_share_approval",
+      region,
+      granted: externalShareApproval,
+      controls
+    }
+  };
+}
+
+function buildManualVendorHandoffRepositoryPayload(record, runtimeMode) {
+  return {
+    orderId: record.order.id,
+    projectId: record.order.projectId,
+    renderPacketId: record.orderEvent.payload.renderPacketId,
+    handoffStatus: record.order.status,
+    consentRecordId: record.consentRecord.id,
+    externalShareApproval: record.consentRecord.granted,
+    manualOrderTrail: {
+      orderId: record.order.id,
+      status: record.order.status,
+      eventType: record.orderEvent.eventType,
+      consentRecordId: record.consentRecord.id,
+      storeId: record.order.storeId
+    },
+    repository: {
+      tables: ["orders", "order_events", "consent_records"],
+      runtimeMode,
+      persisted: true,
+      liveQuote: false,
+      realOrdersEnabled: false
+    }
+  };
+}
+
 function persistedTablesForRoute(route) {
   if (route.id === "render-packets") return ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "api_jobs", "audit_log"];
   if (route.id === "manual-vendor-handoff") {
@@ -771,6 +929,13 @@ function safeInteger(value, fallback, min, max) {
   const number = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(number)) return fallback;
   return Math.max(min, Math.min(max, number));
+}
+
+function safeBoolean(value) {
+  if (value === true) return true;
+  if (value === false) return false;
+  const text = String(value ?? "").trim().toLowerCase();
+  return ["1", "true", "yes", "y", "approved", "granted"].includes(text);
 }
 
 function safeConfidence(value, fallback) {

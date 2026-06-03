@@ -92,7 +92,12 @@ const apiSignals = [
   "card_opportunities",
   "cardProjectRepository: true",
   "/api/card-projects",
-  "card_projects"
+  "card_projects",
+  "manualVendorHandoffRepository: true",
+  "/api/vendor-handoff/manual",
+  "orders",
+  "order_events",
+  "consent_records"
 ];
 const postgresRuntimeSignals = [
   "createPostgresApiRuntime",
@@ -102,6 +107,9 @@ const postgresRuntimeSignals = [
   "INSERT INTO imported_events",
   "INSERT INTO card_opportunities",
   "INSERT INTO card_projects",
+  "INSERT INTO orders",
+  "INSERT INTO order_events",
+  "INSERT INTO consent_records",
   "INSERT INTO idempotency_keys",
   "INSERT INTO audit_log",
   "INSERT INTO api_jobs"
@@ -117,6 +125,10 @@ const postgresDoctorSignals = [
   "persists repository-backed import preview mutations",
   "cardProjects",
   "persists repository-backed card project mutations",
+  "orders",
+  "orderEvents",
+  "consentRecords",
+  "persists repository-backed manual vendor handoff mutations",
   "wrong-role"
 ];
 const postgresIntegrationSignals = [
@@ -130,6 +142,10 @@ const postgresIntegrationSignals = [
   "SELECT COUNT(*)::int AS count FROM card_opportunities",
   "persists real Postgres card project repository mutation",
   "SELECT COUNT(*)::int AS count FROM card_projects",
+  "persists real Postgres manual vendor handoff repository mutation",
+  "SELECT COUNT(*)::int AS count FROM orders",
+  "SELECT COUNT(*)::int AS count FROM order_events",
+  "SELECT COUNT(*)::int AS count FROM consent_records",
   "DROP DATABASE IF EXISTS",
   "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
 ];
@@ -218,6 +234,7 @@ const report = {
       artifactStoreWrites: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
+      manualVendorHandoffRepository: true,
       idempotencyReplay: true,
       queueJobs: true,
       auditLog: true

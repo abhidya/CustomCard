@@ -152,10 +152,11 @@ npm run api:doctor:postgres
 Result: passed. Postgres runtime doctor used an injected fake `pg` pool to
 exercise auth-session lookup, wrong-role blocking, idempotent mutation insert,
 repository-backed import-preview insert, repository-backed card-project insert,
-same-key replay, same-key/different-body conflict, audit-log insert, and
-queue-job insert. It reported 3 idempotency records, 3 audit records, 1 queued
-job, 1 provider connection, 1 imported event, 1 card opportunity, 1 card project,
-and no blockers.
+repository-backed manual vendor handoff order/consent/event insert, same-key
+replay, same-key/different-body conflict, audit-log insert, and queue-job insert.
+It reported 4 idempotency records, 4 audit records, 2 queued jobs, 1 provider
+connection, 1 imported event, 1 card opportunity, 1 card project, 1 order,
+1 order event, 1 consent record, and no blockers.
 
 ```text
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -166,10 +167,12 @@ database, applied `infra/migrations/001_initial_schema.sql`, seeded customer and
 admin auth sessions plus approved relationship memory, authorized the customer
 through the real `pg` runtime, blocked a wrong-role admin request, persisted an
 idempotent queue-backed mutation, persisted repository-backed import-preview and
-card-project mutations, replayed the same idempotency key, rejected a
-changed-body conflict, and verified 3 idempotency records, 3 audit records, 1
-queued job, 1 provider connection, 1 imported event, 1 card opportunity, and 1
-card project before dropping the temporary database.
+card-project mutations, persisted a repository-backed manual vendor handoff
+order/consent/event trail, replayed the same idempotency key, rejected a
+changed-body conflict, and verified 4 idempotency records, 4 audit records,
+2 queued jobs, 1 provider connection, 1 imported event, 1 card opportunity,
+1 card project, 1 order, 1 order event, and 1 consent record before dropping the
+temporary database.
 
 ```text
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
@@ -200,10 +203,10 @@ npm run persistence:doctor
 Result: passed. Persistence doctor reported 18 required tables, auth-session
 persistence, account identity and recovery challenge persistence, idempotency
 replay, import-preview repository readiness, card-project repository readiness,
-queue jobs, render-packet artifact manifest signals, artifact-store write/read
-doctor signals, Postgres runtime SQL/doctor/integration signals, account-auth
-contract/doctor signals, append-only audit coverage, 11 schema-backed API
-routes, and no blockers.
+manual vendor handoff order/consent/event readiness, queue jobs, render-packet
+artifact manifest signals, artifact-store write/read doctor signals, Postgres
+runtime SQL/doctor/integration signals, account-auth contract/doctor signals,
+append-only audit coverage, 11 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor

@@ -21,6 +21,7 @@ describe("api server wrapper", () => {
           idempotencyTable: boolean;
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
+          manualVendorHandoffRepository: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
         };
@@ -32,6 +33,9 @@ describe("api server wrapper", () => {
           importedEventRecords: number | null;
           cardOpportunityRecords: number | null;
           cardProjectRecords: number | null;
+          orderRecords: number | null;
+          orderEventRecords: number | null;
+          consentRecords: number | null;
         };
       };
       blockers: string[];
@@ -51,6 +55,7 @@ describe("api server wrapper", () => {
       idempotencyTable: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
+      manualVendorHandoffRepository: true,
       renderPacketArtifacts: true,
       signedArtifactUrls: true
     });
@@ -114,6 +119,7 @@ describe("api server wrapper", () => {
         idempotencyTable: true,
         importPreviewRepository: true,
         cardProjectRepository: true,
+        manualVendorHandoffRepository: true,
         renderPacketArtifacts: true,
         signedArtifactUrls: true
       });
@@ -222,6 +228,37 @@ describe("api server wrapper", () => {
         realOrdersEnabled: false
       });
 
+      const manualHandoff = await postJson(
+        port,
+        "/api/vendor-handoff/manual",
+        {
+          projectId: "project-contract-api",
+          renderPacketId: "render-packet-contract-api",
+          storeId: "walgreens-store-042",
+          externalShareApproval: "false"
+        }
+      );
+      expect(manualHandoff.status).toBe(202);
+      expect(await manualHandoff.json()).toMatchObject({
+        status: "accepted-contract-only",
+        route: "manual-vendor-handoff",
+        projectId: "project-contract-api",
+        renderPacketId: "render-packet-contract-api",
+        handoffStatus: "vendor_handoff_blocked",
+        externalShareApproval: false,
+        repository: {
+          tables: ["orders", "order_events", "consent_records"],
+          runtimeMode: "contract",
+          persisted: false,
+          liveQuote: false,
+          realOrdersEnabled: false
+        },
+        runtimeMode: "contract",
+        idempotencyPersisted: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false
+      });
+
       const demoReset = await fetch(`http://127.0.0.1:${port}/api/admin/demo-reset`, { method: "POST" });
       expect(demoReset.status).toBe(202);
       expect(await demoReset.json()).toMatchObject({
@@ -288,7 +325,10 @@ describe("api server wrapper", () => {
         providerConnectionRecords: 0,
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
-        cardProjectRecords: 0
+        cardProjectRecords: 0,
+        orderRecords: 0,
+        orderEventRecords: 0,
+        consentRecords: 0
       });
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
@@ -325,7 +365,13 @@ describe("api server wrapper", () => {
       const handoff = await postJson(
         port,
         "/api/vendor-handoff/manual",
-        { renderPacketId: "render-packet-demo", externalShareApproval: true },
+        {
+          projectId: "project-memory-api",
+          renderPacketId: "render-packet-demo",
+          storeId: "walgreens-store-042",
+          region: "US",
+          externalShareApproval: true
+        },
         {
           ...bearer(customerToken),
           "X-Idempotency-Key": "vendor-handoff-0001"
@@ -335,9 +381,27 @@ describe("api server wrapper", () => {
       expect(await handoff.json()).toMatchObject({
         runtimeMode: "memory",
         realOrdersEnabled: false,
+        repositoryPersisted: true,
+        projectId: "project-memory-api",
+        renderPacketId: "render-packet-demo",
+        handoffStatus: "vendor_handoff_ready",
+        externalShareApproval: true,
+        manualOrderTrail: expect.objectContaining({
+          status: "vendor_handoff_ready",
+          eventType: "attempt_vendor_handoff",
+          storeId: "walgreens-store-042"
+        }),
+        repository: {
+          tables: ["orders", "order_events", "consent_records"],
+          runtimeMode: "memory",
+          persisted: true,
+          liveQuote: false,
+          realOrdersEnabled: false
+        },
         handoffChecklist: expect.arrayContaining(["Download signed artifacts"]),
         signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })],
-        disabledReasons: expect.arrayContaining(["Live vendor order APIs remain disabled until certification and kill-switch gates pass."])
+        disabledReasons: expect.arrayContaining(["Live vendor order APIs remain disabled until certification and kill-switch gates pass."]),
+        persistedTables: expect.arrayContaining(["orders", "order_events", "consent_records", "api_jobs", "audit_log"])
       });
 
       const importPreviewHeaders = {
@@ -466,7 +530,10 @@ describe("api server wrapper", () => {
         providerConnectionRecords: 1,
         importedEventRecords: 1,
         cardOpportunityRecords: 1,
-        cardProjectRecords: 1
+        cardProjectRecords: 1,
+        orderRecords: 1,
+        orderEventRecords: 1,
+        consentRecords: 1
       });
     } finally {
       server.kill();

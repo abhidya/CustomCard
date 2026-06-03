@@ -5,7 +5,8 @@ const routes = [
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" }
+  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
+  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" }
 ];
 
 const customerToken = "postgres-customer-session-token";
@@ -132,6 +133,37 @@ await runCheck("persists repository-backed card project mutations", async () => 
   expect(fakeDb.cardProjects.length === 1, "card_projects row should be inserted");
 });
 
+await runCheck("persists repository-backed manual vendor handoff mutations", async () => {
+  const result = await runtime.persistMutation({
+    route: route("manual-vendor-handoff"),
+    request: request({ token: customerToken, idempotencyKey: "vendor-handoff-postgres-0001" }),
+    authContext: customerAuth,
+    bodyText: JSON.stringify({
+      projectId: "project-postgres-contract",
+      renderPacketId: "render-packet-postgres-contract",
+      storeId: "walgreens-store-042",
+      region: "US",
+      externalShareApproval: true
+    }),
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: "manual-vendor-handoff",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    }
+  });
+
+  expect(result.statusCode === 202, "manual vendor handoff mutation should be accepted");
+  expect(result.payload.runtimeMode === "postgres", "manual vendor handoff mutation should report postgres runtime");
+  expect(result.payload.repositoryPersisted, "manual vendor handoff should persist through repository path");
+  expect(result.payload.handoffStatus === "vendor_handoff_ready", "approved handoff should be marked ready for manual upload");
+  expect(result.payload.repository.tables.includes("orders"), "manual handoff repository payload should include orders");
+  expect(fakeDb.orders.length === 1, "orders row should be inserted");
+  expect(fakeDb.orderEvents.length === 1, "order_events row should be inserted");
+  expect(fakeDb.consentRecords.length === 1, "consent_records row should be inserted");
+});
+
 await runCheck("replays matching idempotent mutations", async () => {
   const result = await runtime.persistMutation({
     route: route("render-packets"),
@@ -143,7 +175,7 @@ await runCheck("replays matching idempotent mutations", async () => {
 
   expect(result.statusCode === 202, "replay should return accepted status");
   expect(result.payload.idempotencyReplayed, "replay should mark idempotencyReplayed");
-  expect(fakeDb.idempotencyRecords.size === 3, "replay must not insert another idempotency record");
+  expect(fakeDb.idempotencyRecords.size === 4, "replay must not insert another idempotency record");
 });
 
 await runCheck("rejects idempotency conflicts", async () => {
@@ -171,7 +203,10 @@ const report = {
     providerConnections: fakeDb.providerConnections.length,
     importedEvents: fakeDb.importedEvents.length,
     cardOpportunities: fakeDb.cardOpportunities.length,
-    cardProjects: fakeDb.cardProjects.length
+    cardProjects: fakeDb.cardProjects.length,
+    orders: fakeDb.orders.length,
+    orderEvents: fakeDb.orderEvents.length,
+    consentRecords: fakeDb.consentRecords.length
   },
   checks,
   blockers
@@ -244,6 +279,9 @@ function createFakePostgresState({ customerToken, adminToken }) {
     importedEvents: [],
     cardOpportunities: [],
     cardProjects: [],
+    orders: [],
+    orderEvents: [],
+    consentRecords: [],
     authSessionQueries: 0,
     pool: undefined
   };
@@ -343,6 +381,40 @@ function createFakeClient(state) {
           locale: params[3],
           requiresRtlLayout: params[4],
           approvedMemoryIds: params[5]
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO orders")) {
+        state.orders.push({
+          id: params[0],
+          projectId: params[1],
+          status: params[2],
+          storeId: params[3],
+          quoteCents: params[4],
+          pickupWindowMinutes: params[5],
+          recoveryActions: JSON.parse(params[6])
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO order_events")) {
+        state.orderEvents.push({
+          orderId: params[0],
+          eventType: params[1],
+          payload: JSON.parse(params[2])
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO consent_records")) {
+        state.consentRecords.push({
+          id: params[0],
+          userId: params[1],
+          action: params[2],
+          region: params[3],
+          granted: params[4],
+          controls: JSON.parse(params[5])
         });
         return { rows: [], rowCount: 1 };
       }

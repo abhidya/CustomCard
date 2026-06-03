@@ -67,6 +67,7 @@ const readiness = {
     appendOnlyAudit: true,
     importPreviewRepository: true,
     cardProjectRepository: true,
+    manualVendorHandoffRepository: true,
     renderPacketArtifacts: true,
     signedArtifactUrls: true
   }
@@ -286,6 +287,9 @@ function validateApiServerContract() {
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
   if (!readiness.persistence.importPreviewRepository) blockers.push("API readiness is missing import-preview repository persistence.");
   if (!readiness.persistence.cardProjectRepository) blockers.push("API readiness is missing card-project repository persistence.");
+  if (!readiness.persistence.manualVendorHandoffRepository) {
+    blockers.push("API readiness is missing manual vendor handoff repository persistence.");
+  }
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
   blockers.push(...apiRuntime.validate());
@@ -386,8 +390,18 @@ function buildMutationContractPayload(route, bodyText) {
   }
 
   if (route.id === "manual-vendor-handoff") {
+    const projectId = safeContractId(requestBody.projectId ?? requestBody.cardProjectId, "project-contract");
+    const renderPacketId = safeContractId(requestBody.renderPacketId, "render-packet-contract");
+    const orderId = safeContractId(requestBody.orderId, `order-${stableContractHash(`${projectId}:${renderPacketId}`).slice(0, 8)}`);
+    const externalShareApproval = safeBoolean(requestBody.externalShareApproval ?? requestBody.externalShareApproved ?? requestBody.consentGranted);
     return {
       ...basePayload,
+      orderId,
+      projectId,
+      renderPacketId,
+      handoffStatus: externalShareApproval ? "vendor_handoff_ready" : "vendor_handoff_blocked",
+      consentRecordId: `consent-${stableContractHash(`${orderId}:external-share`).slice(0, 8)}`,
+      externalShareApproval,
       handoffChecklist: ["Download signed artifacts", "Confirm external share approval", "Upload manually to selected printer"],
       signedArtifactUrls: [
         {
@@ -397,7 +411,14 @@ function buildMutationContractPayload(route, bodyText) {
           url: `contract-only://customcard/artifacts/${encodeURIComponent(String(requestBody.renderPacketId ?? "render-packet-contract"))}`
         }
       ],
-      disabledReasons: ["Live vendor order APIs remain disabled until certification and kill-switch gates pass."]
+      disabledReasons: ["Live vendor order APIs remain disabled until certification and kill-switch gates pass."],
+      repository: {
+        tables: ["orders", "order_events", "consent_records"],
+        runtimeMode: "contract",
+        persisted: false,
+        liveQuote: false,
+        realOrdersEnabled: false
+      }
     };
   }
 
@@ -474,6 +495,13 @@ function safeLocale(value) {
 function safeContractText(value, fallback) {
   const text = String(value ?? "").trim().replace(/\s+/g, " ");
   return text.slice(0, 120) || fallback;
+}
+
+function safeBoolean(value) {
+  if (value === true) return true;
+  if (value === false) return false;
+  const text = String(value ?? "").trim().toLowerCase();
+  return ["1", "true", "yes", "y", "approved", "granted"].includes(text);
 }
 
 function safeTimestamp(value, fallback) {
