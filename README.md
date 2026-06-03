@@ -80,7 +80,8 @@ environment configuration instead of static placeholders.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
-  isolated live Postgres route-scoped auth/idempotency/audit/queue runtime checks,
+  isolated live Postgres route-scoped auth/idempotency/audit/queue runtime
+  checks, process-level Postgres HTTP auth/idempotency/repository smoke,
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, and data-request mutation coverage, admin
   demo reset, and no live external calls.
@@ -183,6 +184,7 @@ npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
 npm run persistence:doctor
@@ -207,8 +209,9 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
-contract doctor, live Postgres integration doctor, account-auth storage/recovery
-doctor, artifact-store filesystem plus S3-compatible contract doctor,
+contract doctor, live Postgres integration doctor, Postgres API HTTP doctor,
+account-auth storage/recovery doctor, artifact-store filesystem plus
+S3-compatible contract doctor,
 persistence doctor, demo reset doctor, worker readiness, and mobile doctor on
 pushes to `main` and pull requests.
 
@@ -235,8 +238,8 @@ pushes to `main` and pull requests.
 The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
 retail-printer ordering, live telemetry ingestion/alerting, live S3/MinIO cloud
-object-store writes, deployed Postgres API integration, production hosted
-account-token verification outside the isolated live Postgres doctors,
+object-store writes, deployed production Postgres API integration, production
+hosted account-token verification outside the isolated live Postgres doctors,
 native mobile builds, deployment evidence, legal/security review, or physical
 print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system

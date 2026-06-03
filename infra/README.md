@@ -39,6 +39,7 @@ npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
 npm run persistence:doctor
@@ -71,8 +72,15 @@ verifies all repository-backed customer routes plus admin readiness through the
 real `pg` runtime, exercises relationship-memory, render-packet, import-preview,
 card-project, manual handoff, and data-request persistence, and drops the
 temporary database before exiting.
-CI runs that live doctor against a Postgres service; deployed production account
-auth remains unclaimed.
+`CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled npm run
+api:doctor:postgres:http` starts `scripts/api-server.mjs` against the same
+isolated migrated database shape and verifies public health/routes,
+admin/customer Bearer auth, missing/wrong-role auth blocking, missing
+idempotency blocking, all 6 repository-backed customer HTTP mutations,
+idempotency replay/conflict, audit rows, queue jobs, and repository table counts
+before shutting the server down and dropping the temporary database.
+CI runs both live Postgres doctors against a Postgres service; deployed
+production account auth remains unclaimed.
 
 `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` uses the
 same isolated-database pattern to verify hosted account identity rows,

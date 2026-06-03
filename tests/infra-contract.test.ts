@@ -236,6 +236,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("npm run test:coverage");
     expect(packageJson).toContain("tests/mobile-contract.test.ts");
     expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
+    expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
     expect(viteConfig).toContain("src/artifactHandoff.ts");
@@ -291,6 +292,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run api:doctor:postgres:live");
+    expect(workflow).toContain("npm run api:doctor:postgres:http");
     expect(workflow).toContain("npm run account:doctor:live");
     expect(workflow).toContain("npm run artifact:doctor");
     expect(workflow).toContain("npm run persistence:doctor");
@@ -396,6 +398,30 @@ describe("production infrastructure contract", () => {
     expect(doctor).toContain("authVerification");
     expect(doctor).toContain("expectedCustomerRepositoryRoutes");
     expect(doctor).toContain("wrongRoleBlocked");
+  });
+
+  it("keeps the Postgres API HTTP doctor verifying process-level route persistence", () => {
+    const doctor = read("scripts/postgres-api-http-doctor.mjs");
+
+    expect(doctor).toContain("customcard-postgres-api-http-doctor");
+    expect(doctor).toContain("CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR");
+    expect(doctor).toContain("spawn(\"node\", [\"scripts/api-server.mjs\"]");
+    expect(doctor).toContain("serves public Postgres health and route catalog over HTTP");
+    expect(doctor).toContain("enforces Postgres HTTP auth on admin and customer routes");
+    expect(doctor).toContain("blocks missing HTTP idempotency key before repository mutation");
+    expect(doctor).toContain("persists Postgres HTTP import-preview mutation");
+    expect(doctor).toContain("persists Postgres HTTP relationship-memories mutation");
+    expect(doctor).toContain("persists Postgres HTTP card-projects mutation");
+    expect(doctor).toContain("persists Postgres HTTP render-packets mutation");
+    expect(doctor).toContain("persists Postgres HTTP manual-vendor-handoff mutation");
+    expect(doctor).toContain("persists Postgres HTTP data-requests mutation");
+    expect(doctor).toContain("replays and conflicts Postgres HTTP idempotency");
+    expect(doctor).toContain("customerHttpRoutes");
+    expect(doctor).toContain("missingAuthBlocked");
+    expect(doctor).toContain("missingIdempotencyBlocked");
+    expect(doctor).toContain("SELECT COUNT(*)::int AS count FROM idempotency_keys");
+    expect(doctor).toContain("SELECT COUNT(*)::int AS count FROM audit_log");
+    expect(doctor).toContain("SELECT COUNT(*)::int AS count FROM api_jobs");
   });
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {

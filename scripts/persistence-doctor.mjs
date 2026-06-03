@@ -8,6 +8,7 @@ const files = {
   accountAuthDoctor: "scripts/account-auth-doctor.mjs",
   artifactStore: "src/artifactStore.ts",
   artifactStoreDoctor: "scripts/artifact-store-doctor.mjs",
+  postgresApiHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
   postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
   postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
   migration: "infra/migrations/001_initial_schema.sql"
@@ -177,6 +178,29 @@ const postgresIntegrationSignals = [
   "DROP DATABASE IF EXISTS",
   "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
 ];
+const postgresApiHttpSignals = [
+  "customcard-postgres-api-http-doctor",
+  "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR",
+  "spawn(\"node\", [\"scripts/api-server.mjs\"]",
+  "serves public Postgres health and route catalog over HTTP",
+  "enforces Postgres HTTP auth on admin and customer routes",
+  "blocks missing HTTP idempotency key before repository mutation",
+  "/api/import-preview",
+  "/api/memories/review",
+  "/api/card-projects",
+  "/api/render-packets",
+  "/api/vendor-handoff/manual",
+  "/api/data-requests",
+  "replays and conflicts Postgres HTTP idempotency",
+  "authVerification",
+  "customerHttpRoutes",
+  "missingAuthBlocked",
+  "missingIdempotencyBlocked",
+  "SELECT COUNT(*)::int AS count FROM idempotency_keys",
+  "SELECT COUNT(*)::int AS count FROM audit_log",
+  "SELECT COUNT(*)::int AS count FROM api_jobs",
+  "DROP DATABASE IF EXISTS"
+];
 const accountAuthSignals = [
   "customcard-account-auth",
   "account_identities",
@@ -236,6 +260,7 @@ const checks = [
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),
+  checkIncludes("api", "postgres-api-http-doctor", contents.postgresApiHttpDoctor, postgresApiHttpSignals),
   checkAbsent("schema", "no-raw-content-permission", contents.migration, ["raw_content_allowed", "raw_content_stored BOOLEAN NOT NULL DEFAULT TRUE"]),
   checkAbsent("api", "no-live-persistence-claims", `${contents.apiContracts}\n${contents.apiServer}`, ["realOrdersEnabled: true", "externalNetworkCalls: true"])
 ];

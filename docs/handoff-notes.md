@@ -33,6 +33,7 @@ skeleton for the production path. It includes:
   jobs, and audit logs.
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration,
   API/static server with contract/memory/Postgres runtime validation,
+  process-level Postgres API HTTP auth/idempotency/repository verification,
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual-vendor-handoff, and data-request mutation paths, and
   mobile-shell scaffolding plus mobile contract validation.
@@ -52,8 +53,8 @@ skeleton for the production path. It includes:
   account identity and hashed recovery challenge storage are covered by doctor.
 - No real email/calendar OAuth flow.
 - No deployed production Postgres API integration or production hosted
-  account-token verification outside the isolated live Postgres route-auth and
-  account-auth doctors.
+  account-token verification outside the isolated live Postgres route-auth,
+  Postgres API HTTP, and account-auth doctors.
 - No live AI text/image generation.
 - No live S3/MinIO cloud object-store integration for exported artifacts;
   signed URL contracts, schema gates, temporary filesystem write/read
@@ -84,13 +85,14 @@ skeleton for the production path. It includes:
 6. Run `npm run api:doctor:memory`.
 7. Run `npm run api:doctor:postgres`.
 8. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-9. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-10. Run `npm run artifact:doctor`.
-11. Run `npm run persistence:doctor`.
-12. Run `npm run demo:doctor`.
-13. Run the worker and mobile doctor commands in `docs/verification.md`.
-14. Inspect the app with `npm run dev`.
-15. In the app, start a local workspace, scan the sample invite, generate a card,
+9. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+10. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+11. Run `npm run artifact:doctor`.
+12. Run `npm run persistence:doctor`.
+13. Run `npm run demo:doctor`.
+14. Run the worker and mobile doctor commands in `docs/verification.md`.
+15. Inspect the app with `npm run dev`.
+16. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -101,6 +103,7 @@ into a free local MVP plus a contract-first production skeleton for an event-awa
 card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, account
 identity/recovery storage, memory and route-scoped Postgres auth/idempotency runtime behavior,
+process-level Postgres HTTP auth/idempotency/repository behavior,
 repository-backed relationship-memory, render-packet, import-preview,
 card-project, manual-vendor-handoff, and data-request mutation coverage, public
 printer pricing research, local SVG/PDF print package export, temporary
@@ -115,13 +118,9 @@ print certification, and security/legal review are complete.
 
 ## Next Build Slice
 
-The highest-leverage next slice is turning the repository-backed route contracts
-into production-shaped HTTP/runtime verification and broader product repositories:
+The highest-leverage next slice is broadening the remaining production-adjacent
+edges now that the repository-backed Postgres HTTP path is verified:
 
-- Postgres-mode API HTTP smoke for the repository-backed relationship-memory,
-  render-packet, import-preview, card-project, manual-vendor-handoff, and
-  data-request routes, building on the current route-scoped live Postgres auth
-  doctor.
 - Live S3/MinIO render-packet artifact writing using the signed handoff
   contract.
 - Live seed execution against a deployed reviewer database.

@@ -58,6 +58,12 @@ it after each meaningful implementation pass.
   verification for all 6 repository-backed customer routes, admin readiness
   authorization, wrong-role blocking, and the same idempotency/repository
   mutation paths against an isolated real `pg` database.
+- `npm run api:doctor:postgres:http` starts the real API server in Postgres
+  mode against an isolated migrated database, verifies public health/routes,
+  admin/customer Bearer auth, wrong-role and missing-auth blocks, missing
+  idempotency blocking, all 6 repository-backed customer HTTP mutations,
+  idempotency replay/conflict behavior, audit rows, queue jobs, and repository
+  table counts.
 - Account-auth tests and `npm run account:doctor:live` cover hosted auth adapter
   requirements, durable account identity storage, no raw provider profiles,
   provider-subject uniqueness, hashed expiring recovery challenges, durable
@@ -96,6 +102,7 @@ npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
 npm run persistence:doctor
@@ -114,8 +121,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 122 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 114 tests passed; V8 report measured
+- Vitest: 18 test files passed, 123 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 115 tests passed; V8 report measured
   90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -187,6 +194,23 @@ provider connection, 1 imported event, 1 card opportunity, 1 relationship memory
 1 data request before dropping the temporary database.
 
 ```text
+CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
+```
+
+Result: passed. Postgres API HTTP doctor created an isolated temporary database,
+applied `infra/migrations/001_initial_schema.sql`, seeded customer and admin
+auth sessions, started `scripts/api-server.mjs` in Postgres mode, verified
+public health and route catalog responses, blocked missing and wrong-role auth,
+authorized admin readiness and customer bootstrap through Bearer headers,
+blocked a missing `X-Idempotency-Key`, persisted all 6 repository-backed
+customer HTTP mutations, replayed the render-packet idempotency key, rejected a
+changed-body conflict, and verified 6 idempotency records, 6 audit records, 2
+queued jobs, 1 provider connection, 1 imported event, 1 card opportunity, 1
+relationship memory, 1 card project, 1 render packet, 1 order, 1 order event, 2
+consent records, and 1 data request before shutting down the server and dropping
+the temporary database.
+
+```text
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 ```
 
@@ -219,8 +243,8 @@ readiness, import-preview repository readiness, card-project repository
 readiness, manual vendor handoff order/consent/event readiness, data-request
 privacy/consent readiness, queue jobs, render-packet artifact manifest signals,
 artifact-store write/read doctor signals, Postgres runtime SQL/doctor/integration
-signals, account-auth contract/doctor signals, append-only audit coverage, 12
-schema-backed API routes, and no blockers.
+signals, Postgres API HTTP doctor signals, account-auth contract/doctor signals,
+append-only audit coverage, 12 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor

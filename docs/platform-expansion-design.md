@@ -213,9 +213,10 @@ The server now has explicit runtime modes:
   pool, including wrong-role blocking, replay, conflict, render-packet insert,
   import-preview insert, relationship-memory insert, card-project insert, manual
   handoff insert, data-request insert, audit, and queue-job inserts. The live
-  doctor runs the
-  same shape against an isolated Postgres database; deployed production Postgres
-  traffic is still not claimed.
+  doctor runs the same shape against an isolated Postgres database, and the HTTP
+  doctor starts the actual API server against that migrated Postgres shape to
+  verify Bearer auth, idempotency, repository mutations, audit rows, and queue
+  jobs over HTTP; deployed production Postgres traffic is still not claimed.
 
 ## Persistence Boundary
 
@@ -297,6 +298,12 @@ Implemented checks:
   relationship-memory, render-packet, import-preview, card-project,
   manual-handoff, data-request, audit, and queue paths against an isolated live
   Postgres database after applying the committed migration.
+- `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled npm run api:doctor:postgres:http`
+  starts `scripts/api-server.mjs` in Postgres mode against an isolated migrated
+  database and validates public health/routes, admin/customer Bearer auth,
+  missing/wrong-role auth blocks, missing idempotency blocking, all 6
+  repository-backed customer HTTP mutations, replay/conflict, audit rows, queue
+  jobs, and repository table counts.
 - `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled npm run account:doctor:live` validates
   hosted account identity storage, hashed recovery challenges, durable sessions,
   uniqueness, and audit logging against an isolated live Postgres database.
@@ -319,9 +326,9 @@ Implemented checks:
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
   contract API doctor, memory API doctor, Postgres runtime contract doctor, live
-  Postgres integration doctor, account-auth doctor, artifact-store doctor,
-  persistence doctor, demo reset doctor, worker readiness, and mobile doctor for
-  pushes to `main` and pull requests.
+  Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
+  artifact-store doctor, persistence doctor, demo reset doctor, worker
+  readiness, and mobile doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact handoff/store, pricing, print-export, persistence, orchestration, and
   mobile contract modules: 90% statements, 80% branches, 90% functions, and 90%
@@ -340,7 +347,8 @@ Remaining high-risk work:
   S3-compatible write/read contract verification are covered.
 - No deployed production Postgres API integration or production hosted
   account-token verification; isolated live Postgres route-auth/migration/runtime
-  integration and account identity/recovery storage are covered by doctors.
+  integration, process-level API HTTP verification, and account identity/recovery
+  storage are covered by doctors.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
 - Hosted GitHub Actions verification exists for main pushes, but there is still
