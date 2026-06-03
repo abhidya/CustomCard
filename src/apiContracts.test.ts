@@ -37,7 +37,7 @@ describe("api contracts", () => {
 
     expect(mutations.length).toBeGreaterThanOrEqual(5);
     expect(mutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
-    expect(mutations.every((route) => route.requestSchema.includes("idempotencyKey"))).toBe(true);
+    expect(mutations.every((route) => route.requestSchema.includes("X-Idempotency-Key"))).toBe(true);
     expect(adminRoutes.every((route) => route.auth === "admin-session")).toBe(true);
   });
 
@@ -102,7 +102,7 @@ describe("api contracts", () => {
       expect.arrayContaining([
         "Admin route unsafe-admin must require admin-session auth.",
         "Mutation route unsafe-mutation must require an idempotency key.",
-        "Mutation route unsafe-mutation must name idempotencyKey in the request schema.",
+        "Mutation route unsafe-mutation must name X-Idempotency-Key in the request schema.",
         "Route unsafe-mutation must not allow raw content policy language.",
         "Missing API route contract: health"
       ])

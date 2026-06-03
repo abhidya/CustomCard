@@ -172,7 +172,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "durable-api",
-    requestSchema: ["idempotencyKey", "sourceKind", "metadataOnlyPayload"],
+    requestSchema: ["X-Idempotency-Key", "sourceKind", "metadataOnlyPayload"],
     responseSchema: ["opportunities", "warnings", "rawContentStored"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
@@ -187,7 +187,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "durable-api",
-    requestSchema: ["idempotencyKey", "opportunityId", "approvedMemoryIds", "locale"],
+    requestSchema: ["X-Idempotency-Key", "opportunityId", "approvedMemoryIds", "locale"],
     responseSchema: ["projectId", "renderStatus", "requiresRtlLayout"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
@@ -202,7 +202,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "queue-backed",
-    requestSchema: ["idempotencyKey", "projectId", "panels"],
+    requestSchema: ["X-Idempotency-Key", "projectId", "panels"],
     responseSchema: ["renderPacketId", "checksum", "status"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
@@ -217,7 +217,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "queue-backed",
-    requestSchema: ["idempotencyKey", "renderPacketId", "vendorId", "externalShareApproval"],
+    requestSchema: ["X-Idempotency-Key", "renderPacketId", "vendorId", "externalShareApproval"],
     responseSchema: ["handoffChecklist", "realOrdersEnabled", "disabledReasons"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
@@ -232,7 +232,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "durable-api",
-    requestSchema: ["idempotencyKey", "action", "region"],
+    requestSchema: ["X-Idempotency-Key", "action", "region"],
     responseSchema: ["allowed", "requiredControls", "auditRequired"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
@@ -322,8 +322,8 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     if (route.method === "POST" && !route.idempotencyKeyRequired) {
       issues.push(`Mutation route ${route.id} must require an idempotency key.`);
     }
-    if (route.method === "POST" && !route.requestSchema.includes("idempotencyKey")) {
-      issues.push(`Mutation route ${route.id} must name idempotencyKey in the request schema.`);
+    if (route.method === "POST" && !route.requestSchema.includes("X-Idempotency-Key")) {
+      issues.push(`Mutation route ${route.id} must name X-Idempotency-Key in the request schema.`);
     }
     if (route.externalNetworkCalls) issues.push(`Route ${route.id} must not make live external calls.`);
     if (route.realOrdersEnabled) issues.push(`Route ${route.id} must keep real orders disabled.`);

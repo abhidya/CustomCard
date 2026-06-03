@@ -40,6 +40,9 @@ jobs:
       - name: Validate API contract readiness
         run: npm run api:doctor
 
+      - name: Validate API memory runtime
+        run: npm run api:doctor:memory
+
       - name: Validate persistence readiness
         run: npm run persistence:doctor
 

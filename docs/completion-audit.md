@@ -36,20 +36,20 @@ listed as a gap instead of treated as complete.
 | --- | --- |
 | What small prompt started this? | The last-minute CVS wedding-card workflow and expanded cross-platform/scalable service prompt in `docs/brief-context.md`. |
 | What did we infer and why? | Contract-first skeleton, metadata-only import, structured memory, deterministic print contracts, and tested thin mobile shell; see `docs/brief-context.md` and `docs/decisions.md`. |
-| What was actually built? | Vite/React free local MVP, deterministic MVP domain module, provider adapter catalog, provider no-network runtime contracts, customer/admin panels, typed API and persistence contracts with deployable API/static server, typed domain and service kernel, tests, Postgres migration, worker/migration/runtime scripts, Docker/Kubernetes manifests, GitHub Actions verification, and Expo customer mobile shell contract. |
+| What was actually built? | Vite/React free local MVP, deterministic MVP domain module, provider adapter catalog, provider no-network runtime contracts, customer/admin panels, typed API and persistence contracts with deployable API/static server plus memory-mode auth/idempotency validation, typed domain and service kernel, tests, Postgres migration, worker/migration/runtime scripts, Docker/Kubernetes manifests, GitHub Actions verification, and Expo customer mobile shell contract. |
 | How do I run or inspect it? | README Run, Environment, and Verification sections. |
 | Which requirements are covered? | `docs/requirements-traceability.md`. |
-| What was verified? | `docs/verification.md`; latest recorded runs cover unit tests, coverage, build, Chrome smoke, API doctor, persistence doctor, worker doctor, CI workflow contract, mobile contract tests, and mobile doctor. |
-| What remains risky or incomplete? | Production auth handlers, DB-backed API integration, live OAuth, live AI generation, live vendor quotes/orders, payments, native mobile builds, deployment, legal/security review, and physical print certification. |
+| What was verified? | `docs/verification.md`; latest recorded runs cover unit tests, coverage, build, Chrome smoke, contract API doctor, memory API doctor, persistence doctor, worker doctor, CI workflow contract, mobile contract tests, and mobile doctor. |
+| What remains risky or incomplete? | Production account auth, live Postgres API integration, live OAuth, live AI generation, live vendor quotes/orders, payments, native mobile builds, deployment, legal/security review, and physical print certification. |
 
 ## Current Audit Result
 
 The `deliver-ambiguous-brief` packaging standard is satisfied for the current
 checkpoint: a reviewable free local MVP plus tested provider-adapter runtime,
 customer/admin/API/persistence, mobile-shell contract, CI verification, and
-deployment-readiness expansion. The broader active production objective is not
-complete because live DB-backed authenticated API handlers, live OAuth, live
-AI/image providers, live vendor ordering, cloud deployment proof, physical print
-certification, and legal/security review are still missing. The repo is honest
-about the current stage and does not redefine missing external production
-capabilities as complete.
+deployment-readiness expansion. The broader active production objective remains
+incomplete because live Postgres API integration, production account auth, live
+OAuth, live AI/image providers, live vendor ordering, cloud deployment proof,
+physical print certification, and legal/security review are still missing. The
+repo is honest about the current stage and does not redefine missing external
+production capabilities as complete.

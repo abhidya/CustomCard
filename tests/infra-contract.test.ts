@@ -105,7 +105,10 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("POSTGRES_PASSWORD=");
     expect(env).toContain("QUEUE_URL=");
     expect(env).toContain("OBJECT_STORE_URL=");
+    expect(env).toContain("CUSTOMCARD_API_RUNTIME=contract");
     expect(env).toContain("AUTH_SESSION_SECRET=");
+    expect(env).toContain("CUSTOMCARD_CUSTOMER_SESSION_TOKEN=");
+    expect(env).toContain("CUSTOMCARD_ADMIN_SESSION_TOKEN=");
     expect(env).toContain("IDEMPOTENCY_KEY_TTL_HOURS=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_ID=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_SECRET=");
@@ -168,6 +171,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run check");
     expect(workflow).toContain("npm run deployment:doctor");
     expect(workflow).toContain("npm run api:doctor");
+    expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");

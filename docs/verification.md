@@ -35,7 +35,9 @@ it after each meaningful implementation pass.
   default policy.
 - API-contract and API-server tests cover `/api/health`, customer/admin
   bootstrap, mobile bootstrap, provider readiness, idempotent mutation contracts,
-  404/405 behavior, and the no-live-call/no-real-order posture.
+  explicit contract/memory runtime modes, memory-mode Bearer session gates,
+  `X-Idempotency-Key` replay/conflict behavior, 404/405 behavior, and the
+  no-live-call/no-real-order posture.
 - Persistence-contract tests and `npm run persistence:doctor` cover auth-session
   schema, idempotency replay state, queue job envelopes, append-only audit
   contracts, and 10 schema-backed API route mappings.
@@ -60,6 +62,7 @@ it after each meaningful implementation pass.
 npm run check
 npm run deployment:doctor
 npm run api:doctor
+npm run api:doctor:memory
 npm run persistence:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
@@ -75,7 +78,7 @@ npm run check
 
 Result: passed.
 
-- Vitest: 12 test files passed, 80 tests passed.
+- Vitest: 12 test files passed, 82 tests passed.
 - Coverage: 10 core/API/persistence/infra/mobile test files passed, 74 tests passed; V8 report measured
   90.92% statements, 84.59% branches, 96.01% functions, and 93.96% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
@@ -97,8 +100,17 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 12 routes, 5 idempotent mutation contracts,
-42 providers, 16 persistence tables, no live external calls, no real vendor
-orders, no raw content storage, and no blockers.
+42 providers, 16 persistence tables, contract runtime mode, no live external
+calls, no real vendor orders, no raw content storage, and no blockers.
+
+```text
+npm run api:doctor:memory
+```
+
+Result: passed. Memory runtime doctor reported Bearer auth and idempotency
+enforced, 2 configured sessions, 12 routes, 5 idempotent mutation contracts, 42
+providers, 16 persistence tables, no live external calls, no real vendor orders,
+and no blockers.
 
 ```text
 npm run persistence:doctor
@@ -160,8 +172,8 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
 - No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
-- No live DB-backed authenticated API handler integration test; API server
-  coverage remains a contract/static bootstrap boundary.
+- No live Postgres-backed API integration test or production account auth flow;
+  memory runtime coverage proves the local auth/idempotency behavior only.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

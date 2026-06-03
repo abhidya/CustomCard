@@ -1,24 +1,25 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
+import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
 const host = process.env.HOST ?? "0.0.0.0";
 
 const routes = [
-  { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none" },
-  { id: "route-catalog", method: "GET", path: "/api/routes", audience: "public", auth: "none" },
-  { id: "customer-bootstrap", method: "GET", path: "/api/customer/bootstrap", audience: "customer", auth: "customer-session" },
-  { id: "mobile-bootstrap", method: "GET", path: "/api/mobile/bootstrap", audience: "customer", auth: "customer-session" },
-  { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session" },
-  { id: "admin-provider-catalog", method: "GET", path: "/api/admin/provider-catalog", audience: "admin", auth: "admin-session" },
-  { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session" },
-  { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session" },
-  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session" },
-  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session" },
-  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session" },
-  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session" }
+  { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-demo" },
+  { id: "route-catalog", method: "GET", path: "/api/routes", audience: "public", auth: "none", runtimeMode: "local-demo" },
+  { id: "customer-bootstrap", method: "GET", path: "/api/customer/bootstrap", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "mobile-bootstrap", method: "GET", path: "/api/mobile/bootstrap", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "admin-provider-catalog", method: "GET", path: "/api/admin/provider-catalog", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
+  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
+  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
 ];
 
 const contentTypes = new Map([
@@ -63,6 +64,7 @@ const readiness = {
     appendOnlyAudit: true
   }
 };
+const apiRuntime = createApiRuntime({ env: process.env, routes });
 
 if (process.argv.includes("--doctor")) {
   const blockers = validateApiServerContract();
@@ -71,7 +73,10 @@ if (process.argv.includes("--doctor")) {
       {
         service: "customcard-api-doctor",
         status: blockers.length === 0 ? "ready" : "blocked",
-        readiness,
+        readiness: {
+          ...readiness,
+          runtime: apiRuntime.describe()
+        },
         blockers
       },
       null,
@@ -84,7 +89,13 @@ if (process.argv.includes("--doctor")) {
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
     if (requestUrl.pathname.startsWith("/api/")) {
-      serveApi(request, response, requestUrl.pathname);
+      serveApi(request, response, requestUrl.pathname).catch((error) => {
+        sendJson(response, 500, {
+          service: "customcard-api",
+          status: "internal-error",
+          detail: error instanceof Error ? error.message : "Unknown API runtime error."
+        });
+      });
       return;
     }
 
@@ -94,7 +105,7 @@ if (process.argv.includes("--doctor")) {
   });
 }
 
-function serveApi(request, response, path) {
+async function serveApi(request, response, path) {
   const route = routes.find((candidate) => candidate.path === path);
   if (!route) {
     sendJson(response, 404, { service: "customcard-api", status: "not-found", path });
@@ -106,11 +117,18 @@ function serveApi(request, response, path) {
     return;
   }
 
+  const authContext = await apiRuntime.authorize(route, request);
+  if (!authContext.ok) {
+    sendJson(response, authContext.statusCode, authContext.payload);
+    return;
+  }
+
   if (path === "/api/health") {
     sendJson(response, 200, {
       service: "customcard-api",
       status: "ready",
-      realOrdersEnabled: false
+      realOrdersEnabled: false,
+      runtime: apiRuntime.describe()
     });
     return;
   }
@@ -121,7 +139,10 @@ function serveApi(request, response, path) {
   }
 
   if (path === "/api/admin/readiness") {
-    sendJson(response, 200, readiness);
+    sendJson(response, 200, {
+      ...readiness,
+      runtime: apiRuntime.describe()
+    });
     return;
   }
 
@@ -129,7 +150,8 @@ function serveApi(request, response, path) {
     sendJson(response, 200, {
       service: "customcard-api",
       providers: readiness.providers,
-      externalNetworkCalls: false
+      externalNetworkCalls: false,
+      runtime: apiRuntime.describe()
     });
     return;
   }
@@ -139,6 +161,7 @@ function serveApi(request, response, path) {
       service: "customcard-api",
       status: "ready",
       persistence: readiness.persistence,
+      runtime: apiRuntime.describe(),
       safety: readiness.safety,
       blockers: []
     });
@@ -151,7 +174,8 @@ function serveApi(request, response, path) {
       safetyBanner: "Real orders disabled",
       sections: ["card-queue", "memory-review", "text-chat", "image-render", "handoff"],
       renderChoices: ["Browser SVG renderer", "Credential-gated AI image providers"],
-      realOrdersEnabled: false
+      realOrdersEnabled: false,
+      runtime: apiRuntime.describe()
     });
     return;
   }
@@ -161,19 +185,28 @@ function serveApi(request, response, path) {
       service: "customcard-api",
       primaryActions: ["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"],
       readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual vendor handoff"],
-      realOrdersEnabled: false
+      realOrdersEnabled: false,
+      runtime: apiRuntime.describe()
     });
     return;
   }
 
-  sendJson(response, 202, {
-    service: "customcard-api",
-    status: "accepted-contract-only",
-    route: route.id,
-    idempotencyRequired: true,
-    externalNetworkCalls: false,
-    realOrdersEnabled: false
+  const bodyText = await readRequestBody(request);
+  const persistedMutation = await apiRuntime.persistMutation({
+    route,
+    request,
+    authContext,
+    bodyText,
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: route.id,
+      idempotencyRequired: true,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    }
   });
+  sendJson(response, persistedMutation.statusCode, persistedMutation.payload);
 }
 
 function serveStatic(response, requestPath) {
@@ -239,6 +272,22 @@ function validateApiServerContract() {
   if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
+  blockers.push(...apiRuntime.validate());
 
   return blockers;
+}
+
+function readRequestBody(request) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    request.setEncoding("utf8");
+    request.on("data", (chunk) => {
+      body += chunk;
+      if (body.length > 256_000) {
+        request.destroy(new Error("Request body too large."));
+      }
+    });
+    request.on("error", reject);
+    request.on("end", () => resolve(body));
+  });
 }

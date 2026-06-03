@@ -1,4 +1,4 @@
-import { execFileSync, spawn, type ChildProcess } from "node:child_process";
+import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 describe("api server wrapper", () => {
@@ -14,6 +14,7 @@ describe("api server wrapper", () => {
         providers: { total: number };
         routes: { total: number; mutations: number; idempotentMutations: number };
         persistence: { tables: number; authSessionTable: boolean; idempotencyTable: boolean };
+        runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean };
       };
       blockers: string[];
     };
@@ -29,6 +30,32 @@ describe("api server wrapper", () => {
       authSessionTable: true,
       idempotencyTable: true
     });
+    expect(report.readiness.runtime).toMatchObject({
+      mode: "contract",
+      authEnforced: false,
+      idempotencyEnforced: false
+    });
+  });
+
+  it("blocks unsupported API runtime modes in doctor output", () => {
+    const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
+      encoding: "utf8",
+      env: { ...process.env, CUSTOMCARD_API_RUNTIME: "surprise-runtime" },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(result.stdout) as {
+      status: string;
+      readiness: { runtime: { mode: string; requestedMode: string } };
+      blockers: string[];
+    };
+
+    expect(result.status).toBe(1);
+    expect(report.status).toBe("blocked");
+    expect(report.readiness.runtime).toMatchObject({
+      mode: "invalid",
+      requestedMode: "surprise-runtime"
+    });
+    expect(report.blockers).toContain("Unsupported CUSTOMCARD_API_RUNTIME: surprise-runtime. Expected contract, memory, or postgres.");
   });
 
   it("serves API readiness, bootstrap, and contract-only mutation responses", async () => {
@@ -71,6 +98,8 @@ describe("api server wrapper", () => {
       expect(await mutation.json()).toMatchObject({
         status: "accepted-contract-only",
         idempotencyRequired: true,
+        runtimeMode: "contract",
+        idempotencyPersisted: false,
         externalNetworkCalls: false,
         realOrdersEnabled: false
       });
@@ -85,12 +114,113 @@ describe("api server wrapper", () => {
       await waitForExit(server);
     }
   });
+
+  it("enforces memory-runtime auth sessions and idempotent mutation replay", async () => {
+    const port = 7100 + Math.floor(Math.random() * 1000);
+    const customerToken = "customer-session-token-for-api-test";
+    const adminToken = "admin-session-token-for-api-test";
+    const server = spawn("node", ["scripts/api-server.mjs"], {
+      env: {
+        ...process.env,
+        CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
+        HOST: "127.0.0.1",
+        PORT: String(port)
+      },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    try {
+      await waitForApi(port, server);
+
+      const unauthenticatedAdmin = await fetch(`http://127.0.0.1:${port}/api/admin/readiness`);
+      expect(unauthenticatedAdmin.status).toBe(401);
+      expect(await unauthenticatedAdmin.json()).toMatchObject({ status: "auth-required", requiredAuth: "admin-session" });
+
+      const wrongRole = await getJson(port, "/api/admin/readiness", bearer(customerToken), 403);
+      expect(wrongRole).toMatchObject({ status: "wrong-role", requiredAuth: "admin-session" });
+
+      const initialReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
+      expect(initialReadiness.runtime).toMatchObject({
+        mode: "memory",
+        authEnforced: true,
+        idempotencyEnforced: true,
+        sessionsConfigured: 2,
+        idempotencyRecords: 0,
+        auditRecords: 0,
+        queuedJobs: 0
+      });
+
+      const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
+      expect(customerBootstrap.runtime).toMatchObject({ mode: "memory", authEnforced: true });
+
+      const missingAuth = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
+      expect(missingAuth.status).toBe(401);
+
+      const missingIdempotency = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, bearer(customerToken));
+      expect(missingIdempotency.status).toBe(400);
+      expect(await missingIdempotency.json()).toMatchObject({ status: "idempotency-key-required" });
+
+      const headers = {
+        ...bearer(customerToken),
+        "X-Idempotency-Key": "render-packets-0001"
+      };
+      const first = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, headers);
+      expect(first.status).toBe(202);
+      expect(await first.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "user-demo",
+        idempotencyPersisted: true,
+        idempotencyReplayed: false,
+        persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"])
+      });
+
+      const replay = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, headers);
+      expect(replay.status).toBe(202);
+      expect(await replay.json()).toMatchObject({
+        runtimeMode: "memory",
+        idempotencyPersisted: true,
+        idempotencyReplayed: true
+      });
+
+      const conflict = await postJson(port, "/api/render-packets", { projectId: "changed-project" }, headers);
+      expect(conflict.status).toBe(409);
+      expect(await conflict.json()).toMatchObject({ status: "idempotency-conflict" });
+
+      const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
+      expect(finalReadiness.runtime).toMatchObject({
+        mode: "memory",
+        idempotencyRecords: 1,
+        auditRecords: 1,
+        queuedJobs: 1
+      });
+    } finally {
+      server.kill();
+      await waitForExit(server);
+    }
+  });
 });
 
-async function getJson(port: number, path: string): Promise<any> {
-  const response = await fetch(`http://127.0.0.1:${port}${path}`);
-  expect(response.status).toBe(200);
+async function getJson(port: number, path: string, headers: Record<string, string> = {}, expectedStatus = 200): Promise<any> {
+  const response = await fetch(`http://127.0.0.1:${port}${path}`, { headers });
+  expect(response.status).toBe(expectedStatus);
   return response.json();
+}
+
+function postJson(port: number, path: string, body: unknown, headers: Record<string, string> = {}): Promise<Response> {
+  return fetch(`http://127.0.0.1:${port}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers
+    },
+    body: JSON.stringify(body)
+  });
+}
+
+function bearer(token: string): Record<string, string> {
+  return { Authorization: `Bearer ${token}` };
 }
 
 async function waitForApi(port: number, server: ChildProcess): Promise<void> {
