@@ -138,6 +138,9 @@ Implemented checks:
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer panel evidence.
+- `npm run test:coverage` enforces V8 coverage thresholds for the core
+  TypeScript contract modules: 90% statements, 80% branches, 90% functions, and
+  90% lines.
 
 Remaining high-risk work:
 

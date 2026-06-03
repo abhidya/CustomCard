@@ -128,6 +128,12 @@ CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_UR
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
 
+`npm run check` now runs the full test suite, core contract coverage thresholds,
+the production build, and a high-severity dependency audit. The V8 coverage gate
+applies to `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
+`src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
+verified through Chrome smoke tests.
+
 ## Project Docs
 
 - [Brief context](docs/brief-context.md)

@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
-    "check": "npm run test -- --run && npm run build && npm audit --audit-level=high",
+    "check": "npm run test -- --run && npm run test:coverage && npm run build && npm audit --audit-level=high",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage src/*.test.ts tests/infra-contract.test.ts",
     "preview": "vite preview --host 127.0.0.1",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",
@@ -25,6 +26,7 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/coverage-v8": "^4.1.7",
     "typescript": "^6.0.3",
     "vite": "^8.0.15",
     "vitest": "^4.1.7"

@@ -25,6 +25,9 @@ it after each meaningful implementation pass.
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, and the mobile shell.
+- Coverage is measured for the core TypeScript contract modules with V8
+  thresholds enforced by `npm run check`: 90% statements, 80% branches, 90%
+  functions, and 90% lines.
 - Runtime doctor fails closed on missing or placeholder required environment
   variables.
 - Real ordering remains disabled.
@@ -51,6 +54,10 @@ npm run check
 Result: passed.
 
 - Vitest: 7 test files passed, 56 tests passed.
+- Coverage: 6 core/infra test files passed, 52 tests passed; V8 report measured
+  91.16% statements, 84.22% branches, 94.87% functions, and 93.73% lines across
+  `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
+  `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -111,4 +118,5 @@ documentation claims found during the audit were corrected.
   artifact.
 - Provider docs were checked at the contract/link level only; no vendor sandbox
   credentials or market/commercial terms were verified.
-- No coverage threshold or coverage report.
+- Browser UI smoke tests are not included in the V8 unit coverage percentages;
+  they remain covered by Chrome smoke assertions and visual evidence.
