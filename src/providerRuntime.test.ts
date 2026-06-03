@@ -16,13 +16,27 @@ import {
 const readyEnv: ProviderRuntimeEnv = {
   ANTHROPIC_API_KEY: "configured-anthropic-key",
   AUTH_SESSION_SECRET: "configured-auth-secret",
+  AWS_ACCESS_KEY_ID: "configured-aws-access-key-id",
+  AWS_REGION: "us-east-1",
+  AWS_SECRET_ACCESS_KEY: "configured-aws-secret-access-key",
+  AZURE_OPENAI_API_KEY: "configured-azure-openai-key",
+  AZURE_OPENAI_CHAT_DEPLOYMENT: "customcard-chat",
+  AZURE_OPENAI_ENDPOINT: "https://customcard-test.openai.azure.com",
+  AZURE_OPENAI_IMAGE_DEPLOYMENT: "customcard-image",
+  BEDROCK_IMAGE_MODEL_ID: "amazon.titan-image-generator-v2:0",
+  BEDROCK_TEXT_MODEL_ID: "anthropic.claude-3-5-haiku-20241022-v1:0",
+  BFL_API_KEY: "configured-bfl-key",
   COHERE_API_KEY: "configured-cohere-key",
   CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
+  DEEPSEEK_API_KEY: "configured-deepseek-key",
   FEDEX_VENDOR_MODE: "certification-configured-only",
+  FAL_KEY: "configured-fal-key",
+  FIREWORKS_API_KEY: "configured-fireworks-key",
   GOOGLE_GENERATIVE_AI_API_KEY: "configured-google-ai-key",
   GOOGLE_OAUTH_CLIENT_ID: "configured-google-client-id",
   GOOGLE_OAUTH_CLIENT_SECRET: "configured-google-client-secret",
+  GROQ_API_KEY: "configured-groq-key",
   HUGGINGFACE_API_TOKEN: "configured-huggingface-token",
   IDEOGRAM_API_KEY: "configured-ideogram-key",
   LEONARDO_API_KEY: "configured-leonardo-key",
@@ -146,6 +160,8 @@ describe("provider runtime contracts", () => {
   it("builds redacted no-network text request contracts for enabled chat providers", () => {
     const providerIds = [
       "openai-responses-chat",
+      "azure-openai-chat",
+      "aws-bedrock-converse-chat",
       "anthropic-messages-chat",
       "google-gemini-chat",
       "huggingface-chat",
@@ -153,7 +169,10 @@ describe("provider runtime contracts", () => {
       "cohere-chat",
       "perplexity-sonar-chat",
       "xai-chat",
-      "together-chat"
+      "together-chat",
+      "groq-chat",
+      "deepseek-chat",
+      "fireworks-chat"
     ];
 
     for (const providerId of providerIds) {
@@ -176,6 +195,12 @@ describe("provider runtime contracts", () => {
       "anthropic-version": "2023-06-01",
       "x-api-key": "{ANTHROPIC_API_KEY}"
     });
+    expect(buildTextChatRuntime("azure-openai-chat", textInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "api-key": "{AZURE_OPENAI_API_KEY}"
+    });
+    expect(buildTextChatRuntime("aws-bedrock-converse-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_TEXT_MODEL_ID}/converse"
+    );
     expect(buildTextChatRuntime("google-gemini-chat", textInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
     });
@@ -191,18 +216,31 @@ describe("provider runtime contracts", () => {
     expect(buildTextChatRuntime("together-chat", textInput, readyEnv, openGates).request?.url).toBe(
       "https://api.together.xyz/v1/chat/completions"
     );
+    expect(buildTextChatRuntime("groq-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.groq.com/openai/v1/chat/completions"
+    );
+    expect(buildTextChatRuntime("deepseek-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.deepseek.com/chat/completions"
+    );
+    expect(buildTextChatRuntime("fireworks-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.fireworks.ai/inference/v1/chat/completions"
+    );
   });
 
   it("builds redacted no-network image request contracts for enabled image providers", () => {
     const providerIds = [
       "openai-images",
+      "azure-openai-image",
+      "aws-bedrock-image",
       "google-gemini-image",
       "stability-stable-image",
       "huggingface-image",
       "replicate-image",
       "together-image",
       "ideogram-image",
-      "leonardo-image"
+      "leonardo-image",
+      "fal-image",
+      "bfl-flux-image"
     ];
 
     for (const providerId of providerIds) {
@@ -222,12 +260,24 @@ describe("provider runtime contracts", () => {
     expect(buildImageGenerationRuntime("google-gemini-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
     });
+    expect(buildImageGenerationRuntime("azure-openai-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "api-key": "{AZURE_OPENAI_API_KEY}"
+    });
+    expect(buildImageGenerationRuntime("aws-bedrock-image", imageInput, readyEnv, openGates).request?.url).toBe(
+      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_IMAGE_MODEL_ID}/invoke"
+    );
     expect(buildImageGenerationRuntime("ideogram-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "Api-Key": "{IDEOGRAM_API_KEY}"
     });
     expect(buildImageGenerationRuntime("leonardo-image", imageInput, readyEnv, openGates).request?.url).toBe(
       "https://cloud.leonardo.ai/api/rest/v1/generations"
     );
+    expect(buildImageGenerationRuntime("fal-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
+      authorization: "Key {FAL_KEY}"
+    });
+    expect(buildImageGenerationRuntime("bfl-flux-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "x-key": "{BFL_API_KEY}"
+    });
   });
 
   it("keeps provider imports metadata-only and omits raw source text", () => {

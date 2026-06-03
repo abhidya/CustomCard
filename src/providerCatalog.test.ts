@@ -25,7 +25,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(47);
+    expect(summary.total).toBeGreaterThanOrEqual(56);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -38,6 +38,8 @@ describe("provider catalog", () => {
   it("keeps external providers credential-gated with docs, env vars, and safety gates", () => {
     const externalLabels = [
       "OpenAI Responses chat",
+      "Azure OpenAI chat",
+      "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
       "Google Gemini chat",
       "Mistral chat",
@@ -45,7 +47,12 @@ describe("provider catalog", () => {
       "Perplexity Sonar chat",
       "xAI chat",
       "Together chat",
+      "Groq chat",
+      "DeepSeek chat",
+      "Fireworks chat",
       "OpenAI Images",
+      "Azure OpenAI image",
+      "Amazon Bedrock image",
       "Google Gemini image",
       "Stability AI image",
       "Hugging Face chat",
@@ -54,6 +61,8 @@ describe("provider catalog", () => {
       "Together image",
       "Ideogram image",
       "Leonardo image",
+      "fal image",
+      "Black Forest Labs image",
       "Gmail metadata adapter",
       "Google Calendar events",
       "Microsoft Graph mail",
@@ -74,6 +83,15 @@ describe("provider catalog", () => {
     const admin = buildAdminPanelModel();
 
     expect(admin.coverage.requiredEnv).toContain("OPENAI_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_ENDPOINT");
+    expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_CHAT_DEPLOYMENT");
+    expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_IMAGE_DEPLOYMENT");
+    expect(admin.coverage.requiredEnv).toContain("AWS_ACCESS_KEY_ID");
+    expect(admin.coverage.requiredEnv).toContain("AWS_SECRET_ACCESS_KEY");
+    expect(admin.coverage.requiredEnv).toContain("AWS_REGION");
+    expect(admin.coverage.requiredEnv).toContain("BEDROCK_TEXT_MODEL_ID");
+    expect(admin.coverage.requiredEnv).toContain("BEDROCK_IMAGE_MODEL_ID");
     expect(admin.coverage.requiredEnv).toContain("ANTHROPIC_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("GOOGLE_GENERATIVE_AI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("STABILITY_API_KEY");
@@ -83,8 +101,13 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("PERPLEXITY_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("XAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("TOGETHER_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("GROQ_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("DEEPSEEK_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("FIREWORKS_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("IDEOGRAM_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("LEONARDO_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("FAL_KEY");
+    expect(admin.coverage.requiredEnv).toContain("BFL_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
     expect(admin.coverage.requiredEnv).toContain("WALMART_VENDOR_MODE");
@@ -126,8 +149,8 @@ describe("provider catalog", () => {
         "Public printer pricing research"
       ])
     );
-    expect(customer.chatProviders.length).toBeGreaterThanOrEqual(10);
-    expect(customer.imageProviders.length).toBeGreaterThanOrEqual(10);
+    expect(customer.chatProviders.length).toBeGreaterThanOrEqual(15);
+    expect(customer.imageProviders.length).toBeGreaterThanOrEqual(14);
     expect(transcript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
   });
 

@@ -459,6 +459,42 @@ function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText
     });
   }
 
+  if (adapter.id === "azure-openai-chat") {
+    return request(
+      adapter,
+      "POST",
+      "{AZURE_OPENAI_ENDPOINT}/openai/deployments/{AZURE_OPENAI_CHAT_DEPLOYMENT}/chat/completions?api-version=2024-10-21",
+      ["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_CHAT_DEPLOYMENT"],
+      {
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 700,
+        metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+      },
+      [],
+      { "api-key": "{AZURE_OPENAI_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "aws-bedrock-converse-chat") {
+    return request(
+      adapter,
+      "POST",
+      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_TEXT_MODEL_ID}/converse",
+      ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "BEDROCK_TEXT_MODEL_ID"],
+      {
+        messages: [{ role: "user", content: [{ text: prompt }] }],
+        inferenceConfig: { maxTokens: 700, temperature: 0.4 },
+        metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+      },
+      [],
+      {
+        authorization: "AWS4-HMAC-SHA256 {AWS_ACCESS_KEY_ID}",
+        "x-amz-content-sha256": "{sha256-payload}",
+        "x-customcard-aws-sigv4-required": "true"
+      }
+    );
+  }
+
   if (adapter.id === "anthropic-messages-chat") {
     return request(adapter, "POST", "https://api.anthropic.com/v1/messages", ["ANTHROPIC_API_KEY"], {
       model: "admin-selected-anthropic-model",
@@ -528,6 +564,30 @@ function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText
     });
   }
 
+  if (adapter.id === "groq-chat") {
+    return request(adapter, "POST", "https://api.groq.com/openai/v1/chat/completions", ["GROQ_API_KEY"], {
+      model: "admin-selected-groq-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "deepseek-chat") {
+    return request(adapter, "POST", "https://api.deepseek.com/chat/completions", ["DEEPSEEK_API_KEY"], {
+      model: "admin-selected-deepseek-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "fireworks-chat") {
+    return request(adapter, "POST", "https://api.fireworks.ai/inference/v1/chat/completions", ["FIREWORKS_API_KEY"], {
+      model: "admin-selected-fireworks-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
   return request(adapter, "POST", "{SELF_HOSTED_LLM_BASE_URL}/v1/chat/completions", ["SELF_HOSTED_LLM_API_KEY"], {
     model: "admin-allowlisted-self-hosted-model",
     messages: [{ role: "user", content: prompt }],
@@ -549,6 +609,44 @@ function buildImageRequest(
       size: "1024x1536",
       metadata: { redactions: sanitized.redactions, print_approval_required: true }
     });
+  }
+
+  if (adapter.id === "azure-openai-image") {
+    return request(
+      adapter,
+      "POST",
+      "{AZURE_OPENAI_ENDPOINT}/openai/deployments/{AZURE_OPENAI_IMAGE_DEPLOYMENT}/images/generations?api-version=2024-10-21",
+      ["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_IMAGE_DEPLOYMENT"],
+      {
+        prompt,
+        size: "1024x1536",
+        n: 1,
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      { "api-key": "{AZURE_OPENAI_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "aws-bedrock-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_IMAGE_MODEL_ID}/invoke",
+      ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "BEDROCK_IMAGE_MODEL_ID"],
+      {
+        taskType: "TEXT_IMAGE",
+        textToImageParams: { text: prompt },
+        imageGenerationConfig: { numberOfImages: 1, quality: "standard", width: 1024, height: 1536 },
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      {
+        authorization: "AWS4-HMAC-SHA256 {AWS_ACCESS_KEY_ID}",
+        "x-amz-content-sha256": "{sha256-payload}",
+        "x-customcard-aws-sigv4-required": "true"
+      }
+    );
   }
 
   if (adapter.id === "google-gemini-image") {
@@ -606,6 +704,41 @@ function buildImageRequest(
       num_images: 1,
       metadata: { redactions: sanitized.redactions, print_approval_required: true }
     });
+  }
+
+  if (adapter.id === "fal-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://queue.fal.run/{admin-selected-fal-image-model}",
+      ["FAL_KEY"],
+      {
+        prompt,
+        image_size: { width: 1024, height: 1536 },
+        num_images: 1,
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      { authorization: "Key {FAL_KEY}" }
+    );
+  }
+
+  if (adapter.id === "bfl-flux-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.bfl.ai/v1/{admin-selected-flux-model}",
+      ["BFL_API_KEY"],
+      {
+        prompt,
+        width: 1024,
+        height: 1536,
+        output_format: "png",
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      { "x-key": "{BFL_API_KEY}" }
+    );
   }
 
   return request(adapter, "POST", "https://api.replicate.com/v1/predictions", ["REPLICATE_API_TOKEN"], {

@@ -46,9 +46,9 @@ const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 47,
+    total: 56,
     readyLocal: 12,
-    credentialGated: 21,
+    credentialGated: 30,
     contractOnly: 8,
     blocked: 6
   },
@@ -265,7 +265,7 @@ function validateApiServerContract() {
   if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
     blockers.push("Every mutation route must require idempotency.");
   }
-  if (readiness.providers.total < 47) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providers.total < 56) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");

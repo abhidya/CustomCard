@@ -63,8 +63,10 @@ environment configuration instead of static placeholders.
 - Admin panel with provider coverage, env gates, cloud runtime readiness, and
   blocked live-vendor adapters.
 - Adapter catalog covering free local paths plus gated OpenAI, Anthropic,
-  Google, Microsoft Graph, Mistral, Cohere, Perplexity, xAI, Together,
-  Hugging Face, Stability, Replicate, Ideogram, Leonardo, and vendor contracts.
+  Azure OpenAI, Amazon Bedrock, Google, Microsoft Graph, Mistral, Cohere,
+  Perplexity, xAI, Together, Groq, DeepSeek, Fireworks, Hugging Face,
+  Stability, Replicate, Ideogram, Leonardo, fal, Black Forest Labs, and vendor
+  contracts.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
@@ -117,12 +119,14 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173
 ```
 
 Provider credentials such as `GOOGLE_OAUTH_CLIENT_ID`, `OPENAI_API_KEY`,
-`ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `COHERE_API_KEY`,
-`PERPLEXITY_API_KEY`, `XAI_API_KEY`, `TOGETHER_API_KEY`, `STABILITY_API_KEY`,
-`HUGGINGFACE_API_TOKEN`, `REPLICATE_API_TOKEN`, `IDEOGRAM_API_KEY`,
-`LEONARDO_API_KEY`, and Microsoft Graph keys are documented in
-`infra/env/.env.example`, but live OAuth, AI/image calls, and vendor ordering are
-not implemented in this repo state.
+`AZURE_OPENAI_API_KEY`, `AWS_ACCESS_KEY_ID`, `ANTHROPIC_API_KEY`,
+`MISTRAL_API_KEY`, `COHERE_API_KEY`, `PERPLEXITY_API_KEY`, `XAI_API_KEY`,
+`TOGETHER_API_KEY`, `GROQ_API_KEY`, `DEEPSEEK_API_KEY`,
+`FIREWORKS_API_KEY`, `STABILITY_API_KEY`, `HUGGINGFACE_API_TOKEN`,
+`REPLICATE_API_TOKEN`, `IDEOGRAM_API_KEY`, `LEONARDO_API_KEY`, `FAL_KEY`,
+`BFL_API_KEY`, and Microsoft Graph keys are documented in
+`infra/env/.env.example`, but live OAuth, AI/image calls, and vendor ordering
+are not implemented in this repo state.
 
 ## Architecture
 

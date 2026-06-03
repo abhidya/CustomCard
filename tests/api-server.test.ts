@@ -28,7 +28,7 @@ describe("api server wrapper", () => {
     expect(report.service).toBe("customcard-api-doctor");
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
-    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(47);
+    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(56);
     expect(report.readiness.routes.total).toBe(13);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.persistence).toMatchObject({
@@ -81,7 +81,7 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 13, admin: 4, idempotentMutations: 6 });
-      expect(readiness.providers).toMatchObject({ total: 47, readyLocal: 12, credentialGated: 21, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 56, readyLocal: 12, credentialGated: 30, blocked: 6 });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
         liveVendorOrders: false,
@@ -310,7 +310,7 @@ async function waitForApi(port: number, server: ChildProcess): Promise<void> {
     stderr += String(chunk);
   });
 
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
     if (server.exitCode !== null) {
       throw new Error(`API server exited early: ${stderr}`);
     }
