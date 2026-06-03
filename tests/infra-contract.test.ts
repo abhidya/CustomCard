@@ -386,7 +386,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor:postgres:live");
     expect(workflow).toContain("npm run api:doctor:postgres:http");
     expect(workflow).toContain("npm run account:doctor:live");
-    expect(workflow).toContain("Account auth doctor failed; retrying once after a short service settle delay.");
+    expect(workflow).toContain("Account auth doctor failed on attempt ${attempt}; retrying after a short service settle delay.");
     expect(workflow).toContain("npm run artifact:doctor");
     expect(workflow).toContain("quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1 server /data");
     expect(workflow).toContain("http://127.0.0.1:9000/minio/health/live");

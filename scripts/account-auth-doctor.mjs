@@ -187,7 +187,7 @@ async function retryOperation(operation) {
 
 async function waitForPostgres(pool) {
   let lastError;
-  for (let attempt = 1; attempt <= 12; attempt += 1) {
+  for (let attempt = 1; attempt <= 30; attempt += 1) {
     try {
       await pool.query("SELECT 1");
       return;
@@ -254,6 +254,10 @@ function hashSecret(secret) {
 function poolConfig(connectionString) {
   return {
     connectionString,
+    max: 2,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 1000,
+    allowExitOnIdle: true,
     ssl: process.env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
   };
 }

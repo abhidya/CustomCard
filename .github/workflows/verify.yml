@@ -113,11 +113,14 @@ jobs:
 
       - name: Validate account auth storage/recovery integration
         run: |
-          npm run account:doctor:live || {
-            echo "Account auth doctor failed; retrying once after a short service settle delay."
-            sleep 3
-            npm run account:doctor:live
-          }
+          for attempt in 1 2 3 4; do
+            if npm run account:doctor:live; then
+              exit 0
+            fi
+            echo "Account auth doctor failed on attempt ${attempt}; retrying after a short service settle delay."
+            sleep $((attempt * 3))
+          done
+          npm run account:doctor:live
 
       - name: Validate artifact object-store writes
         run: npm run artifact:doctor
