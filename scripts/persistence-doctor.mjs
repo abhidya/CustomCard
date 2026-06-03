@@ -128,15 +128,21 @@ const accountAuthDoctorSignals = [
 const artifactStoreSignals = [
   "customcard-artifact-store",
   "writeFilesystemArtifactStore",
+  "writeS3CompatibleArtifactStore",
+  "S3CompatibleArtifactStoreClient",
   "readFile",
   "writeFile",
+  "cloudWritesVerified: false",
   "realOrdersEnabled: false",
   "noNetwork: true"
 ];
 const artifactStoreDoctorSignals = [
   "customcard-artifact-store-doctor",
   "writeFilesystemArtifactStore",
+  "writeS3CompatibleArtifactStore",
+  "createInMemoryS3CompatibleArtifactClient",
   "buildArtifactHandoffContract",
+  "s3CompatibleContract",
   "manifestStored",
   "verifiedWrites"
 ];

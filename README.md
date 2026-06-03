@@ -31,8 +31,9 @@ metadata-only provider import, approved relationship memory, layout-safe 5x7
 rendering, explicit order lifecycle transitions, recovery paths,
 regional/vendor-share policy, and runtime readiness checks.
 Render-packet artifact handoff is modeled with checksum manifests,
-HMAC-signed URL contracts, and local filesystem object-store write/read
-verification, while cloud S3/MinIO writes remain credential-gated.
+HMAC-signed URL contracts, local filesystem write/read verification, and an
+injected S3-compatible client contract, while live cloud S3/MinIO writes remain
+credential-gated.
 
 Real ordering is deliberately disabled. The
 `WalgreensFiveBySevenDoubleSidedCardAdapter` is represented as a hard-gated
@@ -202,8 +203,9 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
 contract doctor, live Postgres integration doctor, account-auth storage/recovery
-doctor, artifact-store write/read doctor, persistence doctor, demo reset doctor,
-worker readiness, and mobile doctor on pushes to `main` and pull requests.
+doctor, artifact-store filesystem plus S3-compatible contract doctor,
+persistence doctor, demo reset doctor, worker readiness, and mobile doctor on
+pushes to `main` and pull requests.
 
 ## Project Docs
 

@@ -876,10 +876,10 @@ export const providerCatalog: ProviderAdapter[] = [
     status: "contract-only",
     cost: "self-hosted",
     credentials: ["OBJECT_STORE_URL", "OBJECT_STORE_BUCKET", "OBJECT_STORE_SIGNING_SECRET"],
-    safetyGates: ["Checksum required", "HMAC signed URL contract", "Retention policy required", "Local filesystem write doctor"],
+    safetyGates: ["Checksum required", "HMAC signed URL contract", "Retention policy required", "Local filesystem write doctor", "S3-compatible client contract doctor"],
     roleSurface: ["admin"],
     priority: 65,
-    detail: "Writes render packets to the local filesystem object-store path and models S3/MinIO handoff without enabling cloud writes."
+    detail: "Writes render packets through local filesystem and injected S3-compatible client contracts without claiming live cloud bucket writes."
   },
   {
     id: "local-relationship-memory",

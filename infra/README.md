@@ -13,7 +13,8 @@ This directory is the deployable service skeleton for the production path.
 - `../src/artifactHandoff.ts` defines the render-packet artifact manifest and
   HMAC-signed URL contract used by the API/schema gates.
 - `../src/artifactStore.ts` writes render-packet artifacts to a temporary local
-  filesystem object-store path and verifies readback without network calls.
+  filesystem object-store path and an injected S3-compatible client contract,
+  then verifies readback without network calls.
 - `../scripts/persistence-doctor.mjs` validates auth-session, idempotency, queue
   job, and audit persistence signals.
 - `../scripts/demo-reset.mjs` validates the reviewer demo reset contract before
@@ -73,10 +74,11 @@ account-recovery audit rows. CI runs it against the Postgres service; live hoste
 token verification remains unclaimed.
 
 `npm run artifact:doctor` writes the sample render packet package to a
-temporary local filesystem object-store path, reads every artifact back, verifies
-checksums and byte lengths, stores the handoff manifest, and keeps network calls
-plus real orders disabled. Cloud S3/MinIO writes remain unclaimed until provider
-credentials, bucket policy, and deployment storage are tested.
+temporary local filesystem object-store path and an injected S3-compatible client
+contract, reads every artifact back, verifies checksums and byte lengths, stores
+both handoff manifests, and keeps network calls plus real orders disabled. Cloud
+S3/MinIO writes remain unclaimed until provider credentials, bucket policy, and
+deployment storage are tested.
 
 The persistence boundary requires auth-session storage, account identity storage,
 hashed recovery challenges, idempotency replay, queue job envelopes,

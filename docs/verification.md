@@ -31,9 +31,10 @@ it after each meaningful implementation pass.
 - Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
   config validation, expiry limits, and tamper detection.
 - Artifact-store tests and `npm run artifact:doctor` write every render-packet
-  artifact to a temporary local filesystem object-store path, read the files
-  back, verify byte lengths and content hashes, store the handoff manifest, and
-  keep network calls plus real orders disabled.
+  artifact to a temporary local filesystem object-store path and an injected
+  S3-compatible client contract, read the files back, verify byte lengths and
+  content hashes, store the handoff manifests, and keep network calls plus real
+  orders disabled.
 - Provider adapter coverage currently includes 87 adapters: 16 ready-local, 56
   credential-gated, 9 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
@@ -105,9 +106,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 119 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 111 tests passed; V8 report measured
-  91.07% statements, 83.93% branches, 97.10% functions, and 95.23% lines across
+- Vitest: 18 test files passed, 121 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 113 tests passed; V8 report measured
+  90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/persistenceContracts.ts`,
@@ -180,9 +181,11 @@ npm run artifact:doctor
 ```
 
 Result: passed. Artifact store doctor wrote all 6 render-packet artifacts to a
-temporary filesystem object-store path, read them back, verified all checksums
-and byte lengths, stored the handoff manifest, made no network calls, and kept
-real orders disabled.
+temporary filesystem object-store path and all 6 artifacts through the
+S3-compatible injected-client contract, read them back, verified all checksums
+and byte lengths, stored both handoff manifests, made no network calls, and kept
+real orders disabled. The S3-compatible path recorded 7 put-object operations
+including the manifest and reported `cloudWritesVerified: false`.
 
 ```text
 npm run persistence:doctor
@@ -261,8 +264,9 @@ documentation claims found during the audit were corrected.
 - No live S3/MinIO cloud object-store, queue, droplet, cloud cluster, or vendor
   sandbox test.
 - Local SVG/PDF/manifest print package export, signed artifact handoff contracts,
-  and temporary filesystem object-store write/read verification are covered, but
-  no cloud object-store write is claimed.
+  temporary filesystem object-store write/read verification, and injected
+  S3-compatible write/read contract verification are covered, but no live cloud
+  object-store write is claimed.
 - Public printer pricing is review-only and source-backed with freshness gates;
   no live quote, tax, coupon, stock, pickup-window, or checkout test is claimed.
 - Payment providers are sandbox-contract only; no live charge, capture, refund,

@@ -19,8 +19,9 @@ skeleton for the production path. It includes:
 - Local print package export with four SVG upload artifacts, a combined 5x7 PDF
   proof, and a checksum manifest for manual printer handoff.
 - Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
-  manifests, expiry checks, object-store signing env gates, and local filesystem
-  write/read verification.
+  manifests, expiry checks, object-store signing env gates, local filesystem
+  write/read verification, and injected S3-compatible write/read contract
+  verification.
 - A tested customer mobile shell contract that mirrors the web customer panel at
   the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
@@ -53,8 +54,9 @@ skeleton for the production path. It includes:
   cover the current API persistence boundary.
 - No live AI text/image generation.
 - No live S3/MinIO cloud object-store integration for exported artifacts;
-  signed URL contracts, schema gates, and temporary filesystem write/read
-  verification are covered.
+  signed URL contracts, schema gates, temporary filesystem write/read
+  verification, and injected S3-compatible write/read contract verification are
+  covered.
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, pickup-window, or checkout availability
   verification for public printer prices.
@@ -98,10 +100,11 @@ card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, account
 identity/recovery storage, memory and Postgres auth/idempotency runtime behavior,
 public printer pricing research, local SVG/PDF print package export,
-temporary filesystem artifact-store write/read verification, provider-adapter
-readiness, domain boundaries, signed artifact handoff contracts, print
-contracts, order lifecycle, deployment shape, and safety gates with executable
-TypeScript, browser smoke tests, visual evidence, and
+temporary filesystem artifact-store write/read verification, injected
+S3-compatible artifact-store contract verification, provider-adapter readiness,
+domain boundaries, signed artifact handoff contracts, print contracts, order
+lifecycle, deployment shape, and safety gates with executable TypeScript,
+browser smoke tests, visual evidence, and
 infrastructure tests. Real external AI, OAuth, and ordering remain disabled
 until production credentials, consent flows, vendor terms, sandbox/live quote
 behavior, physical print certification, and security/legal review are complete.

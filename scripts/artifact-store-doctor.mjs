@@ -14,11 +14,15 @@ let exitCode = 0;
 try {
   vite = await createViteServer({ appType: "custom", logLevel: "error", server: { middlewareMode: true } });
   const { buildArtifactHandoffContract, validateArtifactHandoffContract } = await vite.ssrLoadModule("/src/artifactHandoff.ts");
-  const { writeFilesystemArtifactStore } = await vite.ssrLoadModule("/src/artifactStore.ts");
+  const {
+    createInMemoryS3CompatibleArtifactClient,
+    writeFilesystemArtifactStore,
+    writeS3CompatibleArtifactStore
+  } = await vite.ssrLoadModule("/src/artifactStore.ts");
   const { buildSamplePrintExportPackage } = await vite.ssrLoadModule("/src/printExport.ts");
 
   const printPackage = buildSamplePrintExportPackage();
-  const handoff = await buildArtifactHandoffContract(printPackage, {
+  const filesystemHandoff = await buildArtifactHandoffContract(printPackage, {
     projectId: "project-demo",
     storageProvider: "filesystem",
     objectStoreUrl: pathToFileURL(rootPath).toString(),
@@ -27,19 +31,41 @@ try {
     expiresInMinutes: Number(process.env.ARTIFACT_SIGNED_URL_TTL_MINUTES ?? 15),
     generatedAtIso: "2026-06-03T12:00:00.000Z"
   });
-  blockers.push(...(await validateArtifactHandoffContract(handoff, signingSecret)));
-  result = await writeFilesystemArtifactStore(printPackage, handoff);
-  blockers.push(...result.blockers);
+  blockers.push(...prefixBlockers("filesystem", await validateArtifactHandoffContract(filesystemHandoff, signingSecret)));
+  const filesystemResult = await writeFilesystemArtifactStore(printPackage, filesystemHandoff);
+  blockers.push(...prefixBlockers("filesystem", filesystemResult.blockers));
+
+  const s3Client = createInMemoryS3CompatibleArtifactClient();
+  const s3Handoff = await buildArtifactHandoffContract(printPackage, {
+    projectId: "project-demo",
+    storageProvider: "s3-compatible",
+    objectStoreUrl: "https://minio.internal:9000",
+    publicBaseUrl: "https://cdn.customcard.example/artifacts",
+    bucket: "customcard-prod",
+    signingSecret,
+    expiresInMinutes: Number(process.env.ARTIFACT_SIGNED_URL_TTL_MINUTES ?? 15),
+    generatedAtIso: "2026-06-03T12:00:00.000Z"
+  });
+  blockers.push(...prefixBlockers("s3-compatible", await validateArtifactHandoffContract(s3Handoff, signingSecret)));
+  const s3Result = await writeS3CompatibleArtifactStore(printPackage, s3Handoff, s3Client);
+  blockers.push(...prefixBlockers("s3-compatible", s3Result.blockers));
+  result = filesystemResult;
 
   const report = {
     service: "customcard-artifact-store-doctor",
-    status: blockers.length === 0 && result.status === "ready" ? "ready" : "blocked",
-    storageProvider: result.storageProvider,
-    artifactCount: result.artifactCount,
-    manifestStored: Boolean(result.manifestPath),
-    verifiedWrites: result.writes.filter((write) => write.verified).length,
-    noNetwork: result.noNetwork,
-    realOrdersEnabled: result.realOrdersEnabled,
+    status: blockers.length === 0 && filesystemResult.status === "ready" && s3Result.status === "ready" ? "ready" : "blocked",
+    artifactCount: filesystemResult.artifactCount,
+    verifiedWrites: filesystemResult.writes.filter((write) => write.verified).length + s3Result.writes.filter((write) => write.verified).length,
+    manifestStored: Boolean(filesystemResult.manifestPath) && Boolean(s3Result.manifestPath),
+    filesystem: summarizeResult(filesystemResult),
+    s3CompatibleContract: {
+      ...summarizeResult(s3Result),
+      putObjects: s3Client.objects().length,
+      cloudWritesVerified: false
+    },
+    noNetwork: filesystemResult.noNetwork && s3Result.noNetwork,
+    cloudWritesVerified: false,
+    realOrdersEnabled: filesystemResult.realOrdersEnabled || s3Result.realOrdersEnabled,
     blockers
   };
   console.log(JSON.stringify(report, null, 2));
@@ -68,3 +94,21 @@ try {
 }
 
 if (exitCode !== 0) process.exit(exitCode);
+
+function summarizeResult(storeResult) {
+  return {
+    storageProvider: storeResult.storageProvider,
+    status: storeResult.status,
+    bucket: storeResult.bucket ?? null,
+    artifactCount: storeResult.artifactCount,
+    manifestStored: Boolean(storeResult.manifestPath),
+    verifiedWrites: storeResult.writes.filter((write) => write.verified).length,
+    noNetwork: storeResult.noNetwork,
+    realOrdersEnabled: storeResult.realOrdersEnabled,
+    blockers: storeResult.blockers
+  };
+}
+
+function prefixBlockers(scope, items) {
+  return items.map((item) => `${scope}: ${item}`);
+}

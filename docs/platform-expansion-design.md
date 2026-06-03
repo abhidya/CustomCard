@@ -42,7 +42,8 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
   Gemini image generation, Azure OpenAI, Amazon Bedrock, Stability AI, Hugging
   Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, local
-  print package export, and local filesystem object-store render-packet writes.
+  print package export, local filesystem object-store render-packet writes, and
+  injected S3-compatible render-packet write/read contracts.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
   and Office Depot live ordering blocked.
@@ -272,8 +273,9 @@ Implemented checks:
   object-store URI construction, tamper detection, expiry policy, and unsafe
   config failures.
 - `src/artifactStore.test.ts` and `npm run artifact:doctor` validate local
-  filesystem object-store writes, readback verification, checksum/byte-length
-  matching, stored handoff manifests, no network calls, and no real orders.
+  filesystem object-store writes, injected S3-compatible client writes, readback
+  verification, checksum/byte-length matching, stored handoff manifests, no
+  network calls, and no real orders.
 - `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior
   through an injected fake pool without requiring external database credentials.
 - `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
@@ -316,7 +318,8 @@ Remaining high-risk work:
   incident-response drill.
 - No live printer tax, coupon, stock, or pickup-window integration.
 - No live S3/MinIO cloud object-store integration; signed render-packet URL
-  contracts and temporary filesystem write/read verification are covered.
+  contracts, temporary filesystem write/read verification, and injected
+  S3-compatible write/read contract verification are covered.
 - No deployed production Postgres API integration or hosted account-token
   verification; isolated live Postgres migration/runtime integration and account
   identity/recovery storage are covered by doctors.
