@@ -25,6 +25,7 @@ const doctorUrl = buildDatabaseUrl(databaseUrl, doctorDatabase);
 const adminPool = new pg.Pool(poolConfig(adminUrl));
 const checks = [];
 const blockers = [];
+const cleanupWarnings = [];
 let finalCounts = {
   users: 0,
   identities: 0,
@@ -40,11 +41,15 @@ try {
   });
 
   await runCheck("creates isolated account auth database", async () => {
-    await adminPool.query(`CREATE DATABASE ${quoteIdentifier(doctorDatabase)}`);
+    await retryOperation(() => adminPool.query(`CREATE DATABASE ${quoteIdentifier(doctorDatabase)}`));
   });
 
   const doctorPool = new pg.Pool(poolConfig(doctorUrl));
   try {
+    await runCheck("connects to isolated account auth database", async () => {
+      await waitForPostgres(doctorPool);
+    });
+
     await runCheck("applies migration with account auth tables", async () => {
       const migrationSql = await readFile("infra/migrations/001_initial_schema.sql", "utf8");
       await doctorPool.query(migrationSql);
@@ -133,8 +138,7 @@ try {
   blockers.push({ id: "account-auth-doctor", detail: error instanceof Error ? error.message : String(error) });
 } finally {
   await dropDoctorDatabase(adminPool, doctorDatabase).catch((error) => {
-    exitCode = 1;
-    blockers.push({ id: "drop-account-auth-database", detail: error instanceof Error ? error.message : String(error) });
+    cleanupWarnings.push({ id: "drop-account-auth-database", detail: error instanceof Error ? error.message : String(error) });
   });
   await adminPool.end().catch(() => undefined);
   printReport(exitCode === 0 ? "ready" : "blocked");
@@ -166,6 +170,19 @@ async function dropDoctorDatabase(pool, databaseName) {
     [databaseName]
   );
   await pool.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
+}
+
+async function retryOperation(operation) {
+  let lastError;
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      await delay(Math.min(1000, attempt * 150));
+    }
+  }
+  throw lastError;
 }
 
 async function waitForPostgres(pool) {
@@ -205,7 +222,8 @@ function printReport(status) {
         },
         persistence: finalCounts,
         checks,
-        blockers
+        blockers,
+        cleanupWarnings
       },
       null,
       2
