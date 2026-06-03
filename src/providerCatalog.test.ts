@@ -25,7 +25,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(30);
+    expect(summary.total).toBeGreaterThanOrEqual(39);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -40,12 +40,20 @@ describe("provider catalog", () => {
       "OpenAI Responses chat",
       "Anthropic Messages chat",
       "Google Gemini chat",
+      "Mistral chat",
+      "Cohere chat",
+      "Perplexity Sonar chat",
+      "xAI chat",
+      "Together chat",
       "OpenAI Images",
       "Google Gemini image",
       "Stability AI image",
       "Hugging Face chat",
       "Hugging Face image",
       "Replicate image",
+      "Together image",
+      "Ideogram image",
+      "Leonardo image",
       "Gmail metadata adapter",
       "Google Calendar events",
       "Microsoft Graph mail",
@@ -70,6 +78,13 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("GOOGLE_GENERATIVE_AI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("STABILITY_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("HUGGINGFACE_API_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("MISTRAL_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("COHERE_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("PERPLEXITY_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("XAI_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("TOGETHER_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("IDEOGRAM_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("LEONARDO_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
     expect(admin.deploymentAdapters.map((adapter) => adapter.label)).toContain("Cheap droplet compose");
     expect(admin.blockedProviders.map((adapter) => adapter.label)).toEqual(
@@ -88,8 +103,8 @@ describe("provider catalog", () => {
     expect(customer.readyFallbacks.map((adapter) => adapter.label)).toEqual(
       expect.arrayContaining(["Local customer chat", "Browser SVG renderer", "Manual vendor handoff"])
     );
-    expect(customer.chatProviders.length).toBeGreaterThanOrEqual(5);
-    expect(customer.imageProviders.length).toBeGreaterThanOrEqual(6);
+    expect(customer.chatProviders.length).toBeGreaterThanOrEqual(10);
+    expect(customer.imageProviders.length).toBeGreaterThanOrEqual(10);
     expect(transcript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
   });
 

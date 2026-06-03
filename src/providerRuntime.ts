@@ -465,6 +465,46 @@ function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText
     });
   }
 
+  if (adapter.id === "mistral-chat") {
+    return request(adapter, "POST", "https://api.mistral.ai/v1/chat/completions", ["MISTRAL_API_KEY"], {
+      model: "admin-selected-mistral-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "cohere-chat") {
+    return request(adapter, "POST", "https://api.cohere.com/v2/chat", ["COHERE_API_KEY"], {
+      model: "admin-selected-cohere-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "perplexity-sonar-chat") {
+    return request(adapter, "POST", "https://api.perplexity.ai/chat/completions", ["PERPLEXITY_API_KEY"], {
+      model: "admin-selected-sonar-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "xai-chat") {
+    return request(adapter, "POST", "https://api.x.ai/v1/chat/completions", ["XAI_API_KEY"], {
+      model: "admin-selected-grok-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
+  if (adapter.id === "together-chat") {
+    return request(adapter, "POST", "https://api.together.xyz/v1/chat/completions", ["TOGETHER_API_KEY"], {
+      model: "admin-allowlisted-together-chat-model",
+      messages: [{ role: "user", content: prompt }],
+      metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+    });
+  }
+
   return request(adapter, "POST", "{SELF_HOSTED_LLM_BASE_URL}/v1/chat/completions", ["SELF_HOSTED_LLM_API_KEY"], {
     model: "admin-allowlisted-self-hosted-model",
     messages: [{ role: "user", content: prompt }],
@@ -510,6 +550,37 @@ function buildImageRequest(
     return request(adapter, "POST", "https://router.huggingface.co/v1/images/generations", ["HUGGINGFACE_API_TOKEN"], {
       model: "admin-allowlisted-image-model",
       prompt,
+      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+    });
+  }
+
+  if (adapter.id === "together-image") {
+    return request(adapter, "POST", "https://api.together.xyz/v1/images/generations", ["TOGETHER_API_KEY"], {
+      model: "admin-allowlisted-together-image-model",
+      prompt,
+      width: 1024,
+      height: 1536,
+      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+    });
+  }
+
+  if (adapter.id === "ideogram-image") {
+    return request(adapter, "POST", "https://api.ideogram.ai/v1/ideogram-v3/generate", ["IDEOGRAM_API_KEY"], {
+      prompt,
+      rendering_speed: "DEFAULT",
+      aspect_ratio: "2x3",
+      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+    }, [], {
+      "Api-Key": "{IDEOGRAM_API_KEY}"
+    });
+  }
+
+  if (adapter.id === "leonardo-image") {
+    return request(adapter, "POST", "https://cloud.leonardo.ai/api/rest/v1/generations", ["LEONARDO_API_KEY"], {
+      prompt,
+      width: 1024,
+      height: 1536,
+      num_images: 1,
       metadata: { redactions: sanitized.redactions, print_approval_required: true }
     });
   }

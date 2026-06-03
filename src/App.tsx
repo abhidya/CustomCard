@@ -912,6 +912,8 @@ function AdminPanelView({
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
+  const visibleEnv = prioritizeAdminEnv(model.coverage.requiredEnv).slice(0, 24);
+  const hiddenEnvCount = Math.max(model.coverage.requiredEnv.length - visibleEnv.length, 0);
 
   return (
     <section className="adminPanel">
@@ -990,9 +992,10 @@ function AdminPanelView({
             <KeyRound size={18} />
           </div>
           <div className="envChipGrid">
-            {model.coverage.requiredEnv.slice(0, 18).map((envVar) => (
+            {visibleEnv.map((envVar) => (
               <span key={envVar}>{envVar}</span>
             ))}
+            {hiddenEnvCount > 0 && <span>{`+${hiddenEnvCount} more`}</span>}
           </div>
         </article>
 
@@ -1206,6 +1209,37 @@ function summarizeRuntimeReadiness(readinessMap: Map<string, RuntimeReadiness>) 
     missingCredentials: readiness.reduce((total, item) => total + item.missingCredentials.length, 0),
     preparedRequest: readiness.filter((item) => item.mode === "prepared-request").length
   };
+}
+
+function prioritizeAdminEnv(requiredEnv: string[]): string[] {
+  const priority = [
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GOOGLE_GENERATIVE_AI_API_KEY",
+    "MISTRAL_API_KEY",
+    "COHERE_API_KEY",
+    "PERPLEXITY_API_KEY",
+    "XAI_API_KEY",
+    "TOGETHER_API_KEY",
+    "HUGGINGFACE_API_TOKEN",
+    "STABILITY_API_KEY",
+    "REPLICATE_API_TOKEN",
+    "IDEOGRAM_API_KEY",
+    "LEONARDO_API_KEY",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "GOOGLE_OAUTH_CLIENT_SECRET",
+    "MICROSOFT_CLIENT_ID",
+    "MICROSOFT_CLIENT_SECRET",
+    "MICROSOFT_TENANT_ID"
+  ];
+  const envSet = new Set(requiredEnv);
+  const prioritized = priority.filter((envVar) => envSet.has(envVar));
+  const remaining = requiredEnv
+    .filter((envVar) => !priority.includes(envVar))
+    .slice()
+    .sort((first, second) => first.localeCompare(second));
+
+  return [...prioritized, ...remaining];
 }
 
 function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {

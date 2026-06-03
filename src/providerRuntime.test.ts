@@ -16,6 +16,7 @@ import {
 const readyEnv: ProviderRuntimeEnv = {
   ANTHROPIC_API_KEY: "configured-anthropic-key",
   AUTH_SESSION_SECRET: "configured-auth-secret",
+  COHERE_API_KEY: "configured-cohere-key",
   CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
   FEDEX_VENDOR_MODE: "certification-configured-only",
@@ -23,21 +24,27 @@ const readyEnv: ProviderRuntimeEnv = {
   GOOGLE_OAUTH_CLIENT_ID: "configured-google-client-id",
   GOOGLE_OAUTH_CLIENT_SECRET: "configured-google-client-secret",
   HUGGINGFACE_API_TOKEN: "configured-huggingface-token",
+  IDEOGRAM_API_KEY: "configured-ideogram-key",
+  LEONARDO_API_KEY: "configured-leonardo-key",
   MICROSOFT_CLIENT_ID: "configured-microsoft-client-id",
   MICROSOFT_CLIENT_SECRET: "configured-microsoft-client-secret",
   MICROSOFT_TENANT_ID: "configured-microsoft-tenant-id",
+  MISTRAL_API_KEY: "configured-mistral-key",
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   OPENAI_API_KEY: "configured-openai-key",
+  PERPLEXITY_API_KEY: "configured-perplexity-key",
   POSTGRES_PASSWORD: "configured-postgres-password",
   QUEUE_URL: "redis://localhost:6379",
   REPLICATE_API_TOKEN: "configured-replicate-token",
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   STABILITY_API_KEY: "configured-stability-key",
+  TOGETHER_API_KEY: "configured-together-key",
   TRANSACTIONAL_EMAIL_API_KEY: "configured-email-key",
   TRANSACTIONAL_EMAIL_FROM: "cards@example.test",
-  WALGREENS_VENDOR_MODE: "certification-configured-only"
+  WALGREENS_VENDOR_MODE: "certification-configured-only",
+  XAI_API_KEY: "configured-xai-key"
 };
 
 const openGates: ProviderGateState = {
@@ -138,7 +145,12 @@ describe("provider runtime contracts", () => {
       "openai-responses-chat",
       "anthropic-messages-chat",
       "google-gemini-chat",
-      "huggingface-chat"
+      "huggingface-chat",
+      "mistral-chat",
+      "cohere-chat",
+      "perplexity-sonar-chat",
+      "xai-chat",
+      "together-chat"
     ];
 
     for (const providerId of providerIds) {
@@ -164,6 +176,18 @@ describe("provider runtime contracts", () => {
     expect(buildTextChatRuntime("google-gemini-chat", textInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
     });
+    expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.cohere.com/v2/chat"
+    );
+    expect(buildTextChatRuntime("perplexity-sonar-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.perplexity.ai/chat/completions"
+    );
+    expect(buildTextChatRuntime("xai-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.x.ai/v1/chat/completions"
+    );
+    expect(buildTextChatRuntime("together-chat", textInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.together.xyz/v1/chat/completions"
+    );
   });
 
   it("builds redacted no-network image request contracts for enabled image providers", () => {
@@ -172,7 +196,10 @@ describe("provider runtime contracts", () => {
       "google-gemini-image",
       "stability-stable-image",
       "huggingface-image",
-      "replicate-image"
+      "replicate-image",
+      "together-image",
+      "ideogram-image",
+      "leonardo-image"
     ];
 
     for (const providerId of providerIds) {
@@ -192,6 +219,12 @@ describe("provider runtime contracts", () => {
     expect(buildImageGenerationRuntime("google-gemini-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
     });
+    expect(buildImageGenerationRuntime("ideogram-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "Api-Key": "{IDEOGRAM_API_KEY}"
+    });
+    expect(buildImageGenerationRuntime("leonardo-image", imageInput, readyEnv, openGates).request?.url).toBe(
+      "https://cloud.leonardo.ai/api/rest/v1/generations"
+    );
   });
 
   it("keeps provider imports metadata-only and omits raw source text", () => {

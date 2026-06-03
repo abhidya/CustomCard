@@ -32,11 +32,11 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Event import: ICS/manual note, Gmail, Google Calendar, Microsoft Graph mail,
   Microsoft Graph calendar, and iCloud ICS fallback.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
-  Messages, Google Gemini, Hugging Face, and self-hosted OpenAI-compatible
-  endpoints.
+  Messages, Google Gemini, Hugging Face, Mistral, Cohere, Perplexity Sonar,
+  xAI, Together, and self-hosted OpenAI-compatible endpoints.
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
-  Gemini image generation, Stability AI, Hugging Face, Replicate, and
-  object-store render packets.
+  Gemini image generation, Stability AI, Hugging Face, Replicate, Together,
+  Ideogram, Leonardo, and object-store render packets.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, and FedEx live ordering
   blocked.
@@ -58,6 +58,14 @@ Official documentation anchors used for the adapter contracts:
 - Anthropic Messages API: https://docs.anthropic.com/en/api/messages
 - Google Gemini API: https://ai.google.dev/gemini-api/docs
 - Google Gemini image generation: https://ai.google.dev/gemini-api/docs/image-generation
+- Mistral chat API: https://docs.mistral.ai/api
+- Cohere chat API: https://docs.cohere.com/v2/reference/chat
+- Perplexity chat completions API: https://docs.perplexity.ai/api-reference/chat-completions
+- xAI chat completions API: https://docs.x.ai/developers/rest-api-reference/inference/chat
+- Together chat completions API: https://docs.together.ai/reference/chat-completions-1
+- Together image API overview: https://docs.together.ai/docs/inference/images/overview
+- Ideogram image generation API: https://developer.ideogram.ai/api-reference/api-reference/generate-v3
+- Leonardo image generation API: https://docs.leonardo.ai/reference/creategeneration
 - Gmail API guides: https://developers.google.com/gmail/api/guides
 - Google Calendar API overview: https://developers.google.com/calendar/api/guides/overview
 - Microsoft Graph Outlook mail: https://learn.microsoft.com/en-us/graph/outlook-mail-concept-overview

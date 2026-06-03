@@ -92,6 +92,10 @@ const checks = [
     "REAL_ORDER_KILL_SWITCH=disabled",
     "WALGREENS_VENDOR_MODE=disabled_until_certified",
     "OPENAI_API_KEY=",
+    "MISTRAL_API_KEY=",
+    "TOGETHER_API_KEY=",
+    "IDEOGRAM_API_KEY=",
+    "LEONARDO_API_KEY=",
     "REPLICATE_API_TOKEN="
   ]),
   checkIncludes("data", "migration-critical-tables", contents.migration, [

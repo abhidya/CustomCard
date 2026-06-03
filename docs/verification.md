@@ -21,6 +21,8 @@ it after each meaningful implementation pass.
   placeholder-secret rejection, redacted chat/image request contracts,
   metadata-only import contracts, free local fallbacks, and hard-blocked live
   vendor ordering.
+- Provider adapter coverage currently includes 42 adapters: 10 ready-local, 21
+  credential-gated, 8 contract-only, and 3 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
@@ -67,7 +69,7 @@ Result: passed.
 
 - Vitest: 9 test files passed, 66 tests passed.
 - Coverage: 8 core/infra/mobile test files passed, 62 tests passed; V8 report measured
-  91.75% statements, 84.87% branches, 95.34% functions, and 94.16% lines across
+  91.91% statements, 85.22% branches, 95.34% functions, and 94.29% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -114,10 +116,11 @@ and cramped four-across panel previews.
 
 The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
-separates 10 ready-local, 13 credential-gated, 8 contract-only, and 3
-live-blocked rows, and the web mobile customer panel appears before the
-navigation rail with zero horizontal overflow at 1440px desktop and 390px mobile
-widths.
+separates ready-local, credential-gated, contract-only, and live-blocked rows.
+After the provider expansion pass the catalog contains 10 ready-local, 21
+credential-gated, 8 contract-only, and 3 blocked adapters. The web mobile
+customer panel appears before the navigation rail with zero horizontal overflow
+at 1440px desktop and 390px mobile widths.
 
 ```text
 Final package audit

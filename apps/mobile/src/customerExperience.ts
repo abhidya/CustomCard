@@ -122,7 +122,7 @@ export const mobileRenderChoices: MobileRenderChoice[] = [
   },
   {
     label: "AI image providers",
-    detail: "OpenAI, Gemini, Stability, Hugging Face, and Replicate remain credential-gated.",
+    detail: "OpenAI, Gemini, Stability, Hugging Face, Replicate, Together, Ideogram, and Leonardo remain credential-gated.",
     mode: "credential-gated"
   }
 ];

@@ -63,7 +63,7 @@
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, gated provider queue, cloud runtime adapters, and blocked live
   vendors.
-- Provider runtime: readiness dry runs for every catalog adapter; redacted
+- Provider runtime: readiness dry runs for all 42 catalog adapters; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters.
 - CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
@@ -84,7 +84,7 @@
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
 | Tests | `npm run check` | Passed on 2026-06-03: 9 test files, 66 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.75% statements, 84.87% branches, 95.34% functions, 94.16% lines across core, orchestration, and mobile contract modules. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.91% statements, 85.22% branches, 95.34% functions, 94.29% lines across core, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
