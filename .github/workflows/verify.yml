@@ -80,7 +80,12 @@ jobs:
           }
 
       - name: Validate account auth storage/recovery integration
-        run: npm run account:doctor:live
+        run: |
+          npm run account:doctor:live || {
+            echo "Account auth doctor failed; retrying once after a short service settle delay."
+            sleep 3
+            npm run account:doctor:live
+          }
 
       - name: Validate artifact object-store writes
         run: npm run artifact:doctor
