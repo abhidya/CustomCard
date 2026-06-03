@@ -207,6 +207,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.chatBubbles).toBeGreaterThanOrEqual(4);
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Required env");
+    expect(result.adminText).toContain("No-network readiness");
+    expect(result.adminText).toContain("Credential gaps");
     expect(result.adminText).toContain("OPENAI_API_KEY");
     expect(result.adminText).toContain("Walgreens live order");
     expect(result.metricCount).toBeGreaterThanOrEqual(6);
@@ -245,6 +247,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Gmail metadata adapter");
     expect(result.text).toContain("Microsoft Graph calendar");
     expect(result.text).toContain("Walgreens live order");
+    expect(result.text).toContain("Dry run: local fallback ready");
+    expect(result.text).toContain("Dry run: blocked by gates");
+    expect(result.text).toContain("missing OPENAI_API_KEY");
     expect(result.readyRows).toBeGreaterThanOrEqual(6);
     expect(result.gatedRows).toBeGreaterThanOrEqual(10);
     expect(result.contractRows).toBeGreaterThanOrEqual(6);

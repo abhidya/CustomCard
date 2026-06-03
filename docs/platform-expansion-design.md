@@ -89,12 +89,16 @@ The admin panel turns the adapter catalog into an operations surface:
 - Ready, credential-gated, contract-only, and blocked counts.
 - Per-capability local fallback coverage.
 - Required env vars for provider and deployment readiness.
+- No-network runtime readiness counts: local-ready, request-ready, blocked, and
+  missing credential references.
 - Gated provider queue.
 - Cloud runtime adapters.
 - Blocked live-order vendors.
 
-This is intentionally not a settings page that pretends credentials are present.
-It is a readiness console for what must be connected, reviewed, and certified.
+The adapter matrix also shows each dry-run state and the first missing
+credential references. This is intentionally not a settings page that pretends
+credentials are present. It is a readiness console for what must be connected,
+reviewed, and certified.
 
 ## Mobile Customer App
 
@@ -131,8 +135,8 @@ Implemented checks:
   catalog adapter, redacted no-network request contracts for chat/image
   providers, metadata-only import contracts, placeholder-secret rejection, free
   local fallbacks, and hard-blocked live vendor order adapters.
-- UI smoke tests cover customer/admin panels, the core local workflow, mobile
-  overflow, and adapter matrix visibility.
+- UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
+  core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer panel evidence.
 
 Remaining high-risk work:

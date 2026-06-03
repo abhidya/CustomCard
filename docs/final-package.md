@@ -58,8 +58,9 @@
   adapters.
 - Customer panel: next-card state, deterministic local chat transcript,
   image/render choices, and free fallback actions.
-- Admin panel: provider coverage metrics, required env vars, gated provider
-  queue, cloud runtime adapters, and blocked live vendors.
+- Admin panel: provider coverage metrics, no-network runtime readiness, required
+  env vars, gated provider queue, cloud runtime adapters, and blocked live
+  vendors.
 - Provider runtime: readiness dry runs for every catalog adapter; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters.
@@ -91,7 +92,7 @@
 | Convert ambiguity into requirements and acceptance criteria. | `docs/requirements-traceability.md`. | Covered |
 | Record decisions and rejected alternatives. | `docs/decisions.md`, `docs/free-mvp-plan.md`. | Covered |
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
-| Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, `tests/app-smoke.test.ts`, screenshots. | Covered |
+| Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
 | Catalog broad text, image, integration, vendor, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `docs/platform-expansion-design.md`. | Covered as no-network contracts; live calls gated |
 | Add customer mobile app surface. | `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`. | Covered as shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |

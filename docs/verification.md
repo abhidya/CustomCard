@@ -12,8 +12,8 @@ it after each meaningful implementation pass.
   creation, print validation, order lifecycle transitions, regional policy, and
   runtime config.
 - UI smoke tests exercise mobile horizontal overflow, the local auth -> import ->
-  studio -> handoff workflow, customer/admin panels, and adapter readiness when
-  Chrome is available.
+  studio -> handoff workflow, customer/admin panels, no-network runtime
+  readiness, and adapter readiness when Chrome is available.
 - Provider-catalog tests cover adapter capability breadth, free local fallbacks,
   external provider docs/env gates, admin/customer panel models, deterministic
   local chat, and blocked live-vendor status.

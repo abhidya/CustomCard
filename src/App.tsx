@@ -66,6 +66,7 @@ import {
   type ProviderAdapter,
   type ProviderCapability
 } from "./providerCatalog";
+import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 
 type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
@@ -126,6 +127,7 @@ function App() {
   const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
+  const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
     () => buildCustomerChatTranscript(opportunity.recipient),
     [opportunity.recipient]
@@ -375,9 +377,9 @@ function App() {
           />
         )}
 
-        {activeView === "admin" && <AdminPanelView model={adminPanelModel} />}
+        {activeView === "admin" && <AdminPanelView model={adminPanelModel} runtimeReadiness={runtimeReadiness} />}
 
-        {activeView === "adapters" && <AdaptersView />}
+        {activeView === "adapters" && <AdaptersView runtimeReadiness={runtimeReadiness} />}
       </main>
     </div>
   );
@@ -902,7 +904,15 @@ function HandoffView({
   );
 }
 
-function AdminPanelView({ model }: { model: AdminPanelModel }) {
+function AdminPanelView({
+  model,
+  runtimeReadiness
+}: {
+  model: AdminPanelModel;
+  runtimeReadiness: Map<string, RuntimeReadiness>;
+}) {
+  const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
+
   return (
     <section className="adminPanel">
       <div className="sectionHeader">
@@ -923,6 +933,25 @@ function AdminPanelView({ model }: { model: AdminPanelModel }) {
       </div>
 
       <div className="adminGrid">
+        <article className="toolPanel">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Dry-run runtime</p>
+              <h3>No-network readiness</h3>
+            </div>
+            <StatusChip icon={ShieldCheck} label="No fetch" tone="green" />
+          </div>
+          <div className="runtimeGrid" aria-label="Provider runtime dry-run readiness">
+            <Metric label="Local-ready" value={`${runtimeSummary.localResult}`} />
+            <Metric label="Request-ready" value={`${runtimeSummary.preparedRequest}`} />
+            <Metric label="Blocked" value={`${runtimeSummary.blocked}`} />
+            <Metric label="Credential gaps" value={`${runtimeSummary.missingCredentials}`} />
+          </div>
+          <p className="panelNote">
+            Credential-gated providers stay blocked here until env values and safety gates are explicitly present.
+          </p>
+        </article>
+
         <article className="toolPanel">
           <div className="sectionHeader compact">
             <div>
@@ -1004,7 +1033,7 @@ function AdminPanelView({ model }: { model: AdminPanelModel }) {
   );
 }
 
-function AdaptersView() {
+function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, RuntimeReadiness> }) {
   const sortedAdapters = providerCatalog
     .slice()
     .sort((first, second) => first.priority - second.priority || first.label.localeCompare(second.label));
@@ -1020,22 +1049,34 @@ function AdaptersView() {
       </div>
 
       <div className="adapterMatrix">
-        {sortedAdapters.map((adapter) => (
-          <article
-            className={`adapterRow ${adapter.status}`}
-            key={adapter.id}
-          >
-            {adapterIcon(adapter)}
-            <div>
-              <strong>{adapter.label}</strong>
-              <span>
-                {capabilityLabels[adapter.capability]} - {adapter.detail}
-              </span>
-              <small>{adapter.provider}</small>
-            </div>
-            <em>{providerStatusLabel(adapter.status)}</em>
-          </article>
-        ))}
+        {sortedAdapters.map((adapter) => {
+          const readiness = runtimeReadiness.get(adapter.id);
+
+          return (
+            <article
+              className={`adapterRow ${adapter.status}`}
+              key={adapter.id}
+            >
+              {adapterIcon(adapter)}
+              <div>
+                <strong>{adapter.label}</strong>
+                <span>
+                  {capabilityLabels[adapter.capability]} - {adapter.detail}
+                </span>
+                <small>{adapter.provider}</small>
+                {readiness && (
+                  <small className="runtimeHint">
+                    Dry run: {runtimeModeLabel(readiness.mode)}
+                    {readiness.missingCredentials.length > 0
+                      ? ` - missing ${readiness.missingCredentials.slice(0, 2).join(", ")}`
+                      : ""}
+                  </small>
+                )}
+              </div>
+              <em>{providerStatusLabel(adapter.status)}</em>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -1145,6 +1186,35 @@ function decisionLabel(decision: OpportunityDecision): string {
     dismissed: "Dismissed locally"
   };
   return labels[decision];
+}
+
+function buildRuntimeReadinessMap(): Map<string, RuntimeReadiness> {
+  return new Map(
+    providerCatalog.map((adapter) => {
+      const runtime = buildProviderAdapterRuntime(adapter.id);
+      return [adapter.id, runtime.readiness];
+    })
+  );
+}
+
+function summarizeRuntimeReadiness(readinessMap: Map<string, RuntimeReadiness>) {
+  const readiness = Array.from(readinessMap.values());
+
+  return {
+    blocked: readiness.filter((item) => item.mode === "blocked").length,
+    localResult: readiness.filter((item) => item.mode === "local-result").length,
+    missingCredentials: readiness.reduce((total, item) => total + item.missingCredentials.length, 0),
+    preparedRequest: readiness.filter((item) => item.mode === "prepared-request").length
+  };
+}
+
+function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {
+  const labels: Record<RuntimeReadiness["mode"], string> = {
+    blocked: "blocked by gates",
+    "local-result": "local fallback ready",
+    "prepared-request": "request contract ready"
+  };
+  return labels[mode];
 }
 
 function formatOption(value: string): string {
