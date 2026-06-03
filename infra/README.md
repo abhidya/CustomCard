@@ -23,6 +23,9 @@ This directory is the deployable service skeleton for the production path.
   anyone attempts to run seed data against a database.
 - `../scripts/deployment-readiness.mjs` emits the local deployment readiness
   report used by `npm run deployment:doctor`.
+- `../src/capacityPlan.ts` and `../src/capacityPlanData.mjs` define executable
+  local-dev, cheap-droplet, cloud-native, and SaaS-scale capacity profiles used
+  by `npm run capacity:doctor`.
 
 For the droplet deployment, provide `POSTGRES_PASSWORD` from a real secret source
 or local deployment `.env` that is never committed. The compose file uses
@@ -37,6 +40,7 @@ Run the local IaC readiness check before treating the manifests as reviewable:
 
 ```sh
 npm run deployment:doctor
+npm run capacity:doctor
 npm run cloud:doctor
 npm run api:doctor
 npm run api:doctor:memory
@@ -55,6 +59,11 @@ lanes, including cloud-storage checks for the AWS artifact-store module. Passing
 this check means the committed deployment contracts are internally consistent;
 it does not mean a real droplet, AWS account, or Kubernetes cluster has been
 provisioned.
+
+`npm run capacity:doctor` verifies the profile contract, tests, admin/API
+surfaces, documentation, CI wiring, and no-live-traffic posture. The profiles are
+planning data only; measured production benchmarks, provider spend reports, and
+autoscaler evidence remain separate launch evidence.
 
 The Kubernetes web deployment probes `/api/health`, and the production Docker
 image starts `scripts/api-server.mjs` so the same container can serve the static

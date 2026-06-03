@@ -40,6 +40,18 @@ describe("api server wrapper", () => {
           liveEnabled: number;
           blockers: string[];
         };
+        capacity: {
+          total: number;
+          localProfiles: number;
+          cloudProfiles: number;
+          maxDailyCards: number;
+          maxDailyImageGenerations: number;
+          queueBackedProfiles: number;
+          objectStoreBackedProfiles: number;
+          realOrdersEnabled: number;
+          liveProviderCalls: number;
+          blockers: unknown[];
+        };
         routes: { total: number; mutations: number; idempotentMutations: number };
         security: {
           headers: number;
@@ -101,6 +113,18 @@ describe("api server wrapper", () => {
       evidenceMissing: 11,
       blocked: 2,
       liveEnabled: 0
+    });
+    expect(report.readiness.capacity).toMatchObject({
+      total: 4,
+      localProfiles: 1,
+      cloudProfiles: 3,
+      maxDailyCards: 12000,
+      maxDailyImageGenerations: 1000,
+      queueBackedProfiles: 4,
+      objectStoreBackedProfiles: 4,
+      realOrdersEnabled: 0,
+      liveProviderCalls: 0,
+      blockers: []
     });
     expect(report.readiness.production.blockers).toEqual(
       expect.arrayContaining([
@@ -223,6 +247,18 @@ describe("api server wrapper", () => {
         evidenceMissing: 11,
         blocked: 2,
         liveEnabled: 0
+      });
+      expect(readiness.capacity).toMatchObject({
+        total: 4,
+        localProfiles: 1,
+        cloudProfiles: 3,
+        maxDailyCards: 12000,
+        maxDailyImageGenerations: 1000,
+        queueBackedProfiles: 4,
+        objectStoreBackedProfiles: 4,
+        realOrdersEnabled: 0,
+        liveProviderCalls: 0,
+        blockers: []
       });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,

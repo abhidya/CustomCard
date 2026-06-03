@@ -57,6 +57,9 @@ skeleton for the production path. It includes:
   telemetry, applied bucket/IAM proof, deployed Postgres API, Vercel DB access,
   native mobile artifact proof, external audits, and physical print
   certification.
+- Executable capacity profiles for local-dev, cheap-droplet, cloud-native, and
+  SaaS-scale planning, with finite card/image-generation limits, queue and
+  object-store posture, admin/API exposure, and a CI-gated doctor.
 - GitHub Actions verification workflow for the local repository gates.
 - Tests that prove the current skeleton does not fake weak input, live ordering,
   raw-content import, or unsafe order-state transitions.
@@ -93,6 +96,9 @@ skeleton for the production path. It includes:
 - No React Native render test, emulator run, actual EAS/native build, or signed
   mobile artifact; EAS profiles and release doctor are covered.
 - No physical print certification.
+- No measured production capacity benchmark, live autoscaler report, provider
+  spend report, or hosted database throughput proof; capacity profiles are
+  planning contracts only.
 - No external legal/security/privacy/accessibility audit; repo-local baseline
   checks cover deploy headers, privacy storage blocks, artifact-share controls,
   container hardening, and app-shell accessibility signals.
@@ -110,22 +116,23 @@ skeleton for the production path. It includes:
 4. Run `npm run check`.
 5. Run `npm run api:doctor`.
 6. Run `npm run provider:governance:doctor`.
-7. Run `npm run printer:pricing:doctor`.
-8. Run `npm run localization:doctor`.
-9. Run `npm run api:doctor:memory`.
-10. Run `npm run api:doctor:postgres`.
-11. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-12. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-13. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-14. Run `npm run cloud:doctor`.
-15. Run `npm run artifact:doctor`.
-16. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-17. Run `npm run persistence:doctor`.
-18. Run `npm run demo:doctor`.
-19. Run the worker and mobile doctor commands in `docs/verification.md`.
-20. Run `npm run mobile:release:doctor`.
-21. Inspect the app with `npm run dev`.
-22. In the app, start a local workspace, scan the sample invite, generate a card,
+7. Run `npm run capacity:doctor`.
+8. Run `npm run printer:pricing:doctor`.
+9. Run `npm run localization:doctor`.
+10. Run `npm run api:doctor:memory`.
+11. Run `npm run api:doctor:postgres`.
+12. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+13. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+14. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+15. Run `npm run cloud:doctor`.
+16. Run `npm run artifact:doctor`.
+17. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+18. Run `npm run persistence:doctor`.
+19. Run `npm run demo:doctor`.
+20. Run the worker and mobile doctor commands in `docs/verification.md`.
+21. Run `npm run mobile:release:doctor`.
+22. Inspect the app with `npm run dev`.
+23. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

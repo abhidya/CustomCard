@@ -305,6 +305,8 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
+    expect(packageJson).toContain("\"capacity:doctor\": \"node scripts/capacity-plan-doctor.mjs\"");
+    expect(viteConfig).toContain("src/capacityPlan.ts");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
@@ -364,6 +366,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run security:doctor");
     expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
+    expect(workflow).toContain("npm run capacity:doctor");
     expect(workflow).toContain("npm run printer:pricing:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
@@ -387,6 +390,49 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES: 15");
     expect(workflow).toContain("CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173");
   });
+
+  it("ships executable capacity profiles and a CI-gated doctor", () => {
+    const output = execFileSync("npm", ["run", "capacity:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      profiles: number;
+      maxDailyCards: number;
+      maxDailyImageGenerations: number;
+      liveProviderCalls: boolean;
+      realOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+    const capacityPlan = read("src/capacityPlan.ts");
+    const capacityPlanData = read("src/capacityPlanData.mjs");
+    const app = read("src/App.tsx");
+    const apiContracts = read("src/apiContracts.ts");
+    const apiServer = read("scripts/api-server.mjs");
+
+    expect(report).toMatchObject({
+      service: "customcard-capacity-plan-doctor",
+      status: "ready",
+      profiles: 4,
+      maxDailyCards: 12000,
+      maxDailyImageGenerations: 1000,
+      liveProviderCalls: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.lanes.map((lane) => lane.lane)).toEqual(
+      expect.arrayContaining(["profiles", "surfaces", "ci", "safety"])
+    );
+    expect(`${capacityPlan}\n${capacityPlanData}`).toContain("cheap-droplet");
+    expect(`${capacityPlan}\n${capacityPlanData}`).toContain("queueMode");
+    expect(capacityPlan).toContain("capacityPlanData.mjs");
+    expect(capacityPlan).toContain("validateCapacityProfiles");
+    expect(`${app}\n${apiContracts}\n${apiServer}`).toContain("Capacity profiles");
+    expect(`${app}\n${apiContracts}\n${apiServer}`).toContain("summarizeCapacityPlan");
+  }, shellDoctorTimeoutMs);
 
   it("defines a Vercel static plus serverless API deployment contract", () => {
     const vercel = JSON.parse(read("vercel.json")) as {

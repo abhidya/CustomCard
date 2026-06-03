@@ -232,6 +232,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Locale readiness");
     expect(result.adminText).toContain("Launch gates");
     expect(result.adminText).toContain("CRM and workflow integrations");
+    expect(result.adminText).toContain("Capacity profiles");
+    expect(result.adminText).toContain("Cheap droplet");
+    expect(result.adminText).toContain("SaaS scale");
+    expect(result.adminText).toContain("Queue-backed profiles");
+    expect(result.adminText).toContain("Live calls");
     expect(result.adminText).toContain("Production user auth");
     expect(result.adminText).toContain("Live payment charges and refunds");
     expect(result.adminText).toContain("Vercel deployment and DB access");
@@ -246,7 +251,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("HUBSPOT_PRIVATE_APP_TOKEN");
     expect(result.adminText).toContain("ZAPIER_WEBHOOK_URL");
     expect(result.adminText).toContain("Walgreens live order");
-    expect(result.metricCount).toBeGreaterThanOrEqual(6);
+    expect(result.metricCount).toBeGreaterThanOrEqual(10);
     expect(result.gatedRows).toBeGreaterThanOrEqual(8);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);

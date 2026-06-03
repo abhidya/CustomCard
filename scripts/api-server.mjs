@@ -2,6 +2,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
@@ -202,6 +203,7 @@ export const readiness = {
       "No physical sample or retailer certification has been recorded."
     ]
   },
+  capacity: summarizeCapacityPlan(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -483,6 +485,18 @@ function validateApiServerContract() {
   if (readiness.providerGovernance.realOrdersEnabled) blockers.push("Provider governance cannot enable real orders.");
   if (readiness.production.liveEnabled !== 0) blockers.push("Production readiness cannot enable live components by default.");
   if (readiness.production.total < 13) blockers.push("Production readiness must track every launch gate.");
+  if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
+  if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
+  if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");
+  if (readiness.capacity.queueBackedProfiles !== readiness.capacity.total) {
+    blockers.push("Every capacity profile must be queue-backed.");
+  }
+  if (readiness.capacity.objectStoreBackedProfiles !== readiness.capacity.total) {
+    blockers.push("Every capacity profile must be object-store backed.");
+  }
+  if (readiness.capacity.realOrdersEnabled !== 0) blockers.push("Capacity readiness cannot enable real orders.");
+  if (readiness.capacity.liveProviderCalls !== 0) blockers.push("Capacity readiness cannot enable live provider calls.");
+  if (readiness.capacity.blockers.length > 0) blockers.push("Capacity readiness summary has blockers.");
   if (readiness.localization.defaultLocale !== "en-US") blockers.push("Localization default locale must stay en-US.");
   if (readiness.localization.supportedLocales < 4) blockers.push("Localization must cover at least four launch locales.");
   if (readiness.localization.completeBundles !== readiness.localization.supportedLocales) {

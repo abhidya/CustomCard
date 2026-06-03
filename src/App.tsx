@@ -30,6 +30,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  capacityProfiles,
+  summarizeCapacityPlan,
+  type CapacityPlanSummary,
+  type CapacityProfile
+} from "./capacityPlan";
+import {
   addMemory,
   buildOpportunity,
   buildVendorHandoff,
@@ -153,6 +159,7 @@ function App() {
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
+  const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -433,6 +440,8 @@ function App() {
 
         {activeView === "admin" && (
           <AdminPanelView
+            capacityProfiles={capacityProfiles}
+            capacitySummary={capacitySummary}
             localizationSummary={localizationSummary}
             model={adminPanelModel}
             providerGovernance={providerGovernance}
@@ -1088,12 +1097,16 @@ function HandoffView({
 }
 
 function AdminPanelView({
+  capacityProfiles,
+  capacitySummary,
   localizationSummary,
   model,
   providerGovernance,
   productionReadiness,
   runtimeReadiness
 }: {
+  capacityProfiles: CapacityProfile[];
+  capacitySummary: CapacityPlanSummary;
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
   providerGovernance: ProviderGovernanceSummary;
@@ -1124,6 +1137,8 @@ function AdminPanelView({
         <Metric label="Budget cap" value={formatCents(providerGovernance.monthlyBudgetCents)} />
         <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
         <Metric label="Launch gates" value={`${productionReadiness.total}`} />
+        <Metric label="Capacity profiles" value={`${capacitySummary.total}`} />
+        <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
       </div>
 
       <div className="adminGrid">
@@ -1281,6 +1296,40 @@ function AdminPanelView({
             <StatusChip icon={Cloud} label="IaC present" tone="green" />
           </div>
           <AdapterMiniList adapters={model.deploymentAdapters} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Scaling</p>
+              <h3>Capacity profiles</h3>
+            </div>
+            <StatusChip icon={PackageCheck} label="Cheap to scale" tone="green" />
+          </div>
+          <div className="runtimeGrid" aria-label="Capacity profile readiness">
+            <Metric label="Profiles" value={`${capacitySummary.total}`} />
+            <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
+            <Metric label="Image budget" value={`${capacitySummary.maxDailyImageGenerations}`} />
+            <Metric label="Queue-backed profiles" value={`${capacitySummary.queueBackedProfiles}`} />
+            <Metric label="Live calls" value={`${capacitySummary.liveProviderCalls}`} />
+            <Metric label="Real orders" value={`${capacitySummary.realOrdersEnabled}`} />
+          </div>
+          <div className="capacityProfileList">
+            {capacityProfiles.map((profile) => (
+              <div className="capacityProfile" key={profile.id}>
+                <div>
+                  <strong>{profile.label}</strong>
+                  <span>{profile.runtimeShape}</span>
+                </div>
+                <small>
+                  {profile.dailyCardCapacity} cards/day / {profile.dailyImageGenerationBudget} image generations/day
+                </small>
+              </div>
+            ))}
+          </div>
+          <p className="panelNote">
+            These are planning contracts, not measured production benchmarks; live traffic remains blocked until evidence gates pass.
+          </p>
         </article>
 
         <article className="toolPanel adminWide">

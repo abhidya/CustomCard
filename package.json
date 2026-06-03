@@ -27,6 +27,7 @@
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
+    "capacity:doctor": "node scripts/capacity-plan-doctor.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",
     "runtime:doctor": "node scripts/validate-runtime-env.mjs",

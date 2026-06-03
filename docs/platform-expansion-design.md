@@ -19,6 +19,9 @@ The system remains adapter-first:
 - Admin surfaces consume the same adapter catalog to see readiness, required
   environment variables, safety gates, blocked live-order providers, and cloud
   runtime shape.
+- Capacity profiles consume the deployment contract so reviewers can inspect the
+  local, cheap-droplet, cloud-native, and SaaS-scale tradeoffs as executable
+  data.
 - Provider adapters are data contracts first. Live network calls are not enabled
   until credentials, consent, logging, cost controls, and external security
   review exist.
@@ -199,6 +202,9 @@ The admin panel turns the adapter catalog into an operations surface:
 - Provider cost governance: zero-platform-spend, budget-capped, and
   blocked-zero-spend counts, monthly/per-request budget ceilings, rate-limited
   adapter counts, queue-required counts, and ready fallback coverage.
+- Capacity profile readiness: local-dev, cheap-droplet, cloud-native, and
+  SaaS-scale profile counts, max daily card/image-generation planning limits,
+  queue/object-store posture, and live-call/real-order disabled counts.
 - No-network runtime readiness counts: local-ready, request-ready, blocked, and
   missing credential references.
 - Gated provider queue.
@@ -312,6 +318,23 @@ The low-cost path remains:
 2. Small droplet Compose deployment for early hosted validation.
 3. Kubernetes web and worker manifests when the app needs cloud-native scaling.
 
+## Capacity profiles
+
+`src/capacityPlan.ts` is the typed interface for the capacity/cost planning
+contract, backed by shared executable data in `src/capacityPlanData.mjs` so the
+web app, API server, and capacity doctor consume the same source. It defines
+four finite profiles: local dev, cheap droplet, cloud native, and SaaS scale.
+Each profile names daily card capacity, image-generation budget, web and worker
+replica counts, database/queue/object-store mode, cost guardrails, required
+evidence, scaling signals, and tradeoffs while keeping `liveProviderCalls=false`
+and `realOrdersEnabled=false`.
+
+`npm run capacity:doctor` verifies that the profiles, tests, admin/API
+surfaces, docs, CI wiring, and safety posture remain aligned. These are planning
+contracts and not measured production benchmarks. A real droplet benchmark,
+cloud autoscaler report, hosted database throughput test, or provider spend
+report still has to be attached before any production capacity claim is made.
+
 The runtime remains fail-closed:
 
 - `REAL_ORDER_KILL_SWITCH=disabled` keeps live orders off.
@@ -319,6 +342,9 @@ The runtime remains fail-closed:
 - `npm run deployment:doctor` verifies the committed local-dev, cheap-droplet,
   cloud-native, runtime, and data lanes and fails if required deployment signals
   disappear.
+- `npm run capacity:doctor` verifies Capacity profiles in
+  `src/capacityPlan.ts`, admin/API exposure, CI wiring, and the "not measured
+  production benchmarks" disclaimer while keeping live traffic disabled.
 - `npm run api:doctor` verifies the API/static server route map, provider
   summary, contract runtime, idempotent mutation contracts, and no-live-call
   posture.
@@ -364,6 +390,10 @@ Implemented checks:
   launch locales, complete message bundles, RTL layout-review gates, human
   copy-review gates, web/API/mobile parity, CI wiring, no live translation
   provider, and no real orders.
+- `src/capacityPlan.test.ts` and `npm run capacity:doctor` validate Capacity
+  profiles for local-dev, cheap-droplet, cloud-native, and SaaS-scale planning;
+  queue/object-store posture; cost guardrails; admin/API visibility; CI wiring;
+  and the no-live-provider/no-real-order safety contract.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.

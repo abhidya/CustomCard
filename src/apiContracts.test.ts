@@ -90,6 +90,18 @@ describe("api contracts", () => {
       blocked: 2,
       liveEnabled: 0
     });
+    expect(summary.capacity).toMatchObject({
+      total: 4,
+      localProfiles: 1,
+      cloudProfiles: 3,
+      queueBackedProfiles: 4,
+      objectStoreBackedProfiles: 4,
+      realOrdersEnabled: 0,
+      liveProviderCalls: 0,
+      blockers: []
+    });
+    expect(summary.capacity.maxDailyCards).toBe(12000);
+    expect(summary.capacity.maxDailyImageGenerations).toBe(1000);
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(8);
@@ -126,6 +138,19 @@ describe("api contracts", () => {
     });
     expect(payload.production.summary).toMatchObject({ total: 13, liveEnabled: 0 });
     expect(payload.production.gates.map((gate) => gate.id)).toContain("vercel-deployment-db-access");
+    expect(payload.capacity.summary).toMatchObject({
+      total: 4,
+      maxDailyCards: 12000,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0
+    });
+    expect(payload.capacity.profiles.map((profile) => profile.id)).toEqual([
+      "local-dev",
+      "cheap-droplet",
+      "cloud-native",
+      "saas-scale"
+    ]);
+    expect(payload.capacity.profiles.every((profile) => !profile.liveProviderCalls && !profile.realOrdersEnabled)).toBe(true);
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
@@ -144,7 +169,12 @@ describe("api contracts", () => {
     });
     expect(resolveApiContractResponse("/api/admin/readiness")).toMatchObject({
       service: "customcard-api",
-      status: "ready"
+      status: "ready",
+      capacity: {
+        total: 4,
+        liveProviderCalls: 0,
+        realOrdersEnabled: 0
+      }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({
       total: expect.any(Number),

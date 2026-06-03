@@ -1,5 +1,12 @@
 import { mobileExperience, summarizeMobileExperience, validateMobileExperience } from "../apps/mobile/src/customerExperience.ts";
 import {
+  capacityProfiles,
+  summarizeCapacityPlan,
+  validateCapacityProfiles,
+  type CapacityPlanSummary,
+  type CapacityProfile
+} from "./capacityPlan";
+import {
   summarizeLocalizationReadiness,
   supportedLocales,
   type LocalizationReadinessSummary
@@ -57,6 +64,7 @@ export interface ApiReadinessSummary {
   governance: ProviderGovernanceSummary;
   localization: LocalizationReadinessSummary;
   production: ProductionReadinessSummary;
+  capacity: CapacityPlanSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -78,6 +86,10 @@ export interface ApiBootstrapPayload {
   production: {
     gates: typeof productionLaunchGates;
     summary: ProductionReadinessSummary;
+  };
+  capacity: {
+    profiles: CapacityProfile[];
+    summary: CapacityPlanSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -164,7 +176,16 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "admin-session",
     runtimeMode: "durable-api",
     requestSchema: ["adminSession"],
-    responseSchema: ["coverage", "governance", "localization", "production", "runtime", "blockedProviders", "requiredEnv"],
+    responseSchema: [
+      "coverage",
+      "governance",
+      "localization",
+      "production",
+      "capacity",
+      "runtime",
+      "blockedProviders",
+      "requiredEnv"
+    ],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -342,6 +363,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     governance: summarizeProviderGovernance(),
     localization: summarizeLocalizationReadiness(),
     production: summarizeProductionReadiness(),
+    capacity: summarizeCapacityPlan(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -360,6 +382,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     production: {
       gates: productionLaunchGates,
       summary: summarizeProductionReadiness()
+    },
+    capacity: {
+      profiles: capacityProfiles,
+      summary: summarizeCapacityPlan()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -453,6 +479,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
 
   if (validateMobileExperience().length > 0) {
     issues.push("Mobile API bootstrap model failed validation.");
+  }
+  for (const capacityIssue of validateCapacityProfiles()) {
+    issues.push(capacityIssue);
   }
 
   return issues;

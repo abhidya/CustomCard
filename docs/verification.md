@@ -31,6 +31,12 @@ it after each meaningful implementation pass.
   Spanish (US), Urdu, and Arabic customer/admin/API/mobile readiness, complete
   message bundles, RTL layout-review gates, human copy-review gates, CI wiring,
   and `liveTranslationProvider: false`.
+- Capacity profile tests and `npm run capacity:doctor` cover local-dev,
+  cheap-droplet, cloud-native, and SaaS-scale planning profiles, queue and
+  object-store posture, the shared executable data in `src/capacityPlanData.mjs`,
+  admin/API visibility, docs, CI wiring, and disabled live provider calls plus
+  real orders. The profile numbers are planning limits, not measured production
+  benchmarks.
 - Print-export tests cover local source SVG files, a combined 5x7 PDF proof,
   checksum manifest validation, preflight failure paths, and no-network/no-order
   summary behavior.
@@ -143,6 +149,7 @@ npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
 npm run provider:governance:doctor
+npm run capacity:doctor
 npm run printer:pricing:doctor
 npm run localization:doctor
 npm run api:doctor:memory
@@ -169,12 +176,13 @@ npm run check
 
 Result: passed.
 
-- Vitest: 21 test files passed, 145 tests passed.
-- Coverage: 19 core/API/persistence/infra/mobile test files passed, 136 tests passed; V8 report measured
-  91.23% statements, 84.10% branches, 96.96% functions, and 95.16% lines across
+- Vitest: 22 test files passed, 150 tests passed.
+- Coverage: 20 core/API/persistence/infra/mobile test files passed, 141 tests passed; V8 report measured
+  90.98% statements, 83.97% branches, 97.03% functions, and 94.92% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
-  `src/domain.ts`, `src/freeMvp.ts`, `src/localization.ts`,
+  `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
+  `src/freeMvp.ts`, `src/localization.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
   `src/providerCatalog.ts`, `src/providerGovernance.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -216,6 +224,17 @@ Result: passed. The JSON report marked catalog, governance, tests, surfaces,
 CI, and safety lanes `ready`; it verified 102 adapters, 45 usage-based adapters,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
+
+```text
+npm run capacity:doctor
+```
+
+Result: passed. The JSON report marked profiles, tests, surfaces, docs, CI, and
+safety lanes `ready`; it verified 4 capacity profiles, max daily planning limits
+of 12000 cards and 1000 image generations, `src/capacityPlan.ts`,
+`src/capacityPlanData.mjs`, admin/API surfaces, CI wiring, documentation
+signals, no live provider calls, no real orders, and no measured production
+benchmark claim.
 
 ```text
 npm run printer:pricing:doctor

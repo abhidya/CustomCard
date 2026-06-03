@@ -614,6 +614,7 @@ h3 {
 
 .chatLog,
 .adapterMiniList,
+.capacityProfileList,
 .coverageList,
 .envChipGrid {
   display: grid;
@@ -665,6 +666,40 @@ h3 {
 
 .adapterMini.blocked {
   background: #fff1ee;
+}
+
+.capacityProfileList {
+  margin-top: 10px;
+}
+
+.capacityProfile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, auto);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #d8e0e2;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
+.capacityProfile strong,
+.capacityProfile span,
+.capacityProfile small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.capacityProfile strong {
+  color: #1f2b30;
+}
+
+.capacityProfile span,
+.capacityProfile small {
+  color: #63737a;
+  font-size: 0.76rem;
+  font-weight: 780;
 }
 
 .coverageLine {

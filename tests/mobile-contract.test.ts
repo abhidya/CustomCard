@@ -129,7 +129,7 @@ describe("mobile customer experience contract", () => {
         android?: { buildType?: string };
       }>;
     };
-    const releaseOutput = execFileSync("npm", ["run", "mobile:release:doctor", "--silent"], {
+    const releaseOutput = execFileSync("node", ["apps/mobile/scripts/release-doctor.mjs"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });

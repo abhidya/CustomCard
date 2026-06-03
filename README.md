@@ -71,8 +71,13 @@ environment configuration instead of static placeholders.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
-  CRM and workflow integration readiness, production launch gates, cloud runtime
-  readiness, and blocked live-vendor adapters.
+  CRM and workflow integration readiness, production launch gates, capacity
+  profiles, cloud runtime readiness, and blocked live-vendor adapters.
+- Capacity profile planning for local-dev, cheap-droplet, cloud-native, and
+  SaaS-scale runtime shapes through `src/capacityPlan.ts` and the shared
+  executable data in `src/capacityPlanData.mjs`, with queue/object-store posture,
+  cost guardrails, required evidence, and `liveProviderCalls` plus
+  `realOrdersEnabled` held at zero. These are not measured production benchmarks.
 - Adapter catalog covering free local paths plus gated Auth0, Clerk, Supabase
   Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
   Bedrock, Google, Google People, Microsoft Graph, CardDAV, Mistral, Cohere,
@@ -237,6 +242,7 @@ npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
 npm run provider:governance:doctor
+npm run capacity:doctor
 npm run printer:pricing:doctor
 npm run localization:doctor
 npm run api:doctor:memory
@@ -257,7 +263,8 @@ npm run mobile:release:doctor
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
-`src/artifactStore.ts`, `src/domain.ts`, `src/freeMvp.ts`,
+`src/artifactStore.ts`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
+`src/domain.ts`, `src/freeMvp.ts`,
 `src/localization.ts`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
 `src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
@@ -269,11 +276,15 @@ cheap-droplet, cloud-native, Vercel, cloud-storage, runtime, and data lanes.
 verifies the production artifact bucket/IAM contract. These checks validate
 committed IaC shape only; they do not prove a real cloud cluster, AWS account,
 or droplet deployment.
+`npm run capacity:doctor` verifies the committed capacity profiles, admin/API
+surfaces, documentation, and CI wiring while keeping live provider calls and
+real orders disabled.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
-accessibility baseline doctor, provider cost governance doctor, printer pricing
-research doctor, localization readiness doctor, memory-runtime API doctor,
+accessibility baseline doctor, provider cost governance doctor, capacity
+profile doctor, printer pricing research doctor, localization readiness doctor,
+memory-runtime API doctor,
 Postgres runtime contract doctor, live Postgres integration doctor, Postgres API
 HTTP doctor, account-auth storage/recovery doctor, artifact-store filesystem
 plus S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
