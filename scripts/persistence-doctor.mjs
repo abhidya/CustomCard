@@ -59,6 +59,7 @@ const migrationSignals = [
 
 const apiSignals = [
   "admin-persistence-readiness",
+  "admin-demo-reset",
   "/api/admin/persistence-readiness",
   "schemaBackedRoutes",
   "authSessionTable: true",
@@ -104,9 +105,9 @@ const report = {
       auditLog: true
     },
     api: {
-      statefulRoutes: 10,
+      statefulRoutes: 11,
       adminPersistenceReadiness: true,
-      idempotentMutations: 5
+      idempotentMutations: 6
     },
     safety: {
       rawContentStored: false,

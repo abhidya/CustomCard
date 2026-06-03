@@ -15,6 +15,7 @@
     "api:doctor:memory": "CUSTOMCARD_API_RUNTIME=memory CUSTOMCARD_CUSTOMER_SESSION_TOKEN=test-customer-session-token CUSTOMCARD_ADMIN_SESSION_TOKEN=test-admin-session-token node scripts/api-server.mjs --doctor",
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
+    "demo:doctor": "node scripts/demo-reset.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",
     "runtime:doctor": "node scripts/validate-runtime-env.mjs",

@@ -166,6 +166,21 @@ export const apiRouteContracts: ApiRouteContract[] = [
     backedBy: ["persistence contracts", "migration doctor"]
   },
   {
+    id: "admin-demo-reset",
+    method: "POST",
+    path: "/api/admin/demo-reset",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "resetKey", "confirmDemoOnly"],
+    responseSchema: ["seedSummary", "tables", "rows", "signedArtifactUrls", "realOrdersEnabled"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Demo fixture reset only; no raw provider content or production credentials.",
+    backedBy: ["buildDemoSeedPlan", "scripts/demo-reset.mjs"]
+  },
+  {
     id: "import-preview",
     method: "POST",
     path: "/api/import-preview",
@@ -340,6 +355,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     "admin-readiness",
     "admin-provider-catalog",
     "admin-persistence-readiness",
+    "admin-demo-reset",
     "import-preview",
     "render-packets",
     "manual-vendor-handoff"

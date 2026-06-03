@@ -10,6 +10,7 @@ export default defineConfig({
         "src/apiContracts.ts",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
+        "src/demoSeed.ts",
         "src/domain.ts",
         "src/freeMvp.ts",
         "src/persistenceContracts.ts",

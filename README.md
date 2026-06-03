@@ -68,10 +68,10 @@ environment configuration instead of static placeholders.
   keep live vendor ordering blocked.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
-  runtime modes, tested memory-mode auth/idempotency replay, and no live
-  external calls.
+  runtime modes, tested memory-mode auth/idempotency replay, admin demo reset,
+  and no live external calls.
 - Persistence contract/migration boundary for auth sessions, idempotency replay,
-  queue jobs, audit logs, and 10 schema-backed API routes.
+  queue jobs, audit logs, and 11 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 
@@ -98,6 +98,8 @@ CUSTOMCARD_ENV=dev
 DATABASE_URL=postgres://customcard:customcard@postgres:5432/customcard_dev
 QUEUE_URL=redis://redis:6379/0
 OBJECT_STORE_URL=http://minio:9000
+OBJECT_STORE_SIGNING_SECRET=replace-me-do-not-commit-real-secret
+ARTIFACT_SIGNED_URL_TTL_MINUTES=15
 CUSTOMCARD_API_RUNTIME=contract
 AUTH_SESSION_SECRET=replace-me-do-not-commit-real-secret
 CUSTOMCARD_CUSTOMER_SESSION_TOKEN=replace-me-do-not-commit-real-secret
@@ -151,6 +153,7 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run persistence:doctor
+npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -170,7 +173,8 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, persistence doctor,
-worker readiness, and mobile doctor on pushes to `main` and pull requests.
+demo reset doctor, worker readiness, and mobile doctor on pushes to `main` and
+pull requests.
 
 ## Project Docs
 

@@ -14,6 +14,8 @@ This directory is the deployable service skeleton for the production path.
   HMAC-signed URL contract used by the API/schema gates.
 - `../scripts/persistence-doctor.mjs` validates auth-session, idempotency, queue
   job, and audit persistence signals.
+- `../scripts/demo-reset.mjs` validates the reviewer demo reset contract before
+  anyone attempts to run seed data against a database.
 - `../scripts/deployment-readiness.mjs` emits the local deployment readiness
   report used by `npm run deployment:doctor`.
 
@@ -33,6 +35,7 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run persistence:doctor
+npm run demo:doctor
 ```
 
 The report checks the local-dev, cheap-droplet, cloud-native, runtime, and data

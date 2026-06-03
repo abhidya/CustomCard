@@ -152,9 +152,11 @@ describe("production infrastructure contract", () => {
 
     expect(packageJson).toContain("npm run test:coverage");
     expect(packageJson).toContain("tests/mobile-contract.test.ts");
+    expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
     expect(viteConfig).toContain("src/artifactHandoff.ts");
+    expect(viteConfig).toContain("src/demoSeed.ts");
     expect(viteConfig).toContain("src/domain.ts");
     expect(viteConfig).toContain("src/freeMvp.ts");
     expect(viteConfig).toContain("src/persistenceContracts.ts");
@@ -198,12 +200,37 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run persistence:doctor");
+    expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");
     expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");
     expect(workflow).toContain("OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32");
     expect(workflow).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES: 15");
     expect(workflow).toContain("CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173");
+  });
+
+  it("ships a reviewer demo reset contract doctor", () => {
+    const output = execFileSync("npm", ["run", "demo:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      route: string;
+      rows: number;
+      signedArtifactUrls: boolean;
+      realOrdersEnabled: boolean;
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-demo-reset",
+      status: "ready",
+      route: "/api/admin/demo-reset",
+      rows: 17,
+      signedArtifactUrls: true,
+      realOrdersEnabled: false
+    });
   });
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
@@ -282,7 +309,7 @@ describe("production infrastructure contract", () => {
       idempotencyReplay: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 10, idempotentMutations: 5 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 11, idempotentMutations: 6 });
     expect(report.readiness.safety).toMatchObject({
       rawContentStored: false,
       liveExternalCalls: false,

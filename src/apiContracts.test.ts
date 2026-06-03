@@ -20,6 +20,7 @@ describe("api contracts", () => {
         "admin-readiness",
         "admin-provider-catalog",
         "admin-persistence-readiness",
+        "admin-demo-reset",
         "import-preview",
         "card-projects",
         "render-packets",
@@ -34,13 +35,21 @@ describe("api contracts", () => {
   it("keeps mutations idempotent and admin routes session-gated", () => {
     const mutations = apiRouteContracts.filter((route) => route.method === "POST");
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
+    const adminDemoReset = apiRouteContracts.find((route) => route.id === "admin-demo-reset");
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
-    expect(mutations.length).toBeGreaterThanOrEqual(5);
+    expect(mutations.length).toBeGreaterThanOrEqual(6);
     expect(mutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
     expect(mutations.every((route) => route.requestSchema.includes("X-Idempotency-Key"))).toBe(true);
     expect(adminRoutes.every((route) => route.auth === "admin-session")).toBe(true);
+    expect(adminDemoReset).toMatchObject({
+      method: "POST",
+      auth: "admin-session",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    });
+    expect(adminDemoReset?.responseSchema).toEqual(expect.arrayContaining(["seedSummary", "signedArtifactUrls"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");

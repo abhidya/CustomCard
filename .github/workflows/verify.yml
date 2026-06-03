@@ -48,6 +48,9 @@ jobs:
       - name: Validate persistence readiness
         run: npm run persistence:doctor
 
+      - name: Validate demo reset contract
+        run: npm run demo:doctor
+
       - name: Validate worker readiness
         run: npm run worker
 

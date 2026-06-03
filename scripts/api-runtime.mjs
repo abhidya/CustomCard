@@ -405,6 +405,25 @@ function persistedTablesForRoute(route) {
   }
   if (route.id === "card-projects") return ["auth_sessions", "idempotency_keys", "card_opportunities", "relationship_memories", "card_projects", "audit_log"];
   if (route.id === "import-preview") return ["auth_sessions", "idempotency_keys", "provider_connections", "imported_events", "card_opportunities", "audit_log"];
+  if (route.id === "admin-demo-reset") {
+    return [
+      "auth_sessions",
+      "idempotency_keys",
+      "users",
+      "provider_connections",
+      "imported_events",
+      "card_opportunities",
+      "relationship_memories",
+      "card_projects",
+      "render_packets",
+      "orders",
+      "order_events",
+      "vendor_quotes",
+      "consent_records",
+      "data_requests",
+      "audit_log"
+    ];
+  }
   if (route.id === "data-requests") return ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"];
   return ["auth_sessions", "idempotency_keys", "audit_log"];
 }

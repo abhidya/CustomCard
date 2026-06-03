@@ -25,7 +25,7 @@ Requirement types:
 | R013 | Separate dev/test/prod configuration and runtime readiness. | Explicit | Covered as config contracts and runtime doctor. | `getRuntimeConfig`, `validateRuntimeReadiness`, `scripts/validate-runtime-env.mjs`, Docker/Kubernetes manifests. |
 | R014 | Provide cheap droplet and cloud-native deployment shapes. | Explicit | Covered as locally validated scaffolding, not deployed. The deployment doctor verifies local-dev, cheap-droplet, cloud-native, runtime, and data lanes, and the production image now serves API plus static web. | `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `Dockerfile`, `scripts/api-server.mjs`, `scripts/deployment-readiness.mjs`, `infra/README.md`, `tests/infra-contract.test.ts`. |
 | R015 | Provide durable database schema for users, providers, events, cards, memories, render packets, orders, consent, and audit. | Explicit | Covered as Postgres migration plus tested persistence contracts for auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, signed URL expiry, and append-only audit. | `infra/migrations/001_initial_schema.sql`, `src/persistenceContracts.ts`, `src/persistenceContracts.test.ts`, `scripts/persistence-doctor.mjs`, `tests/infra-contract.test.ts`. |
-| R016 | Include queues, workers, object storage, migrations, and static production serving. | Explicit | Covered as skeleton plus tested API/static server, executable memory-mode auth/idempotency runtime, and persistence-readiness boundary. | `scripts/worker.mjs`, `scripts/migrate.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `scripts/serve-dist.mjs`, Docker Compose, Kubernetes manifests, `tests/api-server.test.ts`. |
+| R016 | Include queues, workers, object storage, migrations, static production serving, and reviewer reset tooling. | Explicit | Covered as skeleton plus tested API/static server, executable memory-mode auth/idempotency runtime, demo reset contract, and persistence-readiness boundary. | `scripts/worker.mjs`, `scripts/migrate.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `scripts/serve-dist.mjs`, Docker Compose, Kubernetes manifests, `src/demoSeed.ts`, `tests/api-server.test.ts`, `tests/infra-contract.test.ts`. |
 | R017 | Include regulatory, regional, consent, deletion, and vendor-sharing controls. | Explicit | Covered as decision contracts, not legal review. | `regionRequirements`, `evaluateRegulatoryDecision`, SQL `consent_records`, `data_requests`, tests. |
 | R018 | Document architecture, decisions, run commands, and reviewer handoff. | Inferred | Covered by current docs package. | README, this file, `docs/free-mvp-plan.md`, `docs/platform-expansion-design.md`, `docs/decisions.md`, `docs/verification.md`, `docs/handoff-notes.md`. |
 | R019 | Keep AI/provider calls deterministic or mockable for tests. | Inferred | Covered by no live AI calls, deterministic extraction/rendering, and dry-run provider contracts that never call a network. | `src/freeMvp.ts`, `src/providerRuntime.ts`, `runOperationalExtraction`, `stableId`, tests for free import, SVG generation, provider dry runs, weak-input blocking, and checksums. |
@@ -60,7 +60,7 @@ Requirement types:
   endpoints with real orders and external calls disabled.
 - API memory runtime enforces Bearer sessions on non-public routes and
   `X-Idempotency-Key` persistence/replay/conflict handling on mutations.
-- Persistence contracts map 10 schema-backed API routes to auth-session,
+- Persistence contracts map 11 schema-backed API routes to auth-session,
   idempotency, queue-job, and audit-log tables.
 - Mobile shell resolves API configuration from environment.
 - Mobile customer shell mirrors the customer panel with tested card queue,
@@ -74,6 +74,8 @@ Requirement types:
   and a checksum manifest without network calls or real orders.
 - Render-packet artifact handoff produces object-store URIs, HMAC-signed URL
   contracts, expiry metadata, and schema fields without live uploads.
+- Admin demo reset produces deterministic reviewer fixture contracts across 14
+  tables and 17 rows without production credentials or live calls.
 - Manual vendor handoff blocks real orders and live vendor API claims.
 - Public printer pricing research compares Walgreens/CVS/FedEx observations but
   keeps `liveQuote: false` and requires checkout confirmation.

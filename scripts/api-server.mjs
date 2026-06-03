@@ -15,6 +15,7 @@ const routes = [
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "admin-provider-catalog", method: "GET", path: "/api/admin/provider-catalog", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "admin-demo-reset", method: "POST", path: "/api/admin/demo-reset", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
@@ -58,7 +59,7 @@ const readiness = {
   },
   persistence: {
     tables: 16,
-    schemaBackedRoutes: 10,
+    schemaBackedRoutes: 11,
     authSessionTable: true,
     idempotencyTable: true,
     appendOnlyAudit: true,
@@ -243,6 +244,7 @@ function validateApiServerContract() {
     "/api/admin/readiness",
     "/api/admin/provider-catalog",
     "/api/admin/persistence-readiness",
+    "/api/admin/demo-reset",
     "/api/import-preview",
     "/api/render-packets",
     "/api/vendor-handoff/manual"
@@ -322,6 +324,44 @@ function buildMutationContractPayload(route, bodyText) {
         }
       ],
       disabledReasons: ["Live vendor order APIs remain disabled until certification and kill-switch gates pass."]
+    };
+  }
+
+  if (route.id === "admin-demo-reset") {
+    const resetKey = String(requestBody.resetKey ?? "demo-reset-contract");
+    return {
+      ...basePayload,
+      seedSummary: {
+        service: "customcard-demo-seed",
+        status: "ready",
+        resetKey,
+        tables: 14,
+        rows: 17,
+        renderArtifacts: 6,
+        signedArtifactUrls: true,
+        idempotentReset: true,
+        rawContentStored: false,
+        liveExternalCalls: false,
+        realOrdersEnabled: false
+      },
+      tables: [
+        "users",
+        "auth_sessions",
+        "provider_connections",
+        "imported_events",
+        "card_opportunities",
+        "relationship_memories",
+        "card_projects",
+        "render_packets",
+        "orders",
+        "order_events",
+        "vendor_quotes",
+        "consent_records",
+        "data_requests",
+        "audit_log"
+      ],
+      rows: 17,
+      signedArtifactUrls: true
     };
   }
 

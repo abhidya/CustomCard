@@ -73,21 +73,22 @@
   SVGs, a combined 5x7 PDF proof, and a checksum manifest; signed artifact
   handoff contracts for render packets.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
-  provider-readiness, route catalog, default contract mode, and executable
-  memory-mode Bearer auth plus `X-Idempotency-Key` replay/conflict behavior
-  served by `scripts/api-server.mjs`.
+  provider-readiness, route catalog, admin demo reset, default contract mode,
+  and executable memory-mode Bearer auth plus `X-Idempotency-Key`
+  replay/conflict behavior served by `scripts/api-server.mjs`.
 - Persistence boundary: tested auth-session, idempotency replay, queue-job,
-  schema-backed route, and audit contracts served by
+  schema-backed route, demo reset, and audit contracts served by
   `src/persistenceContracts.ts` and `scripts/persistence-doctor.mjs`.
 - CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
   deployment doctor, contract API doctor, memory-runtime API doctor, persistence
-  doctor, worker readiness, and the mobile doctor on pushes to `main` and pull
-  requests.
+  doctor, demo reset doctor, worker readiness, and the mobile doctor on pushes
+  to `main` and pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
   queue, memory review, local chat, image/render state, manual handoff, and
   real-order kill-switch validation.
-- Demo/seed data: sample anniversary `.ics` content and two approved local memory
-  records in `src/freeMvp.ts`.
+- Demo/seed data: sample anniversary `.ics` content, two approved local memory
+  records in `src/freeMvp.ts`, plus an admin-only demo reset contract covering
+  14 reviewer fixture tables and 17 rows.
 - Config/env requirements: the local web MVP needs no provider or vendor
   credentials; worker/mobile/runtime checks require explicit env vars documented
   in README and `docs/verification.md`.
@@ -97,17 +98,18 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 15 test files, 99 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 84.52% branches, 97.27% functions, 94.92% lines across core, API, artifact handoff, pricing, print export, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 16 test files, 103 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.72% statements, 84.02% branches, 97.39% functions, 95.09% lines across core, API, artifact handoff, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 12 routes, 5 idempotent mutation contracts, contract runtime mode, 44 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 44 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
-| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, append-only audit, and 10 schema-backed routes present. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, append-only audit, demo reset mapping, and 11 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, contract API, memory API, persistence, worker, and mobile gates with safe repo-local env. |
+| Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, contract API, memory API, persistence, demo reset, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -124,7 +126,7 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; contract and memory API runtimes plus persistence boundaries exist; live Postgres integration and production account auth are not covered |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; contract and memory API runtimes, demo reset, plus persistence boundaries exist; live Postgres integration and production account auth are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
 | Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
@@ -141,9 +143,10 @@
 6. Run `npm run api:doctor`.
 7. Run `npm run api:doctor:memory`.
 8. Run `npm run persistence:doctor`.
-9. Run the worker and mobile doctor commands in `docs/verification.md`.
-10. Inspect `.github/workflows/verify.yml`.
-11. Inspect screenshots in `docs/evidence/` and known gaps in
+9. Run `npm run demo:doctor`.
+10. Run the worker and mobile doctor commands in `docs/verification.md`.
+11. Inspect `.github/workflows/verify.yml`.
+12. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps

@@ -132,8 +132,9 @@ platform signing remain outside the repo-local verification loop.
 
 `src/apiContracts.ts` defines the hosted API contract surface for customer,
 admin, and mobile clients. It covers health, route catalog, customer bootstrap,
-mobile bootstrap, admin readiness, provider catalog, import preview, card
-project creation, render packets, manual vendor handoff, and data requests.
+mobile bootstrap, admin readiness, provider catalog, admin demo reset, import
+preview, card project creation, render packets, manual vendor handoff, and data
+requests.
 
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,
@@ -186,7 +187,8 @@ The runtime remains fail-closed:
 - `npm run api:doctor:memory` verifies Bearer session and idempotency enforcement
   in the executable memory runtime.
 - `npm run persistence:doctor` verifies auth-session schema, idempotency replay,
-  queue jobs, append-only audit coverage, and schema-backed API route mappings.
+  queue jobs, append-only audit coverage, and 11 schema-backed API route
+  mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, observability, and managed secrets remain required before production
@@ -222,13 +224,13 @@ Implemented checks:
 - API contract and server tests validate customer/admin/mobile API bootstrap,
   provider readiness, idempotent mutation contracts, `/api/health`, and
   memory-runtime auth/idempotency behavior.
-- Persistence contract tests validate 16 table contracts, 10 schema-backed API
+- Persistence contract tests validate 16 table contracts, 11 schema-backed API
   routes, idempotency replay, queue-backed routes, and migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
-  contract API doctor, memory API doctor, persistence doctor, worker readiness,
-  and mobile doctor for pushes to `main` and pull requests.
+  contract API doctor, memory API doctor, persistence doctor, demo reset doctor,
+  worker readiness, and mobile doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact-handoff, pricing, print-export, persistence, orchestration, and mobile contract
   modules: 90% statements, 80% branches, 90% functions, and 90% lines.

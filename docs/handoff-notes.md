@@ -30,6 +30,9 @@ skeleton for the production path. It includes:
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration,
   API/static server with contract/memory runtime validation, and mobile-shell
   scaffolding plus mobile contract validation.
+- Admin-only demo reset contract and script doctor for deterministic reviewer
+  data across users, sessions, events, memories, projects, render packets,
+  orders, consent, data requests, and audit rows.
 - GitHub Actions verification workflow for the local repository gates.
 - Tests that prove the current skeleton does not fake weak input, live ordering,
   raw-content import, or unsafe order-state transitions.
@@ -66,9 +69,10 @@ skeleton for the production path. It includes:
 5. Run `npm run api:doctor`.
 6. Run `npm run api:doctor:memory`.
 7. Run `npm run persistence:doctor`.
-8. Run the worker and mobile doctor commands in `docs/verification.md`.
-9. Inspect the app with `npm run dev`.
-10. In the app, start a local workspace, scan the sample invite, generate a card,
+8. Run `npm run demo:doctor`.
+9. Run the worker and mobile doctor commands in `docs/verification.md`.
+10. Inspect the app with `npm run dev`.
+11. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -96,5 +100,5 @@ persistence schema into live Postgres-backed authenticated handlers:
 - Persistent event/opportunity/memory/order repositories.
 - Live render-packet artifact writing to object storage using the signed handoff
   contract.
-- Seed/demo reset workflow for reviewers.
-- Remote CI evidence collection and CI-friendly Chrome smoke hardening.
+- Live seed execution against a real Postgres reviewer database.
+- CI-friendly Chrome smoke hardening.

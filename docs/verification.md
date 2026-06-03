@@ -48,7 +48,10 @@ it after each meaningful implementation pass.
   no-live-call/no-real-order posture.
 - Persistence-contract tests and `npm run persistence:doctor` cover auth-session
   schema, idempotency replay state, queue job envelopes, append-only audit
-  contracts, and 10 schema-backed API route mappings.
+  contracts, demo reset mappings, and 11 schema-backed API route mappings.
+- Demo seed tests and `npm run demo:doctor` cover deterministic reviewer reset
+  fixtures, SQL preview, signed artifact handoff references, and no-live-call
+  safety gates.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
@@ -72,6 +75,7 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run persistence:doctor
+npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -86,9 +90,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 15 test files passed, 99 tests passed.
-- Coverage: 13 core/API/persistence/infra/mobile test files passed, 91 tests passed; V8 report measured
-  90.98% statements, 84.52% branches, 97.27% functions, and 94.92% lines across
+- Vitest: 16 test files passed, 103 tests passed.
+- Coverage: 14 core/API/persistence/infra/mobile test files passed, 95 tests passed; V8 report measured
+  90.72% statements, 84.02% branches, 97.39% functions, and 95.09% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -107,7 +111,7 @@ runtime, and data lanes `ready` with 18 deployment checks passed and no blockers
 npm run api:doctor
 ```
 
-Result: passed. API doctor reported 12 routes, 5 idempotent mutation contracts,
+Result: passed. API doctor reported 13 routes, 6 idempotent mutation contracts,
 44 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, contract runtime mode, no live external calls, no real
 vendor orders, no raw content storage, and no blockers.
@@ -117,7 +121,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 12 routes, 5 idempotent mutation contracts, 44
+enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 44
 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
@@ -128,8 +132,17 @@ npm run persistence:doctor
 
 Result: passed. Persistence doctor reported 16 required tables, auth-session
 persistence, idempotency replay, queue jobs, render-packet artifact manifest
-signals, append-only audit coverage, 10 schema-backed API routes, and no
+signals, append-only audit coverage, 11 schema-backed API routes, and no
 blockers.
+
+```text
+npm run demo:doctor
+```
+
+Result: passed. Demo reset doctor reported an admin-only contract preview for
+14 reviewer fixture tables and 17 rows, with idempotency required, signed
+artifact URLs present, no raw content storage, no live external calls, and no
+real orders.
 
 ```text
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker

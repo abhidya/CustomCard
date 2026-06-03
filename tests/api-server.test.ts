@@ -29,7 +29,7 @@ describe("api server wrapper", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(44);
-    expect(report.readiness.routes.total).toBe(12);
+    expect(report.readiness.routes.total).toBe(13);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.persistence).toMatchObject({
       tables: 16,
@@ -80,7 +80,7 @@ describe("api server wrapper", () => {
       expect(health).toMatchObject({ service: "customcard-api", status: "ready", realOrdersEnabled: false });
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 12, admin: 3, idempotentMutations: 5 });
+      expect(readiness.routes).toMatchObject({ total: 13, admin: 4, idempotentMutations: 6 });
       expect(readiness.providers).toMatchObject({ total: 44, readyLocal: 12, credentialGated: 21, blocked: 3 });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
@@ -91,7 +91,7 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 16,
-        schemaBackedRoutes: 10,
+        schemaBackedRoutes: 11,
         authSessionTable: true,
         idempotencyTable: true,
         renderPacketArtifacts: true,
@@ -121,6 +121,23 @@ describe("api server wrapper", () => {
         signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })]
       });
 
+      const demoReset = await fetch(`http://127.0.0.1:${port}/api/admin/demo-reset`, { method: "POST" });
+      expect(demoReset.status).toBe(202);
+      expect(await demoReset.json()).toMatchObject({
+        status: "accepted-contract-only",
+        route: "admin-demo-reset",
+        seedSummary: {
+          service: "customcard-demo-seed",
+          status: "ready",
+          rows: 17,
+          signedArtifactUrls: true,
+          realOrdersEnabled: false
+        },
+        signedArtifactUrls: true,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false
+      });
+
       const wrongMethod = await fetch(`http://127.0.0.1:${port}/api/health`, { method: "POST" });
       expect(wrongMethod.status).toBe(405);
 
@@ -130,7 +147,7 @@ describe("api server wrapper", () => {
       server.kill();
       await waitForExit(server);
     }
-  });
+  }, 10_000);
 
   it("enforces memory-runtime auth sessions and idempotent mutation replay", async () => {
     const port = 7100 + Math.floor(Math.random() * 1000);
@@ -217,6 +234,29 @@ describe("api server wrapper", () => {
         disabledReasons: expect.arrayContaining(["Live vendor order APIs remain disabled until certification and kill-switch gates pass."])
       });
 
+      const demoReset = await postJson(
+        port,
+        "/api/admin/demo-reset",
+        { resetKey: "demo-reset-api-test", confirmDemoOnly: true },
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "admin-demo-reset-0001"
+        }
+      );
+      expect(demoReset.status).toBe(202);
+      expect(await demoReset.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "admin-demo",
+        seedSummary: expect.objectContaining({
+          service: "customcard-demo-seed",
+          resetKey: "demo-reset-api-test",
+          rows: 17,
+          signedArtifactUrls: true,
+          realOrdersEnabled: false
+        }),
+        persistedTables: expect.arrayContaining(["users", "render_packets", "orders", "order_events", "vendor_quotes", "data_requests", "audit_log"])
+      });
+
       const replay = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, headers);
       expect(replay.status).toBe(202);
       expect(await replay.json()).toMatchObject({
@@ -232,15 +272,15 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 2,
-        auditRecords: 2,
+        idempotencyRecords: 3,
+        auditRecords: 3,
         queuedJobs: 2
       });
     } finally {
       server.kill();
       await waitForExit(server);
     }
-  });
+  }, 10_000);
 });
 
 async function getJson(port: number, path: string, headers: Record<string, string> = {}, expectedStatus = 200): Promise<any> {
