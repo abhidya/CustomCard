@@ -54,6 +54,8 @@ skeleton for the production path. It includes:
   prices.
 - No live payment charge/refund, cancellation, or external order-confirmation
   integration; payment provider coverage is sandbox-contract only.
+- No live observability ingestion, alert routing, retention enforcement, or
+  incident-response drill; observability provider coverage is contract-only.
 - No React Native render test, emulator run, native build, or signed mobile
   artifact.
 - No physical print certification.

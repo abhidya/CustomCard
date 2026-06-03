@@ -23,11 +23,12 @@ describe("provider catalog", () => {
       "vendor-handoff",
       "cloud-runtime",
       "notification",
-      "payment"
+      "payment",
+      "observability"
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(80);
+    expect(summary.total).toBeGreaterThanOrEqual(87);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -60,6 +61,12 @@ describe("provider catalog", () => {
       "PayPal Orders payment",
       "Square Payments sandbox",
       "Adyen Checkout payment",
+      "Sentry error tracking",
+      "PostHog product analytics",
+      "OpenTelemetry OTLP exporter",
+      "Grafana Cloud OTLP",
+      "Datadog Logs",
+      "Better Stack Logs",
       "Azure OpenAI chat",
       "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
@@ -175,6 +182,20 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("ADYEN_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("ADYEN_MERCHANT_ACCOUNT");
     expect(admin.coverage.requiredEnv).toContain("ADYEN_HMAC_KEY");
+    expect(admin.coverage.requiredEnv).toContain("SENTRY_DSN");
+    expect(admin.coverage.requiredEnv).toContain("SENTRY_PROJECT_ID");
+    expect(admin.coverage.requiredEnv).toContain("SENTRY_ENVIRONMENT");
+    expect(admin.coverage.requiredEnv).toContain("POSTHOG_PROJECT_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("POSTHOG_HOST");
+    expect(admin.coverage.requiredEnv).toContain("OTEL_EXPORTER_OTLP_ENDPOINT");
+    expect(admin.coverage.requiredEnv).toContain("OTEL_EXPORTER_OTLP_HEADERS");
+    expect(admin.coverage.requiredEnv).toContain("GRAFANA_OTLP_ENDPOINT");
+    expect(admin.coverage.requiredEnv).toContain("GRAFANA_OTLP_INSTANCE_ID");
+    expect(admin.coverage.requiredEnv).toContain("GRAFANA_OTLP_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("DATADOG_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("DATADOG_SITE");
+    expect(admin.coverage.requiredEnv).toContain("BETTERSTACK_SOURCE_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("BETTERSTACK_INGESTING_HOST");
     expect(admin.coverage.requiredEnv).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
     expect(admin.coverage.requiredEnv).toContain("WALMART_VENDOR_MODE");

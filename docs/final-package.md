@@ -66,9 +66,9 @@
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, gated provider queue, cloud runtime adapters, and blocked live
   vendors.
-- Provider runtime: readiness dry runs for all 80 catalog adapters; redacted
+- Provider runtime: readiness dry runs for all 87 catalog adapters; redacted
   no-network request contracts for gated chat, image, event, contact,
-  hosted-auth, and notification providers; hard
+  hosted-auth, notification, payment, and observability providers; hard
   block for live vendor order adapters; hosted auth request contracts for
   common identity providers; metadata-only contact/address-book import
   contracts; local public printer pricing research
@@ -101,12 +101,12 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 16 test files, 109 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.7% statements, 84.79% branches, 97.54% functions, 95.6% lines across core, API, artifact handoff, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 16 test files, 111 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.91% statements, 85.13% branches, 97.58% functions, 95.73% lines across core, API, artifact handoff, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 80 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 87 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, append-only audit, demo reset mapping, and 11 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
@@ -163,6 +163,8 @@
   covered.
 - No live vendor quote, order, payment charge/refund, or cancellation
   integration; payment provider coverage is sandbox-contract only.
+- No live observability ingestion, alert routing, retention enforcement, or
+  incident-response drill; observability provider coverage is contract-only.
 - Public printer pricing is observed research only; checkout confirmation,
   taxes, coupons, stock, and pickup windows are not live-verified.
 - No real droplet or Kubernetes deployment execution evidence.
@@ -184,5 +186,5 @@ visual evidence, and honest handoff notes.
 
 Not ready to claim: production SaaS, live OAuth integration, paid AI generation,
 direct retail-printer ordering, live charges/refunds, certified physical print
-quality, deployed service, native mobile release, or legally/security-reviewed
-product.
+quality, live observability operations, deployed service, native mobile release,
+or legally/security-reviewed product.

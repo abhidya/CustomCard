@@ -6,6 +6,7 @@ import {
   buildEventImportRuntime,
   buildImageGenerationRuntime,
   buildNotificationRuntime,
+  buildObservabilityRuntime,
   buildPaymentRuntime,
   buildProviderAdapterRuntime,
   buildTextChatRuntime,
@@ -37,6 +38,8 @@ const readyEnv: ProviderRuntimeEnv = {
   BEDROCK_IMAGE_MODEL_ID: "amazon.titan-image-generator-v2:0",
   BEDROCK_TEXT_MODEL_ID: "anthropic.claude-3-5-haiku-20241022-v1:0",
   BFL_API_KEY: "configured-bfl-key",
+  BETTERSTACK_INGESTING_HOST: "in.logs.betterstack.com",
+  BETTERSTACK_SOURCE_TOKEN: "configured-betterstack-source-token",
   CARDDAV_ADDRESSBOOK_PATH: "addressbooks/users/customcard/contacts",
   CARDDAV_APP_PASSWORD: "configured-carddav-app-password",
   CARDDAV_BASE_URL: "https://contacts.customcard.test",
@@ -53,6 +56,8 @@ const readyEnv: ProviderRuntimeEnv = {
   CUSTOMCARD_PAYMENT_SUCCESS_URL: "https://customcard.test/payment/success",
   CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
+  DATADOG_API_KEY: "configured-datadog-api-key",
+  DATADOG_SITE: "datadoghq.com",
   DEEPSEEK_API_KEY: "configured-deepseek-key",
   EXPO_ACCESS_TOKEN: "configured-expo-access-token",
   FEDEX_VENDOR_MODE: "certification-configured-only",
@@ -64,6 +69,9 @@ const readyEnv: ProviderRuntimeEnv = {
   GOOGLE_GENERATIVE_AI_API_KEY: "configured-google-ai-key",
   GOOGLE_OAUTH_CLIENT_ID: "configured-google-client-id",
   GOOGLE_OAUTH_CLIENT_SECRET: "configured-google-client-secret",
+  GRAFANA_OTLP_API_KEY: "configured-grafana-otlp-api-key",
+  GRAFANA_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-east-0.grafana.net/otlp",
+  GRAFANA_OTLP_INSTANCE_ID: "configured-grafana-instance-id",
   GROQ_API_KEY: "configured-groq-key",
   HUGGINGFACE_API_TOKEN: "configured-huggingface-token",
   IDEOGRAM_API_KEY: "configured-ideogram-key",
@@ -78,11 +86,15 @@ const readyEnv: ProviderRuntimeEnv = {
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   OPENAI_API_KEY: "configured-openai-key",
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otel-collector.customcard.test",
+  OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Bearer configured-otel-token",
   PAYPAL_CLIENT_ID: "configured-paypal-client-id",
   PAYPAL_CLIENT_SECRET: "configured-paypal-client-secret",
   PAYPAL_WEBHOOK_ID: "configured-paypal-webhook-id",
   PERPLEXITY_API_KEY: "configured-perplexity-key",
   POSTMARK_SERVER_TOKEN: "configured-postmark-server-token",
+  POSTHOG_HOST: "https://us.i.posthog.com",
+  POSTHOG_PROJECT_API_KEY: "configured-posthog-project-api-key",
   POSTGRES_PASSWORD: "configured-postgres-password",
   QUEUE_URL: "redis://localhost:6379",
   REPLICATE_API_TOKEN: "configured-replicate-token",
@@ -90,6 +102,9 @@ const readyEnv: ProviderRuntimeEnv = {
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   SENDGRID_API_KEY: "configured-sendgrid-key",
+  SENTRY_DSN: "https://public@sentry.example/123",
+  SENTRY_ENVIRONMENT: "contract",
+  SENTRY_PROJECT_ID: "123",
   SQUARE_ACCESS_TOKEN: "configured-square-access-token",
   SQUARE_LOCATION_ID: "configured-square-location-id",
   SQUARE_WEBHOOK_SIGNATURE_KEY: "configured-square-webhook-signature-key",
@@ -128,6 +143,7 @@ const openGates: ProviderGateState = {
   notificationOptInRecorded: true,
   idempotencyKeyReady: true,
   paymentSandboxConfigured: true,
+  alertRoutingConfigured: true,
   physicalPrintQaRecorded: true,
   piiMinimized: true,
   promptAuditApproved: true,
@@ -136,9 +152,12 @@ const openGates: ProviderGateState = {
   revocationHandlingReady: true,
   spendLimitCents: 100,
   refundPathDocumented: true,
+  retentionPolicyConfigured: true,
   sensitiveContentExcluded: true,
   suppressionListChecked: true,
   tenantReviewed: true,
+  telemetryPiiRedacted: true,
+  telemetrySamplingConfigured: true,
   vendorCertificationRecorded: true,
   webhookSignatureVerified: true
 };
@@ -198,6 +217,21 @@ const paymentInput = {
   sandboxMode: true,
   idempotencyKey: "payment-idempotency-key",
   refundPathDocumented: true
+};
+
+const observabilityInput = {
+  eventType: "error" as const,
+  serviceName: "customcard-api",
+  release: "2026.06.03",
+  environment: "contract",
+  route: "/api/customer/bootstrap?email=sara@example.com",
+  message: "Runtime error for sara@example.com. Card 4111 1111 1111 1111 should not appear in telemetry.",
+  severity: "error" as const,
+  traceId: "trace-123",
+  metricName: "customcard.runtime.error",
+  value: 1,
+  piiFree: true,
+  sampled: true
 };
 
 describe("provider runtime contracts", () => {
@@ -621,6 +655,79 @@ describe("provider runtime contracts", () => {
     );
   });
 
+  it("builds redacted no-network observability request contracts", () => {
+    const providerIds = [
+      "sentry-error-observability",
+      "posthog-product-observability",
+      "opentelemetry-otlp-observability",
+      "grafana-cloud-otlp-observability",
+      "datadog-logs-observability",
+      "betterstack-logs-observability"
+    ];
+
+    for (const providerId of providerIds) {
+      const result = buildObservabilityRuntime(providerId, observabilityInput, readyEnv, openGates);
+      const serializedBody = JSON.stringify(result.request?.body);
+      const serializedHeaders = JSON.stringify(result.request?.headers);
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.method, providerId).toBe("POST");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["operational-telemetry", "PII-redacted", "sampled", "retention-governed"])
+      );
+      expect(serializedHeaders, providerId).not.toContain("configured-");
+      expect(serializedBody, providerId).toContain("[redacted-email]");
+      expect(serializedBody, providerId).toContain("[redacted-payment]");
+      expect(serializedBody, providerId).not.toContain("sara@example.com");
+      expect(serializedBody, providerId).not.toContain("4111 1111 1111 1111");
+      expect(serializedBody, providerId).toContain("live_telemetry");
+    }
+
+    expect(buildObservabilityRuntime("sentry-error-observability", observabilityInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://sentry.io/api/{SENTRY_PROJECT_ID}/envelope/",
+      headers: expect.objectContaining({ authorization: "Sentry {SENTRY_DSN}" })
+    });
+    expect(buildObservabilityRuntime("posthog-product-observability", observabilityInput, readyEnv, openGates).request?.url).toBe(
+      "{POSTHOG_HOST}/capture/"
+    );
+    expect(buildObservabilityRuntime("opentelemetry-otlp-observability", observabilityInput, readyEnv, openGates).request?.url).toBe(
+      "{OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces"
+    );
+    expect(buildObservabilityRuntime("grafana-cloud-otlp-observability", observabilityInput, readyEnv, openGates).request).toMatchObject({
+      url: "{GRAFANA_OTLP_ENDPOINT}/v1/metrics",
+      headers: expect.objectContaining({ authorization: "Basic {GRAFANA_OTLP_INSTANCE_ID}:{GRAFANA_OTLP_API_KEY}" })
+    });
+    expect(buildObservabilityRuntime("datadog-logs-observability", observabilityInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://http-intake.logs.{DATADOG_SITE}/api/v2/logs",
+      headers: expect.objectContaining({ "DD-API-KEY": "{DATADOG_API_KEY}" })
+    });
+    expect(buildObservabilityRuntime("betterstack-logs-observability", observabilityInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://{BETTERSTACK_INGESTING_HOST}/",
+      headers: expect.objectContaining({ authorization: "Bearer {BETTERSTACK_SOURCE_TOKEN}" })
+    });
+  });
+
+  it("blocks observability providers without redaction, sampling, alert, and retention gates", () => {
+    const result = buildObservabilityRuntime(
+      "sentry-error-observability",
+      { ...observabilityInput, piiFree: false, sampled: false },
+      readyEnv,
+      { networkAllowlisted: true }
+    );
+
+    expect(result.mode).toBe("blocked");
+    expect(result.request).toBeUndefined();
+    expect(result.readiness.blockedReasons).toEqual(
+      expect.arrayContaining([
+        "Missing safety gate: telemetry PII redaction",
+        "Missing safety gate: telemetry sampling",
+        "Missing safety gate: alert routing",
+        "Missing safety gate: telemetry retention policy"
+      ])
+    );
+  });
+
   it("blocks provider imports when consent and schema gates are absent", () => {
     const calendar = buildEventImportRuntime("google-calendar-events", importInput, readyEnv, {});
     const graphCalendar = buildEventImportRuntime("microsoft-graph-calendar", importInput, readyEnv, {
@@ -654,6 +761,7 @@ describe("provider runtime contracts", () => {
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const notification = buildNotificationRuntime("browser-download-notification", notificationInput);
     const payment = buildPaymentRuntime("no-payment-checkout-gate", paymentInput);
+    const observability = buildObservabilityRuntime("local-health-audit-observability", observabilityInput);
     const printPackage = buildProviderAdapterRuntime("local-print-package-export");
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
     const pricing = buildVendorRuntime("public-printer-pricing-research", { vendorId: "walgreens" });
@@ -675,6 +783,8 @@ describe("provider runtime contracts", () => {
     expect(notification.localResult).toMatchObject({ noNetwork: true, visibleOnly: true });
     expect(payment.mode).toBe("local-result");
     expect(payment.localResult).toMatchObject({ noNetwork: true, realChargesEnabled: false, cardDataStored: false });
+    expect(observability.mode).toBe("local-result");
+    expect(observability.localResult).toMatchObject({ noNetwork: true, telemetryShipped: false });
     expect(printPackage.mode).toBe("local-result");
     expect(printPackage.localResult).toMatchObject({
       fileCount: 6,

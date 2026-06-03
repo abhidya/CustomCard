@@ -9,7 +9,8 @@ export type ProviderCapability =
   | "vendor-handoff"
   | "cloud-runtime"
   | "notification"
-  | "payment";
+  | "payment"
+  | "observability";
 
 export type ProviderStatus = "ready-local" | "credential-gated" | "contract-only" | "blocked";
 export type ProviderCost = "free-local" | "free-tier" | "usage-based" | "self-hosted" | "manual";
@@ -94,7 +95,8 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
   "vendor-handoff": "Vendor handoff",
   "cloud-runtime": "Cloud runtime",
   notification: "Notification",
-  payment: "Payment"
+  payment: "Payment",
+  observability: "Observability"
 };
 
 export const providerCatalog: ProviderAdapter[] = [
@@ -1279,6 +1281,110 @@ export const providerCatalog: ProviderAdapter[] = [
     priority: 9.94,
     detail: "Prepares Adyen Checkout API sandbox payment contracts with tokenized client-side payment data only.",
     docsUrl: "https://docs.adyen.com/api-explorer/Checkout/latest/post/payments"
+  },
+  {
+    id: "local-health-audit-observability",
+    label: "Local health and audit telemetry",
+    provider: "CustomCard runtime",
+    capability: "observability",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["No external telemetry", "PII redaction", "Sampling configured"],
+    roleSurface: ["admin"],
+    priority: 9.95,
+    detail: "Summarizes health, audit, and runtime events locally without shipping telemetry."
+  },
+  {
+    id: "sentry-error-observability",
+    label: "Sentry error tracking",
+    provider: "Sentry",
+    capability: "observability",
+    lane: "Error tracking",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["SENTRY_DSN", "SENTRY_PROJECT_ID", "SENTRY_ENVIRONMENT"],
+    safetyGates: ["PII redaction", "Sampling configured", "Alert routing", "Retention policy", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 9.96,
+    detail: "Prepares Sentry envelope contracts for redacted runtime errors and release markers.",
+    docsUrl: "https://develop.sentry.dev/sdk/foundations/transport/envelopes/"
+  },
+  {
+    id: "posthog-product-observability",
+    label: "PostHog product analytics",
+    provider: "PostHog",
+    capability: "observability",
+    lane: "Product analytics",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["POSTHOG_PROJECT_API_KEY", "POSTHOG_HOST"],
+    safetyGates: ["PII redaction", "Sampling configured", "Alert routing", "Retention policy", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 9.97,
+    detail: "Prepares consent-aware product event capture contracts without real user tracking.",
+    docsUrl: "https://posthog.com/docs/api/capture"
+  },
+  {
+    id: "opentelemetry-otlp-observability",
+    label: "OpenTelemetry OTLP exporter",
+    provider: "OpenTelemetry",
+    capability: "observability",
+    lane: "Open telemetry",
+    status: "credential-gated",
+    cost: "self-hosted",
+    credentials: ["OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS"],
+    safetyGates: ["PII redaction", "Sampling configured", "Alert routing", "Retention policy", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 9.98,
+    detail: "Prepares OTLP trace/metric export contracts for self-hosted or managed collectors.",
+    docsUrl: "https://opentelemetry.io/docs/specs/otlp/"
+  },
+  {
+    id: "grafana-cloud-otlp-observability",
+    label: "Grafana Cloud OTLP",
+    provider: "Grafana Cloud",
+    capability: "observability",
+    lane: "Managed observability",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["GRAFANA_OTLP_ENDPOINT", "GRAFANA_OTLP_INSTANCE_ID", "GRAFANA_OTLP_API_KEY"],
+    safetyGates: ["PII redaction", "Sampling configured", "Alert routing", "Retention policy", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 9.99,
+    detail: "Prepares Grafana Cloud OTLP metrics contracts for cheap managed monitoring.",
+    docsUrl: "https://grafana.com/docs/grafana-cloud/send-data/otlp/send-data-otlp/"
+  },
+  {
+    id: "datadog-logs-observability",
+    label: "Datadog Logs",
+    provider: "Datadog",
+    capability: "observability",
+    lane: "Managed logs",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["DATADOG_API_KEY", "DATADOG_SITE"],
+    safetyGates: ["PII redaction", "Sampling configured", "Alert routing", "Retention policy", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 10.01,
+    detail: "Prepares Datadog log intake contracts for redacted API and worker events.",
+    docsUrl: "https://docs.datadoghq.com/api/latest/logs/"
+  },
+  {
+    id: "betterstack-logs-observability",
+    label: "Better Stack Logs",
+    provider: "Better Stack",
+    capability: "observability",
+    lane: "Managed logs",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["BETTERSTACK_SOURCE_TOKEN", "BETTERSTACK_INGESTING_HOST"],
+    safetyGates: ["PII redaction", "Sampling configured", "Alert routing", "Retention policy", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 10.02,
+    detail: "Prepares Better Stack HTTP log ingestion contracts for low-cost runtime logs.",
+    docsUrl: "https://betterstack.com/docs/logs/ingesting-data/http/logs/"
   },
   {
     id: "docker-compose-dev",

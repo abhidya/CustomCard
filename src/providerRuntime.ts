@@ -41,6 +41,10 @@ export interface ProviderGateState {
   idempotencyKeyReady?: boolean;
   refundPathDocumented?: boolean;
   webhookSignatureVerified?: boolean;
+  telemetryPiiRedacted?: boolean;
+  telemetrySamplingConfigured?: boolean;
+  alertRoutingConfigured?: boolean;
+  retentionPolicyConfigured?: boolean;
   vendorCertificationRecorded?: boolean;
   liveQuoteReceived?: boolean;
   externalShareApproved?: boolean;
@@ -107,6 +111,21 @@ export interface PaymentRuntimeInput {
   refundPathDocumented?: boolean;
 }
 
+export interface ObservabilityRuntimeInput {
+  eventType: "health" | "error" | "analytics" | "metric" | "trace" | "log";
+  serviceName: string;
+  release: string;
+  environment: string;
+  route: string;
+  message: string;
+  severity: "info" | "warning" | "error";
+  traceId?: string;
+  metricName?: string;
+  value?: number;
+  piiFree: boolean;
+  sampled: boolean;
+}
+
 export interface VendorRuntimeInput {
   vendorId: VendorId;
   quoteCents?: number;
@@ -124,6 +143,7 @@ export interface ProviderRuntimeInput {
   contactImport?: ContactImportRuntimeInput;
   notification?: NotificationRuntimeInput;
   payment?: PaymentRuntimeInput;
+  observability?: ObservabilityRuntimeInput;
   vendor?: VendorRuntimeInput;
 }
 
@@ -221,6 +241,9 @@ export function buildProviderAdapterRuntime(
   }
   if (adapter.capability === "payment") {
     return buildPaymentRuntime(adapterId, input.payment ?? defaultPaymentInput, env, gates);
+  }
+  if (adapter.capability === "observability") {
+    return buildObservabilityRuntime(adapterId, input.observability ?? defaultObservabilityInput, env, gates);
   }
 
   const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
@@ -509,6 +532,43 @@ export function buildPaymentRuntime(
   });
 
   return blockedOrRequest(adapter, readiness, () => buildPaymentRequest(adapter, input));
+}
+
+export function buildObservabilityRuntime(
+  adapterId: string,
+  input: ObservabilityRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "observability");
+  const sanitized = sanitizeText([input.message, `route:${input.route}`, `service:${input.serviceName}`].join("\n"));
+
+  if (adapter.id === "local-health-audit-observability") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: {
+        adapterId: adapter.id,
+        noNetwork: true,
+        eventType: input.eventType,
+        serviceName: input.serviceName,
+        severity: input.severity,
+        redactions: sanitized.redactions,
+        telemetryShipped: false
+      }
+    };
+  }
+
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, {
+    ...gates,
+    telemetryPiiRedacted: input.piiFree || gates.telemetryPiiRedacted,
+    telemetrySamplingConfigured: input.sampled || gates.telemetrySamplingConfigured
+  });
+
+  return blockedOrRequest(adapter, readiness, () => buildObservabilityRequest(adapter, input, sanitized));
 }
 
 export function buildVendorRuntime(
@@ -1476,6 +1536,165 @@ function buildPaymentRequest(adapter: ProviderAdapter, input: PaymentRuntimeInpu
   );
 }
 
+function buildObservabilityRequest(
+  adapter: ProviderAdapter,
+  input: ObservabilityRuntimeInput,
+  sanitized: SanitizedText
+): RuntimeRequestContract {
+  const metadata = {
+    service_name: normalizeTelemetryToken(input.serviceName, "customcard-api"),
+    release: normalizeTelemetryToken(input.release, "local-contract"),
+    environment: normalizeTelemetryToken(input.environment, "contract"),
+    event_type: input.eventType,
+    severity: input.severity,
+    route: sanitizeText(input.route).text || "/contract",
+    trace_id: input.traceId ? normalizeTelemetryToken(input.traceId, "{customcard-trace-id}") : "{customcard-trace-id}",
+    metric_name: normalizeTelemetryToken(input.metricName || "customcard.runtime.contract", "customcard.runtime.contract"),
+    value: normalizeMetricValue(input.value),
+    message: sanitized.text,
+    redactions: sanitized.redactions,
+    pii_redacted: true,
+    sampling_configured: true,
+    live_telemetry: "disabled"
+  };
+
+  if (adapter.id === "sentry-error-observability") {
+    return request(
+      adapter,
+      "POST",
+      "https://sentry.io/api/{SENTRY_PROJECT_ID}/envelope/",
+      ["SENTRY_DSN", "SENTRY_PROJECT_ID", "SENTRY_ENVIRONMENT"],
+      {
+        envelopeHeaders: { dsn: "{SENTRY_DSN}", sent_at: "{contract-timestamp}" },
+        itemHeaders: { type: "event" },
+        event: {
+          message: sanitized.text,
+          level: input.severity,
+          environment: "{SENTRY_ENVIRONMENT}",
+          release: metadata.release,
+          tags: metadata,
+          extra: { noNetwork: true }
+        }
+      },
+      [],
+      {
+        authorization: "Sentry {SENTRY_DSN}",
+        "content-type": "application/x-sentry-envelope"
+      }
+    );
+  }
+
+  if (adapter.id === "posthog-product-observability") {
+    return request(adapter, "POST", "{POSTHOG_HOST}/capture/", ["POSTHOG_PROJECT_API_KEY", "POSTHOG_HOST"], {
+      api_key: "{POSTHOG_PROJECT_API_KEY}",
+      event: `customcard_${input.eventType}`,
+      distinct_id: "{customcard-customer-reference}",
+      properties: {
+        ...metadata,
+        message: sanitized.text
+      }
+    });
+  }
+
+  if (adapter.id === "opentelemetry-otlp-observability") {
+    return request(
+      adapter,
+      "POST",
+      "{OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces",
+      ["OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS"],
+      {
+        resourceSpans: [
+          {
+            resource: { attributes: telemetryAttributes(metadata) },
+            scopeSpans: [
+              {
+                scope: { name: "customcard.providerRuntime" },
+                spans: [
+                  {
+                    traceId: metadata.trace_id,
+                    spanId: "{customcard-span-id}",
+                    name: `customcard.${input.eventType}`,
+                    attributes: telemetryAttributes({ ...metadata, message: sanitized.text })
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      [],
+      { authorization: "{OTEL_EXPORTER_OTLP_HEADERS}" }
+    );
+  }
+
+  if (adapter.id === "grafana-cloud-otlp-observability") {
+    return request(
+      adapter,
+      "POST",
+      "{GRAFANA_OTLP_ENDPOINT}/v1/metrics",
+      ["GRAFANA_OTLP_ENDPOINT", "GRAFANA_OTLP_INSTANCE_ID", "GRAFANA_OTLP_API_KEY"],
+      {
+        resourceMetrics: [
+          {
+            resource: { attributes: telemetryAttributes(metadata) },
+            scopeMetrics: [
+              {
+                scope: { name: "customcard.providerRuntime" },
+                metrics: [
+                  {
+                    name: metadata.metric_name,
+                    gauge: {
+                      dataPoints: [{ asDouble: metadata.value, attributes: telemetryAttributes(metadata) }]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      [],
+      { authorization: "Basic {GRAFANA_OTLP_INSTANCE_ID}:{GRAFANA_OTLP_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "datadog-logs-observability") {
+    return request(
+      adapter,
+      "POST",
+      "https://http-intake.logs.{DATADOG_SITE}/api/v2/logs",
+      ["DATADOG_API_KEY", "DATADOG_SITE"],
+      [
+        {
+          ddsource: "customcard",
+          service: metadata.service_name,
+          status: input.severity,
+          message: sanitized.text,
+          tags: [`env:${metadata.environment}`, `release:${metadata.release}`],
+          customcard: metadata
+        }
+      ],
+      [],
+      { "DD-API-KEY": "{DATADOG_API_KEY}" }
+    );
+  }
+
+  return request(
+    adapter,
+    "POST",
+    "https://{BETTERSTACK_INGESTING_HOST}/",
+    ["BETTERSTACK_SOURCE_TOKEN", "BETTERSTACK_INGESTING_HOST"],
+    {
+      dt: "{contract-timestamp}",
+      level: input.severity,
+      message: sanitized.text,
+      customcard: metadata
+    },
+    [],
+    { authorization: "Bearer {BETTERSTACK_SOURCE_TOKEN}" }
+  );
+}
+
 function request(
   adapter: ProviderAdapter,
   method: HttpMethod,
@@ -1537,6 +1756,10 @@ function missingSafetyReasons(adapter: ProviderAdapter, gates: ProviderGateState
     if (gate.includes("Idempotency key")) return ["Missing safety gate: payment idempotency key"];
     if (gate.includes("Refund path documented")) return ["Missing safety gate: refund path documented"];
     if (gate.includes("Webhook signature verification")) return ["Missing safety gate: webhook signature verification"];
+    if (gate.includes("PII redaction")) return ["Missing safety gate: telemetry PII redaction"];
+    if (gate.includes("Sampling configured")) return ["Missing safety gate: telemetry sampling"];
+    if (gate.includes("Alert routing")) return ["Missing safety gate: alert routing"];
+    if (gate.includes("Retention policy")) return ["Missing safety gate: telemetry retention policy"];
     return [`Missing safety gate: ${gate}`];
   });
 }
@@ -1575,6 +1798,11 @@ function safetyGateSatisfied(gate: string, gates: ProviderGateState): boolean {
   if (gate.includes("Idempotency key")) return Boolean(gates.idempotencyKeyReady);
   if (gate.includes("Refund path documented")) return Boolean(gates.refundPathDocumented);
   if (gate.includes("Webhook signature verification")) return Boolean(gates.webhookSignatureVerified);
+  if (gate.includes("No external telemetry")) return true;
+  if (gate.includes("PII redaction")) return Boolean(gates.telemetryPiiRedacted || gates.piiMinimized);
+  if (gate.includes("Sampling configured")) return Boolean(gates.telemetrySamplingConfigured);
+  if (gate.includes("Alert routing")) return Boolean(gates.alertRoutingConfigured);
+  if (gate.includes("Retention policy")) return Boolean(gates.retentionPolicyConfigured);
   if (gate.includes("Physical print certification") || gate.includes("Vendor certification")) {
     return Boolean(gates.vendorCertificationRecorded);
   }
@@ -1619,6 +1847,7 @@ function runtimeSupported(adapter: ProviderAdapter): boolean {
   if (adapter.capability === "render-export") return true;
   if (adapter.capability === "notification") return true;
   if (adapter.capability === "payment") return true;
+  if (adapter.capability === "observability") return true;
   return ["event-import", "contact-import", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
 }
 
@@ -1630,6 +1859,7 @@ function dataClassificationsFor(adapter: ProviderAdapter): string[] {
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
   if (adapter.capability === "notification") return ["notification-recipient", "status-message", "PII-redacted", "opt-in-required"];
   if (adapter.capability === "payment") return ["payment-intent", "no-card-data-storage", "idempotent-mutation", "sandbox-only"];
+  if (adapter.capability === "observability") return ["operational-telemetry", "PII-redacted", "sampled", "retention-governed"];
   if (adapter.capability === "vendor-handoff") return ["print-handoff", "external-share-approval-required"];
   return ["operational-metadata"];
 }
@@ -1673,6 +1903,23 @@ function normalizeCurrency(currency: string): string {
 function normalizeReference(value: string, fallback: string): string {
   const normalized = value.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
   return normalized || fallback;
+}
+
+function normalizeTelemetryToken(value: string, fallback: string): string {
+  const normalized = value.trim().replace(/[^a-zA-Z0-9_.:/-]/g, "-").slice(0, 96);
+  return normalized || fallback;
+}
+
+function normalizeMetricValue(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
+  return Math.max(0, Math.min(1000000, Number(value)));
+}
+
+function telemetryAttributes(values: Record<string, unknown>) {
+  return Object.entries(values).map(([key, value]) => ({
+    key,
+    value: typeof value === "number" ? { doubleValue: value } : { stringValue: Array.isArray(value) ? value.join(",") : String(value) }
+  }));
 }
 
 function uniqueSorted(values: string[]): string[] {
@@ -1762,6 +2009,21 @@ const defaultPaymentInput: PaymentRuntimeInput = {
   sandboxMode: false,
   idempotencyKey: undefined,
   refundPathDocumented: false
+};
+
+const defaultObservabilityInput: ObservabilityRuntimeInput = {
+  eventType: "health",
+  serviceName: "customcard-api",
+  release: "local-contract",
+  environment: "contract",
+  route: "/api/health",
+  message: "CustomCard runtime contract is ready.",
+  severity: "info",
+  traceId: "contract-trace",
+  metricName: "customcard.runtime.ready",
+  value: 1,
+  piiFree: false,
+  sampled: false
 };
 
 const defaultVendorInput: VendorRuntimeInput = {

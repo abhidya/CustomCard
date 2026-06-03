@@ -55,15 +55,20 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Payments: local no-payment gate ready; credential-gated Stripe Checkout,
   PayPal Orders, Square Payments, and Adyen Checkout sandbox contracts. Live
   charges, captures, refunds, disputes, taxes, and settlement remain unverified.
+- Observability: local health/audit telemetry ready; credential-gated Sentry,
+  PostHog, OpenTelemetry OTLP, Grafana Cloud, Datadog Logs, and Better Stack
+  Logs contracts. Live telemetry ingestion, alert routing, retention enforcement,
+  and incident response remain unverified.
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
 
 `src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
 It can evaluate readiness for every adapter, reject placeholder credentials,
 build redacted no-network request shapes for credential-gated text, image,
-event, contact, hosted-auth, notification, and payment providers, and keep live
-vendor adapters blocked even if test credentials and approval gates are present.
-These contracts intentionally stop before `fetch` or any SDK call.
+event, contact, hosted-auth, notification, payment, and observability providers,
+and keep live vendor adapters blocked even if test credentials and approval
+gates are present. These contracts intentionally stop before `fetch` or any SDK
+call.
 
 Official documentation anchors used for the adapter contracts:
 
@@ -116,6 +121,12 @@ Official documentation anchors used for the adapter contracts:
 - PayPal Orders API create order: https://developer.paypal.com/docs/api/orders/v2/#orders_create
 - Square Payments API overview: https://developer.squareup.com/docs/payments-api/take-payments
 - Adyen Checkout payments API: https://docs.adyen.com/api-explorer/Checkout/latest/post/payments
+- Sentry envelopes: https://develop.sentry.dev/sdk/foundations/transport/envelopes/
+- PostHog capture API: https://posthog.com/docs/api/capture
+- OpenTelemetry OTLP specification: https://opentelemetry.io/docs/specs/otlp/
+- Grafana Cloud OTLP: https://grafana.com/docs/grafana-cloud/send-data/otlp/send-data-otlp/
+- Datadog Logs API: https://docs.datadoghq.com/api/latest/logs/
+- Better Stack HTTP log source: https://betterstack.com/docs/logs/ingesting-data/http/logs/
 
 ## Customer Panel
 
@@ -232,8 +243,8 @@ The runtime remains fail-closed:
   mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
-- Backups, observability, and managed secrets remain required before production
-  traffic.
+- Backups, live observability provider verification, and managed secrets remain
+  required before production traffic.
 
 ## Verification Strategy
 
@@ -244,7 +255,7 @@ Implemented checks:
   vendor status.
 - `src/providerRuntime.test.ts` validates executable readiness for every
   catalog adapter, redacted no-network request contracts for chat/image/
-  notification/payment providers, metadata-only import contracts,
+  notification/payment/observability providers, metadata-only import contracts,
   placeholder-secret rejection, free local fallbacks, and hard-blocked live
   vendor order adapters.
 - `src/printerPricing.test.ts` validates source-backed public price
@@ -282,6 +293,8 @@ Remaining high-risk work:
 - No live OAuth flow.
 - No live AI/image provider call.
 - No live payment charge/refund, live quote, or live order adapter.
+- No live observability ingestion, alert routing, retention enforcement, or
+  incident-response drill.
 - No live printer tax, coupon, stock, or pickup-window integration.
 - No live object-store upload or cloud object-store integration; signed
   render-packet URL contracts are covered.

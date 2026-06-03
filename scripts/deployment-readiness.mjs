@@ -190,7 +190,21 @@ const checks = [
     "SQUARE_WEBHOOK_SIGNATURE_KEY=",
     "ADYEN_API_KEY=",
     "ADYEN_MERCHANT_ACCOUNT=",
-    "ADYEN_HMAC_KEY="
+    "ADYEN_HMAC_KEY=",
+    "SENTRY_DSN=",
+    "SENTRY_PROJECT_ID=",
+    "SENTRY_ENVIRONMENT=",
+    "POSTHOG_PROJECT_API_KEY=",
+    "POSTHOG_HOST=",
+    "OTEL_EXPORTER_OTLP_ENDPOINT=",
+    "OTEL_EXPORTER_OTLP_HEADERS=",
+    "GRAFANA_OTLP_ENDPOINT=",
+    "GRAFANA_OTLP_INSTANCE_ID=",
+    "GRAFANA_OTLP_API_KEY=",
+    "DATADOG_API_KEY=",
+    "DATADOG_SITE=",
+    "BETTERSTACK_SOURCE_TOKEN=",
+    "BETTERSTACK_INGESTING_HOST="
   ]),
   checkIncludes("data", "migration-critical-tables", contents.migration, [
     "CREATE TABLE users",

@@ -31,7 +31,7 @@ Requirement types:
 | R019 | Keep AI/provider calls deterministic or mockable for tests. | Inferred | Covered by no live AI calls, deterministic extraction/rendering, and dry-run provider contracts that never call a network. | `src/freeMvp.ts`, `src/providerRuntime.ts`, `runOperationalExtraction`, `stableId`, tests for free import, SVG generation, provider dry runs, weak-input blocking, and checksums. |
 | R020 | Use production auth, real OAuth, vendor APIs, payment, live quotes, and physical certification. | Open | Partially modeled but not production-covered. Payment now has no-network sandbox request contracts for Stripe, PayPal, Square, and Adyen, but live auth, OAuth, payment charges/refunds, vendor APIs, live quotes, and physical certification remain intentionally blocked. | README known gaps, `docs/free-mvp-plan.md`, `docs/handoff-notes.md`, adapter kill switch, `src/providerCatalog.ts` blocked live vendor adapters and payment sandbox adapters, `src/providerRuntime.ts` payment dry runs. |
 | R021 | Provide customer and admin panels. | Explicit | Covered in the web UI. Customer panel shows next-card state, local chat, image/render choices, and free fallbacks; admin panel shows provider coverage, dry-run runtime readiness, env gates, deployment readiness, and blocked vendors. | `src/App.tsx`, `src/styles.css`, `tests/app-smoke.test.ts`. |
-| R022 | Load broad service-provider adapters for image generation, integrations, and text chat. | Explicit | Covered as a tested 80-adapter catalog plus executable no-network dry-run contracts with free local fallbacks, hosted-auth readiness, contact/address-book import readiness, notification readiness for email/SMS/WhatsApp/push providers, payment sandbox readiness for Stripe/PayPal/Square/Adyen, public printer pricing research, local print package export, 50 credential-gated external providers, and hard-blocked live vendors; live network calls are not implemented. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `infra/env/.env.example`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. |
+| R022 | Load broad service-provider adapters for image generation, integrations, and text chat. | Explicit | Covered as a tested 87-adapter catalog plus executable no-network dry-run contracts with free local fallbacks, hosted-auth readiness, contact/address-book import readiness, notification readiness for email/SMS/WhatsApp/push providers, payment sandbox readiness for Stripe/PayPal/Square/Adyen, observability readiness for error/product/trace/metric/log providers, public printer pricing research, local print package export, 56 credential-gated external providers, and hard-blocked live vendors; live network calls are not implemented. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `infra/env/.env.example`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. |
 | R023 | Include a customer-facing text chat interface. | Explicit | Covered as deterministic local chat transcript in the customer panel and mobile shell, with dry-run request contracts for future model providers; live model providers remain gated. | `buildCustomerChatTranscript`, `buildTextChatRuntime`, `CustomerPanelView`, `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`, `tests/mobile-contract.test.ts`. |
 | R024 | Include image-generation/render provider readiness. | Explicit | Covered by free browser SVG renderer plus dry-run gated OpenAI, Azure OpenAI, Amazon Bedrock, Gemini, Stability, Hugging Face, Replicate, Together, Ideogram, Leonardo, fal, and Black Forest Labs request contracts; no live paid call. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `CustomerPanelView`, `AdminPanelView`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`. |
 | R025 | Keep the system cheap and cloud-deployment ready through tested IaC. | Explicit | Partially covered. Free local fallback, droplet compose, Kubernetes manifests, env contract, object-store signing secret gates, runtime doctor, contract API doctor, memory API doctor, persistence doctor, deployment doctor, CI verification workflow, and infra tests exist; no real cloud deployment evidence. | `infra/docker-compose.dev.yml`, `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `infra/env/.env.example`, `.github/workflows/verify.yml`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `scripts/deployment-readiness.mjs`, `src/artifactHandoff.ts`, `tests/api-server.test.ts`, `tests/infra-contract.test.ts`, `docs/platform-expansion-design.md`. |
@@ -82,14 +82,15 @@ Requirement types:
   confirmation.
 - Customer/admin panels expose the local customer path and provider operations state.
 - Adapter readiness shows free-ready substitutes, credential-gated providers, contract-only adapters, and blocked live vendor integrations.
-- Provider catalog covers 80 adapters: 15 ready-local, 50 credential-gated, 9
+- Provider catalog covers 87 adapters: 16 ready-local, 56 credential-gated, 9
   contract-only, and 6 blocked.
 - Admin/adapters UI surfaces no-network runtime readiness, blocked dry-run
   state, and missing credential references.
 - Provider runtime dry runs cover every catalog adapter, redact contact/payment
   data before external provider contracts, keep imports metadata-only, prepare
-  payment provider requests only as sandbox/no-network contracts, and never
-  prepare live vendor order requests.
+  payment provider requests only as sandbox/no-network contracts, prepare
+  observability provider requests only as sampled/redacted no-network contracts,
+  and never prepare live vendor order requests.
 - Core, API, persistence, orchestration, and mobile contract coverage thresholds
   are enforced in `npm run check`: 90% statements, 80% branches, 90% functions,
   and 90% lines.
@@ -106,6 +107,8 @@ Requirement types:
   are not.
 - No live text-chat model call.
 - No live payment charge/refund or vendor quote/order/refund integration.
+- No live observability ingestion, alert routing, retention enforcement, or
+  incident-response drill.
 - Public printer prices are review-only observations, not live quote, tax,
   coupon, stock, or pickup-window guarantees.
 - No legal, security, privacy, or accessibility audit.
