@@ -63,14 +63,16 @@ it after each meaningful implementation pass.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, CI workflow gates, coverage scope, and the
   mobile shell/customer contract boundary.
-- Mobile contract tests cover the Expo customer experience model: card queue
-  items, approval controls, memory review, local chat, render choices,
-  review-only printer pricing previews, offline idempotent API sync, locale
-  readiness, manual handoff, and real-order kill-switch doctor behavior.
+- Mobile contract tests cover the Expo customer experience model: next-action
+  summary, card queue items, approval controls, memory review items,
+  print-proof checks, local chat, render choices, review-only printer pricing
+  previews, offline idempotent API sync, locale readiness, manual handoff, and
+  real-order kill-switch doctor behavior.
 - Agent-contract tests cover the typed orchestration surface and fail-closed
   default policy.
 - API-contract and API-server tests cover `/api/health`, customer/admin
-  bootstrap, mobile bootstrap with queue/approval/pricing/offline-sync state,
+  bootstrap, mobile bootstrap with next-action, queue, memory-review,
+  print-proof, pricing, and offline-sync state,
   provider readiness, idempotent mutation contracts,
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
   repository-backed `/api/memories/review`, `/api/render-packets`,
@@ -188,7 +190,7 @@ Result: passed.
 
 - Vitest: 24 test files passed, 158 tests passed.
 - Coverage: 22 core/API/persistence/infra/mobile test files passed, 149 tests passed; V8 report measured
-  91.04% statements, 84.09% branches, 97.16% functions, and 94.87% lines across
+  91.21% statements, 84.31% branches, 97.22% functions, and 94.97% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
@@ -429,7 +431,8 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 ```
 
 Result: passed. Mobile shell configuration resolved from environment and the
-customer experience contract was present.
+customer experience contract was present, including next-action, memory-review,
+and print-proof workflow state.
 
 ```text
 npm run mobile:release:doctor

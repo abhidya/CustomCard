@@ -35,6 +35,18 @@ const mobileBootstrap = {
     label: "Real orders disabled",
     detail: "Live provider, payment, and vendor APIs stay behind admin gates."
   },
+  todaySummary: {
+    cardQueueItemId: "card_anniversary_sara_ahmed",
+    recipientLabel: "Sara and Ahmed",
+    eventLabel: "Anniversary",
+    dueLabel: "Today by 5:00 PM",
+    primaryAction: "approve",
+    riskBadge: "Review before handoff",
+    panelCount: 4,
+    offlineReady: true,
+    realOrdersEnabled: false,
+    customerVisible: true
+  },
   sections: ["card-queue", "approval-controls", "memory-review", "text-chat", "image-render", "pricing-preview", "handoff", "offline-sync"],
   queueItems: [
     {
@@ -70,11 +82,67 @@ const mobileBootstrap = {
     "Local scripted assistant can draft and explain the card before any live model is connected.",
     "Live AI and vendor orders stay off until admin credentials and certification gates pass."
   ],
+  memoryReviewItems: [
+    {
+      id: "memory_sara_ahmed_first_apartment",
+      cardQueueItemId: "card_anniversary_sara_ahmed",
+      recipientLabel: "Sara and Ahmed",
+      memoryLabel: "First apartment note",
+      usage: "approved",
+      approvalRequired: false,
+      rawContentStored: false,
+      customerVisible: true
+    },
+    {
+      id: "memory_mom_garden",
+      cardQueueItemId: "card_birthday_mom",
+      recipientLabel: "Mom",
+      memoryLabel: "Garden hobby note",
+      usage: "review-required",
+      approvalRequired: true,
+      rawContentStored: false,
+      customerVisible: true
+    }
+  ],
   renderChoices: ["Browser SVG renderer", "Local print package export", "Credential-gated AI image providers"],
   pricingPreviews: [
     { vendor: "Walgreens", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false },
     { vendor: "CVS", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false },
     { vendor: "FedEx", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false }
+  ],
+  printProofChecks: [
+    {
+      id: "proof-size",
+      label: "5x7 format",
+      detail: "Four SVG panels match the manual vendor upload package.",
+      passed: true,
+      realOrderState: "manual",
+      customerVisible: true
+    },
+    {
+      id: "proof-resolution",
+      label: "300 DPI export",
+      detail: "Render packet keeps print dimensions and checksum evidence together.",
+      passed: true,
+      realOrderState: "manual",
+      customerVisible: true
+    },
+    {
+      id: "proof-safe-zone",
+      label: "Safe zone",
+      detail: "Panel text stays inside the tested SVG print area.",
+      passed: true,
+      realOrderState: "manual",
+      customerVisible: true
+    },
+    {
+      id: "proof-order-gate",
+      label: "Order gate",
+      detail: "Retail-printer submission stays blocked until certification evidence exists.",
+      passed: true,
+      realOrderState: "disabled",
+      customerVisible: true
+    }
   ],
   handoffSteps: [
     { label: "Download SVG set", realOrderState: "manual" },

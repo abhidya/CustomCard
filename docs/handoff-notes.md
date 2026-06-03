@@ -149,9 +149,10 @@ auth/idempotency behavior, repository-backed customer mutations, source-backed
 printer pricing research, local SVG/PDF print package export, filesystem and
 S3-compatible artifact-store contracts, live MinIO doctor coverage,
 provider-adapter readiness, localization readiness, signed artifact handoff
-contracts, mobile queue/approval/pricing/offline-sync contracts, print
-contracts, order lifecycle, deployment shape, and safety gates with executable
-TypeScript, browser smoke tests, and infrastructure tests.
+contracts, mobile next-action, queue, approval, memory-review, print-proof,
+pricing, and offline-sync contracts, print contracts, order lifecycle,
+deployment shape, and safety gates with executable TypeScript, browser smoke
+tests, and infrastructure tests.
 Real external AI, OAuth, and ordering remain disabled until production
 credentials, consent flows, vendor terms, sandbox/live quote behavior,
 professional translation QA, physical print certification, and external

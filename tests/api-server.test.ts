@@ -357,6 +357,14 @@ describe("api server wrapper", () => {
         expect.arrayContaining(["card-queue", "approval-controls", "text-chat", "pricing-preview", "handoff", "offline-sync"])
       );
       expect(mobile.safetyBanner).toMatchObject({ label: "Real orders disabled" });
+      expect(mobile.todaySummary).toMatchObject({
+        cardQueueItemId: "card_anniversary_sara_ahmed",
+        primaryAction: "approve",
+        panelCount: 4,
+        offlineReady: true,
+        realOrdersEnabled: false,
+        customerVisible: true
+      });
       expect(mobile.queueItems).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ status: "needs-approval", panelCount: 4 }),
@@ -364,10 +372,22 @@ describe("api server wrapper", () => {
         ])
       );
       expect(mobile.approvalActions.every((action: { idempotencyRequired: boolean }) => action.idempotencyRequired)).toBe(true);
+      expect(mobile.memoryReviewItems).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ usage: "approved", rawContentStored: false, customerVisible: true }),
+          expect.objectContaining({ usage: "review-required", rawContentStored: false, customerVisible: true })
+        ])
+      );
       expect(mobile.pricingPreviews).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ vendor: "Walgreens", sourceMode: "review-only-public-price", liveQuote: false }),
           expect.objectContaining({ vendor: "CVS", sourceMode: "review-only-public-price", liveQuote: false })
+        ])
+      );
+      expect(mobile.printProofChecks).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: "proof-size", passed: true, realOrderState: "manual", customerVisible: true }),
+          expect.objectContaining({ id: "proof-order-gate", passed: true, realOrderState: "disabled", customerVisible: true })
         ])
       );
       expect(mobile.syncState).toMatchObject({

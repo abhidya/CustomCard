@@ -7,10 +7,13 @@ import {
   mobileExperienceSections,
   mobileHandoffSteps,
   mobileLocaleOptions,
+  mobileMemoryReviewItems,
   mobilePricingPreviews,
+  mobilePrintProofChecks,
   mobileRenderChoices,
   mobileSafetyBanner,
   mobileSyncState,
+  mobileTodaySummary,
   summarizeMobileExperience
 } from "./customerExperience";
 
@@ -46,20 +49,46 @@ export default function App() {
               <Text style={styles.summaryLabel}>actions</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.reviewOnlyPricingOptions}</Text>
-              <Text style={styles.summaryLabel}>prices</Text>
+              <Text style={styles.summaryValue}>{experienceSummary.passedPrintProofChecks}</Text>
+              <Text style={styles.summaryLabel}>proofs</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.sectionList}>
+        <View style={styles.todayCard}>
+          <View style={styles.cardTop}>
+            <Text style={styles.groupEyebrow}>Next action</Text>
+            <Text style={styles.warningPill}>{mobileTodaySummary.riskBadge}</Text>
+          </View>
+          <Text style={styles.todayTitle}>{mobileTodaySummary.recipientLabel}</Text>
+          <Text style={styles.todayMeta}>
+            {mobileTodaySummary.eventLabel} - {mobileTodaySummary.dueLabel}
+          </Text>
+          <View style={styles.metricRow}>
+            <View style={styles.miniMetric}>
+              <Text style={styles.miniMetricValue}>{mobileTodaySummary.panelCount}</Text>
+              <Text style={styles.miniMetricLabel}>panels</Text>
+            </View>
+            <View style={styles.miniMetric}>
+              <Text style={styles.miniMetricValue}>{mobileTodaySummary.offlineReady ? "On" : "Off"}</Text>
+              <Text style={styles.miniMetricLabel}>offline queue</Text>
+            </View>
+            <View style={styles.miniMetric}>
+              <Text style={styles.miniMetricValue}>{mobileTodaySummary.realOrdersEnabled ? "On" : "Off"}</Text>
+              <Text style={styles.miniMetricLabel}>real orders</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Workflow coverage</Text>
           {mobileExperienceSections.map((section) => (
-            <View key={section.title} style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.cardTitle}>{section.title}</Text>
-                <Text style={styles.pill}>{section.status}</Text>
+            <View key={section.title} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{section.title}</Text>
+                <Text style={styles.cardCopy}>{section.detail}</Text>
               </View>
-              <Text style={styles.cardCopy}>{section.detail}</Text>
+              <Text style={styles.modePill}>{section.status}</Text>
             </View>
           ))}
         </View>
@@ -75,6 +104,19 @@ export default function App() {
                 </Text>
               </View>
               <Text style={styles.modePill}>{queueStatusLabel(item.status)}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Memory review</Text>
+          {mobileMemoryReviewItems.map((item) => (
+            <View key={item.id} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{item.recipientLabel}</Text>
+                <Text style={styles.cardCopy}>{item.memoryLabel}</Text>
+              </View>
+              <Text style={styles.modePill}>{memoryUsageLabel(item.usage)}</Text>
             </View>
           ))}
         </View>
@@ -134,6 +176,19 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
+          <Text style={styles.groupTitle}>Print proof</Text>
+          {mobilePrintProofChecks.map((check) => (
+            <View key={check.id} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{check.label}</Text>
+                <Text style={styles.cardCopy}>{check.detail}</Text>
+              </View>
+              <Text style={styles.modePill}>{proofStatusLabel(check.passed)}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.group}>
           <Text style={styles.groupTitle}>Manual handoff</Text>
           {mobileHandoffSteps.map((step) => (
             <View key={step.label} style={styles.compactRow}>
@@ -182,6 +237,14 @@ function queueStatusLabel(status: string): string {
   if (status === "needs-approval") return "Review";
   if (status === "ready-for-handoff") return "Handoff";
   return "Approved";
+}
+
+function memoryUsageLabel(usage: string): string {
+  return usage === "approved" ? "Approved" : "Review";
+}
+
+function proofStatusLabel(passed: boolean): string {
+  return passed ? "Passed" : "Check";
 }
 
 const styles = StyleSheet.create({
@@ -253,14 +316,11 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase"
   },
-  sectionList: {
-    gap: 10
-  },
-  card: {
+  todayCard: {
     padding: 14,
     borderRadius: 8,
     backgroundColor: "#ffffff",
-    borderColor: "#d5dee0",
+    borderColor: "#c9d7d5",
     borderWidth: 1
   },
   cardTop: {
@@ -269,25 +329,62 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10
   },
-  cardTitle: {
-    flex: 1,
-    color: "#172124",
-    fontSize: 17,
-    fontWeight: "900"
+  groupEyebrow: {
+    color: "#42615f",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase"
   },
-  pill: {
+  warningPill: {
+    flexShrink: 1,
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 7,
-    color: "#123a32",
-    backgroundColor: "#cde9df",
+    color: "#6d251b",
+    backgroundColor: "#fff1ee",
     fontSize: 12,
+    fontWeight: "900",
+    textAlign: "right"
+  },
+  todayTitle: {
+    marginTop: 10,
+    color: "#172124",
+    fontSize: 25,
     fontWeight: "900"
+  },
+  todayMeta: {
+    marginTop: 4,
+    color: "#4d5c61",
+    fontSize: 15,
+    lineHeight: 21
   },
   cardCopy: {
     marginTop: 8,
     color: "#4d5c61",
     lineHeight: 21
+  },
+  metricRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 13
+  },
+  miniMetric: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 7,
+    backgroundColor: "#eef5f3"
+  },
+  miniMetricValue: {
+    color: "#172124",
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  miniMetricLabel: {
+    marginTop: 2,
+    color: "#42615f",
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase"
   },
   group: {
     gap: 10,

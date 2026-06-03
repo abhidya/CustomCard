@@ -163,7 +163,7 @@ export const e2eCoverageItems = [
     status: "covered",
     ciGated: true,
     testCommands: ["npm run test -- --run tests/mobile-contract.test.ts", "npm --prefix apps/mobile run doctor", "npm run check"],
-    evidence: ["Queue items covered", "Approval actions idempotent", "Review-only pricing covered", "Offline sync posture covered"],
+    evidence: ["Next-action summary covered", "Memory review covered", "Print proof checks covered", "Offline sync posture covered"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

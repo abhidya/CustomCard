@@ -108,7 +108,8 @@ environment configuration instead of static placeholders.
   and per-request budget ceilings, rate limits, queue posture, and ready local
   fallbacks before any live network provider can be enabled.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
-  mobile bootstrap with queue/approval/pricing/offline-sync state, provider
+  mobile bootstrap with next-action, queue, memory-review, print-proof,
+  pricing, and offline-sync state, provider
   readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
   isolated live Postgres route-scoped auth/idempotency/audit/queue runtime
@@ -122,10 +123,10 @@ environment configuration instead of static placeholders.
   repository writes, render-packet repository writes, manual handoff
   order/consent/event writes, data-request privacy/consent writes, queue jobs,
   audit logs, and 13 schema-backed API routes.
-- Tested Expo customer app contract for card queue items, approval controls,
-  memory review, local chat, render choices, review-only pricing previews,
-  offline idempotent API sync, locale readiness, manual handoff, and real-order
-  kill-switch posture.
+- Tested Expo customer app contract for the next-action summary, card queue,
+  approval controls, memory review, print-proof checks, local chat, render
+  choices, review-only pricing previews, offline idempotent API sync, locale
+  readiness, manual handoff, and real-order kill-switch posture.
 - Tested Expo/EAS native release contract for development, preview, and
   production iOS/Android build profiles with API URL supplied by environment
   and real orders disabled.

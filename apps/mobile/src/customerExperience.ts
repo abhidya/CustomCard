@@ -23,6 +23,19 @@ export interface MobileExperienceSection {
   customerVisible: boolean;
 }
 
+export interface MobileTodaySummary {
+  cardQueueItemId: string;
+  recipientLabel: string;
+  eventLabel: string;
+  dueLabel: string;
+  primaryAction: MobileApprovalActionKind;
+  riskBadge: string;
+  panelCount: number;
+  offlineReady: boolean;
+  realOrdersEnabled: boolean;
+  customerVisible: boolean;
+}
+
 export interface MobileCardQueueItem {
   id: string;
   recipientLabel: string;
@@ -51,6 +64,17 @@ export interface MobileChatMessage {
   source: "local-script" | "customer-approval";
 }
 
+export interface MobileMemoryReviewItem {
+  id: string;
+  cardQueueItemId: string;
+  recipientLabel: string;
+  memoryLabel: string;
+  usage: "approved" | "review-required";
+  approvalRequired: boolean;
+  rawContentStored: boolean;
+  customerVisible: boolean;
+}
+
 export interface MobileRenderChoice {
   label: string;
   detail: string;
@@ -70,6 +94,15 @@ export interface MobileHandoffStep {
   label: string;
   detail: string;
   realOrderState: "manual" | "disabled";
+}
+
+export interface MobilePrintProofCheck {
+  id: string;
+  label: string;
+  detail: string;
+  passed: boolean;
+  realOrderState: "manual" | "disabled";
+  customerVisible: boolean;
 }
 
 export interface MobileSafetyBanner {
@@ -98,12 +131,15 @@ export interface MobileSyncState {
 
 export interface MobileExperienceModel {
   safetyBanner: MobileSafetyBanner;
+  todaySummary: MobileTodaySummary;
   sections: MobileExperienceSection[];
   queueItems: MobileCardQueueItem[];
   approvalActions: MobileApprovalAction[];
   chatTranscript: MobileChatMessage[];
+  memoryReviewItems: MobileMemoryReviewItem[];
   renderChoices: MobileRenderChoice[];
   pricingPreviews: MobilePricingPreview[];
+  printProofChecks: MobilePrintProofCheck[];
   handoffSteps: MobileHandoffStep[];
   localeOptions: MobileLocaleOption[];
   syncState: MobileSyncState;
@@ -113,6 +149,19 @@ export const mobileSafetyBanner = {
   label: "Real orders disabled",
   detail: "Live provider, payment, and vendor APIs stay behind admin gates."
 } as const;
+
+export const mobileTodaySummary: MobileTodaySummary = {
+  cardQueueItemId: "card_anniversary_sara_ahmed",
+  recipientLabel: "Sara and Ahmed",
+  eventLabel: "Anniversary",
+  dueLabel: "Today by 5:00 PM",
+  primaryAction: "approve",
+  riskBadge: "Review before handoff",
+  panelCount: 4,
+  offlineReady: true,
+  realOrdersEnabled: false,
+  customerVisible: true
+};
 
 export const mobileExperienceSections: MobileExperienceSection[] = [
   {
@@ -269,6 +318,29 @@ export const mobileChatTranscript: MobileChatMessage[] = [
   }
 ];
 
+export const mobileMemoryReviewItems: MobileMemoryReviewItem[] = [
+  {
+    id: "memory_sara_ahmed_first_apartment",
+    cardQueueItemId: "card_anniversary_sara_ahmed",
+    recipientLabel: "Sara and Ahmed",
+    memoryLabel: "First apartment note",
+    usage: "approved",
+    approvalRequired: false,
+    rawContentStored: false,
+    customerVisible: true
+  },
+  {
+    id: "memory_mom_garden",
+    cardQueueItemId: "card_birthday_mom",
+    recipientLabel: "Mom",
+    memoryLabel: "Garden hobby note",
+    usage: "review-required",
+    approvalRequired: true,
+    rawContentStored: false,
+    customerVisible: true
+  }
+];
+
 export const mobileRenderChoices: MobileRenderChoice[] = [
   {
     label: "Browser SVG renderer",
@@ -306,6 +378,41 @@ export const mobilePricingPreviews: MobilePricingPreview[] = [
     sourceMode: "review-only-public-price",
     manualConfirmationRequired: true,
     liveQuote: false
+  }
+];
+
+export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
+  {
+    id: "proof-size",
+    label: "5x7 format",
+    detail: "Four SVG panels match the manual vendor upload package.",
+    passed: true,
+    realOrderState: "manual",
+    customerVisible: true
+  },
+  {
+    id: "proof-resolution",
+    label: "300 DPI export",
+    detail: "Render packet keeps print dimensions and checksum evidence together.",
+    passed: true,
+    realOrderState: "manual",
+    customerVisible: true
+  },
+  {
+    id: "proof-safe-zone",
+    label: "Safe zone",
+    detail: "Panel text stays inside the tested SVG print area.",
+    passed: true,
+    realOrderState: "manual",
+    customerVisible: true
+  },
+  {
+    id: "proof-order-gate",
+    label: "Order gate",
+    detail: "Retail-printer submission stays blocked until certification evidence exists.",
+    passed: true,
+    realOrderState: "disabled",
+    customerVisible: true
   }
 ];
 
@@ -369,12 +476,15 @@ export const mobileSyncState: MobileSyncState = {
 
 export const mobileExperience: MobileExperienceModel = {
   safetyBanner: mobileSafetyBanner,
+  todaySummary: mobileTodaySummary,
   sections: mobileExperienceSections,
   queueItems: mobileCardQueueItems,
   approvalActions: mobileApprovalActions,
   chatTranscript: mobileChatTranscript,
+  memoryReviewItems: mobileMemoryReviewItems,
   renderChoices: mobileRenderChoices,
   pricingPreviews: mobilePricingPreviews,
+  printProofChecks: mobilePrintProofChecks,
   handoffSteps: mobileHandoffSteps,
   localeOptions: mobileLocaleOptions,
   syncState: mobileSyncState
@@ -384,12 +494,17 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
   return {
     capabilityCount: new Set(model.sections.map((section) => section.id)).size,
     customerVisibleSections: model.sections.filter((section) => section.customerVisible).length,
+    todayPrimaryActions: model.todaySummary.customerVisible ? 1 : 0,
     queueItems: model.queueItems.length,
     pendingApprovalItems: model.queueItems.filter((item) => item.status === "needs-approval").length,
     idempotentApprovalActions: model.approvalActions.filter((action) => action.idempotencyRequired).length,
     localChatMessages: model.chatTranscript.filter((message) => message.source === "local-script").length,
+    memoryReviewItems: model.memoryReviewItems.length,
+    approvedMemoryReviewItems: model.memoryReviewItems.filter((item) => item.usage === "approved").length,
     freeRenderChoices: model.renderChoices.filter((choice) => choice.mode === "free-local").length,
     reviewOnlyPricingOptions: model.pricingPreviews.filter((preview) => preview.sourceMode === "review-only-public-price").length,
+    printProofChecks: model.printProofChecks.length,
+    passedPrintProofChecks: model.printProofChecks.filter((check) => check.passed).length,
     disabledHandoffSteps: model.handoffSteps.filter((step) => step.realOrderState === "disabled").length,
     localeOptions: model.localeOptions.length,
     rtlLocales: model.localeOptions.filter((locale) => locale.writingDirection === "rtl").length,
@@ -416,6 +531,17 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
     issues.push("Mobile experience does not expose enough customer sections.");
   }
 
+  const queueItemIds = new Set(model.queueItems.map((item) => item.id));
+  if (!model.todaySummary.customerVisible || model.todaySummary.realOrdersEnabled) {
+    issues.push("Mobile today summary must be customer-visible with real orders disabled.");
+  }
+  if (!queueItemIds.has(model.todaySummary.cardQueueItemId)) {
+    issues.push("Mobile today summary must point at a queued card.");
+  }
+  if (model.todaySummary.panelCount !== 4) {
+    issues.push("Mobile today summary must use a four-panel card.");
+  }
+
   if (model.queueItems.length === 0) {
     issues.push("Mobile card queue must include at least one customer-visible card.");
   }
@@ -436,6 +562,9 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   if (model.approvalActions.some((action) => action.networkMode === "local-first-api" && !model.syncState.pendingMutationTypes.includes(action.mutationType))) {
     issues.push("Mobile API-backed approval actions must be represented in the offline sync queue.");
   }
+  if (!actionKinds.has(model.todaySummary.primaryAction)) {
+    issues.push("Mobile today summary primary action must exist in approval controls.");
+  }
 
   if (!model.chatTranscript.some((message) => message.text.includes("Local scripted assistant"))) {
     issues.push("Mobile chat must identify the local scripted assistant path.");
@@ -443,6 +572,20 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
 
   if (!model.chatTranscript.some((message) => message.text.includes("Live AI and vendor orders stay off"))) {
     issues.push("Mobile chat must disclose that live AI and vendor orders are off.");
+  }
+
+  if (model.memoryReviewItems.length < 2) {
+    issues.push("Mobile memory review must expose at least two customer memory items.");
+  }
+  if (model.memoryReviewItems.some((item) => !item.customerVisible)) {
+    issues.push("Every mobile memory review item must be customer-visible.");
+  }
+  if (model.memoryReviewItems.some((item) => item.rawContentStored)) {
+    issues.push("Mobile memory review must not store raw memory content.");
+  }
+  const memoryUsageStates = new Set(model.memoryReviewItems.map((item) => item.usage));
+  if (!memoryUsageStates.has("approved") || !memoryUsageStates.has("review-required")) {
+    issues.push("Mobile memory review must include approved and review-required states.");
   }
 
   if (!model.renderChoices.some((choice) => choice.mode === "free-local" && choice.label === "Browser SVG renderer")) {
@@ -458,6 +601,20 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
   if (model.pricingPreviews.some((preview) => preview.liveQuote || !preview.manualConfirmationRequired)) {
     issues.push("Mobile pricing previews must stay review-only and manually confirmed.");
+  }
+
+  if (model.printProofChecks.length < 4) {
+    issues.push("Mobile print proof must expose at least four checks.");
+  }
+  if (model.printProofChecks.some((check) => !check.customerVisible)) {
+    issues.push("Every mobile print proof check must be customer-visible.");
+  }
+  if (model.printProofChecks.some((check) => !check.passed)) {
+    issues.push("Mobile print proof checks must pass before handoff.");
+  }
+  const printProofOrderStates = new Set<string>(["manual", "disabled"]);
+  if (model.printProofChecks.some((check) => !printProofOrderStates.has(check.realOrderState))) {
+    issues.push("Mobile print proof must not claim live retail-printer ordering.");
   }
 
   if (!model.handoffSteps.some((step) => step.realOrderState === "manual")) {
@@ -494,7 +651,8 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
 
   for (const phrase of collectMobileExperienceText(model)) {
     if (/\b(live order ready|real orders enabled|payment active|vendor api connected|paid ai active)\b/i.test(phrase)) {
-      issues.push(`Unsafe mobile live-provider claim: ${phrase}`);
+      const unsafeClaim = `Unsafe mobile live-provider claim: ${phrase}`;
+      if (!issues.includes(unsafeClaim)) issues.push(unsafeClaim);
     }
   }
 
@@ -505,12 +663,19 @@ function collectMobileExperienceText(model: MobileExperienceModel): string[] {
   return [
     model.safetyBanner.label,
     model.safetyBanner.detail,
+    model.todaySummary.recipientLabel,
+    model.todaySummary.eventLabel,
+    model.todaySummary.dueLabel,
+    model.todaySummary.primaryAction,
+    model.todaySummary.riskBadge,
     ...model.sections.flatMap((section) => [section.title, section.detail, section.status]),
     ...model.queueItems.flatMap((item) => [item.recipientLabel, item.eventLabel, item.status, item.source]),
     ...model.approvalActions.flatMap((action) => [action.label, action.detail, action.networkMode, action.mutationType]),
     ...model.chatTranscript.map((message) => message.text),
+    ...model.memoryReviewItems.flatMap((item) => [item.recipientLabel, item.memoryLabel, item.usage]),
     ...model.renderChoices.flatMap((choice) => [choice.label, choice.detail, choice.mode]),
     ...model.pricingPreviews.flatMap((preview) => [preview.vendor, preview.product, preview.sourceMode]),
+    ...model.printProofChecks.flatMap((check) => [check.label, check.detail, check.realOrderState]),
     ...model.handoffSteps.flatMap((step) => [step.label, step.detail, step.realOrderState]),
     ...model.localeOptions.flatMap((locale) => [locale.locale, locale.label, locale.cardLanguage, locale.writingDirection]),
     ...model.syncState.pendingMutationTypes,

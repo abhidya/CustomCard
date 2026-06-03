@@ -9,9 +9,12 @@ import {
   mobileExperienceSections,
   mobileHandoffSteps,
   mobileLocaleOptions,
+  mobileMemoryReviewItems,
   mobilePricingPreviews,
+  mobilePrintProofChecks,
   mobileRenderChoices,
   mobileSyncState,
+  mobileTodaySummary,
   requiredMobileCapabilities,
   summarizeMobileExperience,
   validateMobileExperience,
@@ -30,10 +33,15 @@ describe("mobile customer experience contract", () => {
     expect(summary.localeOptions).toBe(4);
     expect(summary.rtlLocales).toBe(2);
     expect(summary.copyReviewRequiredLocales).toBe(3);
+    expect(summary.todayPrimaryActions).toBe(1);
     expect(summary.queueItems).toBeGreaterThanOrEqual(2);
     expect(summary.pendingApprovalItems).toBeGreaterThanOrEqual(1);
     expect(summary.idempotentApprovalActions).toBe(mobileApprovalActions.length);
+    expect(summary.memoryReviewItems).toBeGreaterThanOrEqual(2);
+    expect(summary.approvedMemoryReviewItems).toBeGreaterThanOrEqual(1);
     expect(summary.reviewOnlyPricingOptions).toBe(mobilePricingPreviews.length);
+    expect(summary.printProofChecks).toBeGreaterThanOrEqual(4);
+    expect(summary.passedPrintProofChecks).toBe(mobilePrintProofChecks.length);
     expect(summary.offlineMutationTypes).toBeGreaterThanOrEqual(5);
     expect(mobileExperienceSections.map((section) => section.id)).toEqual(
       expect.arrayContaining(requiredMobileCapabilities)
@@ -41,6 +49,14 @@ describe("mobile customer experience contract", () => {
   });
 
   it("keeps mobile queue, approval, chat, render, pricing, and handoff paths local or gated", () => {
+    expect(mobileTodaySummary).toMatchObject({
+      cardQueueItemId: "card_anniversary_sara_ahmed",
+      primaryAction: "approve",
+      panelCount: 4,
+      offlineReady: true,
+      realOrdersEnabled: false,
+      customerVisible: true
+    });
     expect(mobileCardQueueItems).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ status: "needs-approval", panelCount: 4, customerVisible: true }),
@@ -57,6 +73,12 @@ describe("mobile customer experience contract", () => {
     expect(mobileChatTranscript.map((message) => message.text).join(" ")).toContain(
       "Live AI and vendor orders stay off"
     );
+    expect(mobileMemoryReviewItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ usage: "approved", rawContentStored: false, customerVisible: true }),
+        expect.objectContaining({ usage: "review-required", rawContentStored: false, customerVisible: true })
+      ])
+    );
     expect(mobileRenderChoices).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ label: "Browser SVG renderer", mode: "free-local" }),
@@ -67,6 +89,12 @@ describe("mobile customer experience contract", () => {
       expect.arrayContaining([
         expect.objectContaining({ vendor: "Walgreens", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false }),
         expect.objectContaining({ vendor: "CVS", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false })
+      ])
+    );
+    expect(mobilePrintProofChecks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "proof-size", passed: true, realOrderState: "manual", customerVisible: true }),
+        expect.objectContaining({ id: "proof-order-gate", passed: true, realOrderState: "disabled", customerVisible: true })
       ])
     );
     expect(mobileHandoffSteps).toEqual(
@@ -181,6 +209,15 @@ describe("mobile customer experience contract", () => {
         label: "Real orders enabled",
         detail: "payment active"
       },
+      todaySummary: {
+        ...mobileExperience.todaySummary,
+        cardQueueItemId: "missing_card",
+        primaryAction: "edit-tone",
+        riskBadge: "real orders enabled",
+        panelCount: 2,
+        realOrdersEnabled: true,
+        customerVisible: false
+      },
       sections: [
         {
           ...mobileExperience.sections[0],
@@ -208,6 +245,13 @@ describe("mobile customer experience contract", () => {
           text: "I can help."
         }
       ],
+      memoryReviewItems: [
+        {
+          ...mobileExperience.memoryReviewItems[0],
+          customerVisible: false,
+          rawContentStored: true
+        }
+      ],
       renderChoices: [
         {
           label: "AI only",
@@ -220,6 +264,14 @@ describe("mobile customer experience contract", () => {
           ...mobileExperience.pricingPreviews[0],
           liveQuote: true,
           manualConfirmationRequired: false
+        }
+      ],
+      printProofChecks: [
+        {
+          ...mobileExperience.printProofChecks[0],
+          detail: "live order ready",
+          passed: false,
+          customerVisible: false
         }
       ],
       handoffSteps: [
@@ -259,17 +311,28 @@ describe("mobile customer experience contract", () => {
         "Missing mobile customer capability: offline-sync",
         "Every mobile experience section must be customer-visible.",
         "Mobile experience does not expose enough customer sections.",
+        "Mobile today summary must be customer-visible with real orders disabled.",
+        "Mobile today summary must point at a queued card.",
+        "Mobile today summary must use a four-panel card.",
         "Every mobile card queue item must be customer-visible.",
         "Every mobile card queue item must reference four 5x7 panels.",
         "Missing mobile approval action: edit-tone",
         "Missing mobile approval action: snooze",
         "Missing mobile approval action: dismiss",
         "Every mobile approval action must require idempotency.",
+        "Mobile today summary primary action must exist in approval controls.",
         "Mobile chat must identify the local scripted assistant path.",
         "Mobile chat must disclose that live AI and vendor orders are off.",
+        "Mobile memory review must expose at least two customer memory items.",
+        "Every mobile memory review item must be customer-visible.",
+        "Mobile memory review must not store raw memory content.",
+        "Mobile memory review must include approved and review-required states.",
         "Mobile render choices must include the free browser SVG renderer.",
         "Mobile pricing preview must expose multiple retail-printer choices.",
         "Mobile pricing previews must stay review-only and manually confirmed.",
+        "Mobile print proof must expose at least four checks.",
+        "Every mobile print proof check must be customer-visible.",
+        "Mobile print proof checks must pass before handoff.",
         "Mobile handoff must keep a manual upload path.",
         "Disabled mobile handoff steps must explain blocked live order APIs.",
         "Mobile safety banner must keep real orders disabled.",
@@ -301,5 +364,17 @@ describe("mobile customer experience contract", () => {
         ]
       })
     ).toContain("Mobile render choices must keep AI image providers credential-gated.");
+
+    expect(
+      validateMobileExperience({
+        ...mobileExperience,
+        printProofChecks: [
+          {
+            ...mobileExperience.printProofChecks[0],
+            realOrderState: "live-order" as never
+          }
+        ]
+      })
+    ).toContain("Mobile print proof must not claim live retail-printer ordering.");
   });
 });

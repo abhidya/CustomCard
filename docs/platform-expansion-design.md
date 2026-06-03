@@ -237,10 +237,11 @@ adapters remain zero-spend with real orders disabled.
 `apps/mobile/src/customerExperience.ts` is the tested mobile customer contract.
 `apps/mobile/src/App.tsx` renders that contract as the Expo customer surface
 instead of a placeholder. It mirrors the web customer panel with card queue
-items, approval controls, memory review, local scripted chat, image/render
-status, review-only printer pricing previews, offline idempotent API sync,
-manual handoff, and a real-order-disabled banner. The mobile contract also
-carries the same 4 launch locale options, including copy-review and RTL posture.
+items, a next-action summary, approval controls, memory review items,
+print-proof checks, local scripted chat, image/render status, review-only
+printer pricing previews, offline idempotent API sync, manual handoff, and a
+real-order-disabled banner. The mobile contract also carries the same 4 launch
+locale options, including copy-review and RTL posture.
 
 The mobile doctor validates environment resolution, the contract source, and the
 repo-local real-order kill switch. Native rendering, emulator runs, builds, and
@@ -254,9 +255,10 @@ mobile bootstrap, admin readiness, provider catalog, admin demo reset, import
 preview, card project creation, render packets, manual vendor handoff, and data
 requests. Customer, admin, and mobile bootstrap payloads include localization
 readiness so clients can render the same launch-locale state. The mobile
-bootstrap also exposes the same customer app contract used by Expo: queue items,
-approval actions, render choices, review-only pricing previews, manual handoff
-steps, and offline idempotent sync state.
+bootstrap also exposes the same customer app contract used by Expo: next-action
+summary, queue items, approval actions, memory review items, render choices,
+review-only pricing previews, print-proof checks, manual handoff steps, and
+offline idempotent sync state.
 
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,

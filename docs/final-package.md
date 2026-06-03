@@ -86,7 +86,8 @@
   manifest; signed artifact handoff contracts and live MinIO/S3-compatible
   doctor coverage for render-packet artifacts.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
-  mobile queue/approval/pricing/offline-sync payloads, provider-readiness, route
+  mobile next-action, queue, memory-review, print-proof, pricing, and
+  offline-sync payloads, provider-readiness, route
   catalog, admin demo reset, default contract mode,
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, data-request mutation handling,
@@ -124,10 +125,11 @@
   MinIO/S3-compatible artifact doctor, capacity plan doctor, persistence doctor,
   demo reset doctor, worker readiness, mobile doctor, and mobile release doctor
   on pushes to `main` and pull requests.
-- Mobile customer app: tested Expo customer experience contract with card queue
-  items, approval controls, memory review, local chat, image/render state,
-  review-only printer pricing previews, offline idempotent API sync, locale
-  readiness, manual handoff, and real-order kill-switch validation.
+- Mobile customer app: tested Expo customer experience contract with
+  next-action summary, card queue items, approval controls, memory review
+  items, print-proof checks, local chat, image/render state, review-only printer
+  pricing previews, offline idempotent API sync, locale readiness, manual
+  handoff, and real-order kill-switch validation.
 - Demo/seed data: sample anniversary `.ics` content, two approved local memory
   records in `src/freeMvp.ts`, plus an admin-only demo reset contract covering
   14 reviewer fixture tables and 17 rows.
@@ -141,7 +143,7 @@
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
 | Tests | `npm run check` | Passed on 2026-06-03: 24 test files, 158 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.04% statements, 84.09% branches, 97.16% functions, 94.87% lines across account auth, core, API, artifact handoff/store, demo seed, E2E coverage, external audit readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.21% statements, 84.31% branches, 97.22% functions, 94.97% lines across account auth, core, API, artifact handoff/store, demo seed, E2E coverage, external audit readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
@@ -163,7 +165,7 @@
 | Live S3-compatible artifact writes | `npm run artifact:doctor:s3:live` | Passed in CI against MinIO; created an isolated bucket, wrote 6 render-packet artifacts plus 1 manifest through path-style SigV4 requests, read all 7 objects back, verified checksum/byte-length evidence, reported `cloudWritesVerified: true`, kept external vendor calls and real orders disabled, and cleaned up the bucket. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 13 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
-| Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present. |
+| Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present, including next-action, memory-review, and print-proof workflow state. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
 | CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, and mobile native release gates with safe repo-local env. |

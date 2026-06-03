@@ -80,7 +80,8 @@ Requirement types:
   readiness, mobile doctor, and mobile release doctor on pushes to `main` and
   pull requests.
 - API server exposes tested health, route catalog, customer/admin bootstrap,
-  mobile bootstrap with queue/approval/pricing/offline-sync state, provider
+  mobile bootstrap with next-action, queue, memory-review, print-proof,
+  pricing, and offline-sync state, provider
   readiness, and idempotent mutation contract endpoints with real orders and
   external calls disabled.
 - API memory runtime enforces Bearer sessions on non-public routes and
@@ -112,9 +113,10 @@ Requirement types:
   repository, manual handoff order/consent/event, data-request privacy/consent,
   queue-job, and audit-log tables.
 - Mobile shell resolves API configuration from environment.
-- Mobile customer app mirrors the customer panel with tested card queue items,
-  approval controls, memory, chat, render, review-only pricing, offline
-  idempotent API sync, locale readiness, and handoff sections.
+- Mobile customer app mirrors the customer panel with tested next-action
+  summary, card queue items, approval controls, memory-review items,
+  print-proof checks, chat, render, review-only pricing, offline idempotent API
+  sync, locale readiness, and handoff sections.
 - Mobile doctor validates the customer experience contract and fails if the
   repo-local real-order kill switch is enabled.
 - Local demo auth works without external providers.
