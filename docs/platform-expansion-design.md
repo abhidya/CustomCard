@@ -44,6 +44,13 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
 
+`src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
+It can evaluate readiness for every adapter, reject placeholder credentials,
+build redacted no-network request shapes for credential-gated text, image, and
+event providers, and keep live vendor adapters blocked even if test credentials
+and approval gates are present. These contracts intentionally stop before
+`fetch` or any SDK call.
+
 Official documentation anchors used for the adapter contracts:
 
 - OpenAI Responses API: https://platform.openai.com/docs/api-reference/responses
@@ -120,6 +127,10 @@ Implemented checks:
 - `src/providerCatalog.test.ts` validates catalog coverage, local fallbacks,
   external provider docs/env gates, admin model, customer model, and blocked
   vendor status.
+- `src/providerRuntime.test.ts` validates executable readiness for every
+  catalog adapter, redacted no-network request contracts for chat/image
+  providers, metadata-only import contracts, placeholder-secret rejection, free
+  local fallbacks, and hard-blocked live vendor order adapters.
 - UI smoke tests cover customer/admin panels, the core local workflow, mobile
   overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer panel evidence.

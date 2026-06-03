@@ -8,8 +8,8 @@
   an event-aware personal greeting-card CRM and print-production product; see
   `docs/brief-context.md`.
 - Current delivered outcome: a polished free local MVP plus customer/admin
-  panels, a tested provider-adapter catalog, a customer mobile shell, and a
-  contract-first production skeleton.
+  panels, a tested provider-adapter catalog and no-network runtime contracts, a
+  customer mobile shell, and a contract-first production skeleton.
 - Audience/reviewer: project reviewer, interview/client evaluator, or future
   implementer who needs to inspect the repo without reading chat history.
 
@@ -37,10 +37,11 @@
   import, opportunity, card, SVG, memory, and handoff logic while preserving the
   existing domain and service-kernel contracts; added `src/providerCatalog.ts`
   for provider capability, readiness, env, safety-gate, and role-surface
-  contracts.
+  contracts; added `src/providerRuntime.ts` for executable no-network adapter
+  dry runs.
 - Tests/verification: added deterministic free-MVP and provider-catalog tests and
-  updated Chrome smoke tests to exercise the real reviewer workflow plus
-  customer/admin panels.
+  provider-runtime tests, and updated Chrome smoke tests to exercise the real
+  reviewer workflow plus customer/admin panels.
 - Docs/handoff: added `docs/free-mvp-plan.md` and
   `docs/platform-expansion-design.md`, updated README, traceability, decisions,
   delivery process, verification, completion audit, handoff notes, and visual
@@ -59,6 +60,9 @@
   image/render choices, and free fallback actions.
 - Admin panel: provider coverage metrics, required env vars, gated provider
   queue, cloud runtime adapters, and blocked live vendors.
+- Provider runtime: readiness dry runs for every catalog adapter; redacted
+  no-network request contracts for gated chat, image, and event providers; hard
+  block for live vendor order adapters.
 - Mobile customer shell: card queue, memory review, local chat, image/render
   state, and manual handoff sections.
 - Demo/seed data: sample anniversary `.ics` content and two approved local memory
@@ -72,7 +76,7 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 6 test files, 46 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 7 test files, 56 tests. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
@@ -88,7 +92,7 @@
 | Record decisions and rejected alternatives. | `docs/decisions.md`, `docs/free-mvp-plan.md`. | Covered |
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, `tests/app-smoke.test.ts`, screenshots. | Covered |
-| Catalog broad text, image, integration, vendor, and cloud adapters. | `src/providerCatalog.ts`, `src/providerCatalog.test.ts`, `docs/platform-expansion-design.md`. | Covered as contracts; live calls gated |
+| Catalog broad text, image, integration, vendor, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `docs/platform-expansion-design.md`. | Covered as no-network contracts; live calls gated |
 | Add customer mobile app surface. | `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`. | Covered as shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |

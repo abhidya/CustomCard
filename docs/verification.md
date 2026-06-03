@@ -17,6 +17,10 @@ it after each meaningful implementation pass.
 - Provider-catalog tests cover adapter capability breadth, free local fallbacks,
   external provider docs/env gates, admin/customer panel models, deterministic
   local chat, and blocked live-vendor status.
+- Provider-runtime tests cover every catalog adapter with no-network dry runs,
+  placeholder-secret rejection, redacted chat/image request contracts,
+  metadata-only import contracts, free local fallbacks, and hard-blocked live
+  vendor ordering.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
@@ -46,7 +50,7 @@ npm run check
 
 Result: passed.
 
-- Vitest: 6 test files passed, 46 tests passed.
+- Vitest: 7 test files passed, 56 tests passed.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -100,7 +104,8 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
 - No live object store, queue, or vendor sandbox test.
-- No live AI text-chat or image-generation provider test.
+- No live AI text-chat or image-generation provider test; provider runtime
+  coverage stops at redacted no-network request contracts.
 - No physical print certification.
 - No React Native render test, mobile native build, or signed iOS/Android
   artifact.

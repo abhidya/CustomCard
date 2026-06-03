@@ -57,6 +57,9 @@ configuration instead of static placeholders.
 - Adapter catalog covering free local paths plus gated OpenAI, Anthropic,
   Google, Microsoft Graph, Hugging Face, Stability, Replicate, and vendor
   contracts.
+- Executable adapter dry runs that validate readiness, reject placeholder
+  secrets, redact provider-bound text, prepare no-network request contracts, and
+  keep live vendor ordering blocked.
 
 ## Run
 
@@ -112,6 +115,10 @@ The service kernel models the critical backend contracts without pretending they
 are deployed integrations: metadata-only provider import, approved relationship
 memory, deterministic 5x7 render validation, explicit order lifecycle recovery,
 regional/vendor-share controls, and readiness checks.
+
+The provider runtime adds a no-network execution boundary for the adapter
+catalog: future OAuth, text-chat, image-generation, and vendor paths can be
+reviewed as redacted request contracts without placing API calls or orders.
 
 Verification:
 
