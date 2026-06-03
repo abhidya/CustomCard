@@ -536,6 +536,20 @@ export const providerCatalog: ProviderAdapter[] = [
     detail: "Exports the four card panels without object storage or paid render services."
   },
   {
+    id: "local-print-package-export",
+    label: "Local print package export",
+    provider: "CustomCard renderer",
+    capability: "render-export",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["Four SVG panels", "Combined PDF proof", "Manifest checksums", "No object storage upload"],
+    roleSurface: ["customer", "admin"],
+    priority: 6.2,
+    detail: "Builds source SVGs, a combined 5x7 PDF proof, and a manifest for manual printer handoff."
+  },
+  {
     id: "object-store-render-packets",
     label: "Object-store render packets",
     provider: "S3/MinIO",

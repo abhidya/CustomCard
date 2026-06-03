@@ -92,6 +92,7 @@ describe("provider catalog", () => {
     );
     expect(admin.blockedProviders.every((adapter) => adapter.status === "blocked")).toBe(true);
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Public printer pricing research");
+    expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Local print package export");
   });
 
   it("builds a customer panel model from ready paths plus gated provider choices", () => {
@@ -102,7 +103,13 @@ describe("provider catalog", () => {
       expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
     );
     expect(customer.readyFallbacks.map((adapter) => adapter.label)).toEqual(
-      expect.arrayContaining(["Local customer chat", "Browser SVG renderer", "Manual vendor handoff", "Public printer pricing research"])
+      expect.arrayContaining([
+        "Local customer chat",
+        "Browser SVG renderer",
+        "Local print package export",
+        "Manual vendor handoff",
+        "Public printer pricing research"
+      ])
     );
     expect(customer.chatProviders.length).toBeGreaterThanOrEqual(10);
     expect(customer.imageProviders.length).toBeGreaterThanOrEqual(10);

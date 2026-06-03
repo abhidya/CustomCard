@@ -36,7 +36,7 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   xAI, Together, and self-hosted OpenAI-compatible endpoints.
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
   Gemini image generation, Stability AI, Hugging Face, Replicate, Together,
-  Ideogram, Leonardo, and object-store render packets.
+  Ideogram, Leonardo, local print package export, and object-store render packets.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, and FedEx live ordering
   blocked.
@@ -91,7 +91,8 @@ The customer path stays cheap:
 - No provider OAuth required.
 - No real vendor order.
 - No live printer quote; public pricing research remains review-only.
-- SVG export and manual handoff remain the working path.
+- SVG export, local PDF proof/manifest package export, and manual handoff remain
+  the working path.
 
 ## Admin Panel
 
@@ -107,6 +108,8 @@ The admin panel turns the adapter catalog into an operations surface:
 - Cloud runtime adapters.
 - Blocked live-order vendors.
 - Public printer pricing research for manual Walgreens/CVS/FedEx comparison.
+- Local print package export readiness for source SVGs, a combined PDF proof,
+  and checksum manifest.
 
 The adapter matrix also shows each dry-run state and the first missing
 credential references. This is intentionally not a settings page that pretends
@@ -201,6 +204,9 @@ Implemented checks:
 - `src/printerPricing.test.ts` validates source-backed public price
   observations, minimum-quantity totals, manual-confirmation requirements, and
   the no-live-quote boundary.
+- `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
+  PDF proof, checksum manifest validation, preflight failures, and no-order
+  export summaries.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer contract evidence.
@@ -219,8 +225,8 @@ Implemented checks:
   contract API doctor, memory API doctor, persistence doctor, worker readiness,
   and mobile doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  persistence, orchestration, and mobile contract modules: 90% statements, 80%
-  branches, 90% functions, and 90% lines.
+  pricing, print-export, persistence, orchestration, and mobile contract
+  modules: 90% statements, 80% branches, 90% functions, and 90% lines.
 
 Remaining high-risk work:
 
@@ -228,6 +234,7 @@ Remaining high-risk work:
 - No live AI/image provider call.
 - No payment, live quote, or live order adapter.
 - No live printer tax, coupon, stock, or pickup-window integration.
+- No production object-storage upload or signed render-packet URL flow.
 - No live Postgres API integration test, production account auth flow, or account
   recovery.
 - No React Native render/emulator proof or native iOS/Android build artifact.

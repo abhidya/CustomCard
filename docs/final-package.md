@@ -31,7 +31,8 @@
 
 - Product/workflow: the web app now opens on the usable workflow: local demo
   workspace, manual/ICS import, opportunity decision, card studio, memory review,
-  SVG export, manual handoff, customer panel, admin panel, and adapter readiness.
+  SVG/PDF print package export, manual handoff, customer panel, admin panel, and
+  adapter readiness.
 - UX/polish: redesigned the app shell, responsive navigation, status gates,
   card-studio preview, handoff checklist, adapter matrix, customer/admin
   operations surfaces, and mobile layout.
@@ -57,17 +58,19 @@
   manual vendor handoff.
 - Supporting workflows: add/delete approved memories, snooze/dismiss
   opportunities, choose Walgreens/CVS/FedEx/local-printer handoff, copy checklist,
-  compare review-only public printer prices, inspect free-ready,
+  compare review-only public printer prices, download the local print package,
+  inspect free-ready,
   credential-gated, contract-only, and blocked production adapters.
 - Customer panel: next-card state, deterministic local chat transcript,
   image/render choices, and free fallback actions.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, gated provider queue, cloud runtime adapters, and blocked live
   vendors.
-- Provider runtime: readiness dry runs for all 43 catalog adapters; redacted
+- Provider runtime: readiness dry runs for all 44 catalog adapters; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters; local public printer pricing research
-  for Walgreens/CVS/FedEx manual handoff.
+  for Walgreens/CVS/FedEx manual handoff; local print package export for source
+  SVGs, a combined 5x7 PDF proof, and a checksum manifest.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, default contract mode, and executable
   memory-mode Bearer auth plus `X-Idempotency-Key` replay/conflict behavior
@@ -93,12 +96,12 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 13 test files, 89 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.17% statements, 85.01% branches, 96.21% functions, 94.24% lines across core, API, pricing, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 14 test files, 95 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.66% statements, 85.2% branches, 97.06% functions, 94.94% lines across core, API, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 12 routes, 5 idempotent mutation contracts, contract runtime mode, 43 providers, 16 persistence tables, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 12 routes, 5 idempotent mutation contracts, contract runtime mode, 44 providers, 16 persistence tables, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, no live calls or real orders. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, append-only audit, and 10 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
@@ -115,10 +118,10 @@
 | Record decisions and rejected alternatives. | `docs/decisions.md`, `docs/free-mvp-plan.md`. | Covered |
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
-| Catalog broad text, image, integration, vendor, pricing, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts and review-only pricing observations; live calls gated |
+| Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations, and local export packages; live calls gated |
 | Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
-| Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |
+| Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
 | Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; contract and memory API runtimes plus persistence boundaries exist; live Postgres integration and production account auth are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
@@ -148,7 +151,8 @@
 - No live Gmail, Google Calendar, Outlook, or iCloud OAuth flow.
 - No live Postgres API integration test or production account auth flow.
 - No live AI text/image generation.
-- No PNG/PDF production export pipeline or object-storage upload.
+- No production object-storage upload, signed URL, or physical printer
+  certification; local SVG/PDF/manifest package export is covered.
 - No live vendor quote, order, payment, refund, or cancellation integration.
 - Public printer pricing is observed research only; checkout confirmation,
   taxes, coupons, stock, and pickup windows are not live-verified.

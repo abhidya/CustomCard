@@ -8,6 +8,7 @@ import {
   type ProviderStatus
 } from "./providerCatalog";
 import { buildPrinterPricingComparison } from "./printerPricing";
+import { buildSamplePrintExportPackage, summarizePrintExportPackage } from "./printExport";
 
 export type RuntimeMode = "local-result" | "prepared-request" | "blocked";
 export type HttpMethod = "GET" | "POST";
@@ -167,6 +168,16 @@ export function buildProviderAdapterRuntime(
       capability: adapter.capability,
       mode: "blocked",
       readiness
+    };
+  }
+
+  if (adapter.id === "local-print-package-export") {
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: summarizePrintExportPackage(buildSamplePrintExportPackage())
     };
   }
 

@@ -30,11 +30,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   addMemory,
   buildOpportunity,
-  buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
   defaultMemories,
-  exportFileName,
   freeAdapterLabels,
   generateCardDraft,
   getDefaultDraftInput,
@@ -68,6 +66,7 @@ import {
 } from "./providerCatalog";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import { buildPrinterPricingComparison, type PrinterPricingComparison } from "./printerPricing";
+import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
 
 type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
@@ -127,6 +126,7 @@ function App() {
   const validation = useMemo(() => validateCardDraft(draft), [draft]);
   const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
   const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
+  const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -176,16 +176,20 @@ function App() {
   }
 
   function downloadPanel(panel: CardPanel) {
-    const blob = new Blob([buildPanelSvg(panel)], { type: "image/svg+xml" });
+    downloadExportFile(buildPanelSvgExportFile(panel, draft.id));
+    setExportStatus(`${panel.label} SVG downloaded`);
+  }
+
+  function downloadExportFile(file: PrintExportFile) {
+    const blob = new Blob([file.text], { type: file.mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = exportFileName(panel, draft.id);
+    link.download = file.fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    setExportStatus(`${panel.label} SVG downloaded`);
   }
 
   function downloadAllPanels() {
@@ -193,6 +197,13 @@ function App() {
       window.setTimeout(() => downloadPanel(panel), index * 80);
     });
     setExportStatus("SVG panel downloads queued");
+  }
+
+  function downloadPrintPackage() {
+    printPackage.files.forEach((file, index) => {
+      window.setTimeout(() => downloadExportFile(file), index * 80);
+    });
+    setExportStatus(`Print package queued: ${printPackage.files.length} files`);
   }
 
   async function copyChecklist() {
@@ -372,9 +383,11 @@ function App() {
             onCopyChecklist={copyChecklist}
             onDownloadAll={downloadAllPanels}
             onDownloadPanel={downloadPanel}
+            onDownloadPackage={downloadPrintPackage}
             onVendor={setVendorId}
             panels={draft.panels}
             pricingComparison={pricingComparison}
+            printPackage={printPackage}
             validation={validation}
             vendorId={vendorId}
           />
@@ -823,9 +836,11 @@ function HandoffView({
   onCopyChecklist,
   onDownloadAll,
   onDownloadPanel,
+  onDownloadPackage,
   onVendor,
   panels,
   pricingComparison,
+  printPackage,
   validation,
   vendorId
 }: {
@@ -834,14 +849,18 @@ function HandoffView({
   onCopyChecklist: () => void;
   onDownloadAll: () => void;
   onDownloadPanel: (panel: CardPanel) => void;
+  onDownloadPackage: () => void;
   onVendor: (vendorId: VendorId) => void;
   panels: CardPanel[];
   pricingComparison: PrinterPricingComparison;
+  printPackage: PrintExportPackage;
   validation: CardValidation;
   vendorId: VendorId;
 }) {
   const primaryPricing = pricingComparison.selectedVendorOptions[0];
   const rankedOptions = pricingComparison.rankedKnownPrices.slice(0, 4);
+  const pdfFile = printPackage.files.find((file) => file.kind === "combined-pdf");
+  const manifestFile = printPackage.files.find((file) => file.kind === "manifest-json");
 
   return (
     <section className="handoffLayout">
@@ -876,10 +895,33 @@ function HandoffView({
             <FileDown size={16} />
             Download SVG set
           </button>
+          <button className="quietButton" disabled={!printPackage.manifest.passed} onClick={onDownloadPackage} type="button">
+            <PackageCheck size={16} />
+            Download print package
+          </button>
           <button className="quietButton" type="button" onClick={onCopyChecklist}>
             <ClipboardCheck size={16} />
             Copy checklist
           </button>
+        </div>
+
+        <div className="printPackageBox">
+          <div className="handoffTitle compact">
+            <FileDown size={19} />
+            <div>
+              <span>local print package</span>
+              <h3>{printPackage.manifest.passed ? "Preflight passed" : "Needs fixes"}</h3>
+            </div>
+          </div>
+          <div className="packageMetricGrid">
+            <Metric label="Files" value={`${printPackage.files.length}`} />
+            <Metric label="PDF" value={pdfFile ? `${Math.ceil(pdfFile.byteLength / 1024)} KB` : "Missing"} />
+            <Metric label="Manifest" value={manifestFile ? "Ready" : "Missing"} />
+          </div>
+          <small>
+            Includes four source SVG panels, a combined 5x7 PDF proof, and a checksum manifest. No object storage upload or
+            live order is performed.
+          </small>
         </div>
       </div>
 

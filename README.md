@@ -23,8 +23,8 @@ This repo now contains a runnable Vite, React, and TypeScript free local MVP plu
 a repo-local production skeleton. The web app opens on the actual reviewer
 workflow: local demo auth, manual/ICS event import, opportunity approval,
 relationship memory review, deterministic card generation, 5x7 SVG panel export,
-manual vendor handoff, customer/admin panels, and catalog-driven adapter
-readiness.
+local SVG/PDF print package export, manual vendor handoff, customer/admin
+panels, and catalog-driven adapter readiness.
 
 The service kernel still executes the critical backend contracts in code:
 metadata-only provider import, approved relationship memory, layout-safe 5x7
@@ -49,6 +49,8 @@ environment configuration instead of static placeholders.
 - User-approved relationship memories with add/delete controls.
 - Deterministic card copy and visual directions with no paid AI calls.
 - Four 1500 x 2100 SVG panels for front, inside-left, inside-right, and back.
+- Local print package export with the four SVG panels, a combined 5x7 PDF proof,
+  and a checksum manifest.
 - Manual handoff checklist for Walgreens, CVS, FedEx Office, or a local printer.
 - Review-only public printer pricing comparison for Walgreens, CVS, and FedEx
   manual handoff, with checkout confirmation still required.
@@ -155,7 +157,8 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
 `src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
-`src/persistenceContracts.ts`, `src/providerCatalog.ts`,
+`src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
+`src/providerCatalog.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
 verified through Chrome smoke tests.
 
@@ -189,8 +192,9 @@ worker readiness, and mobile doctor on pushes to `main` and pull requests.
 
 The repo does not include production user auth, live OAuth, live AI/image
 generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
-ordering, live Postgres API integration tests, production account auth flows,
-native mobile builds, deployment evidence, legal/security review, or physical
-print certification. Those paths are represented as contracts and hard gates so
-reviewers can inspect the system shape without mistaking the free local MVP for
-a certified production fulfillment service.
+ordering, production object-storage uploads, live Postgres API integration
+tests, production account auth flows, native mobile builds, deployment evidence,
+legal/security review, or physical print certification. Those paths are
+represented as contracts and hard gates so reviewers can inspect the system
+shape without mistaking the free local MVP for a certified production
+fulfillment service.

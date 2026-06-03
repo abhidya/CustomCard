@@ -1034,6 +1034,24 @@ h3 {
   color: #7d3a30;
 }
 
+.printPackageBox {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #dbe4e6;
+}
+
+.packageMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.printPackageBox small {
+  color: #4d6268;
+}
+
 .pricingResearchBox {
   display: grid;
   gap: 10px;

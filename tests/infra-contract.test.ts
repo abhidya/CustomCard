@@ -147,6 +147,7 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/freeMvp.ts");
     expect(viteConfig).toContain("src/persistenceContracts.ts");
     expect(viteConfig).toContain("src/printerPricing.ts");
+    expect(viteConfig).toContain("src/printExport.ts");
     expect(viteConfig).toContain("src/providerCatalog.ts");
     expect(viteConfig).toContain("src/providerRuntime.ts");
     expect(viteConfig).toContain("src/serviceKernel.ts");

@@ -13,6 +13,7 @@ export default defineConfig({
         "src/freeMvp.ts",
         "src/persistenceContracts.ts",
         "src/printerPricing.ts",
+        "src/printExport.ts",
         "src/providerCatalog.ts",
         "src/providerRuntime.ts",
         "src/serviceKernel.ts"

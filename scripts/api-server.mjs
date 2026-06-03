@@ -45,8 +45,8 @@ const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 43,
-    readyLocal: 11,
+    total: 44,
+    readyLocal: 12,
     credentialGated: 21,
     contractOnly: 8,
     blocked: 3
@@ -173,7 +173,7 @@ async function serveApi(request, response, path) {
       service: "customcard-api",
       safetyBanner: "Real orders disabled",
       sections: ["card-queue", "memory-review", "text-chat", "image-render", "handoff"],
-      renderChoices: ["Browser SVG renderer", "Credential-gated AI image providers"],
+      renderChoices: ["Browser SVG renderer", "Local print package export", "Credential-gated AI image providers"],
       realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
@@ -268,7 +268,7 @@ function validateApiServerContract() {
   if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
     blockers.push("Every mutation route must require idempotency.");
   }
-  if (readiness.providers.total < 43) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providers.total < 44) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");

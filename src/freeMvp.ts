@@ -124,6 +124,7 @@ export const freeAdapterLabels = [
   "Manual memory review",
   "Deterministic copy templates",
   "Browser SVG export",
+  "Local print package",
   "Manual vendor handoff"
 ];
 

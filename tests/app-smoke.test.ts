@@ -154,6 +154,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.validationRows.join(" ")).toContain("Paid APIs");
     expect(result.handoffText).toContain("Manual handoff");
     expect(result.handoffText).toContain("Download SVG set");
+    expect(result.handoffText).toContain("Download print package");
+    expect(result.handoffText).toContain("local print package");
+    expect(result.handoffText).toContain("Preflight passed");
     expect(result.handoffText).toContain("Real orders disabled");
     expect(result.handoffText).toContain("No live vendor quote or order API is connected.");
     expect(result.handoffText).toContain("review-only public pricing");
@@ -262,6 +265,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Microsoft Graph calendar");
     expect(result.text).toContain("Walgreens live order");
     expect(result.text).toContain("Public printer pricing research");
+    expect(result.text).toContain("Local print package export");
     expect(result.text).toContain("Dry run: local fallback ready");
     expect(result.text).toContain("Dry run: blocked by gates");
     expect(result.text).toContain("missing OPENAI_API_KEY");

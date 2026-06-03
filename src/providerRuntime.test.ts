@@ -280,6 +280,7 @@ describe("provider runtime contracts", () => {
     const chat = buildTextChatRuntime("deterministic-customer-chat", textInput);
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
+    const printPackage = buildProviderAdapterRuntime("local-print-package-export");
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
     const pricing = buildVendorRuntime("public-printer-pricing-research", { vendorId: "walgreens" });
 
@@ -288,6 +289,13 @@ describe("provider runtime contracts", () => {
     expect(importResult.mode).toBe("local-result");
     expect(image.mode).toBe("local-result");
     expect(image.localResult?.width).toBe(1500);
+    expect(printPackage.mode).toBe("local-result");
+    expect(printPackage.localResult).toMatchObject({
+      fileCount: 6,
+      manifestPassed: true,
+      noNetwork: true,
+      realOrdersEnabled: false
+    });
     expect(vendor.mode).toBe("local-result");
     expect(vendor.localResult).toMatchObject({ canPlaceRealOrder: false, realOrdersEnabled: false });
     expect(pricing.mode).toBe("local-result");

@@ -17,7 +17,7 @@ Requirement types:
 | R005 | Model provider import for email/calendar with scoped access. | Explicit | Covered as free manual/ICS import, service contracts, cataloged Gmail/Google Calendar/Microsoft Graph/iCloud adapters, and no-network metadata-only request dry runs; not live OAuth. | `src/freeMvp.ts` `parseFreeImport`; `src/serviceKernel.ts` provider adapters; `src/providerCatalog.ts`; `src/providerRuntime.ts`; tests in `src/freeMvp.test.ts`, `src/serviceKernel.test.ts`, `src/providerCatalog.test.ts`, and `src/providerRuntime.test.ts`. |
 | R006 | Detect event opportunities and preserve user approval/rejection decisions. | Explicit | Covered in UI state and deterministic service slice. | `buildOpportunity`; `OpportunitiesView` approve/snooze/dismiss; `importEvents`, `decideOpportunity`; Chrome smoke test. |
 | R007 | Use relationship memory without hidden or creepy personalization. | Explicit | Covered as approved local UI memory and service repository with forget controls. | `addMemory`, `removeMemory`, Memory view; `InMemoryRelationshipMemoryRepository`, `approveRelationshipMemory`, memory tests. |
-| R008 | Generate or validate 5x7 front, inside-left, inside-right, and back panels. | Explicit | Covered as free SVG export in the UI and deterministic render packet contracts. | `generateCardDraft`, `buildPanelSvg`, `validateCardDraft`; `renderPrintPacket`, `validatePrintLayout`; tests. |
+| R008 | Generate or validate 5x7 front, inside-left, inside-right, and back panels. | Explicit | Covered as free SVG export, local SVG/PDF/manifest print package export, and deterministic render packet contracts. | `generateCardDraft`, `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`; `renderPrintPacket`, `validatePrintLayout`; tests. |
 | R009 | Validate layout safety, text overflow, DPI, pixels, and RTL-sensitive rendering. | Explicit | Covered by free MVP validation and service contract tests. | `validateCardDraft`; `validatePrintLayout`, `renderPrintPacket`, `src/serviceKernel.test.ts`; `render_packets` SQL constraints. |
 | R010 | Keep Walgreens/retail behavior isolated behind a certified adapter boundary. | Explicit | Covered as hard-gated adapter contract. | `walgreensAdapter`, `adapterBlocksRealOrders`, `src/domain.test.ts`. |
 | R011 | Never place real external orders until certification, live quote, approval, and kill-switch gates pass. | Explicit | Covered and blocked. Review-only public pricing observations are separated from live quotes. | `realOrdersEnabled: false`, `REAL_ORDER_KILL_SWITCH=disabled`, `transitionOrder`, `src/printerPricing.ts`, infra env examples, runtime doctor. |
@@ -31,7 +31,7 @@ Requirement types:
 | R019 | Keep AI/provider calls deterministic or mockable for tests. | Inferred | Covered by no live AI calls, deterministic extraction/rendering, and dry-run provider contracts that never call a network. | `src/freeMvp.ts`, `src/providerRuntime.ts`, `runOperationalExtraction`, `stableId`, tests for free import, SVG generation, provider dry runs, weak-input blocking, and checksums. |
 | R020 | Use production auth, real OAuth, vendor APIs, payment, live quotes, and physical certification. | Open | Not covered. Intentionally blocked. | README known gaps, `docs/free-mvp-plan.md`, `docs/handoff-notes.md`, adapter kill switch, `src/providerCatalog.ts` blocked live vendor adapters. |
 | R021 | Provide customer and admin panels. | Explicit | Covered in the web UI. Customer panel shows next-card state, local chat, image/render choices, and free fallbacks; admin panel shows provider coverage, dry-run runtime readiness, env gates, deployment readiness, and blocked vendors. | `src/App.tsx`, `src/styles.css`, `tests/app-smoke.test.ts`. |
-| R022 | Load broad service-provider adapters for image generation, integrations, and text chat. | Explicit | Covered as a tested 43-adapter catalog plus executable no-network dry-run contracts with free local fallbacks, public printer pricing research, 21 credential-gated external providers, and hard-blocked live vendors; live network calls are not implemented. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `infra/env/.env.example`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. |
+| R022 | Load broad service-provider adapters for image generation, integrations, and text chat. | Explicit | Covered as a tested 44-adapter catalog plus executable no-network dry-run contracts with free local fallbacks, public printer pricing research, local print package export, 21 credential-gated external providers, and hard-blocked live vendors; live network calls are not implemented. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `infra/env/.env.example`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. |
 | R023 | Include a customer-facing text chat interface. | Explicit | Covered as deterministic local chat transcript in the customer panel and mobile shell, with dry-run request contracts for future model providers; live model providers remain gated. | `buildCustomerChatTranscript`, `buildTextChatRuntime`, `CustomerPanelView`, `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`, `tests/mobile-contract.test.ts`. |
 | R024 | Include image-generation/render provider readiness. | Explicit | Covered by free browser SVG renderer plus dry-run gated OpenAI, Gemini, Stability, Hugging Face, Replicate, Together, Ideogram, and Leonardo request contracts; no live paid call. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `CustomerPanelView`, `AdminPanelView`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `tests/app-smoke.test.ts`. |
 | R025 | Keep the system cheap and cloud-deployment ready through tested IaC. | Explicit | Partially covered. Free local fallback, droplet compose, Kubernetes manifests, env contract, runtime doctor, contract API doctor, memory API doctor, persistence doctor, deployment doctor, CI verification workflow, and infra tests exist; no real cloud deployment evidence. | `infra/docker-compose.dev.yml`, `infra/docker-compose.droplet.yml`, `infra/k8s/app.yaml`, `infra/env/.env.example`, `.github/workflows/verify.yml`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/persistence-doctor.mjs`, `scripts/deployment-readiness.mjs`, `tests/api-server.test.ts`, `tests/infra-contract.test.ts`, `docs/platform-expansion-design.md`. |
@@ -70,12 +70,14 @@ Requirement types:
 - Local demo auth works without external providers.
 - ICS/manual import produces a reviewable opportunity.
 - Card studio renders four 1500 x 2100 SVG-ready panels.
+- Print package export produces four SVG artifacts, a combined 5x7 PDF proof,
+  and a checksum manifest without network calls or real orders.
 - Manual vendor handoff blocks real orders and live vendor API claims.
 - Public printer pricing research compares Walgreens/CVS/FedEx observations but
   keeps `liveQuote: false` and requires checkout confirmation.
 - Customer/admin panels expose the local customer path and provider operations state.
 - Adapter readiness shows free-ready substitutes, credential-gated providers, contract-only adapters, and blocked live vendor integrations.
-- Provider catalog covers 43 adapters: 11 ready-local, 21 credential-gated, 8
+- Provider catalog covers 44 adapters: 12 ready-local, 21 credential-gated, 8
   contract-only, and 3 blocked.
 - Admin/adapters UI surfaces no-network runtime readiness, blocked dry-run
   state, and missing credential references.
@@ -93,7 +95,8 @@ Requirement types:
 - No live Postgres API integration test, production account auth flow, or account
   recovery.
 - No production object-storage upload or signed URL implementation.
-- No actual image generation, print PNG/PDF export, or physical print QA.
+- No actual image generation or physical print QA; local SVG/PDF/manifest export
+  is covered, but production object-storage upload is not.
 - No live text-chat model call.
 - No live vendor quote/order/refund integration.
 - Public printer prices are review-only observations, not live quote, tax,
