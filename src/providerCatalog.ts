@@ -1,6 +1,7 @@
 export type ProviderCapability =
   | "auth"
   | "event-import"
+  | "contact-import"
   | "text-chat"
   | "image-generation"
   | "render-export"
@@ -84,6 +85,7 @@ export interface ChatMessage {
 export const capabilityLabels: Record<ProviderCapability, string> = {
   auth: "Auth",
   "event-import": "Event import",
+  "contact-import": "Contact import",
   "text-chat": "Text chat",
   "image-generation": "Image generation",
   "render-export": "Render/export",
@@ -238,6 +240,94 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["customer"],
     priority: 3,
     detail: "Lets a customer create an opportunity without connecting a provider."
+  },
+  {
+    id: "vcard-contact-import",
+    label: "vCard contact import",
+    provider: "Local parser",
+    capability: "contact-import",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["User pasted data only", "No notes/photos", "Deduplication review"],
+    roleSurface: ["customer", "admin"],
+    priority: 3.2,
+    detail: "Parses pasted .vcf contact cards into address-book candidates without a provider account."
+  },
+  {
+    id: "csv-address-import",
+    label: "CSV address import",
+    provider: "Local parser",
+    capability: "contact-import",
+    lane: "Free local",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["User pasted data only", "No notes/photos", "Deduplication review"],
+    roleSurface: ["customer", "admin"],
+    priority: 3.3,
+    detail: "Parses simple pasted CSV rows for names, emails, birthdays, and postal addresses."
+  },
+  {
+    id: "google-people-contacts",
+    label: "Google People contacts",
+    provider: "Google People API",
+    capability: "contact-import",
+    lane: "Provider integration",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+    safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Revocation handling"],
+    roleSurface: ["admin"],
+    priority: 35,
+    detail: "Imports contact names, email addresses, postal addresses, birthdays, and event metadata after scoped consent.",
+    docsUrl: "https://developers.google.com/people/api/rest/v1/people.connections/list"
+  },
+  {
+    id: "microsoft-graph-contacts",
+    label: "Microsoft Graph contacts",
+    provider: "Microsoft Graph",
+    capability: "contact-import",
+    lane: "Provider integration",
+    status: "credential-gated",
+    cost: "free-tier",
+    credentials: ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET", "MICROSOFT_TENANT_ID"],
+    safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Tenant review", "Revocation handling"],
+    roleSurface: ["admin"],
+    priority: 36,
+    detail: "Imports Outlook contact metadata with least-privilege Contacts.Read scope.",
+    docsUrl: "https://learn.microsoft.com/en-us/graph/api/user-list-contacts"
+  },
+  {
+    id: "carddav-address-book",
+    label: "CardDAV address book",
+    provider: "CardDAV-compatible server",
+    capability: "contact-import",
+    lane: "Provider integration",
+    status: "credential-gated",
+    cost: "self-hosted",
+    credentials: ["CARDDAV_BASE_URL", "CARDDAV_USERNAME", "CARDDAV_APP_PASSWORD", "CARDDAV_ADDRESSBOOK_PATH"],
+    safetyGates: ["Network allowlist", "Metadata-only import", "No raw content storage", "Revocation handling"],
+    roleSurface: ["admin"],
+    priority: 37,
+    detail: "Models generic CardDAV address-book queries for private or self-hosted contact stores.",
+    docsUrl: "https://www.rfc-editor.org/rfc/rfc6352"
+  },
+  {
+    id: "icloud-vcard-contact-fallback",
+    label: "iCloud vCard fallback",
+    provider: "iCloud Contacts export",
+    capability: "contact-import",
+    lane: "Manual integration",
+    status: "contract-only",
+    cost: "manual",
+    credentials: [],
+    safetyGates: ["Manual export only", "No Apple account credentials stored", "No notes/photos"],
+    roleSurface: ["customer", "admin"],
+    priority: 38,
+    detail: "Supports customer-exported iCloud vCards while live Apple account access stays out of scope.",
+    docsUrl: "https://support.apple.com/en-kw/108306"
   },
   {
     id: "gmail-metadata-import",
@@ -1074,7 +1164,9 @@ export function buildCustomerPanelModel(adapters: ProviderAdapter[] = providerCa
     imageProviders: sortByPriority(
       adapters.filter((adapter) => adapter.capability === "image-generation" || adapter.capability === "render-export")
     ),
-    importProviders: sortByPriority(adapters.filter((adapter) => adapter.capability === "event-import")),
+    importProviders: sortByPriority(
+      adapters.filter((adapter) => adapter.capability === "event-import" || adapter.capability === "contact-import")
+    ),
     handoffProviders: sortByPriority(adapters.filter((adapter) => adapter.capability === "vendor-handoff")),
     readyFallbacks: sortByPriority(customerAdapters.filter((adapter) => adapter.status === "ready-local"))
   };

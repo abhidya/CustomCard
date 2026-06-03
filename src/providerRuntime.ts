@@ -11,7 +11,7 @@ import { buildPrinterPricingComparison } from "./printerPricing";
 import { buildSamplePrintExportPackage, summarizePrintExportPackage } from "./printExport";
 
 export type RuntimeMode = "local-result" | "prepared-request" | "blocked";
-export type HttpMethod = "GET" | "POST";
+export type HttpMethod = "GET" | "POST" | "REPORT";
 
 export interface ProviderRuntimeEnv {
   [key: string]: string | undefined;
@@ -69,6 +69,14 @@ export interface EventImportRuntimeInput {
   toIso: string;
 }
 
+export interface ContactImportRuntimeInput {
+  sourceText: string;
+  providerAccountId?: string;
+  groupId?: string;
+  syncToken?: string;
+  addressBookPath?: string;
+}
+
 export interface VendorRuntimeInput {
   vendorId: VendorId;
   quoteCents?: number;
@@ -83,6 +91,7 @@ export interface ProviderRuntimeInput {
   textChat?: TextChatRuntimeInput;
   image?: ImageRuntimeInput;
   eventImport?: EventImportRuntimeInput;
+  contactImport?: ContactImportRuntimeInput;
   vendor?: VendorRuntimeInput;
 }
 
@@ -143,8 +152,10 @@ const placeholderValues = new Set([
 const providerScopes: Record<string, string[]> = {
   "gmail-metadata-import": ["gmail.metadata.readonly"],
   "google-calendar-events": ["calendar.events.readonly"],
+  "google-people-contacts": ["contacts.readonly"],
   "microsoft-graph-mail": ["Mail.ReadBasic"],
-  "microsoft-graph-calendar": ["Calendars.ReadBasic"]
+  "microsoft-graph-calendar": ["Calendars.ReadBasic"],
+  "microsoft-graph-contacts": ["Contacts.Read"]
 };
 
 export function buildProviderAdapterRuntime(
@@ -160,6 +171,9 @@ export function buildProviderAdapterRuntime(
   }
   if (adapter.capability === "event-import") {
     return buildEventImportRuntime(adapterId, input.eventImport ?? defaultEventImportInput, env, gates);
+  }
+  if (adapter.capability === "contact-import") {
+    return buildContactImportRuntime(adapterId, input.contactImport ?? defaultContactImportInput, env, gates);
   }
   if (adapter.capability === "text-chat") {
     return buildTextChatRuntime(adapterId, input.textChat ?? defaultTextChatInput, env, gates);
@@ -357,6 +371,34 @@ export function buildEventImportRuntime(
   });
 
   return blockedOrRequest(adapter, readiness, () => buildEventImportRequest(adapter, input));
+}
+
+export function buildContactImportRuntime(
+  adapterId: string,
+  input: ContactImportRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "contact-import");
+
+  if (adapter.id === "vcard-contact-import" || adapter.id === "csv-address-import" || adapter.id === "icloud-vcard-contact-fallback") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: parseContactImport(input.sourceText || sampleContactText)
+    };
+  }
+
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, {
+    ...gates,
+    metadataOnly: true,
+    rawContentStorageDisabled: true
+  });
+
+  return blockedOrRequest(adapter, readiness, () => buildContactImportRequest(adapter, input));
 }
 
 export function buildVendorRuntime(
@@ -950,6 +992,62 @@ function buildEventImportRequest(
   );
 }
 
+function buildContactImportRequest(
+  adapter: ProviderAdapter,
+  input: ContactImportRuntimeInput
+): RuntimeRequestContract {
+  const accountId = encodeURIComponent(input.providerAccountId || "me");
+  const groupId = input.groupId ? encodeURIComponent(input.groupId) : undefined;
+  const scopes = providerScopes[adapter.id] ?? [];
+
+  if (adapter.id === "google-people-contacts") {
+    return request(
+      adapter,
+      "GET",
+      `https://people.googleapis.com/v1/people/${accountId}/connections?${new URLSearchParams({
+        pageSize: "100",
+        personFields: "names,emailAddresses,addresses,birthdays,events,metadata",
+        ...(input.syncToken ? { syncToken: input.syncToken } : {})
+      }).toString()}`,
+      ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {google-oauth-access-token}" }
+    );
+  }
+
+  if (adapter.id === "microsoft-graph-contacts") {
+    return request(
+      adapter,
+      "GET",
+      `https://graph.microsoft.com/v1.0/me/${groupId ? `contactFolders/${groupId}/contacts` : "contacts"}?$select=id,displayName,emailAddresses,homeAddress,businessAddress,birthday&$top=100`,
+      ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET", "MICROSOFT_TENANT_ID"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {microsoft-graph-access-token}" }
+    );
+  }
+
+  return request(
+    adapter,
+    "REPORT",
+    "{CARDDAV_BASE_URL}/{CARDDAV_ADDRESSBOOK_PATH}",
+    ["CARDDAV_BASE_URL", "CARDDAV_USERNAME", "CARDDAV_APP_PASSWORD", "CARDDAV_ADDRESSBOOK_PATH"],
+    {
+      addressBookQuery:
+        '<card:addressbook-query xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav"><d:prop><d:getetag/><card:address-data/></d:prop></card:addressbook-query>',
+      metadataOnly: true,
+      noNotesOrPhotos: true,
+      requestedAddressBookPath: input.addressBookPath || "{CARDDAV_ADDRESSBOOK_PATH}"
+    },
+    scopes,
+    {
+      authorization: "Basic {CARDDAV_USERNAME}:{CARDDAV_APP_PASSWORD}",
+      "content-type": "application/xml; charset=utf-8"
+    }
+  );
+}
+
 function request(
   adapter: ProviderAdapter,
   method: HttpMethod,
@@ -1071,12 +1169,13 @@ function runtimeSupported(adapter: ProviderAdapter): boolean {
   if (adapter.capability === "memory") return true;
   if (adapter.capability === "render-export") return true;
   if (adapter.capability === "notification") return true;
-  return ["event-import", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
+  return ["event-import", "contact-import", "text-chat", "image-generation", "vendor-handoff"].includes(adapter.capability);
 }
 
 function dataClassificationsFor(adapter: ProviderAdapter): string[] {
   if (adapter.capability === "auth") return ["auth-session", "OIDC-token-metadata", "no-password-storage"];
   if (adapter.capability === "event-import") return ["metadata-only", "no-raw-content"];
+  if (adapter.capability === "contact-import") return ["contact-metadata", "address-book", "no-raw-notes", "no-photos"];
   if (adapter.capability === "text-chat") return ["customer-message", "approved-memory-only", "PII-redacted"];
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
   if (adapter.capability === "vendor-handoff") return ["print-handoff", "external-share-approval-required"];
@@ -1099,6 +1198,37 @@ function hasUsableEnvValue(value: string | undefined): boolean {
 function uniqueSorted(values: string[]): string[] {
   return Array.from(new Set(values.filter(Boolean))).sort((first, second) => first.localeCompare(second));
 }
+
+function parseContactImport(sourceText: string) {
+  const text = sourceText.trim();
+  const vcardCount = text.match(/BEGIN:VCARD/gi)?.length ?? 0;
+  const csvRows = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const contactCount = vcardCount > 0 ? vcardCount : csvRows.length > 1 ? csvRows.length - 1 : csvRows.length > 0 ? 1 : 0;
+
+  return {
+    parser: vcardCount > 0 ? "vcard" : "csv-or-freeform",
+    contactCount,
+    addressSignals: /(\bADR\b|street|avenue|city|state|zip|postal|country)/i.test(text),
+    birthdaySignals: /(\bBDAY\b|birthday|anniversary)/i.test(text),
+    rawNotesStored: false,
+    photosStored: false,
+    needsDeduplicationReview: true,
+    noNetwork: true
+  };
+}
+
+const sampleContactText = [
+  "BEGIN:VCARD",
+  "VERSION:3.0",
+  "FN:Sara Ahmed",
+  "EMAIL:sara@example.com",
+  "ADR:;;123 Garden St;Brooklyn;NY;11201;US",
+  "BDAY:1990-07-10",
+  "END:VCARD"
+].join("\n");
 
 const defaultTextChatInput: TextChatRuntimeInput = {
   customerMessage: "Please make a warm anniversary card and keep fulfillment manual.",
@@ -1125,6 +1255,11 @@ const defaultEventImportInput: EventImportRuntimeInput = {
   sourceText: sampleInviteText,
   fromIso: "2026-07-01T00:00:00.000Z",
   toIso: "2026-07-31T23:59:59.999Z"
+};
+
+const defaultContactImportInput: ContactImportRuntimeInput = {
+  sourceText: sampleContactText,
+  providerAccountId: "me"
 };
 
 const defaultVendorInput: VendorRuntimeInput = {

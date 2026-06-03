@@ -61,9 +61,9 @@ describe("api contracts", () => {
     expect(summary.status).toBe("ready");
     expect(summary.routes.total).toBe(apiRouteContracts.length);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
-    expect(summary.providers.total).toBeGreaterThanOrEqual(61);
-    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(35);
-    expect(summary.runtime.localReady).toBeGreaterThanOrEqual(12);
+    expect(summary.providers.total).toBeGreaterThanOrEqual(67);
+    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(38);
+    expect(summary.runtime.localReady).toBeGreaterThanOrEqual(14);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(5);
   });
@@ -74,7 +74,7 @@ describe("api contracts", () => {
     expect(payload.customer.primaryActions.map((action) => action.capability)).toEqual(
       expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
     );
-    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(61);
+    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(67);
     expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
   });

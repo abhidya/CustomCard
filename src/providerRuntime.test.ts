@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { providerCatalog } from "./providerCatalog";
 import {
   buildAuthRuntime,
+  buildContactImportRuntime,
   buildEventImportRuntime,
   buildImageGenerationRuntime,
   buildProviderAdapterRuntime,
@@ -31,6 +32,10 @@ const readyEnv: ProviderRuntimeEnv = {
   BEDROCK_IMAGE_MODEL_ID: "amazon.titan-image-generator-v2:0",
   BEDROCK_TEXT_MODEL_ID: "anthropic.claude-3-5-haiku-20241022-v1:0",
   BFL_API_KEY: "configured-bfl-key",
+  CARDDAV_ADDRESSBOOK_PATH: "addressbooks/users/customcard/contacts",
+  CARDDAV_APP_PASSWORD: "configured-carddav-app-password",
+  CARDDAV_BASE_URL: "https://contacts.customcard.test",
+  CARDDAV_USERNAME: "configured-carddav-user",
   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
   CLERK_JWT_KEY: "configured-clerk-jwt-key",
   CLERK_SECRET_KEY: "configured-clerk-secret-key",
@@ -124,6 +129,19 @@ const importInput = {
   sourceText: "Private body should not be uploaded to provider APIs.",
   fromIso: "2026-07-01T00:00:00.000Z",
   toIso: "2026-07-31T23:59:59.999Z"
+};
+
+const contactInput = {
+  sourceText: [
+    "BEGIN:VCARD",
+    "VERSION:3.0",
+    "FN:Sara Ahmed",
+    "EMAIL:sara@example.com",
+    "ADR:;;123 Garden St;Brooklyn;NY;11201;US",
+    "BDAY:1990-07-10",
+    "END:VCARD"
+  ].join("\n"),
+  providerAccountId: "me"
 };
 
 describe("provider runtime contracts", () => {
@@ -368,6 +386,38 @@ describe("provider runtime contracts", () => {
     }
   });
 
+  it("keeps contact imports metadata-only and omits local source text", () => {
+    const providerIds = ["google-people-contacts", "microsoft-graph-contacts", "carddav-address-book"];
+
+    for (const providerId of providerIds) {
+      const result = buildContactImportRuntime(providerId, contactInput, readyEnv, openGates);
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["contact-metadata", "address-book", "no-raw-notes", "no-photos"])
+      );
+      expect(JSON.stringify(result.request?.headers), providerId).not.toContain("configured-");
+      expect(JSON.stringify(result.request?.body ?? {}), providerId).not.toContain("Sara Ahmed");
+      expect(result.request?.url, providerId).not.toContain(contactInput.sourceText);
+    }
+
+    expect(buildContactImportRuntime("google-people-contacts", contactInput, readyEnv, openGates).request?.url).toContain(
+      "https://people.googleapis.com/v1/people/me/connections"
+    );
+    expect(buildContactImportRuntime("microsoft-graph-contacts", contactInput, readyEnv, openGates).request?.url).toBe(
+      "https://graph.microsoft.com/v1.0/me/contacts?$select=id,displayName,emailAddresses,homeAddress,businessAddress,birthday&$top=100"
+    );
+    expect(buildContactImportRuntime("carddav-address-book", contactInput, readyEnv, openGates).request).toMatchObject({
+      method: "REPORT",
+      url: "{CARDDAV_BASE_URL}/{CARDDAV_ADDRESSBOOK_PATH}",
+      headers: expect.objectContaining({
+        authorization: "Basic {CARDDAV_USERNAME}:{CARDDAV_APP_PASSWORD}",
+        "content-type": "application/xml; charset=utf-8"
+      })
+    });
+  });
+
   it("blocks provider imports when consent and schema gates are absent", () => {
     const calendar = buildEventImportRuntime("google-calendar-events", importInput, readyEnv, {});
     const graphCalendar = buildEventImportRuntime("microsoft-graph-calendar", importInput, readyEnv, {
@@ -397,6 +447,7 @@ describe("provider runtime contracts", () => {
   it("runs free local fallbacks without credentials or requests", () => {
     const chat = buildTextChatRuntime("deterministic-customer-chat", textInput);
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
+    const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const printPackage = buildProviderAdapterRuntime("local-print-package-export");
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
@@ -405,6 +456,14 @@ describe("provider runtime contracts", () => {
     expect(chat.mode).toBe("local-result");
     expect(chat.localResult?.length).toBeGreaterThan(0);
     expect(importResult.mode).toBe("local-result");
+    expect(contactResult.mode).toBe("local-result");
+    expect(contactResult.localResult).toMatchObject({
+      contactCount: 1,
+      addressSignals: true,
+      rawNotesStored: false,
+      photosStored: false,
+      noNetwork: true
+    });
     expect(image.mode).toBe("local-result");
     expect(image.localResult?.width).toBe(1500);
     expect(printPackage.mode).toBe("local-result");

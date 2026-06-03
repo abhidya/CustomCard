@@ -19,8 +19,8 @@ it after each meaningful implementation pass.
   local chat, and blocked live-vendor status.
 - Provider-runtime tests cover every catalog adapter with no-network dry runs,
   placeholder-secret rejection, redacted chat/image request contracts,
-  metadata-only import contracts, free local fallbacks, and hard-blocked live
-  vendor ordering.
+  metadata-only event/contact import contracts, free local fallbacks, and
+  hard-blocked live vendor ordering.
 - Printer-pricing tests cover review-only public Walgreens/CVS/FedEx/Walmart/
   Staples/Office Depot price observations, minimum quantity math, source URLs,
   manual confirmation, and `liveQuote: false`.
@@ -29,8 +29,8 @@ it after each meaningful implementation pass.
   summary behavior.
 - Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
   config validation, expiry limits, and tamper detection.
-- Provider adapter coverage currently includes 61 adapters: 12 ready-local, 35
-  credential-gated, 8 contract-only, and 6 blocked.
+- Provider adapter coverage currently includes 67 adapters: 14 ready-local, 38
+  credential-gated, 9 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
@@ -90,9 +90,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 16 test files passed, 104 tests passed.
-- Coverage: 14 core/API/persistence/infra/mobile test files passed, 96 tests passed; V8 report measured
-  91% statements, 84.59% branches, 97.42% functions, and 95.25% lines across
+- Vitest: 16 test files passed, 105 tests passed.
+- Coverage: 14 core/API/persistence/infra/mobile test files passed, 97 tests passed; V8 report measured
+  91.17% statements, 84.11% branches, 97.45% functions, and 95.36% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -112,7 +112,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 13 routes, 6 idempotent mutation contracts,
-61 providers, 16 persistence tables, render-packet artifact manifests, signed
+67 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, contract runtime mode, no live external calls, no real
 vendor orders, no raw content storage, and no blockers.
 
@@ -121,7 +121,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 61
+enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 67
 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
@@ -178,11 +178,11 @@ and cramped four-across panel previews.
 The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
-After the provider expansion, pricing-research, print-package, AI-provider, and
-hosted-auth catalog passes the catalog contains 12 ready-local, 35 credential-gated, 8
-contract-only, and 6 blocked adapters. The web mobile customer panel appears
-before the navigation rail with zero horizontal overflow at 1440px desktop and
-390px mobile widths.
+After the provider expansion, pricing-research, print-package, AI-provider,
+hosted-auth, and contact-import catalog passes the catalog contains 14
+ready-local, 38 credential-gated, 9 contract-only, and 6 blocked adapters. The
+web mobile customer panel appears before the navigation rail with zero
+horizontal overflow at 1440px desktop and 390px mobile widths.
 
 ```text
 Final package audit

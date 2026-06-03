@@ -32,6 +32,9 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   Auth0, Clerk, Supabase Auth, Firebase Auth, and Amazon Cognito contracts.
 - Event import: ICS/manual note, Gmail, Google Calendar, Microsoft Graph mail,
   Microsoft Graph calendar, and iCloud ICS fallback.
+- Contact import: local vCard/CSV parsing, Google People contacts, Microsoft
+  Graph contacts, generic CardDAV address books, and iCloud vCard manual
+  fallback.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
   Messages, Azure OpenAI, Amazon Bedrock Converse, Google Gemini, Hugging Face,
   Mistral, Cohere, Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks,
@@ -66,6 +69,10 @@ Official documentation anchors used for the adapter contracts:
 - Supabase Auth getUser: https://supabase.com/docs/reference/javascript/auth-getuser
 - Firebase Auth REST API: https://firebase.google.com/docs/reference/rest/auth
 - Amazon Cognito authorization endpoint: https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html
+- Google People connections: https://developers.google.com/people/api/rest/v1/people.connections/list
+- Microsoft Graph contacts: https://learn.microsoft.com/en-us/graph/api/user-list-contacts
+- CardDAV protocol: https://www.rfc-editor.org/rfc/rfc6352
+- Apple iCloud contacts export: https://support.apple.com/en-kw/108306
 - Azure OpenAI API reference: https://learn.microsoft.com/en-us/azure/foundry/openai/reference
 - Amazon Bedrock Converse API: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html
 - Amazon Bedrock InvokeModel API: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html

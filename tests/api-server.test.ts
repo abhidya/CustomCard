@@ -28,7 +28,7 @@ describe("api server wrapper", () => {
     expect(report.service).toBe("customcard-api-doctor");
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
-    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(61);
+    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(67);
     expect(report.readiness.routes.total).toBe(13);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.persistence).toMatchObject({
@@ -81,7 +81,7 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 13, admin: 4, idempotentMutations: 6 });
-      expect(readiness.providers).toMatchObject({ total: 61, readyLocal: 12, credentialGated: 35, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 67, readyLocal: 14, credentialGated: 38, blocked: 6 });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
         liveVendorOrders: false,

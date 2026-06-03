@@ -15,6 +15,7 @@ describe("provider catalog", () => {
     const requiredCapabilities: ProviderCapability[] = [
       "auth",
       "event-import",
+      "contact-import",
       "text-chat",
       "image-generation",
       "render-export",
@@ -25,7 +26,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(61);
+    expect(summary.total).toBeGreaterThanOrEqual(67);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -43,6 +44,9 @@ describe("provider catalog", () => {
       "Supabase Auth",
       "Firebase Auth",
       "Amazon Cognito hosted auth",
+      "Google People contacts",
+      "Microsoft Graph contacts",
+      "CardDAV address book",
       "Azure OpenAI chat",
       "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
@@ -105,6 +109,10 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("COGNITO_DOMAIN");
     expect(admin.coverage.requiredEnv).toContain("COGNITO_USER_POOL_ID");
     expect(admin.coverage.requiredEnv).toContain("COGNITO_APP_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("CARDDAV_BASE_URL");
+    expect(admin.coverage.requiredEnv).toContain("CARDDAV_USERNAME");
+    expect(admin.coverage.requiredEnv).toContain("CARDDAV_APP_PASSWORD");
+    expect(admin.coverage.requiredEnv).toContain("CARDDAV_ADDRESSBOOK_PATH");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_ENDPOINT");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_CHAT_DEPLOYMENT");
@@ -168,8 +176,12 @@ describe("provider catalog", () => {
         "Browser SVG renderer",
         "Local print package export",
         "Manual vendor handoff",
-        "Public printer pricing research"
+        "Public printer pricing research",
+        "vCard contact import"
       ])
+    );
+    expect(customer.importProviders.map((adapter) => adapter.label)).toEqual(
+      expect.arrayContaining(["ICS / invite paste", "vCard contact import", "Google People contacts"])
     );
     expect(customer.chatProviders.length).toBeGreaterThanOrEqual(15);
     expect(customer.imageProviders.length).toBeGreaterThanOrEqual(14);
