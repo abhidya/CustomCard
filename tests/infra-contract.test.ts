@@ -163,6 +163,17 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("push:");
     expect(workflow).toContain("branches:");
     expect(workflow).toContain("main");
+    expect(workflow).toContain(`  repo-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+`);
+    expect(workflow).toContain(`      CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173
+    steps:
+`);
+    expect(workflow).not.toContain(`      env:
+        CUSTOMCARD_ENV: dev
+`);
     expect(workflow).toContain("actions/checkout@v4");
     expect(workflow).toContain("actions/setup-node@v4");
     expect(workflow).toContain("node-version: 24");
