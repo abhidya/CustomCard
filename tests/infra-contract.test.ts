@@ -45,6 +45,12 @@ describe("production infrastructure contract", () => {
     expect(migration).toContain("width INTEGER NOT NULL CHECK (width = 1500)");
     expect(migration).toContain("dpi INTEGER NOT NULL CHECK (dpi = 300)");
     expect(migration).toContain("checksum TEXT NOT NULL CHECK");
+    expect(migration).toContain("storage_provider TEXT NOT NULL");
+    expect(migration).toContain("artifact_manifest JSONB NOT NULL");
+    expect(migration).toContain("signed_url_expires_at TIMESTAMPTZ NOT NULL");
+    expect(migration).toContain("external_share_approval_required BOOLEAN NOT NULL DEFAULT TRUE");
+    expect(migration).toContain("real_orders_enabled BOOLEAN NOT NULL DEFAULT FALSE");
+    expect(migration).toContain("CHECK (real_orders_enabled = FALSE)");
     expect(migration).toContain("forgotten_at TIMESTAMPTZ");
     expect(migration).toContain("recovery_actions JSONB");
   });
@@ -89,6 +95,9 @@ describe("production infrastructure contract", () => {
     expect(k8s).toContain("secretRef:");
     expect(k8s).toContain("configMapRef:");
     expect(k8s).toContain("REAL_ORDER_KILL_SWITCH");
+    expect(k8s).toContain("OBJECT_STORE_BUCKET");
+    expect(k8s).toContain("OBJECT_STORE_SIGNING_SECRET");
+    expect(k8s).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES");
     expect(k8s).toContain("runtime:doctor");
     expect(k8s).toContain("readinessProbe:");
     expect(k8s).toContain("livenessProbe:");
@@ -106,6 +115,8 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("QUEUE_URL=");
     expect(env).toContain("OBJECT_STORE_URL=");
     expect(env).toContain("CUSTOMCARD_API_RUNTIME=contract");
+    expect(env).toContain("OBJECT_STORE_SIGNING_SECRET=");
+    expect(env).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES=");
     expect(env).toContain("AUTH_SESSION_SECRET=");
     expect(env).toContain("CUSTOMCARD_CUSTOMER_SESSION_TOKEN=");
     expect(env).toContain("CUSTOMCARD_ADMIN_SESSION_TOKEN=");
@@ -143,6 +154,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("tests/mobile-contract.test.ts");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
+    expect(viteConfig).toContain("src/artifactHandoff.ts");
     expect(viteConfig).toContain("src/domain.ts");
     expect(viteConfig).toContain("src/freeMvp.ts");
     expect(viteConfig).toContain("src/persistenceContracts.ts");
@@ -189,6 +201,8 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");
     expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");
+    expect(workflow).toContain("OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32");
+    expect(workflow).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES: 15");
     expect(workflow).toContain("CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173");
   });
 

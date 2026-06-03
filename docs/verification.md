@@ -27,6 +27,8 @@ it after each meaningful implementation pass.
 - Print-export tests cover local source SVG files, a combined 5x7 PDF proof,
   checksum manifest validation, preflight failure paths, and no-network/no-order
   summary behavior.
+- Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
+  config validation, expiry limits, and tamper detection.
 - Provider adapter coverage currently includes 44 adapters: 12 ready-local, 21
   credential-gated, 8 contract-only, and 3 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
@@ -50,7 +52,7 @@ it after each meaningful implementation pass.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
-- Coverage is measured for core, API, pricing, print export, persistence, orchestration, and mobile
+- Coverage is measured for core, API, artifact handoff, pricing, print export, persistence, orchestration, and mobile
   contract modules with V8 thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
@@ -70,7 +72,7 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run persistence:doctor
-CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
+CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
 
@@ -84,11 +86,11 @@ npm run check
 
 Result: passed.
 
-- Vitest: 14 test files passed, 95 tests passed.
-- Coverage: 12 core/API/persistence/infra/mobile test files passed, 87 tests passed; V8 report measured
-  91.66% statements, 85.2% branches, 97.06% functions, and 94.94% lines across
+- Vitest: 15 test files passed, 99 tests passed.
+- Coverage: 13 core/API/persistence/infra/mobile test files passed, 91 tests passed; V8 report measured
+  90.98% statements, 84.52% branches, 97.27% functions, and 94.92% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
-  `src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
+  `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
   `src/providerCatalog.ts`, `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
@@ -106,8 +108,9 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 12 routes, 5 idempotent mutation contracts,
-44 providers, 16 persistence tables, contract runtime mode, no live external
-calls, no real vendor orders, no raw content storage, and no blockers.
+44 providers, 16 persistence tables, render-packet artifact manifests, signed
+artifact URL contracts, contract runtime mode, no live external calls, no real
+vendor orders, no raw content storage, and no blockers.
 
 ```text
 npm run api:doctor:memory
@@ -115,19 +118,21 @@ npm run api:doctor:memory
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
 enforced, 2 configured sessions, 12 routes, 5 idempotent mutation contracts, 44
-providers, 16 persistence tables, no live external calls, no real vendor orders,
-and no blockers.
+providers, 16 persistence tables, render-packet artifact manifests, signed
+artifact URL contracts, no live external calls, no real vendor orders, and no
+blockers.
 
 ```text
 npm run persistence:doctor
 ```
 
 Result: passed. Persistence doctor reported 16 required tables, auth-session
-persistence, idempotency replay, queue jobs, append-only audit coverage, 10
-schema-backed API routes, and no blockers.
+persistence, idempotency replay, queue jobs, render-packet artifact manifest
+signals, append-only audit coverage, 10 schema-backed API routes, and no
+blockers.
 
 ```text
-CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
+CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 ```
 
 Result: passed. Worker reported queue readiness for `provider-sync`,
@@ -178,8 +183,8 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
 - No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
-- Local SVG/PDF/manifest print package export is covered, but no production
-  object-store upload or signed URL flow is claimed.
+- Local SVG/PDF/manifest print package export and signed artifact handoff
+  contracts are covered, but no live object-store upload is claimed.
 - Public printer pricing is review-only and source-backed; no live quote, tax,
   coupon, stock, pickup-window, or checkout test is claimed.
 - No live Postgres-backed API integration test or production account auth flow;

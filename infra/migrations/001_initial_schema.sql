@@ -88,7 +88,15 @@ CREATE TABLE render_packets (
   text_overflow BOOLEAN NOT NULL,
   checksum TEXT NOT NULL CHECK (checksum ~ '^cc_[0-9a-f]{8}$'),
   artifact_uri TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  storage_provider TEXT NOT NULL CHECK (storage_provider IN ('filesystem', 's3-compatible')),
+  artifact_count INTEGER NOT NULL CHECK (artifact_count >= 1),
+  artifact_manifest JSONB NOT NULL,
+  signed_url_expires_at TIMESTAMPTZ NOT NULL,
+  external_share_approval_required BOOLEAN NOT NULL DEFAULT TRUE,
+  real_orders_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (real_orders_enabled = FALSE),
+  CHECK (signed_url_expires_at > created_at)
 );
 
 CREATE TABLE orders (

@@ -34,11 +34,16 @@ describe("api contracts", () => {
   it("keeps mutations idempotent and admin routes session-gated", () => {
     const mutations = apiRouteContracts.filter((route) => route.method === "POST");
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
+    const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
+    const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
     expect(mutations.length).toBeGreaterThanOrEqual(5);
     expect(mutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
     expect(mutations.every((route) => route.requestSchema.includes("X-Idempotency-Key"))).toBe(true);
     expect(adminRoutes.every((route) => route.auth === "admin-session")).toBe(true);
+    expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
+    expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
+    expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
   });
 
   it("summarizes API readiness from provider, runtime, and mobile contracts", () => {

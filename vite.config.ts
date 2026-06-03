@@ -9,6 +9,7 @@ export default defineConfig({
         "apps/mobile/src/customerExperience.ts",
         "src/apiContracts.ts",
         "src/agentContracts.ts",
+        "src/artifactHandoff.ts",
         "src/domain.ts",
         "src/freeMvp.ts",
         "src/persistenceContracts.ts",

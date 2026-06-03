@@ -13,7 +13,13 @@ describe("api server wrapper", () => {
       readiness: {
         providers: { total: number };
         routes: { total: number; mutations: number; idempotentMutations: number };
-        persistence: { tables: number; authSessionTable: boolean; idempotencyTable: boolean };
+        persistence: {
+          tables: number;
+          authSessionTable: boolean;
+          idempotencyTable: boolean;
+          renderPacketArtifacts: boolean;
+          signedArtifactUrls: boolean;
+        };
         runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean };
       };
       blockers: string[];
@@ -28,7 +34,9 @@ describe("api server wrapper", () => {
     expect(report.readiness.persistence).toMatchObject({
       tables: 16,
       authSessionTable: true,
-      idempotencyTable: true
+      idempotencyTable: true,
+      renderPacketArtifacts: true,
+      signedArtifactUrls: true
     });
     expect(report.readiness.runtime).toMatchObject({
       mode: "contract",
@@ -85,7 +93,9 @@ describe("api server wrapper", () => {
         tables: 16,
         schemaBackedRoutes: 10,
         authSessionTable: true,
-        idempotencyTable: true
+        idempotencyTable: true,
+        renderPacketArtifacts: true,
+        signedArtifactUrls: true
       });
       expect(persistence.blockers).toEqual([]);
 
@@ -101,7 +111,14 @@ describe("api server wrapper", () => {
         runtimeMode: "contract",
         idempotencyPersisted: false,
         externalNetworkCalls: false,
-        realOrdersEnabled: false
+        realOrdersEnabled: false,
+        artifactManifest: {
+          artifactCount: 6,
+          signedUrlTtlMinutes: 15,
+          externalShareApprovalRequired: true,
+          realOrdersEnabled: false
+        },
+        signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })]
       });
 
       const wrongMethod = await fetch(`http://127.0.0.1:${port}/api/health`, { method: "POST" });
@@ -173,7 +190,31 @@ describe("api server wrapper", () => {
         authenticatedUserId: "user-demo",
         idempotencyPersisted: true,
         idempotencyReplayed: false,
+        artifactManifest: expect.objectContaining({
+          artifactCount: 6,
+          externalShareApprovalRequired: true,
+          realOrdersEnabled: false
+        }),
+        signedArtifactUrls: [expect.objectContaining({ method: "GET", signatureVersion: "hmac-sha256-v1" })],
         persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"])
+      });
+
+      const handoff = await postJson(
+        port,
+        "/api/vendor-handoff/manual",
+        { renderPacketId: "render-packet-demo", externalShareApproval: true },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "vendor-handoff-0001"
+        }
+      );
+      expect(handoff.status).toBe(202);
+      expect(await handoff.json()).toMatchObject({
+        runtimeMode: "memory",
+        realOrdersEnabled: false,
+        handoffChecklist: expect.arrayContaining(["Download signed artifacts"]),
+        signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })],
+        disabledReasons: expect.arrayContaining(["Live vendor order APIs remain disabled until certification and kill-switch gates pass."])
       });
 
       const replay = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, headers);
@@ -191,9 +232,9 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 1,
-        auditRecords: 1,
-        queuedJobs: 1
+        idempotencyRecords: 2,
+        auditRecords: 2,
+        queuedJobs: 2
       });
     } finally {
       server.kill();

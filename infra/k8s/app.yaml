@@ -5,6 +5,8 @@ metadata:
 data:
   CUSTOMCARD_ENV: "prod"
   OBJECT_STORE_URL: "s3://customcard-prod"
+  OBJECT_STORE_BUCKET: "customcard-prod"
+  ARTIFACT_SIGNED_URL_TTL_MINUTES: "15"
   SECRET_PROVIDER: "managed_secret_store"
   REAL_ORDER_KILL_SWITCH: "disabled"
   WALGREENS_VENDOR_MODE: "disabled_until_certified"
@@ -15,6 +17,7 @@ metadata:
   name: customcard-secrets
   annotations:
     customcard.io/provisioning: "pre-created-by-secret-manager"
+    customcard.io/required-secret-keys: "DATABASE_URL,QUEUE_URL,OBJECT_STORE_SIGNING_SECRET,AUTH_SESSION_SECRET"
 type: Opaque
 data: {}
 ---
@@ -119,7 +122,7 @@ spec:
                 name: customcard-config
           livenessProbe:
             exec:
-              command: ["node", "-e", "for (const key of ['DATABASE_URL','QUEUE_URL','OBJECT_STORE_URL','REAL_ORDER_KILL_SWITCH']) if (!process.env[key]) process.exit(1)"]
+              command: ["node", "-e", "for (const key of ['DATABASE_URL','QUEUE_URL','OBJECT_STORE_URL','OBJECT_STORE_SIGNING_SECRET','REAL_ORDER_KILL_SWITCH']) if (!process.env[key]) process.exit(1)"]
             initialDelaySeconds: 10
             periodSeconds: 30
           resources:

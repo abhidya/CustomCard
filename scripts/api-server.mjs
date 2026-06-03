@@ -61,7 +61,9 @@ const readiness = {
     schemaBackedRoutes: 10,
     authSessionTable: true,
     idempotencyTable: true,
-    appendOnlyAudit: true
+    appendOnlyAudit: true,
+    renderPacketArtifacts: true,
+    signedArtifactUrls: true
   }
 };
 const apiRuntime = createApiRuntime({ env: process.env, routes });
@@ -197,14 +199,7 @@ async function serveApi(request, response, path) {
     request,
     authContext,
     bodyText,
-    responsePayload: {
-      service: "customcard-api",
-      status: "accepted-contract-only",
-      route: route.id,
-      idempotencyRequired: true,
-      externalNetworkCalls: false,
-      realOrdersEnabled: false
-    }
+    responsePayload: buildMutationContractPayload(route, bodyText)
   });
   sendJson(response, persistedMutation.statusCode, persistedMutation.payload);
 }
@@ -272,9 +267,83 @@ function validateApiServerContract() {
   if (!readiness.persistence.authSessionTable) blockers.push("API readiness is missing auth session persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
+  if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
+  if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
   blockers.push(...apiRuntime.validate());
 
   return blockers;
+}
+
+function buildMutationContractPayload(route, bodyText) {
+  const requestBody = parseJsonBody(bodyText);
+  const basePayload = {
+    service: "customcard-api",
+    status: "accepted-contract-only",
+    route: route.id,
+    idempotencyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false
+  };
+
+  if (route.id === "render-packets") {
+    const projectId = String(requestBody.projectId ?? "project-contract");
+    return {
+      ...basePayload,
+      renderPacketId: `render-packet-${stableContractHash(projectId).slice(0, 8)}`,
+      checksum: `cc_artifact_${stableContractHash(`${projectId}:manifest`).slice(0, 8)}`,
+      artifactManifest: {
+        storageProvider: "object-store-contract",
+        artifactCount: 6,
+        signedUrlTtlMinutes: 15,
+        externalShareApprovalRequired: true,
+        realOrdersEnabled: false
+      },
+      signedArtifactUrls: [
+        {
+          method: "GET",
+          signatureVersion: "hmac-sha256-v1",
+          expiresInMinutes: 15,
+          url: `contract-only://customcard/artifacts/${encodeURIComponent(projectId)}`
+        }
+      ]
+    };
+  }
+
+  if (route.id === "manual-vendor-handoff") {
+    return {
+      ...basePayload,
+      handoffChecklist: ["Download signed artifacts", "Confirm external share approval", "Upload manually to selected printer"],
+      signedArtifactUrls: [
+        {
+          method: "GET",
+          signatureVersion: "hmac-sha256-v1",
+          expiresInMinutes: 15,
+          url: `contract-only://customcard/artifacts/${encodeURIComponent(String(requestBody.renderPacketId ?? "render-packet-contract"))}`
+        }
+      ],
+      disabledReasons: ["Live vendor order APIs remain disabled until certification and kill-switch gates pass."]
+    };
+  }
+
+  return basePayload;
+}
+
+function parseJsonBody(bodyText) {
+  if (!bodyText) return {};
+  try {
+    return JSON.parse(bodyText);
+  } catch {
+    return {};
+  }
+}
+
+function stableContractHash(value) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
 function readRequestBody(request) {

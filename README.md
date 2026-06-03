@@ -30,6 +30,8 @@ The service kernel still executes the critical backend contracts in code:
 metadata-only provider import, approved relationship memory, layout-safe 5x7
 rendering, explicit order lifecycle transitions, recovery paths,
 regional/vendor-share policy, and runtime readiness checks.
+Render-packet artifact handoff is modeled with checksum manifests and
+HMAC-signed URL contracts, while live object-store writes remain disabled.
 
 Real ordering is deliberately disabled. The
 `WalgreensFiveBySevenDoubleSidedCardAdapter` is represented as a hard-gated
@@ -149,14 +151,14 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run persistence:doctor
-CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
+CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
 
 `npm run check` now runs the full test suite, contract coverage thresholds, the
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
-`src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
+`src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
 `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
 `src/providerCatalog.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
@@ -192,7 +194,7 @@ worker readiness, and mobile doctor on pushes to `main` and pull requests.
 
 The repo does not include production user auth, live OAuth, live AI/image
 generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
-ordering, production object-storage uploads, live Postgres API integration
+ordering, live object-storage uploads, live Postgres API integration
 tests, production account auth flows, native mobile builds, deployment evidence,
 legal/security review, or physical print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system

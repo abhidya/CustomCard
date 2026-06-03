@@ -70,7 +70,8 @@
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters; local public printer pricing research
   for Walgreens/CVS/FedEx manual handoff; local print package export for source
-  SVGs, a combined 5x7 PDF proof, and a checksum manifest.
+  SVGs, a combined 5x7 PDF proof, and a checksum manifest; signed artifact
+  handoff contracts for render packets.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, default contract mode, and executable
   memory-mode Bearer auth plus `X-Idempotency-Key` replay/conflict behavior
@@ -96,15 +97,15 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 14 test files, 95 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.66% statements, 85.2% branches, 97.06% functions, 94.94% lines across core, API, pricing, print export, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 15 test files, 99 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 84.52% branches, 97.27% functions, 94.92% lines across core, API, artifact handoff, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 12 routes, 5 idempotent mutation contracts, contract runtime mode, 44 providers, 16 persistence tables, no live calls or real orders. |
-| API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, no live calls or real orders. |
-| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, append-only audit, and 10 schema-backed routes present. |
-| Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
+| API readiness | `npm run api:doctor` | Passed; 12 routes, 5 idempotent mutation contracts, contract runtime mode, 44 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
+| API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, append-only audit, and 10 schema-backed routes present. |
+| Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, contract API, memory API, persistence, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
@@ -118,7 +119,7 @@
 | Record decisions and rejected alternatives. | `docs/decisions.md`, `docs/free-mvp-plan.md`. | Covered |
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
-| Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations, and local export packages; live calls gated |
+| Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/artifactHandoff.ts`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactHandoff.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations, local export packages, and signed artifact handoff contracts; live calls gated |
 | Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell; native build not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
@@ -151,8 +152,9 @@
 - No live Gmail, Google Calendar, Outlook, or iCloud OAuth flow.
 - No live Postgres API integration test or production account auth flow.
 - No live AI text/image generation.
-- No production object-storage upload, signed URL, or physical printer
-  certification; local SVG/PDF/manifest package export is covered.
+- No live object-storage upload or physical printer certification; local
+  SVG/PDF/manifest package export and signed artifact handoff contracts are
+  covered.
 - No live vendor quote, order, payment, refund, or cancellation integration.
 - Public printer pricing is observed research only; checkout confirmation,
   taxes, coupons, stock, and pickup windows are not live-verified.

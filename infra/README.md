@@ -10,6 +10,8 @@ This directory is the deployable service skeleton for the production path.
 - `../scripts/api-server.mjs` serves `/api/health`, API bootstrap/readiness
   contracts, explicit contract/memory/Postgres runtime modes, and the built web
   app from `dist`.
+- `../src/artifactHandoff.ts` defines the render-packet artifact manifest and
+  HMAC-signed URL contract used by the API/schema gates.
 - `../scripts/persistence-doctor.mjs` validates auth-session, idempotency, queue
   job, and audit persistence signals.
 - `../scripts/deployment-readiness.mjs` emits the local deployment readiness
@@ -49,8 +51,9 @@ validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
 testing and requires `DATABASE_URL`.
 
 The persistence boundary requires auth-session storage, idempotency replay,
-queue job envelopes, and append-only audit signals in the migration before
-production Postgres handlers are claimed.
+queue job envelopes, render-packet artifact manifests, signed URL expiry, and
+append-only audit signals in the migration before production Postgres handlers
+are claimed.
 
 The Kubernetes `Secret` in `k8s/app.yaml` is intentionally empty and annotated as
 pre-created by a secret manager. Production clusters should source the required
@@ -58,6 +61,11 @@ keys from the platform secret manager, External Secrets, Sealed Secrets, or an
 equivalent operator-approved mechanism. The `runtime:doctor` check rejects empty
 values, known placeholders, and any live-order kill switch value other than
 `disabled`.
+
+Signed artifact handoff requires `OBJECT_STORE_SIGNING_SECRET` to be present and
+at least 32 characters. The committed manifests also keep
+`ARTIFACT_SIGNED_URL_TTL_MINUTES=15` explicit so download links remain
+short-lived.
 
 Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` until vendor sandbox tests and physical print certification are recorded.
 
@@ -78,6 +86,7 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `SELF_HOSTED_LLM_API_KEY`.
 - Notification contract: `TRANSACTIONAL_EMAIL_API_KEY`,
   `TRANSACTIONAL_EMAIL_FROM`.
+- Object-store artifact signer: `OBJECT_STORE_SIGNING_SECRET`.
 - Live vendor adapters: `WALGREENS_VENDOR_MODE`, `CVS_VENDOR_MODE`,
   `FEDEX_VENDOR_MODE`.
 - Persistence controls: `CUSTOMCARD_API_RUNTIME`, `AUTH_SESSION_SECRET`,

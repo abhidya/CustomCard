@@ -17,6 +17,8 @@ skeleton for the production path. It includes:
   kept separate from live quote/order claims.
 - Local print package export with four SVG upload artifacts, a combined 5x7 PDF
   proof, and a checksum manifest for manual printer handoff.
+- Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
+  manifests, expiry checks, and object-store signing env gates.
 - A tested customer mobile shell contract that mirrors the web customer panel at
   the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
@@ -41,7 +43,8 @@ skeleton for the production path. It includes:
 - No real email/calendar OAuth flow.
 - No live Postgres API integration test or production account auth flow.
 - No live AI text/image generation.
-- No production object-storage upload or signed URL flow for exported artifacts.
+- No live object-storage upload or cloud object-store integration for exported
+  artifacts; signed URL contracts and schema gates are covered.
 - No live Walgreens/CVS/FedEx/Shutterfly/vendor quote or order API.
 - No live tax, coupon, stock, or pickup-window verification for public printer
   prices.
@@ -77,7 +80,7 @@ card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, memory
 auth/idempotency runtime behavior, public printer pricing research, local
 SVG/PDF print package export, provider-adapter readiness, domain boundaries,
-print contracts, order lifecycle,
+signed artifact handoff contracts, print contracts, order lifecycle,
 deployment shape, and safety gates with executable TypeScript, browser smoke
 tests, visual evidence, and infrastructure tests. Real external AI, OAuth, and
 ordering remain disabled until production credentials, consent flows, vendor
@@ -91,6 +94,7 @@ persistence schema into live Postgres-backed authenticated handlers:
 
 - Production user auth and authenticated card-project routes.
 - Persistent event/opportunity/memory/order repositories.
-- Render-packet artifact writing to object storage and signed URL handoff.
+- Live render-packet artifact writing to object storage using the signed handoff
+  contract.
 - Seed/demo reset workflow for reviewers.
 - Remote CI evidence collection and CI-friendly Chrome smoke hardening.

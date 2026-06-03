@@ -47,7 +47,14 @@ const migrationSignals = [
   "status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled'))",
   "CREATE INDEX idx_api_jobs_user_status",
   "CREATE TABLE audit_log",
-  "CHECK (raw_content_stored = FALSE)"
+  "CHECK (raw_content_stored = FALSE)",
+  "storage_provider TEXT NOT NULL",
+  "artifact_count INTEGER NOT NULL",
+  "artifact_manifest JSONB NOT NULL",
+  "signed_url_expires_at TIMESTAMPTZ NOT NULL",
+  "external_share_approval_required BOOLEAN NOT NULL DEFAULT TRUE",
+  "real_orders_enabled BOOLEAN NOT NULL DEFAULT FALSE",
+  "CHECK (real_orders_enabled = FALSE)"
 ];
 
 const apiSignals = [

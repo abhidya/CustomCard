@@ -162,6 +162,8 @@ includes 16 durable tables, including `auth_sessions`, `idempotency_keys`,
 shape for production auth sessions, idempotency replay, queue-backed rendering
 and handoff jobs, consent/data requests, and operational audit without claiming
 that live DB handlers are running in the static server.
+Render packets also carry artifact manifests, storage-provider metadata, signed
+URL expiry, and external-share approval gates.
 
 ## Cheap Cloud Deployment Shape
 
@@ -207,6 +209,9 @@ Implemented checks:
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.
+- `src/artifactHandoff.test.ts` validates HMAC-signed artifact URLs,
+  object-store URI construction, tamper detection, expiry policy, and unsafe
+  config failures.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer contract evidence.
@@ -225,7 +230,7 @@ Implemented checks:
   contract API doctor, memory API doctor, persistence doctor, worker readiness,
   and mobile doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  pricing, print-export, persistence, orchestration, and mobile contract
+  artifact-handoff, pricing, print-export, persistence, orchestration, and mobile contract
   modules: 90% statements, 80% branches, 90% functions, and 90% lines.
 
 Remaining high-risk work:
@@ -234,7 +239,8 @@ Remaining high-risk work:
 - No live AI/image provider call.
 - No payment, live quote, or live order adapter.
 - No live printer tax, coupon, stock, or pickup-window integration.
-- No production object-storage upload or signed render-packet URL flow.
+- No live object-store upload or cloud object-store integration; signed
+  render-packet URL contracts are covered.
 - No live Postgres API integration test, production account auth flow, or account
   recovery.
 - No React Native render/emulator proof or native iOS/Android build artifact.

@@ -48,6 +48,9 @@ describe("persistence contracts", () => {
     expect(summary.tables.idempotencyTable).toBe(true);
     expect(summary.tables.jobTable).toBe(true);
     expect(summary.tables.rawContentAllowed).toBe(0);
+    expect(persistenceTableContracts.find((contract) => contract.name === "render_packets")?.requiredColumns).toEqual(
+      expect.arrayContaining(["artifact_manifest", "signed_url_expires_at", "external_share_approval_required", "real_orders_enabled"])
+    );
     expect(summary.routes.schemaBacked).toBe(10);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(summary.blockers).toEqual([]);

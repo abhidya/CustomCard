@@ -97,7 +97,23 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
   table("card_opportunities", ["id", "event_id", "recipient_name", "decision"], ["idx_card_opportunities_event"], true),
   table("relationship_memories", ["id", "user_id", "recipient_name", "approved", "forgotten_at"], ["idx_relationship_memories_recipient"], true),
   table("card_projects", ["id", "opportunity_id", "approved_memory_ids"], ["idx_card_projects_opportunity"], true),
-  table("render_packets", ["id", "project_id", "checksum", "artifact_uri"], ["idx_render_packets_project"], true),
+  table(
+    "render_packets",
+    [
+      "id",
+      "project_id",
+      "checksum",
+      "artifact_uri",
+      "storage_provider",
+      "artifact_count",
+      "artifact_manifest",
+      "signed_url_expires_at",
+      "external_share_approval_required",
+      "real_orders_enabled"
+    ],
+    ["idx_render_packets_project"],
+    true
+  ),
   table("orders", ["id", "project_id", "status", "recovery_actions"], ["idx_orders_project"], true),
   table("order_events", ["id", "order_id", "event_type", "payload"], ["idx_order_events_order"], true, true),
   table("vendor_quotes", ["id", "order_id", "vendor", "live_quote"], ["idx_vendor_quotes_order"], false),
@@ -146,7 +162,14 @@ export const migrationRequiredSignals = [
   "status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled'))",
   "CREATE INDEX idx_api_jobs_user_status",
   "CREATE TABLE audit_log",
-  "CHECK (raw_content_stored = FALSE)"
+  "CHECK (raw_content_stored = FALSE)",
+  "storage_provider TEXT NOT NULL",
+  "artifact_count INTEGER NOT NULL",
+  "artifact_manifest JSONB NOT NULL",
+  "signed_url_expires_at TIMESTAMPTZ NOT NULL",
+  "external_share_approval_required BOOLEAN NOT NULL DEFAULT TRUE",
+  "real_orders_enabled BOOLEAN NOT NULL DEFAULT FALSE",
+  "CHECK (real_orders_enabled = FALSE)"
 ];
 
 export function buildPersistenceReadinessSummary(
@@ -211,6 +234,16 @@ export function validatePersistenceContracts(
     }
     if (tableContract.name === "audit_log" && !tableContract.appendOnly) {
       issues.push("audit_log must be append-only.");
+    }
+    if (tableContract.name === "render_packets") {
+      for (const column of [
+        "artifact_manifest",
+        "signed_url_expires_at",
+        "external_share_approval_required",
+        "real_orders_enabled"
+      ]) {
+        if (!tableContract.requiredColumns.includes(column)) issues.push("render_packets must include signed artifact handoff columns.");
+      }
     }
   }
 

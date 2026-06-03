@@ -43,6 +43,7 @@ const checks = [
     "app:",
     "worker:",
     "OBJECT_STORE_URL: file:///data/objects",
+    "OBJECT_STORE_SIGNING_SECRET:",
     "customcard-objects:/data/objects"
   ]),
   checkIncludes("cloud-native", "k8s-secret-manager-boundary", contents.k8s, [
@@ -64,6 +65,8 @@ const checks = [
   checkIncludes("cloud-native", "k8s-runtime-env-gates", contents.k8s, [
     "secretRef:",
     "configMapRef:",
+    "OBJECT_STORE_SIGNING_SECRET",
+    "ARTIFACT_SIGNED_URL_TTL_MINUTES",
     "REAL_ORDER_KILL_SWITCH",
     "runtime:doctor"
   ]),
@@ -92,6 +95,8 @@ const checks = [
     "DATABASE_URL=",
     "QUEUE_URL=",
     "OBJECT_STORE_URL=",
+    "OBJECT_STORE_SIGNING_SECRET=",
+    "ARTIFACT_SIGNED_URL_TTL_MINUTES=",
     "CUSTOMCARD_API_RUNTIME=contract",
     "AUTH_SESSION_SECRET=",
     "CUSTOMCARD_CUSTOMER_SESSION_TOKEN=",
@@ -121,6 +126,9 @@ const checks = [
     "CHECK (width = 1500)",
     "CHECK (dpi = 300)",
     "checksum TEXT NOT NULL",
+    "artifact_manifest JSONB NOT NULL",
+    "signed_url_expires_at TIMESTAMPTZ NOT NULL",
+    "CHECK (real_orders_enabled = FALSE)",
     "UNIQUE (user_id, route_id, idempotency_key)",
     "CREATE UNIQUE INDEX idx_auth_sessions_hash"
   ])

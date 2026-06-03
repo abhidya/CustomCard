@@ -15,6 +15,8 @@ jobs:
       DATABASE_URL: postgres://x
       QUEUE_URL: redis://x
       OBJECT_STORE_URL: file:///tmp/customcard-objects
+      OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32
+      ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       AUTH_SESSION_SECRET: test-session-secret
       REAL_ORDER_KILL_SWITCH: disabled
       CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173

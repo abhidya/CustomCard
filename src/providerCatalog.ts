@@ -557,11 +557,11 @@ export const providerCatalog: ProviderAdapter[] = [
     lane: "Production contract",
     status: "contract-only",
     cost: "self-hosted",
-    credentials: ["OBJECT_STORE_URL", "OBJECT_STORE_BUCKET"],
-    safetyGates: ["Checksum required", "Signed URL not shipped", "Retention policy required"],
+    credentials: ["OBJECT_STORE_URL", "OBJECT_STORE_BUCKET", "OBJECT_STORE_SIGNING_SECRET"],
+    safetyGates: ["Checksum required", "HMAC signed URL contract", "Retention policy required", "No live upload in local MVP"],
     roleSurface: ["admin"],
     priority: 65,
-    detail: "Models durable render-packet storage for deployment without enabling uploads."
+    detail: "Models durable render-packet storage and expiring signed artifact URLs without enabling live uploads."
   },
   {
     id: "local-relationship-memory",

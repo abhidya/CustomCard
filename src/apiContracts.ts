@@ -203,12 +203,12 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "queue-backed",
     requestSchema: ["X-Idempotency-Key", "projectId", "panels"],
-    responseSchema: ["renderPacketId", "checksum", "status"],
+    responseSchema: ["renderPacketId", "checksum", "artifactManifest", "signedArtifactUrls", "status"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
-    piiPolicy: "Stores validated panel artifacts only.",
-    backedBy: ["renderPrintPacket", "object-store render packets"]
+    piiPolicy: "Stores validated panel artifacts only; signed URLs expire and require external-share approval.",
+    backedBy: ["renderPrintPacket", "object-store render packets", "buildArtifactHandoffContract"]
   },
   {
     id: "manual-vendor-handoff",
@@ -218,7 +218,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "queue-backed",
     requestSchema: ["X-Idempotency-Key", "renderPacketId", "vendorId", "externalShareApproval"],
-    responseSchema: ["handoffChecklist", "realOrdersEnabled", "disabledReasons"],
+    responseSchema: ["handoffChecklist", "signedArtifactUrls", "realOrdersEnabled", "disabledReasons"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
