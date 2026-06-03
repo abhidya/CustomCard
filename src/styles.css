@@ -646,13 +646,29 @@ h3 {
 }
 
 .adapterMini {
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(86px, 0.48fr) minmax(0, 1fr) minmax(82px, auto);
+  justify-content: stretch;
   gap: 10px;
+  width: 100%;
+  min-width: 0;
   min-height: 46px;
   padding: 9px 10px;
   border: 1px solid #d8e0e2;
   border-radius: 8px;
   background: #f8fafb;
+}
+
+.adapterMini span,
+.adapterMini strong,
+.adapterMini small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.adapterMini small {
+  justify-self: end;
+  text-align: right;
 }
 
 .adapterMini.ready-local {
@@ -1445,5 +1461,14 @@ h3 {
 
   .envChipGrid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adapterMini {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adapterMini small {
+    justify-self: start;
+    text-align: left;
   }
 }

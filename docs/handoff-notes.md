@@ -75,7 +75,10 @@ skeleton for the production path. It includes:
 - No deployed production Postgres API integration or production hosted
   account-token verification outside the isolated live Postgres route-auth,
   Postgres API HTTP, and account-auth doctors.
-- No live AI text/image generation.
+- AI provider readiness is covered as repo-local text/image adapter inventory,
+  model allowlist, prompt safety, privacy, print QA, spend, evaluation, and
+  rollout gates; no live AI text/image generation, model output QA run, or
+  production AI traffic is claimed.
 - No live-applied production cloud object-store bucket is claimed outside the
   guarded CI/local MinIO doctor and static AWS artifact-store IaC contract;
   signed URL contracts, schema gates, temporary filesystem write/read
@@ -150,8 +153,8 @@ surfaces, account identity/recovery storage, route-scoped Postgres
 auth/idempotency behavior, repository-backed customer mutations, source-backed
 printer pricing research, local SVG/PDF print package export, filesystem and
 S3-compatible artifact-store contracts, live MinIO doctor coverage,
-provider-adapter readiness, localization readiness, signed artifact handoff
-contracts, mobile next-action, queue, approval, memory-review, print-proof,
+provider-adapter readiness, AI provider readiness, localization readiness,
+signed artifact handoff contracts, mobile next-action, queue, approval, memory-review, print-proof,
 pricing, and offline-sync contracts, print contracts, order lifecycle,
 deployment shape, and safety gates with executable TypeScript, browser smoke
 tests, and infrastructure tests.

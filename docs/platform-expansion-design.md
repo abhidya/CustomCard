@@ -352,10 +352,17 @@ The runtime remains fail-closed:
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
 - `npm run e2e:coverage:doctor` verifies End-to-end coverage in
-  `src/e2eCoverage.ts`, the 21-item repo-local end-to-end coverage matrix,
+  `src/e2eCoverage.ts`, the 22-item repo-local end-to-end coverage matrix,
   admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
   "not live production proof" disclaimer while keeping live production proofs,
   real orders, and live external network requirements at zero.
+- `npm run ai:doctor` verifies AI provider readiness in
+  `src/aiProviderReadiness.ts`, the text/image adapter inventory, model
+  allowlist gates, prompt and brand-safety review evidence, PII/memory
+  minimization, image print QA, spend controls, evaluation fixtures, admin/API
+  exposure, CI wiring, and the "not live AI generation" disclaimer while keeping
+  live provider calls, production AI traffic, and live external network
+  requirements at zero.
 - `npm run observability:doctor` verifies Observability readiness in
   `src/observabilityReadiness.ts`, telemetry schema, PII redaction, sampling,
   retention, alert-route drill tracking, observability provider request
@@ -493,7 +500,10 @@ Implemented checks:
 Remaining high-risk work:
 
 - No live OAuth flow.
-- No live AI/image provider call.
+- AI provider readiness is covered as repo-local text/image adapter inventory,
+  model allowlist, prompt safety, privacy, print QA, spend, evaluation, and
+  rollout gates; no live AI/image provider call, model output QA run, or
+  production AI traffic is claimed.
 - No live payment charge/refund, live quote, or live order adapter.
 - Observability readiness is covered as repo-local telemetry schema, redaction,
   sampling, retention, provider-contract, alert-route, and incident-review

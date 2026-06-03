@@ -2,6 +2,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { summarizeAiProviderReadiness } from "../src/aiProviderReadinessData.mjs";
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
@@ -276,6 +277,7 @@ export const readiness = {
   },
   externalAudit: summarizeExternalAuditReadiness(),
   e2eCoverage: summarizeE2eCoverage(),
+  aiProviderReadiness: summarizeAiProviderReadiness(),
   capacity: summarizeCapacityPlan(),
   observability: summarizeObservabilityReadiness(),
   safety: {
@@ -580,6 +582,25 @@ function validateApiServerContract() {
   if (readiness.e2eCoverage.realOrdersEnabled !== 0) blockers.push("E2E coverage cannot enable real orders.");
   if (readiness.e2eCoverage.externalNetworkCalls !== 0) blockers.push("E2E coverage cannot require live external network calls.");
   if (readiness.e2eCoverage.blockers.length > 0) blockers.push("E2E coverage summary has blockers.");
+  if (readiness.aiProviderReadiness.total < 8) blockers.push("AI provider readiness must track text/image launch evidence.");
+  if (readiness.aiProviderReadiness.textProviderContracts < 15) {
+    blockers.push("AI provider readiness must cover every text provider contract.");
+  }
+  if (readiness.aiProviderReadiness.imageProviderContracts < 12) {
+    blockers.push("AI provider readiness must cover every image provider contract.");
+  }
+  if (readiness.aiProviderReadiness.localFallbacks < 2) blockers.push("AI provider readiness must keep local fallbacks.");
+  if (readiness.aiProviderReadiness.promptAuditRequired < 6) blockers.push("AI provider readiness must require prompt audits.");
+  if (readiness.aiProviderReadiness.liveProviderCallsEnabled !== 0) {
+    blockers.push("AI provider readiness cannot enable live provider calls.");
+  }
+  if (readiness.aiProviderReadiness.externalNetworkCalls !== 0) {
+    blockers.push("AI provider readiness cannot require live external network calls.");
+  }
+  if (readiness.aiProviderReadiness.productionTrafficEnabled !== 0) {
+    blockers.push("AI provider readiness cannot enable production AI traffic.");
+  }
+  if (readiness.aiProviderReadiness.blockers.length > 0) blockers.push("AI provider readiness summary has blockers.");
   if (readiness.observability.total < 7) blockers.push("Observability readiness must track telemetry and alerting evidence.");
   if (readiness.observability.providerContracts < 6) {
     blockers.push("Observability readiness must cover all observability provider contracts.");

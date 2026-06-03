@@ -15,6 +15,7 @@ const requiredCoverageIds = [
   "deployment-iac-readiness",
   "security-privacy-accessibility",
   "external-audit-evidence-register",
+  "ai-provider-readiness",
   "observability-alerting-readiness",
   "capacity-cost-readiness",
   "localization-rtl-readiness",
@@ -230,6 +231,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run external:audit:doctor", "npm run check"],
     evidence: ["15 evidence gaps tracked", "Production-gate mappings verified", "Public production claims disabled", "Attached external artifacts not claimed"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "ai-provider-readiness",
+    label: "AI provider readiness",
+    surface: "governance",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run ai:doctor", "npm run test -- --run src/aiProviderReadiness.test.ts", "npm run check"],
+    evidence: ["Text provider contracts covered", "Image provider contracts covered", "Prompt audits required", "Live AI calls disabled"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

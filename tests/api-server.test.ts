@@ -57,6 +57,20 @@ describe("api server wrapper", () => {
           externalNetworkCalls: number;
           blockers: string[];
         };
+        aiProviderReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          textProviderContracts: number;
+          imageProviderContracts: number;
+          localFallbacks: number;
+          promptAuditRequired: number;
+          humanReviewRequired: number;
+          liveProviderCallsEnabled: number;
+          externalNetworkCalls: number;
+          productionTrafficEnabled: number;
+          blockers: string[];
+        };
         observability: {
           total: number;
           repoLocalReady: number;
@@ -149,13 +163,27 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 21,
-      covered: 21,
+      total: 22,
+      covered: 22,
       repoLocalCoveragePercent: 100,
-      ciGated: 21,
+      ciGated: 22,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
+      blockers: []
+    });
+    expect(report.readiness.aiProviderReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 4,
+      evidenceMissing: 4,
+      textProviderContracts: 15,
+      imageProviderContracts: 12,
+      localFallbacks: 2,
+      promptAuditRequired: 6,
+      humanReviewRequired: 5,
+      liveProviderCallsEnabled: 0,
+      externalNetworkCalls: 0,
+      productionTrafficEnabled: 0,
       blockers: []
     });
     expect(report.readiness.observability).toMatchObject({
@@ -317,12 +345,26 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 21,
-        covered: 21,
+        total: 22,
+        covered: 22,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
         externalNetworkCalls: 0
+      });
+      expect(readiness.aiProviderReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 4,
+        evidenceMissing: 4,
+        textProviderContracts: 15,
+        imageProviderContracts: 12,
+        localFallbacks: 2,
+        promptAuditRequired: 6,
+        humanReviewRequired: 5,
+        liveProviderCallsEnabled: 0,
+        externalNetworkCalls: 0,
+        productionTrafficEnabled: 0,
+        blockers: []
       });
       expect(readiness.observability).toMatchObject({
         total: 7,

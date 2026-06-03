@@ -1,5 +1,12 @@
 import { mobileExperience, summarizeMobileExperience, validateMobileExperience } from "../apps/mobile/src/customerExperience.ts";
 import {
+  aiProviderReadinessItems,
+  summarizeAiProviderReadiness,
+  validateAiProviderReadiness,
+  type AiProviderReadinessItem,
+  type AiProviderReadinessSummary
+} from "./aiProviderReadiness";
+import {
   capacityProfiles,
   summarizeCapacityPlan,
   validateCapacityProfiles,
@@ -87,6 +94,7 @@ export interface ApiReadinessSummary {
   production: ProductionReadinessSummary;
   externalAudit: ExternalAuditReadinessSummary;
   e2eCoverage: E2eCoverageSummary;
+  aiProviderReadiness: AiProviderReadinessSummary;
   capacity: CapacityPlanSummary;
   observability: ObservabilityReadinessSummary;
   runtime: {
@@ -118,6 +126,10 @@ export interface ApiBootstrapPayload {
   e2eCoverage: {
     items: E2eCoverageItem[];
     summary: E2eCoverageSummary;
+  };
+  aiProviderReadiness: {
+    items: AiProviderReadinessItem[];
+    summary: AiProviderReadinessSummary;
   };
   capacity: {
     profiles: CapacityProfile[];
@@ -222,6 +234,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "production",
       "externalAudit",
       "e2eCoverage",
+      "aiProviderReadiness",
       "capacity",
       "observability",
       "runtime",
@@ -407,6 +420,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     production: summarizeProductionReadiness(),
     externalAudit: summarizeExternalAuditReadiness(),
     e2eCoverage: summarizeE2eCoverage(),
+    aiProviderReadiness: summarizeAiProviderReadiness(),
     capacity: summarizeCapacityPlan(),
     observability: summarizeObservabilityReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
@@ -435,6 +449,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     e2eCoverage: {
       items: e2eCoverageItems,
       summary: summarizeE2eCoverage()
+    },
+    aiProviderReadiness: {
+      items: aiProviderReadinessItems,
+      summary: summarizeAiProviderReadiness()
     },
     capacity: {
       profiles: capacityProfiles,
@@ -545,6 +563,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const e2eCoverageIssue of validateE2eCoverage()) {
     issues.push(e2eCoverageIssue);
+  }
+  for (const aiProviderReadinessIssue of validateAiProviderReadiness()) {
+    issues.push(aiProviderReadinessIssue);
   }
   for (const observabilityIssue of validateObservabilityReadiness()) {
     issues.push(observabilityIssue);

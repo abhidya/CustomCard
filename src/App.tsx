@@ -30,6 +30,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  aiProviderReadinessItems,
+  summarizeAiProviderReadiness,
+  type AiProviderReadinessItem,
+  type AiProviderReadinessSummary
+} from "./aiProviderReadiness";
+import {
   capacityProfiles,
   summarizeCapacityPlan,
   type CapacityPlanSummary,
@@ -179,6 +185,7 @@ function App() {
   const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
   const externalAuditSummary = useMemo(() => summarizeExternalAuditReadiness(), []);
   const e2eCoverageSummary = useMemo(() => summarizeE2eCoverage(), []);
+  const aiProviderReadinessSummary = useMemo(() => summarizeAiProviderReadiness(), []);
   const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
   const observabilitySummary = useMemo(() => summarizeObservabilityReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
@@ -463,6 +470,8 @@ function App() {
           <AdminPanelView
             capacityProfiles={capacityProfiles}
             capacitySummary={capacitySummary}
+            aiProviderReadinessItems={aiProviderReadinessItems}
+            aiProviderReadinessSummary={aiProviderReadinessSummary}
             e2eCoverageItems={e2eCoverageItems}
             e2eCoverageSummary={e2eCoverageSummary}
             externalAuditItems={externalAuditReadinessItems}
@@ -1124,6 +1133,8 @@ function HandoffView({
 }
 
 function AdminPanelView({
+  aiProviderReadinessItems,
+  aiProviderReadinessSummary,
   capacityProfiles,
   capacitySummary,
   e2eCoverageItems,
@@ -1138,6 +1149,8 @@ function AdminPanelView({
   productionReadiness,
   runtimeReadiness
 }: {
+  aiProviderReadinessItems: AiProviderReadinessItem[];
+  aiProviderReadinessSummary: AiProviderReadinessSummary;
   capacityProfiles: CapacityProfile[];
   capacitySummary: CapacityPlanSummary;
   e2eCoverageItems: E2eCoverageItem[];
@@ -1181,6 +1194,8 @@ function AdminPanelView({
         <Metric label="Capacity profiles" value={`${capacitySummary.total}`} />
         <Metric label="Public claims" value={`${externalAuditSummary.publicClaimsAllowed}`} />
         <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
+        <Metric label="AI contracts" value={`${aiProviderReadinessSummary.textProviderContracts + aiProviderReadinessSummary.imageProviderContracts}`} />
+        <Metric label="Live AI" value={`${aiProviderReadinessSummary.liveProviderCallsEnabled}`} />
         <Metric label="Alert routes" value={`${observabilitySummary.alertRoutesRequired}`} />
         <Metric label="Live telemetry" value={`${observabilitySummary.liveIngestionEnabled}`} />
       </div>
@@ -1328,6 +1343,30 @@ function AdminPanelView({
           <E2eCoverageList items={e2eCoverageItems} />
           <p className="panelNote">
             The 100% figure is limited to repo-local reviewer workflows and CI-gated doctors; live production auth, real payments, direct printer orders, signed native artifacts, and external audits remain outside this proof.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">AI operations</p>
+              <h3>AI provider readiness</h3>
+            </div>
+            <StatusChip icon={WandSparkles} label="Live AI off" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="AI text and image provider readiness">
+            <Metric label="Items" value={`${aiProviderReadinessSummary.total}`} />
+            <Metric label="Text providers" value={`${aiProviderReadinessSummary.textProviderContracts}`} />
+            <Metric label="Image providers" value={`${aiProviderReadinessSummary.imageProviderContracts}`} />
+            <Metric label="Local fallbacks" value={`${aiProviderReadinessSummary.localFallbacks}`} />
+            <Metric label="Prompt audits" value={`${aiProviderReadinessSummary.promptAuditRequired}`} />
+            <Metric label="Human review" value={`${aiProviderReadinessSummary.humanReviewRequired}`} />
+            <Metric label="Evidence gaps" value={`${aiProviderReadinessSummary.evidenceMissing}`} />
+            <Metric label="Live calls" value={`${aiProviderReadinessSummary.liveProviderCallsEnabled}`} />
+          </div>
+          <AiProviderReadinessList items={aiProviderReadinessItems} />
+          <p className="panelNote">
+            These are text/image adapter, model allowlist, prompt audit, privacy, print QA, spend, evaluation, and rollout contracts; no live AI generation or model traffic is claimed.
           </p>
         </article>
 
@@ -1629,6 +1668,20 @@ function ObservabilityReadinessList({ items }: { items: ObservabilityReadinessIt
           <span>{item.lane}</span>
           <strong>{item.label}</strong>
           <small>{item.liveIngestionEnabled ? "Live ingestion" : "Live ingestion off"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AiProviderReadinessList({ items }: { items: AiProviderReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${item.status === "repo-local-ready" ? "ready-local" : "credential-gated"}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.liveProviderCallsEnabled ? "Live AI" : "Live AI off"}</small>
         </div>
       ))}
     </div>

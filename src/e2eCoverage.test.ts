@@ -12,13 +12,13 @@ describe("end-to-end coverage matrix", () => {
 
     expect(validateE2eCoverage()).toEqual([]);
     expect(summary).toMatchObject({
-      total: 21,
-      covered: 21,
+      total: 22,
+      covered: 22,
       repoLocalCoveragePercent: 100,
       browserSmokeCovered: 4,
       contractTestCovered: 4,
-      doctorCovered: 13,
-      ciGated: 21,
+      doctorCovered: 14,
+      ciGated: 22,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -56,6 +56,7 @@ describe("end-to-end coverage matrix", () => {
         "deployment-iac-readiness",
         "security-privacy-accessibility",
         "external-audit-evidence-register",
+        "ai-provider-readiness",
         "observability-alerting-readiness",
         "capacity-cost-readiness",
         "localization-rtl-readiness",

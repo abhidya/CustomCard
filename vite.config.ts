@@ -15,6 +15,8 @@ export default defineConfig({
         "src/e2eCoverageData.mjs",
         "src/externalAuditReadiness.ts",
         "src/externalAuditReadinessData.mjs",
+        "src/aiProviderReadiness.ts",
+        "src/aiProviderReadinessData.mjs",
         "src/observabilityReadiness.ts",
         "src/observabilityReadinessData.mjs",
         "src/agentContracts.ts",

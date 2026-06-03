@@ -97,13 +97,23 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 21,
-      covered: 21,
+      total: 22,
+      covered: 22,
       repoLocalCoveragePercent: 100,
-      ciGated: 21,
+      ciGated: 22,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
+    });
+    expect(summary.aiProviderReadiness).toMatchObject({
+      total: 8,
+      textProviderContracts: 15,
+      imageProviderContracts: 12,
+      localFallbacks: 2,
+      liveProviderCallsEnabled: 0,
+      externalNetworkCalls: 0,
+      productionTrafficEnabled: 0,
+      blockers: []
     });
     expect(summary.capacity).toMatchObject({
       total: 4,
@@ -183,7 +193,7 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 21,
+      total: 22,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
@@ -192,8 +202,19 @@ describe("api contracts", () => {
         "customer-workspace-to-handoff",
         "admin-panel-readiness",
         "mobile-customer-shell",
+        "ai-provider-readiness",
         "observability-alerting-readiness"
       ])
+    );
+    expect(payload.aiProviderReadiness.summary).toMatchObject({
+      total: 8,
+      textProviderContracts: 15,
+      imageProviderContracts: 12,
+      liveProviderCallsEnabled: 0,
+      productionTrafficEnabled: 0
+    });
+    expect(payload.aiProviderReadiness.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["ai-adapter-inventory", "prompt-brand-safety-review", "image-print-qa"])
     );
     expect(payload.capacity.summary).toMatchObject({
       total: 4,
@@ -247,9 +268,14 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 21,
+        total: 22,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
+      },
+      aiProviderReadiness: {
+        total: 8,
+        liveProviderCallsEnabled: 0,
+        productionTrafficEnabled: 0
       },
       observability: {
         total: 7,

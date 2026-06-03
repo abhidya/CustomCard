@@ -22,6 +22,11 @@ it after each meaningful implementation pass.
   observability request contracts, metadata-only event/contact import contracts,
   metadata-only CRM lifecycle and workflow-integration contracts, free local
   fallbacks, and hard-blocked live vendor ordering.
+- AI provider readiness tests and `npm run ai:doctor` cover text/image adapter
+  inventory, local chat/render fallbacks, model allowlist gates, prompt and
+  brand-safety review evidence, PII/memory minimization, image print QA, spend
+  controls, evaluation fixtures, admin/API exposure, docs, CI wiring, and live
+  provider calls plus production AI traffic held at zero.
 - Observability readiness tests and `npm run observability:doctor` cover
   telemetry schema, PII redaction, sampling, retention, alert-route drill
   tracking, provider request contracts, admin/API exposure, docs, CI wiring,
@@ -134,9 +139,14 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 21-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 22-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
+- AI provider readiness is checked by `npm run ai:doctor`, which verifies the
+  8-item text/image provider readiness register, 15 text provider contracts, 12
+  image provider contracts, 2 local fallbacks, prompt/human-review gates,
+  admin/API surfaces, docs, CI wiring, and zero live provider calls, production
+  AI traffic, or live external network requirements.
 - Observability readiness is checked by `npm run observability:doctor`, which
   verifies the 7-item telemetry and alerting readiness register, provider
   runtime contracts, admin/API surfaces, docs, CI wiring, and zero live
@@ -196,10 +206,11 @@ npm run check
 
 Result: passed.
 
-- Vitest: 25 test files passed, 162 tests passed.
-- Coverage: 23 core/API/persistence/infra/mobile test files passed, 153 tests passed; V8 report measured
-  91.26% statements, 84.5% branches, 97.29% functions, and 94.9% lines across
+- Vitest: 26 test files passed, 166 tests passed.
+- Coverage: 24 core/API/persistence/infra/mobile test files passed, 157 tests passed; V8 report measured
+  91.27% statements, 84.61% branches, 97.35% functions, and 94.94% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
+  `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
   `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
@@ -254,10 +265,20 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 21 repo-local journeys, 100% repo-local
-coverage, 21 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 22 repo-local journeys, 100% repo-local
+coverage, 22 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
+
+```text
+npm run ai:doctor
+```
+
+Result: passed. The JSON report marked register, provider-contracts, surfaces,
+docs, CI, and evidence lanes `ready`; it verified 8 AI readiness items, 15 text
+provider contracts, 12 image provider contracts, 2 local fallbacks, 6 prompt
+audit gates, 5 human-review gates, zero live provider calls, zero production AI
+traffic, and zero live external network requirements.
 
 ```text
 npm run observability:doctor
@@ -517,8 +538,10 @@ documentation claims found during the audit were corrected.
 - No deployed production Postgres API integration or production hosted
   account-token verification; local/CI isolated Postgres route-auth integration
   and account-auth storage/recovery integration are covered by doctors.
-- No live AI text-chat or image-generation provider test; provider runtime
-  coverage stops at redacted no-network request contracts.
+- AI provider readiness is covered as repo-local text/image adapter inventory,
+  model allowlist, prompt safety, privacy, print QA, spend, evaluation, and
+  rollout gates; no live AI text-chat, image-generation provider call, model
+  output QA run, or production AI traffic is claimed.
 - No physical print certification.
 - No external legal/security/privacy/accessibility audit.
 - No React Native render test, mobile emulator run, actual EAS/native build, or
