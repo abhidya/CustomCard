@@ -32,6 +32,7 @@ function createContractApiRuntime({ routes }) {
         idempotencyRecords: 0,
         auditRecords: 0,
         queuedJobs: 0,
+        cardProjectRecords: 0,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -86,6 +87,7 @@ function createMemoryApiRuntime({ env, routes }) {
   const idempotencyRecords = new Map();
   const auditRecords = [];
   const queuedJobs = [];
+  const cardProjects = new Map();
 
   addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo");
   addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo");
@@ -102,6 +104,7 @@ function createMemoryApiRuntime({ env, routes }) {
         idempotencyRecords: idempotencyRecords.size,
         auditRecords: auditRecords.length,
         queuedJobs: queuedJobs.length,
+        cardProjectRecords: cardProjects.size,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -121,13 +124,20 @@ function createMemoryApiRuntime({ env, routes }) {
       const existing = idempotencyRecords.get(prepared.recordKey);
       if (existing) return replayOrConflict(existing, prepared.requestHash);
 
+      const routePersistence = persistMemoryRouteMutation({
+        cardProjects,
+        route,
+        authContext,
+        bodyText
+      });
       const payload = decorateMutationPayload({
         route,
         authContext,
         responsePayload,
         runtimeMode: "memory",
         idempotencyKey: prepared.idempotencyKey,
-        idempotencyReplayed: false
+        idempotencyReplayed: false,
+        routePersistence
       });
       const record = {
         requestHash: prepared.requestHash,
@@ -185,6 +195,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         idempotencyRecords: null,
         auditRecords: null,
         queuedJobs: null,
+        cardProjectRecords: null,
         statefulRoutes: routes.filter((route) => route.audience !== "public").length
       };
     },
@@ -253,13 +264,20 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         }
 
         const idempotencyId = stableRuntimeId("idem", authContext.userId, route.id, prepared.idempotencyKey);
+        const routePersistence = await persistPostgresRouteMutation({
+          client,
+          route,
+          authContext,
+          bodyText
+        });
         const responseBody = decorateMutationPayload({
           route,
           authContext,
           responsePayload,
           runtimeMode: "postgres",
           idempotencyKey: prepared.idempotencyKey,
-          idempotencyReplayed: false
+          idempotencyReplayed: false,
+          routePersistence
         });
         const inserted = await client.query(
           `INSERT INTO idempotency_keys
@@ -399,15 +417,87 @@ function replayOrConflict(record, nextRequestHash) {
   };
 }
 
-function decorateMutationPayload({ route, authContext, responsePayload, runtimeMode, idempotencyKey, idempotencyReplayed }) {
+function decorateMutationPayload({ route, authContext, responsePayload, runtimeMode, idempotencyKey, idempotencyReplayed, routePersistence }) {
   return {
     ...responsePayload,
+    ...(routePersistence?.payload ?? {}),
     runtimeMode,
     authenticatedUserId: authContext.userId,
     persistedTables: persistedTablesForRoute(route),
     idempotencyKey,
     idempotencyPersisted: true,
+    repositoryPersisted: Boolean(routePersistence?.persisted),
     idempotencyReplayed
+  };
+}
+
+function persistMemoryRouteMutation({ cardProjects, route, authContext, bodyText }) {
+  if (route.id !== "card-projects") return undefined;
+  const record = buildCardProjectRecord({ authContext, bodyText });
+  cardProjects.set(record.projectId, record);
+  return {
+    persisted: true,
+    payload: buildCardProjectRepositoryPayload(record, "memory")
+  };
+}
+
+async function persistPostgresRouteMutation({ client, route, authContext, bodyText }) {
+  if (route.id !== "card-projects") return undefined;
+  const record = buildCardProjectRecord({ authContext, bodyText });
+  await client.query(
+    `INSERT INTO card_projects
+       (id, opportunity_id, recipient_name, locale, requires_rtl_layout, approved_memory_ids)
+     VALUES ($1, $2, $3, $4, $5, $6::text[])
+     ON CONFLICT (id) DO UPDATE SET
+       opportunity_id = EXCLUDED.opportunity_id,
+       recipient_name = EXCLUDED.recipient_name,
+       locale = EXCLUDED.locale,
+       requires_rtl_layout = EXCLUDED.requires_rtl_layout,
+       approved_memory_ids = EXCLUDED.approved_memory_ids`,
+    [
+      record.projectId,
+      record.opportunityId,
+      record.recipientName,
+      record.locale,
+      record.requiresRtlLayout,
+      record.approvedMemoryIds
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildCardProjectRepositoryPayload(record, "postgres")
+  };
+}
+
+function buildCardProjectRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const opportunityId = safeId(body.opportunityId, "opportunity-demo");
+  const locale = safeLocale(body.locale);
+  const approvedMemoryIds = Array.isArray(body.approvedMemoryIds)
+    ? body.approvedMemoryIds.map((value) => safeId(value, "")).filter(Boolean).slice(0, 12)
+    : [];
+  return {
+    projectId: safeId(body.projectId, stableRuntimeId("project", authContext.userId, opportunityId, approvedMemoryIds.join(","), locale)),
+    opportunityId,
+    recipientName: safeText(body.recipientName, "Recipient"),
+    locale,
+    requiresRtlLayout: Boolean(body.requiresRtlLayout) || /^(ar|he|fa|ur)(-|$)/i.test(locale),
+    approvedMemoryIds
+  };
+}
+
+function buildCardProjectRepositoryPayload(record, runtimeMode) {
+  return {
+    projectId: record.projectId,
+    opportunityId: record.opportunityId,
+    renderStatus: "ready-for-render",
+    requiresRtlLayout: record.requiresRtlLayout,
+    approvedMemoryIds: record.approvedMemoryIds,
+    repository: {
+      table: "card_projects",
+      runtimeMode,
+      persisted: true
+    }
   };
 }
 
@@ -467,6 +557,31 @@ function readHeader(request, name) {
 
 function stableRuntimeId(...parts) {
   return `rt_${createHash("sha256").update(parts.join(":")).digest("hex").slice(0, 16)}`;
+}
+
+function parseJsonBody(bodyText) {
+  if (!bodyText) return {};
+  try {
+    return JSON.parse(bodyText);
+  } catch {
+    return {};
+  }
+}
+
+function safeId(value, fallback) {
+  const text = String(value ?? "").trim();
+  if (!text) return fallback;
+  return text.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80) || fallback;
+}
+
+function safeLocale(value) {
+  const text = String(value ?? "en-US").trim();
+  return /^[a-z]{2,3}(-[A-Z]{2})?$/i.test(text) ? text : "en-US";
+}
+
+function safeText(value, fallback) {
+  const text = String(value ?? "").trim().replace(/\s+/g, " ");
+  return text.slice(0, 120) || fallback;
 }
 
 function normalizeJson(value) {

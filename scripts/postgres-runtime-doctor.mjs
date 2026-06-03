@@ -3,6 +3,7 @@ import { createApiRuntime, hashSessionToken } from "./api-runtime.mjs";
 const routes = [
   { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-demo" },
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" }
 ];
 
@@ -64,6 +65,35 @@ await runCheck("persists idempotent queue-backed mutations", async () => {
   expect(fakeDb.jobs.length === 1, "queue-backed route should insert an api job");
 });
 
+await runCheck("persists repository-backed card project mutations", async () => {
+  const result = await runtime.persistMutation({
+    route: route("card-projects"),
+    request: request({ token: customerToken, idempotencyKey: "card-projects-postgres-0001" }),
+    authContext: customerAuth,
+    bodyText: JSON.stringify({
+      projectId: "project-postgres-contract",
+      opportunityId: "opportunity-postgres-contract",
+      recipientName: "Sara",
+      locale: "ar-AE",
+      approvedMemoryIds: ["memory-postgres-contract"]
+    }),
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: "card-projects",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    }
+  });
+
+  expect(result.statusCode === 202, "card-project mutation should be accepted");
+  expect(result.payload.runtimeMode === "postgres", "card-project mutation should report postgres runtime");
+  expect(result.payload.repositoryPersisted, "card-project mutation should persist through repository path");
+  expect(result.payload.projectId === "project-postgres-contract", "card-project response should include the persisted project id");
+  expect(result.payload.requiresRtlLayout, "Arabic locale should require RTL layout");
+  expect(fakeDb.cardProjects.length === 1, "card_projects row should be inserted");
+});
+
 await runCheck("replays matching idempotent mutations", async () => {
   const result = await runtime.persistMutation({
     route: route("render-packets"),
@@ -75,7 +105,7 @@ await runCheck("replays matching idempotent mutations", async () => {
 
   expect(result.statusCode === 202, "replay should return accepted status");
   expect(result.payload.idempotencyReplayed, "replay should mark idempotencyReplayed");
-  expect(fakeDb.idempotencyRecords.size === 1, "replay must not insert a second idempotency record");
+  expect(fakeDb.idempotencyRecords.size === 2, "replay must not insert another idempotency record");
 });
 
 await runCheck("rejects idempotency conflicts", async () => {
@@ -99,7 +129,8 @@ const report = {
     authSessionQueries: fakeDb.authSessionQueries,
     idempotencyRecords: fakeDb.idempotencyRecords.size,
     auditRecords: fakeDb.auditRecords.length,
-    queuedJobs: fakeDb.jobs.length
+    queuedJobs: fakeDb.jobs.length,
+    cardProjects: fakeDb.cardProjects.length
   },
   checks,
   blockers
@@ -168,6 +199,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
     idempotencyRecords: new Map(),
     auditRecords: [],
     jobs: [],
+    cardProjects: [],
     authSessionQueries: 0,
     pool: undefined
   };
@@ -218,6 +250,18 @@ function createFakeClient(state) {
 
       if (sql.includes("INSERT INTO audit_log")) {
         state.auditRecords.push({ routeId: params[0], actorId: params[1], metadata: JSON.parse(params[2]) });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO card_projects")) {
+        state.cardProjects.push({
+          id: params[0],
+          opportunityId: params[1],
+          recipientName: params[2],
+          locale: params[3],
+          requiresRtlLayout: params[4],
+          approvedMemoryIds: params[5]
+        });
         return { rows: [], rowCount: 1 };
       }
 

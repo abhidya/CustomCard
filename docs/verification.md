@@ -50,16 +50,17 @@ it after each meaningful implementation pass.
 - API-contract and API-server tests cover `/api/health`, customer/admin
   bootstrap, mobile bootstrap, provider readiness, idempotent mutation contracts,
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
-  customer pricing preview, `X-Idempotency-Key` replay/conflict behavior,
-  404/405 behavior, and the no-live-call/no-real-order posture.
+  repository-backed `/api/card-projects` mutation behavior, customer pricing
+  preview, `X-Idempotency-Key` replay/conflict behavior, 404/405 behavior, and
+  the no-live-call/no-real-order posture.
 - Account-auth tests and `npm run account:doctor:live` cover hosted auth adapter
   requirements, durable account identity storage, no raw provider profiles,
   provider-subject uniqueness, hashed expiring recovery challenges, durable
   sessions, and recovery audit rows.
 - Persistence-contract tests and `npm run persistence:doctor` cover auth-session
   schema, account identity/recovery schema, idempotency replay state, queue job
-  envelopes, append-only audit contracts, demo reset mappings, and 11
-  schema-backed API route mappings.
+  envelopes, card-project repository signals, append-only audit contracts, demo
+  reset mappings, and 11 schema-backed API route mappings.
 - Demo seed tests and `npm run demo:doctor` cover deterministic reviewer reset
   fixtures, SQL preview, signed artifact handoff references, and no-live-call
   safety gates.
@@ -149,9 +150,9 @@ npm run api:doctor:postgres
 
 Result: passed. Postgres runtime doctor used an injected fake `pg` pool to
 exercise auth-session lookup, wrong-role blocking, idempotent mutation insert,
-same-key replay, same-key/different-body conflict, audit-log insert, and
-queue-job insert. It reported 1 idempotency record, 1 audit record, 1 queued job,
-and no blockers.
+repository-backed card-project insert, same-key replay, same-key/different-body
+conflict, audit-log insert, and queue-job insert. It reported 2 idempotency
+records, 2 audit records, 1 queued job, 1 card project, and no blockers.
 
 ```text
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -159,10 +160,11 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 
 Result: passed. Live Postgres integration doctor created an isolated temporary
 database, applied `infra/migrations/001_initial_schema.sql`, seeded customer and
-admin auth sessions, authorized the customer through the real `pg` runtime,
-blocked a wrong-role admin request, persisted an idempotent queue-backed
-mutation, replayed the same idempotency key, rejected a changed-body conflict,
-and verified 1 idempotency record, 1 audit record, and 1 queued job before
+admin auth sessions plus card-project dependencies, authorized the customer
+through the real `pg` runtime, blocked a wrong-role admin request, persisted an
+idempotent queue-backed mutation, persisted a repository-backed card project,
+replayed the same idempotency key, rejected a changed-body conflict, and verified
+2 idempotency records, 2 audit records, 1 queued job, and 1 card project before
 dropping the temporary database.
 
 ```text
@@ -193,10 +195,10 @@ npm run persistence:doctor
 
 Result: passed. Persistence doctor reported 18 required tables, auth-session
 persistence, account identity and recovery challenge persistence, idempotency
-replay, queue jobs, render-packet artifact manifest signals, artifact-store
-write/read doctor signals, Postgres runtime SQL/doctor/integration signals,
-account-auth contract/doctor signals, append-only audit coverage, 11
-schema-backed API routes, and no blockers.
+replay, card-project repository readiness, queue jobs, render-packet artifact
+manifest signals, artifact-store write/read doctor signals, Postgres runtime
+SQL/doctor/integration signals, account-auth contract/doctor signals,
+append-only audit coverage, 11 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -212,7 +214,8 @@ CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_UR
 ```
 
 Result: passed. Worker reported queue readiness for `provider-sync`,
-`render-review`, and `vendor-handoff`, with idempotency required.
+`render-review`, `artifact-signing`, and `vendor-handoff`, with idempotency
+required.
 
 ```text
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor

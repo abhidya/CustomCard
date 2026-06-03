@@ -84,12 +84,16 @@ const apiSignals = [
   "accountIdentityTable: true",
   "accountRecoveryTable: true",
   "idempotencyTable: true",
-  "appendOnlyAudit: true"
+  "appendOnlyAudit: true",
+  "cardProjectRepository: true",
+  "/api/card-projects",
+  "card_projects"
 ];
 const postgresRuntimeSignals = [
   "createPostgresApiRuntime",
   "postgresPoolFactory",
   "FROM auth_sessions",
+  "INSERT INTO card_projects",
   "INSERT INTO idempotency_keys",
   "INSERT INTO audit_log",
   "INSERT INTO api_jobs"
@@ -99,6 +103,8 @@ const postgresDoctorSignals = [
   "idempotencyReplayed",
   "idempotency-conflict",
   "queuedJobs",
+  "cardProjects",
+  "persists repository-backed card project mutations",
   "wrong-role"
 ];
 const postgresIntegrationSignals = [
@@ -106,6 +112,8 @@ const postgresIntegrationSignals = [
   "CREATE DATABASE",
   "infra/migrations/001_initial_schema.sql",
   "applies initial migration to live Postgres",
+  "persists real Postgres card project repository mutation",
+  "SELECT COUNT(*)::int AS count FROM card_projects",
   "DROP DATABASE IF EXISTS",
   "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
 ];
@@ -192,6 +200,7 @@ const report = {
       accountIdentities: true,
       accountRecoveryChallenges: true,
       artifactStoreWrites: true,
+      cardProjectRepository: true,
       idempotencyReplay: true,
       queueJobs: true,
       auditLog: true

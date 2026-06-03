@@ -19,10 +19,11 @@ describe("api server wrapper", () => {
           accountIdentityTable: boolean;
           accountRecoveryTable: boolean;
           idempotencyTable: boolean;
+          cardProjectRepository: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
         };
-        runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean };
+        runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean; cardProjectRecords: number | null };
       };
       blockers: string[];
     };
@@ -39,6 +40,7 @@ describe("api server wrapper", () => {
       accountIdentityTable: true,
       accountRecoveryTable: true,
       idempotencyTable: true,
+      cardProjectRepository: true,
       renderPacketArtifacts: true,
       signedArtifactUrls: true
     });
@@ -100,6 +102,7 @@ describe("api server wrapper", () => {
         accountIdentityTable: true,
         accountRecoveryTable: true,
         idempotencyTable: true,
+        cardProjectRepository: true,
         renderPacketArtifacts: true,
         signedArtifactUrls: true
       });
@@ -134,6 +137,36 @@ describe("api server wrapper", () => {
           realOrdersEnabled: false
         },
         signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })]
+      });
+
+      const cardProject = await postJson(
+        port,
+        "/api/card-projects",
+        {
+          projectId: "project-contract-api",
+          opportunityId: "opportunity-contract-api",
+          recipientName: "Sara",
+          locale: "ar-AE",
+          approvedMemoryIds: ["memory-contract-api"]
+        }
+      );
+      expect(cardProject.status).toBe(202);
+      expect(await cardProject.json()).toMatchObject({
+        status: "accepted-contract-only",
+        route: "card-projects",
+        projectId: "project-contract-api",
+        opportunityId: "opportunity-contract-api",
+        renderStatus: "ready-for-render",
+        requiresRtlLayout: true,
+        repository: {
+          table: "card_projects",
+          runtimeMode: "contract",
+          persisted: false
+        },
+        runtimeMode: "contract",
+        idempotencyPersisted: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false
       });
 
       const demoReset = await fetch(`http://127.0.0.1:${port}/api/admin/demo-reset`, { method: "POST" });
@@ -198,7 +231,8 @@ describe("api server wrapper", () => {
         sessionsConfigured: 2,
         idempotencyRecords: 0,
         auditRecords: 0,
-        queuedJobs: 0
+        queuedJobs: 0,
+        cardProjectRecords: 0
       });
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
@@ -250,6 +284,40 @@ describe("api server wrapper", () => {
         disabledReasons: expect.arrayContaining(["Live vendor order APIs remain disabled until certification and kill-switch gates pass."])
       });
 
+      const cardProjectHeaders = {
+        ...bearer(customerToken),
+        "X-Idempotency-Key": "card-projects-0001"
+      };
+      const cardProject = await postJson(
+        port,
+        "/api/card-projects",
+        {
+          projectId: "project-memory-api",
+          opportunityId: "opportunity-memory-api",
+          recipientName: "Sara",
+          locale: "ar-AE",
+          approvedMemoryIds: ["memory-memory-api"]
+        },
+        cardProjectHeaders
+      );
+      expect(cardProject.status).toBe(202);
+      expect(await cardProject.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "user-demo",
+        repositoryPersisted: true,
+        projectId: "project-memory-api",
+        opportunityId: "opportunity-memory-api",
+        renderStatus: "ready-for-render",
+        requiresRtlLayout: true,
+        approvedMemoryIds: ["memory-memory-api"],
+        repository: {
+          table: "card_projects",
+          runtimeMode: "memory",
+          persisted: true
+        },
+        persistedTables: expect.arrayContaining(["card_opportunities", "relationship_memories", "card_projects", "audit_log"])
+      });
+
       const demoReset = await postJson(
         port,
         "/api/admin/demo-reset",
@@ -288,9 +356,10 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 3,
-        auditRecords: 3,
-        queuedJobs: 2
+        idempotencyRecords: 4,
+        auditRecords: 4,
+        queuedJobs: 2,
+        cardProjectRecords: 1
       });
     } finally {
       server.kill();

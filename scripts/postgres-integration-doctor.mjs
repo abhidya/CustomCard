@@ -19,6 +19,7 @@ if (!databaseUrl) {
 const routes = [
   { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-demo" },
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" }
 ];
 
@@ -34,7 +35,8 @@ let finalRuntime = { mode: "postgres", postgresConfigured: Boolean(databaseUrl) 
 let finalPersistence = {
   idempotencyRecords: 0,
   auditRecords: 0,
-  queuedJobs: 0
+  queuedJobs: 0,
+  cardProjects: 0
 };
 let exitCode = 0;
 let runtime;
@@ -73,6 +75,35 @@ try {
            ('session-user-demo', 'user-demo', $1, 'customer', NOW() + INTERVAL '1 hour'),
            ('session-admin-demo', 'admin-demo', $2, 'admin', NOW() + INTERVAL '1 hour')`,
         [hashSessionToken(customerToken), hashSessionToken(adminToken)]
+      );
+    });
+
+    await runCheck("seeds card-project repository dependencies", async () => {
+      await doctorPool.query(
+        `INSERT INTO provider_connections
+           (id, user_id, provider, scopes, status, adapter_version, metadata_schema)
+         VALUES
+           ('connection-live-postgres', 'user-demo', 'manual-ics', ARRAY['calendar.metadata'], 'connected', 'manual-ics-v1', $1::jsonb)`,
+        [JSON.stringify({ rawContentStored: false })]
+      );
+      await doctorPool.query(
+        `INSERT INTO imported_events
+           (id, connection_id, title, starts_at, timezone, source_evidence, recipient_hint)
+         VALUES
+           ('event-live-postgres', 'connection-live-postgres', 'Anniversary dinner', NOW() + INTERVAL '10 days', 'America/New_York', 'metadata-only', 'Sara')`
+      );
+      await doctorPool.query(
+        `INSERT INTO card_opportunities
+           (id, event_id, recipient_name, lead_time_hours, confidence, decision, evidence)
+         VALUES
+           ('opportunity-live-postgres', 'event-live-postgres', 'Sara', 240, 0.960, 'generate', $1::jsonb)`,
+        [JSON.stringify({ source: "doctor", rawContentStored: false })]
+      );
+      await doctorPool.query(
+        `INSERT INTO relationship_memories
+           (id, user_id, recipient_name, approved, sensitivity, locale, source, text)
+         VALUES
+           ('memory-live-postgres', 'user-demo', 'Sara', TRUE, 'normal', 'en-US', 'doctor', 'Sara prefers quiet dinners.')`
       );
     });
 
@@ -117,6 +148,32 @@ try {
       expect(result.payload.idempotencyPersisted, "Mutation should persist idempotency.");
     });
 
+    await runCheck("persists real Postgres card project repository mutation", async () => {
+      const result = await runtime.persistMutation({
+        route: route("card-projects"),
+        request: request({ token: customerToken, idempotencyKey: "card-projects-live-postgres-0001" }),
+        authContext: customerAuth,
+        bodyText: JSON.stringify({
+          projectId: "project-live-postgres",
+          opportunityId: "opportunity-live-postgres",
+          recipientName: "Sara",
+          locale: "en-US",
+          approvedMemoryIds: ["memory-live-postgres"]
+        }),
+        responsePayload: {
+          service: "customcard-api",
+          status: "accepted-contract-only",
+          route: "card-projects",
+          realOrdersEnabled: false,
+          externalNetworkCalls: false
+        }
+      });
+      expect(result.statusCode === 202, "Card-project mutation should be accepted.");
+      expect(result.payload.runtimeMode === "postgres", "Card-project mutation should use postgres runtime.");
+      expect(result.payload.repositoryPersisted, "Card-project mutation should persist through repository path.");
+      expect(result.payload.projectId === "project-live-postgres", "Card-project response should return persisted project id.");
+    });
+
     await runCheck("replays and conflicts real Postgres idempotency", async () => {
       const replay = await runtime.persistMutation({
         route: route("render-packets"),
@@ -141,9 +198,10 @@ try {
 
     const persistenceCounts = await readPersistenceCounts(doctorPool);
     await runCheck("records real Postgres audit and queue rows", async () => {
-      expect(persistenceCounts.idempotencyRecords === 1, "Expected one idempotency record.");
-      expect(persistenceCounts.auditRecords === 1, "Expected one audit record.");
+      expect(persistenceCounts.idempotencyRecords === 2, "Expected two idempotency records.");
+      expect(persistenceCounts.auditRecords === 2, "Expected two audit records.");
       expect(persistenceCounts.queuedJobs === 1, "Expected one queued job.");
+      expect(persistenceCounts.cardProjects === 1, "Expected one card project.");
     });
 
     finalRuntime = runtime.describe();
@@ -171,15 +229,17 @@ try {
 }
 
 async function readPersistenceCounts(pool) {
-  const [idempotency, audit, jobs] = await Promise.all([
+  const [idempotency, audit, jobs, cardProjects] = await Promise.all([
     pool.query("SELECT COUNT(*)::int AS count FROM idempotency_keys"),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_log"),
-    pool.query("SELECT COUNT(*)::int AS count FROM api_jobs")
+    pool.query("SELECT COUNT(*)::int AS count FROM api_jobs"),
+    pool.query("SELECT COUNT(*)::int AS count FROM card_projects")
   ]);
   return {
     idempotencyRecords: idempotency.rows[0].count,
     auditRecords: audit.rows[0].count,
-    queuedJobs: jobs.rows[0].count
+    queuedJobs: jobs.rows[0].count,
+    cardProjects: cardProjects.rows[0].count
   };
 }
 

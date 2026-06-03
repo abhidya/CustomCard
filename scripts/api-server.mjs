@@ -65,6 +65,7 @@ const readiness = {
     accountRecoveryTable: true,
     idempotencyTable: true,
     appendOnlyAudit: true,
+    cardProjectRepository: true,
     renderPacketArtifacts: true,
     signedArtifactUrls: true
   }
@@ -256,6 +257,7 @@ function validateApiServerContract() {
     "/api/admin/persistence-readiness",
     "/api/admin/demo-reset",
     "/api/import-preview",
+    "/api/card-projects",
     "/api/render-packets",
     "/api/vendor-handoff/manual"
   ]);
@@ -281,6 +283,7 @@ function validateApiServerContract() {
   if (!readiness.persistence.accountRecoveryTable) blockers.push("API readiness is missing account recovery persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
+  if (!readiness.persistence.cardProjectRepository) blockers.push("API readiness is missing card-project repository persistence.");
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
   blockers.push(...apiRuntime.validate());
@@ -320,6 +323,28 @@ function buildMutationContractPayload(route, bodyText) {
           url: `contract-only://customcard/artifacts/${encodeURIComponent(projectId)}`
         }
       ]
+    };
+  }
+
+  if (route.id === "card-projects") {
+    const opportunityId = safeContractId(requestBody.opportunityId, "opportunity-contract");
+    const locale = safeLocale(requestBody.locale);
+    const projectId = safeContractId(requestBody.projectId, `project-${stableContractHash(opportunityId).slice(0, 8)}`);
+    const approvedMemoryIds = Array.isArray(requestBody.approvedMemoryIds)
+      ? requestBody.approvedMemoryIds.map((value) => safeContractId(value, "")).filter(Boolean).slice(0, 12)
+      : [];
+    return {
+      ...basePayload,
+      projectId,
+      opportunityId,
+      renderStatus: "ready-for-render",
+      requiresRtlLayout: Boolean(requestBody.requiresRtlLayout) || /^(ar|he|fa|ur)(-|$)/i.test(locale),
+      approvedMemoryIds,
+      repository: {
+        table: "card_projects",
+        runtimeMode: "contract",
+        persisted: false
+      }
     };
   }
 
@@ -396,6 +421,17 @@ function stableContractHash(value) {
     hash = Math.imul(hash, 16777619);
   }
   return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function safeContractId(value, fallback) {
+  const text = String(value ?? "").trim();
+  if (!text) return fallback;
+  return text.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80) || fallback;
+}
+
+function safeLocale(value) {
+  const text = String(value ?? "en-US").trim();
+  return /^[a-z]{2,3}(-[A-Z]{2})?$/i.test(text) ? text : "en-US";
 }
 
 function readRequestBody(request) {

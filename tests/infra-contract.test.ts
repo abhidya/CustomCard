@@ -336,7 +336,7 @@ describe("production infrastructure contract", () => {
       service: string;
       status: string;
       runtime: { mode: string; authEnforced: boolean; idempotencyEnforced: boolean; postgresConfigured: boolean };
-      persistence: { idempotencyRecords: number; auditRecords: number; queuedJobs: number };
+      persistence: { idempotencyRecords: number; auditRecords: number; queuedJobs: number; cardProjects: number };
       blockers: unknown[];
     };
 
@@ -350,9 +350,10 @@ describe("production infrastructure contract", () => {
         postgresConfigured: true
       },
       persistence: {
-        idempotencyRecords: 1,
-        auditRecords: 1,
-        queuedJobs: 1
+        idempotencyRecords: 2,
+        auditRecords: 2,
+        queuedJobs: 1,
+        cardProjects: 1
       },
       blockers: []
     });
@@ -424,6 +425,7 @@ describe("production infrastructure contract", () => {
           authSessions: boolean;
           accountIdentities: boolean;
           accountRecoveryChallenges: boolean;
+          cardProjectRepository: boolean;
           idempotencyReplay: boolean;
           queueJobs: boolean;
         };
@@ -440,6 +442,7 @@ describe("production infrastructure contract", () => {
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
+      cardProjectRepository: true,
       idempotencyReplay: true,
       queueJobs: true
     });

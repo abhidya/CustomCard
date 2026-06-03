@@ -78,14 +78,15 @@
   manifest; signed artifact handoff contracts for render packets.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, admin demo reset, default contract mode,
-  and executable memory-mode Bearer auth plus `X-Idempotency-Key`
-  replay/conflict behavior served by `scripts/api-server.mjs`; fake-pool and
-  isolated live Postgres runtime coverage now exercise auth-session lookup,
-  idempotency replay/conflict, migration application, audit insert, and
-  queue-job insert.
+  repository-backed card-project mutation handling, and executable memory-mode
+  Bearer auth plus `X-Idempotency-Key` replay/conflict behavior served by
+  `scripts/api-server.mjs`; fake-pool and isolated live Postgres runtime coverage
+  now exercise auth-session lookup, idempotency replay/conflict, migration
+  application, card-project inserts, audit insert, and queue-job insert.
 - Persistence boundary: tested auth-session, account identity, hashed recovery
-  challenge, idempotency replay, queue-job, schema-backed route, demo reset, and
-  audit contracts served by `src/accountAuth.ts`, `src/persistenceContracts.ts`,
+  challenge, idempotency replay, card-project repository, queue-job,
+  schema-backed route, demo reset, and audit contracts served by
+  `src/accountAuth.ts`, `src/persistenceContracts.ts`,
   `scripts/account-auth-doctor.mjs`, `scripts/postgres-runtime-doctor.mjs`,
   `scripts/postgres-integration-doctor.mjs`, and `scripts/persistence-doctor.mjs`.
 - CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
@@ -116,11 +117,11 @@
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
 | API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 87 providers, 18 persistence tables, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
-| API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, audit insert, and queue-job insert without external DB credentials. |
-| API live Postgres integration | `npm run api:doctor:postgres:live` | Passed against an isolated temporary database; migration applied, sessions seeded, real `pg` runtime authorized/blocked sessions, persisted/replayed/conflicted idempotency, and wrote audit plus queue rows. |
+| API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed card-project insert, audit insert, and queue-job insert without external DB credentials. |
+| API live Postgres integration | `npm run api:doctor:postgres:live` | Passed against an isolated temporary database; migration applied, sessions and card-project dependencies seeded, real `pg` runtime authorized/blocked sessions, persisted/replayed/conflicted idempotency, wrote one card-project row, and wrote audit plus queue rows. |
 | Account auth storage/recovery | `npm run account:doctor:live` | Passed against an isolated temporary database; migration applied, hosted identity stored without raw profile, provider-subject uniqueness enforced, hashed recovery challenge used, durable session created, and audit row appended. |
 | Artifact object-store writes | `npm run artifact:doctor` | Passed; wrote all 6 render-packet artifacts to a temporary filesystem object-store path and all 6 artifacts through an injected S3-compatible client contract, read them back, verified checksums and byte lengths, stored both manifests, made no network calls, kept real orders disabled, and reported `cloudWritesVerified: false`. |
-| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible write-read signals, Postgres runtime SQL/doctor/integration signals, append-only audit, demo reset mapping, and 11 schema-backed routes present. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, card-project repository readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible write-read signals, Postgres runtime SQL/doctor/integration signals, append-only audit, demo reset mapping, and 11 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
@@ -141,7 +142,7 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, contract, memory, fake-pool Postgres, and isolated live Postgres API runtimes, demo reset, plus persistence boundaries exist; live hosted auth token verification and live cloud object-store writes are not covered |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, contract, memory, fake-pool Postgres, isolated live Postgres API runtimes, repository-backed card-project mutation coverage, demo reset, plus persistence boundaries exist; live hosted auth token verification and live cloud object-store writes are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
 | Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |

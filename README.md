@@ -80,11 +80,12 @@ environment configuration instead of static placeholders.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
-  isolated live Postgres auth/idempotency/audit/queue runtime checks, admin demo
-  reset, and no live external calls.
+  isolated live Postgres auth/idempotency/audit/queue runtime checks,
+  repository-backed card-project mutation coverage, admin demo reset, and no live
+  external calls.
 - Persistence contract/migration boundary for auth sessions, hosted account
-  identities, hashed recovery challenges, idempotency replay, queue jobs, audit
-  logs, and 11 schema-backed API routes.
+  identities, hashed recovery challenges, idempotency replay, card-project
+  repository writes, queue jobs, audit logs, and 11 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 
