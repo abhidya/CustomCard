@@ -91,7 +91,8 @@ environment configuration instead of static placeholders.
   and per-request budget ceilings, rate limits, queue posture, and ready local
   fallbacks before any live network provider can be enabled.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
-  mobile bootstrap, provider readiness, explicit contract/memory/Postgres
+  mobile bootstrap with queue/approval/pricing/offline-sync state, provider
+  readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
   isolated live Postgres route-scoped auth/idempotency/audit/queue runtime
   checks, process-level Postgres HTTP auth/idempotency/repository smoke,

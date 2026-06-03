@@ -137,7 +137,19 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "durable-api",
     requestSchema: ["session", "platform"],
-    responseSchema: ["sections", "chatTranscript", "renderChoices", "handoffSteps", "safetyBanner", "localeOptions", "localization"],
+    responseSchema: [
+      "sections",
+      "queueItems",
+      "approvalActions",
+      "chatTranscript",
+      "renderChoices",
+      "pricingPreviews",
+      "handoffSteps",
+      "syncState",
+      "safetyBanner",
+      "localeOptions",
+      "localization"
+    ],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -368,8 +380,11 @@ export function resolveApiContractResponse(path: string) {
   if (path === "/api/admin/readiness") {
     return buildApiReadinessSummary();
   }
-  if (path === "/api/customer/bootstrap" || path === "/api/mobile/bootstrap") {
+  if (path === "/api/customer/bootstrap") {
     return buildApiBootstrapPayload();
+  }
+  if (path === "/api/mobile/bootstrap") {
+    return buildApiBootstrapPayload().mobile;
   }
   if (path === "/api/admin/provider-catalog") {
     return {

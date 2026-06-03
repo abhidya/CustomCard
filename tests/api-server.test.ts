@@ -263,7 +263,29 @@ describe("api server wrapper", () => {
       });
 
       const mobile = await getJson(port, "/api/mobile/bootstrap");
-      expect(mobile.sections).toEqual(expect.arrayContaining(["card-queue", "text-chat", "handoff"]));
+      expect(mobile.sections).toEqual(
+        expect.arrayContaining(["card-queue", "approval-controls", "text-chat", "pricing-preview", "handoff", "offline-sync"])
+      );
+      expect(mobile.safetyBanner).toMatchObject({ label: "Real orders disabled" });
+      expect(mobile.queueItems).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ status: "needs-approval", panelCount: 4 }),
+          expect.objectContaining({ status: "approved", panelCount: 4 })
+        ])
+      );
+      expect(mobile.approvalActions.every((action: { idempotencyRequired: boolean }) => action.idempotencyRequired)).toBe(true);
+      expect(mobile.pricingPreviews).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ vendor: "Walgreens", sourceMode: "review-only-public-price", liveQuote: false }),
+          expect.objectContaining({ vendor: "CVS", sourceMode: "review-only-public-price", liveQuote: false })
+        ])
+      );
+      expect(mobile.syncState).toMatchObject({
+        authMode: "customer-session",
+        offlineQueueEnabled: true,
+        idempotencyRequired: true,
+        forbiddenMutationTypes: ["submit-live-order", "charge-payment", "upload-raw-memory"]
+      });
       expect(mobile.localeOptions).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
       expect(mobile.localization).toMatchObject({ supportedLocales: 4, rtlLocales: 2, liveTranslationProvider: false });
       expect(mobile.realOrdersEnabled).toBe(false);

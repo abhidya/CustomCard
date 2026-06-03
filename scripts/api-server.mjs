@@ -26,6 +26,70 @@ export const routes = [
   { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
 ];
 
+const mobileBootstrap = {
+  service: "customcard-api",
+  safetyBanner: {
+    label: "Real orders disabled",
+    detail: "Live provider, payment, and vendor APIs stay behind admin gates."
+  },
+  sections: ["card-queue", "approval-controls", "memory-review", "text-chat", "image-render", "pricing-preview", "handoff", "offline-sync"],
+  queueItems: [
+    {
+      id: "card_anniversary_sara_ahmed",
+      recipientLabel: "Sara and Ahmed",
+      eventLabel: "Anniversary",
+      dueIso: "2026-06-03T17:00:00.000Z",
+      status: "needs-approval",
+      nextAction: "approve",
+      panelCount: 4,
+      source: "ics-import"
+    },
+    {
+      id: "card_birthday_mom",
+      recipientLabel: "Mom",
+      eventLabel: "Birthday",
+      dueIso: "2026-07-10T12:00:00.000Z",
+      status: "approved",
+      nextAction: "edit-tone",
+      panelCount: 4,
+      source: "manual-entry"
+    }
+  ],
+  approvalActions: [
+    { kind: "approve", mutationType: "approve-card", idempotencyRequired: true, networkMode: "local-first-api" },
+    { kind: "edit-tone", mutationType: "update-tone", idempotencyRequired: true, networkMode: "local-first-api" },
+    { kind: "snooze", mutationType: "snooze-card", idempotencyRequired: true, networkMode: "local-first-api" },
+    { kind: "dismiss", mutationType: "dismiss-card", idempotencyRequired: true, networkMode: "local-first-api" },
+    { kind: "request-regeneration", mutationType: "update-tone", idempotencyRequired: true, networkMode: "local-only" }
+  ],
+  chatTranscript: [
+    "I found one anniversary card candidate from your pasted invite.",
+    "Local scripted assistant can draft and explain the card before any live model is connected.",
+    "Live AI and vendor orders stay off until admin credentials and certification gates pass."
+  ],
+  renderChoices: ["Browser SVG renderer", "Local print package export", "Credential-gated AI image providers"],
+  pricingPreviews: [
+    { vendor: "Walgreens", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false },
+    { vendor: "CVS", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false },
+    { vendor: "FedEx", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false }
+  ],
+  handoffSteps: [
+    { label: "Download SVG set", realOrderState: "manual" },
+    { label: "Confirm pickup manually", realOrderState: "disabled" }
+  ],
+  localeOptions: ["en-US", "es-US", "ur-PK", "ar-EG"],
+  syncState: {
+    apiBaseUrlRequired: true,
+    authMode: "customer-session",
+    offlineQueueEnabled: true,
+    idempotencyRequired: true,
+    pendingMutationTypes: ["approve-card", "update-tone", "snooze-card", "dismiss-card", "prepare-handoff"],
+    forbiddenMutationTypes: ["submit-live-order", "charge-payment", "upload-raw-memory"],
+    retryPolicy: "exponential-backoff"
+  },
+  realOrdersEnabled: false
+};
+
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
   [".html", "text/html; charset=utf-8"],
@@ -293,13 +357,8 @@ async function serveApi(request, response, path) {
 
   if (path === "/api/mobile/bootstrap") {
     sendJson(response, 200, {
-      service: "customcard-api",
-      safetyBanner: "Real orders disabled",
-      sections: ["card-queue", "memory-review", "text-chat", "image-render", "handoff"],
-      renderChoices: ["Browser SVG renderer", "Local print package export", "Credential-gated AI image providers"],
-      localeOptions: ["en-US", "es-US", "ur-PK", "ar-EG"],
+      ...mobileBootstrap,
       localization: readiness.localization,
-      realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
     return;

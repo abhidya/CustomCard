@@ -64,7 +64,8 @@ it after each meaningful implementation pass.
 - Agent-contract tests cover the typed orchestration surface and fail-closed
   default policy.
 - API-contract and API-server tests cover `/api/health`, customer/admin
-  bootstrap, mobile bootstrap, provider readiness, idempotent mutation contracts,
+  bootstrap, mobile bootstrap with queue/approval/pricing/offline-sync state,
+  provider readiness, idempotent mutation contracts,
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
   repository-backed `/api/memories/review`, `/api/render-packets`,
   `/api/import-preview`, and `/api/card-projects` mutation behavior, customer
@@ -170,7 +171,7 @@ Result: passed.
 
 - Vitest: 21 test files passed, 145 tests passed.
 - Coverage: 19 core/API/persistence/infra/mobile test files passed, 136 tests passed; V8 report measured
-  91.22% statements, 84.10% branches, 96.96% functions, and 95.15% lines across
+  91.23% statements, 84.10% branches, 96.96% functions, and 95.16% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/localization.ts`,

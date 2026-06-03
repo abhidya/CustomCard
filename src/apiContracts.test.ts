@@ -58,6 +58,9 @@ describe("api contracts", () => {
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
+    expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
+      expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])
+    );
   });
 
   it("summarizes API readiness from provider, runtime, and mobile contracts", () => {
@@ -89,7 +92,11 @@ describe("api contracts", () => {
     });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
-    expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(5);
+    expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(8);
+    expect(summary.mobile.queueItems).toBeGreaterThanOrEqual(2);
+    expect(summary.mobile.idempotentApprovalActions).toBeGreaterThanOrEqual(5);
+    expect(summary.mobile.reviewOnlyPricingOptions).toBeGreaterThanOrEqual(3);
+    expect(summary.mobile.offlineMutationTypes).toBeGreaterThanOrEqual(5);
   });
 
   it("builds bootstrap payloads for customer, admin, and mobile clients", () => {
@@ -100,6 +107,17 @@ describe("api contracts", () => {
     );
     expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(102);
     expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
+    expect(payload.mobile.sections.map((section) => section.id)).toEqual(
+      expect.arrayContaining(["approval-controls", "pricing-preview", "offline-sync"])
+    );
+    expect(payload.mobile.queueItems.every((item) => item.panelCount === 4)).toBe(true);
+    expect(payload.mobile.approvalActions.every((action) => action.idempotencyRequired)).toBe(true);
+    expect(payload.mobile.pricingPreviews.every((preview) => preview.sourceMode === "review-only-public-price" && !preview.liveQuote)).toBe(true);
+    expect(payload.mobile.syncState).toMatchObject({
+      authMode: "customer-session",
+      offlineQueueEnabled: true,
+      idempotencyRequired: true
+    });
     expect(payload.mobile.localeOptions.map((locale) => locale.locale)).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
     expect(payload.localization.summary).toMatchObject({
       supportedLocales: 4,
@@ -137,6 +155,10 @@ describe("api contracts", () => {
       blockers: []
     });
     expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);
+    expect(resolveApiContractResponse("/api/mobile/bootstrap")).toMatchObject({
+      safetyBanner: { label: "Real orders disabled" },
+      syncState: { authMode: "customer-session", idempotencyRequired: true }
+    });
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();
   });
 

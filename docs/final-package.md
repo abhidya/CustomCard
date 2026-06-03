@@ -85,7 +85,8 @@
   manifest; signed artifact handoff contracts and live MinIO/S3-compatible
   doctor coverage for render-packet artifacts.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
-  provider-readiness, route catalog, admin demo reset, default contract mode,
+  mobile queue/approval/pricing/offline-sync payloads, provider-readiness, route
+  catalog, admin demo reset, default contract mode,
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, data-request mutation handling,
   localization readiness payloads, and executable memory-mode Bearer auth plus
@@ -134,7 +135,7 @@
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
 | Tests | `npm run check` | Passed on 2026-06-03: 21 test files, 145 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.22% statements, 84.10% branches, 96.96% functions, 95.15% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.23% statements, 84.10% branches, 96.96% functions, 95.16% lines across account auth, core, API, artifact handoff/store, demo seed, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |

@@ -247,7 +247,10 @@ admin, and mobile clients. It covers health, route catalog, customer bootstrap,
 mobile bootstrap, admin readiness, provider catalog, admin demo reset, import
 preview, card project creation, render packets, manual vendor handoff, and data
 requests. Customer, admin, and mobile bootstrap payloads include localization
-readiness so clients can render the same launch-locale state.
+readiness so clients can render the same launch-locale state. The mobile
+bootstrap also exposes the same customer app contract used by Expo: queue items,
+approval actions, render choices, review-only pricing previews, manual handoff
+steps, and offline idempotent sync state.
 
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,

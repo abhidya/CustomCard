@@ -75,8 +75,9 @@ Requirement types:
   readiness, mobile doctor, and mobile release doctor on pushes to `main` and
   pull requests.
 - API server exposes tested health, route catalog, customer/admin bootstrap,
-  mobile bootstrap, provider readiness, and idempotent mutation contract
-  endpoints with real orders and external calls disabled.
+  mobile bootstrap with queue/approval/pricing/offline-sync state, provider
+  readiness, and idempotent mutation contract endpoints with real orders and
+  external calls disabled.
 - API memory runtime enforces Bearer sessions on non-public routes and
   `X-Idempotency-Key` persistence/replay/conflict handling on mutations.
 - API Postgres runtime contract doctor exercises session lookup, wrong-role
