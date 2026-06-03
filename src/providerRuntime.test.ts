@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { providerCatalog } from "./providerCatalog";
 import {
+  buildAuthRuntime,
   buildEventImportRuntime,
   buildImageGenerationRuntime,
   buildProviderAdapterRuntime,
@@ -16,6 +17,10 @@ import {
 const readyEnv: ProviderRuntimeEnv = {
   ANTHROPIC_API_KEY: "configured-anthropic-key",
   AUTH_SESSION_SECRET: "configured-auth-secret",
+  AUTH0_AUDIENCE: "https://api.customcard.test",
+  AUTH0_CLIENT_ID: "configured-auth0-client-id",
+  AUTH0_CLIENT_SECRET: "configured-auth0-client-secret",
+  AUTH0_DOMAIN: "customcard-test.us.auth0.com",
   AWS_ACCESS_KEY_ID: "configured-aws-access-key-id",
   AWS_REGION: "us-east-1",
   AWS_SECRET_ACCESS_KEY: "configured-aws-secret-access-key",
@@ -26,13 +31,23 @@ const readyEnv: ProviderRuntimeEnv = {
   BEDROCK_IMAGE_MODEL_ID: "amazon.titan-image-generator-v2:0",
   BEDROCK_TEXT_MODEL_ID: "anthropic.claude-3-5-haiku-20241022-v1:0",
   BFL_API_KEY: "configured-bfl-key",
+  CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
+  CLERK_JWT_KEY: "configured-clerk-jwt-key",
+  CLERK_SECRET_KEY: "configured-clerk-secret-key",
   COHERE_API_KEY: "configured-cohere-key",
+  COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
+  COGNITO_DOMAIN: "customcard-auth",
+  COGNITO_USER_POOL_ID: "us-east-1_customcard",
+  CUSTOMCARD_AUTH_CALLBACK_URL: "https://customcard.test/auth/callback",
   CVS_VENDOR_MODE: "certification-configured-only",
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
   DEEPSEEK_API_KEY: "configured-deepseek-key",
   FEDEX_VENDOR_MODE: "certification-configured-only",
   FAL_KEY: "configured-fal-key",
   FIREWORKS_API_KEY: "configured-fireworks-key",
+  FIREBASE_API_KEY: "configured-firebase-api-key",
+  FIREBASE_PROJECT_ID: "customcard-test",
+  FIREBASE_SERVICE_ACCOUNT_JSON: "configured-firebase-service-account-json",
   GOOGLE_GENERATIVE_AI_API_KEY: "configured-google-ai-key",
   GOOGLE_OAUTH_CLIENT_ID: "configured-google-client-id",
   GOOGLE_OAUTH_CLIENT_SECRET: "configured-google-client-secret",
@@ -56,6 +71,9 @@ const readyEnv: ProviderRuntimeEnv = {
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   STABILITY_API_KEY: "configured-stability-key",
   STAPLES_VENDOR_MODE: "certification-configured-only",
+  SUPABASE_ANON_KEY: "configured-supabase-anon-key",
+  SUPABASE_SERVICE_ROLE_KEY: "configured-supabase-service-role-key",
+  SUPABASE_URL: "https://customcard-test.supabase.co",
   TOGETHER_API_KEY: "configured-together-key",
   TRANSACTIONAL_EMAIL_API_KEY: "configured-email-key",
   TRANSACTIONAL_EMAIL_FROM: "cards@example.test",
@@ -155,6 +173,53 @@ describe("provider runtime contracts", () => {
 
     expect(testCredentialReadiness.mode).toBe("blocked");
     expect(testCredentialReadiness.missingCredentials).toContain("OPENAI_API_KEY");
+  });
+
+  it("builds no-network hosted auth request contracts for enabled identity providers", () => {
+    const providerIds = [
+      "auth0-oidc-auth",
+      "clerk-session-auth",
+      "supabase-auth",
+      "firebase-auth",
+      "cognito-hosted-ui-auth"
+    ];
+
+    for (const providerId of providerIds) {
+      const result = buildAuthRuntime(
+        providerId,
+        { requestedRole: "customer", returnToPath: "/customer/cards", sessionTokenPreview: "do-not-leak-token" },
+        readyEnv,
+        openGates
+      );
+      const serializedHeaders = JSON.stringify(result.request?.headers);
+      const serializedBody = JSON.stringify(result.request?.body ?? {});
+
+      expect(result.mode, providerId).toBe("prepared-request");
+      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.dataClassifications, providerId).toEqual(
+        expect.arrayContaining(["auth-session", "no-password-storage"])
+      );
+      expect(serializedHeaders, providerId).not.toContain("configured-");
+      expect(serializedBody, providerId).not.toContain("do-not-leak-token");
+    }
+
+    expect(buildAuthRuntime("auth0-oidc-auth", { requestedRole: "admin", returnToPath: "/admin" }, readyEnv, openGates).request?.url).toBe(
+      "https://{AUTH0_DOMAIN}/authorize?response_type=code&client_id={AUTH0_CLIENT_ID}&redirect_uri={CUSTOMCARD_AUTH_CALLBACK_URL}&scope=openid%20profile%20email&audience={AUTH0_AUDIENCE}"
+    );
+    expect(buildAuthRuntime("clerk-session-auth", { requestedRole: "customer", returnToPath: "/customer" }, readyEnv, openGates).request?.headers).toMatchObject({
+      authorization: "Bearer {CLERK_SECRET_KEY}",
+      "x-customcard-auth-flow": "jwt-verification"
+    });
+    expect(buildAuthRuntime("supabase-auth", { requestedRole: "customer", returnToPath: "/customer" }, readyEnv, openGates).request?.headers).toMatchObject({
+      apikey: "{SUPABASE_ANON_KEY}",
+      authorization: "Bearer {supabase-user-jwt}"
+    });
+    expect(buildAuthRuntime("firebase-auth", { requestedRole: "customer", returnToPath: "/customer" }, readyEnv, openGates).request?.url).toBe(
+      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={FIREBASE_API_KEY}"
+    );
+    expect(buildAuthRuntime("cognito-hosted-ui-auth", { requestedRole: "customer", returnToPath: "/customer" }, readyEnv, openGates).request?.url).toBe(
+      "https://{COGNITO_DOMAIN}.auth.{AWS_REGION}.amazoncognito.com/oauth2/authorize?response_type=code&client_id={COGNITO_APP_CLIENT_ID}&redirect_uri={CUSTOMCARD_AUTH_CALLBACK_URL}&scope=openid%20profile%20email"
+    );
   });
 
   it("builds redacted no-network text request contracts for enabled chat providers", () => {

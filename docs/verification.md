@@ -29,7 +29,7 @@ it after each meaningful implementation pass.
   summary behavior.
 - Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
   config validation, expiry limits, and tamper detection.
-- Provider adapter coverage currently includes 56 adapters: 12 ready-local, 30
+- Provider adapter coverage currently includes 61 adapters: 12 ready-local, 35
   credential-gated, 8 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
@@ -90,9 +90,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 16 test files passed, 103 tests passed.
-- Coverage: 14 core/API/persistence/infra/mobile test files passed, 95 tests passed; V8 report measured
-  90.85% statements, 84.3% branches, 97.39% functions, and 95.17% lines across
+- Vitest: 16 test files passed, 104 tests passed.
+- Coverage: 14 core/API/persistence/infra/mobile test files passed, 96 tests passed; V8 report measured
+  91% statements, 84.59% branches, 97.42% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -112,7 +112,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 13 routes, 6 idempotent mutation contracts,
-56 providers, 16 persistence tables, render-packet artifact manifests, signed
+61 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, contract runtime mode, no live external calls, no real
 vendor orders, no raw content storage, and no blockers.
 
@@ -121,7 +121,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 56
+enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 61
 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
@@ -178,8 +178,8 @@ and cramped four-across panel previews.
 The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
-After the provider expansion, pricing-research, print-package, and AI-provider
-catalog passes the catalog contains 12 ready-local, 30 credential-gated, 8
+After the provider expansion, pricing-research, print-package, AI-provider, and
+hosted-auth catalog passes the catalog contains 12 ready-local, 35 credential-gated, 8
 contract-only, and 6 blocked adapters. The web mobile customer panel appears
 before the navigation rail with zero horizontal overflow at 1440px desktop and
 390px mobile widths.

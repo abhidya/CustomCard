@@ -25,7 +25,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(56);
+    expect(summary.total).toBeGreaterThanOrEqual(61);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -38,6 +38,11 @@ describe("provider catalog", () => {
   it("keeps external providers credential-gated with docs, env vars, and safety gates", () => {
     const externalLabels = [
       "OpenAI Responses chat",
+      "Auth0 OIDC auth",
+      "Clerk session auth",
+      "Supabase Auth",
+      "Firebase Auth",
+      "Amazon Cognito hosted auth",
       "Azure OpenAI chat",
       "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
@@ -83,6 +88,23 @@ describe("provider catalog", () => {
     const admin = buildAdminPanelModel();
 
     expect(admin.coverage.requiredEnv).toContain("OPENAI_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("AUTH0_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("AUTH0_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("AUTH0_CLIENT_SECRET");
+    expect(admin.coverage.requiredEnv).toContain("AUTH0_AUDIENCE");
+    expect(admin.coverage.requiredEnv).toContain("CUSTOMCARD_AUTH_CALLBACK_URL");
+    expect(admin.coverage.requiredEnv).toContain("CLERK_SECRET_KEY");
+    expect(admin.coverage.requiredEnv).toContain("CLERK_JWT_KEY");
+    expect(admin.coverage.requiredEnv).toContain("CLERK_AUTHORIZED_PARTIES");
+    expect(admin.coverage.requiredEnv).toContain("SUPABASE_URL");
+    expect(admin.coverage.requiredEnv).toContain("SUPABASE_ANON_KEY");
+    expect(admin.coverage.requiredEnv).toContain("SUPABASE_SERVICE_ROLE_KEY");
+    expect(admin.coverage.requiredEnv).toContain("FIREBASE_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("FIREBASE_PROJECT_ID");
+    expect(admin.coverage.requiredEnv).toContain("FIREBASE_SERVICE_ACCOUNT_JSON");
+    expect(admin.coverage.requiredEnv).toContain("COGNITO_DOMAIN");
+    expect(admin.coverage.requiredEnv).toContain("COGNITO_USER_POOL_ID");
+    expect(admin.coverage.requiredEnv).toContain("COGNITO_APP_CLIENT_ID");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_ENDPOINT");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_CHAT_DEPLOYMENT");

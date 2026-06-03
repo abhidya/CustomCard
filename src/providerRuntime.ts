@@ -46,6 +46,12 @@ export interface TextChatRuntimeInput {
   locale: string;
 }
 
+export interface AuthRuntimeInput {
+  requestedRole: "customer" | "admin";
+  returnToPath: string;
+  sessionTokenPreview?: string;
+}
+
 export interface ImageRuntimeInput {
   prompt: string;
   recipientName: string;
@@ -73,6 +79,7 @@ export interface VendorRuntimeInput {
 }
 
 export interface ProviderRuntimeInput {
+  auth?: AuthRuntimeInput;
   textChat?: TextChatRuntimeInput;
   image?: ImageRuntimeInput;
   eventImport?: EventImportRuntimeInput;
@@ -148,6 +155,9 @@ export function buildProviderAdapterRuntime(
 ): RuntimeResult {
   const adapter = requireAdapter(adapterId);
 
+  if (adapter.capability === "auth") {
+    return buildAuthRuntime(adapterId, input.auth ?? defaultAuthInput, env, gates);
+  }
   if (adapter.capability === "event-import") {
     return buildEventImportRuntime(adapterId, input.eventImport ?? defaultEventImportInput, env, gates);
   }
@@ -221,6 +231,35 @@ export function getProviderRuntimeReadiness(
     satisfiedGates: adapter.safetyGates.filter((gate) => safetyGateSatisfied(gate, gates)),
     requiredSafetyGates: adapter.safetyGates
   };
+}
+
+export function buildAuthRuntime(
+  adapterId: string,
+  input: AuthRuntimeInput,
+  env: ProviderRuntimeEnv = {},
+  gates: ProviderGateState = {}
+): RuntimeResult {
+  const adapter = requireCapability(adapterId, "auth");
+
+  if (adapter.id === "local-demo-auth") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: {
+        adapterId: adapter.id,
+        requestedRole: input.requestedRole,
+        noNetwork: true,
+        sessionStorage: "browser-local-demo",
+        returnToPath: input.returnToPath
+      }
+    };
+  }
+
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+  return blockedOrRequest(adapter, readiness, () => buildAuthRequest(adapter, input));
 }
 
 export function buildTextChatRuntime(
@@ -441,6 +480,103 @@ function blockedOrRequest<T>(
     readiness,
     request: requestFactory()
   };
+}
+
+function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): RuntimeRequestContract {
+  const authMetadata = {
+    requested_role: input.requestedRole,
+    return_to_path: input.returnToPath,
+    password_storage: "disabled"
+  };
+
+  if (adapter.id === "auth0-oidc-auth") {
+    return request(
+      adapter,
+      "GET",
+      "https://{AUTH0_DOMAIN}/authorize?response_type=code&client_id={AUTH0_CLIENT_ID}&redirect_uri={CUSTOMCARD_AUTH_CALLBACK_URL}&scope=openid%20profile%20email&audience={AUTH0_AUDIENCE}",
+      [
+        "AUTH0_DOMAIN",
+        "AUTH0_CLIENT_ID",
+        "AUTH0_CLIENT_SECRET",
+        "AUTH0_AUDIENCE",
+        "CUSTOMCARD_AUTH_CALLBACK_URL",
+        "AUTH_SESSION_SECRET"
+      ],
+      undefined,
+      [],
+      {
+        "x-customcard-auth-flow": "authorization-code-pkce",
+        "x-customcard-auth-metadata": JSON.stringify(authMetadata)
+      }
+    );
+  }
+
+  if (adapter.id === "clerk-session-auth") {
+    return request(
+      adapter,
+      "GET",
+      "https://api.clerk.com/v1/jwks",
+      ["CLERK_SECRET_KEY", "CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "AUTH_SESSION_SECRET"],
+      undefined,
+      [],
+      {
+        authorization: "Bearer {CLERK_SECRET_KEY}",
+        "x-customcard-auth-flow": "jwt-verification",
+        "x-customcard-authorized-parties": "{CLERK_AUTHORIZED_PARTIES}"
+      }
+    );
+  }
+
+  if (adapter.id === "supabase-auth") {
+    return request(
+      adapter,
+      "GET",
+      "{SUPABASE_URL}/auth/v1/user",
+      ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "AUTH_SESSION_SECRET"],
+      undefined,
+      [],
+      {
+        apikey: "{SUPABASE_ANON_KEY}",
+        authorization: "Bearer {supabase-user-jwt}",
+        "x-customcard-auth-flow": "jwt-user-lookup"
+      }
+    );
+  }
+
+  if (adapter.id === "firebase-auth") {
+    return request(
+      adapter,
+      "POST",
+      "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={FIREBASE_API_KEY}",
+      ["FIREBASE_API_KEY", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT_JSON", "AUTH_SESSION_SECRET"],
+      {
+        idToken: input.sessionTokenPreview ? "{firebase-id-token-preview}" : "{firebase-id-token}",
+        metadata: authMetadata
+      },
+      [],
+      { "x-customcard-auth-flow": "identity-token-lookup" }
+    );
+  }
+
+  return request(
+    adapter,
+    "GET",
+    "https://{COGNITO_DOMAIN}.auth.{AWS_REGION}.amazoncognito.com/oauth2/authorize?response_type=code&client_id={COGNITO_APP_CLIENT_ID}&redirect_uri={CUSTOMCARD_AUTH_CALLBACK_URL}&scope=openid%20profile%20email",
+    [
+      "COGNITO_DOMAIN",
+      "AWS_REGION",
+      "COGNITO_USER_POOL_ID",
+      "COGNITO_APP_CLIENT_ID",
+      "CUSTOMCARD_AUTH_CALLBACK_URL",
+      "AUTH_SESSION_SECRET"
+    ],
+    undefined,
+    [],
+    {
+      "x-customcard-auth-flow": "authorization-code-pkce",
+      "x-customcard-user-pool": "{COGNITO_USER_POOL_ID}"
+    }
+  );
 }
 
 function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText): RuntimeRequestContract {
@@ -939,6 +1075,7 @@ function runtimeSupported(adapter: ProviderAdapter): boolean {
 }
 
 function dataClassificationsFor(adapter: ProviderAdapter): string[] {
+  if (adapter.capability === "auth") return ["auth-session", "OIDC-token-metadata", "no-password-storage"];
   if (adapter.capability === "event-import") return ["metadata-only", "no-raw-content"];
   if (adapter.capability === "text-chat") return ["customer-message", "approved-memory-only", "PII-redacted"];
   if (adapter.capability === "image-generation") return ["art-prompt", "PII-redacted", "human-print-approval-required"];
@@ -968,6 +1105,11 @@ const defaultTextChatInput: TextChatRuntimeInput = {
   recipientName: "Sara and Ahmed",
   approvedMemoryNotes: ["They like botanical cards and quiet humor."],
   locale: "en-US"
+};
+
+const defaultAuthInput: AuthRuntimeInput = {
+  requestedRole: "customer",
+  returnToPath: "/customer"
 };
 
 const defaultImageInput: ImageRuntimeInput = {

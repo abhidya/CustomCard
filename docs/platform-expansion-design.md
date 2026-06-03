@@ -28,7 +28,8 @@ The system remains adapter-first:
 
 The canonical list lives in `src/providerCatalog.ts`. It covers:
 
-- Auth: local demo auth plus hosted auth contract.
+- Auth: local demo auth, hosted email-password contract, and credential-gated
+  Auth0, Clerk, Supabase Auth, Firebase Auth, and Amazon Cognito contracts.
 - Event import: ICS/manual note, Gmail, Google Calendar, Microsoft Graph mail,
   Microsoft Graph calendar, and iCloud ICS fallback.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
@@ -60,6 +61,11 @@ Official documentation anchors used for the adapter contracts:
 
 - OpenAI Responses API: https://platform.openai.com/docs/api-reference/responses
 - OpenAI Images API: https://platform.openai.com/docs/api-reference/images
+- Auth0 OAuth: https://auth0.com/docs/authenticate/protocols/oauth
+- Clerk token verification: https://clerk.com/docs/references/backend/verify-token
+- Supabase Auth getUser: https://supabase.com/docs/reference/javascript/auth-getuser
+- Firebase Auth REST API: https://firebase.google.com/docs/reference/rest/auth
+- Amazon Cognito authorization endpoint: https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html
 - Azure OpenAI API reference: https://learn.microsoft.com/en-us/azure/foundry/openai/reference
 - Amazon Bedrock Converse API: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html
 - Amazon Bedrock InvokeModel API: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html
