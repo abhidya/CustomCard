@@ -77,12 +77,13 @@ Requirement types:
 - Admin demo reset produces deterministic reviewer fixture contracts across 14
   tables and 17 rows without production credentials or live calls.
 - Manual vendor handoff blocks real orders and live vendor API claims.
-- Public printer pricing research compares Walgreens/CVS/FedEx observations but
-  keeps `liveQuote: false` and requires checkout confirmation.
+- Public printer pricing research compares Walgreens/CVS/FedEx/Walmart/Staples/
+  Office Depot observations but keeps `liveQuote: false` and requires checkout
+  confirmation.
 - Customer/admin panels expose the local customer path and provider operations state.
 - Adapter readiness shows free-ready substitutes, credential-gated providers, contract-only adapters, and blocked live vendor integrations.
-- Provider catalog covers 44 adapters: 12 ready-local, 21 credential-gated, 8
-  contract-only, and 3 blocked.
+- Provider catalog covers 47 adapters: 12 ready-local, 21 credential-gated, 8
+  contract-only, and 6 blocked.
 - Admin/adapters UI surfaces no-network runtime readiness, blocked dry-run
   state, and missing credential references.
 - Provider runtime dry runs cover every catalog adapter, redact contact/payment

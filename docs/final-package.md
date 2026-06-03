@@ -57,7 +57,7 @@
   -> edit tone/style/language -> inspect four 5x7 SVG-ready panels -> prepare
   manual vendor handoff.
 - Supporting workflows: add/delete approved memories, snooze/dismiss
-  opportunities, choose Walgreens/CVS/FedEx/local-printer handoff, copy checklist,
+  opportunities, choose retail-printer/local-printer handoff, copy checklist,
   compare review-only public printer prices, download the local print package,
   inspect free-ready,
   credential-gated, contract-only, and blocked production adapters.
@@ -66,12 +66,12 @@
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, gated provider queue, cloud runtime adapters, and blocked live
   vendors.
-- Provider runtime: readiness dry runs for all 44 catalog adapters; redacted
+- Provider runtime: readiness dry runs for all 47 catalog adapters; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters; local public printer pricing research
-  for Walgreens/CVS/FedEx manual handoff; local print package export for source
-  SVGs, a combined 5x7 PDF proof, and a checksum manifest; signed artifact
-  handoff contracts for render packets.
+  for Walgreens/CVS/FedEx/Walmart/Staples/Office Depot manual handoff; local
+  print package export for source SVGs, a combined 5x7 PDF proof, and a checksum
+  manifest; signed artifact handoff contracts for render packets.
 - API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
   provider-readiness, route catalog, admin demo reset, default contract mode,
   and executable memory-mode Bearer auth plus `X-Idempotency-Key`
@@ -103,7 +103,7 @@
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
-| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 44 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 13 routes, 6 idempotent mutation contracts, contract runtime mode, 47 providers, 16 persistence tables, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, idempotency replay, queue jobs, render-packet artifact manifests, append-only audit, demo reset mapping, and 11 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
@@ -179,6 +179,6 @@ with deterministic demo workflows, documented production boundaries, tests,
 visual evidence, and honest handoff notes.
 
 Not ready to claim: production SaaS, live OAuth integration, paid AI generation,
-direct Walgreens/CVS/FedEx ordering, payment handling, certified physical print
+direct retail-printer ordering, payment handling, certified physical print
 quality, deployed service, native mobile release, or legally/security-reviewed
 product.

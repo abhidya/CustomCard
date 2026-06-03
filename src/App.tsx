@@ -93,7 +93,7 @@ const navItems: NavItem[] = [
 const tones: Tone[] = ["warm", "playful", "elegant", "reverent"];
 const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"];
 const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
-const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "local-print-shop"];
+const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"];
 
 function App() {
   const [activeView, setActiveView] = useState<ViewId>("customer");

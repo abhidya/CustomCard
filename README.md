@@ -53,9 +53,11 @@ environment configuration instead of static placeholders.
 - Four 1500 x 2100 SVG panels for front, inside-left, inside-right, and back.
 - Local print package export with the four SVG panels, a combined 5x7 PDF proof,
   and a checksum manifest.
-- Manual handoff checklist for Walgreens, CVS, FedEx Office, or a local printer.
-- Review-only public printer pricing comparison for Walgreens, CVS, and FedEx
-  manual handoff, with checkout confirmation still required.
+- Manual handoff checklist for Walgreens, CVS, FedEx Office, Walmart, Staples,
+  Office Depot, or a local printer.
+- Review-only public printer pricing comparison for Walgreens, CVS, FedEx,
+  Walmart, Staples, and Office Depot manual handoff, with checkout confirmation
+  still required.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, cloud runtime readiness, and
@@ -197,7 +199,7 @@ pull requests.
 ## Honest Gaps
 
 The repo does not include production user auth, live OAuth, live AI/image
-generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
+generation, live vendor quotes, payment handling, direct retail-printer
 ordering, live object-storage uploads, live Postgres API integration
 tests, production account auth flows, native mobile builds, deployment evidence,
 legal/security review, or physical print certification. Those paths are

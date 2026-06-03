@@ -120,7 +120,8 @@ Components:
 1. VendorOption model.
 2. Manual vendor comparison page.
 3. Asset package builder.
-4. Instructions/deep links for CVS, Walgreens, FedEx Office, and generic print.
+4. Instructions/deep links for CVS, Walgreens, FedEx Office, Walmart, Staples,
+   Office Depot, and generic print.
 5. Pickup urgency scoring.
 
 Acceptance criteria:

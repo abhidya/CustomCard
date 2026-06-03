@@ -15,6 +15,12 @@ services:
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
       REAL_ORDER_KILL_SWITCH: disabled
+      WALGREENS_VENDOR_MODE: disabled_until_certified
+      CVS_VENDOR_MODE: disabled_until_certified
+      FEDEX_VENDOR_MODE: disabled_until_certified
+      WALMART_VENDOR_MODE: disabled_until_certified
+      STAPLES_VENDOR_MODE: disabled_until_certified
+      OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
     volumes:
       - customcard-objects:/data/objects
     depends_on:
@@ -36,6 +42,12 @@ services:
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
       REAL_ORDER_KILL_SWITCH: disabled
+      WALGREENS_VENDOR_MODE: disabled_until_certified
+      CVS_VENDOR_MODE: disabled_until_certified
+      FEDEX_VENDOR_MODE: disabled_until_certified
+      WALMART_VENDOR_MODE: disabled_until_certified
+      STAPLES_VENDOR_MODE: disabled_until_certified
+      OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
     volumes:
       - customcard-objects:/data/objects
     depends_on:

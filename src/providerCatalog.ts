@@ -594,7 +594,7 @@ export const providerCatalog: ProviderAdapter[] = [
   {
     id: "manual-vendor-handoff",
     label: "Manual vendor handoff",
-    provider: "Walgreens, CVS, FedEx, local print shop",
+    provider: "Walgreens, CVS, FedEx, Walmart, Staples, Office Depot, local print shop",
     capability: "vendor-handoff",
     lane: "Free local",
     status: "ready-local",
@@ -608,7 +608,7 @@ export const providerCatalog: ProviderAdapter[] = [
   {
     id: "public-printer-pricing-research",
     label: "Public printer pricing research",
-    provider: "Walgreens, CVS, FedEx public pages",
+    provider: "Walgreens, CVS, FedEx, Walmart, Staples, and Office Depot public pages",
     capability: "vendor-handoff",
     lane: "Pricing research",
     status: "ready-local",
@@ -660,6 +660,48 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 92,
     detail: "Modeled as a future adapter after print QA and order recovery are verified."
+  },
+  {
+    id: "walmart-live-print",
+    label: "Walmart live print",
+    provider: "Walmart Photo",
+    capability: "vendor-handoff",
+    lane: "Certified vendor",
+    status: "blocked",
+    cost: "usage-based",
+    credentials: ["WALMART_VENDOR_MODE"],
+    safetyGates: ["Vendor certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
+    roleSurface: ["admin"],
+    priority: 93,
+    detail: "Modeled as a future retail photo adapter; pricing research remains manual and review-only."
+  },
+  {
+    id: "staples-live-print",
+    label: "Staples live print",
+    provider: "Staples Print",
+    capability: "vendor-handoff",
+    lane: "Certified vendor",
+    status: "blocked",
+    cost: "usage-based",
+    credentials: ["STAPLES_VENDOR_MODE"],
+    safetyGates: ["Vendor certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
+    roleSurface: ["admin"],
+    priority: 94,
+    detail: "Modeled as a future print-service adapter after bundle pricing, pickup, and recovery paths are certified."
+  },
+  {
+    id: "office-depot-live-print",
+    label: "Office Depot live print",
+    provider: "Office Depot",
+    capability: "vendor-handoff",
+    lane: "Certified vendor",
+    status: "blocked",
+    cost: "usage-based",
+    credentials: ["OFFICE_DEPOT_VENDOR_MODE"],
+    safetyGates: ["Vendor certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
+    roleSurface: ["admin"],
+    priority: 95,
+    detail: "Modeled as a future print-service adapter after card-stock QA and order recovery are verified."
   },
   {
     id: "browser-download-notification",

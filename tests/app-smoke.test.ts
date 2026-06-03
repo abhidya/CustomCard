@@ -272,7 +272,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.readyRows).toBeGreaterThanOrEqual(6);
     expect(result.gatedRows).toBeGreaterThanOrEqual(10);
     expect(result.contractRows).toBeGreaterThanOrEqual(6);
-    expect(result.blockedRows).toBe(3);
+    expect(result.blockedRows).toBe(6);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 

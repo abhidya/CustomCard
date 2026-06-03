@@ -19,7 +19,12 @@ const checks = [
   checkIncludes("local-dev", "dev-compose-services", contents.devCompose, ["postgres:", "redis:", "minio:"]),
   checkIncludes("local-dev", "dev-compose-kill-switch", contents.devCompose, [
     "REAL_ORDER_KILL_SWITCH: disabled",
-    "WALGREENS_VENDOR_MODE: disabled_until_certified"
+    "WALGREENS_VENDOR_MODE: disabled_until_certified",
+    "CVS_VENDOR_MODE: disabled_until_certified",
+    "FEDEX_VENDOR_MODE: disabled_until_certified",
+    "WALMART_VENDOR_MODE: disabled_until_certified",
+    "STAPLES_VENDOR_MODE: disabled_until_certified",
+    "OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified"
   ]),
   checkIncludes("cheap-droplet", "droplet-runtime-target", contents.dropletCompose, [
     "target: runtime",
@@ -29,7 +34,13 @@ const checks = [
   checkIncludes("cheap-droplet", "droplet-managed-secrets", contents.dropletCompose, [
     "SECRET_PROVIDER: managed_secret_store",
     "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}",
-    "REAL_ORDER_KILL_SWITCH: disabled"
+    "REAL_ORDER_KILL_SWITCH: disabled",
+    "WALGREENS_VENDOR_MODE: disabled_until_certified",
+    "CVS_VENDOR_MODE: disabled_until_certified",
+    "FEDEX_VENDOR_MODE: disabled_until_certified",
+    "WALMART_VENDOR_MODE: disabled_until_certified",
+    "STAPLES_VENDOR_MODE: disabled_until_certified",
+    "OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified"
   ]),
   checkIncludes("cheap-droplet", "droplet-stateful-services", contents.dropletCompose, [
     "postgres:",
@@ -68,6 +79,12 @@ const checks = [
     "OBJECT_STORE_SIGNING_SECRET",
     "ARTIFACT_SIGNED_URL_TTL_MINUTES",
     "REAL_ORDER_KILL_SWITCH",
+    "WALGREENS_VENDOR_MODE",
+    "CVS_VENDOR_MODE",
+    "FEDEX_VENDOR_MODE",
+    "WALMART_VENDOR_MODE",
+    "STAPLES_VENDOR_MODE",
+    "OFFICE_DEPOT_VENDOR_MODE",
     "runtime:doctor"
   ]),
   checkIncludes("cloud-native", "k8s-probes-and-resources", contents.k8s, [
@@ -104,6 +121,11 @@ const checks = [
     "IDEMPOTENCY_KEY_TTL_HOURS=",
     "REAL_ORDER_KILL_SWITCH=disabled",
     "WALGREENS_VENDOR_MODE=disabled_until_certified",
+    "CVS_VENDOR_MODE=disabled_until_certified",
+    "FEDEX_VENDOR_MODE=disabled_until_certified",
+    "WALMART_VENDOR_MODE=disabled_until_certified",
+    "STAPLES_VENDOR_MODE=disabled_until_certified",
+    "OFFICE_DEPOT_VENDOR_MODE=disabled_until_certified",
     "OPENAI_API_KEY=",
     "MISTRAL_API_KEY=",
     "TOGETHER_API_KEY=",

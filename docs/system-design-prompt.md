@@ -24,7 +24,8 @@ anniversaries. Here's a thoughtful direction for this year's card. Do you have a
 new stories or updates you want to add?"
 
 The system must support custom generated cards for retail print workflows such as
-CVS, Walgreens, FedEx Office, local print shops, or mail-delivery card vendors. It
+CVS, Walgreens, FedEx Office, Walmart, Staples, Office Depot, local print shops,
+or mail-delivery card vendors. It
 should support formats like 5x7 flat photo cards and folded cards with front cover,
 inside-left, inside-right, and back cover panels. Generated assets must be
 print-ready, correctly sized, high resolution, and safe for upload to retail
@@ -134,7 +135,8 @@ Required sections:
    - Manual user upload
    - Marketplace/print API aggregators
 
-   Evaluate CVS, Walgreens, FedEx Office, Shutterfly, local print shops, and generic
+   Evaluate CVS, Walgreens, FedEx Office, Walmart, Staples, Office Depot,
+   Shutterfly, local print shops, and generic
    print-on-demand vendors as possible fulfillment channels.
    Discuss how to compare price, pickup time, shipping time, distance,
    availability, and card format.

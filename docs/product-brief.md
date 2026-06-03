@@ -63,7 +63,7 @@ The current delivered app uses free substitutes for the external pieces above:
 2. Manual invite or `.ics` paste instead of live email/calendar OAuth.
 3. Deterministic opportunity detection and card templates instead of paid AI.
 4. Browser SVG export instead of PNG/PDF production pipeline.
-5. Manual Walgreens/CVS/FedEx/local-printer handoff instead of live ordering.
+5. Manual retail-printer/local-printer handoff instead of live ordering.
 
 These choices keep the core workflow reviewable while leaving production auth,
 OAuth, AI, payment, live quotes, and physical certification as explicit future

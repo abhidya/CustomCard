@@ -85,7 +85,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "handoff",
     title: "Handoff",
-    detail: "Manual upload stays active while Walgreens, CVS, and FedEx live orders are blocked.",
+    detail: "Manual upload stays active while retail print live orders are blocked.",
     status: "Manual",
     customerVisible: true
   }
@@ -135,7 +135,7 @@ export const mobileHandoffSteps: MobileHandoffStep[] = [
   },
   {
     label: "Confirm pickup manually",
-    detail: "Walgreens, CVS, and FedEx live order APIs are blocked in this shell.",
+    detail: "Walgreens, CVS, FedEx, Walmart, Staples, and Office Depot live order APIs are blocked in this shell.",
     realOrderState: "disabled"
   }
 ];

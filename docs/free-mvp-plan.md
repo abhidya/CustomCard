@@ -13,7 +13,7 @@ preserving the production integration gates from the earlier service skeleton.
 | Relationship memory | User-approved local memory records with add/delete controls. | `addMemory`, `removeMemory`, Memory view. |
 | Card generation | Deterministic template engine; no paid AI call. | `generateCardDraft`, `validateCardDraft`. |
 | Print export | Browser-generated 1500 x 2100 SVG panels plus a local 5x7 PDF proof and checksum manifest. | `buildPanelSvg`, `buildPrintExportPackage`, Handoff view. |
-| Vendor handoff | Manual checklist for Walgreens, CVS, FedEx Office, or local print shop plus review-only public price comparison. | `buildVendorHandoff`, `src/printerPricing.ts`, Adapter view. |
+| Vendor handoff | Manual checklist for Walgreens, CVS, FedEx Office, Walmart, Staples, Office Depot, or local print shop plus review-only public price comparison. | `buildVendorHandoff`, `src/printerPricing.ts`, Adapter view. |
 
 ## Blocked Production Paths
 

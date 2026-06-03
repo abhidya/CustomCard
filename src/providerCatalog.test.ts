@@ -25,7 +25,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(39);
+    expect(summary.total).toBeGreaterThanOrEqual(47);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -87,13 +87,23 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("LEONARDO_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MICROSOFT_CLIENT_ID");
+    expect(admin.coverage.requiredEnv).toContain("WALMART_VENDOR_MODE");
+    expect(admin.coverage.requiredEnv).toContain("STAPLES_VENDOR_MODE");
+    expect(admin.coverage.requiredEnv).toContain("OFFICE_DEPOT_VENDOR_MODE");
     expect(admin.deploymentAdapters.map((adapter) => adapter.label)).toContain("Cheap droplet compose");
     expect(providerCatalog.find((adapter) => adapter.id === "object-store-render-packets")).toMatchObject({
       credentials: expect.arrayContaining(["OBJECT_STORE_URL", "OBJECT_STORE_SIGNING_SECRET"]),
       safetyGates: expect.arrayContaining(["HMAC signed URL contract", "No live upload in local MVP"])
     });
     expect(admin.blockedProviders.map((adapter) => adapter.label)).toEqual(
-      expect.arrayContaining(["Walgreens live order", "CVS live order", "FedEx live print"])
+      expect.arrayContaining([
+        "Walgreens live order",
+        "CVS live order",
+        "FedEx live print",
+        "Walmart live print",
+        "Staples live print",
+        "Office Depot live print"
+      ])
     );
     expect(admin.blockedProviders.every((adapter) => adapter.status === "blocked")).toBe(true);
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Public printer pricing research");

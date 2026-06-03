@@ -73,6 +73,24 @@ export const printerPricingSources = {
     url: "https://www.office.fedex.com/default/greeting-cards",
     observedAtIso,
     notes: "Official FedEx Office page lists quick and premium 5x7 greeting card starting prices and production windows."
+  },
+  walmartSameDayFolded: {
+    label: "Walmart Photo same-day folded photo card",
+    url: "https://business.walmart.com/ip/Same-Day-Folded-Photo-Card/15907786",
+    observedAtIso,
+    notes: "Official Walmart product page lists same-day folded photo card pricing; exact store availability still requires checkout confirmation."
+  },
+  staplesFoldedCards: {
+    label: "Staples folded cards",
+    url: "https://www.staples.com/services/printing/cards-invitations/",
+    observedAtIso,
+    notes: "Official Staples cards and invitations page lists 5x7 folded card bundle pricing; coupon and production-window details require checkout confirmation."
+  },
+  officeDepotPhotoCards: {
+    label: "Office Depot custom photo holiday cards",
+    url: "https://www.officedepot.com/a/products/7395368/Custom-Photo-Holiday-Cards-With-Envelopes/",
+    observedAtIso,
+    notes: "Official Office Depot custom photo card product page lists a 25-card 7x5 package price; production and pickup/ship details require manual confirmation."
   }
 } satisfies Record<string, PrinterPricingSource>;
 
@@ -158,6 +176,56 @@ export const printerPriceCatalog: PrinterPriceObservation[] = [
     requiresManualConfirmation: true,
     confidence: "public-current",
     source: printerPricingSources.fedexGreetingCards
+  },
+  {
+    id: "walmart-5x7-same-day-folded-card",
+    vendorId: "walmart",
+    vendorName: "Walmart Photo",
+    productName: "Same-day folded photo card",
+    productKind: "folded-card",
+    size: "5x7",
+    unitPriceCents: 142,
+    minimumQuantity: 1,
+    speed: "same-day",
+    pickupEligible: true,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-ambiguous",
+    source: printerPricingSources.walmartSameDayFolded
+  },
+  {
+    id: "staples-5x7-folded-card-bundle",
+    vendorId: "staples",
+    vendorName: "Staples Print",
+    productName: "5x7 folded card bundle",
+    productKind: "folded-card",
+    size: "5x7",
+    unitPriceCents: 120,
+    startingPackagePriceCents: 2999,
+    minimumQuantity: 25,
+    speed: "24-hour",
+    pickupEligible: true,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-ambiguous",
+    source: printerPricingSources.staplesFoldedCards
+  },
+  {
+    id: "office-depot-7x5-photo-holiday-card-bundle",
+    vendorId: "office-depot",
+    vendorName: "Office Depot",
+    productName: "7x5 custom photo holiday card bundle",
+    productKind: "folded-card",
+    size: "5x7",
+    unitPriceCents: 310,
+    startingPackagePriceCents: 7760,
+    minimumQuantity: 25,
+    speed: "ships-in-days",
+    pickupEligible: false,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-ambiguous",
+    source: printerPricingSources.officeDepotPhotoCards
   }
 ];
 
@@ -196,7 +264,15 @@ export function buildPrinterPricingComparison(
     speedRank(first.observation.speed) - speedRank(second.observation.speed) ||
     first.observation.vendorName.localeCompare(second.observation.vendorName)
   );
-  const vendorIds = new Set<VendorId>(["walgreens", "cvs", "fedex", "local-print-shop"]);
+  const vendorIds = new Set<VendorId>([
+    "walgreens",
+    "cvs",
+    "fedex",
+    "walmart",
+    "staples",
+    "office-depot",
+    "local-print-shop"
+  ]);
 
   return {
     selectedVendorId,
@@ -234,7 +310,7 @@ export function validatePrinterPricingCatalog(catalog: PrinterPriceObservation[]
     }
   }
 
-  for (const vendorId of ["walgreens", "cvs", "fedex"] satisfies VendorId[]) {
+  for (const vendorId of ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot"] satisfies VendorId[]) {
     if (!catalog.some((observation) => observation.vendorId === vendorId)) {
       errors.push(`Missing public printer pricing for ${vendorId}.`);
     }

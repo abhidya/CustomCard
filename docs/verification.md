@@ -21,16 +21,16 @@ it after each meaningful implementation pass.
   placeholder-secret rejection, redacted chat/image request contracts,
   metadata-only import contracts, free local fallbacks, and hard-blocked live
   vendor ordering.
-- Printer-pricing tests cover review-only public Walgreens/CVS/FedEx price
-  observations, minimum quantity math, source URLs, manual confirmation, and
-  `liveQuote: false`.
+- Printer-pricing tests cover review-only public Walgreens/CVS/FedEx/Walmart/
+  Staples/Office Depot price observations, minimum quantity math, source URLs,
+  manual confirmation, and `liveQuote: false`.
 - Print-export tests cover local source SVG files, a combined 5x7 PDF proof,
   checksum manifest validation, preflight failure paths, and no-network/no-order
   summary behavior.
 - Artifact-handoff tests cover HMAC-signed URLs, object-store URI construction,
   config validation, expiry limits, and tamper detection.
-- Provider adapter coverage currently includes 44 adapters: 12 ready-local, 21
-  credential-gated, 8 contract-only, and 3 blocked.
+- Provider adapter coverage currently includes 47 adapters: 12 ready-local, 21
+  credential-gated, 8 contract-only, and 6 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
@@ -112,7 +112,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 13 routes, 6 idempotent mutation contracts,
-44 providers, 16 persistence tables, render-packet artifact manifests, signed
+47 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, contract runtime mode, no live external calls, no real
 vendor orders, no raw content storage, and no blockers.
 
@@ -121,7 +121,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 44
+enforced, 2 configured sessions, 13 routes, 6 idempotent mutation contracts, 47
 providers, 16 persistence tables, render-packet artifact manifests, signed
 artifact URL contracts, no live external calls, no real vendor orders, and no
 blockers.
@@ -178,10 +178,10 @@ and cramped four-across panel previews.
 The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
-After the provider expansion, pricing-research, and print-package passes the catalog contains 12 ready-local, 21
-credential-gated, 8 contract-only, and 3 blocked adapters. The web mobile
-customer panel appears before the navigation rail with zero horizontal overflow
-at 1440px desktop and 390px mobile widths.
+After the provider expansion, pricing-research, and print-package passes the
+catalog contains 12 ready-local, 21 credential-gated, 8 contract-only, and 6
+blocked adapters. The web mobile customer panel appears before the navigation
+rail with zero horizontal overflow at 1440px desktop and 390px mobile widths.
 
 ```text
 Final package audit

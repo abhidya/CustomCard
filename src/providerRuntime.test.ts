@@ -30,6 +30,7 @@ const readyEnv: ProviderRuntimeEnv = {
   MICROSOFT_CLIENT_SECRET: "configured-microsoft-client-secret",
   MICROSOFT_TENANT_ID: "configured-microsoft-tenant-id",
   MISTRAL_API_KEY: "configured-mistral-key",
+  OFFICE_DEPOT_VENDOR_MODE: "certification-configured-only",
   OBJECT_STORE_BUCKET: "customcard-test",
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   OPENAI_API_KEY: "configured-openai-key",
@@ -40,10 +41,12 @@ const readyEnv: ProviderRuntimeEnv = {
   SELF_HOSTED_LLM_API_KEY: "configured-self-hosted-key",
   SELF_HOSTED_LLM_BASE_URL: "http://127.0.0.1:11434",
   STABILITY_API_KEY: "configured-stability-key",
+  STAPLES_VENDOR_MODE: "certification-configured-only",
   TOGETHER_API_KEY: "configured-together-key",
   TRANSACTIONAL_EMAIL_API_KEY: "configured-email-key",
   TRANSACTIONAL_EMAIL_FROM: "cards@example.test",
   WALGREENS_VENDOR_MODE: "certification-configured-only",
+  WALMART_VENDOR_MODE: "certification-configured-only",
   XAI_API_KEY: "configured-xai-key"
 };
 
@@ -307,7 +310,14 @@ describe("provider runtime contracts", () => {
   });
 
   it("never prepares live vendor order requests even with credentials and gates", () => {
-    for (const adapterId of ["walgreens-live-order", "cvs-live-order", "fedex-live-print"]) {
+    for (const adapterId of [
+      "walgreens-live-order",
+      "cvs-live-order",
+      "fedex-live-print",
+      "walmart-live-print",
+      "staples-live-print",
+      "office-depot-live-print"
+    ]) {
       const result = buildVendorRuntime(
         adapterId,
         {

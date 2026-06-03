@@ -144,6 +144,9 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("WALGREENS_VENDOR_MODE=disabled_until_certified");
     expect(env).toContain("CVS_VENDOR_MODE=disabled_until_certified");
     expect(env).toContain("FEDEX_VENDOR_MODE=disabled_until_certified");
+    expect(env).toContain("WALMART_VENDOR_MODE=disabled_until_certified");
+    expect(env).toContain("STAPLES_VENDOR_MODE=disabled_until_certified");
+    expect(env).toContain("OFFICE_DEPOT_VENDOR_MODE=disabled_until_certified");
   });
 
   it("keeps coverage instrumentation on core, orchestration, and mobile contract modules", () => {

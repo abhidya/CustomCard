@@ -38,11 +38,11 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   Gemini image generation, Stability AI, Hugging Face, Replicate, Together,
   Ideogram, Leonardo, local print package export, and object-store render packets.
 - Memory: local relationship memory plus Postgres memory contract.
-- Vendor handoff: manual upload ready; Walgreens, CVS, and FedEx live ordering
-  blocked.
-- Printer pricing: public Walgreens/CVS/FedEx 5x7 card observations ready for
-  manual comparison; live quotes, taxes, coupons, stock, and pickup windows
-  remain manual-confirmation work.
+- Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
+  and Office Depot live ordering blocked.
+- Printer pricing: public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot 5x7
+  card observations ready for manual comparison; live quotes, taxes, coupons,
+  stock, and pickup windows remain manual-confirmation work.
 - Notifications: local UI status ready; transactional email contract gated.
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
@@ -107,7 +107,8 @@ The admin panel turns the adapter catalog into an operations surface:
 - Gated provider queue.
 - Cloud runtime adapters.
 - Blocked live-order vendors.
-- Public printer pricing research for manual Walgreens/CVS/FedEx comparison.
+- Public printer pricing research for manual Walgreens/CVS/FedEx/Walmart/
+  Staples/Office Depot comparison.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 

@@ -4,7 +4,7 @@ export type Urgency = "same-day" | "this-week" | "planned" | "needs-date";
 export type Tone = "warm" | "playful" | "elegant" | "reverent";
 export type VisualStyle = "botanical" | "bold-type" | "photo-note" | "minimal";
 export type LanguageChoice = "English" | "Spanish" | "Urdu" | "Arabic";
-export type VendorId = "walgreens" | "cvs" | "fedex" | "local-print-shop";
+export type VendorId = "walgreens" | "cvs" | "fedex" | "walmart" | "staples" | "office-depot" | "local-print-shop";
 
 export interface LocalWorkspace {
   id: string;
@@ -693,5 +693,8 @@ const vendorNames: Record<VendorId, string> = {
   walgreens: "Walgreens",
   cvs: "CVS",
   fedex: "FedEx Office",
+  walmart: "Walmart Photo",
+  staples: "Staples Print",
+  "office-depot": "Office Depot",
   "local-print-shop": "Local print shop"
 };

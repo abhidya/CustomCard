@@ -11,12 +11,12 @@ import {
 describe("printer pricing research", () => {
   it("keeps public printer pricing review-only and source-backed", () => {
     expect(validatePrinterPricingCatalog()).toEqual([]);
-    expect(printerPriceCatalog.length).toBeGreaterThanOrEqual(5);
+    expect(printerPriceCatalog.length).toBeGreaterThanOrEqual(8);
     expect(printerPriceCatalog.every((observation) => observation.liveQuote === false)).toBe(true);
     expect(printerPriceCatalog.every((observation) => observation.requiresManualConfirmation)).toBe(true);
     expect(printerPriceCatalog.every((observation) => observation.source.url.startsWith("https://"))).toBe(true);
     expect(printerPriceCatalog.map((observation) => observation.vendorId)).toEqual(
-      expect.arrayContaining(["walgreens", "cvs", "fedex"])
+      expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot"])
     );
   });
 
@@ -44,9 +44,12 @@ describe("printer pricing research", () => {
     expect(comparison.liveQuote).toBe(false);
     expect(comparison.selectedVendorOptions[0].observation.vendorId).toBe("walgreens");
     expect(comparison.selectedVendorOptions[0].subtotalLabel).toBe("$2.99");
-    expect(comparison.rankedKnownPrices[0].subtotalLabel).toBe("$2.99");
+    expect(comparison.rankedKnownPrices[0]).toMatchObject({
+      observation: expect.objectContaining({ vendorId: "walmart" }),
+      subtotalLabel: "$1.42"
+    });
     expect(comparison.manualConfirmationVendors).toEqual(
-      expect.arrayContaining(["walgreens", "cvs", "fedex", "local-print-shop"])
+      expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"])
     );
     expect(comparison.disclaimer).toContain("not live quotes");
   });
@@ -62,9 +65,15 @@ describe("printer pricing research", () => {
   it("keeps exact public package starts when vendors publish minimum bundles", () => {
     const fedexQuick = printerPriceCatalog.find((observation) => observation.id === "fedex-quick-5x7-double-sided-card");
     const fedexPremium = printerPriceCatalog.find((observation) => observation.id === "fedex-premium-5x7-folded-card");
+    const staplesFolded = printerPriceCatalog.find((observation) => observation.id === "staples-5x7-folded-card-bundle");
+    const officeDepotPhoto = printerPriceCatalog.find(
+      (observation) => observation.id === "office-depot-7x5-photo-holiday-card-bundle"
+    );
 
     expect(fedexQuick).toBeDefined();
     expect(fedexPremium).toBeDefined();
+    expect(staplesFolded).toBeDefined();
+    expect(officeDepotPhoto).toBeDefined();
     expect(estimatePrinterSubtotal(fedexQuick!, 1)).toMatchObject({
       pricedQuantity: 10,
       subtotalCents: 1799,
@@ -74,6 +83,16 @@ describe("printer pricing research", () => {
       pricedQuantity: 20,
       subtotalCents: 2299,
       subtotalLabel: "$22.99"
+    });
+    expect(estimatePrinterSubtotal(staplesFolded!, 1)).toMatchObject({
+      pricedQuantity: 25,
+      subtotalCents: 2999,
+      subtotalLabel: "$29.99"
+    });
+    expect(estimatePrinterSubtotal(officeDepotPhoto!, 1)).toMatchObject({
+      pricedQuantity: 25,
+      subtotalCents: 7760,
+      subtotalLabel: "$77.60"
     });
   });
 
@@ -107,6 +126,9 @@ describe("printer pricing research", () => {
 
   it("filters pricing options by vendor", () => {
     expect(getPrinterPriceOptionsForVendor("cvs").map((observation) => observation.vendorId)).toEqual(["cvs", "cvs"]);
+    expect(getPrinterPriceOptionsForVendor("walmart").map((observation) => observation.id)).toEqual([
+      "walmart-5x7-same-day-folded-card"
+    ]);
     expect(getPrinterPriceOptionsForVendor("local-print-shop")).toEqual([]);
   });
 });
