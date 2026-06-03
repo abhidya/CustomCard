@@ -1,0 +1,343 @@
+const requiredCoverageIds = [
+  "customer-workspace-to-handoff",
+  "customer-panel-readiness",
+  "admin-panel-readiness",
+  "adapter-matrix-readiness",
+  "api-public-readiness",
+  "api-contract-mutations",
+  "api-memory-runtime",
+  "api-postgres-runtime",
+  "api-postgres-http-integration",
+  "account-auth-storage-recovery",
+  "mobile-customer-shell",
+  "mobile-native-release-profile",
+  "artifact-store-handoff",
+  "deployment-iac-readiness",
+  "security-privacy-accessibility",
+  "external-audit-evidence-register",
+  "capacity-cost-readiness",
+  "localization-rtl-readiness",
+  "printer-pricing-research",
+  "demo-reset-worker-readiness"
+];
+
+const requiredSurfaces = ["web-customer", "web-admin", "adapters", "api", "identity", "mobile", "infra", "governance"];
+const allowedAutomationTypes = new Set(["browser-smoke", "contract-test", "doctor", "ci-workflow"]);
+
+export const e2eCoverageItems = [
+  {
+    id: "customer-workspace-to-handoff",
+    label: "Customer workspace to manual handoff",
+    surface: "web-customer",
+    automationType: "browser-smoke",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
+    evidence: ["Starts local workspace", "Scans free import", "Generates four-panel card", "Prepares manual handoff"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "customer-panel-readiness",
+    label: "Customer panel readiness",
+    surface: "web-customer",
+    automationType: "browser-smoke",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
+    evidence: ["Customer panel visible", "Local chat transcript visible", "Render choices visible", "No horizontal overflow"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "admin-panel-readiness",
+    label: "Admin panel readiness",
+    surface: "web-admin",
+    automationType: "browser-smoke",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
+    evidence: ["Provider governance visible", "Launch gates visible", "External audit readiness visible", "Capacity profiles visible"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "adapter-matrix-readiness",
+    label: "Adapter matrix readiness",
+    surface: "adapters",
+    automationType: "browser-smoke",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run provider:governance:doctor", "npm run check"],
+    evidence: ["Ready local adapters visible", "Credential-gated adapters visible", "Blocked live vendor adapters visible"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "api-public-readiness",
+    label: "API health and readiness",
+    surface: "api",
+    automationType: "contract-test",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/api-server.test.ts", "npm run api:doctor", "npm run check"],
+    evidence: ["/api/health responds", "/api/routes responds", "/api/admin/readiness responds", "Security headers enforced"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "api-contract-mutations",
+    label: "API contract mutation workflow",
+    surface: "api",
+    automationType: "contract-test",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/api-server.test.ts src/apiContracts.test.ts", "npm run check"],
+    evidence: ["Import preview accepted contract-only", "Card project accepted contract-only", "Render packet accepted contract-only", "Manual handoff accepted contract-only", "Data request accepted contract-only"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "api-memory-runtime",
+    label: "API memory runtime auth and idempotency",
+    surface: "api",
+    automationType: "contract-test",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/api-server.test.ts", "npm run api:doctor:memory", "npm run check"],
+    evidence: ["Bearer auth enforced", "Wrong role blocked", "Idempotency key required", "Replay and conflict behavior covered"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "api-postgres-runtime",
+    label: "Postgres runtime repository workflow",
+    surface: "api",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run api:doctor:postgres", "npm run api:doctor:postgres:live", "npm run check"],
+    evidence: ["Migration applied to isolated database", "Repository-backed customer routes authorized", "Audit rows written", "Queue jobs written"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "api-postgres-http-integration",
+    label: "Postgres HTTP integration workflow",
+    surface: "api",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run api:doctor:postgres:http", "npm run check"],
+    evidence: ["API server starts in Postgres mode", "HTTP auth enforced", "Six repository-backed mutations covered", "Replay/conflict behavior covered"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "account-auth-storage-recovery",
+    label: "Account auth storage and recovery",
+    surface: "identity",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run account:doctor:live", "npm run check"],
+    evidence: ["Hosted identity rows stored without raw profile", "Hashed recovery challenge stored", "Durable session created", "Audit row appended"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "mobile-customer-shell",
+    label: "Mobile customer shell workflow",
+    surface: "mobile",
+    automationType: "contract-test",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run test -- --run tests/mobile-contract.test.ts", "npm --prefix apps/mobile run doctor", "npm run check"],
+    evidence: ["Queue items covered", "Approval actions idempotent", "Review-only pricing covered", "Offline sync posture covered"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "mobile-native-release-profile",
+    label: "Mobile native release profile gate",
+    surface: "mobile",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run mobile:release:doctor", "npm run check"],
+    evidence: ["iOS profile present", "Android profile present", "API URL environment sourced", "Signed artifact not claimed"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "artifact-store-handoff",
+    label: "Artifact store handoff workflow",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run artifact:doctor", "npm run artifact:doctor:s3:live", "npm run check"],
+    evidence: ["Filesystem write/read verified", "Injected S3-compatible write/read verified", "Live MinIO/S3-compatible write/read verified", "Signed artifact URLs preserved"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "deployment-iac-readiness",
+    label: "Deployment and IaC readiness",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run deployment:doctor", "npm run cloud:doctor", "npm run check"],
+    evidence: ["Local dev lane ready", "Cheap droplet lane ready", "Cloud-native lane ready", "Static AWS artifact-store IaC verified"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "security-privacy-accessibility",
+    label: "Security privacy accessibility baseline",
+    surface: "governance",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run security:doctor", "npm run check"],
+    evidence: ["Security headers verified", "Raw content storage blocked", "Signed artifact sharing controlled", "App-shell accessibility landmarks verified"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "external-audit-evidence-register",
+    label: "External audit evidence register",
+    surface: "governance",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run external:audit:doctor", "npm run check"],
+    evidence: ["15 evidence gaps tracked", "Production-gate mappings verified", "Public production claims disabled", "Attached external artifacts not claimed"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "capacity-cost-readiness",
+    label: "Capacity and cost readiness",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run capacity:doctor", "npm run provider:governance:doctor", "npm run check"],
+    evidence: ["Four capacity profiles covered", "Provider budgets capped", "Queue/object-store posture covered", "Live provider calls disabled"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "localization-rtl-readiness",
+    label: "Localization and RTL readiness",
+    surface: "web-customer",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run localization:doctor", "npm run test -- --run tests/mobile-contract.test.ts tests/app-smoke.test.ts", "npm run check"],
+    evidence: ["Four launch locales covered", "Two RTL locales covered", "Human copy review required", "Mobile locale options covered"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "printer-pricing-research",
+    label: "Printer pricing research workflow",
+    surface: "adapters",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run printer:pricing:doctor", "npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
+    evidence: ["Official-source observations covered", "Freshness policy covered", "Manual confirmation required", "No live quote claim"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "demo-reset-worker-readiness",
+    label: "Demo reset and worker readiness",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run demo:doctor", "npm run worker", "npm run check"],
+    evidence: ["Demo fixture reset covered", "Worker runtime starts", "No live provider calls", "No real orders"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  }
+];
+
+export function summarizeE2eCoverage(items = e2eCoverageItems) {
+  const covered = items.filter((item) => item.status === "covered").length;
+  return {
+    total: items.length,
+    covered,
+    repoLocalCoveragePercent: items.length === 0 ? 0 : Math.round((covered / items.length) * 100),
+    browserSmokeCovered: items.filter((item) => item.automationType === "browser-smoke").length,
+    contractTestCovered: items.filter((item) => item.automationType === "contract-test").length,
+    doctorCovered: items.filter((item) => item.automationType === "doctor").length,
+    ciGated: items.filter((item) => item.ciGated).length,
+    surfaces: Array.from(new Set(items.map((item) => item.surface))).sort(),
+    liveProductionProofs: items.filter((item) => item.liveProductionProof).length,
+    realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
+    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+    requiredCommandCount: Array.from(new Set(items.flatMap((item) => item.testCommands))).length,
+    blockers: validateE2eCoverage(items)
+  };
+}
+
+export function validateE2eCoverage(items = e2eCoverageItems) {
+  const issues = [];
+  const ids = new Set();
+  const surfaces = new Set();
+
+  for (const item of items) {
+    if (ids.has(item.id)) issues.push(`Duplicate E2E coverage item: ${item.id}.`);
+    ids.add(item.id);
+    surfaces.add(item.surface);
+
+    if (item.status !== "covered") issues.push(`E2E coverage item ${item.id} must be covered in the repo-local matrix.`);
+    if (!allowedAutomationTypes.has(item.automationType)) {
+      issues.push(`E2E coverage item ${item.id} has unsupported automation type.`);
+    }
+    if (item.ciGated !== true) issues.push(`E2E coverage item ${item.id} must be CI-gated.`);
+    if (item.testCommands.length === 0) issues.push(`E2E coverage item ${item.id} must list test commands.`);
+    if (item.evidence.length < 2) issues.push(`E2E coverage item ${item.id} must list at least two evidence points.`);
+    if (item.liveProductionProof !== false) {
+      issues.push(`E2E coverage item ${item.id} must not claim live production proof.`);
+    }
+    if (item.realOrdersEnabled !== false) issues.push(`E2E coverage item ${item.id} must keep realOrdersEnabled=false.`);
+    if (item.externalNetworkCalls !== false) {
+      issues.push(`E2E coverage item ${item.id} must not require live external network calls.`);
+    }
+  }
+
+  for (const requiredId of requiredCoverageIds) {
+    if (!ids.has(requiredId)) issues.push(`Missing E2E coverage item: ${requiredId}.`);
+  }
+  for (const requiredSurface of requiredSurfaces) {
+    if (!surfaces.has(requiredSurface)) issues.push(`Missing E2E coverage surface: ${requiredSurface}.`);
+  }
+
+  return issues;
+}

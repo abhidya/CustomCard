@@ -232,6 +232,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Locale readiness");
     expect(result.adminText).toContain("Launch gates");
     expect(result.adminText).toContain("External audit readiness");
+    expect(result.adminText).toContain("End-to-end coverage");
     expect(result.adminText).toContain("CRM and workflow integrations");
     expect(result.adminText).toContain("Capacity profiles");
     expect(result.adminText).toContain("Cheap droplet");
@@ -244,6 +245,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Physical print certification");
     expect(result.adminText).toContain("External security assessment");
     expect(result.adminText).toContain("Public claims");
+    expect(result.adminText).toContain("Customer workspace to manual handoff");
+    expect(result.adminText).toContain("Postgres HTTP integration workflow");
+    expect(result.adminText).toContain("Live proofs");
     expect(result.adminText).toContain("RTL review");
     expect(result.adminText).toContain("Budget capped");
     expect(result.adminText).toContain("Credential gaps");

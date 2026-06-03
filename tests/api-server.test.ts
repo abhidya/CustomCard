@@ -47,6 +47,16 @@ describe("api server wrapper", () => {
           externalArtifactsAttached: number;
           blockers: string[];
         };
+        e2eCoverage: {
+          total: number;
+          covered: number;
+          repoLocalCoveragePercent: number;
+          ciGated: number;
+          liveProductionProofs: number;
+          realOrdersEnabled: number;
+          externalNetworkCalls: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -126,6 +136,16 @@ describe("api server wrapper", () => {
       productionBlocked: 15,
       publicClaimsAllowed: 0,
       externalArtifactsAttached: 0
+    });
+    expect(report.readiness.e2eCoverage).toMatchObject({
+      total: 20,
+      covered: 20,
+      repoLocalCoveragePercent: 100,
+      ciGated: 20,
+      liveProductionProofs: 0,
+      realOrdersEnabled: 0,
+      externalNetworkCalls: 0,
+      blockers: []
     });
     expect(report.readiness.capacity).toMatchObject({
       total: 4,
@@ -273,6 +293,14 @@ describe("api server wrapper", () => {
         productionBlocked: 15,
         publicClaimsAllowed: 0,
         externalArtifactsAttached: 0
+      });
+      expect(readiness.e2eCoverage).toMatchObject({
+        total: 20,
+        covered: 20,
+        repoLocalCoveragePercent: 100,
+        liveProductionProofs: 0,
+        realOrdersEnabled: 0,
+        externalNetworkCalls: 0
       });
       expect(readiness.capacity).toMatchObject({
         total: 4,

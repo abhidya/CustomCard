@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
+import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
@@ -205,6 +206,7 @@ export const readiness = {
     ]
   },
   externalAudit: summarizeExternalAuditReadiness(),
+  e2eCoverage: summarizeE2eCoverage(),
   capacity: summarizeCapacityPlan(),
   safety: {
     externalNetworkCalls: false,
@@ -498,6 +500,16 @@ function validateApiServerContract() {
   if (readiness.externalAudit.blockers.length < readiness.externalAudit.total) {
     blockers.push("External audit readiness must expose blockers for every evidence item.");
   }
+  if (readiness.e2eCoverage.repoLocalCoveragePercent !== 100) {
+    blockers.push("E2E coverage must cover every repo-local reviewer workflow.");
+  }
+  if (readiness.e2eCoverage.ciGated !== readiness.e2eCoverage.total) {
+    blockers.push("Every E2E coverage item must be CI-gated.");
+  }
+  if (readiness.e2eCoverage.liveProductionProofs !== 0) blockers.push("E2E coverage cannot claim live production proof.");
+  if (readiness.e2eCoverage.realOrdersEnabled !== 0) blockers.push("E2E coverage cannot enable real orders.");
+  if (readiness.e2eCoverage.externalNetworkCalls !== 0) blockers.push("E2E coverage cannot require live external network calls.");
+  if (readiness.e2eCoverage.blockers.length > 0) blockers.push("E2E coverage summary has blockers.");
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

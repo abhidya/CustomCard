@@ -14,6 +14,13 @@ import {
   type ExternalAuditReadinessSummary
 } from "./externalAuditReadiness";
 import {
+  e2eCoverageItems,
+  summarizeE2eCoverage,
+  validateE2eCoverage,
+  type E2eCoverageItem,
+  type E2eCoverageSummary
+} from "./e2eCoverage";
+import {
   summarizeLocalizationReadiness,
   supportedLocales,
   type LocalizationReadinessSummary
@@ -72,6 +79,7 @@ export interface ApiReadinessSummary {
   localization: LocalizationReadinessSummary;
   production: ProductionReadinessSummary;
   externalAudit: ExternalAuditReadinessSummary;
+  e2eCoverage: E2eCoverageSummary;
   capacity: CapacityPlanSummary;
   runtime: {
     localReady: number;
@@ -98,6 +106,10 @@ export interface ApiBootstrapPayload {
   externalAudit: {
     items: ExternalAuditReadinessItem[];
     summary: ExternalAuditReadinessSummary;
+  };
+  e2eCoverage: {
+    items: E2eCoverageItem[];
+    summary: E2eCoverageSummary;
   };
   capacity: {
     profiles: CapacityProfile[];
@@ -194,6 +206,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "localization",
       "production",
       "externalAudit",
+      "e2eCoverage",
       "capacity",
       "runtime",
       "blockedProviders",
@@ -377,6 +390,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     localization: summarizeLocalizationReadiness(),
     production: summarizeProductionReadiness(),
     externalAudit: summarizeExternalAuditReadiness(),
+    e2eCoverage: summarizeE2eCoverage(),
     capacity: summarizeCapacityPlan(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
@@ -400,6 +414,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     externalAudit: {
       items: externalAuditReadinessItems,
       summary: summarizeExternalAuditReadiness()
+    },
+    e2eCoverage: {
+      items: e2eCoverageItems,
+      summary: summarizeE2eCoverage()
     },
     capacity: {
       profiles: capacityProfiles,
@@ -503,6 +521,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const externalAuditIssue of validateExternalAuditReadiness()) {
     issues.push(externalAuditIssue);
+  }
+  for (const e2eCoverageIssue of validateE2eCoverage()) {
+    issues.push(e2eCoverageIssue);
   }
 
   return issues;

@@ -42,6 +42,12 @@ import {
   type ExternalAuditReadinessSummary
 } from "./externalAuditReadiness";
 import {
+  e2eCoverageItems,
+  summarizeE2eCoverage,
+  type E2eCoverageItem,
+  type E2eCoverageSummary
+} from "./e2eCoverage";
+import {
   addMemory,
   buildOpportunity,
   buildVendorHandoff,
@@ -166,6 +172,7 @@ function App() {
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
   const externalAuditSummary = useMemo(() => summarizeExternalAuditReadiness(), []);
+  const e2eCoverageSummary = useMemo(() => summarizeE2eCoverage(), []);
   const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -449,6 +456,8 @@ function App() {
           <AdminPanelView
             capacityProfiles={capacityProfiles}
             capacitySummary={capacitySummary}
+            e2eCoverageItems={e2eCoverageItems}
+            e2eCoverageSummary={e2eCoverageSummary}
             externalAuditItems={externalAuditReadinessItems}
             externalAuditSummary={externalAuditSummary}
             localizationSummary={localizationSummary}
@@ -1108,6 +1117,8 @@ function HandoffView({
 function AdminPanelView({
   capacityProfiles,
   capacitySummary,
+  e2eCoverageItems,
+  e2eCoverageSummary,
   externalAuditItems,
   externalAuditSummary,
   localizationSummary,
@@ -1118,6 +1129,8 @@ function AdminPanelView({
 }: {
   capacityProfiles: CapacityProfile[];
   capacitySummary: CapacityPlanSummary;
+  e2eCoverageItems: E2eCoverageItem[];
+  e2eCoverageSummary: E2eCoverageSummary;
   externalAuditItems: ExternalAuditReadinessItem[];
   externalAuditSummary: ExternalAuditReadinessSummary;
   localizationSummary: LocalizationReadinessSummary;
@@ -1151,6 +1164,7 @@ function AdminPanelView({
         <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
         <Metric label="Launch gates" value={`${productionReadiness.total}`} />
         <Metric label="External gaps" value={`${externalAuditSummary.productionBlocked}`} />
+        <Metric label="E2E coverage" value={`${e2eCoverageSummary.repoLocalCoveragePercent}%`} />
         <Metric label="Capacity profiles" value={`${capacitySummary.total}`} />
         <Metric label="Public claims" value={`${externalAuditSummary.publicClaimsAllowed}`} />
         <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
@@ -1278,6 +1292,28 @@ function AdminPanelView({
             <Metric label="Live enabled" value={`${productionReadiness.liveEnabled}`} />
           </div>
           <ProductionGateList gates={productionLaunchGates} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Verification</p>
+              <h3>End-to-end coverage</h3>
+            </div>
+            <StatusChip icon={ClipboardCheck} label="Repo-local 100%" tone="green" />
+          </div>
+          <div className="runtimeGrid" aria-label="End-to-end coverage readiness">
+            <Metric label="Journeys" value={`${e2eCoverageSummary.total}`} />
+            <Metric label="Covered" value={`${e2eCoverageSummary.covered}`} />
+            <Metric label="Browser smoke" value={`${e2eCoverageSummary.browserSmokeCovered}`} />
+            <Metric label="API/contracts" value={`${e2eCoverageSummary.contractTestCovered}`} />
+            <Metric label="Doctors" value={`${e2eCoverageSummary.doctorCovered}`} />
+            <Metric label="Live proofs" value={`${e2eCoverageSummary.liveProductionProofs}`} />
+          </div>
+          <E2eCoverageList items={e2eCoverageItems} />
+          <p className="panelNote">
+            The 100% figure is limited to repo-local reviewer workflows and CI-gated doctors; live production auth, real payments, direct printer orders, signed native artifacts, and external audits remain outside this proof.
+          </p>
         </article>
 
         <article className="toolPanel adminWide">
@@ -1529,6 +1565,27 @@ function ExternalAuditList({ items }: { items: ExternalAuditReadinessItem[] }) {
       ))}
     </div>
   );
+}
+
+function E2eCoverageList({ items }: { items: E2eCoverageItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className="adapterMini ready-local" key={item.id}>
+          <span>{item.surface}</span>
+          <strong>{item.label}</strong>
+          <small>{e2eAutomationLabel(item.automationType)}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function e2eAutomationLabel(type: E2eCoverageItem["automationType"]): string {
+  if (type === "browser-smoke") return "Browser smoke";
+  if (type === "contract-test") return "Contract test";
+  if (type === "ci-workflow") return "CI workflow";
+  return "Doctor";
 }
 
 function externalAuditStatusLabel(status: ExternalAuditReadinessItem["status"]): string {

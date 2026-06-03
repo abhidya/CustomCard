@@ -305,10 +305,13 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"localization:doctor\": \"node scripts/localization-doctor.mjs\"");
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
     expect(packageJson).toContain("\"external:audit:doctor\": \"node scripts/external-audit-readiness-doctor.mjs\"");
+    expect(packageJson).toContain("\"e2e:coverage:doctor\": \"node scripts/e2e-coverage-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
     expect(packageJson).toContain("\"capacity:doctor\": \"node scripts/capacity-plan-doctor.mjs\"");
     expect(viteConfig).toContain("src/capacityPlan.ts");
+    expect(viteConfig).toContain("src/e2eCoverage.ts");
+    expect(viteConfig).toContain("src/e2eCoverageData.mjs");
     expect(viteConfig).toContain("src/externalAuditReadiness.ts");
     expect(viteConfig).toContain("src/externalAuditReadinessData.mjs");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
@@ -369,6 +372,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run security:doctor");
     expect(workflow).toContain("npm run external:audit:doctor");
+    expect(workflow).toContain("npm run e2e:coverage:doctor");
     expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
     expect(workflow).toContain("npm run capacity:doctor");
@@ -679,6 +683,47 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "privacy", status: "ready" }),
         expect.objectContaining({ lane: "accessibility", status: "ready" }),
         expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
+
+  it("emits an end-to-end coverage readiness report", () => {
+    const output = execFileSync("npm", ["run", "e2e:coverage:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      journeys: number;
+      repoLocalCoveragePercent: number;
+      ciGated: number;
+      liveProductionProofs: number;
+      realOrdersEnabled: number;
+      externalNetworkCalls: number;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-e2e-coverage-doctor",
+      status: "ready",
+      journeys: 20,
+      repoLocalCoveragePercent: 100,
+      ciGated: 20,
+      liveProductionProofs: 0,
+      realOrdersEnabled: 0,
+      externalNetworkCalls: 0,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "matrix", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "tests", status: "ready" }),
+        expect.objectContaining({ lane: "docs", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" }),
+        expect.objectContaining({ lane: "safety", status: "ready" })
       ])
     );
   }, shellDoctorTimeoutMs);

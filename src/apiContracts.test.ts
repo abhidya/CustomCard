@@ -96,6 +96,15 @@ describe("api contracts", () => {
       publicClaimsAllowed: 0,
       externalArtifactsAttached: 0
     });
+    expect(summary.e2eCoverage).toMatchObject({
+      total: 20,
+      covered: 20,
+      repoLocalCoveragePercent: 100,
+      ciGated: 20,
+      liveProductionProofs: 0,
+      realOrdersEnabled: 0,
+      externalNetworkCalls: 0
+    });
     expect(summary.capacity).toMatchObject({
       total: 4,
       localProfiles: 1,
@@ -152,6 +161,14 @@ describe("api contracts", () => {
     expect(payload.externalAudit.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
+    expect(payload.e2eCoverage.summary).toMatchObject({
+      total: 20,
+      repoLocalCoveragePercent: 100,
+      liveProductionProofs: 0
+    });
+    expect(payload.e2eCoverage.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["customer-workspace-to-handoff", "admin-panel-readiness", "mobile-customer-shell"])
+    );
     expect(payload.capacity.summary).toMatchObject({
       total: 4,
       maxDailyCards: 12000,
@@ -193,6 +210,11 @@ describe("api contracts", () => {
         total: 15,
         publicClaimsAllowed: 0,
         externalArtifactsAttached: 0
+      },
+      e2eCoverage: {
+        total: 20,
+        repoLocalCoveragePercent: 100,
+        liveProductionProofs: 0
       }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({

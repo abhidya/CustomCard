@@ -349,6 +349,11 @@ The runtime remains fail-closed:
   `src/externalAuditReadiness.ts`, production-launch-gate mappings, admin/API
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
+- `npm run e2e:coverage:doctor` verifies End-to-end coverage in
+  `src/e2eCoverage.ts`, the 20-item repo-local end-to-end coverage matrix,
+  admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
+  "not live production proof" disclaimer while keeping live production proofs,
+  real orders, and live external network requirements at zero.
 - `npm run api:doctor` verifies the API/static server route map, provider
   summary, contract runtime, idempotent mutation contracts, and no-live-call
   posture.
@@ -406,6 +411,14 @@ Implemented checks:
   partner certification, and physical print certification. This register is not
   an external audit report; it is a launch evidence contract with every item
   blocking production and `publicClaimAllowed=false`.
+- `src/e2eCoverage.test.ts` and `npm run e2e:coverage:doctor` validate the
+  End-to-end coverage matrix for customer workspace/handoff, customer panel,
+  admin panel, adapter matrix, API contracts, memory runtime, Postgres runtime,
+  Postgres HTTP integration, account-auth storage/recovery, mobile shell, native
+  release profiles, artifact handoff, deployment IaC, security/privacy/
+  accessibility, external audit readiness, capacity/cost, localization/RTL,
+  printer pricing, demo reset, and worker readiness. The matrix reports 100%
+  repo-local coverage only; it is not live production proof.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.

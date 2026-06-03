@@ -127,6 +127,10 @@ it after each meaningful implementation pass.
   verifies the 15-item launch evidence register, production-gate mappings,
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
+- End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
+  which verifies the 20-item repo-local matrix, backing browser/API/mobile/infra
+  tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
+  production proofs, real orders, or live external network requirements.
 - `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
@@ -153,6 +157,7 @@ npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
 npm run external:audit:doctor
+npm run e2e:coverage:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -181,12 +186,13 @@ npm run check
 
 Result: passed.
 
-- Vitest: 23 test files passed, 154 tests passed.
-- Coverage: 21 core/API/persistence/infra/mobile test files passed, 145 tests passed; V8 report measured
-  90.98% statements, 84.02% branches, 97.1% functions, and 94.87% lines across
+- Vitest: 24 test files passed, 158 tests passed.
+- Coverage: 22 core/API/persistence/infra/mobile test files passed, 149 tests passed; V8 report measured
+  91.04% statements, 84.09% branches, 97.16% functions, and 94.87% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
+  `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
   `src/freeMvp.ts`, `src/localization.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -231,6 +237,16 @@ docs, CI, and safety lanes `ready`; it verified 15 external evidence items,
 15 production-blocking gaps, zero public production claims, zero attached
 external audit artifacts, admin/API surfaces, documentation signals, CI wiring,
 and the explicit "not an external audit report" boundary.
+
+```text
+npm run e2e:coverage:doctor
+```
+
+Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
+safety lanes `ready`; it verified 20 repo-local journeys, 100% repo-local
+coverage, 20 CI-gated coverage items, admin/API surfaces, backing browser/API/
+mobile/infra test files, documentation signals, zero live production proofs,
+zero real orders, and zero live external network requirements.
 
 ```text
 npm run provider:governance:doctor

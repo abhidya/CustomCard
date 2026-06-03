@@ -118,22 +118,23 @@ skeleton for the production path. It includes:
 6. Run `npm run provider:governance:doctor`.
 7. Run `npm run capacity:doctor`.
 8. Run `npm run external:audit:doctor`.
-9. Run `npm run printer:pricing:doctor`.
-10. Run `npm run localization:doctor`.
-11. Run `npm run api:doctor:memory`.
-12. Run `npm run api:doctor:postgres`.
-13. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-14. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-15. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-16. Run `npm run cloud:doctor`.
-17. Run `npm run artifact:doctor`.
-18. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-19. Run `npm run persistence:doctor`.
-20. Run `npm run demo:doctor`.
-21. Run the worker and mobile doctor commands in `docs/verification.md`.
-22. Run `npm run mobile:release:doctor`.
-23. Inspect the app with `npm run dev`.
-24. In the app, start a local workspace, scan the sample invite, generate a card,
+9. Run `npm run e2e:coverage:doctor`.
+10. Run `npm run printer:pricing:doctor`.
+11. Run `npm run localization:doctor`.
+12. Run `npm run api:doctor:memory`.
+13. Run `npm run api:doctor:postgres`.
+14. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+15. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+16. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+17. Run `npm run cloud:doctor`.
+18. Run `npm run artifact:doctor`.
+19. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+20. Run `npm run persistence:doctor`.
+21. Run `npm run demo:doctor`.
+22. Run the worker and mobile doctor commands in `docs/verification.md`.
+23. Run `npm run mobile:release:doctor`.
+24. Inspect the app with `npm run dev`.
+25. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

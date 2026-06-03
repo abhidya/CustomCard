@@ -80,6 +80,11 @@ environment configuration instead of static placeholders.
   cloud IAM, signed mobile artifact, retail certification, and physical print
   certification gaps. `publicClaimAllowed` and attached external artifacts stay
   at zero until real reports or certifications are attached.
+- End-to-end coverage matrix in `src/e2eCoverage.ts` and
+  `src/e2eCoverageData.mjs` that maps 20 repo-local reviewer journeys across
+  customer web, admin web, adapters, API, identity, mobile, infra, and
+  governance to browser smoke tests, contract tests, doctors, and CI gates.
+  This is repo-local coverage; live production proofs remain at zero.
 - Capacity profile planning for local-dev, cheap-droplet, cloud-native, and
   SaaS-scale runtime shapes through `src/capacityPlan.ts` and the shared
   executable data in `src/capacityPlanData.mjs`, with queue/object-store posture,
@@ -249,6 +254,7 @@ npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
 npm run external:audit:doctor
+npm run e2e:coverage:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -272,7 +278,8 @@ production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
 `src/artifactStore.ts`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
-`src/domain.ts`, `src/externalAuditReadiness.ts`,
+`src/domain.ts`, `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
+`src/externalAuditReadiness.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
 `src/localization.ts`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
 `src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
@@ -292,11 +299,14 @@ real orders disabled.
 register, production-gate mappings, admin/API surfaces, documentation, CI
 wiring, and the no-public-claim/no-attached-external-artifact boundary. It is
 not an external audit report.
+`npm run e2e:coverage:doctor` verifies the committed end-to-end coverage
+matrix, admin/API surfaces, backing test files, documentation, CI wiring, and
+the no-live-production-proof/no-real-order/no-live-network boundary.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
 accessibility baseline doctor, external audit readiness doctor, provider cost
-governance doctor, capacity profile doctor, printer pricing research doctor,
+governance doctor, end-to-end coverage doctor, capacity profile doctor, printer pricing research doctor,
 localization readiness doctor,
 memory-runtime API doctor,
 Postgres runtime contract doctor, live Postgres integration doctor, Postgres API
