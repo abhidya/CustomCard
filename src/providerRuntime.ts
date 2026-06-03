@@ -7,6 +7,7 @@ import {
   type ProviderCapability,
   type ProviderStatus
 } from "./providerCatalog";
+import { buildPrinterPricingComparison } from "./printerPricing";
 
 export type RuntimeMode = "local-result" | "prepared-request" | "blocked";
 export type HttpMethod = "GET" | "POST";
@@ -328,6 +329,17 @@ export function buildVendorRuntime(
         checks: [],
         errors: []
       })
+    };
+  }
+
+  if (adapter.id === "public-printer-pricing-research") {
+    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: buildPrinterPricingComparison(input.vendorId)
     };
   }
 

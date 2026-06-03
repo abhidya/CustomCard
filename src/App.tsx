@@ -67,6 +67,7 @@ import {
   type ProviderCapability
 } from "./providerCatalog";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
+import { buildPrinterPricingComparison, type PrinterPricingComparison } from "./printerPricing";
 
 type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
@@ -125,6 +126,7 @@ function App() {
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
   const validation = useMemo(() => validateCardDraft(draft), [draft]);
   const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
+  const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -372,6 +374,7 @@ function App() {
             onDownloadPanel={downloadPanel}
             onVendor={setVendorId}
             panels={draft.panels}
+            pricingComparison={pricingComparison}
             validation={validation}
             vendorId={vendorId}
           />
@@ -822,6 +825,7 @@ function HandoffView({
   onDownloadPanel,
   onVendor,
   panels,
+  pricingComparison,
   validation,
   vendorId
 }: {
@@ -832,9 +836,13 @@ function HandoffView({
   onDownloadPanel: (panel: CardPanel) => void;
   onVendor: (vendorId: VendorId) => void;
   panels: CardPanel[];
+  pricingComparison: PrinterPricingComparison;
   validation: CardValidation;
   vendorId: VendorId;
 }) {
+  const primaryPricing = pricingComparison.selectedVendorOptions[0];
+  const rankedOptions = pricingComparison.rankedKnownPrices.slice(0, 4);
+
   return (
     <section className="handoffLayout">
       <div className="toolPanel">
@@ -898,6 +906,37 @@ function HandoffView({
               <span key={reason}>{reason}</span>
             ))}
           </div>
+        </div>
+
+        <div className="pricingResearchBox">
+          <div className="handoffTitle compact">
+            <Printer size={19} />
+            <div>
+              <span>review-only public pricing</span>
+              <h3>{primaryPricing ? primaryPricing.subtotalLabel : "Manual quote required"}</h3>
+            </div>
+          </div>
+          {primaryPricing ? (
+            <p>
+              {primaryPricing.observation.vendorName} {primaryPricing.observation.productName} starts at{" "}
+              {formatCents(primaryPricing.observation.unitPriceCents)} each
+              {primaryPricing.pricedQuantity > primaryPricing.quantity
+                ? ` with a ${primaryPricing.observation.minimumQuantity}-card minimum`
+                : ""}.
+            </p>
+          ) : (
+            <p>Local print shops still need a manual quote before upload.</p>
+          )}
+          <div className="pricingOptionList">
+            {rankedOptions.map((estimate) => (
+              <div className="pricingOption" key={estimate.observation.id}>
+                <strong>{estimate.observation.vendorName}</strong>
+                <span>{estimate.subtotalLabel}</span>
+                <small>{estimate.observation.speed.replace(/-/g, " ")} / confirm in checkout</small>
+              </div>
+            ))}
+          </div>
+          <small>{pricingComparison.disclaimer}</small>
         </div>
       </div>
     </section>
@@ -1249,6 +1288,10 @@ function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {
     "prepared-request": "request contract ready"
   };
   return labels[mode];
+}
+
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }
 
 function formatOption(value: string): string {

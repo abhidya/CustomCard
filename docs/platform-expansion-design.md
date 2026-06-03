@@ -40,6 +40,9 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, and FedEx live ordering
   blocked.
+- Printer pricing: public Walgreens/CVS/FedEx 5x7 card observations ready for
+  manual comparison; live quotes, taxes, coupons, stock, and pickup windows
+  remain manual-confirmation work.
 - Notifications: local UI status ready; transactional email contract gated.
 - Cloud runtime: local Docker Compose ready; droplet Compose and Kubernetes
   manifests contract-ready.
@@ -87,6 +90,7 @@ The customer path stays cheap:
 - No live image-generation call.
 - No provider OAuth required.
 - No real vendor order.
+- No live printer quote; public pricing research remains review-only.
 - SVG export and manual handoff remain the working path.
 
 ## Admin Panel
@@ -102,6 +106,7 @@ The admin panel turns the adapter catalog into an operations surface:
 - Gated provider queue.
 - Cloud runtime adapters.
 - Blocked live-order vendors.
+- Public printer pricing research for manual Walgreens/CVS/FedEx comparison.
 
 The adapter matrix also shows each dry-run state and the first missing
 credential references. This is intentionally not a settings page that pretends
@@ -193,6 +198,9 @@ Implemented checks:
   catalog adapter, redacted no-network request contracts for chat/image
   providers, metadata-only import contracts, placeholder-secret rejection, free
   local fallbacks, and hard-blocked live vendor order adapters.
+- `src/printerPricing.test.ts` validates source-backed public price
+  observations, minimum-quantity totals, manual-confirmation requirements, and
+  the no-live-quote boundary.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer contract evidence.
@@ -218,7 +226,8 @@ Remaining high-risk work:
 
 - No live OAuth flow.
 - No live AI/image provider call.
-- No payment, quote, or live order adapter.
+- No payment, live quote, or live order adapter.
+- No live printer tax, coupon, stock, or pickup-window integration.
 - No live Postgres API integration test, production account auth flow, or account
   recovery.
 - No React Native render/emulator proof or native iOS/Android build artifact.

@@ -50,6 +50,8 @@ environment configuration instead of static placeholders.
 - Deterministic card copy and visual directions with no paid AI calls.
 - Four 1500 x 2100 SVG panels for front, inside-left, inside-right, and back.
 - Manual handoff checklist for Walgreens, CVS, FedEx Office, or a local printer.
+- Review-only public printer pricing comparison for Walgreens, CVS, and FedEx
+  manual handoff, with checkout confirmation still required.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, cloud runtime readiness, and
@@ -174,6 +176,7 @@ worker readiness, and mobile doctor on pushes to `main` and pull requests.
 - [Decisions](docs/decisions.md)
 - [Delivery process](docs/delivery-process.md)
 - [Platform expansion design](docs/platform-expansion-design.md)
+- [Printer pricing research](docs/printer-pricing-research.md)
 - [Verification](docs/verification.md)
 - [Completion audit](docs/completion-audit.md)
 - [Final package](docs/final-package.md)

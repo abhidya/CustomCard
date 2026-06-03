@@ -21,7 +21,10 @@ it after each meaningful implementation pass.
   placeholder-secret rejection, redacted chat/image request contracts,
   metadata-only import contracts, free local fallbacks, and hard-blocked live
   vendor ordering.
-- Provider adapter coverage currently includes 42 adapters: 10 ready-local, 21
+- Printer-pricing tests cover review-only public Walgreens/CVS/FedEx price
+  observations, minimum quantity math, source URLs, manual confirmation, and
+  `liveQuote: false`.
+- Provider adapter coverage currently includes 43 adapters: 11 ready-local, 21
   credential-gated, 8 contract-only, and 3 blocked.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
@@ -44,7 +47,7 @@ it after each meaningful implementation pass.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
-- Coverage is measured for core, API, persistence, orchestration, and mobile
+- Coverage is measured for core, API, pricing, persistence, orchestration, and mobile
   contract modules with V8 thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
@@ -78,13 +81,13 @@ npm run check
 
 Result: passed.
 
-- Vitest: 12 test files passed, 82 tests passed.
-- Coverage: 10 core/API/persistence/infra/mobile test files passed, 74 tests passed; V8 report measured
-  90.92% statements, 84.59% branches, 96.01% functions, and 93.96% lines across
+- Vitest: 13 test files passed, 89 tests passed.
+- Coverage: 11 core/API/persistence/infra/mobile test files passed, 81 tests passed; V8 report measured
+  91.17% statements, 85.01% branches, 96.21% functions, and 94.24% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
-  `src/persistenceContracts.ts`, `src/providerCatalog.ts`, `src/providerRuntime.ts`, and
-  `src/serviceKernel.ts`.
+  `src/persistenceContracts.ts`, `src/printerPricing.ts`,
+  `src/providerCatalog.ts`, `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -100,7 +103,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 12 routes, 5 idempotent mutation contracts,
-42 providers, 16 persistence tables, contract runtime mode, no live external
+43 providers, 16 persistence tables, contract runtime mode, no live external
 calls, no real vendor orders, no raw content storage, and no blockers.
 
 ```text
@@ -108,7 +111,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 12 routes, 5 idempotent mutation contracts, 42
+enforced, 2 configured sessions, 12 routes, 5 idempotent mutation contracts, 43
 providers, 16 persistence tables, no live external calls, no real vendor orders,
 and no blockers.
 
@@ -154,7 +157,7 @@ and cramped four-across panel previews.
 The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
-After the provider expansion pass the catalog contains 10 ready-local, 21
+After the provider expansion and pricing-research passes the catalog contains 11 ready-local, 21
 credential-gated, 8 contract-only, and 3 blocked adapters. The web mobile
 customer panel appears before the navigation rail with zero horizontal overflow
 at 1440px desktop and 390px mobile widths.
@@ -172,6 +175,8 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
 - No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
+- Public printer pricing is review-only and source-backed; no live quote, tax,
+  coupon, stock, pickup-window, or checkout test is claimed.
 - No live Postgres-backed API integration test or production account auth flow;
   memory runtime coverage proves the local auth/idempotency behavior only.
 - No live AI text-chat or image-generation provider test; provider runtime

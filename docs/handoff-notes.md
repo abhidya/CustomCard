@@ -12,6 +12,8 @@ skeleton for the production path. It includes:
 - A tested provider catalog covering local/free fallbacks plus credential-gated
   OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability, Replicate,
   notification, vendor, and cloud-runtime adapters.
+- Review-only public printer pricing research for Walgreens, CVS, and FedEx,
+  kept separate from live quote/order claims.
 - A tested customer mobile shell contract that mirrors the web customer panel at
   the product boundary.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
@@ -38,6 +40,8 @@ skeleton for the production path. It includes:
 - No live AI text/image generation.
 - No PNG/PDF export pipeline for physical production.
 - No live Walgreens/CVS/FedEx/Shutterfly/vendor quote or order API.
+- No live tax, coupon, stock, or pickup-window verification for public printer
+  prices.
 - No payment, refund, cancellation, or external order-confirmation integration.
 - No React Native render test, emulator run, native build, or signed mobile
   artifact.
@@ -68,7 +72,7 @@ CustomCard started from a last-minute physical wedding-card workflow and expande
 into a free local MVP plus a contract-first production skeleton for an event-aware
 card concierge. The current repo does not claim live production fulfillment. It
 proves the product workflow, customer/admin/API/persistence surfaces, memory
-auth/idempotency runtime behavior,
+auth/idempotency runtime behavior, public printer pricing research,
 provider-adapter readiness, domain boundaries, print contracts, order lifecycle,
 deployment shape, and safety gates with executable TypeScript, browser smoke
 tests, visual evidence, and infrastructure tests. Real external AI, OAuth, and

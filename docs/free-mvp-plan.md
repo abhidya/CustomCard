@@ -13,14 +13,15 @@ preserving the production integration gates from the earlier service skeleton.
 | Relationship memory | User-approved local memory records with add/delete controls. | `addMemory`, `removeMemory`, Memory view. |
 | Card generation | Deterministic template engine; no paid AI call. | `generateCardDraft`, `validateCardDraft`. |
 | Print export | Browser-generated 1500 x 2100 SVG panels. | `buildPanelSvg`, Handoff view. |
-| Vendor handoff | Manual checklist for Walgreens, CVS, FedEx Office, or local print shop. | `buildVendorHandoff`, Adapter view. |
+| Vendor handoff | Manual checklist for Walgreens, CVS, FedEx Office, or local print shop plus review-only public price comparison. | `buildVendorHandoff`, `src/printerPricing.ts`, Adapter view. |
 
 ## Blocked Production Paths
 
 - Production user auth and account recovery.
 - Gmail, Google Calendar, Outlook, or iCloud OAuth.
 - Paid AI text/image generation.
-- Live vendor quotes, payments, refunds, or real order placement.
+- Live vendor quotes, taxes, coupons, stock, pickup-window checks, payments,
+  refunds, or real order placement.
 - Physical print certification.
 - Legal, privacy, security, accessibility, and deployment audits.
 

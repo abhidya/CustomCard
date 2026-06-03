@@ -592,6 +592,20 @@ export const providerCatalog: ProviderAdapter[] = [
     detail: "Keeps fulfillment cheap and reviewable through manual upload."
   },
   {
+    id: "public-printer-pricing-research",
+    label: "Public printer pricing research",
+    provider: "Walgreens, CVS, FedEx public pages",
+    capability: "vendor-handoff",
+    lane: "Pricing research",
+    status: "ready-local",
+    cost: "free-local",
+    credentials: [],
+    safetyGates: ["Public pages only", "Manual confirmation required", "No checkout automation"],
+    roleSurface: ["customer", "admin"],
+    priority: 8.1,
+    detail: "Compares observed public 5x7 card prices without treating them as live quotes."
+  },
+  {
     id: "walgreens-live-order",
     label: "Walgreens live order",
     provider: "Walgreens",

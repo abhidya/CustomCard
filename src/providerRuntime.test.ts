@@ -281,6 +281,7 @@ describe("provider runtime contracts", () => {
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
     const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
+    const pricing = buildVendorRuntime("public-printer-pricing-research", { vendorId: "walgreens" });
 
     expect(chat.mode).toBe("local-result");
     expect(chat.localResult?.length).toBeGreaterThan(0);
@@ -289,6 +290,12 @@ describe("provider runtime contracts", () => {
     expect(image.localResult?.width).toBe(1500);
     expect(vendor.mode).toBe("local-result");
     expect(vendor.localResult).toMatchObject({ canPlaceRealOrder: false, realOrdersEnabled: false });
+    expect(pricing.mode).toBe("local-result");
+    expect(pricing.localResult).toMatchObject({
+      liveQuote: false,
+      selectedVendorId: "walgreens",
+      disclaimer: expect.stringContaining("not live quotes")
+    });
   });
 
   it("never prepares live vendor order requests even with credentials and gates", () => {
