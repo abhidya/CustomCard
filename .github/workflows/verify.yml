@@ -78,7 +78,15 @@ jobs:
         run: npm run api:doctor:postgres
 
       - name: Validate live Postgres migration/runtime integration
-        run: npm run api:doctor:postgres:live
+        run: |
+          for attempt in 1 2 3 4; do
+            if npm run api:doctor:postgres:live; then
+              exit 0
+            fi
+            echo "Live Postgres integration doctor failed on attempt ${attempt}; retrying after a short service settle delay."
+            sleep $((attempt * 3))
+          done
+          npm run api:doctor:postgres:live
 
       - name: Validate Postgres API HTTP integration
         run: |

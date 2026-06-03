@@ -66,6 +66,7 @@ let finalPersistence = {
 };
 let exitCode = 0;
 let runtime;
+let doctorPool;
 
 try {
   await runCheck("connects to configured Postgres database", async () => {
@@ -73,11 +74,15 @@ try {
   });
 
   await runCheck("creates isolated doctor database", async () => {
-    await adminPool.query(`CREATE DATABASE ${quoteIdentifier(doctorDatabase)}`);
+    await retryOperation(() => adminPool.query(`CREATE DATABASE ${quoteIdentifier(doctorDatabase)}`));
   });
 
-  const doctorPool = new pg.Pool(poolConfig(doctorUrl));
+  doctorPool = new pg.Pool(poolConfig(doctorUrl));
   try {
+    await runCheck("connects to isolated doctor database", async () => {
+      await waitForPostgres(doctorPool);
+    });
+
     await runCheck("applies initial migration to live Postgres", async () => {
       const migrationSql = await readFile("infra/migrations/001_initial_schema.sql", "utf8");
       await doctorPool.query(migrationSql);
@@ -414,12 +419,25 @@ async function dropDoctorDatabase(pool, databaseName) {
      WHERE datname = $1 AND pid <> pg_backend_pid()`,
     [databaseName]
   );
-  await pool.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
+  await retryOperation(() => pool.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`));
+}
+
+async function retryOperation(operation) {
+  let lastError;
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      await delay(Math.min(1000, attempt * 150));
+    }
+  }
+  throw lastError;
 }
 
 async function waitForPostgres(pool) {
   let lastError;
-  for (let attempt = 1; attempt <= 12; attempt += 1) {
+  for (let attempt = 1; attempt <= 30; attempt += 1) {
     try {
       await pool.query("SELECT 1");
       return;
