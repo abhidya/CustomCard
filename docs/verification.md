@@ -89,6 +89,10 @@ it after each meaningful implementation pass.
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
   app/worker writer IAM, safe defaults, and runtime env outputs without live
   cloud calls.
+- `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
+  iOS/Android identifiers, development/preview/production build profiles,
+  environment-sourced API URL, disabled real-order kill switch, and no hardcoded
+  production API endpoint.
 - Coverage is measured for core, API, artifact handoff/store, pricing, print
   export, persistence, orchestration, and mobile contract modules with V8
   thresholds enforced by `npm run check`: 90%
@@ -120,6 +124,7 @@ npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
+npm run mobile:release:doctor
 ```
 
 ## Latest Result
@@ -132,8 +137,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 126 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 118 tests passed; V8 report measured
+- Vitest: 18 test files passed, 127 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 119 tests passed; V8 report measured
   90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -304,6 +309,15 @@ Result: passed. Mobile shell configuration resolved from environment and the
 customer experience contract was present.
 
 ```text
+npm run mobile:release:doctor
+```
+
+Result: passed. Mobile release doctor reported iOS and Android platforms,
+development/preview/production native build profiles, environment-sourced API
+URL handling, `REAL_ORDER_KILL_SWITCH=disabled`, no live provider calls, no real
+orders, and no signed artifact built.
+
+```text
 Visual inspection
 ```
 
@@ -361,8 +375,9 @@ documentation claims found during the audit were corrected.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.
-- No React Native render test, mobile emulator run, mobile native build, or
-  signed iOS/Android artifact.
+- No React Native render test, mobile emulator run, actual EAS/native build, or
+  signed iOS/Android artifact; EAS profile and release-doctor contracts are
+  covered.
 - Provider docs were checked at the contract/link level only; no vendor sandbox
   credentials or market/commercial terms were verified.
 - Browser UI smoke tests are not included in the V8 unit coverage percentages;

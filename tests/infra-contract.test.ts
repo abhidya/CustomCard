@@ -291,6 +291,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
+    expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
     expect(viteConfig).toContain("src/artifactHandoff.ts");
@@ -359,6 +360,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");
+    expect(workflow).toContain("npm run mobile:release:doctor");
     expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");
     expect(workflow).toContain("OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32");
     expect(workflow).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES: 15");
@@ -542,15 +544,26 @@ describe("production infrastructure contract", () => {
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
     const mobilePackage = read("apps/mobile/package.json");
     const appConfig = read("apps/mobile/app.config.js");
+    const easConfig = read("apps/mobile/eas.json");
+    const releaseDoctor = read("apps/mobile/scripts/release-doctor.mjs");
     const mobileApp = read("apps/mobile/src/App.tsx");
     const mobileExperience = read("apps/mobile/src/customerExperience.ts");
 
     expect(mobilePackage).toContain("\"expo\"");
     expect(mobilePackage).toContain("\"react-native\"");
+    expect(mobilePackage).toContain("\"release:doctor\": \"node ./scripts/release-doctor.mjs\"");
     expect(appConfig).toContain('platforms: ["ios", "android"]');
     expect(appConfig).toContain("process.env.CUSTOMCARD_API_BASE_URL");
     expect(appConfig).not.toContain("${CUSTOMCARD_API_BASE_URL}");
     expect(appConfig).toContain("realOrderKillSwitch");
+    expect(easConfig).toContain("\"developmentClient\": true");
+    expect(easConfig).toContain("\"channel\": \"production\"");
+    expect(easConfig).toContain("\"autoIncrement\": true");
+    expect(easConfig).toContain("\"REAL_ORDER_KILL_SWITCH\": \"disabled\"");
+    expect(easConfig).not.toContain("CUSTOMCARD_API_BASE_URL");
+    expect(releaseDoctor).toContain("customcard-mobile-release-doctor");
+    expect(releaseDoctor).toContain("signedArtifactBuilt: false");
+    expect(releaseDoctor).toContain("nativeBuildProfiles");
     expect(mobileApp).toContain("CustomCard");
     expect(mobileApp).toContain("Customer mobile panel");
     expect(mobileApp).toContain("Text interface");

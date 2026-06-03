@@ -118,3 +118,6 @@ jobs:
 
       - name: Validate mobile shell contract
         run: npm --prefix apps/mobile run doctor
+
+      - name: Validate mobile native release contract
+        run: npm run mobile:release:doctor

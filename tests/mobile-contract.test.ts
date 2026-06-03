@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   mobileChatTranscript,
@@ -61,6 +62,64 @@ describe("mobile customer experience contract", () => {
       stderr = String((error as { stderr?: string }).stderr);
     }
     expect(stderr).toContain("kill switch must resolve to disabled");
+  });
+
+  it("ships a native release profile gate without hardcoded production API endpoints", () => {
+    const eas = JSON.parse(readFileSync("apps/mobile/eas.json", "utf8")) as {
+      build: Record<string, {
+        channel?: string;
+        distribution?: string;
+        developmentClient?: boolean;
+        autoIncrement?: boolean;
+        env?: Record<string, string>;
+        ios?: { simulator?: boolean };
+        android?: { buildType?: string };
+      }>;
+    };
+    const releaseOutput = execFileSync("npm", ["run", "mobile:release:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(releaseOutput) as {
+      service: string;
+      status: string;
+      platforms: string[];
+      nativeBuildProfiles: string[];
+      signedArtifactBuilt: boolean;
+      liveProviderCalls: boolean;
+      realOrdersEnabled: boolean;
+      blockers: unknown[];
+    };
+
+    expect(eas.build.development).toMatchObject({
+      developmentClient: true,
+      distribution: "internal",
+      channel: "development",
+      env: { REAL_ORDER_KILL_SWITCH: "disabled" }
+    });
+    expect(eas.build.preview).toMatchObject({
+      distribution: "internal",
+      channel: "preview",
+      ios: { simulator: true },
+      android: { buildType: "apk" },
+      env: { REAL_ORDER_KILL_SWITCH: "disabled" }
+    });
+    expect(eas.build.production).toMatchObject({
+      channel: "production",
+      autoIncrement: true,
+      env: { REAL_ORDER_KILL_SWITCH: "disabled" }
+    });
+    expect(JSON.stringify(eas)).not.toContain("CUSTOMCARD_API_BASE_URL");
+    expect(report).toMatchObject({
+      service: "customcard-mobile-release-doctor",
+      status: "ready",
+      platforms: ["ios", "android"],
+      nativeBuildProfiles: ["development", "preview", "production"],
+      signedArtifactBuilt: false,
+      liveProviderCalls: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
   });
 
   it("flags incomplete or unsafe mobile customer models before they reach the app", () => {

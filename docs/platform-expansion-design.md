@@ -332,9 +332,10 @@ Implemented checks:
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
   contract API doctor, memory API doctor, Postgres runtime contract doctor, live
   Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
-  artifact-store doctor, live MinIO/S3-compatible artifact doctor, persistence
-  doctor, demo reset doctor, worker readiness, and mobile doctor for pushes to
-  `main` and pull requests.
+  cloud artifact IaC doctor, artifact-store doctor, live MinIO/S3-compatible
+  artifact doctor, persistence doctor, demo reset doctor, worker readiness,
+  mobile doctor, and mobile release doctor for pushes to `main` and pull
+  requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact handoff/store, pricing, print-export, persistence, orchestration, and
   mobile contract modules: 90% statements, 80% branches, 90% functions, and 90%
@@ -357,7 +358,8 @@ Remaining high-risk work:
   account-token verification; isolated live Postgres route-auth/migration/runtime
   integration, process-level API HTTP verification, and account identity/recovery
   storage are covered by doctors.
-- No React Native render/emulator proof or native iOS/Android build artifact.
+- No React Native render/emulator proof or actual native iOS/Android build
+  artifact; EAS profiles and release doctor are covered.
 - No cloud deployment proof against a real cluster.
 - Hosted GitHub Actions verification exists for main pushes, but there is still
   no live deployment proof against a real cluster.

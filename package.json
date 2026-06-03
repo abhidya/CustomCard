@@ -26,7 +26,8 @@
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",
     "runtime:doctor": "node scripts/validate-runtime-env.mjs",
-    "worker": "node scripts/worker.mjs"
+    "worker": "node scripts/worker.mjs",
+    "mobile:release:doctor": "npm --prefix apps/mobile run release:doctor"
   },
   "dependencies": {
     "lucide-react": "^1.17.0",

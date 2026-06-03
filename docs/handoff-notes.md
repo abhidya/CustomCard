@@ -68,8 +68,8 @@ skeleton for the production path. It includes:
   integration; payment provider coverage is sandbox-contract only.
 - No live observability ingestion, alert routing, retention enforcement, or
   incident-response drill; observability provider coverage is contract-only.
-- No React Native render test, emulator run, native build, or signed mobile
-  artifact.
+- No React Native render test, emulator run, actual EAS/native build, or signed
+  mobile artifact; EAS profiles and release doctor are covered.
 - No physical print certification.
 - No legal or security review.
 - No deployment has been performed in this pass.
@@ -94,8 +94,9 @@ skeleton for the production path. It includes:
 14. Run `npm run persistence:doctor`.
 15. Run `npm run demo:doctor`.
 16. Run the worker and mobile doctor commands in `docs/verification.md`.
-17. Inspect the app with `npm run dev`.
-18. In the app, start a local workspace, scan the sample invite, generate a card,
+17. Run `npm run mobile:release:doctor`.
+18. Inspect the app with `npm run dev`.
+19. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

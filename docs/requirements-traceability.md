@@ -50,13 +50,14 @@ Requirement types:
 - Regional vendor-share policy blocks sharing without approval.
 - Runtime config separates cheap droplet/dev behavior from cloud/prod behavior.
 - Infra manifests include app, worker, database, queue, storage, migrations, probes, and kill-switch controls.
-- Deployment doctor reports local-dev, cheap-droplet, cloud-native, runtime, and
-  data lanes ready, and the droplet app/worker share persistent object storage.
+- Deployment doctor reports local-dev, cheap-droplet, cloud-native,
+  cloud-storage, runtime, and data lanes ready, and the droplet app/worker share
+  persistent object storage.
 - CI workflow runs full repository check, deployment doctor, contract API
   doctor, memory API doctor, Postgres runtime contract doctor, live Postgres
-  integration doctor, Postgres API HTTP doctor, account-auth doctor, persistence
-  doctor, worker readiness, and mobile doctor on pushes to `main` and pull
-  requests.
+  integration doctor, Postgres API HTTP doctor, account-auth doctor, cloud
+  artifact IaC doctor, persistence doctor, worker readiness, mobile doctor, and
+  mobile release doctor on pushes to `main` and pull requests.
 - API server exposes tested health, route catalog, customer/admin bootstrap,
   mobile bootstrap, provider readiness, and idempotent mutation contract
   endpoints with real orders and external calls disabled.
@@ -134,8 +135,8 @@ Requirement types:
 - No actual image generation or physical print QA; local SVG/PDF/manifest export,
   signed artifact handoff contracts, temporary filesystem object-store write/read
   verification, injected S3-compatible write/read contract verification, and live
-  CI/local MinIO/S3-compatible doctor coverage are covered, but production cloud
-  bucket policy/IAM is not.
+  CI/local MinIO/S3-compatible doctor coverage are covered, and static AWS
+  artifact bucket/IAM is covered; live-applied production cloud IAM is not.
 - No live text-chat model call.
 - No live payment charge/refund or vendor quote/order/refund integration.
 - No live observability ingestion, alert routing, retention enforcement, or
@@ -148,5 +149,6 @@ Requirement types:
 - No real droplet or Kubernetes deployment has been executed.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment has been executed.
-- No React Native render test, emulator run, native build, or signed mobile
-  artifact has been produced.
+- No React Native render test, emulator run, actual EAS/native build, or signed
+  mobile artifact has been produced; EAS profiles and release doctor are
+  covered.

@@ -100,10 +100,10 @@
 - CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
   deployment doctor, contract API doctor, memory-runtime API doctor, Postgres
   runtime contract doctor, live Postgres integration doctor, Postgres API HTTP
-  doctor, account-auth storage/recovery doctor, artifact-store write/read
-  doctor, live MinIO/S3-compatible artifact doctor, persistence doctor, demo
-  reset doctor, worker readiness, and the mobile doctor on pushes to `main` and
-  pull requests.
+  doctor, account-auth storage/recovery doctor, cloud artifact IaC doctor,
+  artifact-store write/read doctor, live MinIO/S3-compatible artifact doctor,
+  persistence doctor, demo reset doctor, worker readiness, mobile doctor, and
+  mobile release doctor on pushes to `main` and pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
   queue, memory review, local chat, image/render state, manual handoff, and
   real-order kill-switch validation.
@@ -119,7 +119,7 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 126 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 127 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 83.65% branches, 97.19% functions, 95.25% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
@@ -136,8 +136,9 @@
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 12 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
+| Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, and mobile gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, and mobile native release gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -150,7 +151,7 @@
 | Build the main free reviewer workflow. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. | Covered |
 | Add customer/admin panels. | `CustomerPanelView`, `AdminPanelView`, runtime readiness UI, `tests/app-smoke.test.ts`, screenshots. | Covered |
 | Catalog broad text, image, integration, vendor, pricing, print-export, and cloud adapters. | `src/providerCatalog.ts`, `src/providerRuntime.ts`, `src/printerPricing.ts`, `src/printExport.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`, `scripts/artifact-store-s3-live-doctor.mjs`, `src/providerCatalog.test.ts`, `src/providerRuntime.test.ts`, `src/printerPricing.test.ts`, `src/printExport.test.ts`, `src/artifactHandoff.test.ts`, `src/artifactStore.test.ts`, `docs/platform-expansion-design.md`, `docs/printer-pricing-research.md`. | Covered as no-network contracts, review-only pricing observations with source freshness, local export packages, signed artifact handoff contracts, temporary filesystem object-store write/read verification, injected S3-compatible write/read contract verification, and live MinIO/S3-compatible write/read doctor coverage; production cloud calls gated |
-| Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell; native build not covered |
+| Add customer mobile app surface. | `apps/mobile/src/customerExperience.ts`, `apps/mobile/src/App.tsx`, `apps/mobile/eas.json`, `apps/mobile/scripts/release-doctor.mjs`, `apps/mobile/README.md`, `tests/infra-contract.test.ts`, `tests/mobile-contract.test.ts`. | Covered as tested shell plus native release profile contract; actual native build artifact not covered |
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
@@ -180,8 +181,9 @@
 15. Run `npm run persistence:doctor`.
 16. Run `npm run demo:doctor`.
 17. Run the worker and mobile doctor commands in `docs/verification.md`.
-18. Inspect `.github/workflows/verify.yml`.
-19. Inspect screenshots in `docs/evidence/` and known gaps in
+18. Run `npm run mobile:release:doctor`.
+19. Inspect `.github/workflows/verify.yml`.
+20. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -209,8 +211,8 @@
 - No real droplet or Kubernetes deployment execution evidence.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment execution evidence is claimed.
-- No React Native render test, emulator run, native build, or signed mobile
-  artifact.
+- No React Native render test, emulator run, actual EAS/native build, or signed
+  mobile artifact; native release profiles and release doctor are covered.
 - No physical print certification.
 - No legal, security, privacy, or accessibility audit.
 - No browser UI unit-coverage instrumentation; UI remains covered by smoke and

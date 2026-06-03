@@ -93,6 +93,9 @@ environment configuration instead of static placeholders.
   audit logs, and 12 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
+- Tested Expo/EAS native release contract for development, preview, and
+  production iOS/Android build profiles with API URL supplied by environment
+  and real orders disabled.
 - Tested AWS artifact-store IaC contract for an encrypted, versioned,
   private-by-default S3 bucket, prefix-scoped app/worker IAM policy, lifecycle
   cleanup, and runtime env outputs.
@@ -200,6 +203,7 @@ npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
+npm run mobile:release:doctor
 ```
 
 `npm run check` now runs the full test suite, contract coverage thresholds, the
@@ -225,8 +229,8 @@ contract doctor, live Postgres integration doctor, Postgres API HTTP doctor,
 cloud artifact IaC doctor, account-auth storage/recovery doctor,
 artifact-store filesystem plus
 S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
-persistence doctor, demo reset doctor, worker readiness, and mobile doctor on
-pushes to `main` and pull requests.
+persistence doctor, demo reset doctor, worker readiness, mobile doctor, and
+mobile native release doctor on pushes to `main` and pull requests.
 
 ## Project Docs
 
@@ -253,8 +257,9 @@ generation, live vendor quotes, live payment charges/refunds, direct
 retail-printer ordering, live telemetry ingestion/alerting, live-applied cloud
 bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
 deployed production Postgres API integration, production hosted account-token
-verification outside the isolated live Postgres doctors, native mobile builds,
-deployment evidence, legal/security review, or physical print certification. Those paths are
+verification outside the isolated live Postgres doctors, a produced/signed
+native mobile artifact or emulator render proof, deployment evidence,
+legal/security review, or physical print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system
 shape without mistaking the free local MVP for a certified production
 fulfillment service.
