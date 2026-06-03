@@ -32,7 +32,7 @@ Acceptance criteria:
 Goal: Create the first runnable web app.
 
 Recommended shape:
-1. Web app. This repo currently uses Vite/React for the service console; a later
+1. Web app. This repo currently uses Vite/React for the free local MVP; a later
    Next.js or Remix move is optional only if server-rendered routes become useful.
 2. PostgreSQL for core relational data.
 3. Object storage for generated assets.
@@ -49,7 +49,7 @@ Initial screens:
 
 Acceptance criteria:
 1. App runs locally.
-2. Basic auth/user model exists.
+2. Local demo auth/user model exists.
 3. User can create a manual card project without email integration.
 
 ## Milestone 2: Manual Card Project Flow
@@ -71,6 +71,11 @@ Acceptance criteria:
 3. User can select a tone and edit text.
 4. System exports four print-ready panels.
 5. Exported panels pass dimension and safe-zone checks.
+
+Current status: covered for the free local MVP with manual/ICS import,
+deterministic card templates, four SVG panels, and manual vendor handoff.
+Persistent server-side projects and production export packaging remain future
+work.
 
 ## Milestone 3: Gmail and Calendar Ingestion
 

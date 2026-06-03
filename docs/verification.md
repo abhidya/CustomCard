@@ -12,12 +12,14 @@ it after each meaningful implementation pass.
   creation, print validation, order lifecycle transitions, regional policy, and
   runtime config.
 - UI smoke tests exercise source extraction, weak-input blocking, mobile
-  horizontal overflow, and service-slice visibility when Chrome is available.
+  horizontal overflow, the local auth -> import -> studio -> handoff workflow,
+  and adapter readiness when Chrome is available.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, and the mobile shell.
 - Runtime doctor fails closed on missing or placeholder required environment
   variables.
 - Real ordering remains disabled.
+- Free local MVP workflow renders in desktop and mobile visual checks.
 
 ## Fresh Commands To Run
 
@@ -37,7 +39,7 @@ npm run check
 
 Result: passed.
 
-- Vitest: 4 test files passed, 35 tests passed.
+- Vitest: 5 test files passed, 40 tests passed.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -53,6 +55,20 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 ```
 
 Result: passed. Mobile shell configuration resolved from environment.
+
+```text
+Visual inspection
+```
+
+Result: passed with local rendered screenshots.
+
+- Desktop opportunity screen: `docs/evidence/customcard-desktop.png`.
+- Mobile opportunity screen after responsive fix: `docs/evidence/customcard-mobile.png`.
+- Desktop card studio screen: `docs/evidence/customcard-studio.png`.
+- Desktop manual handoff screen: `docs/evidence/customcard-handoff.png`.
+
+The visual pass caught and fixed two layout issues: mobile status-chip clipping
+and cramped four-across panel previews.
 
 ## Known Verification Gaps
 

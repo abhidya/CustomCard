@@ -98,52 +98,55 @@ describeWithChrome("CustomCard UI smoke", () => {
     }
   });
 
-  it("updates extraction facts and blocks weak input from fake print success", async () => {
+  it("runs local auth, free import, card studio, and manual handoff", async () => {
     const sessionId = await createPage(1280, 900);
     const result = await evaluate(
       sessionId,
       `(async () => {
-        const runExtraction = async (text) => {
-          const textarea = document.querySelector("textarea");
+        const clickByText = async (label) => {
           const button = [...document.querySelectorAll("button")].find((node) =>
-            node.textContent.includes("Run extraction")
+            node.textContent.includes(label)
           );
-          const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set;
-          setter.call(textarea, text);
-          textarea.dispatchEvent(new Event("input", { bubbles: true }));
+          if (!button) throw new Error("Missing button: " + label);
           button.click();
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          const operationalRun = [...document.querySelectorAll(".inspectorBlock")]
-            .map((node) => node.textContent)
-            .find((textContent) => textContent.includes("Operational run"));
-          return {
-            facts: [...document.querySelectorAll(".factCard strong")].map((node) => node.textContent),
-            matchedCards: document.querySelectorAll(".storyFrame.matched").length,
-            operationalRun
-          };
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         };
+
+        await clickByText("Start local workspace");
+        await clickByText("Scan free import");
+        const opportunityText = document.body.textContent;
+        await clickByText("Generate card");
+        const studioText = document.body.textContent;
+        const panelCount = document.querySelectorAll(".panelPreview").length;
+        const validationRows = [...document.querySelectorAll(".validationPanel span")].map((node) => node.textContent);
+        await clickByText("Prepare handoff");
         return {
-          rich: await runExtraction(
-            "Sara and Ahmed wedding tomorrow. Walgreens pickup. 5x7 1500x2100 300 DPI. GDPR privacy and wrong store recovery."
-          ),
-          weak: await runExtraction("Please make something nice.")
+          h1: document.querySelector("h1")?.textContent,
+          opportunityText,
+          studioText,
+          panelCount,
+          validationRows,
+          handoffText: document.body.textContent,
+          downloadTiles: document.querySelectorAll(".downloadTile").length,
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth
         };
       })()`
     );
 
-    expect(result.rich.facts).toEqual(
-      expect.arrayContaining(["wedding", "Sara and Ahmed", "Walgreens", "5x7, 1500x2100, 300 DPI"])
-    );
-    expect(result.rich.matchedCards).toBeGreaterThan(0);
-    expect(result.rich.operationalRun).toContain("5 facts");
-    expect(result.rich.operationalRun).toContain("4 mock assets");
-    expect(result.rich.operationalRun).toContain("mock_packet");
-
-    expect(result.weak.facts).toEqual(["No strong product signal detected"]);
-    expect(result.weak.matchedCards).toBe(0);
-    expect(result.weak.operationalRun).toContain("1 facts");
-    expect(result.weak.operationalRun).toContain("0 mock assets");
-    expect(result.weak.operationalRun).toContain("blocked");
+    expect(result.h1).toBe("CustomCard");
+    expect(result.opportunityText).toContain("Signed in locally");
+    expect(result.opportunityText).toContain("Anniversary card for Sara and Ahmed");
+    expect(result.studioText).toContain("Card draft");
+    expect(result.panelCount).toBe(4);
+    expect(result.validationRows.join(" ")).toContain("5x7 print size");
+    expect(result.validationRows.join(" ")).toContain("Paid APIs");
+    expect(result.handoffText).toContain("Manual handoff");
+    expect(result.handoffText).toContain("Download SVG set");
+    expect(result.handoffText).toContain("Real orders disabled");
+    expect(result.handoffText).toContain("No live vendor quote or order API is connected.");
+    expect(result.downloadTiles).toBe(4);
+    expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
   it("keeps the mobile first viewport from overflowing horizontally", async () => {
@@ -158,37 +161,39 @@ describeWithChrome("CustomCard UI smoke", () => {
       }))()`
     );
 
-    expect(layout.h1).toBe("CustomCard service console");
+    expect(layout.h1).toBe("CustomCard");
     expect(layout.scrollWidth).toBe(layout.clientWidth);
     expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
   }, 30000);
 
-  it("exposes the executable service slice for imports, memory, recovery, and policy gates", async () => {
+  it("exposes ready free adapters and blocked production integrations", async () => {
     const sessionId = await createPage(1280, 900);
     const result = await evaluate(
       sessionId,
       `(async () => {
-        const serviceButton = [...document.querySelectorAll("button")].find((node) =>
-          node.textContent.includes("Service slice")
+        const adaptersButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent.includes("Adapters")
         );
-        serviceButton.click();
+        adaptersButton.click();
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         return {
           heading: document.querySelector("h2")?.textContent,
           text: document.body.textContent,
-          readinessRows: document.querySelectorAll(".runtimePanel .qualityRow").length,
+          readyRows: [...document.querySelectorAll(".adapterRow.ready")].length,
+          blockedRows: [...document.querySelectorAll(".adapterRow.blocked")].length,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth
         };
       })()`
     );
 
-    expect(result.heading).toContain("Provider import, memory, lifecycle, recovery, and readiness");
-    expect(result.text).toContain("Provider import");
-    expect(result.text).toContain("Memory store");
-    expect(result.text).toContain("switch to one-hour pickup");
-    expect(result.text).toContain("US vendor_share: blocked");
-    expect(result.readinessRows).toBeGreaterThanOrEqual(4);
+    expect(result.heading).toContain("Adapter readiness");
+    expect(result.text).toContain("Local demo auth");
+    expect(result.text).toContain("ICS / invite paste");
+    expect(result.text).toContain("Gmail / Google Calendar OAuth");
+    expect(result.text).toContain("Live quote / payment / order APIs");
+    expect(result.readyRows).toBeGreaterThanOrEqual(6);
+    expect(result.blockedRows).toBeGreaterThanOrEqual(3);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
@@ -205,6 +210,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     const loaded = waitEvent("Page.loadEventFired", sessionId, 10000);
     await send("Page.navigate", { url: baseUrl }, sessionId);
     await loaded.catch(() => undefined);
+    await evaluate(sessionId, "new Promise((resolve) => requestAnimationFrame(() => resolve(true)))");
+    await evaluate(sessionId, "localStorage.clear(); true");
+    const reloaded = waitEvent("Page.loadEventFired", sessionId, 10000);
+    await send("Page.reload", {}, sessionId);
+    await reloaded.catch(() => undefined);
     await evaluate(sessionId, "new Promise((resolve) => requestAnimationFrame(() => resolve(true)))");
     return sessionId;
   }

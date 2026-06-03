@@ -25,8 +25,9 @@ repo state. It is process evidence, not marketing.
 ## Design And Decision Records
 
 - Recorded conservative implementation defaults in `docs/decisions.md`.
-- Chose a contract-first service skeleton because the prompt asks for a
-  production-shaped service but no live provider/vendor access was available.
+- Chose a free local MVP plus contract-first service skeleton because the prompt
+  asks for a production-shaped service but no live provider/vendor access was
+  available.
 - Kept provider, AI, database, deployment, and vendor choices behind typed
   contracts or runtime configuration where practical.
 
@@ -38,7 +39,7 @@ repo state. It is process evidence, not marketing.
   roadmap.
 - Architecture lane: modeled local prototype, cheap droplet, and SaaS-scale
   profiles.
-- Implementation lane: built the Vite/React service console, typed domain model,
+- Implementation lane: built the Vite/React free local MVP, typed domain model,
   service kernel, infrastructure skeleton, and mobile shell boundary.
 - Verification lane: added domain, service-kernel, UI smoke, and infra contract
   tests.
@@ -58,10 +59,13 @@ Local `.omx` logs show the repo moved through these phases:
 - A service-kernel and infra pass adding provider import contracts, approved
   memory, render validation, order lifecycle, regional policy, migrations, and
   deployment manifests.
+- A free-MVP polish pass adding local demo auth, manual/ICS import, deterministic
+  card generation, SVG export, manual vendor handoff, and adapter readiness.
 - Final verification and repository check-in.
 
 ## Evidence Boundary
 
-The current repo demonstrates a reviewable skeleton. It does not demonstrate
-live OAuth, live AI generation, live vendor quote/order behavior, deployment,
-payment, legal approval, security review, or physical print certification.
+The current repo demonstrates a reviewable free local MVP and production
+skeleton. It does not demonstrate production auth, live OAuth, live AI
+generation, live vendor quote/order behavior, deployment, payment, legal
+approval, security review, or physical print certification.

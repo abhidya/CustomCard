@@ -55,6 +55,20 @@ The smallest useful version should focus on a single end-to-end happy path:
 7. Manual download or vendor upload handoff.
 8. Card history and editable memory records.
 
+## Free Local MVP Implemented In This Repo
+
+The current delivered app uses free substitutes for the external pieces above:
+
+1. Local demo workspace instead of production auth.
+2. Manual invite or `.ics` paste instead of live email/calendar OAuth.
+3. Deterministic opportunity detection and card templates instead of paid AI.
+4. Browser SVG export instead of PNG/PDF production pipeline.
+5. Manual Walgreens/CVS/FedEx/local-printer handoff instead of live ordering.
+
+These choices keep the core workflow reviewable while leaving production auth,
+OAuth, AI, payment, live quotes, and physical certification as explicit future
+work.
+
 ## Not In V1
 
 1. Fully automated card ordering.

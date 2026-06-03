@@ -1,742 +1,883 @@
 import {
-  AlertTriangle,
-  ArchiveRestore,
-  Boxes,
+  Calendar,
   Check,
-  ChevronRight,
-  ClipboardList,
-  Cpu,
-  Database,
-  FileText,
-  Gauge,
-  GitBranch,
-  Globe2,
-  Layers3,
+  CircleCheck,
+  ClipboardCheck,
+  Download,
+  FileDown,
+  Heart,
+  KeyRound,
   Lock,
-  Map,
+  PackageCheck,
+  PanelTop,
+  Plus,
   Printer,
-  Radar,
-  Route,
+  RefreshCw,
+  Settings,
   ShieldCheck,
-  Sparkles,
-  Workflow,
-  Zap
+  Store,
+  Trash2,
+  Upload,
+  UserRound,
+  WandSparkles,
+  XCircle,
+  type LucideIcon
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  adapterBlocksRealOrders,
-  agents,
-  architectureProfiles,
-  buildMilestones,
-  computeBlueprintCoverage,
-  countHardRisks,
-  getBlockingGates,
-  getRunMode,
-  qualityGates,
-  regionRequirements,
-  runOperationalExtraction,
-  sourceThesis,
-  storyboards,
-  walgreensAdapter,
-  type BuildMilestone,
-  type OperationalRun,
-  type RunMode,
-  type Storyboard
-} from "./domain";
-import {
-  buildDemoServiceSlice,
-  type ServiceSliceState
-} from "./serviceKernel";
+  addMemory,
+  buildOpportunity,
+  buildPanelSvg,
+  buildVendorHandoff,
+  createLocalWorkspace,
+  defaultMemories,
+  exportFileName,
+  freeAdapterLabels,
+  generateCardDraft,
+  getDefaultDraftInput,
+  parseFreeImport,
+  removeMemory,
+  sampleInviteText,
+  validateCardDraft,
+  type CardDraftInput,
+  type CardOpportunity,
+  type CardPanel,
+  type CardValidation,
+  type LanguageChoice,
+  type LocalWorkspace,
+  type MemoryItem,
+  type Tone,
+  type VendorHandoff,
+  type VendorId,
+  type VisualStyle
+} from "./freeMvp";
 
-type SectionId =
-  | "extract"
-  | "paths"
-  | "architecture"
-  | "agents"
-  | "runtime"
-  | "adapter"
-  | "regions"
-  | "milestones";
+type ViewId = "opportunities" | "studio" | "memory" | "handoff" | "adapters";
+type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
 
-const sectionNav: Array<{ id: SectionId; label: string; icon: typeof FileText }> = [
-  { id: "extract", label: "Storyboard", icon: FileText },
-  { id: "paths", label: "User paths", icon: Route },
-  { id: "architecture", label: "Architecture", icon: Workflow },
-  { id: "agents", label: "Agents", icon: Cpu },
-  { id: "runtime", label: "Service slice", icon: Database },
-  { id: "adapter", label: "Print adapter", icon: Printer },
-  { id: "regions", label: "Risk & regions", icon: Globe2 },
-  { id: "milestones", label: "Build plan", icon: ClipboardList }
+interface NavItem {
+  id: ViewId;
+  label: string;
+  icon: LucideIcon;
+}
+
+const workspaceKey = "customcard-free-workspace-v1";
+const fixedReviewDate = new Date("2026-06-03T12:00:00.000Z");
+
+const navItems: NavItem[] = [
+  { id: "opportunities", label: "Opportunities", icon: Calendar },
+  { id: "studio", label: "Card studio", icon: WandSparkles },
+  { id: "memory", label: "Memory", icon: Heart },
+  { id: "handoff", label: "Handoff", icon: Printer },
+  { id: "adapters", label: "Adapters", icon: Settings }
 ];
 
-const defaultSourceText = `A user signs up and connects email. The service detects an upcoming anniversary card for Sara and Ahmed and asks whether to generate a card. It asks questions about tone, relationship, language, and style. It remembers prior cards, such as ten years of anniversary cards, and proposes a direction for the next one. The product must support 5x7 double-sided cards with front, inside-left, inside-right, and back panels. The wedge is vendor-neutral card generation plus a physically certified WalgreensFiveBySevenDoubleSidedCardAdapter. It must quote live, never place real orders until tests and physical print validation pass, and scale from a five dollar DigitalOcean deployment to a full SaaS. It must cover regional privacy, order failures, wrong store pickup, urgent same-day recovery, and cross-platform usage.`;
+const tones: Tone[] = ["warm", "playful", "elegant", "reverent"];
+const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"];
+const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
+const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "local-print-shop"];
 
-const pathRows = [
-  {
-    id: "proactive",
-    title: "Proactive invite",
-    sequence: "Provider sync -> evidence -> opportunity -> interview -> print packet -> vendor handoff",
-    decisions: ["enough lead time", "relationship confidence", "high-care content"],
-    gates: ["user chooses generate", "panel approval", "external sharing approval"]
-  },
-  {
-    id: "last-minute",
-    title: "Last-minute card",
-    sequence: "Paste details -> minimal interview -> deterministic render -> same-day adapter",
-    decisions: ["pickup window safe", "asset packet valid", "vendor available"],
-    gates: ["print checks", "store selection", "final handoff review"]
-  },
-  {
-    id: "memory",
-    title: "Recurring relationship",
-    sequence: "Prior card history -> memory proposal -> user confirms -> new angle",
-    decisions: ["memory approved", "sensitive fact detected", "avoid repetition"],
-    gates: ["memory review", "claim provenance", "forget controls"]
-  },
-  {
-    id: "high-care",
-    title: "High-care event",
-    sequence: "Event signal -> conservative interview -> phrase verification -> human review",
-    decisions: ["religious text", "condolence context", "language risk"],
-    gates: ["expanded review", "source citation", "manual approval"]
-  }
+const adapterRows = [
+  { label: "Local demo auth", status: "Ready", detail: "Browser workspace with localStorage only." },
+  { label: "ICS / invite paste", status: "Ready", detail: "Manual import path; no mailbox credentials." },
+  { label: "Relationship memory", status: "Ready", detail: "User-approved local memories with delete controls." },
+  { label: "Card generation", status: "Ready", detail: "Deterministic templates; no paid model call." },
+  { label: "SVG export", status: "Ready", detail: "Browser-generated 1500 x 2100 panel files." },
+  { label: "Manual vendor handoff", status: "Ready", detail: "Walgreens, CVS, FedEx, or local print shop checklist." },
+  { label: "Gmail / Google Calendar OAuth", status: "Blocked", detail: "Production OAuth is not implemented." },
+  { label: "Outlook / iCloud OAuth", status: "Blocked", detail: "Provider adapters remain contract-only." },
+  { label: "Live quote / payment / order APIs", status: "Blocked", detail: "Real orders stay disabled until certification." }
 ];
 
 function App() {
-  const [activeSection, setActiveSection] = useState<SectionId>("extract");
-  const [runMode, setRunMode] = useState<RunMode>("five-dollar-droplet");
-  const [sourceText, setSourceText] = useState(defaultSourceText);
-  const [operationalRun, setOperationalRun] = useState<OperationalRun>(() =>
-    runOperationalExtraction(defaultSourceText)
-  );
-  const [selectedStoryboardId, setSelectedStoryboardId] = useState(storyboards[0].id);
-  const [selectedMilestone, setSelectedMilestone] = useState(buildMilestones[0]);
+  const [activeView, setActiveView] = useState<ViewId>("opportunities");
+  const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
+  const [authForm, setAuthForm] = useState({ name: "Abdul Demo", email: "demo@customcard.local" });
+  const [inviteText, setInviteText] = useState(sampleInviteText);
+  const [scanStatus, setScanStatus] = useState("Sample invite loaded");
+  const [opportunityDecision, setOpportunityDecision] = useState<OpportunityDecision>("pending");
+  const [vendorId, setVendorId] = useState<VendorId>("walgreens");
+  const [memoryForm, setMemoryForm] = useState({ recipient: "Sara and Ahmed", note: "" });
+  const [exportStatus, setExportStatus] = useState("Ready to export");
 
-  const selectedStoryboard =
-    storyboards.find((storyboard) => storyboard.id === selectedStoryboardId) ?? storyboards[0];
-  const selectedProfile = getRunMode(runMode);
-  const serviceSlice = useMemo(
-    () => buildDemoServiceSlice(runMode === "saas-scale" ? "cloud-native-saas" : "five-dollar-droplet"),
-    [runMode]
+  const memories = workspace?.memories ?? defaultMemories;
+  const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
+  const opportunity = useMemo(() => buildOpportunity(signal, memories, fixedReviewDate), [signal, memories]);
+  const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
+    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(sampleInviteText), defaultMemories, fixedReviewDate))
   );
-  const extractionConfidence = useMemo(() => Math.min(99, 70 + sourceText.length / 55), [sourceText]);
-  const blockingGates = getBlockingGates();
+
+  useEffect(() => {
+    setDraftInput((current) => ({
+      ...getDefaultDraftInput(workspace, opportunity),
+      tone: current.tone,
+      style: current.style,
+      language: current.language
+    }));
+  }, [workspace, opportunity]);
+
+  const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
+  const validation = useMemo(() => validateCardDraft(draft), [draft]);
+  const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
+
+  function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
+    setWorkspace(nextWorkspace);
+    if (!nextWorkspace) {
+      localStorage.removeItem(workspaceKey);
+      return;
+    }
+    localStorage.setItem(workspaceKey, JSON.stringify(nextWorkspace));
+  }
+
+  function startWorkspace() {
+    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, fixedReviewDate);
+    saveWorkspace(nextWorkspace);
+    setScanStatus("Local workspace ready");
+  }
+
+  function addApprovedMemory() {
+    if (!workspace) {
+      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, fixedReviewDate);
+      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, fixedReviewDate);
+      saveWorkspace(withMemory);
+    } else {
+      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, fixedReviewDate));
+    }
+    setMemoryForm({ recipient: memoryForm.recipient, note: "" });
+  }
+
+  function deleteMemory(memoryId: string) {
+    if (!workspace) return;
+    saveWorkspace(removeMemory(workspace, memoryId));
+  }
+
+  function scanImport() {
+    setScanStatus(`${signal.source} scanned`);
+    setOpportunityDecision("pending");
+  }
+
+  function updateDraft<K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) {
+    setDraftInput((current) => ({ ...current, [field]: value }));
+  }
+
+  function downloadPanel(panel: CardPanel) {
+    const blob = new Blob([buildPanelSvg(panel)], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = exportFileName(panel, draft.id);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setExportStatus(`${panel.label} SVG downloaded`);
+  }
+
+  function downloadAllPanels() {
+    draft.panels.forEach((panel, index) => {
+      window.setTimeout(() => downloadPanel(panel), index * 80);
+    });
+    setExportStatus("SVG panel downloads queued");
+  }
+
+  async function copyChecklist() {
+    const text = [
+      `${handoff.vendorName} manual handoff`,
+      ...handoff.checklist.map((item, index) => `${index + 1}. ${item}`),
+      "Real orders disabled: no live quote, payment, or order API is connected."
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setExportStatus("Checklist copied");
+    } catch {
+      setExportStatus("Clipboard unavailable; checklist remains visible");
+    }
+  }
 
   return (
-    <div className="blueprintShell">
-      <aside className="blueprintRail" aria-label="Blueprint navigation">
-        <div className="brandMark">
-          <span>CC</span>
-          <strong>CustomCard</strong>
-          <small>Service Console</small>
+    <div className="appShell">
+      <aside className="appRail" aria-label="CustomCard navigation">
+        <div className="brandBlock">
+          <span className="brandSigil">CC</span>
+          <div>
+            <strong>CustomCard</strong>
+            <small>Free local MVP</small>
+          </div>
         </div>
-        <nav className="railList">
-          {sectionNav.map((section) => {
-            const Icon = section.icon;
-            return (
-              <button
-                className={activeSection === section.id ? "railItem active" : "railItem"}
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                type="button"
-              >
-                <Icon size={17} />
-                {section.label}
-              </button>
-            );
-          })}
+
+        <nav className="navList">
+          {navItems.map((item) => (
+            <button
+              className={activeView === item.id ? "navButton active" : "navButton"}
+              key={item.id}
+              onClick={() => setActiveView(item.id)}
+              type="button"
+            >
+              <item.icon size={18} />
+              <span>{item.label}</span>
+            </button>
+          ))}
         </nav>
-        <div className="railFooter">
-          <span>Real ordering</span>
-          <strong>Disabled</strong>
-          <small>until physical certification</small>
+
+        <div className="railStatus">
+          <Lock size={18} />
+          <div>
+            <strong>Real orders disabled</strong>
+            <span>No paid APIs</span>
+          </div>
         </div>
       </aside>
 
-      <main className="blueprintMain">
-        <header className="commandBar">
+      <main className="appMain">
+        <header className="topBar">
           <div>
-            <p className="eyebrow">Production operations room</p>
-            <h1>CustomCard service console</h1>
+            <p className="eyebrow">Runnable product workflow</p>
+            <h1>CustomCard</h1>
           </div>
-          <div className="commandActions">
-            <select
-              aria-label="Deployment profile"
-              onChange={(event) => setRunMode(event.target.value as RunMode)}
-              value={runMode}
-            >
-              {architectureProfiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.title}
-                </option>
-              ))}
-            </select>
-            <button
-              className="commandButton"
-              type="button"
-              onClick={() => setOperationalRun(runOperationalExtraction(sourceText))}
-            >
-              <Sparkles size={16} />
-              Run extraction
-            </button>
+          <div className="topStatus" aria-label="MVP safety status">
+            <StatusChip icon={ShieldCheck} label="Local auth" tone="green" />
+            <StatusChip icon={FileDown} label="SVG export" tone="blue" />
+            <StatusChip icon={XCircle} label="Live orders off" tone="red" />
           </div>
         </header>
 
-        <section className="statusStrip" aria-label="Global safety gates">
-          <StatusPill icon={Lock} label="Human approval required" tone="safe" />
-          <StatusPill icon={ShieldCheck} label="Vendor sharing gated" tone="safe" />
-          <StatusPill icon={AlertTriangle} label={`${blockingGates.length} blocking gate`} tone="warn" />
-          <StatusPill icon={Gauge} label={`${computeBlueprintCoverage()}% chapter coverage`} tone="info" />
+        <section className="workspaceBand" aria-label="Workspace">
+          <div className="workspaceIdentity">
+            <div className="iconBadge">
+              <UserRound size={22} />
+            </div>
+            <div>
+              <span>{workspace ? "Signed in locally" : "Demo auth"}</span>
+              <strong>{workspace?.name ?? "Create a local workspace"}</strong>
+              <small>{workspace?.email ?? "No external provider required"}</small>
+            </div>
+          </div>
+
+          {workspace ? (
+            <div className="workspaceActions">
+              <button className="quietButton" type="button" onClick={() => setActiveView("memory")}>
+                <Heart size={16} />
+                {workspace.memories.length} memories
+              </button>
+              <button className="dangerButton" type="button" onClick={() => saveWorkspace(undefined)}>
+                <Trash2 size={16} />
+                Clear
+              </button>
+            </div>
+          ) : (
+            <div className="authInline">
+              <label>
+                <span>Name</span>
+                <input
+                  value={authForm.name}
+                  onChange={(event) => setAuthForm((current) => ({ ...current, name: event.target.value }))}
+                />
+              </label>
+              <label>
+                <span>Email</span>
+                <input
+                  value={authForm.email}
+                  onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
+                />
+              </label>
+              <button className="primaryButton" type="button" onClick={startWorkspace}>
+                <KeyRound size={16} />
+                Start local workspace
+              </button>
+            </div>
+          )}
         </section>
 
-        <section className="thesisBand">
-          <div>
-            <span>Core thesis</span>
-            <p>{sourceThesis}</p>
-          </div>
-          <div className="numericStack">
-            <strong>{storyboards.length}</strong>
-            <span>storyboards</span>
-          </div>
-          <div className="numericStack">
-            <strong>{countHardRisks()}</strong>
-            <span>hard-risk paths</span>
-          </div>
-          <div className="numericStack">
-            <strong>1500x2100</strong>
-            <span>print contract</span>
-          </div>
+        <section className="adapterStrip" aria-label="Free MVP adapters">
+          {freeAdapterLabels.map((label) => (
+            <span key={label}>
+              <Check size={14} />
+              {label}
+            </span>
+          ))}
         </section>
 
-        <div className="workbenchGrid">
-          <section className="canvasSurface">
-            {activeSection === "extract" && (
-              <StoryboardExtraction
-                confidence={Math.round(extractionConfidence)}
-                operationalRun={operationalRun}
-                selectedStoryboard={selectedStoryboard}
-                setSelectedStoryboardId={setSelectedStoryboardId}
-                sourceText={sourceText}
-                setSourceText={setSourceText}
-              />
-            )}
-            {activeSection === "paths" && <UserPaths />}
-            {activeSection === "architecture" && <ArchitectureMap profile={selectedProfile} />}
-            {activeSection === "agents" && <AgentBoard />}
-            {activeSection === "runtime" && <RuntimeSlice serviceSlice={serviceSlice} />}
-            {activeSection === "adapter" && <AdapterConsole operationalRun={operationalRun} />}
-            {activeSection === "regions" && <RiskRegions />}
-            {activeSection === "milestones" && (
-              <Milestones selected={selectedMilestone} setSelected={setSelectedMilestone} />
-            )}
-          </section>
-
-          <Inspector
-            activeSection={activeSection}
-            operationalRun={operationalRun}
-            selectedMilestone={selectedMilestone}
-            selectedProfileTitle={selectedProfile.title}
-            selectedStoryboard={selectedStoryboard}
-            serviceSlice={serviceSlice}
+        {activeView === "opportunities" && (
+          <OpportunitiesView
+            inviteText={inviteText}
+            onDecision={setOpportunityDecision}
+            onInviteText={setInviteText}
+            onScan={scanImport}
+            onStartCard={() => {
+              setOpportunityDecision("accepted");
+              setActiveView("studio");
+            }}
+            opportunity={opportunity}
+            decision={opportunityDecision}
+            scanStatus={scanStatus}
+            warnings={signal.warnings}
           />
-        </div>
+        )}
+
+        {activeView === "studio" && (
+          <StudioView
+            draftInput={draftInput}
+            memories={memories}
+            onExport={() => setActiveView("handoff")}
+            onUpdate={updateDraft}
+            opportunity={opportunity}
+            panels={draft.panels}
+            validation={validation}
+          />
+        )}
+
+        {activeView === "memory" && (
+          <MemoryView
+            canDelete={Boolean(workspace)}
+            memories={memories}
+            memoryForm={memoryForm}
+            onAdd={addApprovedMemory}
+            onDelete={deleteMemory}
+            onFormChange={setMemoryForm}
+          />
+        )}
+
+        {activeView === "handoff" && (
+          <HandoffView
+            exportStatus={exportStatus}
+            handoff={handoff}
+            onCopyChecklist={copyChecklist}
+            onDownloadAll={downloadAllPanels}
+            onDownloadPanel={downloadPanel}
+            onVendor={setVendorId}
+            panels={draft.panels}
+            validation={validation}
+            vendorId={vendorId}
+          />
+        )}
+
+        {activeView === "adapters" && <AdaptersView />}
       </main>
     </div>
   );
 }
 
-function StatusPill({
-  icon: Icon,
-  label,
-  tone
+function OpportunitiesView({
+  inviteText,
+  onDecision,
+  onInviteText,
+  onScan,
+  onStartCard,
+  opportunity,
+  decision,
+  scanStatus,
+  warnings
 }: {
-  icon: typeof Lock;
-  label: string;
-  tone: "safe" | "warn" | "info";
+  inviteText: string;
+  onDecision: (decision: OpportunityDecision) => void;
+  onInviteText: (value: string) => void;
+  onScan: () => void;
+  onStartCard: () => void;
+  opportunity: CardOpportunity;
+  decision: OpportunityDecision;
+  scanStatus: string;
+  warnings: string[];
 }) {
   return (
-    <div className={`statusPill ${tone}`}>
-      <Icon size={15} />
-      {label}
-    </div>
-  );
-}
-
-function StoryboardExtraction({
-  confidence,
-  operationalRun,
-  selectedStoryboard,
-  setSelectedStoryboardId,
-  sourceText,
-  setSourceText
-}: {
-  confidence: number;
-  operationalRun: OperationalRun;
-  selectedStoryboard: Storyboard;
-  setSelectedStoryboardId: (id: string) => void;
-  sourceText: string;
-  setSourceText: (value: string) => void;
-}) {
-  return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">First screen</p>
-          <h2>Extract storyboards from messy product context</h2>
-        </div>
-        <span className="confidenceBadge">{confidence}% extraction confidence</span>
-      </div>
-
-      <div className="sourceAndTimeline">
-        <label className="sourcePanel">
-          <span>Untrusted source paste</span>
-          <textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} />
-        </label>
-        <div className="timeline">
-          {["Paste", "Detect facts", "Storyboard", "Gate risks", "Build plan"].map((item, index) => (
-            <div className="timelineStep" key={item}>
-              <strong>{index + 1}</strong>
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="extractionFacts">
-        {operationalRun.facts.map((fact) => (
-          <article className="factCard" key={fact.id}>
-            <span>{fact.label}</span>
-            <strong>{fact.value}</strong>
-            <small>{Math.round(fact.confidence * 100)}% - {fact.evidence}</small>
-          </article>
-        ))}
-      </div>
-
-      <div className="storyboardMatrix">
-        {storyboards.map((storyboard) => (
-          <button
-            className={[
-              "storyFrame",
-              selectedStoryboard.id === storyboard.id ? "active" : "",
-              operationalRun.matchedStoryboardIds.includes(storyboard.id) ? "matched" : ""
-            ].join(" ")}
-            key={storyboard.id}
-            onClick={() => setSelectedStoryboardId(storyboard.id)}
-            type="button"
-          >
-            <span>{storyboard.chapter.replace("-", " ")}</span>
-            <strong>{storyboard.title}</strong>
-            <small>{storyboard.sourceSignal}</small>
+    <section className="viewGrid">
+      <div className="toolPanel">
+        <div className="sectionHeader">
+          <div>
+            <p className="eyebrow">Intake</p>
+            <h2>Opportunity scan</h2>
+          </div>
+          <button className="iconTextButton" type="button" onClick={onScan}>
+            <RefreshCw size={16} />
+            Scan free import
           </button>
-        ))}
-      </div>
-    </>
-  );
-}
-
-function UserPaths() {
-  return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Decision matrix</p>
-          <h2>User paths all the way through failure and recovery</h2>
         </div>
-      </div>
-      <div className="pathMatrix">
-        {pathRows.map((path) => (
-          <article className="pathRow" key={path.id}>
-            <div>
-              <strong>{path.title}</strong>
-              <span>{path.sequence}</span>
-            </div>
-            <ul>
-              {path.decisions.map((decision) => (
-                <li key={decision}>{decision}</li>
-              ))}
-            </ul>
-            <div className="gateStack">
-              {path.gates.map((gate) => (
-                <span key={gate}>{gate}</span>
-              ))}
-            </div>
-          </article>
-        ))}
-      </div>
-    </>
-  );
-}
 
-function ArchitectureMap({ profile }: { profile: ReturnType<typeof getRunMode> }) {
-  const nodes = [
-    ["Client", "Web, mobile shell later, shared state"],
-    ["API", "Auth, projects, cards, memory, vendors"],
-    ["Jobs", "sync, generation, rendering, QA"],
-    ["Data", "SQL, object store, audit log"],
-    ["AI", "models behind policy wrapper"],
-    ["Vendors", "adapters, quotes, handoff only"]
-  ];
+        <label className="fieldStack">
+          <span>Invite or ICS text</span>
+          <textarea
+            className="importBox"
+            value={inviteText}
+            onChange={(event) => onInviteText(event.target.value)}
+          />
+        </label>
 
-  return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Run mode: {profile.title}</p>
-          <h2>Architecture that can shrink to a droplet or scale to SaaS</h2>
+        <div className="signalGrid">
+          <Metric label="Status" value={scanStatus} />
+          <Metric label="Confidence" value={`${opportunity.confidence}%`} />
+          <Metric label="Date" value={opportunity.dateLabel} />
+          <Metric label="Path" value={opportunity.recommendedPath} />
         </div>
+
+        {warnings.length > 0 && (
+          <div className="warningList">
+            {warnings.map((warning) => (
+              <span key={warning}>
+                <XCircle size={15} />
+                {warning}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
-      <div className="architectureGrid">
-        <div className="systemMap">
-          {nodes.map(([name, detail], index) => (
-            <div className="systemNode" key={name}>
-              <span>0{index + 1}</span>
-              <strong>{name}</strong>
-              <small>{detail}</small>
-            </div>
+
+      <div className="opportunityCard">
+        <div className="cardHeaderLine">
+          <span className={opportunity.status === "ready" ? "statePill ready" : "statePill hold"}>
+            {opportunity.status === "ready" ? "Ready" : "Needs detail"}
+          </span>
+          <span className="urgency">{opportunity.urgency}</span>
+        </div>
+        <h2>{opportunity.title}</h2>
+        <p>{opportunity.recommendedPath}</p>
+
+        <div className="evidenceList">
+          {opportunity.evidence.slice(0, 5).map((item) => (
+            <span key={item}>
+              <CircleCheck size={15} />
+              {item}
+            </span>
           ))}
         </div>
-        <div className="profilePanel">
-          <h3>{profile.title}</h3>
-          <p>{profile.scalingMove}</p>
-          <div className="chipWrap">
-            {profile.stack.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </div>
-          <ul>
-            {profile.tradeoffs.map((tradeoff) => (
-              <li key={tradeoff}>{tradeoff}</li>
-            ))}
-          </ul>
+
+        <div className="decisionRow">
+          <button className="primaryButton" type="button" onClick={onStartCard}>
+            <WandSparkles size={16} />
+            Generate card
+          </button>
+          <button className="quietButton" type="button" onClick={() => onDecision("snoozed")}>
+            <Calendar size={16} />
+            Snooze
+          </button>
+          <button className="quietButton" type="button" onClick={() => onDecision("dismissed")}>
+            <XCircle size={16} />
+            Dismiss
+          </button>
+        </div>
+
+        <div className={`decisionBanner ${decision}`}>
+          <ClipboardCheck size={16} />
+          <span>{decisionLabel(decision)}</span>
         </div>
       </div>
-    </>
+    </section>
   );
 }
 
-function AgentBoard() {
+function StudioView({
+  draftInput,
+  memories,
+  onExport,
+  onUpdate,
+  opportunity,
+  panels,
+  validation
+}: {
+  draftInput: CardDraftInput;
+  memories: MemoryItem[];
+  onExport: () => void;
+  onUpdate: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
+  opportunity: CardOpportunity;
+  panels: CardPanel[];
+  validation: CardValidation;
+}) {
   return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Agentic system</p>
-          <h2>Model work is bounded; deterministic gates own production safety</h2>
-        </div>
-      </div>
-      <div className="agentPipeline">
-        {agents.map((agent, index) => (
-          <article className="agentNode" key={agent.id}>
-            <span>{index + 1}</span>
-            <strong>{agent.name}</strong>
-            <small>{agent.deterministic ? "Deterministic" : "LLM-assisted"} - {agent.hardStops[0]}</small>
-            {index < agents.length - 1 && <ChevronRight size={18} />}
-          </article>
-        ))}
-      </div>
-      <div className="agentRules">
-        <Rule icon={Radar} title="Prompt injection boundary" text="Provider text is data only, never instructions." />
-        <Rule icon={ArchiveRestore} title="Memory provenance" text="Only approved memories enter generation." />
-        <Rule icon={Database} title="Claim citations" text="Every factual claim traces to user input or memory ID." />
-        <Rule icon={ShieldCheck} title="External sharing gate" text="No vendor sees data before user approval." />
-      </div>
-    </>
-  );
-}
-
-function RuntimeSlice({ serviceSlice }: { serviceSlice: ServiceSliceState }) {
-  const opportunity = serviceSlice.opportunities[0];
-  const project = serviceSlice.project;
-  const order = serviceSlice.order;
-
-  return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Production service kernel</p>
-          <h2>Provider import, memory, lifecycle, recovery, and readiness are executable paths</h2>
-        </div>
-      </div>
-      <div className="runtimeGrid">
-        <article className="runtimePanel">
-          <span>Provider import</span>
-          <strong>{serviceSlice.connection.provider}</strong>
-          <small>{serviceSlice.connection.scopes.join(", ")}</small>
-          <small>raw content stored: {String(serviceSlice.connection.rawContentStored)}</small>
-        </article>
-        <article className="runtimePanel">
-          <span>Opportunity</span>
-          <strong>{opportunity.title}</strong>
-          <small>{opportunity.leadTimeHours}h lead time - {opportunity.decision}</small>
-          <small>{opportunity.evidence.join(" / ")}</small>
-        </article>
-        <article className="runtimePanel">
-          <span>Memory store</span>
-          <strong>{serviceSlice.memories.length} approved memory</strong>
-          <small>{serviceSlice.memories[0]?.text}</small>
-        </article>
-        <article className="runtimePanel">
-          <span>Renderer gate</span>
-          <strong>{serviceSlice.renderPacket.kind}</strong>
-          <small>
-            {serviceSlice.renderPacket.assets.length} validated assets, RTL: {String(project?.requiresRtlLayout)}
-          </small>
-          <small>{serviceSlice.renderPacket.assets[0]?.checksum}</small>
-        </article>
-        <article className="runtimePanel wide">
-          <span>Order recovery</span>
-          <strong>{order?.status}</strong>
-          <div className="chipWrap">
-            {order?.recoveryActions.map((action) => (
-              <span key={action}>{action}</span>
-            ))}
+    <section className="studioLayout">
+      <div className="toolPanel">
+        <div className="sectionHeader">
+          <div>
+            <p className="eyebrow">Studio</p>
+            <h2>Card draft</h2>
           </div>
-        </article>
-        <article className="runtimePanel wide">
-          <span>Runtime readiness</span>
-          <div className="qualityRows compactRows">
-            {serviceSlice.readiness.map((check) => (
-              <div className={`qualityRow ${check.status}`} key={check.id}>
-                {check.status === "pass" ? <Check size={16} /> : <AlertTriangle size={16} />}
-                <strong>{check.id}</strong>
-                <span>{check.detail}</span>
-              </div>
-            ))}
-          </div>
-        </article>
+          <StatusChip
+            icon={validation.passed ? CircleCheck : XCircle}
+            label={validation.passed ? "Print safe" : "Needs fix"}
+            tone={validation.passed ? "green" : "red"}
+          />
+        </div>
+
+        <div className="formGrid">
+          <label className="fieldStack">
+            <span>Sender</span>
+            <input value={draftInput.sender} onChange={(event) => onUpdate("sender", event.target.value)} />
+          </label>
+          <label className="fieldStack">
+            <span>Recipient</span>
+            <input value={draftInput.recipient} onChange={(event) => onUpdate("recipient", event.target.value)} />
+          </label>
+          <label className="fieldStack">
+            <span>Relationship</span>
+            <input
+              value={draftInput.relationship}
+              onChange={(event) => onUpdate("relationship", event.target.value)}
+            />
+          </label>
+          <label className="fieldStack">
+            <span>Language</span>
+            <select
+              value={draftInput.language}
+              onChange={(event) => onUpdate("language", event.target.value as LanguageChoice)}
+            >
+              {languages.map((language) => (
+                <option key={language}>{language}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <SegmentedControl
+          label="Tone"
+          options={tones}
+          value={draftInput.tone}
+          onValue={(value) => onUpdate("tone", value as Tone)}
+        />
+        <SegmentedControl
+          label="Style"
+          options={styles}
+          value={draftInput.style}
+          onValue={(value) => onUpdate("style", value as VisualStyle)}
+        />
+
+        <label className="fieldStack">
+          <span>Personal note</span>
+          <textarea
+            className="noteBox"
+            value={draftInput.personalNote}
+            onChange={(event) => onUpdate("personalNote", event.target.value)}
+          />
+        </label>
+
+        <label className="toggleLine">
+          <input
+            checked={draftInput.useMemory}
+            onChange={(event) => onUpdate("useMemory", event.target.checked)}
+            type="checkbox"
+          />
+          Use approved memory for {opportunity.recipient}
+        </label>
+
+        <button className="primaryButton wide" type="button" onClick={onExport}>
+          <Upload size={16} />
+          Prepare handoff
+        </button>
       </div>
-      <div className="detailBlock">
-        <h3>Policy enforcement</h3>
-        <div className="chipWrap">
-          {serviceSlice.regulatoryDecisions.map((decision) => (
-            <span key={`${decision.region}-${decision.action}`}>
-              {decision.region} {decision.action}: {decision.allowed ? "allowed" : "blocked"}
+
+      <div className="previewColumn">
+        <div className="sectionHeader">
+          <div>
+            <p className="eyebrow">Preview</p>
+            <h2>5x7 panels</h2>
+          </div>
+          <span className="smallStat">{memories.filter((memory) => memory.approved).length} approved memories</span>
+        </div>
+        <div className="panelGrid">
+          {panels.map((panel) => (
+            <PanelPreview key={panel.id} panel={panel} />
+          ))}
+        </div>
+
+        <div className="validationPanel">
+          {validation.checks.map((check) => (
+            <span key={check.label}>
+              {check.passed ? <CircleCheck size={16} /> : <XCircle size={16} />}
+              <strong>{check.label}</strong>
+              {check.detail}
             </span>
           ))}
         </div>
       </div>
-    </>
+    </section>
   );
 }
 
-function AdapterConsole({ operationalRun }: { operationalRun: OperationalRun }) {
-  const adapterSafe = adapterBlocksRealOrders(walgreensAdapter);
-
+function MemoryView({
+  canDelete,
+  memories,
+  memoryForm,
+  onAdd,
+  onDelete,
+  onFormChange
+}: {
+  canDelete: boolean;
+  memories: MemoryItem[];
+  memoryForm: { recipient: string; note: string };
+  onAdd: () => void;
+  onDelete: (memoryId: string) => void;
+  onFormChange: (form: { recipient: string; note: string }) => void;
+}) {
   return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">{walgreensAdapter.name}</p>
-          <h2>Vendor-neutral card engine, physically certified adapter</h2>
-        </div>
-        <span className={adapterSafe ? "safeBadge" : "dangerBadge"}>real orders disabled</span>
-      </div>
-      <div className="adapterLayout">
-        <div className="printSpec">
-          <span>Target asset</span>
-          <strong>
-            {walgreensAdapter.targetPixels.width} x {walgreensAdapter.targetPixels.height}
-          </strong>
-          <small>{walgreensAdapter.targetPixels.width / 300} x {walgreensAdapter.targetPixels.height / 300} in at 300 DPI</small>
-          <div className="panelTiles">
-            {walgreensAdapter.panels.map((panel) => (
-              <span key={panel}>{panel}</span>
-            ))}
+    <section className="memoryLayout">
+      <div className="toolPanel">
+        <div className="sectionHeader">
+          <div>
+            <p className="eyebrow">Review</p>
+            <h2>Relationship memory</h2>
           </div>
+          <StatusChip icon={Lock} label="User approved" tone="green" />
         </div>
-        <div className="adapterChecks">
-          {operationalRun.printPacket.kind === "blocked" && (
-            <div className="certGate blockedPacket">
-              <AlertTriangle size={16} />
-              <span>{operationalRun.printPacket.reason}</span>
-            </div>
-          )}
-          {operationalRun.printPacket.assets.map((asset) => (
-            <div className="certGate pass" key={asset.panel}>
-              <Check size={16} />
-              <span>
-                mock {asset.panel}: {asset.width} x {asset.height} @ {asset.dpi} DPI
-              </span>
-            </div>
-          ))}
-          {walgreensAdapter.certificationGates.map((gate) => (
-            <div className="certGate" key={gate}>
-              <AlertTriangle size={16} />
-              <span>{gate}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
 
-function RiskRegions() {
-  return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Risk and compliance</p>
-          <h2>Privacy, high-care content, and external boundaries are product surfaces</h2>
+        <div className="formGrid single">
+          <label className="fieldStack">
+            <span>Recipient</span>
+            <input
+              value={memoryForm.recipient}
+              onChange={(event) => onFormChange({ ...memoryForm, recipient: event.target.value })}
+            />
+          </label>
+          <label className="fieldStack">
+            <span>Memory</span>
+            <textarea
+              className="noteBox"
+              value={memoryForm.note}
+              onChange={(event) => onFormChange({ ...memoryForm, note: event.target.value })}
+              placeholder="A detail the user explicitly approves for reuse."
+            />
+          </label>
+          <button className="primaryButton" disabled={!memoryForm.note.trim()} onClick={onAdd} type="button">
+            <Plus size={16} />
+            Add approved memory
+          </button>
         </div>
       </div>
-      <div className="regionGrid">
-        {regionRequirements.map((requirement) => (
-          <article className="regionPanel" key={requirement.region}>
-            <strong>{requirement.region}</strong>
-            <p>{requirement.dataPosture}</p>
-            <div className="chipWrap">
-              {requirement.requirements.map((item) => (
-                <span key={item}>{item}</span>
-              ))}
+
+      <div className="memoryList">
+        {memories.map((memory) => (
+          <article className="memoryItem" key={memory.id}>
+            <div>
+              <span className={memory.sensitivity === "review" ? "statePill hold" : "statePill ready"}>
+                {memory.sensitivity}
+              </span>
+              <h3>{memory.recipient}</h3>
+              <p>{memory.note}</p>
+              <div className="tagRow">
+                {memory.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
             </div>
+            <button
+              aria-label={`Delete ${memory.recipient} memory`}
+              className="iconOnlyButton"
+              disabled={!canDelete}
+              onClick={() => onDelete(memory.id)}
+              title={canDelete ? "Delete memory" : "Start a workspace to edit memories"}
+              type="button"
+            >
+              <Trash2 size={17} />
+            </button>
           </article>
         ))}
       </div>
-      <div className="qualityRows">
-        {qualityGates.map((gate) => (
-          <div className={`qualityRow ${gate.status}`} key={gate.id}>
-            {gate.status === "pass" ? <Check size={16} /> : <AlertTriangle size={16} />}
-            <strong>{gate.label}</strong>
-            <span>{gate.detail}</span>
-          </div>
-        ))}
-      </div>
-    </>
+    </section>
   );
 }
 
-function Milestones({
-  selected,
-  setSelected
+function HandoffView({
+  exportStatus,
+  handoff,
+  onCopyChecklist,
+  onDownloadAll,
+  onDownloadPanel,
+  onVendor,
+  panels,
+  validation,
+  vendorId
 }: {
-  selected: BuildMilestone;
-  setSelected: (milestone: BuildMilestone) => void;
+  exportStatus: string;
+  handoff: VendorHandoff;
+  onCopyChecklist: () => void;
+  onDownloadAll: () => void;
+  onDownloadPanel: (panel: CardPanel) => void;
+  onVendor: (vendorId: VendorId) => void;
+  panels: CardPanel[];
+  validation: CardValidation;
+  vendorId: VendorId;
 }) {
   return (
-    <>
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">AI coding agent runway</p>
-          <h2>Concrete milestones with evidence gates</h2>
+    <section className="handoffLayout">
+      <div className="toolPanel">
+        <div className="sectionHeader">
+          <div>
+            <p className="eyebrow">Export</p>
+            <h2>Manual handoff</h2>
+          </div>
+          <StatusChip icon={PackageCheck} label={exportStatus} tone="blue" />
+        </div>
+
+        <SegmentedControl
+          label="Vendor"
+          options={vendors}
+          value={vendorId}
+          onValue={(value) => onVendor(value as VendorId)}
+        />
+
+        <div className="downloadGrid">
+          {panels.map((panel) => (
+            <button className="downloadTile" key={panel.id} onClick={() => onDownloadPanel(panel)} type="button">
+              <Download size={18} />
+              <strong>{panel.label}</strong>
+              <span>1500 x 2100 SVG</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="decisionRow">
+          <button className="primaryButton" disabled={!validation.passed} onClick={onDownloadAll} type="button">
+            <FileDown size={16} />
+            Download SVG set
+          </button>
+          <button className="quietButton" type="button" onClick={onCopyChecklist}>
+            <ClipboardCheck size={16} />
+            Copy checklist
+          </button>
         </div>
       </div>
-      <div className="milestoneBoard">
-        {buildMilestones.map((milestone) => (
+
+      <div className="handoffPanel">
+        <div className="handoffTitle">
+          <Store size={21} />
+          <div>
+            <span>{handoff.mode}</span>
+            <h2>{handoff.vendorName}</h2>
+          </div>
+        </div>
+
+        <ol className="checklist">
+          {handoff.checklist.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ol>
+
+        <div className="blockedBox">
+          <XCircle size={18} />
+          <div>
+            <strong>Real orders disabled</strong>
+            {handoff.disabledReasons.map((reason) => (
+              <span key={reason}>{reason}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AdaptersView() {
+  return (
+    <section className="adaptersView">
+      <div className="sectionHeader">
+        <div>
+          <p className="eyebrow">Coverage</p>
+          <h2>Adapter readiness</h2>
+        </div>
+        <StatusChip icon={ShieldCheck} label="Free-only boundary" tone="green" />
+      </div>
+
+      <div className="adapterMatrix">
+        {adapterRows.map((row) => (
+          <article className={row.status === "Ready" ? "adapterRow ready" : "adapterRow blocked"} key={row.label}>
+            {row.status === "Ready" ? <CircleCheck size={19} /> : <XCircle size={19} />}
+            <div>
+              <strong>{row.label}</strong>
+              <span>{row.detail}</span>
+            </div>
+            <em>{row.status}</em>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PanelPreview({ panel }: { panel: CardPanel }) {
+  return (
+    <article className={`panelPreview ${panel.id}`}>
+      <div className="panelChrome">
+        <span>{panel.label}</span>
+        <PanelTop size={16} />
+      </div>
+      <div className="panelBody" dir={panel.rtl ? "rtl" : "ltr"}>
+        <h3>{panel.headline}</h3>
+        <p>{panel.body}</p>
+      </div>
+      <small>{panel.artDirection}</small>
+    </article>
+  );
+}
+
+function SegmentedControl({
+  label,
+  options,
+  value,
+  onValue
+}: {
+  label: string;
+  options: string[];
+  value: string;
+  onValue: (value: string) => void;
+}) {
+  return (
+    <div className="segmentBlock">
+      <span>{label}</span>
+      <div className="segmentRow">
+        {options.map((option) => (
           <button
-            className={selected.id === milestone.id ? "milestone active" : "milestone"}
-            key={milestone.id}
-            onClick={() => setSelected(milestone)}
+            className={value === option ? "segment active" : "segment"}
+            key={option}
+            onClick={() => onValue(option)}
             type="button"
           >
-            <span>{milestone.id}</span>
-            <strong>{milestone.title}</strong>
-            <small>{milestone.exitGate}</small>
+            {formatOption(option)}
           </button>
         ))}
       </div>
-      <div className="detailBlock">
-        <h3>{selected.title}</h3>
-        <div className="twoColumnList">
-          <ListBlock title="Deliverables" items={selected.deliverables} />
-          <ListBlock title="Evidence" items={selected.testEvidence} />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function Rule({ icon: Icon, title, text }: { icon: typeof Radar; title: string; text: string }) {
-  return (
-    <div className="rule">
-      <Icon size={18} />
-      <strong>{title}</strong>
-      <span>{text}</span>
     </div>
   );
 }
 
-function ListBlock({ title, items }: { title: string; items: string[] }) {
+function StatusChip({ icon: Icon, label, tone }: { icon: LucideIcon; label: string; tone: "green" | "blue" | "red" }) {
   return (
-    <div>
-      <strong>{title}</strong>
-      <ul>
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
+    <span className={`statusChip ${tone}`}>
+      <Icon size={15} />
+      {label}
+    </span>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
 
-function Inspector({
-  activeSection,
-  selectedMilestone,
-  selectedProfileTitle,
-  selectedStoryboard,
-  operationalRun,
-  serviceSlice
-}: {
-  activeSection: SectionId;
-  operationalRun: OperationalRun;
-  selectedMilestone: BuildMilestone;
-  selectedProfileTitle: string;
-  selectedStoryboard: Storyboard;
-  serviceSlice: ServiceSliceState;
-}) {
-  return (
-    <aside className="inspector">
-      <div className="inspectorTitle">
-        <Map size={18} />
-        <strong>Inspector</strong>
-        <span>{activeSection}</span>
-      </div>
-      <div className="inspectorBlock">
-        <span>Selected storyboard</span>
-        <h3>{selectedStoryboard.title}</h3>
-        <p>{selectedStoryboard.userPath}</p>
-      </div>
-      <div className="inspectorBlock">
-        <span>Evidence</span>
-        <p>{selectedStoryboard.sourceSignal}</p>
-      </div>
-      <div className="inspectorBlock">
-        <span>Failure paths</span>
-        <ul>
-          {selectedStoryboard.edgeCases.map((edgeCase) => (
-            <li key={edgeCase}>{edgeCase}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="inspectorBlock">
-        <span>Deployment</span>
-        <p>{selectedProfileTitle}</p>
-      </div>
-      <div className="inspectorBlock">
-        <span>Milestone focus</span>
-        <p>
-          {selectedMilestone.id}: {selectedMilestone.title}
-        </p>
-      </div>
-      <div className="inspectorBlock">
-        <span>Operational run</span>
-        <p>
-          {operationalRun.facts.length} facts, {operationalRun.printPacket.assets.length} mock assets,
-          handoff mode {operationalRun.handoff.mode}. {operationalRun.handoff.reason}
-        </p>
-      </div>
-      <div className="inspectorBlock">
-        <span>Service kernel</span>
-        <p>
-          {serviceSlice.connection.provider} import, {serviceSlice.memories.length} memory, order {serviceSlice.order?.status},
-          config {serviceSlice.config.deploymentMode}.
-        </p>
-      </div>
-      <div className="inspectorBlock">
-        <span>Hard rule</span>
-        <p>{walgreensAdapter.realOrderPolicy}</p>
-      </div>
-    </aside>
-  );
+function decisionLabel(decision: OpportunityDecision): string {
+  const labels: Record<OpportunityDecision, string> = {
+    pending: "Awaiting user decision",
+    accepted: "Approved for card generation",
+    snoozed: "Snoozed locally",
+    dismissed: "Dismissed locally"
+  };
+  return labels[decision];
+}
+
+function formatOption(value: string): string {
+  return value
+    .split("-")
+    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+    .join(" ");
+}
+
+function loadWorkspace(): LocalWorkspace | undefined {
+  try {
+    const raw = localStorage.getItem(workspaceKey);
+    if (!raw) return undefined;
+    return JSON.parse(raw) as LocalWorkspace;
+  } catch {
+    return undefined;
+  }
 }
 
 export default App;

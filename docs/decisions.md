@@ -3,9 +3,9 @@
 This document records the implementation defaults chosen while turning the
 ambiguous CustomCard brief into a reviewable repo.
 
-## D001: Keep The Current Repo As A Contract-First Service Skeleton
+## D001: Keep The Current Repo As A Free MVP Plus Contract-First Skeleton
 
-Decision: represent the product as a Vite/React service console plus typed
+Decision: represent the product as a Vite/React free local MVP plus typed
 domain/service contracts, tests, database schema, and deployment scaffolding.
 
 Reason: the brief asks for a production-shaped service, but no external
@@ -83,3 +83,16 @@ needed to prove the current service contracts.
 
 Rejected: claiming store-ready mobile releases. Signing, native build pipelines,
 push notifications, and mobile QA are outside this pass.
+
+## D008: Finish The Reviewable MVP With Free Local Substitutes
+
+Decision: finish the user-facing app with local demo auth, manual/ICS import,
+deterministic templates, browser SVG export, and manual vendor handoff.
+
+Reason: the requested finish line required free solutions only. These paths make
+the core product workflow usable without credentials, paid model calls, vendor
+accounts, payment processors, or production infrastructure.
+
+Rejected: treating Gmail OAuth, paid AI generation, live vendor APIs, or real
+orders as required for this pass. Those integrations remain open production work
+with explicit safety gates.
