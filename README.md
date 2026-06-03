@@ -131,16 +131,20 @@ CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_UR
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
 
-`npm run check` now runs the full test suite, core contract coverage thresholds,
-the production build, and a high-severity dependency audit. The V8 coverage gate
-applies to `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
+`npm run check` now runs the full test suite, contract coverage thresholds, the
+production build, and a high-severity dependency audit. The V8 coverage gate
+applies to `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
+`src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
-verified through Chrome smoke tests, and the mobile customer shell is covered by
-root Vitest contract tests plus its package doctor.
+verified through Chrome smoke tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
 cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
 shape only; it does not prove a real cloud cluster or droplet deployment.
+
+`.github/workflows/verify.yml` runs the same repository check, deployment
+doctor, worker readiness, and mobile doctor on pushes to `main` and pull
+requests.
 
 ## Project Docs
 

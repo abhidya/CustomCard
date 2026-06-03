@@ -2,12 +2,14 @@ import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import {
   mobileChatTranscript,
+  mobileExperience,
   mobileExperienceSections,
   mobileHandoffSteps,
   mobileRenderChoices,
   requiredMobileCapabilities,
   summarizeMobileExperience,
-  validateMobileExperience
+  validateMobileExperience,
+  type MobileExperienceModel
 } from "../apps/mobile/src/customerExperience";
 
 describe("mobile customer experience contract", () => {
@@ -59,5 +61,77 @@ describe("mobile customer experience contract", () => {
       stderr = String((error as { stderr?: string }).stderr);
     }
     expect(stderr).toContain("kill switch must resolve to disabled");
+  });
+
+  it("flags incomplete or unsafe mobile customer models before they reach the app", () => {
+    const unsafeModel: MobileExperienceModel = {
+      safetyBanner: {
+        label: "Real orders enabled",
+        detail: "payment active"
+      },
+      sections: [
+        {
+          ...mobileExperience.sections[0],
+          customerVisible: false,
+          detail: "live order ready"
+        }
+      ],
+      chatTranscript: [
+        {
+          speaker: "assistant",
+          source: "local-script",
+          text: "I can help."
+        }
+      ],
+      renderChoices: [
+        {
+          label: "AI only",
+          detail: "paid ai active",
+          mode: "credential-gated"
+        }
+      ],
+      handoffSteps: [
+        {
+          label: "Auto vendor submit",
+          detail: "vendor api connected",
+          realOrderState: "disabled"
+        }
+      ]
+    };
+
+    expect(validateMobileExperience(unsafeModel)).toEqual(
+      expect.arrayContaining([
+        "Missing mobile customer capability: memory-review",
+        "Missing mobile customer capability: text-chat",
+        "Missing mobile customer capability: image-render",
+        "Missing mobile customer capability: handoff",
+        "Every mobile experience section must be customer-visible.",
+        "Mobile experience does not expose enough customer sections.",
+        "Mobile chat must identify the local scripted assistant path.",
+        "Mobile chat must disclose that live AI and vendor orders are off.",
+        "Mobile render choices must include the free browser SVG renderer.",
+        "Mobile handoff must keep a manual upload path.",
+        "Disabled mobile handoff steps must explain blocked live order APIs.",
+        "Mobile safety banner must keep real orders disabled.",
+        "Unsafe mobile live-provider claim: Real orders enabled",
+        "Unsafe mobile live-provider claim: payment active",
+        "Unsafe mobile live-provider claim: live order ready",
+        "Unsafe mobile live-provider claim: paid ai active",
+        "Unsafe mobile live-provider claim: vendor api connected"
+      ])
+    );
+
+    expect(
+      validateMobileExperience({
+        ...mobileExperience,
+        renderChoices: [
+          {
+            label: "Browser SVG renderer",
+            detail: "Free renderer stays available.",
+            mode: "free-local"
+          }
+        ]
+      })
+    ).toContain("Mobile render choices must keep AI image providers credential-gated.");
   });
 });

@@ -35,6 +35,19 @@ export interface MobileHandoffStep {
   realOrderState: "manual" | "disabled";
 }
 
+export interface MobileSafetyBanner {
+  label: string;
+  detail: string;
+}
+
+export interface MobileExperienceModel {
+  safetyBanner: MobileSafetyBanner;
+  sections: MobileExperienceSection[];
+  chatTranscript: MobileChatMessage[];
+  renderChoices: MobileRenderChoice[];
+  handoffSteps: MobileHandoffStep[];
+}
+
 export const mobileSafetyBanner = {
   label: "Real orders disabled",
   detail: "Live provider, payment, and vendor APIs stay behind admin gates."
@@ -127,19 +140,27 @@ export const mobileHandoffSteps: MobileHandoffStep[] = [
   }
 ];
 
-export function summarizeMobileExperience() {
+export const mobileExperience: MobileExperienceModel = {
+  safetyBanner: mobileSafetyBanner,
+  sections: mobileExperienceSections,
+  chatTranscript: mobileChatTranscript,
+  renderChoices: mobileRenderChoices,
+  handoffSteps: mobileHandoffSteps
+};
+
+export function summarizeMobileExperience(model: MobileExperienceModel = mobileExperience) {
   return {
-    capabilityCount: new Set(mobileExperienceSections.map((section) => section.id)).size,
-    customerVisibleSections: mobileExperienceSections.filter((section) => section.customerVisible).length,
-    localChatMessages: mobileChatTranscript.filter((message) => message.source === "local-script").length,
-    freeRenderChoices: mobileRenderChoices.filter((choice) => choice.mode === "free-local").length,
-    disabledHandoffSteps: mobileHandoffSteps.filter((step) => step.realOrderState === "disabled").length
+    capabilityCount: new Set(model.sections.map((section) => section.id)).size,
+    customerVisibleSections: model.sections.filter((section) => section.customerVisible).length,
+    localChatMessages: model.chatTranscript.filter((message) => message.source === "local-script").length,
+    freeRenderChoices: model.renderChoices.filter((choice) => choice.mode === "free-local").length,
+    disabledHandoffSteps: model.handoffSteps.filter((step) => step.realOrderState === "disabled").length
   };
 }
 
-export function validateMobileExperience(): string[] {
+export function validateMobileExperience(model: MobileExperienceModel = mobileExperience): string[] {
   const issues: string[] = [];
-  const sectionIds = new Set(mobileExperienceSections.map((section) => section.id));
+  const sectionIds = new Set(model.sections.map((section) => section.id));
 
   for (const capability of requiredMobileCapabilities) {
     if (!sectionIds.has(capability)) {
@@ -147,43 +168,43 @@ export function validateMobileExperience(): string[] {
     }
   }
 
-  if (mobileExperienceSections.some((section) => !section.customerVisible)) {
+  if (model.sections.some((section) => !section.customerVisible)) {
     issues.push("Every mobile experience section must be customer-visible.");
   }
 
-  if (mobileExperienceSections.length < requiredMobileCapabilities.length) {
+  if (model.sections.length < requiredMobileCapabilities.length) {
     issues.push("Mobile experience does not expose enough customer sections.");
   }
 
-  if (!mobileChatTranscript.some((message) => message.text.includes("Local scripted assistant"))) {
+  if (!model.chatTranscript.some((message) => message.text.includes("Local scripted assistant"))) {
     issues.push("Mobile chat must identify the local scripted assistant path.");
   }
 
-  if (!mobileChatTranscript.some((message) => message.text.includes("Live AI and vendor orders stay off"))) {
+  if (!model.chatTranscript.some((message) => message.text.includes("Live AI and vendor orders stay off"))) {
     issues.push("Mobile chat must disclose that live AI and vendor orders are off.");
   }
 
-  if (!mobileRenderChoices.some((choice) => choice.mode === "free-local" && choice.label === "Browser SVG renderer")) {
+  if (!model.renderChoices.some((choice) => choice.mode === "free-local" && choice.label === "Browser SVG renderer")) {
     issues.push("Mobile render choices must include the free browser SVG renderer.");
   }
 
-  if (!mobileRenderChoices.some((choice) => choice.mode === "credential-gated")) {
+  if (!model.renderChoices.some((choice) => choice.mode === "credential-gated")) {
     issues.push("Mobile render choices must keep AI image providers credential-gated.");
   }
 
-  if (!mobileHandoffSteps.some((step) => step.realOrderState === "manual")) {
+  if (!model.handoffSteps.some((step) => step.realOrderState === "manual")) {
     issues.push("Mobile handoff must keep a manual upload path.");
   }
 
-  if (!mobileHandoffSteps.every((step) => step.realOrderState !== "disabled" || step.detail.includes("blocked"))) {
+  if (!model.handoffSteps.every((step) => step.realOrderState !== "disabled" || step.detail.includes("blocked"))) {
     issues.push("Disabled mobile handoff steps must explain blocked live order APIs.");
   }
 
-  if (mobileSafetyBanner.label !== "Real orders disabled") {
+  if (model.safetyBanner.label !== "Real orders disabled") {
     issues.push("Mobile safety banner must keep real orders disabled.");
   }
 
-  for (const phrase of collectMobileExperienceText()) {
+  for (const phrase of collectMobileExperienceText(model)) {
     if (/\b(live order ready|real orders enabled|payment active|vendor api connected|paid ai active)\b/i.test(phrase)) {
       issues.push(`Unsafe mobile live-provider claim: ${phrase}`);
     }
@@ -192,13 +213,13 @@ export function validateMobileExperience(): string[] {
   return issues;
 }
 
-function collectMobileExperienceText(): string[] {
+function collectMobileExperienceText(model: MobileExperienceModel): string[] {
   return [
-    mobileSafetyBanner.label,
-    mobileSafetyBanner.detail,
-    ...mobileExperienceSections.flatMap((section) => [section.title, section.detail, section.status]),
-    ...mobileChatTranscript.map((message) => message.text),
-    ...mobileRenderChoices.flatMap((choice) => [choice.label, choice.detail, choice.mode]),
-    ...mobileHandoffSteps.flatMap((step) => [step.label, step.detail, step.realOrderState])
+    model.safetyBanner.label,
+    model.safetyBanner.detail,
+    ...model.sections.flatMap((section) => [section.title, section.detail, section.status]),
+    ...model.chatTranscript.map((message) => message.text),
+    ...model.renderChoices.flatMap((choice) => [choice.label, choice.detail, choice.mode]),
+    ...model.handoffSteps.flatMap((step) => [step.label, step.detail, step.realOrderState])
   ];
 }

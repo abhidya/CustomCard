@@ -21,6 +21,7 @@ skeleton for the production path. It includes:
   projects, render packets, orders, consent, data requests, and audit logs.
 - Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration, static
   server, and mobile-shell scaffolding plus mobile contract validation.
+- GitHub Actions verification workflow for the local repository gates.
 - Tests that prove the current skeleton does not fake weak input, live ordering,
   raw-content import, or unsafe order-state transitions.
 - Chrome smoke tests that exercise the local auth -> import -> studio -> handoff
@@ -41,6 +42,8 @@ skeleton for the production path. It includes:
 - No physical print certification.
 - No legal or security review.
 - No deployment has been performed in this pass.
+- No remote hosted CI run evidence has been collected beyond the committed
+  workflow file.
 
 ## Reviewer Path
 
@@ -76,4 +79,4 @@ Postgres-backed authenticated service:
 - Render-packet artifact writing to object storage.
 - Export package builder for manual vendor upload.
 - Seed/demo reset workflow for reviewers.
-- Coverage reporting and CI-friendly Chrome smoke configuration.
+- Remote CI evidence collection and CI-friendly Chrome smoke hardening.

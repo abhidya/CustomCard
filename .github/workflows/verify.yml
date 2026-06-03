@@ -1,0 +1,43 @@
+name: Verify CustomCard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  repo-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CUSTOMCARD_ENV: dev
+      DATABASE_URL: postgres://x
+      QUEUE_URL: redis://x
+      OBJECT_STORE_URL: file:///tmp/customcard-objects
+      REAL_ORDER_KILL_SWITCH: disabled
+      CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full repository check
+        run: npm run check
+
+      - name: Validate deployment readiness
+        run: npm run deployment:doctor
+
+      - name: Validate worker readiness
+        run: npm run worker
+
+      - name: Validate mobile shell contract
+        run: npm --prefix apps/mobile run doctor

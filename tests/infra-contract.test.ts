@@ -111,6 +111,46 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("FEDEX_VENDOR_MODE=disabled_until_certified");
   });
 
+  it("keeps coverage instrumentation on core, orchestration, and mobile contract modules", () => {
+    const packageJson = read("package.json");
+    const viteConfig = read("vite.config.ts");
+
+    expect(packageJson).toContain("npm run test:coverage");
+    expect(packageJson).toContain("tests/mobile-contract.test.ts");
+    expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
+    expect(viteConfig).toContain("src/agentContracts.ts");
+    expect(viteConfig).toContain("src/domain.ts");
+    expect(viteConfig).toContain("src/freeMvp.ts");
+    expect(viteConfig).toContain("src/providerCatalog.ts");
+    expect(viteConfig).toContain("src/providerRuntime.ts");
+    expect(viteConfig).toContain("src/serviceKernel.ts");
+    expect(viteConfig).toContain("statements: 90");
+    expect(viteConfig).toContain("branches: 80");
+    expect(viteConfig).toContain("functions: 90");
+    expect(viteConfig).toContain("lines: 90");
+  });
+
+  it("defines a CI verification workflow for tests, coverage, build, deployment, worker, and mobile checks", () => {
+    const workflow = read(".github/workflows/verify.yml");
+
+    expect(workflow).toContain("Verify CustomCard");
+    expect(workflow).toContain("pull_request:");
+    expect(workflow).toContain("push:");
+    expect(workflow).toContain("branches:");
+    expect(workflow).toContain("main");
+    expect(workflow).toContain("actions/checkout@v4");
+    expect(workflow).toContain("actions/setup-node@v4");
+    expect(workflow).toContain("node-version: 24");
+    expect(workflow).toContain("cache: npm");
+    expect(workflow).toContain("npm ci");
+    expect(workflow).toContain("npm run check");
+    expect(workflow).toContain("npm run deployment:doctor");
+    expect(workflow).toContain("npm run worker");
+    expect(workflow).toContain("npm --prefix apps/mobile run doctor");
+    expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");
+    expect(workflow).toContain("CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173");
+  });
+
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
     const mobilePackage = read("apps/mobile/package.json");
     const appConfig = read("apps/mobile/app.config.js");

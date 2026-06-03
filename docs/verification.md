@@ -24,16 +24,21 @@ it after each meaningful implementation pass.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
-  env examples, runtime checks, and the mobile shell/customer contract boundary.
+  env examples, runtime checks, CI workflow gates, coverage scope, and the
+  mobile shell/customer contract boundary.
 - Mobile contract tests cover the Expo customer experience model: card queue,
   memory review, local chat, render choices, manual handoff, and real-order
   kill-switch doctor behavior.
+- Agent-contract tests cover the typed orchestration surface and fail-closed
+  default policy.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
-- Coverage is measured for the core TypeScript contract modules with V8
-  thresholds enforced by `npm run check`: 90% statements, 80% branches, 90%
+- Coverage is measured for core, orchestration, and mobile contract modules with
+  V8 thresholds enforced by `npm run check`: 90% statements, 80% branches, 90%
   functions, and 90% lines.
+- CI verification is defined in `.github/workflows/verify.yml` for pushes to
+  `main` and pull requests.
 - Runtime doctor fails closed on missing or placeholder required environment
   variables.
 - Real ordering remains disabled.
@@ -60,9 +65,10 @@ npm run check
 
 Result: passed.
 
-- Vitest: 8 test files passed, 60 tests passed.
-- Coverage: 7 core/infra/mobile test files passed, 56 tests passed; V8 report measured
-  91.16% statements, 84.22% branches, 94.87% functions, and 93.73% lines across
+- Vitest: 9 test files passed, 66 tests passed.
+- Coverage: 8 core/infra/mobile test files passed, 62 tests passed; V8 report measured
+  91.75% statements, 84.87% branches, 95.34% functions, and 94.16% lines across
+  `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
@@ -135,3 +141,5 @@ documentation claims found during the audit were corrected.
   credentials or market/commercial terms were verified.
 - Browser UI smoke tests are not included in the V8 unit coverage percentages;
   they remain covered by Chrome smoke assertions and visual evidence.
+- GitHub Actions workflow definition is contract-tested locally, but no remote
+  hosted CI run is claimed in this pass.

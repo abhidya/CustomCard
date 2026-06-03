@@ -6,6 +6,8 @@ export default defineConfig({
   test: {
     coverage: {
       include: [
+        "apps/mobile/src/customerExperience.ts",
+        "src/agentContracts.ts",
         "src/domain.ts",
         "src/freeMvp.ts",
         "src/providerCatalog.ts",

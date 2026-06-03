@@ -148,11 +148,15 @@ Implemented checks:
 - Infra tests require provider env vars and mobile customer contract evidence.
 - Mobile contract tests validate the customer app sections, local/gated
   chat-render-handoff posture, and doctor kill-switch behavior.
+- Agent contract tests validate the typed orchestration surface and fail-closed
+  default policy.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
-- `npm run test:coverage` enforces V8 coverage thresholds for the core
-  TypeScript contract modules: 90% statements, 80% branches, 90% functions, and
-  90% lines.
+- `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
+  worker readiness, and mobile doctor for pushes to `main` and pull requests.
+- `npm run test:coverage` enforces V8 coverage thresholds for core,
+  orchestration, and mobile contract modules: 90% statements, 80% branches, 90%
+  functions, and 90% lines.
 
 Remaining high-risk work:
 
@@ -161,4 +165,5 @@ Remaining high-risk work:
 - No payment, quote, or live order adapter.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
+- No remote hosted CI run is claimed in this repo-local pass.
 - No legal/security/privacy/accessibility audit.

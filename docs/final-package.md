@@ -10,7 +10,7 @@
 - Current delivered outcome: a polished free local MVP plus customer/admin
   panels, a tested provider-adapter catalog and no-network runtime contracts, a
   tested customer mobile shell contract, and a contract-first production
-  skeleton.
+  skeleton with committed CI verification gates.
 - Audience/reviewer: project reviewer, interview/client evaluator, or future
   implementer who needs to inspect the repo without reading chat history.
 
@@ -42,7 +42,8 @@
   dry runs.
 - Tests/verification: added deterministic free-MVP and provider-catalog tests and
   provider-runtime tests, and updated Chrome smoke tests to exercise the real
-  reviewer workflow plus customer/admin panels.
+  reviewer workflow plus customer/admin panels; coverage now includes
+  orchestration and mobile contract modules, and CI runs the repository gates.
 - Docs/handoff: added `docs/free-mvp-plan.md` and
   `docs/platform-expansion-design.md`, updated README, traceability, decisions,
   delivery process, verification, completion audit, handoff notes, and visual
@@ -65,6 +66,9 @@
 - Provider runtime: readiness dry runs for every catalog adapter; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters.
+- CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
+  deployment doctor, worker readiness, and the mobile doctor on pushes to `main`
+  and pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
   queue, memory review, local chat, image/render state, manual handoff, and
   real-order kill-switch validation.
@@ -79,13 +83,14 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 8 test files, 60 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed core contract thresholds: 91.16% statements, 84.22% branches, 94.87% functions, 93.73% lines. |
+| Tests | `npm run check` | Passed on 2026-06-03: 9 test files, 66 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.75% statements, 84.87% branches, 95.34% functions, 94.16% lines across core, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -104,7 +109,7 @@
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
 | Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; skeleton only |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
-| Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `docs/verification.md`. | Covered for core contracts; UI covered by smoke |
+| Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
 
 ## Reviewer Path
@@ -117,7 +122,8 @@
 4. Run `npm run check`.
 5. Run `npm run deployment:doctor`.
 6. Run the worker and mobile doctor commands in `docs/verification.md`.
-7. Inspect screenshots in `docs/evidence/` and known gaps in
+7. Inspect `.github/workflows/verify.yml`.
+8. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -129,6 +135,7 @@
 - No PNG/PDF production export pipeline or object-storage upload.
 - No live vendor quote, order, payment, refund, or cancellation integration.
 - No real droplet or Kubernetes deployment execution evidence.
+- No remote hosted CI run evidence beyond the committed workflow contract.
 - No React Native render test, emulator run, native build, or signed mobile
   artifact.
 - No physical print certification.
