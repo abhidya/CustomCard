@@ -77,6 +77,13 @@ describe("api contracts", () => {
     expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(87);
     expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
+    expect(payload.printerPricing).toMatchObject({
+      selectedVendorId: "walgreens",
+      liveQuote: false,
+      refreshReport: expect.objectContaining({
+        sourceCount: 7
+      })
+    });
   });
 
   it("resolves safe GET response contracts for the API server wrapper", () => {

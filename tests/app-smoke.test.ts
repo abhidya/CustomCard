@@ -160,6 +160,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.handoffText).toContain("Real orders disabled");
     expect(result.handoffText).toContain("No live vendor quote or order API is connected.");
     expect(result.handoffText).toContain("review-only public pricing");
+    expect(result.handoffText).toContain("Sources");
+    expect(result.handoffText).toContain("Max age");
     expect(result.handoffText).toContain("not live quotes");
     expect(result.downloadTiles).toBe(4);
     expect(result.scrollWidth).toBe(result.clientWidth);

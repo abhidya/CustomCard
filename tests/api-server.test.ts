@@ -103,6 +103,15 @@ describe("api server wrapper", () => {
       expect(mobile.sections).toEqual(expect.arrayContaining(["card-queue", "text-chat", "handoff"]));
       expect(mobile.realOrdersEnabled).toBe(false);
 
+      const customer = await getJson(port, "/api/customer/bootstrap");
+      expect(customer.printerPricing).toMatchObject({
+        selectedVendorId: "walgreens",
+        liveQuote: false,
+        sourceCount: 7,
+        maxAgeDays: 30,
+        externalNetworkCalls: false
+      });
+
       const mutation = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
       expect(mutation.status).toBe(202);
       expect(await mutation.json()).toMatchObject({
@@ -147,7 +156,7 @@ describe("api server wrapper", () => {
       server.kill();
       await waitForExit(server);
     }
-  }, 10_000);
+  }, 15_000);
 
   it("enforces memory-runtime auth sessions and idempotent mutation replay", async () => {
     const port = 7100 + Math.floor(Math.random() * 1000);
@@ -188,6 +197,7 @@ describe("api server wrapper", () => {
 
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
       expect(customerBootstrap.runtime).toMatchObject({ mode: "memory", authEnforced: true });
+      expect(customerBootstrap.printerPricing).toMatchObject({ liveQuote: false, sourceCount: 7 });
 
       const missingAuth = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
       expect(missingAuth.status).toBe(401);

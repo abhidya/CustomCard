@@ -3,6 +3,8 @@ import type { VendorId } from "./freeMvp";
 export type PrinterPricingConfidence = "public-current" | "public-ambiguous" | "manual-estimate";
 export type PrinterPricingSpeed = "same-day" | "24-hour" | "ships-in-days" | "manual-confirm";
 export type PrinterProductKind = "folded-card" | "flat-card" | "photo-card" | "premium-card";
+export type PrinterPricingCollectionMode = "official-developer-catalog" | "official-public-page" | "official-product-page";
+export type PrinterPricingFreshnessStatus = "fresh" | "stale" | "future-dated";
 
 export interface PrinterPricingSource {
   label: string;
@@ -37,12 +39,48 @@ export interface PrinterPriceEstimate {
   subtotalLabel: string;
 }
 
+export interface PrinterPricingCollectionRule {
+  sourceLabel: string;
+  url: string;
+  vendorIds: VendorId[];
+  mode: PrinterPricingCollectionMode;
+  maxAgeDays: number;
+  extractHints: string[];
+  blockedFields: string[];
+  noNetworkRuntime: true;
+}
+
+export interface PrinterPricingSourceFreshness {
+  sourceLabel: string;
+  url: string;
+  observedAtIso: string;
+  ageDays: number;
+  status: PrinterPricingFreshnessStatus;
+  observationIds: string[];
+}
+
+export interface PrinterPricingRefreshReport {
+  generatedAtIso: string;
+  maxAgeDays: number;
+  totalObservations: number;
+  sourceCount: number;
+  freshSources: number;
+  staleSources: PrinterPricingSourceFreshness[];
+  futureDatedSources: PrinterPricingSourceFreshness[];
+  collectionRules: PrinterPricingCollectionRule[];
+  blockers: string[];
+  canShowComparison: boolean;
+  liveQuote: false;
+  disclaimer: string;
+}
+
 export interface PrinterPricingComparison {
   selectedVendorId: VendorId;
   quantity: number;
   selectedVendorOptions: PrinterPriceEstimate[];
   rankedKnownPrices: PrinterPriceEstimate[];
   manualConfirmationVendors: VendorId[];
+  refreshReport: PrinterPricingRefreshReport;
   disclaimer: string;
   liveQuote: false;
 }
@@ -61,6 +99,12 @@ export const printerPricingSources = {
     url: "https://www.cvs.com/Photo/Cards",
     observedAtIso,
     notes: "Official CVS cards page lists same-day 5x7 card starting prices and pickup availability counts."
+  },
+  cvsDoubleSidedCards: {
+    label: "CVS Photo double-sided cards",
+    url: "https://www.cvs.com/Photo/Cards",
+    observedAtIso,
+    notes: "Official CVS cards page lists 5x7 double-sided cardstock pricing separately from premium cards."
   },
   cvsSameDay: {
     label: "CVS Photo same-day photo gifts",
@@ -82,9 +126,15 @@ export const printerPricingSources = {
   },
   staplesFoldedCards: {
     label: "Staples folded cards",
-    url: "https://www.staples.com/services/printing/cards-invitations/",
+    url: "https://www.staples.com/services/printing/cards-invitations-announcements/folded-cards/",
     observedAtIso,
-    notes: "Official Staples cards and invitations page lists 5x7 folded card bundle pricing; coupon and production-window details require checkout confirmation."
+    notes: "Official Staples folded-cards page lists a 5x7 25-card folded package; coupon and production-window details require checkout confirmation."
+  },
+  staplesSameDayCards: {
+    label: "Staples same-day cards",
+    url: "https://www.staples.com/services/printing/cards-invitations-announcements/same-day-cards/",
+    observedAtIso,
+    notes: "Official Staples same-day cards page lists a 5x7 25-card package; store pickup still requires checkout confirmation."
   },
   officeDepotPhotoCards: {
     label: "Office Depot custom photo holiday cards",
@@ -93,6 +143,89 @@ export const printerPricingSources = {
     notes: "Official Office Depot custom photo card product page lists a 25-card 7x5 package price; production and pickup/ship details require manual confirmation."
   }
 } satisfies Record<string, PrinterPricingSource>;
+
+export const printerPricingCollectionRules: PrinterPricingCollectionRule[] = [
+  {
+    sourceLabel: printerPricingSources.walgreensProductCatalog.label,
+    url: printerPricingSources.walgreensProductCatalog.url,
+    vendorIds: ["walgreens"],
+    mode: "official-developer-catalog",
+    maxAgeDays: 30,
+    extractHints: ["5x7 folded card", "unit retail price", "same-day photo product"],
+    blockedFields: ["tax", "coupon", "store stock", "pickup window", "live order placement"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.cvsCards.label,
+    url: printerPricingSources.cvsCards.url,
+    vendorIds: ["cvs"],
+    mode: "official-public-page",
+    maxAgeDays: 30,
+    extractHints: ["Same Day 5x7 Premium Cards", "5x7 Folded Cards", "starting price", "minimum quantity"],
+    blockedFields: ["tax", "coupon", "store stock", "pickup window", "photo checkout availability"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.cvsDoubleSidedCards.label,
+    url: printerPricingSources.cvsDoubleSidedCards.url,
+    vendorIds: ["cvs"],
+    mode: "official-public-page",
+    maxAgeDays: 30,
+    extractHints: ["5x7 Double-Sided Cardstock", "starting price", "minimum quantity"],
+    blockedFields: ["tax", "coupon", "store stock", "pickup window", "photo checkout availability"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.fedexGreetingCards.label,
+    url: printerPricingSources.fedexGreetingCards.url,
+    vendorIds: ["fedex"],
+    mode: "official-public-page",
+    maxAgeDays: 30,
+    extractHints: ["Quick 5x7 double-sided greeting card", "Premium 5x7 folded greeting card", "package start"],
+    blockedFields: ["tax", "coupon", "local pickup slot", "delivery date", "print QA result"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.walmartSameDayFolded.label,
+    url: printerPricingSources.walmartSameDayFolded.url,
+    vendorIds: ["walmart"],
+    mode: "official-product-page",
+    maxAgeDays: 30,
+    extractHints: ["Same-Day Folded Photo Card", "5x7", "each"],
+    blockedFields: ["tax", "coupon", "store stock", "pickup window", "business-account checkout"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.staplesFoldedCards.label,
+    url: printerPricingSources.staplesFoldedCards.url,
+    vendorIds: ["staples"],
+    mode: "official-public-page",
+    maxAgeDays: 30,
+    extractHints: ["5x7 folded cards", "25 quantity", "pre-tax subtotal"],
+    blockedFields: ["tax", "coupon", "pickup window", "delivery availability", "card-stock proof"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.staplesSameDayCards.label,
+    url: printerPricingSources.staplesSameDayCards.url,
+    vendorIds: ["staples"],
+    mode: "official-public-page",
+    maxAgeDays: 30,
+    extractHints: ["5x7 same-day cards", "25 quantity", "pre-tax subtotal"],
+    blockedFields: ["tax", "coupon", "store stock", "pickup window", "card-stock proof"],
+    noNetworkRuntime: true
+  },
+  {
+    sourceLabel: printerPricingSources.officeDepotPhotoCards.label,
+    url: printerPricingSources.officeDepotPhotoCards.url,
+    vendorIds: ["office-depot"],
+    mode: "official-product-page",
+    maxAgeDays: 30,
+    extractHints: ["7x5 custom photo holiday cards", "25 pack", "package price"],
+    blockedFields: ["tax", "coupon", "pickup window", "delivery availability", "card-stock proof"],
+    noNetworkRuntime: true
+  }
+];
 
 export const printerPriceCatalog: PrinterPriceObservation[] = [
   {
@@ -115,7 +248,23 @@ export const printerPriceCatalog: PrinterPriceObservation[] = [
     id: "cvs-5x7-double-sided-cardstock",
     vendorId: "cvs",
     vendorName: "CVS Photo",
-    productName: "Same Day 5x7 Premium / double-sided cardstock card",
+    productName: "5x7 double-sided cardstock card",
+    productKind: "flat-card",
+    size: "5x7",
+    unitPriceCents: 199,
+    minimumQuantity: 20,
+    speed: "same-day",
+    pickupEligible: true,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-current",
+    source: printerPricingSources.cvsDoubleSidedCards
+  },
+  {
+    id: "cvs-5x7-premium-card",
+    vendorId: "cvs",
+    vendorName: "CVS Photo",
+    productName: "Same Day 5x7 Premium card",
     productKind: "premium-card",
     size: "5x7",
     unitPriceCents: 249,
@@ -200,15 +349,32 @@ export const printerPriceCatalog: PrinterPriceObservation[] = [
     productName: "5x7 folded card bundle",
     productKind: "folded-card",
     size: "5x7",
+    unitPriceCents: 200,
+    startingPackagePriceCents: 4999,
+    minimumQuantity: 25,
+    speed: "ships-in-days",
+    pickupEligible: false,
+    liveQuote: false,
+    requiresManualConfirmation: true,
+    confidence: "public-current",
+    source: printerPricingSources.staplesFoldedCards
+  },
+  {
+    id: "staples-5x7-same-day-card-bundle",
+    vendorId: "staples",
+    vendorName: "Staples Print",
+    productName: "5x7 same-day card bundle",
+    productKind: "flat-card",
+    size: "5x7",
     unitPriceCents: 120,
     startingPackagePriceCents: 2999,
     minimumQuantity: 25,
-    speed: "24-hour",
+    speed: "same-day",
     pickupEligible: true,
     liveQuote: false,
     requiresManualConfirmation: true,
-    confidence: "public-ambiguous",
-    source: printerPricingSources.staplesFoldedCards
+    confidence: "public-current",
+    source: printerPricingSources.staplesSameDayCards
   },
   {
     id: "office-depot-7x5-photo-holiday-card-bundle",
@@ -256,7 +422,8 @@ export function estimatePrinterSubtotal(observation: PrinterPriceObservation, qu
 export function buildPrinterPricingComparison(
   selectedVendorId: VendorId,
   quantity = 1,
-  catalog: PrinterPriceObservation[] = printerPriceCatalog
+  catalog: PrinterPriceObservation[] = printerPriceCatalog,
+  now = new Date()
 ): PrinterPricingComparison {
   const estimates = catalog.map((observation) => estimatePrinterSubtotal(observation, quantity));
   const rankedKnownPrices = estimates.slice().sort((first, second) =>
@@ -282,15 +449,61 @@ export function buildPrinterPricingComparison(
     manualConfirmationVendors: Array.from(vendorIds).filter((vendorId) =>
       vendorId === "local-print-shop" || catalog.some((observation) => observation.vendorId === vendorId)
     ),
+    refreshReport: buildPrinterPricingRefreshReport(catalog, now),
     disclaimer:
       "Public printer prices are review-only observations, not live quotes. Confirm price, tax, pickup window, and stock in the vendor checkout before upload.",
     liveQuote: false
   };
 }
 
-export function validatePrinterPricingCatalog(catalog: PrinterPriceObservation[] = printerPriceCatalog): string[] {
+export function buildPrinterPricingRefreshReport(
+  catalog: PrinterPriceObservation[] = printerPriceCatalog,
+  now = new Date()
+): PrinterPricingRefreshReport {
+  const sourceMap = new Map<string, { source: PrinterPricingSource; observationIds: string[] }>();
+  for (const observation of catalog) {
+    const key = observation.source.url;
+    const current = sourceMap.get(key) ?? { source: observation.source, observationIds: [] };
+    current.observationIds.push(observation.id);
+    sourceMap.set(key, current);
+  }
+
+  const freshness = Array.from(sourceMap.values()).map(({ source, observationIds }) =>
+    buildSourceFreshness(source, observationIds, now)
+  );
+  const staleSources = freshness.filter((source) => source.status === "stale");
+  const futureDatedSources = freshness.filter((source) => source.status === "future-dated");
+  const catalogErrors = validatePrinterPricingCatalog(catalog, { skipFreshness: true });
+  const blockers = [
+    ...catalogErrors,
+    ...staleSources.map((source) => `${source.sourceLabel} source is ${source.ageDays} days old; refresh before showing as current.`),
+    ...futureDatedSources.map((source) => `${source.sourceLabel} source observation date is in the future.`)
+  ];
+
+  return {
+    generatedAtIso: now.toISOString(),
+    maxAgeDays: maxPrinterPricingAgeDays,
+    totalObservations: catalog.length,
+    sourceCount: sourceMap.size,
+    freshSources: freshness.filter((source) => source.status === "fresh").length,
+    staleSources,
+    futureDatedSources,
+    collectionRules: printerPricingCollectionRules,
+    blockers,
+    canShowComparison: blockers.length === 0,
+    liveQuote: false,
+    disclaimer:
+      "Pricing collection uses official public pages only and excludes taxes, coupons, stock, pickup windows, payments, and live order placement."
+  };
+}
+
+export function validatePrinterPricingCatalog(
+  catalog: PrinterPriceObservation[] = printerPriceCatalog,
+  options: { enforceFreshness?: boolean; now?: Date; skipFreshness?: boolean } = {}
+): string[] {
   const errors: string[] = [];
   const ids = new Set<string>();
+  const sourceUrlsWithRules = new Set(printerPricingCollectionRules.map((rule) => rule.url));
 
   for (const observation of catalog) {
     if (ids.has(observation.id)) errors.push(`Duplicate printer price id: ${observation.id}`);
@@ -308,6 +521,9 @@ export function validatePrinterPricingCatalog(catalog: PrinterPriceObservation[]
     if (!observation.source.url.startsWith("https://")) {
       errors.push(`Printer price ${observation.id} must cite an HTTPS source.`);
     }
+    if (!sourceUrlsWithRules.has(observation.source.url)) {
+      errors.push(`Printer price ${observation.id} must have a collection rule for ${observation.source.url}.`);
+    }
   }
 
   for (const vendorId of ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot"] satisfies VendorId[]) {
@@ -316,7 +532,36 @@ export function validatePrinterPricingCatalog(catalog: PrinterPriceObservation[]
     }
   }
 
+  if (options.enforceFreshness && !options.skipFreshness) {
+    const report = buildPrinterPricingRefreshReport(catalog, options.now ?? new Date());
+    errors.push(...report.staleSources.map((source) => `${source.sourceLabel} source is stale.`));
+    errors.push(...report.futureDatedSources.map((source) => `${source.sourceLabel} source is future dated.`));
+  }
+
   return errors;
+}
+
+const maxPrinterPricingAgeDays = 30;
+const dayInMs = 24 * 60 * 60 * 1000;
+
+function buildSourceFreshness(
+  source: PrinterPricingSource,
+  observationIds: string[],
+  now: Date
+): PrinterPricingSourceFreshness {
+  const observedAt = new Date(source.observedAtIso);
+  const ageDays = Math.floor((now.getTime() - observedAt.getTime()) / dayInMs);
+  const status: PrinterPricingFreshnessStatus =
+    ageDays < 0 ? "future-dated" : ageDays > maxPrinterPricingAgeDays ? "stale" : "fresh";
+
+  return {
+    sourceLabel: source.label,
+    url: source.url,
+    observedAtIso: source.observedAtIso,
+    ageDays,
+    status,
+    observationIds
+  };
 }
 
 function formatCents(cents: number): string {

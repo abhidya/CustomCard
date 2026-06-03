@@ -859,6 +859,7 @@ function HandoffView({
 }) {
   const primaryPricing = pricingComparison.selectedVendorOptions[0];
   const rankedOptions = pricingComparison.rankedKnownPrices.slice(0, 4);
+  const refreshReport = pricingComparison.refreshReport;
   const pdfFile = printPackage.files.find((file) => file.kind === "combined-pdf");
   const manifestFile = printPackage.files.find((file) => file.kind === "manifest-json");
 
@@ -969,12 +970,20 @@ function HandoffView({
           ) : (
             <p>Local print shops still need a manual quote before upload.</p>
           )}
+          <div className="pricingFreshnessGrid">
+            <Metric label="Sources" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
+            <Metric label="Max age" value={`${refreshReport.maxAgeDays} days`} />
+            <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />
+          </div>
           <div className="pricingOptionList">
             {rankedOptions.map((estimate) => (
               <div className="pricingOption" key={estimate.observation.id}>
                 <strong>{estimate.observation.vendorName}</strong>
                 <span>{estimate.subtotalLabel}</span>
-                <small>{estimate.observation.speed.replace(/-/g, " ")} / confirm in checkout</small>
+                <small>
+                  {estimate.observation.speed.replace(/-/g, " ")} / {estimate.observation.confidence.replace(/-/g, " ")} /
+                  confirm in checkout
+                </small>
               </div>
             ))}
           </div>

@@ -57,8 +57,8 @@ environment configuration instead of static placeholders.
 - Manual handoff checklist for Walgreens, CVS, FedEx Office, Walmart, Staples,
   Office Depot, or a local printer.
 - Review-only public printer pricing comparison for Walgreens, CVS, FedEx,
-  Walmart, Staples, and Office Depot manual handoff, with checkout confirmation
-  still required.
+  Walmart, Staples, and Office Depot manual handoff, with official-source
+  freshness checks and checkout confirmation still required.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, cloud runtime readiness, and

@@ -47,8 +47,9 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
   and Office Depot live ordering blocked.
 - Printer pricing: public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot 5x7
-  card observations ready for manual comparison; live quotes, taxes, coupons,
-  stock, and pickup windows remain manual-confirmation work.
+  card observations ready for manual comparison, with official-source collection
+  rules and 30-day freshness reporting; live quotes, taxes, coupons, stock, and
+  pickup windows remain manual-confirmation work.
 - Notifications: local UI status ready; credential-gated Resend, SendGrid,
   Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, and Firebase
   Cloud Messaging contracts; generic transactional email contract gated.
@@ -159,7 +160,7 @@ The admin panel turns the adapter catalog into an operations surface:
 - Cloud runtime adapters.
 - Blocked live-order vendors.
 - Public printer pricing research for manual Walgreens/CVS/FedEx/Walmart/
-  Staples/Office Depot comparison.
+  Staples/Office Depot comparison, including source-count and freshness state.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 
@@ -259,8 +260,8 @@ Implemented checks:
   placeholder-secret rejection, free local fallbacks, and hard-blocked live
   vendor order adapters.
 - `src/printerPricing.test.ts` validates source-backed public price
-  observations, minimum-quantity totals, manual-confirmation requirements, and
-  the no-live-quote boundary.
+  observations, collection rules, freshness blocking, minimum-quantity totals,
+  manual-confirmation requirements, and the no-live-quote boundary.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.

@@ -8,6 +8,7 @@ import {
   type ProviderCoverageSummary
 } from "./providerCatalog.ts";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime.ts";
+import { buildPrinterPricingComparison } from "./printerPricing.ts";
 
 export type ApiMethod = "GET" | "POST";
 export type ApiAudience = "public" | "customer" | "admin";
@@ -57,6 +58,7 @@ export interface ApiBootstrapPayload {
   admin: ReturnType<typeof buildAdminPanelModel>;
   mobile: typeof mobileExperience;
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
+  printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
 }
 
 export const apiRouteContracts: ApiRouteContract[] = [
@@ -98,12 +100,12 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "durable-api",
     requestSchema: ["session"],
-    responseSchema: ["primaryActions", "readyFallbacks", "chatTranscript"],
+    responseSchema: ["primaryActions", "readyFallbacks", "chatTranscript", "printerPricing"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
-    piiPolicy: "Approved memories only; no raw provider content.",
-    backedBy: ["buildCustomerPanelModel", "buildCustomerChatTranscript"]
+    piiPolicy: "Approved memories only; public printer pricing observations contain no customer data.",
+    backedBy: ["buildCustomerPanelModel", "buildCustomerChatTranscript", "buildPrinterPricingComparison"]
   },
   {
     id: "mobile-bootstrap",
@@ -284,7 +286,8 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     customer: buildCustomerPanelModel(),
     admin: buildAdminPanelModel(),
     mobile: mobileExperience,
-    chatTranscript: buildCustomerChatTranscript("Sara and Ahmed")
+    chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
+    printerPricing: buildPrinterPricingComparison("walgreens")
   };
 }
 

@@ -22,8 +22,9 @@ it after each meaningful implementation pass.
   observability request contracts, metadata-only event/contact import contracts,
   free local fallbacks, and hard-blocked live vendor ordering.
 - Printer-pricing tests cover review-only public Walgreens/CVS/FedEx/Walmart/
-  Staples/Office Depot price observations, minimum quantity math, source URLs,
-  manual confirmation, and `liveQuote: false`.
+  Staples/Office Depot price observations, collection rules, 30-day freshness
+  blocking, minimum quantity math, source URLs, manual confirmation, and
+  `liveQuote: false`.
 - Print-export tests cover local source SVG files, a combined 5x7 PDF proof,
   checksum manifest validation, preflight failure paths, and no-network/no-order
   summary behavior.
@@ -44,8 +45,8 @@ it after each meaningful implementation pass.
 - API-contract and API-server tests cover `/api/health`, customer/admin
   bootstrap, mobile bootstrap, provider readiness, idempotent mutation contracts,
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
-  `X-Idempotency-Key` replay/conflict behavior, 404/405 behavior, and the
-  no-live-call/no-real-order posture.
+  customer pricing preview, `X-Idempotency-Key` replay/conflict behavior,
+  404/405 behavior, and the no-live-call/no-real-order posture.
 - Persistence-contract tests and `npm run persistence:doctor` cover auth-session
   schema, idempotency replay state, queue job envelopes, append-only audit
   contracts, demo reset mappings, and 11 schema-backed API route mappings.
@@ -90,9 +91,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 16 test files passed, 111 tests passed.
-- Coverage: 14 core/API/persistence/infra/mobile test files passed, 103 tests passed; V8 report measured
-  91.91% statements, 85.13% branches, 97.58% functions, and 95.73% lines across
+- Vitest: 16 test files passed, 113 tests passed.
+- Coverage: 14 core/API/persistence/infra/mobile test files passed, 105 tests passed; V8 report measured
+  91.78% statements, 85.03% branches, 97.13% functions, and 95.6% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -200,8 +201,8 @@ documentation claims found during the audit were corrected.
 - No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
 - Local SVG/PDF/manifest print package export and signed artifact handoff
   contracts are covered, but no live object-store upload is claimed.
-- Public printer pricing is review-only and source-backed; no live quote, tax,
-  coupon, stock, pickup-window, or checkout test is claimed.
+- Public printer pricing is review-only and source-backed with freshness gates;
+  no live quote, tax, coupon, stock, pickup-window, or checkout test is claimed.
 - Payment providers are sandbox-contract only; no live charge, capture, refund,
   dispute, tax, settlement, or payment-webhook test is claimed.
 - Observability providers are contract-only; no live telemetry ingestion, alert,

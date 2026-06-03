@@ -798,6 +798,10 @@ describe("provider runtime contracts", () => {
     expect(pricing.localResult).toMatchObject({
       liveQuote: false,
       selectedVendorId: "walgreens",
+      refreshReport: expect.objectContaining({
+        liveQuote: false,
+        sourceCount: 7
+      }),
       disclaimer: expect.stringContaining("not live quotes")
     });
   });

@@ -14,8 +14,8 @@ skeleton for the production path. It includes:
   OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability, Replicate,
   notification, vendor, and cloud-runtime adapters.
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
-  Walmart, Staples, and Office Depot, kept separate from live quote/order
-  claims.
+  Walmart, Staples, and Office Depot, with official-source freshness reporting
+  kept separate from live quote/order claims.
 - Local print package export with four SVG upload artifacts, a combined 5x7 PDF
   proof, and a checksum manifest for manual printer handoff.
 - Render-packet artifact handoff contracts with HMAC-signed URLs, artifact
@@ -50,8 +50,8 @@ skeleton for the production path. It includes:
 - No live object-storage upload or cloud object-store integration for exported
   artifacts; signed URL contracts and schema gates are covered.
 - No live retail-printer quote or order API.
-- No live tax, coupon, stock, or pickup-window verification for public printer
-  prices.
+- No live tax, coupon, stock, pickup-window, or checkout availability
+  verification for public printer prices.
 - No live payment charge/refund, cancellation, or external order-confirmation
   integration; payment provider coverage is sandbox-contract only.
 - No live observability ingestion, alert routing, retention enforcement, or

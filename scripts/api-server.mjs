@@ -188,6 +188,14 @@ async function serveApi(request, response, path) {
       service: "customcard-api",
       primaryActions: ["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"],
       readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual vendor handoff"],
+      printerPricing: {
+        selectedVendorId: "walgreens",
+        liveQuote: false,
+        sourceCount: 7,
+        maxAgeDays: 30,
+        freshnessPolicy: "Use src/printerPricing.ts refresh report before showing prices as current.",
+        externalNetworkCalls: false
+      },
       realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
