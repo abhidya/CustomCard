@@ -258,8 +258,15 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain(`  repo-check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
+    services:
+      postgres:
+        image: postgres:16
 `);
+    expect(workflow).toContain("POSTGRES_DB: customcard_ci");
+    expect(workflow).toContain("pg_isready -U customcard -d customcard_ci");
+    expect(workflow).toContain(`    env:
+`);
+    expect(workflow).toContain("DATABASE_URL: postgres://customcard:customcard@127.0.0.1:5432/customcard_ci");
     expect(workflow).toContain(`      CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173
     steps:
 `);
@@ -276,6 +283,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
+    expect(workflow).toContain("npm run api:doctor:postgres:live");
     expect(workflow).toContain("npm run persistence:doctor");
     expect(workflow).toContain("npm run demo:doctor");
     expect(workflow).toContain("npm run worker");

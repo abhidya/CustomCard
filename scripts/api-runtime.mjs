@@ -56,6 +56,9 @@ function createContractApiRuntime({ routes }) {
           idempotencyPersisted: false
         }
       };
+    },
+    async close() {
+      return undefined;
     }
   };
 }
@@ -148,6 +151,9 @@ function createMemoryApiRuntime({ env, routes }) {
       }
 
       return { ok: true, statusCode: 202, payload };
+    },
+    async close() {
+      return undefined;
     }
   };
 }
@@ -306,6 +312,11 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
       } finally {
         client.release();
       }
+    },
+    async close() {
+      if (!poolPromise) return;
+      const pool = await poolPromise;
+      if (typeof pool.end === "function") await pool.end();
     }
   };
 }

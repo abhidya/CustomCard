@@ -45,8 +45,9 @@ skeleton for the production path. It includes:
 
 - No production user auth or account recovery.
 - No real email/calendar OAuth flow.
-- No live Postgres API integration test or production account auth flow; the
-  Postgres runtime is contract-tested through an injected fake pool only.
+- No deployed production Postgres API integration or production account auth
+  flow; fake-pool and isolated live Postgres migration/runtime doctors cover the
+  current API persistence boundary.
 - No live AI text/image generation.
 - No live object-storage upload or cloud object-store integration for exported
   artifacts; signed URL contracts and schema gates are covered.
@@ -73,11 +74,13 @@ skeleton for the production path. It includes:
 4. Run `npm run check`.
 5. Run `npm run api:doctor`.
 6. Run `npm run api:doctor:memory`.
-7. Run `npm run persistence:doctor`.
-8. Run `npm run demo:doctor`.
-9. Run the worker and mobile doctor commands in `docs/verification.md`.
-10. Inspect the app with `npm run dev`.
-11. In the app, start a local workspace, scan the sample invite, generate a card,
+7. Run `npm run api:doctor:postgres`.
+8. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+9. Run `npm run persistence:doctor`.
+10. Run `npm run demo:doctor`.
+11. Run the worker and mobile doctor commands in `docs/verification.md`.
+12. Inspect the app with `npm run dev`.
+13. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -86,10 +89,10 @@ skeleton for the production path. It includes:
 CustomCard started from a last-minute physical wedding-card workflow and expanded
 into a free local MVP plus a contract-first production skeleton for an event-aware
 card concierge. The current repo does not claim live production fulfillment. It
-proves the product workflow, customer/admin/API/persistence surfaces, memory
-auth/idempotency runtime behavior, public printer pricing research, local
-SVG/PDF print package export, provider-adapter readiness, domain boundaries,
-signed artifact handoff contracts, print contracts, order lifecycle,
+proves the product workflow, customer/admin/API/persistence surfaces, memory and
+Postgres auth/idempotency runtime behavior, public printer pricing research,
+local SVG/PDF print package export, provider-adapter readiness, domain
+boundaries, signed artifact handoff contracts, print contracts, order lifecycle,
 deployment shape, and safety gates with executable TypeScript, browser smoke
 tests, visual evidence, and infrastructure tests. Real external AI, OAuth, and
 ordering remain disabled until production credentials, consent flows, vendor
@@ -98,12 +101,12 @@ security/legal review are complete.
 
 ## Next Build Slice
 
-The highest-leverage next slice is turning the fake-pool Postgres runtime
-contract into a real migrated Postgres integration test:
+The highest-leverage next slice is turning the isolated Postgres doctor into
+production account and repository flows:
 
 - Production user auth and authenticated card-project routes.
 - Persistent event/opportunity/memory/order repositories.
 - Live render-packet artifact writing to object storage using the signed handoff
   contract.
-- Live seed execution against a real Postgres reviewer database.
+- Live seed execution against a deployed reviewer database.
 - CI-friendly Chrome smoke hardening.

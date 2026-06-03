@@ -34,6 +34,8 @@ Run the local IaC readiness check before treating the manifests as reviewable:
 npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
+npm run api:doctor:postgres
+CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 npm run persistence:doctor
 npm run demo:doctor
 ```
@@ -53,8 +55,12 @@ validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
 `npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
 path and validates session lookup, wrong-role blocking, idempotency replay,
 conflict handling, audit inserts, and queue-job inserts without external
-credentials. `CUSTOMCARD_API_RUNTIME=postgres` with a real `DATABASE_URL` is
-still reserved for live database integration testing.
+credentials. `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run
+api:doctor:postgres:live` creates an isolated temporary database on the configured
+Postgres server, applies the committed migration, seeds customer/admin sessions,
+exercises the real `pg` runtime, and drops the temporary database before exiting.
+CI runs that live doctor against a Postgres service; deployed production account
+auth remains unclaimed.
 
 The persistence boundary requires auth-session storage, idempotency replay,
 queue job envelopes, render-packet artifact manifests, signed URL expiry, and

@@ -273,6 +273,9 @@ Implemented checks:
   config failures.
 - `npm run api:doctor:postgres` validates Postgres API runtime SQL behavior
   through an injected fake pool without requiring external database credentials.
+- `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled npm run api:doctor:postgres:live`
+  validates the same auth/idempotency/audit/queue path against an isolated live
+  Postgres database after applying the committed migration.
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer contract evidence.
@@ -288,9 +291,9 @@ Implemented checks:
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
-  contract API doctor, memory API doctor, Postgres runtime contract doctor,
-  persistence doctor, demo reset doctor, worker readiness, and mobile doctor for
-  pushes to `main` and pull requests.
+  contract API doctor, memory API doctor, Postgres runtime contract doctor, live
+  Postgres integration doctor, persistence doctor, demo reset doctor, worker
+  readiness, and mobile doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact-handoff, pricing, print-export, persistence, orchestration, and mobile contract
   modules: 90% statements, 80% branches, 90% functions, and 90% lines.
@@ -305,8 +308,9 @@ Remaining high-risk work:
 - No live printer tax, coupon, stock, or pickup-window integration.
 - No live object-store upload or cloud object-store integration; signed
   render-packet URL contracts are covered.
-- No live Postgres API integration test, production account auth flow, or account
-  recovery.
+- No deployed production Postgres API integration, production account auth flow,
+  or account recovery; isolated live Postgres migration/runtime integration is
+  covered by doctor.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
 - Hosted GitHub Actions verification exists for main pushes, but there is still

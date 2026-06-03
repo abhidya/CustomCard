@@ -76,6 +76,7 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
+CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -94,7 +95,7 @@ Result: passed.
 
 - Vitest: 16 test files passed, 114 tests passed.
 - Coverage: 14 core/API/persistence/infra/mobile test files passed, 106 tests passed; V8 report measured
-  91.78% statements, 85.03% branches, 97.13% functions, and 95.6% lines across
+  91.71% statements, 84.96% branches, 96.87% functions, and 95.52% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/domain.ts`, `src/freeMvp.ts`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
@@ -139,13 +140,25 @@ queue-job insert. It reported 1 idempotency record, 1 audit record, 1 queued job
 and no blockers.
 
 ```text
+CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
+```
+
+Result: passed. Live Postgres integration doctor created an isolated temporary
+database, applied `infra/migrations/001_initial_schema.sql`, seeded customer and
+admin auth sessions, authorized the customer through the real `pg` runtime,
+blocked a wrong-role admin request, persisted an idempotent queue-backed
+mutation, replayed the same idempotency key, rejected a changed-body conflict,
+and verified 1 idempotency record, 1 audit record, and 1 queued job before
+dropping the temporary database.
+
+```text
 npm run persistence:doctor
 ```
 
 Result: passed. Persistence doctor reported 16 required tables, auth-session
 persistence, idempotency replay, queue jobs, render-packet artifact manifest
-signals, Postgres runtime SQL/doctor signals, append-only audit coverage, 11
-schema-backed API routes, and no blockers.
+signals, Postgres runtime SQL/doctor/integration signals, append-only audit
+coverage, 11 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -208,7 +221,8 @@ documentation claims found during the audit were corrected.
 ## Known Verification Gaps
 
 - No live OAuth integration test.
-- No real database migration run against Postgres in this pass.
+- No production/deployed Postgres migration run in this pass; isolated live
+  Postgres migration/runtime integration is covered by doctor.
 - No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
 - Local SVG/PDF/manifest print package export and signed artifact handoff
   contracts are covered, but no live object-store upload is claimed.
@@ -218,8 +232,8 @@ documentation claims found during the audit were corrected.
   dispute, tax, settlement, or payment-webhook test is claimed.
 - Observability providers are contract-only; no live telemetry ingestion, alert,
   retention, dashboard, or incident-response drill is claimed.
-- No live Postgres-backed API integration test or production account auth flow;
-  the Postgres runtime is contract-tested with an injected fake pool only.
+- No production Postgres-backed API integration test or production account auth
+  flow; local/CI isolated Postgres integration is covered by doctor.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

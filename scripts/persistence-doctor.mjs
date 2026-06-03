@@ -4,6 +4,7 @@ const files = {
   apiContracts: "src/apiContracts.ts",
   apiRuntime: "scripts/api-runtime.mjs",
   apiServer: "scripts/api-server.mjs",
+  postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
   postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
   migration: "infra/migrations/001_initial_schema.sql"
 };
@@ -83,6 +84,14 @@ const postgresDoctorSignals = [
   "queuedJobs",
   "wrong-role"
 ];
+const postgresIntegrationSignals = [
+  "customcard-postgres-integration-doctor",
+  "CREATE DATABASE",
+  "infra/migrations/001_initial_schema.sql",
+  "applies initial migration to live Postgres",
+  "DROP DATABASE IF EXISTS",
+  "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR"
+];
 const authSessionSignals = migrationSignals.slice(0, 7);
 const idempotencySignals = migrationSignals.slice(7, 12);
 const queueJobSignals = migrationSignals.slice(12, 16);
@@ -98,6 +107,7 @@ const checks = [
   checkIncludes("api", "server-persistence-readiness", contents.apiServer, apiSignals.slice(1)),
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
+  checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),
   checkAbsent("schema", "no-raw-content-permission", contents.migration, ["raw_content_allowed", "raw_content_stored BOOLEAN NOT NULL DEFAULT TRUE"]),
   checkAbsent("api", "no-live-persistence-claims", `${contents.apiContracts}\n${contents.apiServer}`, ["realOrdersEnabled: true", "externalNetworkCalls: true"])
 ];

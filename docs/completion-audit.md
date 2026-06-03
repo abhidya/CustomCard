@@ -36,11 +36,11 @@ listed as a gap instead of treated as complete.
 | --- | --- |
 | What small prompt started this? | The last-minute CVS wedding-card workflow and expanded cross-platform/scalable service prompt in `docs/brief-context.md`. |
 | What did we infer and why? | Contract-first skeleton, metadata-only import, structured memory, deterministic print contracts, and tested thin mobile shell; see `docs/brief-context.md` and `docs/decisions.md`. |
-| What was actually built? | Vite/React free local MVP, deterministic MVP domain module, provider adapter catalog, provider no-network runtime contracts, review-only printer pricing research with source freshness rules, local SVG/PDF/manifest print package export, signed artifact handoff contracts, customer/admin panels, typed API and persistence contracts with deployable API/static server plus memory-mode and fake-pool Postgres auth/idempotency validation, typed domain and service kernel, tests, Postgres migration, worker/migration/runtime scripts, Docker/Kubernetes manifests, GitHub Actions verification, and Expo customer mobile shell contract. |
+| What was actually built? | Vite/React free local MVP, deterministic MVP domain module, provider adapter catalog, provider no-network runtime contracts, review-only printer pricing research with source freshness rules, local SVG/PDF/manifest print package export, signed artifact handoff contracts, customer/admin panels, typed API and persistence contracts with deployable API/static server plus memory-mode, fake-pool Postgres, and isolated live Postgres auth/idempotency validation, typed domain and service kernel, tests, Postgres migration, worker/migration/runtime scripts, Docker/Kubernetes manifests, GitHub Actions verification, and Expo customer mobile shell contract. |
 | How do I run or inspect it? | README Run, Environment, and Verification sections. |
 | Which requirements are covered? | `docs/requirements-traceability.md`. |
-| What was verified? | `docs/verification.md`; latest recorded runs cover unit tests, coverage, build, Chrome smoke, contract API doctor, memory API doctor, Postgres runtime contract doctor, persistence doctor, worker doctor, CI workflow contract, mobile contract tests, and mobile doctor. |
-| What remains risky or incomplete? | Production account auth, live Postgres API integration, live OAuth, live AI generation, live vendor quotes/orders, live printer taxes/stock/pickup windows, payments, native mobile builds, deployment, legal/security review, and physical print certification. |
+| What was verified? | `docs/verification.md`; latest recorded runs cover unit tests, coverage, build, Chrome smoke, contract API doctor, memory API doctor, Postgres runtime contract doctor, live Postgres integration doctor, persistence doctor, worker doctor, CI workflow contract, mobile contract tests, and mobile doctor. |
+| What remains risky or incomplete? | Production account auth, deployed production Postgres integration, live OAuth, live AI generation, live vendor quotes/orders, live printer taxes/stock/pickup windows, payments, native mobile builds, deployment, legal/security review, and physical print certification. |
 
 ## Current Audit Result
 
@@ -48,8 +48,9 @@ The `deliver-ambiguous-brief` packaging standard is satisfied for the current
 checkpoint: a reviewable free local MVP plus tested provider-adapter runtime,
 customer/admin/API/persistence, mobile-shell contract, CI verification, and
 deployment-readiness expansion. The broader active production objective remains
-incomplete because live Postgres API integration, production account auth, live
-OAuth, live AI/image providers, live vendor ordering, cloud deployment proof,
-physical print certification, and legal/security review are still missing. The
+incomplete because deployed production Postgres integration, production account
+auth, live OAuth, live AI/image providers, live vendor ordering, cloud
+deployment proof, physical print certification, and legal/security review are
+still missing. The
 repo is honest about the current stage and does not redefine missing external
 production capabilities as complete.

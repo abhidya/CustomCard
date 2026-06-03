@@ -77,9 +77,9 @@ environment configuration instead of static placeholders.
   keep live vendor ordering blocked.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
-  runtime modes, tested memory-mode auth/idempotency replay, fake-pool Postgres
-  auth/idempotency/audit/queue runtime contract, admin demo reset, and no live
-  external calls.
+  runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
+  isolated live Postgres auth/idempotency/audit/queue runtime checks, admin demo
+  reset, and no live external calls.
 - Persistence contract/migration boundary for auth sessions, idempotency replay,
   queue jobs, audit logs, and 11 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
@@ -174,6 +174,7 @@ npm run deployment:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
+CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
 npm run persistence:doctor
 npm run demo:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -195,8 +196,9 @@ shape only; it does not prove a real cloud cluster or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
-contract doctor, persistence doctor, demo reset doctor, worker readiness, and
-mobile doctor on pushes to `main` and pull requests.
+contract doctor, live Postgres integration doctor, persistence doctor, demo
+reset doctor, worker readiness, and mobile doctor on pushes to `main` and pull
+requests.
 
 ## Project Docs
 
@@ -219,10 +221,11 @@ mobile doctor on pushes to `main` and pull requests.
 ## Honest Gaps
 
 The repo does not include production user auth, live OAuth, live AI/image
-generation, live vendor quotes, live payment charges/refunds, direct retail-printer
-ordering, live telemetry ingestion/alerting, live object-storage uploads, live Postgres API integration
-tests, production account auth flows, native mobile builds, deployment evidence,
-legal/security review, or physical print certification. Those paths are
+generation, live vendor quotes, live payment charges/refunds, direct
+retail-printer ordering, live telemetry ingestion/alerting, live object-storage
+uploads, deployed Postgres API integration, production account auth flows,
+native mobile builds, deployment evidence, legal/security review, or physical
+print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system
 shape without mistaking the free local MVP for a certified production
 fulfillment service.
