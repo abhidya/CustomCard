@@ -24,7 +24,7 @@ if (startupBlockers.length > 0) {
 }
 
 const bucket = buildDoctorBucketName(configuredBucket);
-const client = new SigV4S3CompatibleArtifactClient({ endpoint, accessKeyId, secretAccessKey, region });
+let client;
 const blockers = [];
 const cleanupWarnings = [];
 let vite;
@@ -32,54 +32,57 @@ let result;
 let exitCode = 0;
 let finalStatus = "blocked";
 
-try {
-  vite = await createViteServer({ appType: "custom", logLevel: "error", server: { middlewareMode: true } });
-  const { buildArtifactHandoffContract, validateArtifactHandoffContract } = await vite.ssrLoadModule("/src/artifactHandoff.ts");
-  const { writeS3CompatibleArtifactStore } = await vite.ssrLoadModule("/src/artifactStore.ts");
-  const { buildSamplePrintExportPackage } = await vite.ssrLoadModule("/src/printExport.ts");
+async function runDoctor() {
+  client = new SigV4S3CompatibleArtifactClient({ endpoint, accessKeyId, secretAccessKey, region });
+  try {
+    vite = await createViteServer({ appType: "custom", logLevel: "error", server: { middlewareMode: true } });
+    const { buildArtifactHandoffContract, validateArtifactHandoffContract } = await vite.ssrLoadModule("/src/artifactHandoff.ts");
+    const { writeS3CompatibleArtifactStore } = await vite.ssrLoadModule("/src/artifactStore.ts");
+    const { buildSamplePrintExportPackage } = await vite.ssrLoadModule("/src/printExport.ts");
 
-  const printPackage = buildSamplePrintExportPackage();
-  const publicBaseUrl = process.env.OBJECT_STORE_PUBLIC_BASE_URL ?? buildPathStyleBucketUrl(endpoint, bucket);
-  const handoff = await buildArtifactHandoffContract(printPackage, {
-    projectId: "project-live-s3",
-    storageProvider: "s3-compatible",
-    objectStoreUrl: endpoint,
-    publicBaseUrl,
-    bucket,
-    signingSecret,
-    expiresInMinutes,
-    generatedAtIso: "2026-06-03T12:00:00.000Z"
-  });
+    const printPackage = buildSamplePrintExportPackage();
+    const publicBaseUrl = process.env.OBJECT_STORE_PUBLIC_BASE_URL ?? buildPathStyleBucketUrl(endpoint, bucket);
+    const handoff = await buildArtifactHandoffContract(printPackage, {
+      projectId: "project-live-s3",
+      storageProvider: "s3-compatible",
+      objectStoreUrl: endpoint,
+      publicBaseUrl,
+      bucket,
+      signingSecret,
+      expiresInMinutes,
+      generatedAtIso: "2026-06-03T12:00:00.000Z"
+    });
 
-  blockers.push(...prefixBlockers("handoff", await validateArtifactHandoffContract(handoff, signingSecret)));
+    blockers.push(...prefixBlockers("handoff", await validateArtifactHandoffContract(handoff, signingSecret)));
 
-  await client.waitUntilReady();
-  await client.createBucket(bucket);
-  result = await writeS3CompatibleArtifactStore(printPackage, handoff, client);
-  blockers.push(...prefixBlockers("s3-live", result.blockers));
+    await client.waitUntilReady();
+    await client.createBucket(bucket);
+    result = await writeS3CompatibleArtifactStore(printPackage, handoff, client);
+    blockers.push(...prefixBlockers("s3-live", result.blockers));
 
-  if (result.status !== "ready") blockers.push("Live S3-compatible artifact write result was blocked.");
-  if (result.writes.length !== handoff.artifacts.length) blockers.push("Live S3-compatible artifact write count mismatch.");
-  if (!result.writes.every((write) => write.verified)) blockers.push("Live S3-compatible artifact readback verification failed.");
-  if (!result.manifestPath.startsWith(`s3://${bucket}/`)) blockers.push("Live S3-compatible manifest path is missing the doctor bucket.");
-  if (client.putObjects !== 7) blockers.push("Live S3-compatible doctor should write six artifacts plus one manifest.");
-  if (client.getObjects !== 7) blockers.push("Live S3-compatible doctor should read six artifacts plus one manifest.");
+    if (result.status !== "ready") blockers.push("Live S3-compatible artifact write result was blocked.");
+    if (result.writes.length !== handoff.artifacts.length) blockers.push("Live S3-compatible artifact write count mismatch.");
+    if (!result.writes.every((write) => write.verified)) blockers.push("Live S3-compatible artifact readback verification failed.");
+    if (!result.manifestPath.startsWith(`s3://${bucket}/`)) blockers.push("Live S3-compatible manifest path is missing the doctor bucket.");
+    if (client.putObjects !== 7) blockers.push("Live S3-compatible doctor should write six artifacts plus one manifest.");
+    if (client.getObjects !== 7) blockers.push("Live S3-compatible doctor should read six artifacts plus one manifest.");
 
-  finalStatus = blockers.length === 0 ? "ready" : "blocked";
-  if (blockers.length > 0) exitCode = 1;
-} catch (error) {
-  blockers.push({ id: "artifact-store-s3-live-doctor", detail: error instanceof Error ? error.message : String(error) });
-  finalStatus = "blocked";
-  exitCode = 1;
-} finally {
-  await client.cleanupBucket(bucket).catch((error) => {
-    cleanupWarnings.push({ id: "cleanup-live-s3-bucket", detail: error instanceof Error ? error.message : String(error) });
-  });
-  await vite?.close().catch(() => undefined);
-  printReport(finalStatus);
+    finalStatus = blockers.length === 0 ? "ready" : "blocked";
+    if (blockers.length > 0) exitCode = 1;
+  } catch (error) {
+    blockers.push({ id: "artifact-store-s3-live-doctor", detail: error instanceof Error ? error.message : String(error) });
+    finalStatus = "blocked";
+    exitCode = 1;
+  } finally {
+    await client.cleanupBucket(bucket).catch((error) => {
+      cleanupWarnings.push({ id: "cleanup-live-s3-bucket", detail: error instanceof Error ? error.message : String(error) });
+    });
+    await vite?.close().catch(() => undefined);
+    printReport(finalStatus);
+  }
+
+  if (exitCode !== 0) process.exit(exitCode);
 }
-
-if (exitCode !== 0) process.exit(exitCode);
 
 class SigV4S3CompatibleArtifactClient {
   constructor({ endpoint, accessKeyId, secretAccessKey, region }) {
@@ -193,6 +196,8 @@ class SigV4S3CompatibleArtifactClient {
     return { status: response.status, body: responseBody };
   }
 }
+
+await runDoctor();
 
 function buildSignedHeaders({ endpoint, accessKeyId, secretAccessKey, region, method, bucket, key, body, headers }) {
   const url = new URL(endpoint);
