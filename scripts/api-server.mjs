@@ -69,6 +69,7 @@ const readiness = {
     cardProjectRepository: true,
     manualVendorHandoffRepository: true,
     dataRequestRepository: true,
+    renderPacketRepository: true,
     renderPacketArtifacts: true,
     signedArtifactUrls: true
   }
@@ -293,6 +294,7 @@ function validateApiServerContract() {
     blockers.push("API readiness is missing manual vendor handoff repository persistence.");
   }
   if (!readiness.persistence.dataRequestRepository) blockers.push("API readiness is missing data-request repository persistence.");
+  if (!readiness.persistence.renderPacketRepository) blockers.push("API readiness is missing render-packet repository persistence.");
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
   blockers.push(...apiRuntime.validate());
@@ -313,14 +315,21 @@ function buildMutationContractPayload(route, bodyText) {
 
   if (route.id === "render-packets") {
     const projectId = String(requestBody.projectId ?? "project-contract");
+    const renderPacketId = safeContractId(requestBody.renderPacketId, `render-packet-${stableContractHash(projectId).slice(0, 8)}`);
+    const checksum = `cc_${stableContractHash(`${renderPacketId}:${projectId}`).slice(0, 8)}`;
+    const signedUrlExpiresAt = safeTimestamp(requestBody.signedUrlExpiresAt, "2030-01-01T00:15:00.000Z");
     return {
       ...basePayload,
-      renderPacketId: `render-packet-${stableContractHash(projectId).slice(0, 8)}`,
-      checksum: `cc_artifact_${stableContractHash(`${projectId}:manifest`).slice(0, 8)}`,
+      renderPacketId,
+      checksum,
       artifactManifest: {
+        renderPacketId,
+        projectId,
         storageProvider: "object-store-contract",
         artifactCount: 6,
+        manifestChecksum: checksum,
         signedUrlTtlMinutes: 15,
+        signedUrlExpiresAt,
         externalShareApprovalRequired: true,
         realOrdersEnabled: false
       },
@@ -331,7 +340,14 @@ function buildMutationContractPayload(route, bodyText) {
           expiresInMinutes: 15,
           url: `contract-only://customcard/artifacts/${encodeURIComponent(projectId)}`
         }
-      ]
+      ],
+      repository: {
+        table: "render_packets",
+        runtimeMode: "contract",
+        persisted: false,
+        signedArtifactUrls: true,
+        realOrdersEnabled: false
+      }
     };
   }
 

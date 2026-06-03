@@ -43,6 +43,7 @@ let finalPersistence = {
   importedEvents: 0,
   cardOpportunities: 0,
   cardProjects: 0,
+  renderPackets: 0,
   orders: 0,
   orderEvents: 0,
   consentRecords: 0,
@@ -67,7 +68,7 @@ try {
          WHERE table_schema = 'public' AND table_type = 'BASE TABLE'`
       );
       const tableNames = new Set(tables.rows.map((row) => row.table_name));
-      for (const requiredTable of ["users", "auth_sessions", "provider_connections", "imported_events", "card_opportunities", "card_projects", "orders", "order_events", "consent_records", "data_requests", "idempotency_keys", "api_jobs", "audit_log"]) {
+      for (const requiredTable of ["users", "auth_sessions", "provider_connections", "imported_events", "card_opportunities", "card_projects", "render_packets", "orders", "order_events", "consent_records", "data_requests", "idempotency_keys", "api_jobs", "audit_log"]) {
         expect(tableNames.has(requiredTable), `Migration did not create ${requiredTable}.`);
       }
     });
@@ -117,25 +118,6 @@ try {
       const auth = await runtime.authorize(route("admin-readiness"), request({ token: customerToken }));
       expect(!auth.ok, "Customer token must not authorize admin route.");
       expect(auth.statusCode === 403, "Wrong-role auth should return 403.");
-    });
-
-    await runCheck("persists real Postgres idempotent queue mutation", async () => {
-      const result = await runtime.persistMutation({
-        route: route("render-packets"),
-        request: request({ token: customerToken, idempotencyKey: "render-packets-live-postgres-0001" }),
-        authContext: customerAuth,
-        bodyText: JSON.stringify({ projectId: "project-live-postgres" }),
-        responsePayload: {
-          service: "customcard-api",
-          status: "accepted-contract-only",
-          route: "render-packets",
-          realOrdersEnabled: false,
-          externalNetworkCalls: false
-        }
-      });
-      expect(result.statusCode === 202, "First mutation should be accepted.");
-      expect(result.payload.runtimeMode === "postgres", "Mutation should use postgres runtime.");
-      expect(result.payload.idempotencyPersisted, "Mutation should persist idempotency.");
     });
 
     await runCheck("persists real Postgres import preview repository mutation", async () => {
@@ -198,6 +180,32 @@ try {
       expect(result.payload.projectId === "project-live-postgres", "Card-project response should return persisted project id.");
     });
 
+    const renderPacketBody = {
+      projectId: "project-live-postgres",
+      renderPacketId: "render-packet-live-postgres",
+      locale: "en-US"
+    };
+    await runCheck("persists real Postgres render packet repository mutation", async () => {
+      const result = await runtime.persistMutation({
+        route: route("render-packets"),
+        request: request({ token: customerToken, idempotencyKey: "render-packets-live-postgres-0001" }),
+        authContext: customerAuth,
+        bodyText: JSON.stringify(renderPacketBody),
+        responsePayload: {
+          service: "customcard-api",
+          status: "accepted-contract-only",
+          route: "render-packets",
+          realOrdersEnabled: false,
+          externalNetworkCalls: false
+        }
+      });
+      expect(result.statusCode === 202, "Render-packet mutation should be accepted.");
+      expect(result.payload.runtimeMode === "postgres", "Render-packet mutation should use postgres runtime.");
+      expect(result.payload.idempotencyPersisted, "Render-packet mutation should persist idempotency.");
+      expect(result.payload.repositoryPersisted, "Render-packet mutation should persist through repository path.");
+      expect(result.payload.renderPacketId === "render-packet-live-postgres", "Render-packet response should return persisted id.");
+    });
+
     await runCheck("persists real Postgres manual vendor handoff repository mutation", async () => {
       const result = await runtime.persistMutation({
         route: route("manual-vendor-handoff"),
@@ -257,7 +265,7 @@ try {
         route: route("render-packets"),
         request: request({ token: customerToken, idempotencyKey: "render-packets-live-postgres-0001" }),
         authContext: customerAuth,
-        bodyText: JSON.stringify({ projectId: "project-live-postgres" }),
+        bodyText: JSON.stringify(renderPacketBody),
         responsePayload: { service: "customcard-api", status: "accepted-contract-only", route: "render-packets" }
       });
       expect(replay.statusCode === 202, "Replay should be accepted.");
@@ -283,6 +291,7 @@ try {
       expect(persistenceCounts.importedEvents === 1, "Expected one imported event.");
       expect(persistenceCounts.cardOpportunities === 1, "Expected one card opportunity.");
       expect(persistenceCounts.cardProjects === 1, "Expected one card project.");
+      expect(persistenceCounts.renderPackets === 1, "Expected one render packet.");
       expect(persistenceCounts.orders === 1, "Expected one manual handoff order.");
       expect(persistenceCounts.orderEvents === 1, "Expected one manual handoff order event.");
       expect(persistenceCounts.consentRecords === 2, "Expected two consent records.");
@@ -314,7 +323,7 @@ try {
 }
 
 async function readPersistenceCounts(pool) {
-  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, cardProjects, orders, orderEvents, consentRecords, dataRequests] = await Promise.all([
+  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, cardProjects, renderPackets, orders, orderEvents, consentRecords, dataRequests] = await Promise.all([
     pool.query("SELECT COUNT(*)::int AS count FROM idempotency_keys"),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_log"),
     pool.query("SELECT COUNT(*)::int AS count FROM api_jobs"),
@@ -322,6 +331,7 @@ async function readPersistenceCounts(pool) {
     pool.query("SELECT COUNT(*)::int AS count FROM imported_events"),
     pool.query("SELECT COUNT(*)::int AS count FROM card_opportunities"),
     pool.query("SELECT COUNT(*)::int AS count FROM card_projects"),
+    pool.query("SELECT COUNT(*)::int AS count FROM render_packets"),
     pool.query("SELECT COUNT(*)::int AS count FROM orders"),
     pool.query("SELECT COUNT(*)::int AS count FROM order_events"),
     pool.query("SELECT COUNT(*)::int AS count FROM consent_records"),
@@ -335,6 +345,7 @@ async function readPersistenceCounts(pool) {
     importedEvents: importedEvents.rows[0].count,
     cardOpportunities: cardOpportunities.rows[0].count,
     cardProjects: cardProjects.rows[0].count,
+    renderPackets: renderPackets.rows[0].count,
     orders: orders.rows[0].count,
     orderEvents: orderEvents.rows[0].count,
     consentRecords: consentRecords.rows[0].count,

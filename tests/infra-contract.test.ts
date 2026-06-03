@@ -344,6 +344,7 @@ describe("production infrastructure contract", () => {
         importedEvents: number;
         cardOpportunities: number;
         cardProjects: number;
+        renderPackets: number;
         orders: number;
         orderEvents: number;
         consentRecords: number;
@@ -369,6 +370,7 @@ describe("production infrastructure contract", () => {
         importedEvents: 1,
         cardOpportunities: 1,
         cardProjects: 1,
+        renderPackets: 1,
         orders: 1,
         orderEvents: 1,
         consentRecords: 2,
@@ -444,6 +446,7 @@ describe("production infrastructure contract", () => {
           authSessions: boolean;
           accountIdentities: boolean;
           accountRecoveryChallenges: boolean;
+          renderPacketRepository: boolean;
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
           manualVendorHandoffRepository: boolean;
@@ -464,6 +467,7 @@ describe("production infrastructure contract", () => {
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
+      renderPacketRepository: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
       manualVendorHandoffRepository: true,

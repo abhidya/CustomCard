@@ -23,6 +23,7 @@ describe("api server wrapper", () => {
           cardProjectRepository: boolean;
           manualVendorHandoffRepository: boolean;
           dataRequestRepository: boolean;
+          renderPacketRepository: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
         };
@@ -34,6 +35,7 @@ describe("api server wrapper", () => {
           importedEventRecords: number | null;
           cardOpportunityRecords: number | null;
           cardProjectRecords: number | null;
+          renderPacketRecords: number | null;
           orderRecords: number | null;
           orderEventRecords: number | null;
           consentRecords: number | null;
@@ -59,6 +61,7 @@ describe("api server wrapper", () => {
       cardProjectRepository: true,
       manualVendorHandoffRepository: true,
       dataRequestRepository: true,
+      renderPacketRepository: true,
       renderPacketArtifacts: true,
       signedArtifactUrls: true
     });
@@ -124,6 +127,7 @@ describe("api server wrapper", () => {
         cardProjectRepository: true,
         manualVendorHandoffRepository: true,
         dataRequestRepository: true,
+        renderPacketRepository: true,
         renderPacketArtifacts: true,
         signedArtifactUrls: true
       });
@@ -151,13 +155,22 @@ describe("api server wrapper", () => {
         idempotencyPersisted: false,
         externalNetworkCalls: false,
         realOrdersEnabled: false,
+        checksum: expect.stringMatching(/^cc_[0-9a-f]{8}$/),
         artifactManifest: {
           artifactCount: 6,
+          manifestChecksum: expect.stringMatching(/^cc_[0-9a-f]{8}$/),
           signedUrlTtlMinutes: 15,
           externalShareApprovalRequired: true,
           realOrdersEnabled: false
         },
-        signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })]
+        signedArtifactUrls: [expect.objectContaining({ signatureVersion: "hmac-sha256-v1" })],
+        repository: {
+          table: "render_packets",
+          runtimeMode: "contract",
+          persisted: false,
+          signedArtifactUrls: true,
+          realOrdersEnabled: false
+        }
       });
 
       const importPreview = await postJson(
@@ -368,6 +381,7 @@ describe("api server wrapper", () => {
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
         cardProjectRecords: 0,
+        renderPacketRecords: 0,
         orderRecords: 0,
         orderEventRecords: 0,
         consentRecords: 0,
@@ -389,28 +403,48 @@ describe("api server wrapper", () => {
         ...bearer(customerToken),
         "X-Idempotency-Key": "render-packets-0001"
       };
-      const first = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, headers);
+      const renderPacketBody = {
+        projectId: "project-memory-api",
+        renderPacketId: "render-packet-memory-api",
+        locale: "ar-AE",
+        signedUrlExpiresAt: "2020-01-01T00:00:00.000Z"
+      };
+      const first = await postJson(port, "/api/render-packets", renderPacketBody, headers);
       expect(first.status).toBe(202);
-      expect(await first.json()).toMatchObject({
+      const firstPayload = await first.json();
+      expect(firstPayload).toMatchObject({
         runtimeMode: "memory",
         authenticatedUserId: "user-demo",
         idempotencyPersisted: true,
         idempotencyReplayed: false,
+        repositoryPersisted: true,
+        renderPacketId: "render-packet-memory-api",
+        checksum: expect.stringMatching(/^cc_[0-9a-f]{8}$/),
         artifactManifest: expect.objectContaining({
           artifactCount: 6,
+          manifestChecksum: expect.stringMatching(/^cc_[0-9a-f]{8}$/),
           externalShareApprovalRequired: true,
-          realOrdersEnabled: false
+          realOrdersEnabled: false,
+          direction: "rtl"
         }),
         signedArtifactUrls: [expect.objectContaining({ method: "GET", signatureVersion: "hmac-sha256-v1" })],
-        persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"])
+        repository: {
+          table: "render_packets",
+          runtimeMode: "memory",
+          persisted: true,
+          signedArtifactUrls: true,
+          realOrdersEnabled: false
+        },
+        persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "render_packets", "api_jobs", "audit_log"])
       });
+      expect(new Date(firstPayload.artifactManifest.signedUrlExpiresAt).getTime()).toBeGreaterThan(Date.now());
 
       const handoff = await postJson(
         port,
         "/api/vendor-handoff/manual",
         {
           projectId: "project-memory-api",
-          renderPacketId: "render-packet-demo",
+          renderPacketId: "render-packet-memory-api",
           storeId: "walgreens-store-042",
           region: "US",
           externalShareApproval: true
@@ -426,7 +460,7 @@ describe("api server wrapper", () => {
         realOrdersEnabled: false,
         repositoryPersisted: true,
         projectId: "project-memory-api",
-        renderPacketId: "render-packet-demo",
+        renderPacketId: "render-packet-memory-api",
         handoffStatus: "vendor_handoff_ready",
         externalShareApproval: true,
         manualOrderTrail: expect.objectContaining({
@@ -593,7 +627,7 @@ describe("api server wrapper", () => {
         persistedTables: expect.arrayContaining(["users", "render_packets", "orders", "order_events", "vendor_quotes", "data_requests", "audit_log"])
       });
 
-      const replay = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, headers);
+      const replay = await postJson(port, "/api/render-packets", renderPacketBody, headers);
       expect(replay.status).toBe(202);
       expect(await replay.json()).toMatchObject({
         runtimeMode: "memory",
@@ -615,6 +649,7 @@ describe("api server wrapper", () => {
         importedEventRecords: 1,
         cardOpportunityRecords: 1,
         cardProjectRecords: 1,
+        renderPacketRecords: 1,
         orderRecords: 1,
         orderEventRecords: 1,
         consentRecords: 2,

@@ -49,7 +49,11 @@ await runCheck("persists idempotent queue-backed mutations", async () => {
     route: route("render-packets"),
     request: request({ token: customerToken, idempotencyKey: "render-packets-postgres-0001" }),
     authContext: customerAuth,
-    bodyText: JSON.stringify({ projectId: "project-postgres-contract" }),
+    bodyText: JSON.stringify({
+      projectId: "project-postgres-contract",
+      renderPacketId: "render-packet-postgres-contract",
+      locale: "ar-AE"
+    }),
     responsePayload: {
       service: "customcard-api",
       status: "accepted-contract-only",
@@ -62,10 +66,14 @@ await runCheck("persists idempotent queue-backed mutations", async () => {
   expect(result.statusCode === 202, "first mutation should be accepted");
   expect(result.payload.runtimeMode === "postgres", "mutation should report postgres runtime");
   expect(result.payload.idempotencyPersisted, "mutation should persist idempotency");
+  expect(result.payload.repositoryPersisted, "render-packet mutation should persist through repository path");
+  expect(result.payload.renderPacketId === "render-packet-postgres-contract", "render-packet response should include persisted id");
+  expect(result.payload.artifactManifest.direction === "rtl", "Arabic render packet should be RTL");
   expect(result.payload.persistedTables.includes("api_jobs"), "queue-backed route should include api_jobs");
   expect(fakeDb.idempotencyRecords.size === 1, "idempotency record should be inserted");
   expect(fakeDb.auditRecords.length === 1, "audit record should be inserted");
   expect(fakeDb.jobs.length === 1, "queue-backed route should insert an api job");
+  expect(fakeDb.renderPackets.length === 1, "render_packets row should be inserted");
 });
 
 await runCheck("persists repository-backed import preview mutations", async () => {
@@ -200,7 +208,11 @@ await runCheck("replays matching idempotent mutations", async () => {
     route: route("render-packets"),
     request: request({ token: customerToken, idempotencyKey: "render-packets-postgres-0001" }),
     authContext: customerAuth,
-    bodyText: JSON.stringify({ projectId: "project-postgres-contract" }),
+    bodyText: JSON.stringify({
+      projectId: "project-postgres-contract",
+      renderPacketId: "render-packet-postgres-contract",
+      locale: "ar-AE"
+    }),
     responsePayload: { service: "customcard-api", status: "accepted-contract-only", route: "render-packets" }
   });
 
@@ -235,6 +247,7 @@ const report = {
     importedEvents: fakeDb.importedEvents.length,
     cardOpportunities: fakeDb.cardOpportunities.length,
     cardProjects: fakeDb.cardProjects.length,
+    renderPackets: fakeDb.renderPackets.length,
     orders: fakeDb.orders.length,
     orderEvents: fakeDb.orderEvents.length,
     consentRecords: fakeDb.consentRecords.length,
@@ -311,6 +324,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
     importedEvents: [],
     cardOpportunities: [],
     cardProjects: [],
+    renderPackets: [],
     orders: [],
     orderEvents: [],
     consentRecords: [],
@@ -414,6 +428,29 @@ function createFakeClient(state) {
           locale: params[3],
           requiresRtlLayout: params[4],
           approvedMemoryIds: params[5]
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO render_packets")) {
+        state.renderPackets.push({
+          id: params[0],
+          projectId: params[1],
+          kind: params[2],
+          width: params[3],
+          height: params[4],
+          dpi: params[5],
+          locale: params[6],
+          direction: params[7],
+          safeZonePassed: params[8],
+          textOverflow: params[9],
+          checksum: params[10],
+          artifactUri: params[11],
+          storageProvider: params[12],
+          artifactCount: params[13],
+          artifactManifest: JSON.parse(params[14]),
+          signedUrlExpiresAt: params[15],
+          externalShareApprovalRequired: params[16]
         });
         return { rows: [], rowCount: 1 };
       }

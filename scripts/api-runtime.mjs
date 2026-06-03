@@ -36,6 +36,7 @@ function createContractApiRuntime({ routes }) {
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
         cardProjectRecords: 0,
+        renderPacketRecords: 0,
         orderRecords: 0,
         orderEventRecords: 0,
         consentRecords: 0,
@@ -98,6 +99,7 @@ function createMemoryApiRuntime({ env, routes }) {
   const importedEvents = new Map();
   const cardOpportunities = new Map();
   const cardProjects = new Map();
+  const renderPackets = new Map();
   const orders = new Map();
   const orderEvents = new Map();
   const consentRecords = new Map();
@@ -122,6 +124,7 @@ function createMemoryApiRuntime({ env, routes }) {
         importedEventRecords: importedEvents.size,
         cardOpportunityRecords: cardOpportunities.size,
         cardProjectRecords: cardProjects.size,
+        renderPacketRecords: renderPackets.size,
         orderRecords: orders.size,
         orderEventRecords: orderEvents.size,
         consentRecords: consentRecords.size,
@@ -151,6 +154,7 @@ function createMemoryApiRuntime({ env, routes }) {
           importedEvents,
           cardOpportunities,
           cardProjects,
+          renderPackets,
           orders,
           orderEvents,
           consentRecords,
@@ -229,6 +233,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         importedEventRecords: null,
         cardOpportunityRecords: null,
         cardProjectRecords: null,
+        renderPacketRecords: null,
         orderRecords: null,
         orderEventRecords: null,
         consentRecords: null,
@@ -489,6 +494,15 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
     };
   }
 
+  if (route.id === "render-packets") {
+    const record = buildRenderPacketRecord({ authContext, bodyText });
+    repositories.renderPackets.set(record.id, record);
+    return {
+      persisted: true,
+      payload: buildRenderPacketRepositoryPayload(record, "memory")
+    };
+  }
+
   if (route.id === "manual-vendor-handoff") {
     const record = buildManualVendorHandoffRecord({ authContext, bodyText });
     repositories.orders.set(record.order.id, record.order);
@@ -678,6 +692,59 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     };
   }
 
+  if (route.id === "render-packets") {
+    const record = buildRenderPacketRecord({ authContext, bodyText });
+    await client.query(
+      `INSERT INTO render_packets
+         (id, project_id, kind, width, height, dpi, locale, direction, safe_zone_passed, text_overflow,
+          checksum, artifact_uri, storage_provider, artifact_count, artifact_manifest,
+          signed_url_expires_at, external_share_approval_required, real_orders_enabled)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+               $11, $12, $13, $14, $15::jsonb, $16::timestamptz, $17, FALSE)
+       ON CONFLICT (id) DO UPDATE SET
+         project_id = EXCLUDED.project_id,
+         kind = EXCLUDED.kind,
+         width = EXCLUDED.width,
+         height = EXCLUDED.height,
+         dpi = EXCLUDED.dpi,
+         locale = EXCLUDED.locale,
+         direction = EXCLUDED.direction,
+         safe_zone_passed = EXCLUDED.safe_zone_passed,
+         text_overflow = EXCLUDED.text_overflow,
+         checksum = EXCLUDED.checksum,
+         artifact_uri = EXCLUDED.artifact_uri,
+         storage_provider = EXCLUDED.storage_provider,
+         artifact_count = EXCLUDED.artifact_count,
+         artifact_manifest = EXCLUDED.artifact_manifest,
+         signed_url_expires_at = EXCLUDED.signed_url_expires_at,
+         external_share_approval_required = EXCLUDED.external_share_approval_required,
+         real_orders_enabled = FALSE`,
+      [
+        record.id,
+        record.projectId,
+        record.kind,
+        record.width,
+        record.height,
+        record.dpi,
+        record.locale,
+        record.direction,
+        record.safeZonePassed,
+        record.textOverflow,
+        record.checksum,
+        record.artifactUri,
+        record.storageProvider,
+        record.artifactCount,
+        JSON.stringify(record.artifactManifest),
+        record.signedUrlExpiresAt,
+        record.externalShareApprovalRequired
+      ]
+    );
+    return {
+      persisted: true,
+      payload: buildRenderPacketRepositoryPayload(record, "postgres")
+    };
+  }
+
   if (route.id !== "card-projects") return undefined;
   const record = buildCardProjectRecord({ authContext, bodyText });
   await client.query(
@@ -810,6 +877,81 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
       table: "card_projects",
       runtimeMode,
       persisted: true
+    }
+  };
+}
+
+function buildRenderPacketRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const projectId = safeId(body.projectId, "project-demo");
+  const locale = safeLocale(body.locale);
+  const direction = safeDirection(body.direction, locale);
+  const renderPacketId = safeId(body.renderPacketId, stableRuntimeId("render-packet", authContext.userId, projectId, locale));
+  const checksum = `cc_${createHash("sha256").update(`${renderPacketId}:${projectId}:${locale}:${direction}`).digest("hex").slice(0, 8)}`;
+  const storageProvider = safeStorageProvider(body.storageProvider);
+  const artifactCount = safeInteger(body.artifactCount, 6, 1, 24);
+  const signedUrlExpiresAt = safeFutureTimestamp(body.signedUrlExpiresAt, defaultSignedUrlExpiresAt());
+  const artifactUri = safeArtifactUri(
+    body.artifactUri,
+    `file:///tmp/customcard-artifacts/projects/${projectId}/render-packets/${renderPacketId}/artifact-handoff-manifest.json`
+  );
+  const externalShareApprovalRequired = body.externalShareApprovalRequired === undefined
+    ? true
+    : safeBoolean(body.externalShareApprovalRequired);
+  const safeZonePassed = body.safeZonePassed === undefined ? true : safeBoolean(body.safeZonePassed);
+  const textOverflow = body.textOverflow === undefined ? false : safeBoolean(body.textOverflow);
+  const kind = safeRenderPacketKind(body.kind, safeZonePassed, textOverflow);
+  const artifactManifest = {
+    renderPacketId,
+    projectId,
+    storageProvider,
+    artifactCount,
+    manifestChecksum: checksum,
+    signedUrlExpiresAt,
+    externalShareApprovalRequired,
+    realOrdersEnabled: false,
+    noNetwork: true,
+    width: 1500,
+    height: 2100,
+    dpi: 300,
+    locale,
+    direction,
+    safeZonePassed,
+    textOverflow
+  };
+
+  return {
+    id: renderPacketId,
+    projectId,
+    kind,
+    width: 1500,
+    height: 2100,
+    dpi: 300,
+    locale,
+    direction,
+    safeZonePassed,
+    textOverflow,
+    checksum,
+    artifactUri,
+    storageProvider,
+    artifactCount,
+    artifactManifest,
+    signedUrlExpiresAt,
+    externalShareApprovalRequired
+  };
+}
+
+function buildRenderPacketRepositoryPayload(record, runtimeMode) {
+  return {
+    renderPacketId: record.id,
+    checksum: record.checksum,
+    artifactManifest: record.artifactManifest,
+    repository: {
+      table: "render_packets",
+      runtimeMode,
+      persisted: true,
+      signedArtifactUrls: true,
+      realOrdersEnabled: false
     }
   };
 }
@@ -1034,6 +1176,30 @@ function safeLocale(value) {
   return /^[a-z]{2,3}(-[A-Z]{2})?$/i.test(text) ? text : "en-US";
 }
 
+function safeDirection(value, locale) {
+  const direction = String(value ?? "").trim().toLowerCase();
+  if (direction === "rtl" || direction === "ltr") return direction;
+  return /^(ar|he|fa|ur)(-|$)/i.test(locale) ? "rtl" : "ltr";
+}
+
+function safeRenderPacketKind(value, safeZonePassed, textOverflow) {
+  const kind = String(value ?? "").trim();
+  if (kind === "blocked") return "blocked";
+  if (kind === "validated_print_packet") return "validated_print_packet";
+  return safeZonePassed && !textOverflow ? "validated_print_packet" : "blocked";
+}
+
+function safeStorageProvider(value) {
+  const provider = String(value ?? "filesystem").trim();
+  return provider === "s3-compatible" ? "s3-compatible" : "filesystem";
+}
+
+function safeArtifactUri(value, fallback) {
+  const text = String(value ?? "").trim();
+  if (/^(file|s3):\/\//.test(text)) return text.slice(0, 240);
+  return fallback;
+}
+
 function safeText(value, fallback) {
   const text = String(value ?? "").trim().replace(/\s+/g, " ");
   return text.slice(0, 120) || fallback;
@@ -1042,6 +1208,14 @@ function safeText(value, fallback) {
 function safeTimestamp(value, fallback) {
   const date = new Date(String(value ?? ""));
   return Number.isNaN(date.getTime()) ? fallback : date.toISOString();
+}
+
+function safeFutureTimestamp(value, fallback) {
+  const date = new Date(String(value ?? ""));
+  const fallbackDate = new Date(fallback);
+  const minimumExpiresAt = Date.now() + 60 * 1000;
+  const candidate = Number.isNaN(date.getTime()) ? fallbackDate : date;
+  return candidate.getTime() > minimumExpiresAt ? candidate.toISOString() : fallbackDate.toISOString();
 }
 
 function safeInteger(value, fallback, min, max) {
@@ -1070,6 +1244,10 @@ function safeDataRequestStatus(value) {
 function defaultDataRequestDueAt(requestType) {
   const days = requestType === "revoke_consent" ? 7 : 30;
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function defaultSignedUrlExpiresAt() {
+  return new Date(Date.now() + 15 * 60 * 1000).toISOString();
 }
 
 function safeConfidence(value, fallback) {
