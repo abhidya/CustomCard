@@ -348,10 +348,11 @@ Remaining high-risk work:
 - No live observability ingestion, alert routing, retention enforcement, or
   incident-response drill.
 - No live printer tax, coupon, stock, or pickup-window integration.
-- No production cloud object-store bucket policy/IAM verification; signed
-  render-packet URL contracts, temporary filesystem write/read verification,
-  injected S3-compatible write/read contract verification, and live CI/local
-  MinIO/S3-compatible write/read doctor coverage are covered.
+- No live-applied production cloud object-store bucket policy/IAM verification;
+  signed render-packet URL contracts, static AWS artifact-store IaC, temporary
+  filesystem write/read verification, injected S3-compatible write/read
+  contract verification, and live CI/local MinIO/S3-compatible write/read doctor
+  coverage are covered.
 - No deployed production Postgres API integration or production hosted
   account-token verification; isolated live Postgres route-auth/migration/runtime
   integration, process-level API HTTP verification, and account identity/recovery

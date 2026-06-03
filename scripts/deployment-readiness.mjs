@@ -5,6 +5,9 @@ const files = {
   dockerfile: "Dockerfile",
   dropletCompose: "infra/docker-compose.droplet.yml",
   envExample: "infra/env/.env.example",
+  cloudArtifactMain: "infra/aws/artifact-store/main.tf",
+  cloudArtifactVariables: "infra/aws/artifact-store/variables.tf",
+  cloudArtifactOutputs: "infra/aws/artifact-store/outputs.tf",
   k8s: "infra/k8s/app.yaml",
   migration: "infra/migrations/001_initial_schema.sql"
 };
@@ -108,6 +111,35 @@ const checks = [
     "replace-me",
     "ghcr.io/example",
     ":latest"
+  ]),
+  checkIncludes("cloud-storage", "aws-artifact-bucket-policy", contents.cloudArtifactMain, [
+    'resource "aws_s3_bucket" "artifacts"',
+    'resource "aws_s3_bucket_public_access_block" "artifacts"',
+    'resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts"',
+    'resource "aws_s3_bucket_versioning" "artifacts"',
+    'resource "aws_s3_bucket_lifecycle_configuration" "artifacts"',
+    'sid    = "DenyInsecureTransport"',
+    'sid    = "DenyUnencryptedObjectUploads"'
+  ]),
+  checkIncludes("cloud-storage", "aws-artifact-writer-iam", contents.cloudArtifactMain, [
+    'data "aws_iam_policy_document" "artifact_writer"',
+    '"s3:PutObject"',
+    '"s3:GetObject"',
+    '"s3:DeleteObject"',
+    'values   = ["projects/*"]',
+    'resource "aws_iam_role_policy_attachment" "app_artifact_writer"',
+    'resource "aws_iam_role_policy_attachment" "worker_artifact_writer"'
+  ]),
+  checkIncludes("cloud-storage", "aws-artifact-safe-inputs-and-env-outputs", `${contents.cloudArtifactVariables}\n${contents.cloudArtifactOutputs}`, [
+    "artifact_retention_days >= 7",
+    "artifact_retention_days <= 365",
+    "noncurrent_artifact_retention_days >= 1",
+    "default     = false",
+    "OBJECT_STORE_URL",
+    "OBJECT_STORE_BUCKET",
+    "OBJECT_STORE_REGION",
+    "OBJECT_STORE_SIGNING_SECRET",
+    "REAL_ORDER_KILL_SWITCH"
   ]),
   checkIncludes("runtime", "dockerfile-production-server", contents.dockerfile, [
     "FROM node:25-slim AS runtime",

@@ -119,11 +119,12 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 124 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 126 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 83.65% branches, 97.19% functions, 95.25% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
-| Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
+| Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
+| Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
 | API readiness | `npm run api:doctor` | Passed; 14 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, 18 persistence tables, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
@@ -136,7 +137,7 @@
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, and mobile gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -153,7 +154,7 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, live MinIO/S3-compatible artifact write/read verification, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and production cloud bucket policy/IAM are not covered |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/cloud-artifact-iac-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, live MinIO/S3-compatible artifact write/read verification, static AWS artifact-store bucket/IAM contract, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and live-applied cloud IAM are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
 | Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
@@ -167,19 +168,20 @@
    inspect adapter readiness.
 4. Run `npm run check`.
 5. Run `npm run deployment:doctor`.
-6. Run `npm run api:doctor`.
-7. Run `npm run api:doctor:memory`.
-8. Run `npm run api:doctor:postgres`.
-9. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-10. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-11. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-12. Run `npm run artifact:doctor`.
-13. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
-14. Run `npm run persistence:doctor`.
-15. Run `npm run demo:doctor`.
-16. Run the worker and mobile doctor commands in `docs/verification.md`.
-17. Inspect `.github/workflows/verify.yml`.
-18. Inspect screenshots in `docs/evidence/` and known gaps in
+6. Run `npm run cloud:doctor`.
+7. Run `npm run api:doctor`.
+8. Run `npm run api:doctor:memory`.
+9. Run `npm run api:doctor:postgres`.
+10. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+11. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+12. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+13. Run `npm run artifact:doctor`.
+14. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+15. Run `npm run persistence:doctor`.
+16. Run `npm run demo:doctor`.
+17. Run the worker and mobile doctor commands in `docs/verification.md`.
+18. Inspect `.github/workflows/verify.yml`.
+19. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -191,11 +193,12 @@
   verification; isolated live Postgres route-auth/migration/runtime integration
   and process-level API HTTP verification are covered by doctors.
 - No live AI text/image generation.
-- No production cloud object-store bucket policy/IAM verification or physical
-  printer certification; local SVG/PDF/manifest package export, signed artifact
-  handoff contracts, temporary filesystem object-store write/read verification,
-  injected S3-compatible write/read contract verification, and live CI/local
-  MinIO/S3-compatible write/read doctor coverage are covered.
+- No live-applied production cloud object-store bucket policy/IAM verification
+  or physical printer certification; static AWS artifact-store IaC, local
+  SVG/PDF/manifest package export, signed artifact handoff contracts, temporary
+  filesystem object-store write/read verification, injected S3-compatible
+  write/read contract verification, and live CI/local MinIO/S3-compatible
+  write/read doctor coverage are covered.
 - No live vendor quote, order, payment charge/refund, or cancellation
   integration; payment provider coverage is sandbox-contract only.
 - No live observability ingestion, alert routing, retention enforcement, or

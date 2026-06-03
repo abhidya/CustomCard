@@ -93,6 +93,9 @@ environment configuration instead of static placeholders.
   audit logs, and 12 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
+- Tested AWS artifact-store IaC contract for an encrypted, versioned,
+  private-by-default S3 bucket, prefix-scoped app/worker IAM policy, lifecycle
+  cleanup, and runtime env outputs.
 
 ## Run
 
@@ -184,6 +187,7 @@ Verification:
 ```sh
 npm run check
 npm run deployment:doctor
+npm run cloud:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
@@ -209,13 +213,17 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
-cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
-shape only; it does not prove a real cloud cluster or droplet deployment.
+cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes. `npm run
+cloud:doctor` focuses on `infra/aws/artifact-store` and statically verifies the
+production artifact bucket/IAM contract. These checks validate committed IaC
+shape only; they do not prove a real cloud cluster, AWS account, or droplet
+deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, contract API doctor, memory-runtime API doctor, Postgres runtime
 contract doctor, live Postgres integration doctor, Postgres API HTTP doctor,
-account-auth storage/recovery doctor, artifact-store filesystem plus
+cloud artifact IaC doctor, account-auth storage/recovery doctor,
+artifact-store filesystem plus
 S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
 persistence doctor, demo reset doctor, worker readiness, and mobile doctor on
 pushes to `main` and pull requests.
@@ -242,9 +250,9 @@ pushes to `main` and pull requests.
 
 The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
-retail-printer ordering, live telemetry ingestion/alerting, production cloud
-object-store bucket verification beyond the CI/local MinIO doctor, deployed
-production Postgres API integration, production hosted account-token
+retail-printer ordering, live telemetry ingestion/alerting, live-applied cloud
+bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
+deployed production Postgres API integration, production hosted account-token
 verification outside the isolated live Postgres doctors, native mobile builds,
 deployment evidence, legal/security review, or physical print certification. Those paths are
 represented as contracts and hard gates so reviewers can inspect the system

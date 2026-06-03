@@ -49,11 +49,12 @@ checkpoint: a reviewable free local MVP plus tested provider-adapter runtime,
 customer/admin/API/persistence, process-level Postgres HTTP verification,
 repository-backed relationship-memory, render-packet, import-preview,
 card-project, manual-vendor-handoff, and data-request route coverage,
-live MinIO/S3-compatible artifact writes, mobile-shell contract, CI
+live MinIO/S3-compatible artifact writes, static AWS artifact-store bucket/IAM
+contract, mobile-shell contract, CI
 verification, and deployment-readiness expansion. The broader active production
 objective remains incomplete because deployed
 production Postgres integration, live production account auth, live OAuth, live
-AI/image providers, live vendor ordering, cloud deployment proof, physical print
-certification, and legal/security review are still missing. The
+AI/image providers, live vendor ordering, live-applied cloud deployment proof,
+physical print certification, and legal/security review are still missing. The
 repo is honest about the current stage and does not redefine missing external
 production capabilities as complete.

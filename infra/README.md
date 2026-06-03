@@ -5,6 +5,8 @@ This directory is the deployable service skeleton for the production path.
 - `docker-compose.dev.yml` runs app, worker, Postgres, Redis, and MinIO for local development.
 - `docker-compose.droplet.yml` is the cheap single-host deployment shape for a small DigitalOcean droplet.
 - `k8s/app.yaml` is the cloud-native starting point for web and worker deployments.
+- `aws/artifact-store/` is the Terraform contract for a private, encrypted,
+  versioned production artifact bucket and prefix-scoped app/worker IAM policy.
 - `migrations/001_initial_schema.sql` defines the durable service data model.
 - `env/.env.example` lists required secrets and kill switches.
 - `../scripts/api-server.mjs` serves `/api/health`, API bootstrap/readiness
@@ -35,6 +37,7 @@ Run the local IaC readiness check before treating the manifests as reviewable:
 
 ```sh
 npm run deployment:doctor
+npm run cloud:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
@@ -48,8 +51,9 @@ npm run demo:doctor
 ```
 
 The report checks the local-dev, cheap-droplet, cloud-native, runtime, and data
-lanes. Passing this check means the committed deployment contracts are internally
-consistent; it does not mean a real droplet or Kubernetes cluster has been
+lanes, including cloud-storage checks for the AWS artifact-store module. Passing
+this check means the committed deployment contracts are internally consistent;
+it does not mean a real droplet, AWS account, or Kubernetes cluster has been
 provisioned.
 
 The Kubernetes web deployment probes `/api/health`, and the production Docker
@@ -98,8 +102,19 @@ the same package to a live S3-compatible endpoint such as MinIO using path-style
 SigV4 requests, reads every object back, verifies checksums and byte lengths,
 stores the handoff manifest, reports `cloudWritesVerified: true`, cleans up the
 isolated bucket, and keeps external vendor calls plus real orders disabled. A
-production cloud bucket policy/IAM review remains separate from this CI/local
-MinIO proof.
+production cloud bucket policy/IAM contract is now represented by
+`infra/aws/artifact-store` and checked by `npm run cloud:doctor`; live AWS apply,
+Access Analyzer review, and account-specific IAM validation remain separate from
+this repo-local proof.
+
+The AWS artifact-store module provisions only the artifact storage boundary:
+public access block, bucket-owner-enforced ownership, versioning, AES256
+server-side encryption, lifecycle cleanup under `projects/`, an HTTPS-only and
+encrypted-upload bucket policy, and a least-privilege writer policy scoped to
+`projects/*`. Existing app and worker IAM roles can be attached by passing
+`app_role_name` and `worker_role_name`. Runtime outputs name the required
+`OBJECT_STORE_*` values that still need to be mirrored into the platform secret
+or config manager.
 
 The persistence boundary requires auth-session storage, account identity storage,
 hashed recovery challenges, idempotency replay, queue job envelopes,

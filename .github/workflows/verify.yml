@@ -53,6 +53,9 @@ jobs:
       - name: Validate deployment readiness
         run: npm run deployment:doctor
 
+      - name: Validate cloud artifact IaC
+        run: npm run cloud:doctor
+
       - name: Validate API contract readiness
         run: npm run api:doctor
 

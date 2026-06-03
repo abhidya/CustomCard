@@ -119,6 +119,49 @@ describe("production infrastructure contract", () => {
     expect(k8s).not.toContain(":latest");
   });
 
+  it("ships testable cloud artifact bucket and IAM IaC", () => {
+    const main = read("infra/aws/artifact-store/main.tf");
+    const variables = read("infra/aws/artifact-store/variables.tf");
+    const outputs = read("infra/aws/artifact-store/outputs.tf");
+
+    expect(main).toContain('resource "aws_s3_bucket" "artifacts"');
+    expect(main).toContain('resource "aws_s3_bucket_public_access_block" "artifacts"');
+    expect(main).toContain("block_public_acls       = true");
+    expect(main).toContain("block_public_policy     = true");
+    expect(main).toContain("ignore_public_acls      = true");
+    expect(main).toContain("restrict_public_buckets = true");
+    expect(main).toContain('object_ownership = "BucketOwnerEnforced"');
+    expect(main).toContain('resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts"');
+    expect(main).toContain('sse_algorithm = "AES256"');
+    expect(main).toContain('resource "aws_s3_bucket_versioning" "artifacts"');
+    expect(main).toContain('resource "aws_s3_bucket_lifecycle_configuration" "artifacts"');
+    expect(main).toContain("days_after_initiation = 1");
+    expect(main).toContain('sid    = "DenyInsecureTransport"');
+    expect(main).toContain('variable = "aws:SecureTransport"');
+    expect(main).toContain('sid    = "DenyUnencryptedObjectUploads"');
+    expect(main).toContain('variable = "s3:x-amz-server-side-encryption"');
+    expect(main).toContain('data "aws_iam_policy_document" "artifact_writer"');
+    expect(main).toContain('values   = ["projects/*"]');
+    expect(main).toContain('"s3:PutObject"');
+    expect(main).toContain('"s3:GetObject"');
+    expect(main).toContain('"s3:DeleteObject"');
+    expect(main).toContain('resource "aws_iam_role_policy_attachment" "app_artifact_writer"');
+    expect(main).toContain('resource "aws_iam_role_policy_attachment" "worker_artifact_writer"');
+    expect(main).not.toContain("public-read");
+    expect(main).not.toContain("force_destroy = true");
+
+    expect(variables).toContain("artifact_retention_days >= 7");
+    expect(variables).toContain("artifact_retention_days <= 365");
+    expect(variables).toContain("noncurrent_artifact_retention_days >= 1");
+    expect(variables).toContain("default     = false");
+
+    expect(outputs).toContain('OBJECT_STORE_URL                = "s3://${aws_s3_bucket.artifacts.bucket}"');
+    expect(outputs).toContain("OBJECT_STORE_BUCKET             = aws_s3_bucket.artifacts.bucket");
+    expect(outputs).toContain("OBJECT_STORE_REGION             = data.aws_region.current.name");
+    expect(outputs).toContain('OBJECT_STORE_SIGNING_SECRET     = "set-in-secret-manager"');
+    expect(outputs).toContain('REAL_ORDER_KILL_SWITCH          = "disabled"');
+  });
+
   it("documents required secret and kill-switch environment variables", () => {
     const env = read("infra/env/.env.example");
 
@@ -247,6 +290,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
+    expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
     expect(viteConfig).toContain("src/artifactHandoff.ts");
@@ -298,6 +342,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm ci");
     expect(workflow).toContain("npm run check");
     expect(workflow).toContain("npm run deployment:doctor");
+    expect(workflow).toContain("npm run cloud:doctor");
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
@@ -459,6 +504,41 @@ describe("production infrastructure contract", () => {
     expect(doctor).toContain("realOrdersEnabled: false");
   });
 
+  it("emits a cloud artifact IaC readiness report", () => {
+    const output = execFileSync("npm", ["run", "cloud:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      module: string;
+      liveCloudCalls: boolean;
+      realOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-cloud-artifact-iac-doctor",
+      status: "ready",
+      module: "infra/aws/artifact-store",
+      liveCloudCalls: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "bucket", status: "ready" }),
+        expect.objectContaining({ lane: "policy", status: "ready" }),
+        expect.objectContaining({ lane: "iam", status: "ready" }),
+        expect.objectContaining({ lane: "inputs", status: "ready" }),
+        expect.objectContaining({ lane: "outputs", status: "ready" }),
+        expect.objectContaining({ lane: "safety", status: "ready" })
+      ])
+    );
+  });
+
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
     const mobilePackage = read("apps/mobile/package.json");
     const appConfig = read("apps/mobile/app.config.js");
@@ -506,6 +586,7 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "local-dev", status: "ready" }),
         expect.objectContaining({ lane: "cheap-droplet", status: "ready" }),
         expect.objectContaining({ lane: "cloud-native", status: "ready" }),
+        expect.objectContaining({ lane: "cloud-storage", status: "ready" }),
         expect.objectContaining({ lane: "runtime", status: "ready" }),
         expect.objectContaining({ lane: "data", status: "ready" })
       ])

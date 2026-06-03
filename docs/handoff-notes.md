@@ -56,11 +56,11 @@ skeleton for the production path. It includes:
   account-token verification outside the isolated live Postgres route-auth,
   Postgres API HTTP, and account-auth doctors.
 - No live AI text/image generation.
-- No production cloud object-store bucket is claimed outside the guarded
-  CI/local MinIO doctor; signed URL contracts, schema gates, temporary
-  filesystem write/read verification, injected S3-compatible write/read
-  contract verification, and live MinIO/S3-compatible doctor coverage are
-  covered.
+- No live-applied production cloud object-store bucket is claimed outside the
+  guarded CI/local MinIO doctor and static AWS artifact-store IaC contract;
+  signed URL contracts, schema gates, temporary filesystem write/read
+  verification, injected S3-compatible write/read contract verification, and
+  live MinIO/S3-compatible doctor coverage are covered.
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, pickup-window, or checkout availability
   verification for public printer prices.
@@ -88,13 +88,14 @@ skeleton for the production path. It includes:
 8. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
 9. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
 10. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-11. Run `npm run artifact:doctor`.
-12. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-13. Run `npm run persistence:doctor`.
-14. Run `npm run demo:doctor`.
-15. Run the worker and mobile doctor commands in `docs/verification.md`.
-16. Inspect the app with `npm run dev`.
-17. In the app, start a local workspace, scan the sample invite, generate a card,
+11. Run `npm run cloud:doctor`.
+12. Run `npm run artifact:doctor`.
+13. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+14. Run `npm run persistence:doctor`.
+15. Run `npm run demo:doctor`.
+16. Run the worker and mobile doctor commands in `docs/verification.md`.
+17. Inspect the app with `npm run dev`.
+18. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

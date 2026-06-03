@@ -82,8 +82,13 @@ it after each meaningful implementation pass.
   fixtures, SQL preview, signed artifact handoff references, and no-live-call
   safety gates.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
-  JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
-  lanes.
+  JSON report for local-dev, cheap-droplet, cloud-native, cloud-storage,
+  runtime, and data lanes.
+- Cloud artifact IaC is checked by `npm run cloud:doctor`, which statically
+  verifies `infra/aws/artifact-store` for private S3 bucket posture, encryption,
+  versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
+  app/worker writer IAM, safe defaults, and runtime env outputs without live
+  cloud calls.
 - Coverage is measured for core, API, artifact handoff/store, pricing, print
   export, persistence, orchestration, and mobile contract modules with V8
   thresholds enforced by `npm run check`: 90%
@@ -102,6 +107,7 @@ it after each meaningful implementation pass.
 ```sh
 npm run check
 npm run deployment:doctor
+npm run cloud:doctor
 npm run api:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
@@ -126,8 +132,8 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 124 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 116 tests passed; V8 report measured
+- Vitest: 18 test files passed, 126 tests passed.
+- Coverage: 16 core/API/persistence/infra/mobile test files passed, 118 tests passed; V8 report measured
   90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -142,7 +148,16 @@ npm run deployment:doctor
 ```
 
 Result: passed. The JSON report marked local-dev, cheap-droplet, cloud-native,
-runtime, and data lanes `ready` with 18 deployment checks passed and no blockers.
+cloud-storage, runtime, and data lanes `ready` with 22 deployment checks passed
+and no blockers.
+
+```text
+npm run cloud:doctor
+```
+
+Result: passed. The JSON report marked bucket, policy, IAM, inputs, outputs,
+and safety lanes `ready`; it verified the static AWS artifact-store module
+without live cloud calls or real orders.
 
 ```text
 npm run api:doctor
