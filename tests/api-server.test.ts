@@ -1,5 +1,6 @@
 import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { describe, expect, it } from "vitest";
+import { handleApiRequest } from "../scripts/api-server.mjs";
 
 const shellDoctorTimeoutMs = 15_000;
 
@@ -31,6 +32,13 @@ describe("api server wrapper", () => {
           completeBundles: number;
           liveTranslationProvider: boolean;
           blockers: unknown[];
+        };
+        production: {
+          total: number;
+          evidenceMissing: number;
+          blocked: number;
+          liveEnabled: number;
+          blockers: string[];
         };
         routes: { total: number; mutations: number; idempotentMutations: number };
         security: {
@@ -88,6 +96,18 @@ describe("api server wrapper", () => {
       realOrdersEnabled: false,
       blockers: []
     });
+    expect(report.readiness.production).toMatchObject({
+      total: 13,
+      evidenceMissing: 11,
+      blocked: 2,
+      liveEnabled: 0
+    });
+    expect(report.readiness.production.blockers).toEqual(
+      expect.arrayContaining([
+        "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
+        "No physical sample or retailer certification has been recorded."
+      ])
+    );
     expect(report.readiness.routes.total).toBe(15);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
@@ -119,6 +139,22 @@ describe("api server wrapper", () => {
       idempotencyEnforced: false
     });
   }, shellDoctorTimeoutMs);
+
+  it("serves health through the Vercel serverless API seam", async () => {
+    const response = createMockResponse();
+
+    await handleApiRequest({ method: "GET", url: "/api/health", headers: { host: "customcard.test" } }, response);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(JSON.parse(response.body)).toMatchObject({
+      service: "customcard-api",
+      status: "ready",
+      realOrdersEnabled: false,
+      runtime: { mode: "contract" }
+    });
+  });
 
   it("blocks unsupported API runtime modes in doctor output", () => {
     const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
@@ -181,6 +217,12 @@ describe("api server wrapper", () => {
         completeBundles: 4,
         liveTranslationProvider: false,
         blockers: []
+      });
+      expect(readiness.production).toMatchObject({
+        total: 13,
+        evidenceMissing: 11,
+        blocked: 2,
+        liveEnabled: 0
       });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
@@ -796,6 +838,20 @@ describe("api server wrapper", () => {
     }
   }, 30_000);
 });
+
+function createMockResponse() {
+  return {
+    body: "",
+    headers: new Map<string, string>(),
+    statusCode: 0,
+    setHeader(name: string, value: string) {
+      this.headers.set(name.toLowerCase(), value);
+    },
+    end(body: string) {
+      this.body = body;
+    }
+  };
+}
 
 async function getJson(port: number, path: string, headers: Record<string, string> = {}, expectedStatus = 200): Promise<any> {
   const response = await fetch(`http://127.0.0.1:${port}${path}`, { headers });

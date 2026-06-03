@@ -36,6 +36,10 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Contact import: local vCard/CSV parsing, Google People contacts, Microsoft
   Graph contacts, generic CardDAV address books, and iCloud vCard manual
   fallback.
+- Business CRM integration: admin-only CRM CSV lifecycle import plus gated
+  Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify
+  customer lifecycle contracts for birthday, purchase-anniversary, and
+  warranty-anniversary campaigns.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
   Messages, Azure OpenAI, Amazon Bedrock Converse, Google Gemini, Hugging Face,
   Mistral, Cohere, Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks,
@@ -90,10 +94,10 @@ the launch locale options so mobile cannot drift from web/API readiness.
 `src/providerRuntime.ts` turns the catalog into executable dry-run contracts.
 It can evaluate readiness for every adapter, reject placeholder credentials,
 build redacted no-network request shapes for credential-gated text, image,
-event, contact, hosted-auth, notification, payment, and observability providers,
-and keep live vendor adapters blocked even if test credentials and approval
-gates are present. These contracts intentionally stop before `fetch` or any SDK
-call.
+event, contact, CRM lifecycle, hosted-auth, notification, payment, and
+observability providers, and keep live vendor adapters blocked even if test
+credentials and approval gates are present. These contracts intentionally stop
+before `fetch` or any SDK call.
 
 Official documentation anchors used for the adapter contracts:
 
@@ -131,6 +135,12 @@ Official documentation anchors used for the adapter contracts:
 - Google Calendar API overview: https://developers.google.com/calendar/api/guides/overview
 - Microsoft Graph Outlook mail: https://learn.microsoft.com/en-us/graph/outlook-mail-concept-overview
 - Microsoft Graph Outlook calendar: https://learn.microsoft.com/en-us/graph/outlook-calendar-concept-overview
+- Salesforce REST query resource: https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_query.htm
+- HubSpot CRM search: https://developers.hubspot.com/docs/api-reference/latest/crm/search-the-crm
+- Zoho CRM records API: https://www.zoho.com/crm/developer/docs/api/v6/get-records.html
+- Pipedrive Persons API: https://developers.pipedrive.com/docs/api/v1/Persons
+- Microsoft Dataverse Web API query: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query/overview
+- Shopify Admin GraphQL customers: https://shopify.dev/docs/api/admin-graphql/latest/queries/customers
 - Hugging Face Inference Providers: https://huggingface.co/docs/inference-providers/index
 - Stability image API: https://platform.stability.ai/docs/getting-started/stable-image
 - Replicate HTTP API: https://replicate.com/docs/reference/http
@@ -192,6 +202,10 @@ The admin panel turns the adapter catalog into an operations surface:
   source-count, and freshness state.
 - Localization readiness for 4 launch locales, 2 RTL layout-review locales, 3
   human-copy-review locales, complete bundles, and live translation disabled.
+- Production launch gates for production auth, live OAuth, AI generation, vendor
+  quotes, live payments/refunds, direct retail orders, telemetry, applied
+  bucket/IAM proof, deployed Postgres API, Vercel DB access, signed native
+  mobile proof, external audits, and physical print certification.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 
@@ -233,6 +247,15 @@ contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,
 `/api/admin/readiness`, and `/api/admin/provider-catalog`, exposes
 `/api/admin/persistence-readiness`, keeps live external calls disabled, and also
 serves the built web app from `dist`.
+
+`vercel.json` and `api/[...path].mjs` add a Vercel deployment seam for the same
+runtime. Vercel serves the built Vite app from `dist` and routes `/api/*` to the
+serverless `handleApiRequest` Module. In contract mode it stays database-free;
+in Postgres mode it requires `CUSTOMCARD_API_RUNTIME=postgres`, `DATABASE_URL`,
+and customer/admin session tokens in Vercel environment variables.
+The current protected Vercel deployment evidence is recorded in
+`docs/deployment-evidence.md`; hosted DB env vars and public route proof remain
+open launch-gate evidence.
 
 The server now has explicit runtime modes:
 
@@ -317,9 +340,11 @@ Implemented checks:
   visibility, API visibility, and CI wiring.
 - `src/providerRuntime.test.ts` validates executable readiness for every
   catalog adapter, redacted no-network request contracts for chat/image/
-  notification/payment/observability providers, metadata-only import contracts,
-  placeholder-secret rejection, free local fallbacks, and hard-blocked live
-  vendor order adapters.
+  notification/payment/observability providers, metadata-only import and CRM
+  lifecycle contracts, placeholder-secret rejection, free local fallbacks, and
+  hard-blocked live vendor order adapters.
+- `src/productionReadiness.test.ts` validates the 13 production launch gates and
+  keeps live production components disabled until external evidence is attached.
 - `src/printerPricing.test.ts` and `npm run printer:pricing:doctor` validate
   source-backed public price observations, collection rules, freshness blocking,
   minimum-quantity totals, manual-confirmation requirements, UI/API exposure, CI

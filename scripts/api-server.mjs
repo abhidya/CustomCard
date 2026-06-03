@@ -1,13 +1,14 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
 const host = process.env.HOST ?? "0.0.0.0";
 
-const routes = [
+export const routes = [
   { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-demo" },
   { id: "route-catalog", method: "GET", path: "/api/routes", audience: "public", auth: "none", runtimeMode: "local-demo" },
   { id: "customer-bootstrap", method: "GET", path: "/api/customer/bootstrap", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
@@ -55,7 +56,7 @@ const securityHeaders = {
   "X-Frame-Options": "DENY"
 };
 
-const readiness = {
+export const readiness = {
   service: "customcard-api",
   status: "ready",
   realOrdersEnabled: false,
@@ -99,6 +100,43 @@ const readiness = {
     messageKeys: 9,
     liveTranslationProvider: false,
     blockers: []
+  },
+  production: {
+    total: 13,
+    contractReady: 0,
+    evidenceMissing: 11,
+    blocked: 2,
+    liveEnabled: 0,
+    requiredEvidence: [
+      "Access log sample",
+      "Account recovery drill",
+      "Alert route drill",
+      "Applied bucket ARN",
+      "Database connectivity doctor",
+      "Deployment URL",
+      "Emulator screenshot",
+      "External audit report",
+      "Hosted identity tenant",
+      "Physical print QA",
+      "Production DATABASE_URL",
+      "Retail partner certification",
+      "Vercel project link"
+    ],
+    blockers: [
+      "No production tenant token-verification evidence has been attached.",
+      "Live OAuth app approvals and revocation evidence are not present.",
+      "Paid model traffic has no live allowlist, spend, or QA evidence.",
+      "Retail quote APIs and quote freshness evidence are not connected.",
+      "The app has no live processor approval, refund proof, or PCI review.",
+      "Direct ordering remains disabled until retail certification and physical QA pass.",
+      "No live telemetry project, alert route, or retention evidence is attached.",
+      "Static IaC is present, but no applied production bucket/IAM output is attached.",
+      "No deployed production Postgres route proof or backup policy is attached.",
+      "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
+      "No signed native artifact or emulator render proof is attached.",
+      "Only internal doctors exist; no external audit report is attached.",
+      "No physical sample or retailer certification has been recorded."
+    ]
   },
   safety: {
     externalNetworkCalls: false,
@@ -151,12 +189,12 @@ if (process.argv.includes("--doctor")) {
     )
   );
   if (blockers.length > 0) process.exit(1);
-} else {
+} else if (isCliEntrypoint()) {
   createServer((request, response) => {
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
     if (requestUrl.pathname.startsWith("/api/")) {
-      serveApi(request, response, requestUrl.pathname).catch((error) => {
+      handleApiRequest(request, response).catch((error) => {
         sendJson(response, 500, {
           service: "customcard-api",
           status: "internal-error",
@@ -170,6 +208,11 @@ if (process.argv.includes("--doctor")) {
   }).listen(port, host, () => {
     console.log(`CustomCard API server listening on http://${host}:${port}`);
   });
+}
+
+export async function handleApiRequest(request, response) {
+  const requestUrl = new URL(request.url ?? "/", `http://${request.headers?.host ?? "localhost"}`);
+  await serveApi(request, response, requestUrl.pathname);
 }
 
 async function serveApi(request, response, path) {
@@ -294,6 +337,10 @@ async function serveApi(request, response, path) {
   sendJson(response, persistedMutation.statusCode, persistedMutation.payload);
 }
 
+function isCliEntrypoint() {
+  return Boolean(process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href);
+}
+
 function serveStatic(response, requestPath) {
   if (!existsSync(join(root, "index.html"))) {
     sendJson(response, 503, {
@@ -365,7 +412,7 @@ function validateApiServerContract() {
   if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
     blockers.push("Every mutation route must require idempotency.");
   }
-  if (readiness.providers.total < 87) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providers.total < 94) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (readiness.providerGovernance.total !== readiness.providers.total) {
     blockers.push("Provider governance summary must cover every adapter.");
   }
@@ -375,6 +422,8 @@ function validateApiServerContract() {
   if (readiness.providerGovernance.blockers.length > 0) blockers.push("Provider governance summary has blockers.");
   if (readiness.providerGovernance.liveNetworkDefault) blockers.push("Provider governance cannot default to live network calls.");
   if (readiness.providerGovernance.realOrdersEnabled) blockers.push("Provider governance cannot enable real orders.");
+  if (readiness.production.liveEnabled !== 0) blockers.push("Production readiness cannot enable live components by default.");
+  if (readiness.production.total < 13) blockers.push("Production readiness must track every launch gate.");
   if (readiness.localization.defaultLocale !== "en-US") blockers.push("Localization default locale must stay en-US.");
   if (readiness.localization.supportedLocales < 4) blockers.push("Localization must cover at least four launch locales.");
   if (readiness.localization.completeBundles !== readiness.localization.supportedLocales) {

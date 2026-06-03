@@ -126,7 +126,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "self-hosted",
     credentials: ["AUTH_SESSION_SECRET"],
     safetyGates: ["HttpOnly sessions", "Hashed recovery challenges", "Revocation handling"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 80,
     detail: "Documents the self-hosted auth boundary while account identity and recovery storage are contract-tested."
   },
@@ -147,7 +147,7 @@ export const providerCatalog: ProviderAdapter[] = [
       "AUTH_SESSION_SECRET"
     ],
     safetyGates: ["OAuth consent required", "Tenant review", "Revocation handling", "Network allowlist"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 20,
     detail: "Optional authorization-code OIDC adapter for hosted customer/admin identity.",
     docsUrl: "https://auth0.com/docs/authenticate/protocols/oauth"
@@ -162,7 +162,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["CLERK_SECRET_KEY", "CLERK_JWT_KEY", "CLERK_AUTHORIZED_PARTIES", "AUTH_SESSION_SECRET"],
     safetyGates: ["Tenant review", "Revocation handling", "Network allowlist"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 21,
     detail: "Optional Clerk JWT/session verification adapter for hosted customer/admin sessions.",
     docsUrl: "https://clerk.com/docs/references/backend/verify-token"
@@ -177,7 +177,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "AUTH_SESSION_SECRET"],
     safetyGates: ["Tenant review", "Revocation handling", "Network allowlist"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 22,
     detail: "Optional Supabase Auth adapter for verifying user JWTs before API access.",
     docsUrl: "https://supabase.com/docs/reference/javascript/auth-getuser"
@@ -192,7 +192,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["FIREBASE_API_KEY", "FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT_JSON", "AUTH_SESSION_SECRET"],
     safetyGates: ["Tenant review", "Revocation handling", "Network allowlist"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 23,
     detail: "Optional Firebase Auth adapter for token lookup and account identity verification.",
     docsUrl: "https://firebase.google.com/docs/reference/rest/auth"
@@ -214,7 +214,7 @@ export const providerCatalog: ProviderAdapter[] = [
       "AUTH_SESSION_SECRET"
     ],
     safetyGates: ["OAuth consent required", "Tenant review", "Revocation handling", "Network allowlist"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 24,
     detail: "Optional Cognito Hosted UI authorization-code adapter for customer/admin login.",
     docsUrl: "https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html"
@@ -285,7 +285,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
     safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Revocation handling"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 35,
     detail: "Imports contact names, email addresses, postal addresses, birthdays, and event metadata after scoped consent.",
     docsUrl: "https://developers.google.com/people/api/rest/v1/people.connections/list"
@@ -300,7 +300,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET", "MICROSOFT_TENANT_ID"],
     safetyGates: ["OAuth consent required", "Metadata-only import", "No raw content storage", "Tenant review", "Revocation handling"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 36,
     detail: "Imports Outlook contact metadata with least-privilege Contacts.Read scope.",
     docsUrl: "https://learn.microsoft.com/en-us/graph/api/user-list-contacts"
@@ -315,7 +315,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "self-hosted",
     credentials: ["CARDDAV_BASE_URL", "CARDDAV_USERNAME", "CARDDAV_APP_PASSWORD", "CARDDAV_ADDRESSBOOK_PATH"],
     safetyGates: ["Network allowlist", "Metadata-only import", "No raw content storage", "Revocation handling"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 37,
     detail: "Models generic CardDAV address-book queries for private or self-hosted contact stores.",
     docsUrl: "https://www.rfc-editor.org/rfc/rfc6352"
@@ -449,7 +449,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
     safetyGates: ["Metadata-only import", "OAuth consent required", "No raw content storage"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 30,
     detail: "Imports mail metadata only after scoped Google OAuth consent.",
     docsUrl: "https://developers.google.com/gmail/api/guides"
@@ -464,7 +464,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
     safetyGates: ["Calendar scope consent", "Metadata schema validation", "Revocation handling"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 31,
     detail: "Imports calendar event metadata behind the same provider connection model.",
     docsUrl: "https://developers.google.com/calendar/api/guides/overview"
@@ -479,7 +479,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET", "MICROSOFT_TENANT_ID"],
     safetyGates: ["OAuth consent required", "Metadata-only import", "Tenant review"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 32,
     detail: "Adds Outlook mail metadata as a contract-ready provider.",
     docsUrl: "https://learn.microsoft.com/en-us/graph/outlook-mail-concept-overview"
@@ -494,7 +494,7 @@ export const providerCatalog: ProviderAdapter[] = [
     cost: "free-tier",
     credentials: ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET", "MICROSOFT_TENANT_ID"],
     safetyGates: ["OAuth consent required", "Calendar event schema validation", "Revocation handling"],
-    roleSurface: ["admin"],
+    roleSurface: ["customer", "admin"],
     priority: 33,
     detail: "Adds Outlook calendar metadata import as a provider contract.",
     docsUrl: "https://learn.microsoft.com/en-us/graph/outlook-calendar-concept-overview"

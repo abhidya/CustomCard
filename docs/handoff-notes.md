@@ -12,7 +12,10 @@ skeleton for the production path. It includes:
   adapter readiness.
 - A tested provider catalog covering local/free fallbacks plus credential-gated
   OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability, Replicate,
-  notification, vendor, and cloud-runtime adapters.
+  notification, business CRM, vendor, and cloud-runtime adapters.
+- Admin-only business CRM lifecycle readiness for CSV export plus Salesforce,
+  HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify customer
+  lifecycle contracts.
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot, with 12 official-source observations,
   freshness reporting, and live quote/order claims kept separate.
@@ -44,6 +47,11 @@ skeleton for the production path. It includes:
 - Admin-only demo reset contract and script doctor for deterministic reviewer
   data across users, sessions, events, memories, projects, render packets,
   orders, consent, data requests, and audit rows.
+- A production launch-gate registry covering live production auth, OAuth,
+  AI/image generation, vendor quotes, payments/refunds, retail ordering,
+  telemetry, applied bucket/IAM proof, deployed Postgres API, Vercel DB access,
+  native mobile artifact proof, external audits, and physical print
+  certification.
 - GitHub Actions verification workflow for the local repository gates.
 - Tests that prove the current skeleton does not fake weak input, live ordering,
   raw-content import, or unsafe order-state transitions.
@@ -72,6 +80,9 @@ skeleton for the production path. It includes:
   proof; non-English and RTL launch locales remain human-review gated.
 - No live payment charge/refund, cancellation, or external order-confirmation
   integration; payment provider coverage is sandbox-contract only.
+- Vercel deployment exists but public route checks return deployment-protection
+  401 responses, and no hosted DB env vars are configured; the admin launch-gate
+  registry tracks the remaining env sync and DB doctor evidence.
 - No live observability ingestion, alert routing, retention enforcement, or
   incident-response drill; observability provider coverage is contract-only.
 - No React Native render test, emulator run, actual EAS/native build, or signed
@@ -80,7 +91,9 @@ skeleton for the production path. It includes:
 - No external legal/security/privacy/accessibility audit; repo-local baseline
   checks cover deploy headers, privacy storage blocks, artifact-share controls,
   container hardening, and app-shell accessibility signals.
-- No deployment has been performed in this pass.
+- A Vercel deployment was performed and recorded in
+  `docs/deployment-evidence.md`, but DB-backed public route verification remains
+  incomplete.
 - Hosted GitHub Actions verification exists for main pushes; no production
   deployment has been performed.
 

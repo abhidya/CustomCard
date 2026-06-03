@@ -50,6 +50,10 @@ environment configuration instead of static placeholders.
 - Local demo workspace auth using browser storage only.
 - Manual invite text and `.ics` paste import.
 - Local vCard and CSV contact/address import.
+- Admin-only business CRM CSV lifecycle import plus gated Salesforce, HubSpot,
+  Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify customer lifecycle sync
+  contracts for birthday, purchase-anniversary, and warranty-anniversary card
+  campaigns.
 - Deterministic opportunity detection and user approve/snooze/dismiss states.
 - User-approved relationship memories with add/delete controls.
 - Deterministic card copy and visual directions with no paid AI calls.
@@ -67,7 +71,8 @@ environment configuration instead of static placeholders.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
-  cloud runtime readiness, and blocked live-vendor adapters.
+  CRM lifecycle readiness, production launch gates, cloud runtime readiness, and
+  blocked live-vendor adapters.
 - Adapter catalog covering free local paths plus gated Auth0, Clerk, Supabase
   Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
   Bedrock, Google, Google People, Microsoft Graph, CardDAV, Mistral, Cohere,
@@ -76,7 +81,8 @@ environment configuration instead of static placeholders.
   Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, Firebase Cloud
   Messaging, Stripe Checkout, PayPal Orders, Square Payments, Adyen Checkout,
   Sentry, PostHog, OpenTelemetry OTLP, Grafana Cloud, Datadog Logs, Better
-  Stack Logs, and vendor contracts.
+  Stack Logs, Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales,
+  Shopify Admin, and vendor contracts.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
@@ -119,6 +125,26 @@ npm run dev
 
 Open the Vite URL printed by the dev server. The app opens directly into the
 free local workflow, not a marketing landing page.
+
+## Vercel Deployment Contract
+
+`vercel.json` builds the Vite app into `dist` and routes `/api/*` to the
+serverless handler in `api/[...path].mjs`, which reuses the same
+`handleApiRequest` Module as the local API/static server. Static hosting works
+without database credentials; DB-backed API access requires Vercel environment
+variables such as:
+
+```sh
+CUSTOMCARD_API_RUNTIME=postgres
+DATABASE_URL=postgres://...
+CUSTOMCARD_CUSTOMER_SESSION_TOKEN=...
+CUSTOMCARD_ADMIN_SESSION_TOKEN=...
+```
+
+The deployment launch gate remains evidence-missing until DB env vars are
+synced, deployment protection is bypassed or disabled for verification, and the
+hosted DB doctor is captured. Current Vercel evidence is recorded in
+`docs/deployment-evidence.md`.
 
 ## Environment
 
@@ -166,10 +192,11 @@ Provider credentials such as `AUTH0_DOMAIN`, `CLERK_SECRET_KEY`,
 `WHATSAPP_ACCESS_TOKEN`, `EXPO_ACCESS_TOKEN`, `STRIPE_SECRET_KEY`,
 `PAYPAL_CLIENT_ID`, `SQUARE_ACCESS_TOKEN`, `ADYEN_API_KEY`, `SENTRY_DSN`,
 `POSTHOG_PROJECT_API_KEY`, `OTEL_EXPORTER_OTLP_ENDPOINT`,
-`GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `BETTERSTACK_SOURCE_TOKEN`, and
-Microsoft Graph keys are documented in `infra/env/.env.example`, but live OAuth,
-AI/image calls, notification sends, payment charges/refunds, telemetry ingestion,
-and vendor ordering are not implemented in this repo state.
+`GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `BETTERSTACK_SOURCE_TOKEN`,
+Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, and Microsoft Graph
+keys are documented in `infra/env/.env.example`, but live OAuth, AI/image calls,
+notification sends, payment charges/refunds, telemetry ingestion, CRM sync, and
+vendor ordering are not implemented in this repo state.
 
 ## Architecture
 
@@ -258,6 +285,7 @@ mobile native release doctor on pushes to `main` and pull requests.
 - [Platform expansion design](docs/platform-expansion-design.md)
 - [Printer pricing research](docs/printer-pricing-research.md)
 - [Verification](docs/verification.md)
+- [Deployment evidence](docs/deployment-evidence.md)
 - [Completion audit](docs/completion-audit.md)
 - [Final package](docs/final-package.md)
 - [Handoff notes](docs/handoff-notes.md)
@@ -274,8 +302,8 @@ bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
 deployed production Postgres API integration, production hosted account-token
 verification outside the isolated live Postgres doctors, professional
 translation QA or live translation providers, a produced/signed native mobile
-artifact or emulator render proof, deployment evidence, external legal/security/
-privacy/accessibility audit, or physical print certification. Those paths are
-represented as contracts and hard gates so reviewers can inspect the system
-shape without mistaking the free local MVP for a certified production
-fulfillment service.
+artifact or emulator render proof, public Vercel DB-backed route proof, external
+legal/security/privacy/accessibility audit, or physical print certification.
+Those paths are represented in `src/productionReadiness.ts` as admin-visible
+contracts and hard gates so reviewers can inspect the system shape without
+mistaking the free local MVP for a certified production fulfillment service.

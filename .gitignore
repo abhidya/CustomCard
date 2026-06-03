@@ -4,3 +4,4 @@ coverage/
 .omx/
 .DS_Store
 *.local
+.vercel

@@ -81,6 +81,12 @@ describe("api contracts", () => {
       liveTranslationProvider: false,
       blockers: []
     });
+    expect(summary.production).toMatchObject({
+      total: 13,
+      evidenceMissing: 11,
+      blocked: 2,
+      liveEnabled: 0
+    });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(5);
@@ -92,7 +98,7 @@ describe("api contracts", () => {
     expect(payload.customer.primaryActions.map((action) => action.capability)).toEqual(
       expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
     );
-    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(87);
+    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(94);
     expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
     expect(payload.mobile.localeOptions.map((locale) => locale.locale)).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
     expect(payload.localization.summary).toMatchObject({
@@ -100,6 +106,8 @@ describe("api contracts", () => {
       rtlLocales: 2,
       blockers: []
     });
+    expect(payload.production.summary).toMatchObject({ total: 13, liveEnabled: 0 });
+    expect(payload.production.gates.map((gate) => gate.id)).toContain("vercel-deployment-db-access");
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",

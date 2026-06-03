@@ -388,6 +388,32 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173");
   });
 
+  it("defines a Vercel static plus serverless API deployment contract", () => {
+    const vercel = JSON.parse(read("vercel.json")) as {
+      buildCommand: string;
+      outputDirectory: string;
+      rewrites: Array<{ source: string; destination: string }>;
+    };
+    const handler = read("api/[...path].mjs");
+    const apiServer = read("scripts/api-server.mjs");
+    const apiRuntime = read("scripts/api-runtime.mjs");
+
+    expect(vercel).toMatchObject({
+      buildCommand: "npm run build",
+      outputDirectory: "dist"
+    });
+    expect(vercel.rewrites).toEqual(
+      expect.arrayContaining([
+        { source: "/api/(.*)", destination: "/api/$1" },
+        { source: "/(.*)", destination: "/index.html" }
+      ])
+    );
+    expect(handler).toContain("handleApiRequest");
+    expect(apiServer).toContain("export async function handleApiRequest");
+    expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
+    expect(apiRuntime).toContain("DATABASE_URL");
+  });
+
   it("ships a reviewer demo reset contract doctor", () => {
     const output = execFileSync("npm", ["run", "demo:doctor", "--silent"], {
       encoding: "utf8",

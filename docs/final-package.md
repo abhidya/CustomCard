@@ -8,7 +8,8 @@
   an event-aware personal greeting-card CRM and print-production product; see
   `docs/brief-context.md`.
 - Current delivered outcome: a polished free local MVP plus customer/admin
-  panels, a tested provider-adapter catalog and no-network runtime contracts, a
+  panels, a tested 94-adapter catalog and no-network runtime contracts, admin
+  business CRM lifecycle contracts, a tested production launch-gate registry, a
   tested localization readiness catalog, a tested customer mobile shell
   contract, and a contract-first production skeleton with API/static server,
   account identity/recovery storage contracts, memory-mode auth/idempotency
@@ -27,9 +28,10 @@
   no production OAuth, vendor, payment, or print-certification access exists in
   this repo state.
 - Unknown or unrecoverable: production provider credentials, vendor sandbox
-  terms, payment processor decisions, deployment target, external legal/security
-  review outcome, live AI/image-provider cost behavior, and physical print QA
-  results.
+  terms, payment processor decisions, hosted DB credentials, external
+  legal/security review outcome, live AI/image-provider cost behavior, and
+  physical print QA results. A protected Vercel deployment exists, but public
+  DB-backed route proof is still missing.
 
 ## What Changed
 
@@ -68,11 +70,13 @@
 - Customer panel: next-card state, deterministic local chat transcript,
   image/render choices, locale readiness, and free fallback actions.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
-  env vars, localization readiness, gated provider queue, cloud runtime
-  adapters, and blocked live vendors.
-- Provider runtime: readiness dry runs for all 87 catalog adapters; redacted
+  env vars, localization readiness, production launch gates, gated provider
+  queue, cloud runtime adapters, CRM lifecycle adapters, and blocked live
+  vendors.
+- Provider runtime: readiness dry runs for all 94 catalog adapters; redacted
   no-network request contracts for gated chat, image, event, contact,
-  hosted-auth, notification, payment, and observability providers; hard
+  CRM lifecycle, hosted-auth, notification, payment, and observability
+  providers; hard
   block for live vendor order adapters; hosted auth request contracts for
   common identity providers; metadata-only contact/address-book import
   contracts; local public printer pricing research
@@ -85,13 +89,14 @@
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual vendor handoff, data-request mutation handling,
   localization readiness payloads, and executable memory-mode Bearer auth plus
-  `X-Idempotency-Key` replay/conflict
-  behavior served by `scripts/api-server.mjs`; fake-pool and isolated live
-  Postgres runtime coverage now exercise auth-session lookup, idempotency
-  replay/conflict, migration application, provider/event/opportunity inserts,
-  card-project inserts, relationship-memory inserts, render-packet inserts, audit
-  insert, and queue-job insert, with a process-level HTTP doctor proving the
-  same repository-backed routes through `scripts/api-server.mjs`.
+  `X-Idempotency-Key` replay/conflict behavior served by
+  `scripts/api-server.mjs`. `api/[...path].mjs` exposes the same handler as a
+  Vercel serverless route. Fake-pool and isolated live Postgres runtime coverage
+  exercise auth-session lookup, idempotency replay/conflict, migration
+  application, provider/event/opportunity inserts, card-project inserts,
+  relationship-memory inserts, render-packet inserts, audit insert, and
+  queue-job insert, with a process-level HTTP doctor proving the same
+  repository-backed routes through `scripts/api-server.mjs`.
 - Localization readiness: English (US), Spanish (US), Urdu, and Arabic are
   exposed across web customer/admin panels, API bootstrap/readiness payloads, and
   the mobile shell contract with complete message bundles, RTL layout-review

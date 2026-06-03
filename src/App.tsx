@@ -75,6 +75,12 @@ import {
 } from "./localization";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
+import {
+  productionLaunchGates,
+  summarizeProductionReadiness,
+  type ProductionLaunchGate,
+  type ProductionReadinessSummary
+} from "./productionReadiness";
 import { buildPrinterPricingComparison, type PrinterPricingComparison } from "./printerPricing";
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
 
@@ -142,6 +148,7 @@ function App() {
   const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
+  const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -301,6 +308,7 @@ function App() {
             onNavigate={setActiveView}
             opportunity={opportunity}
             panelCount={draft.panels.length}
+            productionReadiness={productionReadiness}
             selectedLocale={selectedLocale}
             workspace={workspace}
           />
@@ -424,6 +432,7 @@ function App() {
             localizationSummary={localizationSummary}
             model={adminPanelModel}
             providerGovernance={providerGovernance}
+            productionReadiness={productionReadiness}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -443,6 +452,7 @@ function CustomerPanelView({
   onNavigate,
   opportunity,
   panelCount,
+  productionReadiness,
   selectedLocale,
   workspace
 }: {
@@ -454,6 +464,7 @@ function CustomerPanelView({
   onNavigate: (view: ViewId) => void;
   opportunity: CardOpportunity;
   panelCount: number;
+  productionReadiness: ProductionReadinessSummary;
   selectedLocale: SupportedLocale;
   workspace: LocalWorkspace | undefined;
 }) {
@@ -570,6 +581,22 @@ function CustomerPanelView({
             <Metric label="RTL" value={selectedLocale.requiresRtlLayout ? "Review" : "No"} />
             <Metric label="Copy" value={selectedLocale.reviewState === "ready" ? "Ready" : "Review"} />
             <Metric label="Card language" value={selectedLocale.cardLanguage} />
+          </div>
+        </article>
+
+        <article className="surfaceCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Launch state</p>
+              <h3>Production safety</h3>
+            </div>
+            <ShieldCheck size={18} />
+          </div>
+          <div className="runtimeGrid compactMetrics" aria-label="Customer production safety">
+            <Metric label="Live orders" value="Off" />
+            <Metric label="Live charges" value="Off" />
+            <Metric label="Gates" value={`${productionReadiness.total}`} />
+            <Metric label="Evidence gaps" value={`${productionReadiness.evidenceMissing}`} />
           </div>
         </article>
       </div>
@@ -1060,11 +1087,13 @@ function AdminPanelView({
   localizationSummary,
   model,
   providerGovernance,
+  productionReadiness,
   runtimeReadiness
 }: {
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
   providerGovernance: ProviderGovernanceSummary;
+  productionReadiness: ProductionReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1090,6 +1119,7 @@ function AdminPanelView({
         <Metric label="Blocked live" value={`${model.coverage.blocked}`} />
         <Metric label="Budget cap" value={formatCents(providerGovernance.monthlyBudgetCents)} />
         <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
+        <Metric label="Launch gates" value={`${productionReadiness.total}`} />
       </div>
 
       <div className="adminGrid">
@@ -1202,6 +1232,23 @@ function AdminPanelView({
         <article className="toolPanel adminWide">
           <div className="sectionHeader compact">
             <div>
+              <p className="eyebrow">Production</p>
+              <h3>Launch gates</h3>
+            </div>
+            <StatusChip icon={Lock} label="Evidence required" tone="red" />
+          </div>
+          <div className="runtimeGrid" aria-label="Production launch gate readiness">
+            <Metric label="Tracked" value={`${productionReadiness.total}`} />
+            <Metric label="Evidence missing" value={`${productionReadiness.evidenceMissing}`} />
+            <Metric label="Blocked" value={`${productionReadiness.blocked}`} />
+            <Metric label="Live enabled" value={`${productionReadiness.liveEnabled}`} />
+          </div>
+          <ProductionGateList gates={productionLaunchGates} />
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
               <p className="eyebrow">Provider queue</p>
               <h3>Gated adapters</h3>
             </div>
@@ -1293,6 +1340,20 @@ function AdapterMiniList({ adapters }: { adapters: ProviderAdapter[] }) {
           <span>{capabilityLabels[adapter.capability]}</span>
           <strong>{adapter.label}</strong>
           <small>{providerStatusLabel(adapter.status)}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProductionGateList({ gates }: { gates: ProductionLaunchGate[] }) {
+  return (
+    <div className="adapterMiniList">
+      {gates.map((gate) => (
+        <div className={`adapterMini ${gate.status === "blocked" ? "blocked" : "credential-gated"}`} key={gate.id}>
+          <span>{gate.category}</span>
+          <strong>{gate.label}</strong>
+          <small>{gate.status === "blocked" ? "Blocked" : "Evidence missing"}</small>
         </div>
       ))}
     </div>
@@ -1430,7 +1491,10 @@ function prioritizeAdminEnv(requiredEnv: string[]): string[] {
     "GOOGLE_OAUTH_CLIENT_SECRET",
     "MICROSOFT_CLIENT_ID",
     "MICROSOFT_CLIENT_SECRET",
-    "MICROSOFT_TENANT_ID"
+    "MICROSOFT_TENANT_ID",
+    "SALESFORCE_INSTANCE_URL",
+    "HUBSPOT_PRIVATE_APP_TOKEN",
+    "SHOPIFY_SHOP_DOMAIN"
   ];
   const envSet = new Set(requiredEnv);
   const prioritized = priority.filter((envVar) => envSet.has(envVar));

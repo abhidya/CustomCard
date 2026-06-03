@@ -14,6 +14,11 @@ import {
 } from "./providerCatalog.ts";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance.ts";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime.ts";
+import {
+  productionLaunchGates,
+  summarizeProductionReadiness,
+  type ProductionReadinessSummary
+} from "./productionReadiness.ts";
 import { buildPrinterPricingComparison } from "./printerPricing.ts";
 
 export type ApiMethod = "GET" | "POST";
@@ -51,6 +56,7 @@ export interface ApiReadinessSummary {
   providers: ProviderCoverageSummary;
   governance: ProviderGovernanceSummary;
   localization: LocalizationReadinessSummary;
+  production: ProductionReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -68,6 +74,10 @@ export interface ApiBootstrapPayload {
   localization: {
     locales: typeof supportedLocales;
     summary: LocalizationReadinessSummary;
+  };
+  production: {
+    gates: typeof productionLaunchGates;
+    summary: ProductionReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -142,7 +152,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "admin-session",
     runtimeMode: "durable-api",
     requestSchema: ["adminSession"],
-    responseSchema: ["coverage", "governance", "localization", "runtime", "blockedProviders", "requiredEnv"],
+    responseSchema: ["coverage", "governance", "localization", "production", "runtime", "blockedProviders", "requiredEnv"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -319,6 +329,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     providers: summarizeProviderCoverage(),
     governance: summarizeProviderGovernance(),
     localization: summarizeLocalizationReadiness(),
+    production: summarizeProductionReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -333,6 +344,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     localization: {
       locales: supportedLocales,
       summary: summarizeLocalizationReadiness()
+    },
+    production: {
+      gates: productionLaunchGates,
+      summary: summarizeProductionReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")

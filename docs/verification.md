@@ -20,7 +20,8 @@ it after each meaningful implementation pass.
 - Provider-runtime tests cover every catalog adapter with no-network dry runs,
   placeholder-secret rejection, redacted chat/image/notification/payment/
   observability request contracts, metadata-only event/contact import contracts,
-  free local fallbacks, and hard-blocked live vendor ordering.
+  metadata-only CRM lifecycle contracts, free local fallbacks, and hard-blocked
+  live vendor ordering.
 - Printer-pricing tests and `npm run printer:pricing:doctor` cover 12
   review-only public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot price
   observations, collection rules, 30-day freshness blocking, minimum quantity
@@ -44,8 +45,13 @@ it after each meaningful implementation pass.
   live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
   reads every object back, verifies checksums, writes the manifest, cleans up the
   isolated bucket, and keeps external vendor calls plus real orders disabled.
-- Provider adapter coverage currently includes 87 adapters: 16 ready-local, 56
+- Provider adapter coverage currently includes 94 adapters: 17 ready-local, 62
   credential-gated, 9 contract-only, and 6 blocked.
+- Production readiness tests cover 13 launch gates for live auth, OAuth,
+  AI/image generation, vendor quotes, payments/refunds, direct retail ordering,
+  telemetry, applied bucket/IAM proof, deployed Postgres API, Vercel DB access,
+  signed native mobile proof, external audits, and physical print
+  certification; `liveEnabled` remains 0.
 - Domain and service tests exercise source extraction, weak-input blocking, raw
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
@@ -92,7 +98,12 @@ it after each meaningful implementation pass.
   safety gates.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, cloud-storage,
-  runtime, and data lanes.
+  Vercel, runtime, and data lanes.
+- Vercel deployment evidence exists for project
+  `world-prize-s-projects/customcard`, deployment
+  `dpl_Gh1VhQEDsYh5wf7o3Pz27vJHFwy4`, and serverless function
+  `api/[...path]`; public `/` and `/api/health` returned Vercel deployment
+  protection 401 responses, and `vercel env ls` showed no project env vars.
 - Cloud artifact IaC is checked by `npm run cloud:doctor`, which statically
   verifies `infra/aws/artifact-store` for private S3 bucket posture, encryption,
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
@@ -200,7 +211,7 @@ npm run provider:governance:doctor
 ```
 
 Result: passed. The JSON report marked catalog, governance, tests, surfaces,
-CI, and safety lanes `ready`; it verified 87 adapters, 39 usage-based adapters,
+CI, and safety lanes `ready`; it verified 94 adapters, 45 usage-based adapters,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
 
@@ -227,10 +238,11 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 15 routes, 7 idempotent mutation contracts,
-87 providers, provider governance for all 87 adapters, 13 schema-backed routes,
+94 providers, provider governance for all 94 adapters, 13 schema-backed routes,
 relationship-memory repository readiness, render-packet artifact manifests,
 signed artifact URL contracts, contract runtime mode, no live external calls,
-no real vendor orders, no raw content storage, and no blockers.
+no real vendor orders, no raw content storage, 13 production launch gates with
+`liveEnabled: 0`, and no blockers.
 
 ```text
 npm run api:doctor:memory
