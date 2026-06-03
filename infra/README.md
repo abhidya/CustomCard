@@ -7,6 +7,8 @@ This directory is the deployable service skeleton for the production path.
 - `k8s/app.yaml` is the cloud-native starting point for web and worker deployments.
 - `migrations/001_initial_schema.sql` defines the durable service data model.
 - `env/.env.example` lists required secrets and kill switches.
+- `../scripts/api-server.mjs` serves `/api/health`, API bootstrap/readiness
+  contracts, and the built web app from `dist`.
 - `../scripts/deployment-readiness.mjs` emits the local deployment readiness
   report used by `npm run deployment:doctor`.
 
@@ -23,12 +25,17 @@ Run the local IaC readiness check before treating the manifests as reviewable:
 
 ```sh
 npm run deployment:doctor
+npm run api:doctor
 ```
 
 The report checks the local-dev, cheap-droplet, cloud-native, runtime, and data
 lanes. Passing this check means the committed deployment contracts are internally
 consistent; it does not mean a real droplet or Kubernetes cluster has been
 provisioned.
+
+The Kubernetes web deployment probes `/api/health`, and the production Docker
+image starts `scripts/api-server.mjs` so the same container can serve the static
+web bundle and the contract-first API endpoints.
 
 The Kubernetes `Secret` in `k8s/app.yaml` is intentionally empty and annotated as
 pre-created by a secret manager. Production clusters should source the required

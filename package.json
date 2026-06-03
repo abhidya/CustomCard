@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage src/*.test.ts tests/infra-contract.test.ts tests/mobile-contract.test.ts",
     "preview": "vite preview --host 127.0.0.1",
+    "api:serve": "node scripts/api-server.mjs",
+    "api:doctor": "node scripts/api-server.mjs --doctor",
     "deployment:doctor": "node scripts/deployment-readiness.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "migrate": "node scripts/migrate.mjs",

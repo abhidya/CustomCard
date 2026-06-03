@@ -70,6 +70,7 @@ const checks = [
   checkIncludes("cloud-native", "k8s-probes-and-resources", contents.k8s, [
     "readinessProbe:",
     "livenessProbe:",
+    "/api/health",
     "resources:",
     "requests:",
     "limits:"
@@ -83,7 +84,9 @@ const checks = [
     "FROM node:25-slim AS runtime",
     "npm ci --omit=dev",
     "COPY --from=build /app/dist ./dist",
-    'CMD ["node", "scripts/serve-dist.mjs"]'
+    "COPY src ./src",
+    "COPY apps/mobile/src ./apps/mobile/src",
+    'CMD ["node", "scripts/api-server.mjs"]'
   ]),
   checkIncludes("runtime", "runtime-env-example", contents.envExample, [
     "DATABASE_URL=",

@@ -269,14 +269,14 @@ describeWithChrome("CustomCard UI smoke", () => {
       { width, height, deviceScaleFactor: 1, mobile: width < 600 },
       sessionId
     );
-    const loaded = waitEvent("Page.loadEventFired", sessionId, 10000);
+    const loaded = waitEvent("Page.loadEventFired", sessionId, 10000).catch(() => undefined);
     await send("Page.navigate", { url: baseUrl }, sessionId);
-    await loaded.catch(() => undefined);
+    await loaded;
     await evaluate(sessionId, "new Promise((resolve) => requestAnimationFrame(() => resolve(true)))");
     await evaluate(sessionId, "localStorage.clear(); true");
-    const reloaded = waitEvent("Page.loadEventFired", sessionId, 10000);
+    const reloaded = waitEvent("Page.loadEventFired", sessionId, 10000).catch(() => undefined);
     await send("Page.reload", {}, sessionId);
-    await reloaded.catch(() => undefined);
+    await reloaded;
     await evaluate(sessionId, "new Promise((resolve) => requestAnimationFrame(() => resolve(true)))");
     return sessionId;
   }
@@ -302,15 +302,22 @@ describeWithChrome("CustomCard UI smoke", () => {
 
   function waitEvent(method: string, sessionId?: string, timeout = 5000): Promise<any> {
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error(`Timed out waiting for ${method}`)), timeout);
-      eventWaiters.push({
+      const waiter: EventWaiter = {
         method,
         sessionId,
         resolve: (message) => {
           clearTimeout(timer);
           resolve(message);
         }
-      });
+      };
+      const timer = setTimeout(() => {
+        const index = eventWaiters.indexOf(waiter);
+        if (index !== -1) {
+          eventWaiters.splice(index, 1);
+        }
+        reject(new Error(`Timed out waiting for ${method}`));
+      }, timeout);
+      eventWaiters.push(waiter);
     });
   }
 });

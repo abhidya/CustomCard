@@ -58,7 +58,9 @@ describe("production infrastructure contract", () => {
     expect(dropletCompose).toContain("SECRET_PROVIDER: managed_secret_store");
     expect(dropletCompose).not.toContain("SECRET_PROVIDER: local_env");
     expect(dropletCompose.match(/customcard-objects:\/data\/objects/g)?.length).toBe(2);
-    expect(dockerfile).toContain("node\", \"scripts/serve-dist.mjs");
+    expect(dockerfile).toContain("node\", \"scripts/api-server.mjs");
+    expect(dockerfile).toContain("COPY src ./src");
+    expect(dockerfile).toContain("COPY apps/mobile/src ./apps/mobile/src");
     expect(dockerfile).toContain("COPY infra ./infra");
     expect(dockerfile).not.toContain("vite preview");
   });
@@ -81,6 +83,7 @@ describe("production infrastructure contract", () => {
     expect(k8s).toContain("runtime:doctor");
     expect(k8s).toContain("readinessProbe:");
     expect(k8s).toContain("livenessProbe:");
+    expect(k8s).toContain("/api/health");
     expect(k8s).not.toContain("replace-me");
     expect(k8s).not.toContain("ghcr.io/example");
     expect(k8s).not.toContain(":latest");
@@ -152,6 +155,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm ci");
     expect(workflow).toContain("npm run check");
     expect(workflow).toContain("npm run deployment:doctor");
+    expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run worker");
     expect(workflow).toContain("npm --prefix apps/mobile run doctor");
     expect(workflow).toContain("REAL_ORDER_KILL_SWITCH: disabled");

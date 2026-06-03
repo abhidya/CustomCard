@@ -36,6 +36,9 @@ jobs:
       - name: Validate deployment readiness
         run: npm run deployment:doctor
 
+      - name: Validate API contract readiness
+        run: npm run api:doctor
+
       - name: Validate worker readiness
         run: npm run worker
 

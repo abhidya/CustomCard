@@ -33,12 +33,15 @@ it after each meaningful implementation pass.
   kill-switch doctor behavior.
 - Agent-contract tests cover the typed orchestration surface and fail-closed
   default policy.
+- API-contract and API-server tests cover `/api/health`, customer/admin
+  bootstrap, mobile bootstrap, provider readiness, idempotent mutation contracts,
+  404/405 behavior, and the no-live-call/no-real-order posture.
 - Deployment readiness is checked by `npm run deployment:doctor`, which emits a
   JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
   lanes.
-- Coverage is measured for core, orchestration, and mobile contract modules with
-  V8 thresholds enforced by `npm run check`: 90% statements, 80% branches, 90%
-  functions, and 90% lines.
+- Coverage is measured for core, API, orchestration, and mobile contract modules
+  with V8 thresholds enforced by `npm run check`: 90% statements, 80% branches,
+  90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
 - Runtime doctor fails closed on missing or placeholder required environment
@@ -53,6 +56,7 @@ it after each meaningful implementation pass.
 ```sh
 npm run check
 npm run deployment:doctor
+npm run api:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -67,12 +71,13 @@ npm run check
 
 Result: passed.
 
-- Vitest: 9 test files passed, 66 tests passed.
-- Coverage: 8 core/infra/mobile test files passed, 62 tests passed; V8 report measured
-  91.91% statements, 85.22% branches, 95.34% functions, and 94.29% lines across
+- Vitest: 11 test files passed, 74 tests passed.
+- Coverage: 9 core/API/infra/mobile test files passed, 68 tests passed; V8 report measured
+  91.33% statements, 84.73% branches, 95.65% functions, and 94.03% lines across
   `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
-  `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
-  `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
+  `src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
+  `src/providerCatalog.ts`, `src/providerRuntime.ts`, and
+  `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -82,6 +87,14 @@ npm run deployment:doctor
 
 Result: passed. The JSON report marked local-dev, cheap-droplet, cloud-native,
 runtime, and data lanes `ready` with 18 deployment checks passed and no blockers.
+
+```text
+npm run api:doctor
+```
+
+Result: passed. API doctor reported 11 routes, 5 idempotent mutation contracts,
+42 providers, no live external calls, no real vendor orders, no raw content
+storage, and no blockers.
 
 ```text
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -135,6 +148,8 @@ documentation claims found during the audit were corrected.
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
 - No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
+- No DB-backed authenticated API integration test; API server coverage remains a
+  contract/static bootstrap boundary.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

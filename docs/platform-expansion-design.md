@@ -120,6 +120,20 @@ The mobile doctor validates environment resolution, the contract source, and the
 repo-local real-order kill switch. Native rendering, emulator runs, builds, and
 platform signing remain outside the repo-local verification loop.
 
+## API Boundary
+
+`src/apiContracts.ts` defines the hosted API contract surface for customer,
+admin, and mobile clients. It covers health, route catalog, customer bootstrap,
+mobile bootstrap, admin readiness, provider catalog, import preview, card
+project creation, render packets, manual vendor handoff, and data requests.
+
+`scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
+contracts. It serves `/api/health`, `/api/routes`, `/api/customer/bootstrap`,
+`/api/mobile/bootstrap`, `/api/admin/readiness`, and
+`/api/admin/provider-catalog`, accepts mutation routes as contract-only
+idempotent responses, keeps live external calls disabled, and also serves the
+built web app from `dist`.
+
 ## Cheap Cloud Deployment Shape
 
 The low-cost path remains:
@@ -135,6 +149,8 @@ The runtime remains fail-closed:
 - `npm run deployment:doctor` verifies the committed local-dev, cheap-droplet,
   cloud-native, runtime, and data lanes and fails if required deployment signals
   disappear.
+- `npm run api:doctor` verifies the API/static server route map, provider
+  summary, idempotent mutation contracts, and no-live-call posture.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, observability, and managed secrets remain required before production
@@ -158,11 +174,14 @@ Implemented checks:
   chat-render-handoff posture, and doctor kill-switch behavior.
 - Agent contract tests validate the typed orchestration surface and fail-closed
   default policy.
+- API contract and server tests validate customer/admin/mobile API bootstrap,
+  provider readiness, idempotent mutation contracts, and `/api/health`.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
-  worker readiness, and mobile doctor for pushes to `main` and pull requests.
-- `npm run test:coverage` enforces V8 coverage thresholds for core,
+  API doctor, worker readiness, and mobile doctor for pushes to `main` and pull
+  requests.
+- `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   orchestration, and mobile contract modules: 90% statements, 80% branches, 90%
   functions, and 90% lines.
 
@@ -171,6 +190,7 @@ Remaining high-risk work:
 - No live OAuth flow.
 - No live AI/image provider call.
 - No payment, quote, or live order adapter.
+- No DB-backed authenticated API persistence.
 - No React Native render/emulator proof or native iOS/Android build artifact.
 - No cloud deployment proof against a real cluster.
 - No remote hosted CI run is claimed in this repo-local pass.

@@ -10,7 +10,7 @@
 - Current delivered outcome: a polished free local MVP plus customer/admin
   panels, a tested provider-adapter catalog and no-network runtime contracts, a
   tested customer mobile shell contract, and a contract-first production
-  skeleton with committed CI verification gates.
+  skeleton with API/static server and committed CI verification gates.
 - Audience/reviewer: project reviewer, interview/client evaluator, or future
   implementer who needs to inspect the repo without reading chat history.
 
@@ -66,9 +66,12 @@
 - Provider runtime: readiness dry runs for all 42 catalog adapters; redacted
   no-network request contracts for gated chat, image, and event providers; hard
   block for live vendor order adapters.
+- API boundary: tested `/api/health`, customer/admin/mobile bootstrap,
+  provider-readiness, route catalog, and idempotent mutation contract endpoints
+  served by `scripts/api-server.mjs`.
 - CI verification: `.github/workflows/verify.yml` runs install, `npm run check`,
-  deployment doctor, worker readiness, and the mobile doctor on pushes to `main`
-  and pull requests.
+  deployment doctor, API doctor, worker readiness, and the mobile doctor on
+  pushes to `main` and pull requests.
 - Mobile customer shell: tested Expo customer experience contract with card
   queue, memory review, local chat, image/render state, manual handoff, and
   real-order kill-switch validation.
@@ -83,14 +86,15 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 9 test files, 66 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.91% statements, 85.22% branches, 95.34% functions, 94.29% lines across core, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 11 test files, 74 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.33% statements, 84.73% branches, 95.65% functions, 94.03% lines across core, API, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
+| API readiness | `npm run api:doctor` | Passed; 11 routes, 5 idempotent mutation contracts, 42 providers, no live calls or real orders. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, worker, and mobile gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, API, worker, and mobile gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -107,9 +111,9 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; skeleton only |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `src/apiContracts.ts`, `scripts/api-server.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; API contract/server boundary exists; DB-backed auth/API persistence not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
-| Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, orchestration, and mobile contracts; UI covered by smoke |
+| Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `src/apiContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
 
 ## Reviewer Path
@@ -121,16 +125,18 @@
    inspect adapter readiness.
 4. Run `npm run check`.
 5. Run `npm run deployment:doctor`.
-6. Run the worker and mobile doctor commands in `docs/verification.md`.
-7. Inspect `.github/workflows/verify.yml`.
-8. Inspect screenshots in `docs/evidence/` and known gaps in
+6. Run `npm run api:doctor`.
+7. Run the worker and mobile doctor commands in `docs/verification.md`.
+8. Inspect `.github/workflows/verify.yml`.
+9. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
 
 - No production user auth or account recovery.
 - No live Gmail, Google Calendar, Outlook, or iCloud OAuth flow.
-- No persistent production API server with authenticated sessions.
+- No DB-backed production API with authenticated sessions or persisted
+  request/response state.
 - No live AI text/image generation.
 - No PNG/PDF production export pipeline or object-storage upload.
 - No live vendor quote, order, payment, refund, or cancellation integration.

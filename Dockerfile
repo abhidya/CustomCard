@@ -14,6 +14,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY scripts ./scripts
+COPY src ./src
+COPY apps/mobile/src ./apps/mobile/src
 COPY infra ./infra
 EXPOSE 4173
-CMD ["node", "scripts/serve-dist.mjs"]
+CMD ["node", "scripts/api-server.mjs"]

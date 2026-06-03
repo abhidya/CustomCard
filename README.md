@@ -37,9 +37,9 @@ contract: 1500 x 2100 px, 300 DPI, four panels, live-quote inputs, and no extern
 order until physical print certification exists.
 
 The repo also includes a Postgres migration, worker and migration runners,
-dev/droplet/cloud deployment manifests, a static production server, and an Expo
-iOS/Android customer shell contract that resolves its API URL from environment
-configuration instead of static placeholders.
+dev/droplet/cloud deployment manifests, a static/API production server, and an
+Expo iOS/Android customer shell contract that resolves its API URL from
+environment configuration instead of static placeholders.
 
 ## Free MVP Capabilities
 
@@ -60,6 +60,9 @@ configuration instead of static placeholders.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
+- API contract/server boundary with `/api/health`, customer/admin bootstrap,
+  mobile bootstrap, provider readiness, idempotent mutation contracts, and no
+  live external calls.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 
@@ -111,6 +114,7 @@ React free local MVP
   -> executable service kernel
   -> Postgres migration model
   -> worker/migration/runtime scripts
+  -> API/static production server
   -> Docker Compose or Kubernetes manifests
   -> Expo customer mobile shell contract
 ```
@@ -129,6 +133,7 @@ Verification:
 ```sh
 npm run check
 npm run deployment:doctor
+npm run api:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -136,17 +141,18 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 `npm run check` now runs the full test suite, contract coverage thresholds, the
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/agentContracts.ts`,
-`src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
-`src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
-verified through Chrome smoke tests.
+`src/apiContracts.ts`, `src/domain.ts`, `src/freeMvp.ts`,
+`src/providerCatalog.ts`, `src/providerRuntime.ts`, and
+`src/serviceKernel.ts`; browser UI behavior is verified through Chrome smoke
+tests.
 
 `npm run deployment:doctor` emits a JSON readiness report for the local-dev,
 cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
 shape only; it does not prove a real cloud cluster or droplet deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
-doctor, worker readiness, and mobile doctor on pushes to `main` and pull
-requests.
+doctor, API doctor, worker readiness, and mobile doctor on pushes to `main` and
+pull requests.
 
 ## Project Docs
 
@@ -169,7 +175,8 @@ requests.
 
 The repo does not include production user auth, live OAuth, live AI/image
 generation, live vendor quotes, payment handling, direct Walgreens/CVS/FedEx
-ordering, native mobile builds, deployment evidence, legal/security review, or
-physical print certification. Those paths are represented as contracts and hard
-gates so reviewers can inspect the system shape without mistaking the free local
-MVP for a certified production fulfillment service.
+ordering, DB-backed authenticated API persistence, native mobile builds,
+deployment evidence, legal/security review, or physical print certification.
+Those paths are represented as contracts and hard gates so reviewers can inspect
+the system shape without mistaking the free local MVP for a certified production
+fulfillment service.
