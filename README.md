@@ -44,6 +44,52 @@ npm install
 npm run dev
 ```
 
+Open the Vite URL printed by the dev server. The app is a service console, not a
+marketing landing page.
+
+## Environment
+
+The local web console does not need provider or vendor credentials. Runtime
+scripts and deployment manifests require explicit environment variables so they
+fail closed instead of silently using placeholders.
+
+Core runtime variables:
+
+```sh
+CUSTOMCARD_ENV=dev
+DATABASE_URL=postgres://customcard:customcard@postgres:5432/customcard_dev
+QUEUE_URL=redis://redis:6379/0
+OBJECT_STORE_URL=http://minio:9000
+REAL_ORDER_KILL_SWITCH=disabled
+```
+
+Mobile shell variable:
+
+```sh
+CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173
+```
+
+Provider credentials such as `GOOGLE_OAUTH_CLIENT_ID` and
+`GOOGLE_OAUTH_CLIENT_SECRET` are documented in `infra/env/.env.example`, but live
+OAuth is not implemented in this repo state.
+
+## Architecture
+
+```text
+React service console
+  -> typed domain contracts
+  -> executable service kernel
+  -> Postgres migration model
+  -> worker/migration/runtime scripts
+  -> Docker Compose or Kubernetes manifests
+  -> thin Expo mobile shell boundary
+```
+
+The service kernel models the critical backend contracts without pretending they
+are deployed integrations: metadata-only provider import, approved relationship
+memory, deterministic 5x7 render validation, explicit order lifecycle recovery,
+regional/vendor-share controls, and readiness checks.
+
 Verification:
 
 ```sh
@@ -58,7 +104,9 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 - [Product brief](docs/product-brief.md)
 - [Requirements and traceability](docs/requirements-traceability.md)
 - [Decisions](docs/decisions.md)
+- [Delivery process](docs/delivery-process.md)
 - [Verification](docs/verification.md)
+- [Completion audit](docs/completion-audit.md)
 - [Handoff notes](docs/handoff-notes.md)
 - [System design prompt](docs/system-design-prompt.md)
 - [Implementation roadmap](docs/implementation-roadmap.md)

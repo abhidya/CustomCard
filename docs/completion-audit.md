@@ -1,0 +1,47 @@
+# Completion Audit
+
+This audit checks the current repo against the `deliver-ambiguous-brief` skill
+contract. It is intentionally evidence-based: uncertain or missing evidence is
+listed as a gap instead of treated as complete.
+
+## Coverage Contract
+
+| Contract item | Status | Evidence |
+| --- | --- | --- |
+| Tiny prompt recovered or marked unrecoverable. | Covered | `docs/brief-context.md` records the recovered attachment paths, verbatim product-driving excerpts, and deidentification boundary. |
+| Relevant project chat/session histories inspected. | Covered | `docs/delivery-process.md` records inspection of `.omx` history and Codex attachment history; `.omx` remains local/ignored. |
+| Current repo state mapped to files, behavior, docs, and verification evidence. | Covered | `docs/requirements-traceability.md`, `docs/verification.md`, README. |
+| Interview/client constraints captured separately from product features. | Covered | `docs/brief-context.md` separates explicit requirements, inferences, assumptions, and unknowns; `docs/handoff-notes.md` captures reviewer/submission expectations. |
+| AI-assisted workflow captured as process, not vague marketing copy. | Covered | `docs/delivery-process.md`. |
+| Deliverable is a repo/state package, not only a brainstorm, plan, or history report. | Covered | Runnable app, typed service kernel, tests, infra, mobile shell, docs, and pushed git commit `afd1a26`. |
+| Gaps are named plainly. | Covered | README Honest Gaps, `docs/handoff-notes.md`, `docs/verification.md`, `docs/requirements-traceability.md`. |
+
+## Workflow Requirements
+
+| Requirement | Status | Evidence |
+| --- | --- | --- |
+| Source-of-truth brief/context document. | Covered | `docs/brief-context.md`. |
+| Concrete requirements, acceptance criteria, and traceability IDs. | Covered | `docs/requirements-traceability.md`. |
+| Decisions/design document before/around implementation. | Covered | `docs/decisions.md`, `docs/system-design-prompt.md`, `docs/implementation-roadmap.md`. |
+| Working implementation for the main product path. | Covered at skeleton level | `src/App.tsx`, `src/domain.ts`, `src/serviceKernel.ts`; no live OAuth/vendor path is claimed. |
+| Verification and review evidence. | Covered | `docs/verification.md`; tests under `src/*.test.ts` and `tests/*.test.ts`. |
+| Communication/handoff notes. | Covered | `docs/handoff-notes.md`. |
+| Packaged README front door. | Covered | README setup, env vars, architecture, docs, verification, and known gaps. |
+
+## Completion Questions
+
+| Question | Answer |
+| --- | --- |
+| What small prompt started this? | The last-minute CVS wedding-card workflow and expanded cross-platform/scalable service prompt in `docs/brief-context.md`. |
+| What did we infer and why? | Contract-first skeleton, metadata-only import, structured memory, deterministic print contracts, and thin mobile shell; see `docs/brief-context.md` and `docs/decisions.md`. |
+| What was actually built? | Vite/React service console, typed domain and service kernel, tests, Postgres migration, worker/migration/runtime scripts, Docker/Kubernetes manifests, and Expo mobile shell boundary. |
+| How do I run or inspect it? | README Run, Environment, and Verification sections. |
+| Which requirements are covered? | `docs/requirements-traceability.md`. |
+| What was verified? | `docs/verification.md`; latest recorded run passed `npm run check`, worker doctor, and mobile doctor. |
+| What remains risky or incomplete? | Live OAuth, live AI generation, live vendor quotes/orders, payments, deployment, legal/security review, and physical print certification. |
+
+## Final Audit Result
+
+The `deliver-ambiguous-brief` objective is satisfied for a reviewable repository
+state. The repo is honest about the current stage and does not redefine missing
+external production capabilities as complete.
