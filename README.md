@@ -124,6 +124,7 @@ Verification:
 
 ```sh
 npm run check
+npm run deployment:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -133,6 +134,10 @@ the production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
 verified through Chrome smoke tests.
+
+`npm run deployment:doctor` emits a JSON readiness report for the local-dev,
+cheap-droplet, cloud-native, runtime, and data lanes. It validates committed IaC
+shape only; it does not prove a real cloud cluster or droplet deployment.
 
 ## Project Docs
 

@@ -13,6 +13,8 @@ services:
       OBJECT_STORE_URL: file:///data/objects
       SECRET_PROVIDER: managed_secret_store
       REAL_ORDER_KILL_SWITCH: disabled
+    volumes:
+      - customcard-objects:/data/objects
     depends_on:
       - postgres
       - redis

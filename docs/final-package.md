@@ -77,10 +77,11 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 7 test files, 56 tests. |
+| Tests | `npm run check` | Passed on 2026-06-03: 7 test files, 57 tests. |
 | Coverage | `npm run check` includes `npm run test:coverage`. | Passed core contract thresholds: 91.16% statements, 84.22% branches, 94.87% functions, 93.73% lines. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
+| Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, runtime, and data lanes reported ready with no blockers. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration present. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
@@ -99,7 +100,7 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `validateCardDraft`, visual evidence. | Covered |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `infra/`, `apps/mobile/`, tests. | Partial; skeleton only |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/serviceKernel.ts`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; skeleton only |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
 | Enforce coverage as a quality gate. | `npm run test:coverage`, `vite.config.ts`, `docs/verification.md`. | Covered for core contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
@@ -112,8 +113,9 @@
    sample invite, generate a card, prepare handoff, inspect the admin panel, and
    inspect adapter readiness.
 4. Run `npm run check`.
-5. Run the worker and mobile doctor commands in `docs/verification.md`.
-6. Inspect screenshots in `docs/evidence/` and known gaps in
+5. Run `npm run deployment:doctor`.
+6. Run the worker and mobile doctor commands in `docs/verification.md`.
+7. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -124,7 +126,7 @@
 - No live AI text/image generation.
 - No PNG/PDF production export pipeline or object-storage upload.
 - No live vendor quote, order, payment, refund, or cancellation integration.
-- No deployment evidence for the droplet/cloud manifests.
+- No real droplet or Kubernetes deployment execution evidence.
 - No physical print certification.
 - No legal, security, privacy, or accessibility audit.
 - No browser UI unit-coverage instrumentation; UI remains covered by smoke and

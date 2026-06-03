@@ -119,6 +119,9 @@ The runtime remains fail-closed:
 
 - `REAL_ORDER_KILL_SWITCH=disabled` keeps live orders off.
 - Provider keys are named in `infra/env/.env.example` but not committed.
+- `npm run deployment:doctor` verifies the committed local-dev, cheap-droplet,
+  cloud-native, runtime, and data lanes and fails if required deployment signals
+  disappear.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, observability, and managed secrets remain required before production
@@ -138,6 +141,8 @@ Implemented checks:
 - UI smoke tests cover customer/admin panels, runtime dry-run readiness, the
   core local workflow, mobile overflow, and adapter matrix visibility.
 - Infra tests require provider env vars and mobile customer panel evidence.
+- `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
+  by `tests/infra-contract.test.ts`.
 - `npm run test:coverage` enforces V8 coverage thresholds for the core
   TypeScript contract modules: 90% statements, 80% branches, 90% functions, and
   90% lines.

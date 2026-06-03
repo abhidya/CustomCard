@@ -25,6 +25,9 @@ it after each meaningful implementation pass.
   content rejection, and unsafe lifecycle rejection.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, and the mobile shell.
+- Deployment readiness is checked by `npm run deployment:doctor`, which emits a
+  JSON report for local-dev, cheap-droplet, cloud-native, runtime, and data
+  lanes.
 - Coverage is measured for the core TypeScript contract modules with V8
   thresholds enforced by `npm run check`: 90% statements, 80% branches, 90%
   functions, and 90% lines.
@@ -39,6 +42,7 @@ it after each meaningful implementation pass.
 
 ```sh
 npm run check
+npm run deployment:doctor
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
 ```
@@ -53,13 +57,20 @@ npm run check
 
 Result: passed.
 
-- Vitest: 7 test files passed, 56 tests passed.
-- Coverage: 6 core/infra test files passed, 52 tests passed; V8 report measured
+- Vitest: 7 test files passed, 57 tests passed.
+- Coverage: 6 core/infra test files passed, 53 tests passed; V8 report measured
   91.16% statements, 84.22% branches, 94.87% functions, and 93.73% lines across
   `src/domain.ts`, `src/freeMvp.ts`, `src/providerCatalog.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
+
+```text
+npm run deployment:doctor
+```
+
+Result: passed. The JSON report marked local-dev, cheap-droplet, cloud-native,
+runtime, and data lanes `ready` with 18 deployment checks passed and no blockers.
 
 ```text
 CUSTOMCARD_ENV=dev DATABASE_URL=postgres://x QUEUE_URL=redis://x OBJECT_STORE_URL=file:///tmp REAL_ORDER_KILL_SWITCH=disabled npm run worker
@@ -110,7 +121,7 @@ documentation claims found during the audit were corrected.
 
 - No live OAuth integration test.
 - No real database migration run against Postgres in this pass.
-- No live object store, queue, or vendor sandbox test.
+- No live object store, queue, droplet, cloud cluster, or vendor sandbox test.
 - No live AI text-chat or image-generation provider test; provider runtime
   coverage stops at redacted no-network request contracts.
 - No physical print certification.

@@ -1,0 +1,161 @@
+import { readFileSync } from "node:fs";
+
+const files = {
+  devCompose: "infra/docker-compose.dev.yml",
+  dockerfile: "Dockerfile",
+  dropletCompose: "infra/docker-compose.droplet.yml",
+  envExample: "infra/env/.env.example",
+  k8s: "infra/k8s/app.yaml",
+  migration: "infra/migrations/001_initial_schema.sql"
+};
+
+const contents = Object.fromEntries(
+  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
+);
+
+const checks = [
+  checkIncludes("local-dev", "dev-compose-app", contents.devCompose, ["app:", "npm run dev", "5173:5173"]),
+  checkIncludes("local-dev", "dev-compose-worker", contents.devCompose, ["worker:", "npm run worker"]),
+  checkIncludes("local-dev", "dev-compose-services", contents.devCompose, ["postgres:", "redis:", "minio:"]),
+  checkIncludes("local-dev", "dev-compose-kill-switch", contents.devCompose, [
+    "REAL_ORDER_KILL_SWITCH: disabled",
+    "WALGREENS_VENDOR_MODE: disabled_until_certified"
+  ]),
+  checkIncludes("cheap-droplet", "droplet-runtime-target", contents.dropletCompose, [
+    "target: runtime",
+    'restart: unless-stopped',
+    "80:4173"
+  ]),
+  checkIncludes("cheap-droplet", "droplet-managed-secrets", contents.dropletCompose, [
+    "SECRET_PROVIDER: managed_secret_store",
+    "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}",
+    "REAL_ORDER_KILL_SWITCH: disabled"
+  ]),
+  checkIncludes("cheap-droplet", "droplet-stateful-services", contents.dropletCompose, [
+    "postgres:",
+    "redis:",
+    "redis-server --appendonly yes",
+    "customcard-postgres:",
+    "customcard-redis:",
+    "customcard-objects:"
+  ]),
+  checkIncludes("cheap-droplet", "droplet-object-store-mounted-by-app-and-worker", contents.dropletCompose, [
+    "app:",
+    "worker:",
+    "OBJECT_STORE_URL: file:///data/objects",
+    "customcard-objects:/data/objects"
+  ]),
+  checkIncludes("cloud-native", "k8s-secret-manager-boundary", contents.k8s, [
+    "kind: Secret",
+    'customcard.io/provisioning: "pre-created-by-secret-manager"',
+    "data: {}"
+  ]),
+  checkIncludes("cloud-native", "k8s-migration-before-rollout", contents.k8s, [
+    "kind: Job",
+    "name: customcard-migrate",
+    "npm run runtime:doctor && npm run migrate"
+  ]),
+  checkIncludes("cloud-native", "k8s-web-worker-deployments", contents.k8s, [
+    "name: customcard-web",
+    "name: customcard-worker",
+    "replicas: 3",
+    "replicas: 2"
+  ]),
+  checkIncludes("cloud-native", "k8s-runtime-env-gates", contents.k8s, [
+    "secretRef:",
+    "configMapRef:",
+    "REAL_ORDER_KILL_SWITCH",
+    "runtime:doctor"
+  ]),
+  checkIncludes("cloud-native", "k8s-probes-and-resources", contents.k8s, [
+    "readinessProbe:",
+    "livenessProbe:",
+    "resources:",
+    "requests:",
+    "limits:"
+  ]),
+  checkAbsent("cloud-native", "k8s-no-placeholder-or-latest-image", contents.k8s, [
+    "replace-me",
+    "ghcr.io/example",
+    ":latest"
+  ]),
+  checkIncludes("runtime", "dockerfile-production-server", contents.dockerfile, [
+    "FROM node:25-slim AS runtime",
+    "npm ci --omit=dev",
+    "COPY --from=build /app/dist ./dist",
+    'CMD ["node", "scripts/serve-dist.mjs"]'
+  ]),
+  checkIncludes("runtime", "runtime-env-example", contents.envExample, [
+    "DATABASE_URL=",
+    "QUEUE_URL=",
+    "OBJECT_STORE_URL=",
+    "REAL_ORDER_KILL_SWITCH=disabled",
+    "WALGREENS_VENDOR_MODE=disabled_until_certified",
+    "OPENAI_API_KEY=",
+    "REPLICATE_API_TOKEN="
+  ]),
+  checkIncludes("data", "migration-critical-tables", contents.migration, [
+    "CREATE TABLE users",
+    "CREATE TABLE provider_connections",
+    "CREATE TABLE render_packets",
+    "CREATE TABLE orders",
+    "CREATE TABLE audit_log"
+  ]),
+  checkIncludes("data", "migration-safety-constraints", contents.migration, [
+    "CHECK (raw_content_stored = FALSE)",
+    "CHECK (width = 1500)",
+    "CHECK (dpi = 300)",
+    "checksum TEXT NOT NULL"
+  ])
+];
+
+const lanes = Array.from(new Set(checks.map((item) => item.lane))).map((lane) => {
+  const laneChecks = checks.filter((item) => item.lane === lane);
+  return {
+    lane,
+    passed: laneChecks.filter((item) => item.passed).length,
+    total: laneChecks.length,
+    status: laneChecks.every((item) => item.passed) ? "ready" : "blocked"
+  };
+});
+
+const failed = checks.filter((item) => !item.passed);
+const report = {
+  service: "customcard-deployment-readiness",
+  status: failed.length === 0 ? "ready" : "blocked",
+  lanes,
+  checks,
+  blockers: failed.map((item) => ({ id: item.id, lane: item.lane, detail: item.detail }))
+};
+
+console.log(JSON.stringify(report, null, 2));
+
+if (failed.length > 0) {
+  process.exit(1);
+}
+
+function checkIncludes(lane, id, text, required) {
+  const missing = required.filter((needle) => !text.includes(needle));
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `Found ${required.length} required deployment signals.`
+        : `Missing required deployment signals: ${missing.join(", ")}`
+  };
+}
+
+function checkAbsent(lane, id, text, forbidden) {
+  const present = forbidden.filter((needle) => text.includes(needle));
+  return {
+    id,
+    lane,
+    passed: present.length === 0,
+    detail:
+      present.length === 0
+        ? `No forbidden deployment placeholders found.`
+        : `Forbidden deployment placeholders present: ${present.join(", ")}`
+  };
+}

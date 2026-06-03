@@ -57,6 +57,7 @@ describe("production infrastructure contract", () => {
     expect(dropletCompose).toContain("${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}");
     expect(dropletCompose).toContain("SECRET_PROVIDER: managed_secret_store");
     expect(dropletCompose).not.toContain("SECRET_PROVIDER: local_env");
+    expect(dropletCompose.match(/customcard-objects:\/data\/objects/g)?.length).toBe(2);
     expect(dockerfile).toContain("node\", \"scripts/serve-dist.mjs");
     expect(dockerfile).toContain("COPY infra ./infra");
     expect(dockerfile).not.toContain("vite preview");
@@ -131,5 +132,29 @@ describe("production infrastructure contract", () => {
         stdio: "pipe"
       })
     ).not.toThrow();
+  });
+
+  it("emits a deployment readiness report for local, droplet, and cloud-native paths", () => {
+    const output = execFileSync("node", ["scripts/deployment-readiness.mjs"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      status: string;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report.status).toBe("ready");
+    expect(report.blockers).toEqual([]);
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "local-dev", status: "ready" }),
+        expect.objectContaining({ lane: "cheap-droplet", status: "ready" }),
+        expect.objectContaining({ lane: "cloud-native", status: "ready" }),
+        expect.objectContaining({ lane: "runtime", status: "ready" }),
+        expect.objectContaining({ lane: "data", status: "ready" })
+      ])
+    );
   });
 });

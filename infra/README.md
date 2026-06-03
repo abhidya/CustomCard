@@ -7,6 +7,8 @@ This directory is the deployable service skeleton for the production path.
 - `k8s/app.yaml` is the cloud-native starting point for web and worker deployments.
 - `migrations/001_initial_schema.sql` defines the durable service data model.
 - `env/.env.example` lists required secrets and kill switches.
+- `../scripts/deployment-readiness.mjs` emits the local deployment readiness
+  report used by `npm run deployment:doctor`.
 
 For the droplet deployment, provide `POSTGRES_PASSWORD` from a real secret source
 or local deployment `.env` that is never committed. The compose file uses
@@ -16,6 +18,17 @@ of starting with an empty database password.
 For Kubernetes, apply the `customcard-migrate` Job successfully before rolling
 the web and worker Deployments. The deployment manifest keeps the live-order kill
 switch explicit and uses probes so bad pods fail visibly.
+
+Run the local IaC readiness check before treating the manifests as reviewable:
+
+```sh
+npm run deployment:doctor
+```
+
+The report checks the local-dev, cheap-droplet, cloud-native, runtime, and data
+lanes. Passing this check means the committed deployment contracts are internally
+consistent; it does not mean a real droplet or Kubernetes cluster has been
+provisioned.
 
 The Kubernetes `Secret` in `k8s/app.yaml` is intentionally empty and annotated as
 pre-created by a secret manager. Production clusters should source the required
