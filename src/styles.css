@@ -1,0 +1,889 @@
+:root {
+  color: #eaf0f4;
+  background: #0f151c;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  line-height: 1.45;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    #0f151c;
+  background-size: 34px 34px;
+}
+
+button,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+select,
+textarea {
+  border: 1px solid #314151;
+  border-radius: 7px;
+  color: #eef4f7;
+  background: #111922;
+}
+
+.blueprintShell {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.blueprintRail {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100vh;
+  padding: 16px 12px;
+  border-right: 1px solid #263544;
+  background: rgba(10, 14, 19, 0.96);
+  min-width: 0;
+}
+
+.brandMark {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #2d3d4b;
+  border-radius: 8px;
+  background: #151e28;
+}
+
+.brandMark span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #72d6c3;
+  border-radius: 6px;
+  color: #d9fff7;
+  font-weight: 850;
+}
+
+.brandMark strong,
+.brandMark span,
+.railList button,
+.railFooter span,
+.railFooter strong,
+.railFooter small {
+  display: block;
+}
+
+.brandMark small,
+.railFooter small,
+.railFooter span {
+  color: #9eacb8;
+}
+
+.railList {
+  display: grid;
+  gap: 5px;
+}
+
+.railList button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  color: #aab7c2;
+  background: transparent;
+  text-align: left;
+}
+
+.railList button.active {
+  color: #f5fbfa;
+  background: #1a2a33;
+  font-weight: 760;
+}
+
+.railFooter {
+  margin-top: auto;
+  padding: 12px;
+  border: 1px solid #57392f;
+  border-radius: 8px;
+  background: #251b19;
+}
+
+.railFooter strong {
+  color: #fff1ea;
+}
+
+.blueprintMain {
+  width: 100%;
+  min-width: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+  padding: 18px;
+}
+
+.commandBar,
+.commandActions,
+.statusStrip,
+.statusPill,
+.sectionHeader,
+.certGate,
+.inspectorTitle {
+  display: flex;
+  align-items: center;
+}
+
+.commandBar {
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.commandBar h1,
+.sectionHeader h2 {
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.commandBar h1 {
+  font-size: clamp(1.55rem, 2.8vw, 2.55rem);
+}
+
+.sectionHeader h2 {
+  font-size: clamp(1.25rem, 2vw, 1.9rem);
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: #95a6b5;
+  font-size: 0.75rem;
+  font-weight: 820;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.commandActions {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.commandActions select,
+.commandButton {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.commandButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 7px;
+  color: #09261f;
+  background: #7edec7;
+  font-weight: 820;
+}
+
+.statusStrip {
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.statusPill {
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+.statusPill.safe {
+  color: #cefaec;
+  background: #14332c;
+}
+
+.statusPill.info {
+  color: #d9ebff;
+  background: #17283d;
+}
+
+.statusPill.warn {
+  color: #ffe3bd;
+  background: #382612;
+}
+
+.thesisBand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, minmax(112px, 156px));
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid #2b3b49;
+  border-radius: 8px;
+  background: #161f29;
+}
+
+.thesisBand span,
+.storyFrame span,
+.sourcePanel span,
+.timelineStep span,
+.inspectorTitle span,
+.inspector span:first-child,
+.printSpec > span {
+  color: #9caebb;
+}
+
+.thesisBand p {
+  margin: 4px 0 0;
+  max-width: 92ch;
+}
+
+.numericStack {
+  display: grid;
+  align-content: center;
+  border-left: 1px solid #314453;
+  padding-left: 12px;
+}
+
+.numericStack strong {
+  color: #7edec7;
+  font-size: 1.32rem;
+}
+
+.workbenchGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 14px;
+  align-items: start;
+}
+
+.canvasSurface,
+.inspector {
+  min-width: 0;
+  border: 1px solid #2b3b49;
+  border-radius: 8px;
+  background: rgba(20, 29, 38, 0.94);
+}
+
+.canvasSurface {
+  min-height: 680px;
+  padding: 16px;
+}
+
+.sectionHeader {
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.sourceAndTimeline,
+.architectureGrid,
+.adapterLayout,
+.adapterChecks {
+  display: grid;
+  gap: 12px;
+}
+
+.sourceAndTimeline {
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+}
+
+.sourcePanel {
+  display: grid;
+  gap: 8px;
+}
+
+.sourcePanel textarea {
+  min-height: 210px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.timelineStep,
+.storyFrame,
+.pathRow,
+.systemNode,
+.profilePanel,
+.rule,
+.printSpec,
+.certGate,
+.regionPanel,
+.qualityRows > div,
+.milestone,
+.detailBlock,
+.detailPanel,
+.inspector > div:not(.inspectorTitle) {
+  border: 1px solid #304252;
+  border-radius: 8px;
+  background: #101923;
+}
+
+.timelineStep {
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px;
+}
+
+.timelineStep strong {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: #08221d;
+  background: #7edec7;
+}
+
+.storyboardMatrix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.extractionFacts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.factCard {
+  display: grid;
+  gap: 4px;
+  min-height: 104px;
+  padding: 10px;
+  border: 1px solid #304252;
+  border-radius: 8px;
+  background: #101923;
+}
+
+.factCard span {
+  color: #7edec7;
+  font-size: 0.72rem;
+  font-weight: 830;
+  text-transform: uppercase;
+}
+
+.factCard strong {
+  color: #f2f7f8;
+  overflow-wrap: anywhere;
+}
+
+.factCard small {
+  color: #9fafbb;
+}
+
+.storyFrame {
+  display: grid;
+  gap: 7px;
+  min-height: 150px;
+  padding: 12px;
+  color: inherit;
+  text-align: left;
+}
+
+.storyFrame.active {
+  border-color: #7edec7;
+  background: #132928;
+}
+
+.storyFrame.matched {
+  box-shadow: inset 0 0 0 1px rgba(126, 222, 199, 0.45);
+}
+
+.storyFrame span {
+  font-size: 0.73rem;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.storyFrame strong,
+.milestone strong,
+.regionPanel strong,
+.systemNode strong {
+  color: #f3f7f9;
+}
+
+.storyFrame small,
+.systemNode small,
+.agentNode small,
+.milestone small,
+.profilePanel p,
+.regionPanel p,
+.inspector p,
+.inspector li {
+  color: #adbbc7;
+}
+
+.pathMatrix,
+.agentRules,
+.regionGrid,
+.qualityRows,
+.milestoneBoard,
+.adapterChecks {
+  display: grid;
+  gap: 10px;
+}
+
+.pathRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(190px, 0.55fr) minmax(220px, 0.65fr);
+  gap: 12px;
+  padding: 13px;
+}
+
+.pathRow span {
+  display: block;
+  margin-top: 5px;
+  color: #a8b8c5;
+}
+
+.gateStack,
+.chipWrap,
+.panelTiles {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.gateStack span,
+.chipWrap span,
+.panelTiles span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid #3a4d5b;
+  border-radius: 6px;
+  color: #dae7ef;
+  background: #172332;
+  font-size: 0.83rem;
+}
+
+.systemMap {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.systemMap::before {
+  position: absolute;
+  inset: 50% 7% auto;
+  height: 1px;
+  background: #37515f;
+  content: "";
+}
+
+.systemNode {
+  position: relative;
+  min-height: 124px;
+  padding: 12px;
+}
+
+.systemNode span {
+  display: block;
+  color: #7edec7;
+  font-weight: 840;
+}
+
+.profilePanel,
+.detailBlock,
+.detailPanel {
+  margin-top: 12px;
+  padding: 14px;
+}
+
+.profilePanel h3,
+.detailBlock h3,
+.detailPanel h3,
+.inspector h3 {
+  margin: 0 0 8px;
+}
+
+.agentPipeline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.agentNode {
+  min-height: 124px;
+  padding: 12px;
+  border: 1px solid #304252;
+  border-radius: 8px;
+  background: #111b25;
+}
+
+.agentNode span {
+  color: #7edec7;
+  font-weight: 860;
+}
+
+.agentNode small {
+  display: block;
+  margin-top: 6px;
+}
+
+.agentRules {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rule {
+  padding: 12px;
+}
+
+.rule svg,
+.certGate svg,
+.qualityRows .warning svg {
+  color: #e7bd74;
+}
+
+.adapterLayout {
+  grid-template-columns: minmax(250px, 0.68fr) minmax(0, 1fr);
+}
+
+.printSpec {
+  min-height: 280px;
+  padding: 16px;
+  background:
+    linear-gradient(90deg, rgba(126, 222, 199, 0.08), transparent),
+    #101923;
+}
+
+.printSpec strong {
+  display: block;
+  margin: 8px 0 2px;
+  color: #7edec7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.65rem;
+}
+
+.panelTiles {
+  margin-top: 16px;
+}
+
+.certGate {
+  min-height: 42px;
+  gap: 9px;
+  padding: 10px;
+}
+
+.certGate.pass {
+  border-color: #315949;
+  background: #10241f;
+}
+
+.certGate.pass svg {
+  color: #7edec7;
+}
+
+.certGate.blockedPacket {
+  border-color: #674730;
+  background: #251b19;
+}
+
+.regionGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.runtimeGrid,
+.twoColumnList {
+  display: grid;
+  gap: 10px;
+}
+
+.runtimeGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.runtimePanel {
+  display: grid;
+  gap: 6px;
+  min-height: 126px;
+  padding: 12px;
+  border: 1px solid #304252;
+  border-radius: 8px;
+  background: #101923;
+}
+
+.runtimePanel.wide {
+  grid-column: span 2;
+}
+
+.runtimePanel span {
+  color: #7edec7;
+  font-size: 0.73rem;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.runtimePanel strong {
+  color: #f3f7f9;
+}
+
+.runtimePanel small {
+  color: #adbbc7;
+}
+
+.compactRows {
+  margin-top: 4px;
+}
+
+.compactRows > div {
+  grid-template-columns: 22px minmax(130px, 0.32fr) minmax(0, 1fr);
+}
+
+.twoColumnList {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.regionPanel {
+  padding: 13px;
+}
+
+.qualityRows {
+  margin-top: 12px;
+}
+
+.qualityRows > div {
+  display: grid;
+  grid-template-columns: 22px minmax(180px, 0.35fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+}
+
+.qualityRows .pass svg {
+  color: #7edec7;
+}
+
+.qualityRows .fail svg {
+  color: #ff9a84;
+}
+
+.milestoneBoard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.milestone {
+  min-height: 154px;
+  padding: 12px;
+  color: inherit;
+  text-align: left;
+}
+
+.milestone.active {
+  border-color: #7edec7;
+  background: #132928;
+}
+
+.milestone span {
+  display: block;
+  color: #7edec7;
+  font-weight: 840;
+}
+
+.milestone small {
+  display: block;
+  margin-top: 8px;
+}
+
+.inspector {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+}
+
+.inspectorTitle {
+  gap: 8px;
+}
+
+.inspectorTitle span {
+  margin-left: auto;
+  font-size: 0.78rem;
+}
+
+.inspector > div:not(.inspectorTitle) {
+  padding: 11px;
+}
+
+.inspector > div > span:first-child {
+  display: block;
+  margin-bottom: 6px;
+  color: #7edec7;
+  font-size: 0.73rem;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.inspector ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.confidenceBadge,
+.safeBadge {
+  align-self: start;
+  padding: 7px 9px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 820;
+}
+
+.confidenceBadge {
+  color: #d9ebff;
+  background: #17283d;
+}
+
+.safeBadge {
+  color: #ffe3d8;
+  background: #3d251b;
+}
+
+@media (max-width: 1100px) {
+  .workbenchGrid,
+  .sourceAndTimeline,
+  .adapterLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .inspector {
+    position: static;
+  }
+
+  .storyboardMatrix,
+  .extractionFacts,
+  .systemMap,
+    .agentPipeline,
+    .agentRules,
+    .regionGrid,
+    .runtimeGrid,
+    .milestoneBoard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .blueprintShell {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .blueprintRail {
+    position: relative;
+    height: auto;
+    gap: 10px;
+    padding: 12px;
+    width: 100%;
+  }
+
+  .brandMark {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .brandMark span {
+    grid-row: 1 / 3;
+  }
+
+  .commandBar,
+  .sectionHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .blueprintMain {
+    max-width: 100%;
+    padding: 14px 12px;
+  }
+
+  .commandBar h1 {
+    font-size: 1.36rem;
+  }
+
+  .railList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .railList button {
+    min-height: 34px;
+  }
+
+  .railFooter {
+    margin-top: 0;
+  }
+
+  .commandActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .commandActions select,
+  .commandButton,
+  .statusPill {
+    width: 100%;
+  }
+
+  .statusStrip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .thesisBand,
+  .storyboardMatrix,
+  .extractionFacts,
+  .systemMap,
+    .agentPipeline,
+    .agentRules,
+    .regionGrid,
+    .runtimeGrid,
+    .twoColumnList,
+    .milestoneBoard,
+    .pathRow {
+    grid-template-columns: 1fr;
+  }
+
+  .runtimePanel.wide {
+    grid-column: auto;
+  }
+
+  .qualityRows > div {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+
+  .qualityRows > div span {
+    grid-column: 2;
+  }
+}

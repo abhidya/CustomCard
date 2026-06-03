@@ -1,0 +1,142 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customcard-config
+data:
+  CUSTOMCARD_ENV: "prod"
+  OBJECT_STORE_URL: "s3://customcard-prod"
+  SECRET_PROVIDER: "managed_secret_store"
+  REAL_ORDER_KILL_SWITCH: "disabled"
+  WALGREENS_VENDOR_MODE: "disabled_until_certified"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: customcard-secrets
+  annotations:
+    customcard.io/provisioning: "pre-created-by-secret-manager"
+type: Opaque
+data: {}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: customcard-migrate
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/customcard/customcard:0.1.0
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "npm run runtime:doctor && npm run migrate"]
+          envFrom:
+            - secretRef:
+                name: customcard-secrets
+            - configMapRef:
+                name: customcard-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customcard-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: customcard-web
+  template:
+    metadata:
+      labels:
+        app: customcard-web
+    spec:
+      initContainers:
+        - name: assert-runtime-env
+          image: ghcr.io/customcard/customcard:0.1.0
+          imagePullPolicy: IfNotPresent
+          command: ["npm", "run", "runtime:doctor"]
+          envFrom:
+            - secretRef:
+                name: customcard-secrets
+            - configMapRef:
+                name: customcard-config
+      containers:
+        - name: web
+          image: ghcr.io/customcard/customcard:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4173
+          envFrom:
+            - secretRef:
+                name: customcard-secrets
+            - configMapRef:
+                name: customcard-config
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 4173
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4173
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customcard-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: customcard-worker
+  template:
+    metadata:
+      labels:
+        app: customcard-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/customcard/customcard:0.1.0
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "npm run runtime:doctor && npm run worker"]
+          envFrom:
+            - secretRef:
+                name: customcard-secrets
+            - configMapRef:
+                name: customcard-config
+          livenessProbe:
+            exec:
+              command: ["node", "-e", "for (const key of ['DATABASE_URL','QUEUE_URL','OBJECT_STORE_URL','REAL_ORDER_KILL_SWITCH']) if (!process.env[key]) process.exit(1)"]
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: customcard-web
+spec:
+  selector:
+    app: customcard-web
+  ports:
+    - port: 80
+      targetPort: 4173

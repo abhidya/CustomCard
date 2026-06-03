@@ -1,0 +1,15 @@
+{
+  "name": "@customcard/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CustomCard iOS/Android app shell targeting the shared API and service contracts.",
+  "scripts": {
+    "doctor": "node ./scripts/doctor.mjs"
+  },
+  "dependencies": {
+    "expo": "^55.0.0",
+    "react": "^19.2.6",
+    "react-native": "^0.84.0"
+  },
+  "devDependencies": {}
+}

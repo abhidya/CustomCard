@@ -1,0 +1,73 @@
+services:
+  app:
+    build:
+      context: ..
+      target: deps
+    working_dir: /app
+    command: npm run dev -- --host 0.0.0.0
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./env/.env.example
+    environment:
+      REAL_ORDER_KILL_SWITCH: disabled
+      WALGREENS_VENDOR_MODE: disabled_until_certified
+    volumes:
+      - ..:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  worker:
+    build:
+      context: ..
+      target: deps
+    working_dir: /app
+    command: npm run worker
+    env_file:
+      - ./env/.env.example
+    environment:
+      REAL_ORDER_KILL_SWITCH: disabled
+      WALGREENS_VENDOR_MODE: disabled_until_certified
+    volumes:
+      - ..:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: customcard
+      POSTGRES_PASSWORD: customcard
+      POSTGRES_DB: customcard_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - customcard-postgres:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: customcard
+      MINIO_ROOT_PASSWORD: customcard-dev-only
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - customcard-minio:/data
+
+volumes:
+  customcard-postgres:
+  customcard-minio:

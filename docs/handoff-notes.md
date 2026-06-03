@@ -1,0 +1,60 @@
+# Handoff Notes
+
+## Current State
+
+CustomCard is now a reviewable, contract-first service skeleton for an
+event-aware personal greeting-card CRM and fulfillment product. It includes:
+
+- A runnable Vite/React/TypeScript service console.
+- Typed storyboard, architecture, agent, print-adapter, and risk contracts.
+- Executable service-kernel contracts for provider import, approved memory,
+  card-project creation, print validation, order recovery, and regional policy.
+- Postgres migration for users, providers, events, opportunities, memories,
+  projects, render packets, orders, consent, data requests, and audit logs.
+- Docker, Docker Compose, Kubernetes, runtime doctor, worker, migration, static
+  server, and mobile-shell scaffolding.
+- Tests that prove the current skeleton does not fake weak input, live ordering,
+  raw-content import, or unsafe order-state transitions.
+
+## What Is Deliberately Not Done
+
+- No real email/calendar OAuth flow.
+- No production API server with authenticated user sessions.
+- No live AI text/image generation.
+- No PNG/PDF export pipeline for physical production.
+- No live Walgreens/CVS/FedEx/Shutterfly/vendor quote or order API.
+- No payment, refund, cancellation, or external order-confirmation integration.
+- No physical print certification.
+- No legal or security review.
+- No deployment has been performed in this pass.
+
+## Reviewer Path
+
+1. Read `README.md`.
+2. Read `docs/brief-context.md` to understand the recovered prompt.
+3. Read `docs/requirements-traceability.md` to see what is covered and open.
+4. Run `npm run check`.
+5. Run the worker and mobile doctor commands in `docs/verification.md`.
+6. Inspect the app with `npm run dev`.
+
+## Suggested Submission Note
+
+CustomCard started from a last-minute physical wedding-card workflow and expanded
+into a contract-first service skeleton for an event-aware card concierge. The
+current repo does not claim live production fulfillment. It proves the product
+wedge, domain boundaries, print contracts, order lifecycle, deployment shape, and
+safety gates with executable TypeScript and infrastructure tests. Real external
+ordering remains disabled until OAuth, vendor terms, sandbox/live quote behavior,
+physical print certification, and security/legal review are complete.
+
+## Next Build Slice
+
+The highest-leverage next slice is a manual card project API plus persistent
+Postgres-backed service:
+
+- Authenticated user and card-project routes.
+- Persistent event/opportunity/memory/order repositories.
+- Render-packet artifact writing to object storage.
+- Export package builder for manual vendor upload.
+- Seed/demo reset workflow for reviewers.
+- Coverage reporting and CI-friendly Chrome smoke configuration.
