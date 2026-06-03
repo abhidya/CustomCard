@@ -225,6 +225,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Required env");
     expect(result.adminText).toContain("No-network readiness");
+    expect(result.adminText).toContain("Provider governance");
+    expect(result.adminText).toContain("Budget capped");
     expect(result.adminText).toContain("Credential gaps");
     expect(result.adminText).toContain("OPENAI_API_KEY");
     expect(result.adminText).toContain("MISTRAL_API_KEY");

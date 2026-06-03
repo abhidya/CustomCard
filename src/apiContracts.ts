@@ -7,6 +7,7 @@ import {
   summarizeProviderCoverage,
   type ProviderCoverageSummary
 } from "./providerCatalog.ts";
+import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance.ts";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime.ts";
 import { buildPrinterPricingComparison } from "./printerPricing.ts";
 
@@ -43,6 +44,7 @@ export interface ApiReadinessSummary {
     idempotentMutations: number;
   };
   providers: ProviderCoverageSummary;
+  governance: ProviderGovernanceSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -130,7 +132,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "admin-session",
     runtimeMode: "durable-api",
     requestSchema: ["adminSession"],
-    responseSchema: ["coverage", "runtime", "blockedProviders", "requiredEnv"],
+    responseSchema: ["coverage", "governance", "runtime", "blockedProviders", "requiredEnv"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -151,6 +153,21 @@ export const apiRouteContracts: ApiRouteContract[] = [
     realOrdersEnabled: false,
     piiPolicy: "Adapter metadata only.",
     backedBy: ["providerCatalog", "summarizeProviderCoverage"]
+  },
+  {
+    id: "admin-provider-governance",
+    method: "GET",
+    path: "/api/admin/provider-governance",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession"],
+    responseSchema: ["policies", "budgetCapped", "rateLimited", "fallbackCovered", "blockers"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Adapter governance metadata only; no customer content.",
+    backedBy: ["summarizeProviderGovernance", "validateProviderGovernance"]
   },
   {
     id: "admin-persistence-readiness",
@@ -290,6 +307,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
       idempotentMutations: routes.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length
     },
     providers: summarizeProviderCoverage(),
+    governance: summarizeProviderGovernance(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -328,6 +346,9 @@ export function resolveApiContractResponse(path: string) {
       adapters: providerCatalog,
       coverage: summarizeProviderCoverage()
     };
+  }
+  if (path === "/api/admin/provider-governance") {
+    return summarizeProviderGovernance();
   }
 
   return undefined;
@@ -372,6 +393,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     "mobile-bootstrap",
     "admin-readiness",
     "admin-provider-catalog",
+    "admin-provider-governance",
     "admin-persistence-readiness",
     "admin-demo-reset",
     "import-preview",

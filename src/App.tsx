@@ -64,6 +64,7 @@ import {
   type ProviderAdapter,
   type ProviderCapability
 } from "./providerCatalog";
+import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import { buildPrinterPricingComparison, type PrinterPricingComparison } from "./printerPricing";
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
@@ -128,6 +129,7 @@ function App() {
   const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
   const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
+  const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -396,7 +398,13 @@ function App() {
           />
         )}
 
-        {activeView === "admin" && <AdminPanelView model={adminPanelModel} runtimeReadiness={runtimeReadiness} />}
+        {activeView === "admin" && (
+          <AdminPanelView
+            model={adminPanelModel}
+            providerGovernance={providerGovernance}
+            runtimeReadiness={runtimeReadiness}
+          />
+        )}
 
         {activeView === "adapters" && <AdaptersView runtimeReadiness={runtimeReadiness} />}
       </main>
@@ -999,9 +1007,11 @@ function HandoffView({
 
 function AdminPanelView({
   model,
+  providerGovernance,
   runtimeReadiness
 }: {
   model: AdminPanelModel;
+  providerGovernance: ProviderGovernanceSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1025,6 +1035,7 @@ function AdminPanelView({
         <Metric label="Credential gated" value={`${model.coverage.credentialGated}`} />
         <Metric label="Contract only" value={`${model.coverage.contractOnly}`} />
         <Metric label="Blocked live" value={`${model.coverage.blocked}`} />
+        <Metric label="Budget cap" value={formatCents(providerGovernance.monthlyBudgetCents)} />
       </div>
 
       <div className="adminGrid">
@@ -1090,6 +1101,27 @@ function AdminPanelView({
             ))}
             {hiddenEnvCount > 0 && <span>{`+${hiddenEnvCount} more`}</span>}
           </div>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Cost controls</p>
+              <h3>Provider governance</h3>
+            </div>
+            <StatusChip icon={ShieldCheck} label="Budget capped" tone="green" />
+          </div>
+          <div className="runtimeGrid" aria-label="Provider cost and rate governance">
+            <Metric label="Zero spend" value={`${providerGovernance.zeroPlatformSpend}`} />
+            <Metric label="Budget capped" value={`${providerGovernance.budgetCapped}`} />
+            <Metric label="Blocked zero spend" value={`${providerGovernance.blockedZeroSpend}`} />
+            <Metric label="Rate limited" value={`${providerGovernance.rateLimited}`} />
+            <Metric label="Queued" value={`${providerGovernance.queueRequired}`} />
+            <Metric label="Max request" value={formatCents(providerGovernance.maxPerRequestBudgetCents)} />
+          </div>
+          <p className="panelNote">
+            Every paid or gated adapter maps to a ready local fallback before live network calls can be enabled.
+          </p>
         </article>
 
         <article className="toolPanel adminWide">

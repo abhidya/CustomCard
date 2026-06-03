@@ -120,14 +120,15 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 18 test files, 128 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.98% statements, 83.65% branches, 97.19% functions, 95.25% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 19 test files, 132 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 90.95% statements, 84.01% branches, 97.07% functions, 95.04% lines across account auth, core, API, artifact handoff/store, demo seed, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`. | Passed; latest visual pass covered customer/admin panels and the web mobile customer-panel viewport with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
-| API readiness | `npm run api:doctor` | Passed; 14 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, 18 persistence tables, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
+| Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 87 adapters, 39 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
+| API readiness | `npm run api:doctor` | Passed; 15 routes, 7 idempotent mutation contracts, contract runtime mode, 87 providers, provider governance, 13 schema-backed routes, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
 | API Postgres runtime contract | `npm run api:doctor:postgres` | Passed; fake-pool runtime exercised auth-session lookup, wrong-role blocking, idempotency insert/replay/conflict, repository-backed render-packet insert, repository-backed import-preview insert, repository-backed relationship-memory insert, repository-backed card-project insert, manual handoff order/consent/event insert, data-request privacy/consent insert, audit insert, and queue-job insert without external DB credentials. |
 | API live Postgres integration | `npm run api:doctor:postgres:live` | Passed against an isolated temporary database; migration applied, sessions seeded, real `pg` runtime authorized all 6 repository-backed customer routes, authorized the admin readiness route, blocked wrong-role access, persisted/replayed/conflicted idempotency, wrote one provider connection, imported event, card opportunity, relationship-memory row, card-project row, render-packet row, manual handoff order/consent/event row, data-request row, two consent rows, and audit plus queue rows. |
@@ -135,7 +136,7 @@
 | Account auth storage/recovery | `npm run account:doctor:live` | Passed against an isolated temporary database; migration applied, hosted identity stored without raw profile, provider-subject uniqueness enforced, hashed recovery challenge used, durable session created, and audit row appended. |
 | Artifact object-store writes | `npm run artifact:doctor` | Passed; wrote all 6 render-packet artifacts to a temporary filesystem object-store path and all 6 artifacts through an injected S3-compatible client contract, read them back, verified checksums and byte lengths, stored both manifests, made no network calls, kept real orders disabled, and reported `cloudWritesVerified: false`. |
 | Live S3-compatible artifact writes | `npm run artifact:doctor:s3:live` | Passed in CI against MinIO; created an isolated bucket, wrote 6 render-packet artifacts plus 1 manifest through path-style SigV4 requests, read all 7 objects back, verified checksum/byte-length evidence, reported `cloudWritesVerified: true`, kept external vendor calls and real orders disabled, and cleaned up the bucket. |
-| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 12 schema-backed routes present. |
+| Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 13 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
 | Mobile shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile shell configuration and customer experience contract present. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
@@ -173,19 +174,20 @@
 5. Run `npm run deployment:doctor`.
 6. Run `npm run cloud:doctor`.
 7. Run `npm run api:doctor`.
-8. Run `npm run api:doctor:memory`.
-9. Run `npm run api:doctor:postgres`.
-10. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-11. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-12. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-13. Run `npm run artifact:doctor`.
-14. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
-15. Run `npm run persistence:doctor`.
-16. Run `npm run demo:doctor`.
-17. Run the worker and mobile doctor commands in `docs/verification.md`.
-18. Run `npm run mobile:release:doctor`.
-19. Inspect `.github/workflows/verify.yml`.
-20. Inspect screenshots in `docs/evidence/` and known gaps in
+8. Run `npm run provider:governance:doctor`.
+9. Run `npm run api:doctor:memory`.
+10. Run `npm run api:doctor:postgres`.
+11. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+12. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+13. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+14. Run `npm run artifact:doctor`.
+15. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+16. Run `npm run persistence:doctor`.
+17. Run `npm run demo:doctor`.
+18. Run the worker and mobile doctor commands in `docs/verification.md`.
+19. Run `npm run mobile:release:doctor`.
+20. Inspect `.github/workflows/verify.yml`.
+21. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps

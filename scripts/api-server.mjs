@@ -14,6 +14,7 @@ const routes = [
   { id: "mobile-bootstrap", method: "GET", path: "/api/mobile/bootstrap", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "admin-provider-catalog", method: "GET", path: "/api/admin/provider-catalog", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
+  { id: "admin-provider-governance", method: "GET", path: "/api/admin/provider-governance", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "admin-demo-reset", method: "POST", path: "/api/admin/demo-reset", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
@@ -73,6 +74,20 @@ const readiness = {
     contractOnly: 9,
     blocked: 6
   },
+  providerGovernance: {
+    total: 87,
+    zeroPlatformSpend: 18,
+    budgetCapped: 63,
+    blockedZeroSpend: 6,
+    monthlyBudgetCents: 101800,
+    maxPerRequestBudgetCents: 75,
+    rateLimited: 81,
+    queueRequired: 56,
+    fallbackCovered: 87,
+    liveNetworkDefault: false,
+    realOrdersEnabled: false,
+    blockers: []
+  },
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -88,7 +103,7 @@ const readiness = {
   },
   persistence: {
     tables: 18,
-    schemaBackedRoutes: 12,
+    schemaBackedRoutes: 13,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
@@ -190,7 +205,20 @@ async function serveApi(request, response, path) {
     sendJson(response, 200, {
       service: "customcard-api",
       providers: readiness.providers,
+      providerGovernance: readiness.providerGovernance,
       externalNetworkCalls: false,
+      runtime: apiRuntime.describe()
+    });
+    return;
+  }
+
+  if (path === "/api/admin/provider-governance") {
+    sendJson(response, 200, {
+      service: "customcard-api",
+      status: "ready",
+      providerGovernance: readiness.providerGovernance,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
     return;
@@ -295,6 +323,7 @@ function validateApiServerContract() {
     "/api/mobile/bootstrap",
     "/api/admin/readiness",
     "/api/admin/provider-catalog",
+    "/api/admin/provider-governance",
     "/api/admin/persistence-readiness",
     "/api/admin/demo-reset",
     "/api/import-preview",
@@ -321,6 +350,15 @@ function validateApiServerContract() {
     blockers.push("Every mutation route must require idempotency.");
   }
   if (readiness.providers.total < 87) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providerGovernance.total !== readiness.providers.total) {
+    blockers.push("Provider governance summary must cover every adapter.");
+  }
+  if (readiness.providerGovernance.fallbackCovered !== readiness.providers.total) {
+    blockers.push("Provider governance summary must map every adapter to a ready fallback.");
+  }
+  if (readiness.providerGovernance.blockers.length > 0) blockers.push("Provider governance summary has blockers.");
+  if (readiness.providerGovernance.liveNetworkDefault) blockers.push("Provider governance cannot default to live network calls.");
+  if (readiness.providerGovernance.realOrdersEnabled) blockers.push("Provider governance cannot enable real orders.");
   if (readiness.security.headers < 7) blockers.push("API server must expose a complete security header baseline.");
   if (!readiness.security.cspFrameAncestors) blockers.push("API server CSP must block framed embedding.");
   if (!readiness.security.cspObjectBlocked) blockers.push("API server CSP must block object/plugin loads.");

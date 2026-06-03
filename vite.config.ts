@@ -19,6 +19,7 @@ export default defineConfig({
         "src/printerPricing.ts",
         "src/printExport.ts",
         "src/providerCatalog.ts",
+        "src/providerGovernance.ts",
         "src/providerRuntime.ts",
         "src/serviceKernel.ts"
       ],

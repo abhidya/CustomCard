@@ -84,7 +84,7 @@ Requirement types:
   stores a hosted identity without raw profile data, enforces provider-subject
   uniqueness, stores a hashed recovery challenge, creates a durable session, and
   appends audit.
-- Persistence contracts map 12 schema-backed API routes to auth-session,
+- Persistence contracts map 13 schema-backed API routes to auth-session,
   account identity, account recovery, idempotency, relationship-memory
   repository, render-packet repository, import-preview repository, card-project
   repository, manual handoff order/consent/event, data-request privacy/consent,

@@ -144,6 +144,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
   routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "audit_log"], true, false, false),
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections"], true, false, false),
+  routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "audit_log"], true, false, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),
   routePersistence(
     "admin-demo-reset",

@@ -76,8 +76,12 @@ it after each meaningful implementation pass.
   schema, account identity/recovery schema, idempotency replay state, queue job
   envelopes, relationship-memory repository signals, render-packet repository
   signals, import-preview event/opportunity repository signals, card-project
-  repository signals, append-only audit contracts, demo reset mappings, and 12
+  repository signals, append-only audit contracts, demo reset mappings, and 13
   schema-backed API route mappings.
+- Provider-governance tests and `npm run provider:governance:doctor` cover
+  adapter budget ceilings, per-request caps, rate limits, queue posture, ready
+  local fallback coverage, blocked live-vendor zero-spend posture, admin/API
+  surfaces, CI wiring, and no live network or real-order defaults.
 - Demo seed tests and `npm run demo:doctor` cover deterministic reviewer reset
   fixtures, SQL preview, signed artifact handoff references, and no-live-call
   safety gates.
@@ -120,6 +124,7 @@ npm run deployment:doctor
 npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
+npm run provider:governance:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -144,14 +149,15 @@ npm run check
 
 Result: passed.
 
-- Vitest: 18 test files passed, 128 tests passed.
-- Coverage: 16 core/API/persistence/infra/mobile test files passed, 120 tests passed; V8 report measured
-  90.98% statements, 83.65% branches, 97.19% functions, and 95.25% lines across
+- Vitest: 19 test files passed, 132 tests passed.
+- Coverage: 17 core/API/persistence/infra/mobile test files passed, 124 tests passed; V8 report measured
+  90.95% statements, 84.01% branches, 97.07% functions, and 95.04% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/domain.ts`, `src/freeMvp.ts`, `src/persistenceContracts.ts`,
   `src/printerPricing.ts`, `src/printExport.ts`, `src/providerCatalog.ts`,
-  `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
+  `src/providerGovernance.ts`, `src/providerRuntime.ts`, and
+  `src/serviceKernel.ts`.
 - Build: `tsc -b && vite build` passed.
 - Audit: `npm audit --audit-level=high` found 0 vulnerabilities.
 
@@ -183,21 +189,30 @@ and no live provider calls or real orders. It explicitly reported no external
 audit or legal review claim.
 
 ```text
+npm run provider:governance:doctor
+```
+
+Result: passed. The JSON report marked catalog, governance, tests, surfaces,
+CI, and safety lanes `ready`; it verified 87 adapters, 39 usage-based adapters,
+6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
+governance surfaces, CI wiring, and no live provider calls or real orders.
+
+```text
 npm run api:doctor
 ```
 
-Result: passed. API doctor reported 14 routes, 7 idempotent mutation contracts,
-87 providers, 18 persistence tables, relationship-memory repository readiness,
-render-packet artifact manifests, signed artifact URL contracts, contract
-runtime mode, no live external calls, no real vendor orders, no raw content
-storage, and no blockers.
+Result: passed. API doctor reported 15 routes, 7 idempotent mutation contracts,
+87 providers, provider governance for all 87 adapters, 13 schema-backed routes,
+relationship-memory repository readiness, render-packet artifact manifests,
+signed artifact URL contracts, contract runtime mode, no live external calls,
+no real vendor orders, no raw content storage, and no blockers.
 
 ```text
 npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 14 routes, 7 idempotent mutation contracts, 87
+enforced, 2 configured sessions, 15 routes, 7 idempotent mutation contracts, 87
 providers, 18 persistence tables, relationship-memory repository readiness,
 render-packet artifact manifests, signed artifact URL contracts, no live external
 calls, no real vendor orders, and no blockers.
@@ -300,7 +315,7 @@ privacy/consent readiness, queue jobs, render-packet artifact manifest signals,
 artifact-store write/read doctor signals, live S3-compatible artifact doctor
 signals, Postgres runtime SQL/doctor/integration signals, Postgres API HTTP
 doctor signals, account-auth contract/doctor signals, append-only audit
-coverage, 12 schema-backed API routes, and no blockers.
+coverage, 13 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor

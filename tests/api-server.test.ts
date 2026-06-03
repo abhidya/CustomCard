@@ -12,6 +12,15 @@ describe("api server wrapper", () => {
       status: string;
       readiness: {
         providers: { total: number };
+        providerGovernance: {
+          total: number;
+          budgetCapped: number;
+          blockedZeroSpend: number;
+          fallbackCovered: number;
+          liveNetworkDefault: boolean;
+          realOrdersEnabled: boolean;
+          blockers: unknown[];
+        };
         routes: { total: number; mutations: number; idempotentMutations: number };
         security: {
           headers: number;
@@ -59,7 +68,16 @@ describe("api server wrapper", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(87);
-    expect(report.readiness.routes.total).toBe(14);
+    expect(report.readiness.providerGovernance).toMatchObject({
+      total: 87,
+      budgetCapped: 63,
+      blockedZeroSpend: 6,
+      fallbackCovered: 87,
+      liveNetworkDefault: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.readiness.routes.total).toBe(15);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -134,8 +152,16 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 14, admin: 4, idempotentMutations: 7 });
+      expect(readiness.routes).toMatchObject({ total: 15, admin: 5, idempotentMutations: 7 });
       expect(readiness.providers).toMatchObject({ total: 87, readyLocal: 16, credentialGated: 56, blocked: 6 });
+      expect(readiness.providerGovernance).toMatchObject({
+        total: 87,
+        fallbackCovered: 87,
+        budgetCapped: 63,
+        liveNetworkDefault: false,
+        realOrdersEnabled: false,
+        blockers: []
+      });
       expect(readiness.safety).toMatchObject({
         externalNetworkCalls: false,
         liveVendorOrders: false,
@@ -145,7 +171,7 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 18,
-        schemaBackedRoutes: 12,
+        schemaBackedRoutes: 13,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -160,6 +186,19 @@ describe("api server wrapper", () => {
         signedArtifactUrls: true
       });
       expect(persistence.blockers).toEqual([]);
+
+      const governance = await getJson(port, "/api/admin/provider-governance");
+      expect(governance.providerGovernance).toMatchObject({
+        total: 87,
+        monthlyBudgetCents: 101800,
+        maxPerRequestBudgetCents: 75,
+        rateLimited: 81,
+        queueRequired: 56,
+        fallbackCovered: 87,
+        liveNetworkDefault: false,
+        realOrdersEnabled: false,
+        blockers: []
+      });
 
       const mobile = await getJson(port, "/api/mobile/bootstrap");
       expect(mobile.sections).toEqual(expect.arrayContaining(["card-queue", "text-chat", "handoff"]));

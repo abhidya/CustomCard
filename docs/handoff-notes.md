@@ -85,19 +85,20 @@ skeleton for the production path. It includes:
 3. Read `docs/requirements-traceability.md` to see what is covered and open.
 4. Run `npm run check`.
 5. Run `npm run api:doctor`.
-6. Run `npm run api:doctor:memory`.
-7. Run `npm run api:doctor:postgres`.
-8. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-9. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-10. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-11. Run `npm run cloud:doctor`.
-12. Run `npm run artifact:doctor`.
-13. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-14. Run `npm run persistence:doctor`.
-15. Run `npm run demo:doctor`.
-16. Run the worker and mobile doctor commands in `docs/verification.md`.
-17. Run `npm run mobile:release:doctor`.
-18. Inspect the app with `npm run dev`.
+6. Run `npm run provider:governance:doctor`.
+7. Run `npm run api:doctor:memory`.
+8. Run `npm run api:doctor:postgres`.
+9. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+10. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+11. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+12. Run `npm run cloud:doctor`.
+13. Run `npm run artifact:doctor`.
+14. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+15. Run `npm run persistence:doctor`.
+16. Run `npm run demo:doctor`.
+17. Run the worker and mobile doctor commands in `docs/verification.md`.
+18. Run `npm run mobile:release:doctor`.
+19. Inspect the app with `npm run dev`.
 19. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.

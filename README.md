@@ -63,8 +63,8 @@ environment configuration instead of static placeholders.
   freshness checks and checkout confirmation still required.
 - Customer panel with local chat transcript, next-card state, render choices,
   and free workflow actions.
-- Admin panel with provider coverage, env gates, cloud runtime readiness, and
-  blocked live-vendor adapters.
+- Admin panel with provider coverage, env gates, provider cost/rate governance,
+  cloud runtime readiness, and blocked live-vendor adapters.
 - Adapter catalog covering free local paths plus gated Auth0, Clerk, Supabase
   Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
   Bedrock, Google, Google People, Microsoft Graph, CardDAV, Mistral, Cohere,
@@ -77,6 +77,9 @@ environment configuration instead of static placeholders.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
+- Provider governance contracts that cap every paid/gated adapter with monthly
+  and per-request budget ceilings, rate limits, queue posture, and ready local
+  fallbacks before any live network provider can be enabled.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap, provider readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
@@ -90,7 +93,7 @@ environment configuration instead of static placeholders.
   event/opportunity writes, relationship-memory repository writes, card-project
   repository writes, render-packet repository writes, manual handoff
   order/consent/event writes, data-request privacy/consent writes, queue jobs,
-  audit logs, and 12 schema-backed API routes.
+  audit logs, and 13 schema-backed API routes.
 - Tested Expo customer shell contract for card queue, memory review, local chat,
   render choices, manual handoff, and real-order kill-switch posture.
 - Tested Expo/EAS native release contract for development, preview, and
@@ -196,6 +199,7 @@ npm run deployment:doctor
 npm run cloud:doctor
 npm run api:doctor
 npm run security:doctor
+npm run provider:governance:doctor
 npm run api:doctor:memory
 npm run api:doctor:postgres
 CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live
@@ -216,7 +220,7 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
 `src/artifactStore.ts`, `src/domain.ts`, `src/freeMvp.ts`,
 `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
-`src/providerCatalog.ts`, `src/providerRuntime.ts`, and
+`src/providerCatalog.ts`, `src/providerGovernance.ts`, `src/providerRuntime.ts`, and
 `src/serviceKernel.ts`; browser UI behavior is verified through Chrome smoke
 tests.
 
@@ -229,9 +233,10 @@ deployment.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
-accessibility baseline doctor, memory-runtime API doctor, Postgres runtime
-contract doctor, live Postgres integration doctor, Postgres API HTTP doctor,
-account-auth storage/recovery doctor, artifact-store filesystem plus
+accessibility baseline doctor, provider cost governance doctor, memory-runtime
+API doctor, Postgres runtime contract doctor, live Postgres integration doctor,
+Postgres API HTTP doctor, account-auth storage/recovery doctor,
+artifact-store filesystem plus
 S3-compatible contract doctor, live MinIO/S3-compatible artifact doctor,
 persistence doctor, demo reset doctor, worker readiness, mobile doctor, and
 mobile native release doctor on pushes to `main` and pull requests.

@@ -19,6 +19,7 @@ describe("api contracts", () => {
         "mobile-bootstrap",
         "admin-readiness",
         "admin-provider-catalog",
+        "admin-provider-governance",
         "admin-persistence-readiness",
         "admin-demo-reset",
         "import-preview",
@@ -67,6 +68,10 @@ describe("api contracts", () => {
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(summary.providers.total).toBeGreaterThanOrEqual(87);
     expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(56);
+    expect(summary.governance.total).toBe(summary.providers.total);
+    expect(summary.governance.blockers).toEqual([]);
+    expect(summary.governance.fallbackCovered).toBe(summary.providers.total);
+    expect(summary.governance.liveNetworkDefault).toBe(false);
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(5);
@@ -99,6 +104,14 @@ describe("api contracts", () => {
     expect(resolveApiContractResponse("/api/admin/readiness")).toMatchObject({
       service: "customcard-api",
       status: "ready"
+    });
+    expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({
+      total: expect.any(Number),
+      budgetCapped: expect.any(Number),
+      fallbackCovered: expect.any(Number),
+      liveNetworkDefault: false,
+      realOrdersEnabled: false,
+      blockers: []
     });
     expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();

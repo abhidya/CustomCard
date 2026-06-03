@@ -156,6 +156,9 @@ The admin panel turns the adapter catalog into an operations surface:
 - Ready, credential-gated, contract-only, and blocked counts.
 - Per-capability local fallback coverage.
 - Required env vars for provider and deployment readiness.
+- Provider cost governance: zero-platform-spend, budget-capped, and
+  blocked-zero-spend counts, monthly/per-request budget ceilings, rate-limited
+  adapter counts, queue-required counts, and ready fallback coverage.
 - No-network runtime readiness counts: local-ready, request-ready, blocked, and
   missing credential references.
 - Gated provider queue.
@@ -170,6 +173,11 @@ The adapter matrix also shows each dry-run state and the first missing
 credential references. This is intentionally not a settings page that pretends
 credentials are present. It is a readiness console for what must be connected,
 reviewed, and certified.
+
+Provider governance keeps the cheap path explicit: every usage-based,
+free-tier, or self-hosted adapter receives a finite budget and rate limit; every
+paid/gated path maps back to a ready local fallback; blocked live vendor
+adapters remain zero-spend with real orders disabled.
 
 ## Mobile Customer App
 
@@ -259,7 +267,7 @@ The runtime remains fail-closed:
   import-preview repository signals, card-project repository signals, manual
   vendor handoff order/consent/event repository signals, data-request
   privacy/consent repository signals, queue jobs, append-only audit coverage, and
-  12 schema-backed API route mappings.
+  13 schema-backed API route mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, live observability provider verification, and managed secrets remain
@@ -272,6 +280,10 @@ Implemented checks:
 - `src/providerCatalog.test.ts` validates catalog coverage, local fallbacks,
   external provider docs/env gates, admin model, customer model, and blocked
   vendor status.
+- `src/providerGovernance.test.ts` and `npm run provider:governance:doctor`
+  validate provider budget ceilings, per-request caps, rate limits, queue
+  posture, ready local fallbacks, blocked live-vendor zero-spend posture, admin
+  visibility, API visibility, and CI wiring.
 - `src/providerRuntime.test.ts` validates executable readiness for every
   catalog adapter, redacted no-network request contracts for chat/image/
   notification/payment/observability providers, metadata-only import contracts,
@@ -325,7 +337,7 @@ Implemented checks:
   repository-backed relationship-memory, render-packet, import-preview,
   card-project, manual-vendor-handoff, and data-request mutations, and
   memory-runtime auth/idempotency behavior.
-- Persistence contract tests validate 18 table contracts, 12 schema-backed API
+- Persistence contract tests validate 18 table contracts, 13 schema-backed API
   routes, account identity/recovery storage, idempotency replay, queue-backed
   routes, and migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested

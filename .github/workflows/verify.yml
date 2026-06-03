@@ -62,6 +62,9 @@ jobs:
       - name: Validate security privacy accessibility baseline
         run: npm run security:doctor
 
+      - name: Validate provider cost governance
+        run: npm run provider:governance:doctor
+
       - name: Validate API memory runtime
         run: npm run api:doctor:memory
 

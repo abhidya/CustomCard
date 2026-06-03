@@ -300,6 +300,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
+    expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
@@ -311,6 +312,7 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/printerPricing.ts");
     expect(viteConfig).toContain("src/printExport.ts");
     expect(viteConfig).toContain("src/providerCatalog.ts");
+    expect(viteConfig).toContain("src/providerGovernance.ts");
     expect(viteConfig).toContain("src/providerRuntime.ts");
     expect(viteConfig).toContain("src/serviceKernel.ts");
     expect(viteConfig).toContain("statements: 90");
@@ -355,6 +357,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run cloud:doctor");
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run security:doctor");
+    expect(workflow).toContain("npm run provider:governance:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
     expect(workflow).toContain("npm run api:doctor:postgres");
     expect(workflow).toContain("npm run api:doctor:postgres:live");
@@ -587,6 +590,44 @@ describe("production infrastructure contract", () => {
     );
   });
 
+  it("emits a provider cost governance readiness report", () => {
+    const output = execFileSync("npm", ["run", "provider:governance:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      adapterCount: number;
+      usageBasedCount: number;
+      blockedCount: number;
+      liveProviderCalls: boolean;
+      realOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-provider-governance-doctor",
+      status: "ready",
+      adapterCount: 87,
+      usageBasedCount: expect.any(Number),
+      blockedCount: 6,
+      liveProviderCalls: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.usageBasedCount).toBeGreaterThanOrEqual(30);
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "catalog", status: "ready" }),
+        expect.objectContaining({ lane: "governance", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  });
+
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {
     const mobilePackage = read("apps/mobile/package.json");
     const appConfig = read("apps/mobile/app.config.js");
@@ -696,7 +737,7 @@ describe("production infrastructure contract", () => {
       idempotencyReplay: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 12, idempotentMutations: 7 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 13, idempotentMutations: 7 });
     expect(report.readiness.safety).toMatchObject({
       rawContentStored: false,
       liveExternalCalls: false,
