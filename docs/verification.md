@@ -156,6 +156,15 @@ it after each meaningful implementation pass.
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
   app/worker writer IAM, safe defaults, and runtime env outputs without live
   cloud calls.
+- Cloud artifact proof readiness is checked by
+  `npm run cloud:artifact:proof:doctor`, which verifies the 8-item applied cloud
+  artifact proof register, Terraform artifact-store source coverage, runtime
+  env-output coverage, applied bucket ARN/IAM policy/signed URL/access-log/
+  secret-sync/restore-drill evidence requirements, admin/API surfaces, docs, CI
+  wiring, and zero Terraform apply, applied bucket proof, IAM proof, signed URL
+  proof, access-log proof, secret-sync proof, restore-drill proof, live provider
+  calls, live external network calls, or real orders. It is not live-applied
+  cloud bucket/IAM proof.
 - Security/privacy/accessibility baseline is checked by `npm run
   security:doctor`, which statically verifies API security headers, CSP
   no-frame/no-plugin/no-eval posture, non-root/container-hardened deployment
@@ -167,7 +176,7 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 28-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 29-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
@@ -195,9 +204,9 @@ it after each meaningful implementation pass.
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
   production API endpoint.
 - Coverage is measured for core, API, artifact handoff/store, payment readiness,
-  mobile render readiness, hosted API proof readiness, localization, pricing,
-  print export, persistence, orchestration, and mobile contract modules with V8
-  thresholds enforced by `npm run check`: 90%
+  cloud artifact proof readiness, mobile render readiness, hosted API proof
+  readiness, localization, pricing, print export, persistence, orchestration,
+  and mobile contract modules with V8 thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
@@ -214,6 +223,7 @@ it after each meaningful implementation pass.
 npm run check
 npm run deployment:doctor
 npm run cloud:doctor
+npm run cloud:artifact:proof:doctor
 npm run api:doctor
 npm run security:doctor
 npm run external:audit:doctor
@@ -251,14 +261,16 @@ npm run check
 
 Result: passed.
 
-- Vitest: 32 test files passed, 190 tests passed.
-- Coverage: 30 core/API/persistence/infra/mobile test files passed, 181 tests passed; V8 report measured
-  92.19% statements, 86.37% branches, 97.84% functions, and 95.36% lines across
+- Vitest: 33 test files passed, 194 tests passed.
+- Coverage: 31 core/API/persistence/infra/mobile test files passed, 185 tests passed; V8 report measured
+  92.38% statements, 86.72% branches, 97.91% functions, and 95.47% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
-  `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
-  `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
+`src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
+`src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/businessEngagementReadiness.ts`, `src/businessEngagementReadinessData.mjs`,
-  `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
+  `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
+  `src/cloudArtifactProofReadiness.ts`,
+  `src/cloudArtifactProofReadinessData.mjs`, `src/domain.ts`,
   `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
   `src/freeMvp.ts`, `src/localization.ts`, `src/observabilityReadiness.ts`,
@@ -291,6 +303,20 @@ and safety lanes `ready`; it verified the static AWS artifact-store module
 without live cloud calls or real orders.
 
 ```text
+npm run cloud:artifact:proof:doctor
+```
+
+Result: passed. The JSON report marked register, tests, Terraform,
+object-store, surfaces, E2E, docs, CI, coverage, and evidence lanes `ready`; it
+verified 8 cloud artifact proof readiness items, 2 repo-local-ready contracts,
+6 applied-cloud evidence gaps, 3 Terraform file contracts, 6 runtime env-output
+contracts, zero Terraform apply executions, zero applied bucket ARN proofs, zero
+IAM policy output proofs, zero signed URL probe proofs, zero access-log proofs,
+zero secret-sync proofs, zero restore-drill proofs, zero live provider calls,
+zero live external network calls, and zero real orders. It is not live-applied
+cloud bucket/IAM proof.
+
+```text
 npm run security:doctor
 ```
 
@@ -316,8 +342,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 28 repo-local journeys, 100% repo-local
-coverage, 28 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 29 repo-local journeys, 100% repo-local
+coverage, 29 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 

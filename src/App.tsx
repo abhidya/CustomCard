@@ -138,6 +138,12 @@ import {
   type ReviewerDbSeedReadinessSummary
 } from "./reviewerDbSeedReadiness";
 import {
+  cloudArtifactProofReadinessItems,
+  summarizeCloudArtifactProofReadiness,
+  type CloudArtifactProofReadinessItem,
+  type CloudArtifactProofReadinessSummary
+} from "./cloudArtifactProofReadiness";
+import {
   businessEngagementReadinessItems,
   summarizeBusinessEngagementReadiness,
   type BusinessEngagementReadinessItem,
@@ -231,6 +237,7 @@ function App() {
   const mobileRenderReadinessSummary = useMemo(() => summarizeMobileRenderReadiness(), []);
   const hostedApiReadinessSummary = useMemo(() => summarizeHostedApiReadiness(), []);
   const reviewerDbSeedReadinessSummary = useMemo(() => summarizeReviewerDbSeedReadiness(), []);
+  const cloudArtifactProofReadinessSummary = useMemo(() => summarizeCloudArtifactProofReadiness(), []);
   const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -536,6 +543,8 @@ function App() {
             hostedApiReadinessSummary={hostedApiReadinessSummary}
             reviewerDbSeedReadinessItems={reviewerDbSeedReadinessItems}
             reviewerDbSeedReadinessSummary={reviewerDbSeedReadinessSummary}
+            cloudArtifactProofReadinessItems={cloudArtifactProofReadinessItems}
+            cloudArtifactProofReadinessSummary={cloudArtifactProofReadinessSummary}
             businessEngagementReadinessItems={businessEngagementReadinessItems}
             businessEngagementReadinessSummary={businessEngagementReadinessSummary}
             runtimeReadiness={runtimeReadiness}
@@ -1213,6 +1222,8 @@ function AdminPanelView({
   hostedApiReadinessSummary,
   reviewerDbSeedReadinessItems,
   reviewerDbSeedReadinessSummary,
+  cloudArtifactProofReadinessItems,
+  cloudArtifactProofReadinessSummary,
   businessEngagementReadinessItems,
   businessEngagementReadinessSummary,
   runtimeReadiness
@@ -1241,6 +1252,8 @@ function AdminPanelView({
   hostedApiReadinessSummary: HostedApiReadinessSummary;
   reviewerDbSeedReadinessItems: ReviewerDbSeedReadinessItem[];
   reviewerDbSeedReadinessSummary: ReviewerDbSeedReadinessSummary;
+  cloudArtifactProofReadinessItems: CloudArtifactProofReadinessItem[];
+  cloudArtifactProofReadinessSummary: CloudArtifactProofReadinessSummary;
   businessEngagementReadinessItems: BusinessEngagementReadinessItem[];
   businessEngagementReadinessSummary: BusinessEngagementReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
@@ -1288,6 +1301,8 @@ function AdminPanelView({
         <Metric label="Public DB proof" value={`${hostedApiReadinessSummary.publicRouteProofs}`} />
         <Metric label="Seed tables" value={`${reviewerDbSeedReadinessSummary.tableContracts}`} />
         <Metric label="Hosted seed" value={`${reviewerDbSeedReadinessSummary.hostedSeedProofs}`} />
+        <Metric label="Cloud proof" value={`${cloudArtifactProofReadinessSummary.appliedBucketArnProofs}`} />
+        <Metric label="Cloud IAM" value={`${cloudArtifactProofReadinessSummary.iamPolicyOutputProofs}`} />
         <Metric label="Business CRM" value={`${businessEngagementReadinessSummary.crmAdapterContracts}`} />
         <Metric label="Live sends" value={`${businessEngagementReadinessSummary.liveMessagesEnabled}`} />
       </div>
@@ -1510,6 +1525,55 @@ function AdminPanelView({
           <p className="panelNote">
             These are reviewer seed-plan, SQL-preview, Vercel env, hosted migration, token-probe, and rollback
             contracts; not hosted reviewer DB mutation or hosted account-token proof.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide cloudProofCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Cloud artifacts</p>
+              <h3>Cloud artifact proof readiness</h3>
+            </div>
+            <StatusChip icon={Cloud} label="Applied proof missing" tone="red" />
+          </div>
+          <div className="cloudProofOverview" aria-label="Cloud artifact bucket IAM and signed URL proof readiness">
+            <div>
+              <span>Repo-local ready</span>
+              <strong>{cloudArtifactProofReadinessSummary.repoLocalReady}</strong>
+            </div>
+            <div>
+              <span>Applied req.</span>
+              <strong>{cloudArtifactProofReadinessSummary.appliedCloudRequired}</strong>
+            </div>
+            <div>
+              <span>TF files</span>
+              <strong>{cloudArtifactProofReadinessSummary.terraformFileContracts}</strong>
+            </div>
+            <div>
+              <span>Env outputs</span>
+              <strong>{cloudArtifactProofReadinessSummary.envOutputContracts}</strong>
+            </div>
+            <div>
+              <span>Bucket proof</span>
+              <strong>{cloudArtifactProofReadinessSummary.appliedBucketArnProofs}</strong>
+            </div>
+            <div>
+              <span>IAM proof</span>
+              <strong>{cloudArtifactProofReadinessSummary.iamPolicyOutputProofs}</strong>
+            </div>
+            <div>
+              <span>URL proof</span>
+              <strong>{cloudArtifactProofReadinessSummary.signedUrlProbeProofs}</strong>
+            </div>
+            <div>
+              <span>Restore proof</span>
+              <strong>{cloudArtifactProofReadinessSummary.restoreDrillProofs}</strong>
+            </div>
+          </div>
+          <CloudArtifactProofReadinessList items={cloudArtifactProofReadinessItems} />
+          <p className="panelNote">
+            These are Terraform source, plan review, applied bucket, IAM output, signed URL, access log, secret-sync, and
+            restore-drill contracts; not live-applied cloud bucket/IAM proof.
           </p>
         </article>
 
@@ -2004,6 +2068,46 @@ function ReviewerDbSeedReadinessList({ items }: { items: ReviewerDbSeedReadiness
   );
 }
 
+function CloudArtifactProofReadinessList({ items }: { items: CloudArtifactProofReadinessItem[] }) {
+  const repoLocalItems = items.filter((item) => item.status === "repo-local-ready");
+  const evidenceItems = items.filter((item) => item.status !== "repo-local-ready");
+
+  return (
+    <div className="cloudProofColumns">
+      <div>
+        <p className="eyebrow">Source contracts</p>
+        <div className="cloudProofList">
+          {repoLocalItems.map((item) => (
+            <CloudArtifactProofRow item={item} key={item.id} />
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="eyebrow">Evidence required</p>
+        <div className="cloudProofList">
+          {evidenceItems.map((item) => (
+            <CloudArtifactProofRow item={item} key={item.id} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CloudArtifactProofRow({ item }: { item: CloudArtifactProofReadinessItem }) {
+  const stateLabel = item.status === "repo-local-ready" ? "Repo-local ready" : "Proof missing";
+
+  return (
+    <div className={`cloudProofRow ${cloudArtifactProofReadinessStatusClass(item.status)}`}>
+      <div>
+        <span>{item.lane}</span>
+        <strong>{item.label}</strong>
+      </div>
+      <small>{stateLabel}</small>
+    </div>
+  );
+}
+
 function BusinessEngagementReadinessList({ items }: { items: BusinessEngagementReadinessItem[] }) {
   return (
     <div className="adapterMiniList">
@@ -2031,6 +2135,11 @@ function hostedApiReadinessStatusClass(status: HostedApiReadinessItem["status"])
 }
 
 function reviewerDbSeedReadinessStatusClass(status: ReviewerDbSeedReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  return "credential-gated";
+}
+
+function cloudArtifactProofReadinessStatusClass(status: CloudArtifactProofReadinessItem["status"]): ProviderStatus {
   if (status === "repo-local-ready") return "ready-local";
   return "credential-gated";
 }

@@ -31,6 +31,8 @@ export default defineConfig({
         "src/reviewerDbSeedReadinessData.mjs",
         "src/businessEngagementReadiness.ts",
         "src/businessEngagementReadinessData.mjs",
+        "src/cloudArtifactProofReadiness.ts",
+        "src/cloudArtifactProofReadinessData.mjs",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",

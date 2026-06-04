@@ -12,6 +12,7 @@ import { summarizeMobileRenderReadiness } from "../src/mobileRenderReadinessData
 import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
 import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
 import { summarizeReviewerDbSeedReadiness } from "../src/reviewerDbSeedReadinessData.mjs";
+import { summarizeCloudArtifactProofReadiness } from "../src/cloudArtifactProofReadinessData.mjs";
 import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
@@ -291,6 +292,7 @@ export const readiness = {
   mobileRenderReadiness: summarizeMobileRenderReadiness(),
   hostedApiReadiness: summarizeHostedApiReadiness(),
   reviewerDbSeedReadiness: summarizeReviewerDbSeedReadiness(),
+  cloudArtifactProofReadiness: summarizeCloudArtifactProofReadiness(),
   businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
   safety: {
     externalNetworkCalls: false,
@@ -746,6 +748,54 @@ function validateApiServerContract() {
   }
   if (readiness.reviewerDbSeedReadiness.blockers.length > 0) {
     blockers.push("Reviewer DB seed readiness summary has blockers.");
+  }
+  if (readiness.cloudArtifactProofReadiness.total < 8) {
+    blockers.push("Cloud artifact proof readiness must track applied bucket and IAM proof evidence.");
+  }
+  if (readiness.cloudArtifactProofReadiness.repoLocalReady < 2) {
+    blockers.push("Cloud artifact proof readiness must keep static IaC and plan-review contracts ready.");
+  }
+  if (readiness.cloudArtifactProofReadiness.appliedCloudRequired < 6) {
+    blockers.push("Cloud artifact proof readiness must identify applied cloud proof requirements.");
+  }
+  if (readiness.cloudArtifactProofReadiness.terraformFileContracts < 3) {
+    blockers.push("Cloud artifact proof readiness must cover artifact-store Terraform files.");
+  }
+  if (readiness.cloudArtifactProofReadiness.envOutputContracts < 6) {
+    blockers.push("Cloud artifact proof readiness must track runtime object-store env outputs.");
+  }
+  if (readiness.cloudArtifactProofReadiness.terraformApplyExecutions !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim Terraform apply execution.");
+  }
+  if (readiness.cloudArtifactProofReadiness.appliedBucketArnProofs !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim applied bucket ARN proof.");
+  }
+  if (readiness.cloudArtifactProofReadiness.iamPolicyOutputProofs !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim IAM policy output proof.");
+  }
+  if (readiness.cloudArtifactProofReadiness.signedUrlProbeProofs !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim signed URL cloud probe proof.");
+  }
+  if (readiness.cloudArtifactProofReadiness.accessLogProofs !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim cloud access log proof.");
+  }
+  if (readiness.cloudArtifactProofReadiness.secretSyncProofs !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim secret manager sync proof.");
+  }
+  if (readiness.cloudArtifactProofReadiness.restoreDrillProofs !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot claim retention restore drill proof.");
+  }
+  if (readiness.cloudArtifactProofReadiness.externalNetworkCalls !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot require live external network calls.");
+  }
+  if (readiness.cloudArtifactProofReadiness.liveProviderCalls !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot enable live provider calls.");
+  }
+  if (readiness.cloudArtifactProofReadiness.realOrdersEnabled !== 0) {
+    blockers.push("Cloud artifact proof readiness cannot enable real orders.");
+  }
+  if (readiness.cloudArtifactProofReadiness.blockers.length > 0) {
+    blockers.push("Cloud artifact proof readiness summary has blockers.");
   }
   if (readiness.businessEngagementReadiness.total < 8) {
     blockers.push("Business engagement readiness must track CRM lifecycle campaign evidence.");

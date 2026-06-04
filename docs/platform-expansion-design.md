@@ -53,6 +53,12 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   plans, customer/admin session-token contracts, SQL preview safety, Vercel env
   sync, hosted migration, hosted seed execution, hosted token probes, and
   rollback drills. Run `npm run reviewer:db:seed:doctor`. This is not hosted reviewer DB mutation or hosted account-token proof.
+- Cloud artifact proof readiness: `src/cloudArtifactProofReadiness.ts` and
+  `src/cloudArtifactProofReadinessData.mjs` track Terraform artifact-store
+  source coverage, plan review, applied bucket ARN proof, IAM policy output
+  proof, signed URL cloud probes, access-log proof, secret-manager env sync,
+  and retention/restore drills. Run `npm run cloud:artifact:proof:doctor`. This
+  is not live-applied cloud bucket/IAM proof.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
   Messages, Azure OpenAI, Amazon Bedrock Converse, Google Gemini, Hugging Face,
   Mistral, Cohere, Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks,
@@ -391,10 +397,18 @@ The runtime remains fail-closed:
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
 - `npm run e2e:coverage:doctor` verifies End-to-end coverage in
-  `src/e2eCoverage.ts`, the 28-item repo-local end-to-end coverage matrix,
+  `src/e2eCoverage.ts`, the 29-item repo-local end-to-end coverage matrix,
   admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
   "not live production proof" disclaimer while keeping live production proofs,
   real orders, and live external network requirements at zero.
+- `npm run cloud:artifact:proof:doctor` verifies Cloud artifact proof readiness
+  in `src/cloudArtifactProofReadiness.ts`, Terraform artifact-store source and
+  runtime env-output coverage, applied bucket ARN/IAM policy/signed URL/access
+  log/secret-sync/restore-drill evidence requirements, admin/API exposure, CI
+  wiring, and the "not live-applied cloud bucket/IAM proof" disclaimer while
+  keeping Terraform apply, applied bucket proof, IAM proof, signed URL proof,
+  access-log proof, secret-sync proof, restore-drill proof, live external
+  network calls, live provider calls, and real orders at zero.
 - `npm run reviewer:db:seed:doctor` verifies Reviewer DB seed readiness in
   `src/reviewerDbSeedReadiness.ts`, deterministic seed-plan and SQL-preview
   contracts, customer/admin session-token requirements, hosted migration/env
@@ -502,12 +516,18 @@ Implemented checks:
   End-to-end coverage matrix for customer workspace/handoff, customer panel,
   admin panel, adapter matrix, API contracts, memory runtime, Postgres runtime,
   Postgres HTTP integration, account-auth storage/recovery, mobile shell, native
-  release profiles, artifact handoff, deployment IaC, security/privacy/
+  release profiles, artifact handoff, deployment IaC, cloud artifact proof
+  readiness, security/privacy/
   accessibility, external audit readiness, AI provider readiness,
   observability/alerting readiness, retail fulfillment readiness, payment/refund
   readiness, capacity/cost, localization/RTL, printer pricing, demo reset, and
   worker readiness. The
   matrix reports 100% repo-local coverage only; it is not live production proof.
+- `src/cloudArtifactProofReadiness.test.ts` and
+  `npm run cloud:artifact:proof:doctor` validate static artifact IaC, Terraform
+  plan review, applied bucket ARN proof, IAM policy output proof, signed URL
+  cloud probe, access-log proof, secret-manager env sync, and retention/restore
+  drill requirements while keeping all applied-cloud proof claims at zero.
 - `src/businessEngagementReadiness.test.ts` and
   `npm run business:engagement:doctor` validate CRM lifecycle source,
   popular-CRM OAuth contracts, trigger normalization, card-opportunity review,
@@ -572,13 +592,15 @@ Implemented checks:
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,
   contract API doctor, memory API doctor, Postgres runtime contract doctor, live
   Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
-  cloud artifact IaC doctor, localization doctor, artifact-store doctor, live
+  cloud artifact IaC doctor, cloud artifact proof readiness doctor,
+  localization doctor, artifact-store doctor, live
   MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
   worker readiness, mobile doctor, mobile render readiness doctor, hosted API
   proof readiness doctor, business engagement readiness doctor, and mobile
   release doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  artifact handoff/store, mobile render readiness, hosted API proof readiness,
+  artifact handoff/store, cloud artifact proof readiness, mobile render
+  readiness, hosted API proof readiness,
   localization, pricing, print-export, persistence, orchestration, and mobile
   contract modules: 90%
   statements, 80% branches, 90% functions, and 90% lines.
@@ -598,11 +620,13 @@ Remaining high-risk work:
 - No live printer tax, coupon, stock, or pickup-window integration.
 - No professional translation QA, live translation provider, or native RTL
   render proof.
-- No live-applied production cloud object-store bucket policy/IAM verification;
-  signed render-packet URL contracts, static AWS artifact-store IaC, temporary
-  filesystem write/read verification, injected S3-compatible write/read
-  contract verification, and live CI/local MinIO/S3-compatible write/read doctor
-  coverage are covered.
+- Live-applied production cloud object-store bucket policy/IAM verification is
+  still not attached; Cloud artifact proof readiness explicitly tracks the applied bucket ARN, IAM
+  policy output, signed URL probe, access-log, secret-manager sync, and
+  restore-drill evidence requirements, while signed render-packet URL contracts,
+  static AWS artifact-store IaC, temporary filesystem write/read verification,
+  injected S3-compatible write/read contract verification, and live CI/local
+  MinIO/S3-compatible write/read doctor coverage are covered.
 - No deployed production Postgres API integration or production hosted
   account-token verification; isolated live Postgres route-auth/migration/runtime
   integration, process-level API HTTP verification, and account identity/recovery

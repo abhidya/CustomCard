@@ -43,6 +43,13 @@ skeleton for the production path. It includes:
   manifests, expiry checks, object-store signing env gates, local filesystem
   write/read verification, and injected S3-compatible write/read contract
   verification, plus a guarded live MinIO/S3-compatible write/read doctor.
+- Cloud artifact proof readiness for static artifact IaC, Terraform plan review,
+  applied bucket ARN proof, IAM policy output proof, signed URL cloud probes,
+  access-log proof, secret-manager env sync, and retention/restore drills;
+  `npm run cloud:artifact:proof:doctor` keeps Terraform apply, applied bucket
+  proof, IAM proof, signed URL proof, access-log proof, secret-sync proof,
+  restore-drill proof, live provider calls, external network calls, and real
+  orders at zero.
 - A tested customer mobile app contract that mirrors the web customer panel and
   adds queue items, approval controls, review-only pricing previews, and offline
   idempotent sync at the product boundary.
@@ -113,10 +120,12 @@ skeleton for the production path. It includes:
   rollout gates; no live AI text/image generation, model output QA run, or
   production AI traffic is claimed.
 - No live-applied production cloud object-store bucket is claimed outside the
-  guarded CI/local MinIO doctor and static AWS artifact-store IaC contract;
-  signed URL contracts, schema gates, temporary filesystem write/read
-  verification, injected S3-compatible write/read contract verification, and
-  live MinIO/S3-compatible doctor coverage are covered.
+  guarded CI/local MinIO doctor, static AWS artifact-store IaC contract, and
+  repo-local Cloud artifact proof readiness gate; signed URL contracts, schema
+  gates, temporary filesystem write/read verification, injected S3-compatible
+  write/read contract verification, live MinIO/S3-compatible doctor coverage,
+  and applied bucket/IAM/signed-URL/access-log/secret-sync/restore-drill proof
+  requirements are covered.
 - No live retail-printer quote or order API.
 - No live tax, coupon, stock, pickup-window, or checkout availability
   verification for public printer prices.
@@ -168,18 +177,19 @@ skeleton for the production path. It includes:
 16. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
 17. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
 18. Run `npm run cloud:doctor`.
-19. Run `npm run artifact:doctor`.
-20. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
-21. Run `npm run persistence:doctor`.
-22. Run `npm run demo:doctor`.
-23. Run the worker and mobile doctor commands in `docs/verification.md`.
-24. Run `npm run mobile:render:doctor`.
-25. Run `npm run hosted:api:doctor`.
-26. Run `npm run reviewer:db:seed:doctor`.
-27. Run `npm run business:engagement:doctor`.
-28. Run `npm run mobile:release:doctor`.
-29. Inspect the app with `npm run dev`.
-30. In the app, start a local workspace, scan the sample invite, generate a card,
+19. Run `npm run cloud:artifact:proof:doctor`.
+20. Run `npm run artifact:doctor`.
+21. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live` against MinIO when Docker or a compatible endpoint is available.
+22. Run `npm run persistence:doctor`.
+23. Run `npm run demo:doctor`.
+24. Run the worker and mobile doctor commands in `docs/verification.md`.
+25. Run `npm run mobile:render:doctor`.
+26. Run `npm run hosted:api:doctor`.
+27. Run `npm run reviewer:db:seed:doctor`.
+28. Run `npm run business:engagement:doctor`.
+29. Run `npm run mobile:release:doctor`.
+30. Inspect the app with `npm run dev`.
+31. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 
@@ -193,6 +203,7 @@ surfaces, account identity/recovery storage, route-scoped Postgres
 auth/idempotency behavior, repository-backed customer mutations, source-backed
 printer pricing research, local SVG/PDF print package export, filesystem and
 S3-compatible artifact-store contracts, live MinIO doctor coverage,
+cloud artifact applied-proof readiness gates,
 provider-adapter readiness, AI provider readiness, localization readiness,
 signed artifact handoff contracts, mobile next-action, queue, approval, memory-review, print-proof,
 pricing, and offline-sync contracts, print contracts, order lifecycle,
@@ -211,5 +222,6 @@ path are verified:
 
 - Live seed execution against a deployed reviewer database.
 - CI-friendly Chrome smoke hardening.
-- Production cloud bucket policy/IAM verification outside the CI/local MinIO
-  doctor.
+- Attaching real AWS bucket ARN, IAM output, signed URL probe, access log,
+  secret-manager sync, and restore-drill evidence to the Cloud artifact proof
+  readiness register.

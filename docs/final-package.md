@@ -11,8 +11,9 @@
   panels, a tested 102-adapter catalog and no-network runtime contracts, admin
   business CRM/workflow integration contracts, executable capacity profiles for
   local/cheap/cloud/SaaS planning, a tested payment readiness register, a
-  tested mobile render readiness register, a tested production launch-gate
-  registry, a tested localization readiness catalog, a tested customer mobile app
+  tested mobile render readiness register, a tested cloud artifact proof
+  readiness register, a tested production launch-gate registry, a tested
+  localization readiness catalog, a tested customer mobile app
   contract, and a contract-first production skeleton with API/static server,
   account identity/recovery storage contracts, memory-mode auth/idempotency
   validation, fake-pool contract and isolated live Postgres
@@ -74,8 +75,8 @@
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, localization readiness, production launch gates, gated provider
   queue, cloud runtime adapters, capacity profiles, payment readiness, mobile
-  render readiness, CRM lifecycle adapters, workflow integrations, and blocked
-  live vendors.
+  render readiness, cloud artifact proof readiness, CRM lifecycle adapters,
+  workflow integrations, and blocked live vendors.
 - Provider runtime: readiness dry runs for all 102 catalog adapters; redacted
   no-network request contracts for gated chat, image, event, contact,
   CRM lifecycle, workflow integration, hosted-auth, notification, payment, and observability
@@ -123,6 +124,7 @@
   deployment doctor, contract API doctor, memory-runtime API doctor, Postgres
   runtime contract doctor, live Postgres integration doctor, Postgres API HTTP
   doctor, account-auth storage/recovery doctor, cloud artifact IaC doctor,
+  cloud artifact proof readiness doctor,
   localization readiness doctor, artifact-store write/read doctor, live
   MinIO/S3-compatible artifact doctor, capacity plan doctor, persistence doctor,
   demo reset doctor, worker readiness, mobile doctor, mobile render readiness
@@ -145,15 +147,16 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 32 test files, 190 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 92.19% statements, 86.37% branches, 97.84% functions, 95.36% lines across account auth, core, API, artifact handoff/store, business engagement readiness, demo seed, E2E coverage, external audit readiness, AI provider readiness, observability readiness, retail fulfillment readiness, payment readiness, mobile render readiness, hosted API proof readiness, reviewer DB seed readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 33 test files, 194 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 92.38% statements, 86.72% branches, 97.91% functions, 95.47% lines across account auth, core, API, artifact handoff/store, business engagement readiness, cloud artifact proof readiness, demo seed, E2E coverage, external audit readiness, AI provider readiness, observability readiness, retail fulfillment readiness, payment readiness, mobile render readiness, hosted API proof readiness, reviewer DB seed readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`, `/tmp/customcard-payment-readiness-*.png`, and `/tmp/customcard-mobile-render-readiness-*.png`. | Passed; latest visual pass covered customer/admin panels, mobile render readiness admin panel content, and desktop/mobile viewports with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
+| Cloud artifact proof readiness | `npm run cloud:artifact:proof:doctor` | Passed; verified 8 cloud artifact proof readiness items, 3 Terraform file contracts, 6 runtime env outputs, applied bucket ARN/IAM policy/signed URL/access-log/secret-sync/restore-drill evidence requirements, admin/API surfaces, docs, CI wiring, zero Terraform apply executions, zero applied bucket proof, zero IAM proof, zero signed URL probe proof, zero access-log proof, zero secret-sync proof, zero restore-drill proof, zero live provider calls, zero external network calls, and zero real orders. This is not live-applied cloud bucket/IAM proof. |
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
 | External audit readiness | `npm run external:audit:doctor` | Passed; verified 15 production-blocking external evidence items, production-gate mappings, admin/API surfaces, CI wiring, documentation, zero public production claims, and zero attached external audit artifacts. |
-| End-to-end coverage readiness | `npm run e2e:coverage:doctor` | Passed; verified 28 repo-local reviewer journeys, 100% repo-local coverage, 28 CI-gated coverage items, admin/API surfaces, backing browser/API/mobile/infra tests, zero live production proofs, zero real orders, and zero live external network requirements. |
+| End-to-end coverage readiness | `npm run e2e:coverage:doctor` | Passed; verified 29 repo-local reviewer journeys, 100% repo-local coverage, 29 CI-gated coverage items, admin/API surfaces, backing browser/API/mobile/infra tests, zero live production proofs, zero real orders, and zero live external network requirements. |
 | AI provider readiness | `npm run ai:doctor` | Passed; verified 8 AI readiness items, 15 text provider contracts, 12 image provider contracts, 2 local fallbacks, 6 prompt-audit gates, 5 human-review gates, admin/API surfaces, docs, CI wiring, zero live provider calls, zero production AI traffic, and zero live external network requirements. |
 | Observability readiness | `npm run observability:doctor` | Passed; verified 7 telemetry/alerting readiness items, 6 observability provider contracts, 4 alert-route-required controls, admin/API surfaces, docs, CI wiring, zero live ingestion, zero production alerts, and zero live external network requirements. |
 | Retail fulfillment readiness | `npm run retail:doctor` | Passed; verified 8 retail fulfillment readiness items, 6 blocked retail-printer adapter contracts, 2 manual fallbacks, 21 recovery events, admin/API surfaces, docs, CI wiring, zero live quotes, zero direct retail orders, zero real payments, zero external network calls, and zero physical certification claims. |
@@ -179,7 +182,7 @@
 | Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, admin/API surfaces, docs, CI wiring, zero emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, mobile render readiness, hosted API proof readiness, business engagement readiness, and mobile native release gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, cloud artifact proof readiness, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, mobile render readiness, hosted API proof readiness, business engagement readiness, and mobile native release gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -197,9 +200,9 @@
 | Keep generation and import deterministic/no paid services. | `src/freeMvp.ts`, `src/freeMvp.test.ts`. | Covered |
 | Export four 5x7 card panels. | `buildPanelSvg`, `buildPrintExportPackage`, `validateCardDraft`, visual evidence. | Covered as SVG upload artifacts plus local PDF proof and manifest |
 | Keep real orders disabled. | `buildVendorHandoff`, `walgreensAdapter`, README, tests. | Covered |
-| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/cloud-artifact-iac-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, live MinIO/S3-compatible artifact write/read verification, static AWS artifact-store bucket/IAM contract, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and live-applied cloud IAM are not covered |
+| Provide production-shaped skeleton for future auth/provider/vendor work. | `src/accountAuth.ts`, `src/serviceKernel.ts`, `src/apiContracts.ts`, `src/persistenceContracts.ts`, `src/demoSeed.ts`, `src/artifactStore.ts`, `src/cloudArtifactProofReadiness.ts`, `scripts/account-auth-doctor.mjs`, `scripts/artifact-store-doctor.mjs`, `scripts/artifact-store-s3-live-doctor.mjs`, `scripts/cloud-artifact-iac-doctor.mjs`, `scripts/cloud-artifact-proof-readiness-doctor.mjs`, `scripts/api-runtime.mjs`, `scripts/api-server.mjs`, `scripts/postgres-runtime-doctor.mjs`, `scripts/postgres-integration-doctor.mjs`, `scripts/postgres-api-http-doctor.mjs`, `scripts/demo-reset.mjs`, `scripts/persistence-doctor.mjs`, `infra/`, `scripts/deployment-readiness.mjs`, `apps/mobile/`, tests. | Partial; hosted account identity and recovery storage, filesystem and S3-compatible artifact write/read verification, live MinIO/S3-compatible artifact write/read verification, static AWS artifact-store bucket/IAM contract, applied bucket/IAM/signed-URL/access-log/secret-sync/restore-drill proof readiness, contract, memory, fake-pool Postgres, isolated live Postgres route auth plus process-level Postgres HTTP repository-backed relationship-memory/render-packet/import-preview/card-project/manual-vendor-handoff/data-request mutation coverage, demo reset, plus persistence boundaries exist; production hosted auth token verification and live-applied cloud IAM are not covered |
 | Verify and document core workflows. | `docs/verification.md`, `docs/evidence/`, tests. | Covered |
-| Enforce coverage as a quality gate. | `npm run test:coverage`, `npm run e2e:coverage:doctor`, `npm run payment:doctor`, `npm run mobile:render:doctor`, `npm run reviewer:db:seed:doctor`, `npm run business:engagement:doctor`, `vite.config.ts`, `src/e2eCoverage.test.ts`, `src/capacityPlan.test.ts`, `src/aiProviderReadiness.test.ts`, `src/observabilityReadiness.test.ts`, `src/paymentReadiness.test.ts`, `src/mobileRenderReadiness.test.ts`, `src/reviewerDbSeedReadiness.test.ts`, `src/businessEngagementReadiness.test.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, E2E matrix, capacity planning, AI provider readiness, observability readiness, payment readiness, mobile render readiness, reviewer DB seed readiness, business engagement readiness, persistence, orchestration, and mobile contracts; UI covered by smoke |
+| Enforce coverage as a quality gate. | `npm run test:coverage`, `npm run e2e:coverage:doctor`, `npm run payment:doctor`, `npm run mobile:render:doctor`, `npm run cloud:artifact:proof:doctor`, `npm run reviewer:db:seed:doctor`, `npm run business:engagement:doctor`, `vite.config.ts`, `src/e2eCoverage.test.ts`, `src/capacityPlan.test.ts`, `src/aiProviderReadiness.test.ts`, `src/observabilityReadiness.test.ts`, `src/paymentReadiness.test.ts`, `src/mobileRenderReadiness.test.ts`, `src/cloudArtifactProofReadiness.test.ts`, `src/reviewerDbSeedReadiness.test.ts`, `src/businessEngagementReadiness.test.ts`, `src/apiContracts.test.ts`, `src/persistenceContracts.test.ts`, `src/agentContracts.test.ts`, `tests/mobile-contract.test.ts`, `docs/verification.md`. | Covered for core, API, E2E matrix, capacity planning, AI provider readiness, observability readiness, payment readiness, mobile render readiness, cloud artifact proof readiness, reviewer DB seed readiness, business engagement readiness, persistence, orchestration, and mobile contracts; UI covered by smoke |
 | Name gaps plainly. | README Honest Gaps, `docs/handoff-notes.md`, `docs/requirements-traceability.md`. | Covered |
 
 ## Reviewer Path
@@ -212,32 +215,33 @@
 4. Run `npm run check`.
 5. Run `npm run deployment:doctor`.
 6. Run `npm run cloud:doctor`.
-7. Run `npm run api:doctor`.
-8. Run `npm run security:doctor`.
-9. Run `npm run external:audit:doctor`.
-10. Run `npm run e2e:coverage:doctor`.
-11. Run `npm run payment:doctor`.
-12. Run `npm run provider:governance:doctor`.
-13. Run `npm run capacity:doctor`.
-14. Run `npm run printer:pricing:doctor`.
-15. Run `npm run localization:doctor`.
-16. Run `npm run api:doctor:memory`.
-17. Run `npm run api:doctor:postgres`.
-18. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
-19. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
-20. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
-21. Run `npm run artifact:doctor`.
-22. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
-23. Run `npm run persistence:doctor`.
-24. Run `npm run demo:doctor`.
-25. Run the worker and mobile doctor commands in `docs/verification.md`.
-26. Run `npm run mobile:render:doctor`.
-27. Run `npm run hosted:api:doctor`.
-28. Run `npm run reviewer:db:seed:doctor`.
-29. Run `npm run business:engagement:doctor`.
-29. Run `npm run mobile:release:doctor`.
-29. Inspect `.github/workflows/verify.yml`.
-30. Inspect screenshots in `docs/evidence/` and known gaps in
+7. Run `npm run cloud:artifact:proof:doctor`.
+8. Run `npm run api:doctor`.
+9. Run `npm run security:doctor`.
+10. Run `npm run external:audit:doctor`.
+11. Run `npm run e2e:coverage:doctor`.
+12. Run `npm run payment:doctor`.
+13. Run `npm run provider:governance:doctor`.
+14. Run `npm run capacity:doctor`.
+15. Run `npm run printer:pricing:doctor`.
+16. Run `npm run localization:doctor`.
+17. Run `npm run api:doctor:memory`.
+18. Run `npm run api:doctor:postgres`.
+19. Run `CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:live`.
+20. Run `CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http`.
+21. Run `CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live`.
+22. Run `npm run artifact:doctor`.
+23. Run `CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 ... npm run artifact:doctor:s3:live`.
+24. Run `npm run persistence:doctor`.
+25. Run `npm run demo:doctor`.
+26. Run the worker and mobile doctor commands in `docs/verification.md`.
+27. Run `npm run mobile:render:doctor`.
+28. Run `npm run hosted:api:doctor`.
+29. Run `npm run reviewer:db:seed:doctor`.
+30. Run `npm run business:engagement:doctor`.
+31. Run `npm run mobile:release:doctor`.
+32. Inspect `.github/workflows/verify.yml`.
+33. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -254,12 +258,14 @@
   model allowlist, prompt safety, privacy, print QA, spend, evaluation, and
   rollout gates; no live AI text/image generation, model output QA run, or
   production AI traffic is claimed.
-- No live-applied production cloud object-store bucket policy/IAM verification
-  or physical printer certification; static AWS artifact-store IaC, local
-  SVG/PDF/manifest package export, signed artifact handoff contracts, temporary
-  filesystem object-store write/read verification, injected S3-compatible
-  write/read contract verification, and live CI/local MinIO/S3-compatible
-  write/read doctor coverage are covered.
+- Live-applied production cloud object-store bucket policy/IAM verification and
+  physical printer certification are still not attached; Cloud artifact proof readiness tracks the
+  applied bucket ARN, IAM policy output, signed URL probe, access-log,
+  secret-manager sync, and restore-drill evidence requirements, while static
+  AWS artifact-store IaC, local SVG/PDF/manifest package export, signed artifact
+  handoff contracts, temporary filesystem object-store write/read verification,
+  injected S3-compatible write/read contract verification, and live CI/local
+  MinIO/S3-compatible write/read doctor coverage are covered.
 - No live vendor quote, order, payment charge/refund, or cancellation
   integration; payment provider coverage is sandbox-contract only.
 - Observability readiness is covered as repo-local telemetry schema, redaction,

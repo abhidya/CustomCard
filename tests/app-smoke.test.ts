@@ -253,6 +253,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Hosted seed proof missing");
     expect(result.adminText).toContain("Hosted seed execution proof");
     expect(result.adminText).toContain("Rollback cleanup drill");
+    expect(result.adminText).toContain("Cloud artifact proof readiness");
+    expect(result.adminText).toContain("Applied proof missing");
+    expect(result.adminText).toContain("Applied bucket ARN proof");
+    expect(result.adminText).toContain("IAM policy output proof");
+    expect(result.adminText).toContain("Signed URL cloud probe");
     expect(result.adminText).toContain("Business engagement readiness");
     expect(result.adminText).toContain("Live sends off");
     expect(result.adminText).toContain("Popular CRM OAuth contracts");

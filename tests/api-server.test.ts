@@ -167,6 +167,31 @@ describe("api server wrapper", () => {
           realOrdersEnabled: number;
           blockers: string[];
         };
+        cloudArtifactProofReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          appliedCloudRequired: number;
+          bucketArnProofRequired: number;
+          iamPolicyProofRequired: number;
+          signedUrlProbeRequired: number;
+          accessLogProofRequired: number;
+          secretSyncRequired: number;
+          restoreDrillRequired: number;
+          terraformFileContracts: number;
+          envOutputContracts: number;
+          terraformApplyExecutions: number;
+          appliedBucketArnProofs: number;
+          iamPolicyOutputProofs: number;
+          signedUrlProbeProofs: number;
+          accessLogProofs: number;
+          secretSyncProofs: number;
+          restoreDrillProofs: number;
+          externalNetworkCalls: number;
+          liveProviderCalls: number;
+          realOrdersEnabled: number;
+          blockers: string[];
+        };
         businessEngagementReadiness: {
           total: number;
           repoLocalReady: number;
@@ -264,10 +289,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 28,
-      covered: 28,
+      total: 29,
+      covered: 29,
       repoLocalCoveragePercent: 100,
-      ciGated: 28,
+      ciGated: 29,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -378,6 +403,31 @@ describe("api server wrapper", () => {
       hostedTokenProbeProofs: 0,
       vercelEnvSyncProofs: 0,
       destructiveLiveMutations: 0,
+      externalNetworkCalls: 0,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
+    expect(report.readiness.cloudArtifactProofReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 2,
+      evidenceMissing: 6,
+      appliedCloudRequired: 6,
+      bucketArnProofRequired: 2,
+      iamPolicyProofRequired: 2,
+      signedUrlProbeRequired: 3,
+      accessLogProofRequired: 2,
+      secretSyncRequired: 3,
+      restoreDrillRequired: 1,
+      terraformFileContracts: 3,
+      envOutputContracts: 6,
+      terraformApplyExecutions: 0,
+      appliedBucketArnProofs: 0,
+      iamPolicyOutputProofs: 0,
+      signedUrlProbeProofs: 0,
+      accessLogProofs: 0,
+      secretSyncProofs: 0,
+      restoreDrillProofs: 0,
       externalNetworkCalls: 0,
       liveProviderCalls: 0,
       realOrdersEnabled: 0,
@@ -547,8 +597,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 28,
-        covered: 28,
+        total: 29,
+        covered: 29,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -648,6 +698,23 @@ describe("api server wrapper", () => {
         hostedSeedProofs: 0,
         hostedTokenProbeProofs: 0,
         vercelEnvSyncProofs: 0,
+        externalNetworkCalls: 0,
+        realOrdersEnabled: 0,
+        blockers: []
+      });
+      expect(readiness.cloudArtifactProofReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 2,
+        evidenceMissing: 6,
+        appliedCloudRequired: 6,
+        terraformFileContracts: 3,
+        envOutputContracts: 6,
+        appliedBucketArnProofs: 0,
+        iamPolicyOutputProofs: 0,
+        signedUrlProbeProofs: 0,
+        accessLogProofs: 0,
+        secretSyncProofs: 0,
+        restoreDrillProofs: 0,
         externalNetworkCalls: 0,
         realOrdersEnabled: 0,
         blockers: []

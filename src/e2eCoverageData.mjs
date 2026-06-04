@@ -14,6 +14,7 @@ const requiredCoverageIds = [
   "mobile-native-release-profile",
   "artifact-store-handoff",
   "deployment-iac-readiness",
+  "cloud-artifact-proof-readiness",
   "hosted-api-proof-readiness",
   "reviewer-db-seed-readiness",
   "business-engagement-readiness",
@@ -224,6 +225,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run deployment:doctor", "npm run cloud:doctor", "npm run check"],
     evidence: ["Local dev lane ready", "Cheap droplet lane ready", "Cloud-native lane ready", "Static AWS artifact-store IaC verified"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "cloud-artifact-proof-readiness",
+    label: "Cloud artifact proof readiness",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run cloud:artifact:proof:doctor", "npm run test -- --run src/cloudArtifactProofReadiness.test.ts", "npm run check"],
+    evidence: ["Terraform artifact bucket contract covered", "Applied bucket ARN proof gap tracked", "IAM output proof gap tracked", "Applied cloud proof remains unclaimed"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

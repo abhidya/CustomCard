@@ -97,10 +97,10 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 28,
-      covered: 28,
+      total: 29,
+      covered: 29,
       repoLocalCoveragePercent: 100,
-      ciGated: 28,
+      ciGated: 29,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
@@ -217,6 +217,31 @@ describe("api contracts", () => {
       realOrdersEnabled: 0,
       blockers: []
     });
+    expect(summary.cloudArtifactProofReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 2,
+      evidenceMissing: 6,
+      appliedCloudRequired: 6,
+      bucketArnProofRequired: 2,
+      iamPolicyProofRequired: 2,
+      signedUrlProbeRequired: 3,
+      accessLogProofRequired: 2,
+      secretSyncRequired: 3,
+      restoreDrillRequired: 1,
+      terraformFileContracts: 3,
+      envOutputContracts: 6,
+      terraformApplyExecutions: 0,
+      appliedBucketArnProofs: 0,
+      iamPolicyOutputProofs: 0,
+      signedUrlProbeProofs: 0,
+      accessLogProofs: 0,
+      secretSyncProofs: 0,
+      restoreDrillProofs: 0,
+      externalNetworkCalls: 0,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
     expect(summary.businessEngagementReadiness).toMatchObject({
       total: 8,
       repoLocalReady: 4,
@@ -290,7 +315,7 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 28,
+      total: 29,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
@@ -305,6 +330,7 @@ describe("api contracts", () => {
         "retail-fulfillment-readiness",
         "payment-refund-readiness",
         "hosted-api-proof-readiness",
+        "cloud-artifact-proof-readiness",
         "business-engagement-readiness"
       ])
     );
@@ -391,6 +417,18 @@ describe("api contracts", () => {
     expect(payload.reviewerDbSeedReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["reviewer-seed-plan-contract", "hosted-seed-execution-proof", "rollback-cleanup-drill"])
     );
+    expect(payload.cloudArtifactProofReadiness.summary).toMatchObject({
+      total: 8,
+      appliedCloudRequired: 6,
+      terraformFileContracts: 3,
+      envOutputContracts: 6,
+      appliedBucketArnProofs: 0,
+      iamPolicyOutputProofs: 0,
+      signedUrlProbeProofs: 0
+    });
+    expect(payload.cloudArtifactProofReadiness.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["static-artifact-iac-contract", "applied-bucket-arn-proof", "iam-policy-output-proof"])
+    );
     expect(payload.businessEngagementReadiness.summary).toMatchObject({
       total: 8,
       crmAdapterContracts: 7,
@@ -432,7 +470,7 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 28,
+        total: 29,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
       },
@@ -473,6 +511,13 @@ describe("api contracts", () => {
         total: 8,
         hostedSeedProofs: 0,
         hostedTokenProbeProofs: 0,
+        externalNetworkCalls: 0
+      },
+      cloudArtifactProofReadiness: {
+        total: 8,
+        appliedBucketArnProofs: 0,
+        iamPolicyOutputProofs: 0,
+        signedUrlProbeProofs: 0,
         externalNetworkCalls: 0
       },
       businessEngagementReadiness: {

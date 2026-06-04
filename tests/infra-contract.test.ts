@@ -173,6 +173,58 @@ describe("production infrastructure contract", () => {
     expect(outputs).toContain('REAL_ORDER_KILL_SWITCH          = "disabled"');
   });
 
+  it("ships a cloud artifact proof readiness doctor without claiming applied cloud proof", () => {
+    const output = execFileSync("npm", ["run", "cloud:artifact:proof:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      items: number;
+      repoLocalReady: number;
+      evidenceMissing: number;
+      appliedCloudRequired: number;
+      terraformFileContracts: number;
+      envOutputContracts: number;
+      terraformApplyExecutions: number;
+      appliedBucketArnProofs: number;
+      iamPolicyOutputProofs: number;
+      signedUrlProbeProofs: number;
+      accessLogProofs: number;
+      secretSyncProofs: number;
+      restoreDrillProofs: number;
+      externalNetworkCalls: number;
+      realOrdersEnabled: number;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-cloud-artifact-proof-readiness-doctor",
+      status: "ready",
+      items: 8,
+      repoLocalReady: 2,
+      evidenceMissing: 6,
+      appliedCloudRequired: 6,
+      terraformFileContracts: 3,
+      envOutputContracts: 6,
+      terraformApplyExecutions: 0,
+      appliedBucketArnProofs: 0,
+      iamPolicyOutputProofs: 0,
+      signedUrlProbeProofs: 0,
+      accessLogProofs: 0,
+      secretSyncProofs: 0,
+      restoreDrillProofs: 0,
+      externalNetworkCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
+    expect(report.lanes.map((lane) => lane.lane)).toEqual(
+      expect.arrayContaining(["register", "terraform", "object-store", "surfaces", "docs", "ci"])
+    );
+  }, shellDoctorTimeoutMs);
+
   it("documents required secret and kill-switch environment variables", () => {
     const env = read("infra/env/.env.example");
 
@@ -302,6 +354,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
     expect(packageJson).toContain("\"cloud:doctor\": \"node scripts/cloud-artifact-iac-doctor.mjs\"");
+    expect(packageJson).toContain("\"cloud:artifact:proof:doctor\": \"node scripts/cloud-artifact-proof-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"localization:doctor\": \"node scripts/localization-doctor.mjs\"");
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
     expect(packageJson).toContain("\"external:audit:doctor\": \"node scripts/external-audit-readiness-doctor.mjs\"");
@@ -336,6 +389,8 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/hostedApiReadinessData.mjs");
     expect(viteConfig).toContain("src/reviewerDbSeedReadiness.ts");
     expect(viteConfig).toContain("src/reviewerDbSeedReadinessData.mjs");
+    expect(viteConfig).toContain("src/cloudArtifactProofReadiness.ts");
+    expect(viteConfig).toContain("src/cloudArtifactProofReadinessData.mjs");
     expect(viteConfig).toContain("src/businessEngagementReadiness.ts");
     expect(viteConfig).toContain("src/businessEngagementReadinessData.mjs");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
@@ -393,6 +448,8 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run check");
     expect(workflow).toContain("npm run deployment:doctor");
     expect(workflow).toContain("npm run cloud:doctor");
+    expect(workflow).toContain("Validate cloud artifact proof readiness");
+    expect(workflow).toContain("npm run cloud:artifact:proof:doctor");
     expect(workflow).toContain("npm run api:doctor");
     expect(workflow).toContain("npm run security:doctor");
     expect(workflow).toContain("npm run external:audit:doctor");
@@ -740,9 +797,9 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-e2e-coverage-doctor",
       status: "ready",
-      journeys: 28,
+      journeys: 29,
       repoLocalCoveragePercent: 100,
-      ciGated: 28,
+      ciGated: 29,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,

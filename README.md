@@ -83,7 +83,8 @@ environment configuration instead of static placeholders.
   profiles, external audit readiness, AI provider readiness, observability
   readiness, retail fulfillment readiness, payment readiness, mobile render
   readiness, hosted API proof readiness, business engagement readiness, cloud
-  runtime readiness, and blocked live-vendor adapters.
+  artifact proof readiness, cloud runtime readiness, and blocked live-vendor
+  adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
@@ -140,8 +141,18 @@ environment configuration instead of static placeholders.
   external network calls, and real orders at zero. Run `npm run
   reviewer:db:seed:doctor`; it is not hosted reviewer DB mutation or hosted
   account-token proof.
+- Cloud artifact proof readiness register in
+  `src/cloudArtifactProofReadiness.ts` and
+  `src/cloudArtifactProofReadinessData.mjs` for Terraform artifact-store source
+  coverage, plan review, applied bucket ARN proof, IAM policy output proof,
+  signed URL cloud probes, access-log proof, secret-manager env sync, and
+  retention/restore drills while keeping Terraform apply execution, applied
+  bucket proof, IAM proof, signed URL proof, access-log proof, secret-sync
+  proof, restore-drill proof, live provider calls, external network calls, and
+  real orders at zero. Run `npm run cloud:artifact:proof:doctor`; it is not
+  live-applied cloud bucket/IAM proof.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 28 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 29 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -312,6 +323,7 @@ Verification:
 npm run check
 npm run deployment:doctor
 npm run cloud:doctor
+npm run cloud:artifact:proof:doctor
 npm run api:doctor
 npm run security:doctor
 npm run external:audit:doctor
@@ -345,6 +357,8 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
 `src/artifactStore.ts`, `src/businessEngagementReadiness.ts`,
 `src/businessEngagementReadinessData.mjs`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
+`src/cloudArtifactProofReadiness.ts`,
+`src/cloudArtifactProofReadinessData.mjs`,
 `src/domain.ts`, `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
 `src/externalAuditReadiness.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
@@ -362,6 +376,13 @@ cheap-droplet, cloud-native, Vercel, cloud-storage, runtime, and data lanes.
 verifies the production artifact bucket/IAM contract. These checks validate
 committed IaC shape only; they do not prove a real cloud cluster, AWS account,
 or droplet deployment.
+`npm run cloud:artifact:proof:doctor` verifies the committed Cloud artifact
+proof readiness register, Terraform source/env-output coverage, applied bucket
+ARN and IAM policy proof requirements, signed URL/access-log/secret-sync/
+restore-drill evidence requirements, admin/API surfaces, documentation, CI
+wiring, and the zero Terraform-apply/applied-bucket/IAM/signed-URL/access-log/
+secret-sync/restore-drill proof boundary. It is not live-applied cloud
+bucket/IAM proof.
 `npm run capacity:doctor` verifies the committed capacity profiles, admin/API
 surfaces, documentation, and CI wiring while keeping live provider calls and
 real orders disabled.
@@ -406,7 +427,8 @@ It is not live CRM OAuth, customer messaging, CRM writeback, or production
 campaign analytics proof.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
-doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
+doctor, cloud artifact IaC doctor, cloud artifact proof readiness doctor,
+contract API doctor, security/privacy/
 accessibility baseline doctor, external audit readiness doctor, provider cost
 governance doctor, end-to-end coverage doctor, AI provider readiness doctor,
 observability readiness doctor, payment readiness doctor, mobile render
@@ -444,7 +466,8 @@ mobile native release doctor on pushes to `main` and pull requests.
 The repo does not include live production user auth, live OAuth, live AI/image
 generation, live vendor quotes, live payment charges/refunds, direct
 retail-printer ordering, live telemetry ingestion/alerting, live-applied cloud
-bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
+bucket/IAM proof beyond the static AWS IaC contract, CI/local MinIO doctor, and
+repo-local Cloud artifact proof readiness gate,
 deployed production Postgres API integration, production hosted account-token
 verification outside the isolated live Postgres doctors, professional
 translation QA or live translation providers, actual emulator/native screenshot

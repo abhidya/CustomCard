@@ -550,6 +550,83 @@ h3 {
   color: #1f2b30;
 }
 
+.cloudProofCard {
+  background: #ffffff;
+}
+
+.cloudProofOverview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 12px 0 14px;
+  border-top: 1px solid #d8e0e2;
+  border-bottom: 1px solid #d8e0e2;
+}
+
+.cloudProofOverview div {
+  min-width: 0;
+  padding: 11px 12px;
+  border-right: 1px solid #d8e0e2;
+}
+
+.cloudProofOverview div:nth-child(4n) {
+  border-right: 0;
+}
+
+.cloudProofOverview span,
+.cloudProofRow span,
+.cloudProofRow small {
+  display: block;
+  color: #617178;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cloudProofOverview strong {
+  display: block;
+  margin-top: 2px;
+  color: #1f2b30;
+  font-size: 1.18rem;
+}
+
+.cloudProofColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.cloudProofList {
+  border-top: 1px solid #d8e0e2;
+}
+
+.cloudProofRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 11px 0;
+  border-bottom: 1px solid #d8e0e2;
+}
+
+.cloudProofRow strong {
+  display: block;
+  min-width: 0;
+  color: #1f2b30;
+  font-size: 0.93rem;
+  overflow-wrap: anywhere;
+}
+
+.cloudProofRow small {
+  justify-self: end;
+  color: #6f2b22;
+  text-align: right;
+}
+
+.cloudProofRow.ready-local small {
+  color: #1b5b4d;
+}
+
 .quickActionGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1423,6 +1500,31 @@ h3 {
   .downloadGrid,
   .adapterToolbar,
   .adapterMatrix {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cloudProofOverview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cloudProofOverview div,
+  .cloudProofOverview div:nth-child(4n) {
+    border-right: 0;
+  }
+
+  .cloudProofOverview div:nth-child(odd) {
+    border-right: 1px solid #d8e0e2;
+  }
+
+  .cloudProofOverview div {
+    border-bottom: 1px solid #d8e0e2;
+  }
+
+  .cloudProofOverview div:last-child {
+    border-bottom: 0;
+  }
+
+  .cloudProofColumns {
     grid-template-columns: minmax(0, 1fr);
   }
 

@@ -75,6 +75,13 @@ import {
   type ReviewerDbSeedReadinessSummary
 } from "./reviewerDbSeedReadiness";
 import {
+  cloudArtifactProofReadinessItems,
+  summarizeCloudArtifactProofReadiness,
+  validateCloudArtifactProofReadiness,
+  type CloudArtifactProofReadinessItem,
+  type CloudArtifactProofReadinessSummary
+} from "./cloudArtifactProofReadiness";
+import {
   businessEngagementReadinessItems,
   summarizeBusinessEngagementReadiness,
   validateBusinessEngagementReadiness,
@@ -144,6 +151,7 @@ export interface ApiReadinessSummary {
   mobileRenderReadiness: MobileRenderReadinessSummary;
   hostedApiReadiness: HostedApiReadinessSummary;
   reviewerDbSeedReadiness: ReviewerDbSeedReadinessSummary;
+  cloudArtifactProofReadiness: CloudArtifactProofReadinessSummary;
   businessEngagementReadiness: BusinessEngagementReadinessSummary;
   runtime: {
     localReady: number;
@@ -206,6 +214,10 @@ export interface ApiBootstrapPayload {
   reviewerDbSeedReadiness: {
     items: ReviewerDbSeedReadinessItem[];
     summary: ReviewerDbSeedReadinessSummary;
+  };
+  cloudArtifactProofReadiness: {
+    items: CloudArtifactProofReadinessItem[];
+    summary: CloudArtifactProofReadinessSummary;
   };
   businessEngagementReadiness: {
     items: BusinessEngagementReadinessItem[];
@@ -313,6 +325,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "paymentReadiness",
       "mobileRenderReadiness",
       "hostedApiReadiness",
+      "cloudArtifactProofReadiness",
       "runtime",
       "blockedProviders",
       "requiredEnv"
@@ -504,6 +517,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     mobileRenderReadiness: summarizeMobileRenderReadiness(),
     hostedApiReadiness: summarizeHostedApiReadiness(),
     reviewerDbSeedReadiness: summarizeReviewerDbSeedReadiness(),
+    cloudArtifactProofReadiness: summarizeCloudArtifactProofReadiness(),
     businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
@@ -563,6 +577,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     reviewerDbSeedReadiness: {
       items: reviewerDbSeedReadinessItems,
       summary: summarizeReviewerDbSeedReadiness()
+    },
+    cloudArtifactProofReadiness: {
+      items: cloudArtifactProofReadinessItems,
+      summary: summarizeCloudArtifactProofReadiness()
     },
     businessEngagementReadiness: {
       items: businessEngagementReadinessItems,
@@ -690,6 +708,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const reviewerDbSeedReadinessIssue of validateReviewerDbSeedReadiness()) {
     issues.push(reviewerDbSeedReadinessIssue);
+  }
+  for (const cloudArtifactProofReadinessIssue of validateCloudArtifactProofReadiness()) {
+    issues.push(cloudArtifactProofReadinessIssue);
   }
   for (const businessEngagementReadinessIssue of validateBusinessEngagementReadiness()) {
     issues.push(businessEngagementReadinessIssue);
