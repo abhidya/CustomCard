@@ -97,10 +97,10 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 23,
-      covered: 23,
+      total: 24,
+      covered: 24,
       repoLocalCoveragePercent: 100,
-      ciGated: 23,
+      ciGated: 24,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
@@ -147,6 +147,21 @@ describe("api contracts", () => {
       directOrderEnabled: 0,
       realPaymentsEnabled: 0,
       physicalCertificationAttached: 0,
+      blockers: []
+    });
+    expect(summary.paymentReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 4,
+      evidenceMissing: 3,
+      certificationBlocked: 1,
+      paymentProviderContracts: 4,
+      localFallbacks: 1,
+      ledgerEvents: 23,
+      liveChargesEnabled: 0,
+      liveRefundsEnabled: 0,
+      liveCaptureEnabled: 0,
+      cardDataStored: 0,
+      pciScopeApproved: 0,
       blockers: []
     });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
@@ -206,7 +221,7 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 23,
+      total: 24,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
@@ -217,7 +232,8 @@ describe("api contracts", () => {
         "mobile-customer-shell",
         "ai-provider-readiness",
         "observability-alerting-readiness",
-        "retail-fulfillment-readiness"
+        "retail-fulfillment-readiness",
+        "payment-refund-readiness"
       ])
     );
     expect(payload.aiProviderReadiness.summary).toMatchObject({
@@ -262,6 +278,16 @@ describe("api contracts", () => {
     expect(payload.retailFulfillment.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["live-quote-contracts", "vendor-api-certification", "physical-print-qa"])
     );
+    expect(payload.paymentReadiness.summary).toMatchObject({
+      total: 8,
+      paymentProviderContracts: 4,
+      liveChargesEnabled: 0,
+      liveRefundsEnabled: 0,
+      pciScopeApproved: 0
+    });
+    expect(payload.paymentReadiness.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["sandbox-payment-contracts", "live-charge-capture-approval", "refund-void-dispute-drills"])
+    );
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
@@ -292,7 +318,7 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 23,
+        total: 24,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
       },
@@ -311,6 +337,12 @@ describe("api contracts", () => {
         liveQuoteEnabled: 0,
         directOrderEnabled: 0,
         physicalCertificationAttached: 0
+      },
+      paymentReadiness: {
+        total: 8,
+        liveChargesEnabled: 0,
+        liveRefundsEnabled: 0,
+        pciScopeApproved: 0
       }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({

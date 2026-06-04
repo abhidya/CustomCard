@@ -73,8 +73,8 @@ environment configuration instead of static placeholders.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
-  readiness, retail fulfillment readiness, cloud runtime readiness, and blocked
-  live-vendor adapters.
+  readiness, retail fulfillment readiness, payment readiness, cloud runtime
+  readiness, and blocked live-vendor adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
@@ -98,8 +98,15 @@ environment configuration instead of static placeholders.
   recovery, payment/refund boundary, and physical print QA while keeping live
   quotes, direct retail orders, real payments, and physical certification
   claims disabled. Run `npm run retail:doctor`; it is not live retail ordering.
+- Payment readiness register in `src/paymentReadiness.ts` and
+  `src/paymentReadinessData.mjs` for no-payment fallback, sandbox provider
+  contracts, idempotent checkout, no-card-data storage, webhook signatures,
+  live charge/capture approval, refund/dispute drills, and settlement
+  reconciliation while keeping live charges, refunds, captures, card storage,
+  PCI approval claims, and live external network requirements disabled. Run
+  `npm run payment:doctor`; it is not live payment processing.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 23 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 24 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -274,6 +281,7 @@ npm run api:doctor
 npm run security:doctor
 npm run external:audit:doctor
 npm run e2e:coverage:doctor
+npm run payment:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -300,7 +308,8 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/domain.ts`, `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
 `src/externalAuditReadiness.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
-`src/localization.ts`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
+`src/localization.ts`, `src/paymentReadiness.ts`,
+`src/paymentReadinessData.mjs`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
 `src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
 verified through Chrome smoke tests.
@@ -328,12 +337,16 @@ wiring. It is not live AI generation or model-provider traffic proof.
 readiness register, provider runtime contracts, admin/API surfaces,
 documentation, and CI wiring. It is not live telemetry ingestion or alert
 delivery proof.
+`npm run payment:doctor` verifies the committed payment readiness register,
+payment sandbox provider contracts, no-payment fallback, admin/API surfaces,
+documentation, CI wiring, and the zero live charge/refund/capture, zero card
+storage, zero PCI-approval-claim boundary. It is not live payment processing.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
 accessibility baseline doctor, external audit readiness doctor, provider cost
 governance doctor, end-to-end coverage doctor, AI provider readiness doctor,
-observability readiness doctor,
+observability readiness doctor, payment readiness doctor,
 capacity profile doctor, printer pricing research doctor,
 localization readiness doctor,
 memory-runtime API doctor,

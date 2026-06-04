@@ -47,6 +47,13 @@ import {
   type RetailFulfillmentReadinessSummary
 } from "./retailFulfillmentReadiness";
 import {
+  paymentReadinessItems,
+  summarizePaymentReadiness,
+  validatePaymentReadiness,
+  type PaymentReadinessItem,
+  type PaymentReadinessSummary
+} from "./paymentReadiness";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -105,6 +112,7 @@ export interface ApiReadinessSummary {
   capacity: CapacityPlanSummary;
   observability: ObservabilityReadinessSummary;
   retailFulfillment: RetailFulfillmentReadinessSummary;
+  paymentReadiness: PaymentReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -150,6 +158,10 @@ export interface ApiBootstrapPayload {
   retailFulfillment: {
     items: RetailFulfillmentReadinessItem[];
     summary: RetailFulfillmentReadinessSummary;
+  };
+  paymentReadiness: {
+    items: PaymentReadinessItem[];
+    summary: PaymentReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -250,6 +262,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "capacity",
       "observability",
       "retailFulfillment",
+      "paymentReadiness",
       "runtime",
       "blockedProviders",
       "requiredEnv"
@@ -437,6 +450,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     capacity: summarizeCapacityPlan(),
     observability: summarizeObservabilityReadiness(),
     retailFulfillment: summarizeRetailFulfillmentReadiness(),
+    paymentReadiness: summarizePaymentReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -479,6 +493,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     retailFulfillment: {
       items: retailFulfillmentReadinessItems,
       summary: summarizeRetailFulfillmentReadiness()
+    },
+    paymentReadiness: {
+      items: paymentReadinessItems,
+      summary: summarizePaymentReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -590,6 +608,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const retailFulfillmentIssue of validateRetailFulfillmentReadiness()) {
     issues.push(retailFulfillmentIssue);
+  }
+  for (const paymentReadinessIssue of validatePaymentReadiness()) {
+    issues.push(paymentReadinessIssue);
   }
 
   return issues;

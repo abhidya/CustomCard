@@ -7,6 +7,7 @@ import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
 import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
+import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
 import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
@@ -282,6 +283,7 @@ export const readiness = {
   capacity: summarizeCapacityPlan(),
   observability: summarizeObservabilityReadiness(),
   retailFulfillment: summarizeRetailFulfillmentReadiness(),
+  paymentReadiness: summarizePaymentReadiness(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -644,6 +646,21 @@ function validateApiServerContract() {
     blockers.push("Retail fulfillment readiness cannot claim physical print certification.");
   }
   if (readiness.retailFulfillment.blockers.length > 0) blockers.push("Retail fulfillment readiness summary has blockers.");
+  if (readiness.paymentReadiness.total < 8) blockers.push("Payment readiness must track live charge and refund launch evidence.");
+  if (readiness.paymentReadiness.paymentProviderContracts < 4) {
+    blockers.push("Payment readiness must cover every sandbox payment provider contract.");
+  }
+  if (readiness.paymentReadiness.localFallbacks < 1) blockers.push("Payment readiness must keep the no-payment fallback.");
+  if (readiness.paymentReadiness.ledgerEvents < 20) blockers.push("Payment readiness must track ledger, refund, webhook, and settlement events.");
+  if (readiness.paymentReadiness.liveChargesEnabled !== 0) blockers.push("Payment readiness cannot enable live charges.");
+  if (readiness.paymentReadiness.liveRefundsEnabled !== 0) blockers.push("Payment readiness cannot enable live refunds.");
+  if (readiness.paymentReadiness.liveCaptureEnabled !== 0) blockers.push("Payment readiness cannot enable live captures.");
+  if (readiness.paymentReadiness.externalNetworkCalls !== 0) {
+    blockers.push("Payment readiness cannot require live external network calls.");
+  }
+  if (readiness.paymentReadiness.cardDataStored !== 0) blockers.push("Payment readiness cannot store card data.");
+  if (readiness.paymentReadiness.pciScopeApproved !== 0) blockers.push("Payment readiness cannot claim PCI approval.");
+  if (readiness.paymentReadiness.blockers.length > 0) blockers.push("Payment readiness summary has blockers.");
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

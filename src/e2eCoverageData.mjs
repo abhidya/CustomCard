@@ -18,6 +18,7 @@ const requiredCoverageIds = [
   "ai-provider-readiness",
   "observability-alerting-readiness",
   "retail-fulfillment-readiness",
+  "payment-refund-readiness",
   "capacity-cost-readiness",
   "localization-rtl-readiness",
   "printer-pricing-research",
@@ -271,6 +272,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run retail:doctor", "npm run test -- --run src/retailFulfillmentReadiness.test.ts", "npm run check"],
     evidence: ["Live vendor adapters covered", "Manual fallbacks covered", "Recovery drills tracked", "Direct orders disabled"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "payment-refund-readiness",
+    label: "Payment and refund readiness",
+    surface: "governance",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run payment:doctor", "npm run test -- --run src/paymentReadiness.test.ts", "npm run check"],
+    evidence: ["Payment provider contracts covered", "No-payment fallback covered", "Refund drills tracked", "Live charges disabled"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

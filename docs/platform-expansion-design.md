@@ -70,6 +70,12 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Payments: local no-payment gate ready; credential-gated Stripe Checkout,
   PayPal Orders, Square Payments, and Adyen Checkout sandbox contracts. Live
   charges, captures, refunds, disputes, taxes, and settlement remain unverified.
+- Payment readiness: `src/paymentReadiness.ts` and
+  `src/paymentReadinessData.mjs` track no-payment fallback, sandbox payment
+  contracts, idempotent checkout, no-card-data storage, webhook signatures,
+  live charge/capture approval, refund/dispute drills, and settlement
+  reconciliation. Run `npm run payment:doctor`; this is not live payment
+  processing.
 - Observability: local health/audit telemetry ready; credential-gated Sentry,
   PostHog, OpenTelemetry OTLP, Grafana Cloud, Datadog Logs, and Better Stack
   Logs contracts. Live telemetry ingestion, alert routing, retention enforcement,
@@ -227,6 +233,9 @@ The admin panel turns the adapter catalog into an operations surface:
 - Retail fulfillment readiness for six blocked live vendor adapter contracts,
   two manual fallbacks, recovery drills, quote/order/payment/certification
   evidence gaps, and zero direct-order enablement.
+- Payment readiness for four sandbox payment provider contracts, one no-payment
+  fallback, webhook/refund/settlement evidence gaps, and zero live charges,
+  refunds, captures, card-data storage, or PCI approval claims.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 
@@ -360,7 +369,7 @@ The runtime remains fail-closed:
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
 - `npm run e2e:coverage:doctor` verifies End-to-end coverage in
-  `src/e2eCoverage.ts`, the 22-item repo-local end-to-end coverage matrix,
+  `src/e2eCoverage.ts`, the 24-item repo-local end-to-end coverage matrix,
   admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
   "not live production proof" disclaimer while keeping live production proofs,
   real orders, and live external network requirements at zero.
@@ -377,6 +386,12 @@ The runtime remains fail-closed:
   contracts, admin/API exposure, CI wiring, and the "not live telemetry ingestion"
   disclaimer while keeping live ingestion, production alerts, and live external
   network requirements at zero. This is not live telemetry ingestion evidence.
+- `npm run payment:doctor` verifies Payment readiness in
+  `src/paymentReadiness.ts`, sandbox payment provider contracts, no-payment
+  fallback, idempotency, webhook, refund, settlement, admin/API exposure, CI
+  wiring, and the "not live payment processing" disclaimer while keeping live
+  charges, refunds, captures, card-data storage, PCI approval claims, and live
+  external network requirements at zero.
 - `npm run api:doctor` verifies the API/static server route map, provider
   summary, contract runtime, idempotent mutation contracts, and no-live-call
   posture.
@@ -425,6 +440,13 @@ Implemented checks:
   physical print QA requirements, admin/API surfaces, CI wiring, and zero live
   quotes, direct orders, real payments, external network calls, or physical
   certification claims. This is not live retail ordering.
+- `src/paymentReadiness.test.ts` and `npm run payment:doctor` validate Payment
+  readiness for the no-payment fallback, four sandbox payment provider
+  contracts, idempotent checkout session requirements, no-card-data storage,
+  webhook signature verification, live charge/capture approval, refund/void/
+  dispute drills, settlement reconciliation, admin/API surfaces, CI wiring, and
+  zero live charges, refunds, captures, external network calls, stored card
+  data, or PCI approval claims. This is not live payment processing.
 - `src/localization.test.ts` and `npm run localization:doctor` validate the 4
   launch locales, complete message bundles, RTL layout-review gates, human
   copy-review gates, web/API/mobile parity, CI wiring, no live translation
@@ -447,8 +469,9 @@ Implemented checks:
   Postgres HTTP integration, account-auth storage/recovery, mobile shell, native
   release profiles, artifact handoff, deployment IaC, security/privacy/
   accessibility, external audit readiness, AI provider readiness,
-  observability/alerting readiness, retail fulfillment readiness, capacity/cost,
-  localization/RTL, printer pricing, demo reset, and worker readiness. The
+  observability/alerting readiness, retail fulfillment readiness, payment/refund
+  readiness, capacity/cost, localization/RTL, printer pricing, demo reset, and
+  worker readiness. The
   matrix reports 100% repo-local coverage only; it is not live production proof.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order

@@ -31,6 +31,13 @@ it after each meaningful implementation pass.
   telemetry schema, PII redaction, sampling, retention, alert-route drill
   tracking, provider request contracts, admin/API exposure, docs, CI wiring,
   and live ingestion plus production alerts held at zero.
+- Payment readiness tests and `npm run payment:doctor` cover the no-payment
+  fallback, Stripe/PayPal/Square/Adyen sandbox provider contracts, idempotent
+  checkout sessions, no-card-data storage, webhook signature verification, live
+  charge/capture approval requirements, refund/void/dispute drills, settlement
+  reconciliation, admin/API exposure, docs, CI wiring, and live charges,
+  refunds, captures, external network calls, card data storage, and PCI approval
+  claims held at zero.
 - Printer-pricing tests and `npm run printer:pricing:doctor` cover 12
   review-only public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot price
   observations, collection rules, 30-day freshness blocking, minimum quantity
@@ -139,7 +146,7 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 22-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 24-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
@@ -151,13 +158,18 @@ it after each meaningful implementation pass.
   verifies the 7-item telemetry and alerting readiness register, provider
   runtime contracts, admin/API surfaces, docs, CI wiring, and zero live
   ingestion, production alerts, or live external network requirements.
+- Payment readiness is checked by `npm run payment:doctor`, which verifies the
+  8-item payment readiness register, 4 sandbox payment provider contracts,
+  1 no-payment fallback, 23 ledger events, admin/API surfaces, docs, CI wiring,
+  and zero live charges, refunds, captures, external network calls, stored card
+  data, or PCI approval claims.
 - `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
   production API endpoint.
-- Coverage is measured for core, API, artifact handoff/store, localization,
-  pricing, print export, persistence, orchestration, and mobile contract modules
-  with V8 thresholds enforced by `npm run check`: 90%
+- Coverage is measured for core, API, artifact handoff/store, payment readiness,
+  localization, pricing, print export, persistence, orchestration, and mobile
+  contract modules with V8 thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
@@ -178,6 +190,7 @@ npm run api:doctor
 npm run security:doctor
 npm run external:audit:doctor
 npm run e2e:coverage:doctor
+npm run payment:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -206,9 +219,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 27 test files passed, 170 tests passed.
-- Coverage: 25 core/API/persistence/infra/mobile test files passed, 161 tests passed; V8 report measured
-  91.40% statements, 84.87% branches, 97.44% functions, and 94.93% lines across
+- Vitest: 28 test files passed, 174 tests passed.
+- Coverage: 26 core/API/persistence/infra/mobile test files passed, 165 tests passed; V8 report measured
+  91.49% statements, 85.11% branches, 97.52% functions, and 94.91% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -216,7 +229,8 @@ Result: passed.
   `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
   `src/freeMvp.ts`, `src/localization.ts`, `src/observabilityReadiness.ts`,
-  `src/observabilityReadinessData.mjs`,
+  `src/observabilityReadinessData.mjs`, `src/paymentReadiness.ts`,
+  `src/paymentReadinessData.mjs`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
   `src/providerCatalog.ts`, `src/providerGovernance.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -265,8 +279,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 23 repo-local journeys, 100% repo-local
-coverage, 23 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 24 repo-local journeys, 100% repo-local
+coverage, 24 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 
@@ -289,6 +303,16 @@ docs, CI, and evidence lanes `ready`; it verified 7 telemetry/alerting readiness
 items, 6 observability provider contracts, 4 alert-route-required controls, zero
 live ingestion, zero production alerts, and zero live external network
 requirements.
+
+```text
+npm run payment:doctor
+```
+
+Result: passed. The JSON report marked register, provider-contracts, surfaces,
+docs, CI, and evidence lanes `ready`; it verified 8 payment readiness items, 4
+sandbox payment provider contracts, 1 no-payment fallback, 23 ledger events,
+zero live charges, zero live refunds, zero live captures, zero external network
+calls, zero stored card data, and zero PCI approval claims.
 
 ```text
 npm run retail:doctor

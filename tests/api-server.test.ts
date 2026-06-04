@@ -97,6 +97,22 @@ describe("api server wrapper", () => {
           physicalCertificationAttached: number;
           blockers: string[];
         };
+        paymentReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          certificationBlocked: number;
+          paymentProviderContracts: number;
+          localFallbacks: number;
+          ledgerEvents: number;
+          liveChargesEnabled: number;
+          liveRefundsEnabled: number;
+          liveCaptureEnabled: number;
+          externalNetworkCalls: number;
+          cardDataStored: number;
+          pciScopeApproved: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -178,10 +194,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 23,
-      covered: 23,
+      total: 24,
+      covered: 24,
       repoLocalCoveragePercent: 100,
-      ciGated: 23,
+      ciGated: 24,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -225,6 +241,22 @@ describe("api server wrapper", () => {
       externalNetworkCalls: 0,
       realPaymentsEnabled: 0,
       physicalCertificationAttached: 0,
+      blockers: []
+    });
+    expect(report.readiness.paymentReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 4,
+      evidenceMissing: 3,
+      certificationBlocked: 1,
+      paymentProviderContracts: 4,
+      localFallbacks: 1,
+      ledgerEvents: 23,
+      liveChargesEnabled: 0,
+      liveRefundsEnabled: 0,
+      liveCaptureEnabled: 0,
+      externalNetworkCalls: 0,
+      cardDataStored: 0,
+      pciScopeApproved: 0,
       blockers: []
     });
     expect(report.readiness.capacity).toMatchObject({
@@ -375,8 +407,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 23,
-        covered: 23,
+        total: 24,
+        covered: 24,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -420,6 +452,22 @@ describe("api server wrapper", () => {
         externalNetworkCalls: 0,
         realPaymentsEnabled: 0,
         physicalCertificationAttached: 0,
+        blockers: []
+      });
+      expect(readiness.paymentReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 4,
+        evidenceMissing: 3,
+        certificationBlocked: 1,
+        paymentProviderContracts: 4,
+        localFallbacks: 1,
+        ledgerEvents: 23,
+        liveChargesEnabled: 0,
+        liveRefundsEnabled: 0,
+        liveCaptureEnabled: 0,
+        externalNetworkCalls: 0,
+        cardDataStored: 0,
+        pciScopeApproved: 0,
         blockers: []
       });
       expect(readiness.capacity).toMatchObject({

@@ -11,6 +11,7 @@ import {
   Image,
   KeyRound,
   Lock,
+  CreditCard,
   MessageCircle,
   PackageCheck,
   PanelTop,
@@ -111,6 +112,12 @@ import {
   type RetailFulfillmentReadinessItem,
   type RetailFulfillmentReadinessSummary
 } from "./retailFulfillmentReadiness";
+import {
+  paymentReadinessItems,
+  summarizePaymentReadiness,
+  type PaymentReadinessItem,
+  type PaymentReadinessSummary
+} from "./paymentReadiness";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -195,6 +202,7 @@ function App() {
   const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
   const observabilitySummary = useMemo(() => summarizeObservabilityReadiness(), []);
   const retailFulfillmentSummary = useMemo(() => summarizeRetailFulfillmentReadiness(), []);
+  const paymentReadinessSummary = useMemo(() => summarizePaymentReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -491,6 +499,8 @@ function App() {
             productionReadiness={productionReadiness}
             retailFulfillmentItems={retailFulfillmentReadinessItems}
             retailFulfillmentSummary={retailFulfillmentSummary}
+            paymentReadinessItems={paymentReadinessItems}
+            paymentReadinessSummary={paymentReadinessSummary}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -1158,6 +1168,8 @@ function AdminPanelView({
   productionReadiness,
   retailFulfillmentItems,
   retailFulfillmentSummary,
+  paymentReadinessItems,
+  paymentReadinessSummary,
   runtimeReadiness
 }: {
   aiProviderReadinessItems: AiProviderReadinessItem[];
@@ -1176,6 +1188,8 @@ function AdminPanelView({
   productionReadiness: ProductionReadinessSummary;
   retailFulfillmentItems: RetailFulfillmentReadinessItem[];
   retailFulfillmentSummary: RetailFulfillmentReadinessSummary;
+  paymentReadinessItems: PaymentReadinessItem[];
+  paymentReadinessSummary: PaymentReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1213,6 +1227,8 @@ function AdminPanelView({
         <Metric label="Live telemetry" value={`${observabilitySummary.liveIngestionEnabled}`} />
         <Metric label="Retail contracts" value={`${retailFulfillmentSummary.liveVendorAdapterContracts}`} />
         <Metric label="Direct orders" value={`${retailFulfillmentSummary.directOrderEnabled}`} />
+        <Metric label="Payment contracts" value={`${paymentReadinessSummary.paymentProviderContracts}`} />
+        <Metric label="Live charges" value={`${paymentReadinessSummary.liveChargesEnabled}`} />
       </div>
 
       <div className="adminGrid">
@@ -1432,6 +1448,31 @@ function AdminPanelView({
           <p className="panelNote">
             These are manual handoff, public pricing, quote, certification, kill-switch, recovery, payment, and
             physical-QA contracts; not live retail ordering or physical print certification.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Commerce</p>
+              <h3>Payment readiness</h3>
+            </div>
+            <StatusChip icon={CreditCard} label="Live charges off" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="Payment charge refund and reconciliation readiness">
+            <Metric label="Items" value={`${paymentReadinessSummary.total}`} />
+            <Metric label="Providers" value={`${paymentReadinessSummary.paymentProviderContracts}`} />
+            <Metric label="Fallbacks" value={`${paymentReadinessSummary.localFallbacks}`} />
+            <Metric label="Ledger events" value={`${paymentReadinessSummary.ledgerEvents}`} />
+            <Metric label="Webhooks" value={`${paymentReadinessSummary.webhookSignatureRequired}`} />
+            <Metric label="Live charges" value={`${paymentReadinessSummary.liveChargesEnabled}`} />
+            <Metric label="Live refunds" value={`${paymentReadinessSummary.liveRefundsEnabled}`} />
+            <Metric label="PCI claims" value={`${paymentReadinessSummary.pciScopeApproved}`} />
+          </div>
+          <PaymentReadinessList items={paymentReadinessItems} />
+          <p className="panelNote">
+            These are no-payment fallback, sandbox payment, idempotency, card-storage, webhook, charge/capture,
+            refund/dispute, and reconciliation contracts; not live payment processing.
           </p>
         </article>
 
@@ -1740,6 +1781,26 @@ function RetailFulfillmentReadinessList({ items }: { items: RetailFulfillmentRea
       ))}
     </div>
   );
+}
+
+function PaymentReadinessList({ items }: { items: PaymentReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${paymentReadinessStatusClass(item.status)}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.liveChargesEnabled ? "Live charge" : "Charges off"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function paymentReadinessStatusClass(status: PaymentReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  if (status === "certification-blocked") return "blocked";
+  return "credential-gated";
 }
 
 function retailFulfillmentStatusClass(status: RetailFulfillmentReadinessItem["status"]): ProviderStatus {
