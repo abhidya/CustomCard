@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { summarizeAiProviderReadiness } from "../src/aiProviderReadinessData.mjs";
+import { summarizeBusinessEngagementReadiness } from "../src/businessEngagementReadinessData.mjs";
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
@@ -288,6 +289,7 @@ export const readiness = {
   paymentReadiness: summarizePaymentReadiness(),
   mobileRenderReadiness: summarizeMobileRenderReadiness(),
   hostedApiReadiness: summarizeHostedApiReadiness(),
+  businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -698,6 +700,36 @@ function validateApiServerContract() {
   if (readiness.hostedApiReadiness.realOrdersEnabled !== 0) blockers.push("Hosted API readiness cannot enable real orders.");
   if (readiness.hostedApiReadiness.liveProviderCalls !== 0) blockers.push("Hosted API readiness cannot enable live provider calls.");
   if (readiness.hostedApiReadiness.blockers.length > 0) blockers.push("Hosted API readiness summary has blockers.");
+  if (readiness.businessEngagementReadiness.total < 8) {
+    blockers.push("Business engagement readiness must track CRM lifecycle campaign evidence.");
+  }
+  if (readiness.businessEngagementReadiness.crmAdapterContracts < 7) {
+    blockers.push("Business engagement readiness must cover CSV plus popular CRM lifecycle adapters.");
+  }
+  if (readiness.businessEngagementReadiness.workflowAdapterContracts < 8) {
+    blockers.push("Business engagement readiness must cover workflow payload adapters.");
+  }
+  if (readiness.businessEngagementReadiness.notificationAdapterContracts < 10) {
+    blockers.push("Business engagement readiness must cover customer message channel adapters.");
+  }
+  if (readiness.businessEngagementReadiness.lifecycleTriggerKinds !== 3) {
+    blockers.push("Business engagement readiness must cover birthday, purchase-anniversary, and warranty-anniversary triggers.");
+  }
+  if (readiness.businessEngagementReadiness.liveMessagesEnabled !== 0) {
+    blockers.push("Business engagement readiness cannot enable live customer messages.");
+  }
+  if (readiness.businessEngagementReadiness.crmWritesEnabled !== 0) {
+    blockers.push("Business engagement readiness cannot enable CRM writes.");
+  }
+  if (readiness.businessEngagementReadiness.externalNetworkCalls !== 0) {
+    blockers.push("Business engagement readiness cannot require live external network calls.");
+  }
+  if (readiness.businessEngagementReadiness.realOrdersEnabled !== 0) {
+    blockers.push("Business engagement readiness cannot enable real orders.");
+  }
+  if (readiness.businessEngagementReadiness.blockers.length > 0) {
+    blockers.push("Business engagement readiness summary has blockers.");
+  }
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

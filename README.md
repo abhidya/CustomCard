@@ -54,6 +54,14 @@ environment configuration instead of static placeholders.
   Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify customer lifecycle sync
   contracts for birthday, purchase-anniversary, and warranty-anniversary card
   campaigns.
+- Business engagement readiness register in `src/businessEngagementReadiness.ts`
+  and `src/businessEngagementReadinessData.mjs` for CRM lifecycle sources,
+  trigger normalization, card-opportunity review, workflow payloads, customer
+  message channels, consent/suppression gates, and campaign feedback while
+  keeping live CRM OAuth, customer messaging, CRM writeback, production
+  analytics, external network calls, and real orders at zero. Run `npm run
+  business:engagement:doctor`; it is not live CRM OAuth, customer messaging,
+  CRM writeback, or production campaign analytics proof.
 - Deterministic opportunity detection and user approve/snooze/dismiss states.
 - User-approved relationship memories with add/delete controls.
 - Deterministic card copy and visual directions with no paid AI calls.
@@ -74,8 +82,8 @@ environment configuration instead of static placeholders.
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
   readiness, retail fulfillment readiness, payment readiness, mobile render
-  readiness, hosted API proof readiness, cloud runtime readiness, and blocked
-  live-vendor adapters.
+  readiness, hosted API proof readiness, business engagement readiness, cloud
+  runtime readiness, and blocked live-vendor adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
@@ -124,7 +132,7 @@ environment configuration instead of static placeholders.
   orders at zero. Run `npm run hosted:api:doctor`; it is not public DB-backed
   Vercel proof.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 26 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 27 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -302,6 +310,7 @@ npm run e2e:coverage:doctor
 npm run payment:doctor
 npm run mobile:render:doctor
 npm run hosted:api:doctor
+npm run business:engagement:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -324,7 +333,8 @@ npm run mobile:release:doctor
 production build, and a high-severity dependency audit. The V8 coverage gate
 applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/agentContracts.ts`, `src/apiContracts.ts`, `src/artifactHandoff.ts`,
-`src/artifactStore.ts`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
+`src/artifactStore.ts`, `src/businessEngagementReadiness.ts`,
+`src/businessEngagementReadinessData.mjs`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
 `src/domain.ts`, `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
 `src/externalAuditReadiness.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
@@ -371,6 +381,12 @@ register, Vercel/serverless source contracts, hosted env/DB/token proof gaps,
 deployment evidence boundary, admin/API surfaces, documentation, CI wiring, and
 the zero public-route-proof/hosted-DB-proof/env-sync-proof boundary. It is not
 public DB-backed Vercel proof.
+`npm run business:engagement:doctor` verifies the committed Business
+engagement readiness register, CRM/workflow/notification adapter coverage,
+provider runtime no-network contracts, admin/API surfaces, documentation, CI
+wiring, and the zero live-message/CRM-write/live-network/real-order boundary.
+It is not live CRM OAuth, customer messaging, CRM writeback, or production
+campaign analytics proof.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/

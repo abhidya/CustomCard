@@ -15,6 +15,7 @@ const requiredCoverageIds = [
   "artifact-store-handoff",
   "deployment-iac-readiness",
   "hosted-api-proof-readiness",
+  "business-engagement-readiness",
   "security-privacy-accessibility",
   "external-audit-evidence-register",
   "ai-provider-readiness",
@@ -235,6 +236,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run hosted:api:doctor", "npm run test -- --run src/hostedApiReadiness.test.ts", "npm run check"],
     evidence: ["Vercel deployment metadata tracked", "Hosted env proof gaps tracked", "Public DB route proof remains unclaimed", "Hosted token proof remains unclaimed"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "business-engagement-readiness",
+    label: "CRM lifecycle engagement readiness",
+    surface: "adapters",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run business:engagement:doctor", "npm run test -- --run src/businessEngagementReadiness.test.ts", "npm run check"],
+    evidence: ["CRM lifecycle triggers covered", "Workflow payload contracts covered", "Customer message channels covered", "Live customer sends disabled"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

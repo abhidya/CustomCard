@@ -97,10 +97,10 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 26,
-      covered: 26,
+      total: 27,
+      covered: 27,
       repoLocalCoveragePercent: 100,
-      ciGated: 26,
+      ciGated: 27,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
@@ -197,6 +197,22 @@ describe("api contracts", () => {
       liveProviderCalls: 0,
       blockers: []
     });
+    expect(summary.businessEngagementReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 4,
+      evidenceMissing: 3,
+      approvalBlocked: 1,
+      crmAdapterContracts: 7,
+      workflowAdapterContracts: 8,
+      notificationAdapterContracts: 10,
+      lifecycleTriggerKinds: 3,
+      liveOAuthRequired: 1,
+      liveMessagesEnabled: 0,
+      crmWritesEnabled: 0,
+      externalNetworkCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(8);
@@ -254,7 +270,7 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 26,
+      total: 27,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
@@ -268,7 +284,8 @@ describe("api contracts", () => {
         "observability-alerting-readiness",
         "retail-fulfillment-readiness",
         "payment-refund-readiness",
-        "hosted-api-proof-readiness"
+        "hosted-api-proof-readiness",
+        "business-engagement-readiness"
       ])
     );
     expect(payload.aiProviderReadiness.summary).toMatchObject({
@@ -344,6 +361,17 @@ describe("api contracts", () => {
     expect(payload.hostedApiReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["vercel-project-link", "public-db-backed-route-proof", "hosted-account-token-verification"])
     );
+    expect(payload.businessEngagementReadiness.summary).toMatchObject({
+      total: 8,
+      crmAdapterContracts: 7,
+      workflowAdapterContracts: 8,
+      notificationAdapterContracts: 10,
+      liveMessagesEnabled: 0,
+      crmWritesEnabled: 0
+    });
+    expect(payload.businessEngagementReadiness.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["popular-crm-oauth-contracts", "customer-message-channel-contracts", "consent-suppression-privacy-gate"])
+    );
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
@@ -374,7 +402,7 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 26,
+        total: 27,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
       },
@@ -410,6 +438,12 @@ describe("api contracts", () => {
         publicRouteProofs: 0,
         hostedDbProofs: 0,
         hostedTokenVerificationProofs: 0
+      },
+      businessEngagementReadiness: {
+        total: 8,
+        liveMessagesEnabled: 0,
+        crmWritesEnabled: 0,
+        externalNetworkCalls: 0
       }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({

@@ -131,6 +131,12 @@ import {
   type HostedApiReadinessItem,
   type HostedApiReadinessSummary
 } from "./hostedApiReadiness";
+import {
+  businessEngagementReadinessItems,
+  summarizeBusinessEngagementReadiness,
+  type BusinessEngagementReadinessItem,
+  type BusinessEngagementReadinessSummary
+} from "./businessEngagementReadiness";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -218,6 +224,7 @@ function App() {
   const paymentReadinessSummary = useMemo(() => summarizePaymentReadiness(), []);
   const mobileRenderReadinessSummary = useMemo(() => summarizeMobileRenderReadiness(), []);
   const hostedApiReadinessSummary = useMemo(() => summarizeHostedApiReadiness(), []);
+  const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -520,6 +527,8 @@ function App() {
             mobileRenderReadinessSummary={mobileRenderReadinessSummary}
             hostedApiReadinessItems={hostedApiReadinessItems}
             hostedApiReadinessSummary={hostedApiReadinessSummary}
+            businessEngagementReadinessItems={businessEngagementReadinessItems}
+            businessEngagementReadinessSummary={businessEngagementReadinessSummary}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -1193,6 +1202,8 @@ function AdminPanelView({
   mobileRenderReadinessSummary,
   hostedApiReadinessItems,
   hostedApiReadinessSummary,
+  businessEngagementReadinessItems,
+  businessEngagementReadinessSummary,
   runtimeReadiness
 }: {
   aiProviderReadinessItems: AiProviderReadinessItem[];
@@ -1217,6 +1228,8 @@ function AdminPanelView({
   mobileRenderReadinessSummary: MobileRenderReadinessSummary;
   hostedApiReadinessItems: HostedApiReadinessItem[];
   hostedApiReadinessSummary: HostedApiReadinessSummary;
+  businessEngagementReadinessItems: BusinessEngagementReadinessItem[];
+  businessEngagementReadinessSummary: BusinessEngagementReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1260,6 +1273,8 @@ function AdminPanelView({
         <Metric label="Native proofs" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
         <Metric label="Hosted routes" value={`${hostedApiReadinessSummary.routeContracts}`} />
         <Metric label="Public DB proof" value={`${hostedApiReadinessSummary.publicRouteProofs}`} />
+        <Metric label="Business CRM" value={`${businessEngagementReadinessSummary.crmAdapterContracts}`} />
+        <Metric label="Live sends" value={`${businessEngagementReadinessSummary.liveMessagesEnabled}`} />
       </div>
 
       <div className="adminGrid">
@@ -1455,6 +1470,31 @@ function AdminPanelView({
           <p className="panelNote">
             These are Vercel deployment, serverless route, environment, hosted Postgres, token verification, and backup
             readiness contracts; not public DB-backed Vercel proof or hosted account-token verification.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Business engagement</p>
+              <h3>Business engagement readiness</h3>
+            </div>
+            <StatusChip icon={RefreshCw} label="Live sends off" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="Business CRM lifecycle engagement readiness">
+            <Metric label="Items" value={`${businessEngagementReadinessSummary.total}`} />
+            <Metric label="CRM adapters" value={`${businessEngagementReadinessSummary.crmAdapterContracts}`} />
+            <Metric label="Workflows" value={`${businessEngagementReadinessSummary.workflowAdapterContracts}`} />
+            <Metric label="Channels" value={`${businessEngagementReadinessSummary.notificationAdapterContracts}`} />
+            <Metric label="Triggers" value={`${businessEngagementReadinessSummary.lifecycleTriggerKinds}`} />
+            <Metric label="Opt-in gates" value={`${businessEngagementReadinessSummary.optInRequired}`} />
+            <Metric label="OAuth req." value={`${businessEngagementReadinessSummary.liveOAuthRequired}`} />
+            <Metric label="Live sends" value={`${businessEngagementReadinessSummary.liveMessagesEnabled}`} />
+          </div>
+          <BusinessEngagementReadinessList items={businessEngagementReadinessItems} />
+          <p className="panelNote">
+            These are CRM lifecycle source, trigger, approval, workflow, message-channel, consent, and feedback-loop
+            contracts; not live CRM OAuth, customer messaging, CRM writeback, or production campaign analytics proof.
           </p>
         </article>
 
@@ -1908,6 +1948,26 @@ function HostedApiReadinessList({ items }: { items: HostedApiReadinessItem[] }) 
       ))}
     </div>
   );
+}
+
+function BusinessEngagementReadinessList({ items }: { items: BusinessEngagementReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${businessEngagementReadinessStatusClass(item.status)}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.liveMessagesEnabled || item.crmWritesEnabled ? "Live enabled" : "Live off"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function businessEngagementReadinessStatusClass(status: BusinessEngagementReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  if (status === "approval-blocked") return "blocked";
+  return "credential-gated";
 }
 
 function hostedApiReadinessStatusClass(status: HostedApiReadinessItem["status"]): ProviderStatus {

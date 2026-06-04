@@ -147,6 +147,22 @@ describe("api server wrapper", () => {
           liveProviderCalls: number;
           blockers: string[];
         };
+        businessEngagementReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          approvalBlocked: number;
+          crmAdapterContracts: number;
+          workflowAdapterContracts: number;
+          notificationAdapterContracts: number;
+          lifecycleTriggerKinds: number;
+          liveOAuthRequired: number;
+          liveMessagesEnabled: number;
+          crmWritesEnabled: number;
+          externalNetworkCalls: number;
+          realOrdersEnabled: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -228,10 +244,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 26,
-      covered: 26,
+      total: 27,
+      covered: 27,
       repoLocalCoveragePercent: 100,
-      ciGated: 26,
+      ciGated: 27,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -325,6 +341,22 @@ describe("api server wrapper", () => {
       deploymentProtectionBypasses: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
+      blockers: []
+    });
+    expect(report.readiness.businessEngagementReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 4,
+      evidenceMissing: 3,
+      approvalBlocked: 1,
+      crmAdapterContracts: 7,
+      workflowAdapterContracts: 8,
+      notificationAdapterContracts: 10,
+      lifecycleTriggerKinds: 3,
+      liveOAuthRequired: 1,
+      liveMessagesEnabled: 0,
+      crmWritesEnabled: 0,
+      externalNetworkCalls: 0,
+      realOrdersEnabled: 0,
       blockers: []
     });
     expect(report.readiness.capacity).toMatchObject({
@@ -475,8 +507,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 26,
-        covered: 26,
+        total: 27,
+        covered: 27,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -567,6 +599,21 @@ describe("api server wrapper", () => {
         deploymentProtectionBypasses: 0,
         realOrdersEnabled: 0,
         liveProviderCalls: 0,
+        blockers: []
+      });
+      expect(readiness.businessEngagementReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 4,
+        evidenceMissing: 3,
+        approvalBlocked: 1,
+        crmAdapterContracts: 7,
+        workflowAdapterContracts: 8,
+        notificationAdapterContracts: 10,
+        lifecycleTriggerKinds: 3,
+        liveMessagesEnabled: 0,
+        crmWritesEnabled: 0,
+        externalNetworkCalls: 0,
+        realOrdersEnabled: 0,
         blockers: []
       });
       expect(readiness.capacity).toMatchObject({

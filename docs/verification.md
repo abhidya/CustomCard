@@ -136,6 +136,13 @@ it after each meaningful implementation pass.
   surfaces, docs, CI wiring, and zero public DB-backed route proof, hosted DB
   connectivity proof, hosted token verification proof, backup policy proof, or
   deployment-protection bypass claims.
+- Business engagement readiness is checked by `npm run business:engagement:doctor`,
+  which verifies the 8-item CRM lifecycle engagement register, CSV plus popular
+  CRM contracts, workflow payload contracts, customer message channel contracts,
+  lifecycle trigger coverage, admin/API surfaces, docs, CI wiring, and zero live
+  customer messages, CRM writes, live external network calls, or real orders.
+  It is not live CRM OAuth, customer messaging, CRM writeback, or production
+  campaign analytics proof.
 - Cloud artifact IaC is checked by `npm run cloud:doctor`, which statically
   verifies `infra/aws/artifact-store` for private S3 bucket posture, encryption,
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
@@ -152,7 +159,7 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 26-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 27-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
@@ -205,6 +212,8 @@ npm run external:audit:doctor
 npm run e2e:coverage:doctor
 npm run payment:doctor
 npm run mobile:render:doctor
+npm run hosted:api:doctor
+npm run business:engagement:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -233,12 +242,13 @@ npm run check
 
 Result: passed.
 
-- Vitest: 30 test files passed, 182 tests passed.
-- Coverage: 26 core/API/persistence/infra/mobile test files passed, 165 tests passed; V8 report measured
-  91.85% statements, 85.82% branches, 97.69% functions, and 95.13% lines across
+- Vitest: 31 test files passed, 186 tests passed.
+- Coverage: 29 core/API/persistence/infra/mobile test files passed, 177 tests passed; V8 report measured
+  91.98% statements, 86.01% branches, 97.76% functions, and 95.22% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
+  `src/businessEngagementReadiness.ts`, `src/businessEngagementReadinessData.mjs`,
   `src/capacityPlan.ts`, `src/capacityPlanData.mjs`, `src/domain.ts`,
   `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
@@ -293,8 +303,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 26 repo-local journeys, 100% repo-local
-coverage, 26 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 27 repo-local journeys, 100% repo-local
+coverage, 27 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 
@@ -350,6 +360,18 @@ claims, zero hosted DB proof claims, zero public DB-backed route proof claims,
 zero hosted account-token verification proof claims, zero backup policy claims,
 zero deployment-protection bypass claims, zero live provider calls, zero
 external network calls, and zero real orders.
+
+```text
+npm run business:engagement:doctor
+```
+
+Result: passed. The JSON report marked register, tests, provider-catalog,
+provider-runtime, surfaces, e2e, docs, CI, and evidence lanes `ready`; it
+verified 8 business engagement readiness items, 7 CRM adapter contracts, 8
+workflow adapter contracts, 10 notification adapter contracts, 3 lifecycle
+trigger kinds, zero live customer messages, zero CRM writes, zero live external
+network calls, and zero real orders. It is not live CRM OAuth, customer
+messaging, CRM writeback, or production campaign analytics proof.
 
 ```text
 npm run retail:doctor

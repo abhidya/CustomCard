@@ -249,6 +249,10 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Public DB proof missing");
     expect(result.adminText).toContain("Vercel project link");
     expect(result.adminText).toContain("Hosted account-token verification");
+    expect(result.adminText).toContain("Business engagement readiness");
+    expect(result.adminText).toContain("Live sends off");
+    expect(result.adminText).toContain("Popular CRM OAuth contracts");
+    expect(result.adminText).toContain("Customer message channel contracts");
     expect(result.adminText).toContain("External audit readiness");
     expect(result.adminText).toContain("End-to-end coverage");
     expect(result.adminText).toContain("CRM and workflow integrations");

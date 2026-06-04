@@ -43,6 +43,11 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify
   customer lifecycle contracts for birthday, purchase-anniversary, and
   warranty-anniversary campaigns.
+- Business engagement readiness: `src/businessEngagementReadiness.ts` and
+  `src/businessEngagementReadinessData.mjs` track CRM lifecycle source,
+  trigger normalization, card-opportunity review, workflow payload, customer
+  message channel, consent/suppression, and feedback-loop gates. Run `npm run
+  business:engagement:doctor`. This is not live CRM OAuth, customer messaging, CRM writeback, or production campaign analytics proof.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
   Messages, Azure OpenAI, Amazon Bedrock Converse, Google Gemini, Hugging Face,
   Mistral, Cohere, Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks,
@@ -381,10 +386,16 @@ The runtime remains fail-closed:
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
 - `npm run e2e:coverage:doctor` verifies End-to-end coverage in
-  `src/e2eCoverage.ts`, the 26-item repo-local end-to-end coverage matrix,
+  `src/e2eCoverage.ts`, the 27-item repo-local end-to-end coverage matrix,
   admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
   "not live production proof" disclaimer while keeping live production proofs,
   real orders, and live external network requirements at zero.
+- `npm run business:engagement:doctor` verifies Business engagement readiness in
+  `src/businessEngagementReadiness.ts`, CRM/workflow/notification adapter
+  coverage, provider runtime no-network contracts, admin/API exposure, CI
+  wiring, and the "not live CRM OAuth, customer messaging, CRM writeback, or
+  production campaign analytics proof" disclaimer while keeping live customer
+  sends, CRM writes, live external network calls, and real orders at zero.
 - `npm run ai:doctor` verifies AI provider readiness in
   `src/aiProviderReadiness.ts`, the text/image adapter inventory, model
   allowlist gates, prompt and brand-safety review evidence, PII/memory
@@ -485,6 +496,12 @@ Implemented checks:
   readiness, capacity/cost, localization/RTL, printer pricing, demo reset, and
   worker readiness. The
   matrix reports 100% repo-local coverage only; it is not live production proof.
+- `src/businessEngagementReadiness.test.ts` and
+  `npm run business:engagement:doctor` validate CRM lifecycle source,
+  popular-CRM OAuth contracts, trigger normalization, card-opportunity review,
+  workflow payload contracts, customer message channel contracts,
+  consent/suppression privacy gates, campaign feedback evidence, and zero live
+  customer sends or CRM writes.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.
@@ -541,8 +558,8 @@ Implemented checks:
   cloud artifact IaC doctor, localization doctor, artifact-store doctor, live
   MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
   worker readiness, mobile doctor, mobile render readiness doctor, hosted API
-  proof readiness doctor, and mobile release doctor for pushes to `main` and
-  pull requests.
+  proof readiness doctor, business engagement readiness doctor, and mobile
+  release doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
   artifact handoff/store, mobile render readiness, hosted API proof readiness,
   localization, pricing, print-export, persistence, orchestration, and mobile

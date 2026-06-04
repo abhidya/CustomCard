@@ -58,6 +58,11 @@ skeleton for the production path. It includes:
   route proof, hosted DB proof, env sync proof, hosted token proof, backup
   policy proof, deployment-protection bypass, live provider calls, external
   network calls, and real orders at zero.
+- Business engagement readiness for CRM lifecycle source, trigger
+  normalization, card-opportunity review, workflow payloads, customer message
+  channels, consent/suppression gates, and campaign feedback; `npm run
+  business:engagement:doctor` keeps live customer sends, CRM writes, live
+  external network calls, and real orders at zero.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
 - Executable service-kernel contracts for provider import, approved memory,
   card-project creation, print validation, order recovery, and regional policy.
@@ -164,9 +169,10 @@ skeleton for the production path. It includes:
 23. Run the worker and mobile doctor commands in `docs/verification.md`.
 24. Run `npm run mobile:render:doctor`.
 25. Run `npm run hosted:api:doctor`.
-26. Run `npm run mobile:release:doctor`.
-27. Inspect the app with `npm run dev`.
-28. In the app, start a local workspace, scan the sample invite, generate a card,
+26. Run `npm run business:engagement:doctor`.
+27. Run `npm run mobile:release:doctor`.
+28. Inspect the app with `npm run dev`.
+29. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

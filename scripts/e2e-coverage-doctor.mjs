@@ -23,7 +23,7 @@ const summary = summarizeE2eCoverage(e2eCoverageItems);
 const validationBlockers = validateE2eCoverage(e2eCoverageItems);
 
 const checks = [
-  checkExact("matrix", "item-count", summary.total, 26),
+  checkExact("matrix", "item-count", summary.total, 27),
   checkExact("matrix", "repo-local-coverage-percent", summary.repoLocalCoveragePercent, 100),
   checkExact("matrix", "covered-count", summary.covered, summary.total),
   checkExact("matrix", "ci-gated-count", summary.ciGated, summary.total),

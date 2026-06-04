@@ -12,13 +12,13 @@ describe("end-to-end coverage matrix", () => {
 
     expect(validateE2eCoverage()).toEqual([]);
     expect(summary).toMatchObject({
-      total: 26,
-      covered: 26,
+      total: 27,
+      covered: 27,
       repoLocalCoveragePercent: 100,
       browserSmokeCovered: 4,
       contractTestCovered: 4,
-      doctorCovered: 18,
-      ciGated: 26,
+      doctorCovered: 19,
+      ciGated: 27,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -56,6 +56,7 @@ describe("end-to-end coverage matrix", () => {
         "artifact-store-handoff",
         "deployment-iac-readiness",
         "hosted-api-proof-readiness",
+        "business-engagement-readiness",
         "security-privacy-accessibility",
         "external-audit-evidence-register",
         "ai-provider-readiness",
@@ -85,6 +86,14 @@ describe("end-to-end coverage matrix", () => {
     });
     expect(e2eCoverageItems.find((item) => item.id === "hosted-api-proof-readiness")?.testCommands).toContain(
       "npm run hosted:api:doctor"
+    );
+    expect(e2eCoverageItems.find((item) => item.id === "business-engagement-readiness")).toMatchObject({
+      surface: "adapters",
+      automationType: "doctor",
+      liveProductionProof: false
+    });
+    expect(e2eCoverageItems.find((item) => item.id === "business-engagement-readiness")?.testCommands).toContain(
+      "npm run business:engagement:doctor"
     );
   });
 

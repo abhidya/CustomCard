@@ -86,6 +86,9 @@ jobs:
       - name: Validate hosted API proof readiness
         run: npm run hosted:api:doctor
 
+      - name: Validate business engagement readiness
+        run: npm run business:engagement:doctor
+
       - name: Validate localization readiness
         run: npm run localization:doctor
 

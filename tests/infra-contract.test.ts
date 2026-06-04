@@ -312,6 +312,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"payment:doctor\": \"node scripts/payment-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"mobile:render:doctor\": \"node scripts/mobile-render-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"hosted:api:doctor\": \"node scripts/hosted-api-readiness-doctor.mjs\"");
+    expect(packageJson).toContain("\"business:engagement:doctor\": \"node scripts/business-engagement-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
     expect(packageJson).toContain("\"capacity:doctor\": \"node scripts/capacity-plan-doctor.mjs\"");
@@ -332,6 +333,8 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/mobileRenderReadinessData.mjs");
     expect(viteConfig).toContain("src/hostedApiReadiness.ts");
     expect(viteConfig).toContain("src/hostedApiReadinessData.mjs");
+    expect(viteConfig).toContain("src/businessEngagementReadiness.ts");
+    expect(viteConfig).toContain("src/businessEngagementReadinessData.mjs");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
@@ -397,6 +400,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run payment:doctor");
     expect(workflow).toContain("npm run mobile:render:doctor");
     expect(workflow).toContain("npm run hosted:api:doctor");
+    expect(workflow).toContain("npm run business:engagement:doctor");
     expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
     expect(workflow).toContain("npm run capacity:doctor");
@@ -732,9 +736,9 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-e2e-coverage-doctor",
       status: "ready",
-      journeys: 26,
+      journeys: 27,
       repoLocalCoveragePercent: 100,
-      ciGated: 26,
+      ciGated: 27,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -1039,6 +1043,59 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "register", status: "ready" }),
         expect.objectContaining({ lane: "vercel-source", status: "ready" }),
         expect.objectContaining({ lane: "hosted-env", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "docs", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
+
+  it("emits a business engagement readiness report", () => {
+    const output = execFileSync("npm", ["run", "business:engagement:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      items: number;
+      repoLocalReady: number;
+      evidenceMissing: number;
+      approvalBlocked: number;
+      crmAdapterContracts: number;
+      workflowAdapterContracts: number;
+      notificationAdapterContracts: number;
+      lifecycleTriggerKinds: number;
+      liveMessagesEnabled: number;
+      crmWritesEnabled: number;
+      externalNetworkCalls: number;
+      realOrdersEnabled: number;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-business-engagement-readiness-doctor",
+      status: "ready",
+      items: 8,
+      repoLocalReady: 4,
+      evidenceMissing: 3,
+      approvalBlocked: 1,
+      crmAdapterContracts: 7,
+      workflowAdapterContracts: 8,
+      notificationAdapterContracts: 10,
+      lifecycleTriggerKinds: 3,
+      liveMessagesEnabled: 0,
+      crmWritesEnabled: 0,
+      externalNetworkCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "register", status: "ready" }),
+        expect.objectContaining({ lane: "provider-catalog", status: "ready" }),
+        expect.objectContaining({ lane: "provider-runtime", status: "ready" }),
         expect.objectContaining({ lane: "surfaces", status: "ready" }),
         expect.objectContaining({ lane: "docs", status: "ready" }),
         expect.objectContaining({ lane: "ci", status: "ready" })

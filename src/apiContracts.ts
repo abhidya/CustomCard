@@ -68,6 +68,13 @@ import {
   type HostedApiReadinessSummary
 } from "./hostedApiReadiness";
 import {
+  businessEngagementReadinessItems,
+  summarizeBusinessEngagementReadiness,
+  validateBusinessEngagementReadiness,
+  type BusinessEngagementReadinessItem,
+  type BusinessEngagementReadinessSummary
+} from "./businessEngagementReadiness";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -129,6 +136,7 @@ export interface ApiReadinessSummary {
   paymentReadiness: PaymentReadinessSummary;
   mobileRenderReadiness: MobileRenderReadinessSummary;
   hostedApiReadiness: HostedApiReadinessSummary;
+  businessEngagementReadiness: BusinessEngagementReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -186,6 +194,10 @@ export interface ApiBootstrapPayload {
   hostedApiReadiness: {
     items: HostedApiReadinessItem[];
     summary: HostedApiReadinessSummary;
+  };
+  businessEngagementReadiness: {
+    items: BusinessEngagementReadinessItem[];
+    summary: BusinessEngagementReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -479,6 +491,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     paymentReadiness: summarizePaymentReadiness(),
     mobileRenderReadiness: summarizeMobileRenderReadiness(),
     hostedApiReadiness: summarizeHostedApiReadiness(),
+    businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -533,6 +546,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     hostedApiReadiness: {
       items: hostedApiReadinessItems,
       summary: summarizeHostedApiReadiness()
+    },
+    businessEngagementReadiness: {
+      items: businessEngagementReadinessItems,
+      summary: summarizeBusinessEngagementReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -653,6 +670,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const hostedApiReadinessIssue of validateHostedApiReadiness()) {
     issues.push(hostedApiReadinessIssue);
+  }
+  for (const businessEngagementReadinessIssue of validateBusinessEngagementReadiness()) {
+    issues.push(businessEngagementReadinessIssue);
   }
 
   return issues;

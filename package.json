@@ -33,6 +33,7 @@
     "payment:doctor": "node scripts/payment-readiness-doctor.mjs",
     "mobile:render:doctor": "node scripts/mobile-render-readiness-doctor.mjs",
     "hosted:api:doctor": "node scripts/hosted-api-readiness-doctor.mjs",
+    "business:engagement:doctor": "node scripts/business-engagement-readiness-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
     "capacity:doctor": "node scripts/capacity-plan-doctor.mjs",
