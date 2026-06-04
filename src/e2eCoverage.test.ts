@@ -12,13 +12,13 @@ describe("end-to-end coverage matrix", () => {
 
     expect(validateE2eCoverage()).toEqual([]);
     expect(summary).toMatchObject({
-      total: 24,
-      covered: 24,
+      total: 25,
+      covered: 25,
       repoLocalCoveragePercent: 100,
       browserSmokeCovered: 4,
       contractTestCovered: 4,
-      doctorCovered: 16,
-      ciGated: 24,
+      doctorCovered: 17,
+      ciGated: 25,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -51,6 +51,7 @@ describe("end-to-end coverage matrix", () => {
         "api-postgres-http-integration",
         "account-auth-storage-recovery",
         "mobile-customer-shell",
+        "mobile-render-readiness",
         "mobile-native-release-profile",
         "artifact-store-handoff",
         "deployment-iac-readiness",
@@ -68,6 +69,14 @@ describe("end-to-end coverage matrix", () => {
     );
     expect(e2eCoverageItems.every((item) => item.ciGated)).toBe(true);
     expect(e2eCoverageItems.every((item) => item.testCommands.length > 0)).toBe(true);
+    expect(e2eCoverageItems.find((item) => item.id === "mobile-render-readiness")).toMatchObject({
+      surface: "mobile",
+      automationType: "doctor",
+      liveProductionProof: false
+    });
+    expect(e2eCoverageItems.find((item) => item.id === "mobile-render-readiness")?.testCommands).toContain(
+      "npm run mobile:render:doctor"
+    );
   });
 
   it("flags unsafe or weak coverage claims before they reach admin or API readiness", () => {

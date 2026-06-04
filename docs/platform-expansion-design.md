@@ -261,7 +261,13 @@ real-order-disabled banner. The mobile contract also carries the same 4 launch
 locale options, including copy-review and RTL posture.
 
 The mobile doctor validates environment resolution, the contract source, and the
-repo-local real-order kill switch. Native rendering, emulator runs, builds, and
+repo-local real-order kill switch. Mobile render readiness in
+`src/mobileRenderReadiness.ts` and `src/mobileRenderReadinessData.mjs` tracks
+native shell source rendering, customer-flow screen state, print-proof render
+rows, responsive viewport constraints, RTL render review, Expo preview profile
+readiness, emulator render proof, and signed native artifact proof. Run
+`npm run mobile:render:doctor`; this is not an emulator render proof or signed
+native build. Actual emulator runs, native screenshots, EAS artifacts, and
 platform signing remain outside the repo-local verification loop.
 
 ## API Boundary
@@ -528,12 +534,12 @@ Implemented checks:
   Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
   cloud artifact IaC doctor, localization doctor, artifact-store doctor, live
   MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
-  worker readiness, mobile doctor, and mobile release doctor for pushes to
-  `main` and pull requests.
+  worker readiness, mobile doctor, mobile render readiness doctor, and mobile
+  release doctor for pushes to `main` and pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  artifact handoff/store, localization, pricing, print-export, persistence,
-  orchestration, and mobile contract modules: 90% statements, 80% branches, 90%
-  functions, and 90% lines.
+  artifact handoff/store, mobile render readiness, localization, pricing,
+  print-export, persistence, orchestration, and mobile contract modules: 90%
+  statements, 80% branches, 90% functions, and 90% lines.
 
 Remaining high-risk work:
 

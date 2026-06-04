@@ -6,6 +6,7 @@ import { summarizeAiProviderReadiness } from "../src/aiProviderReadinessData.mjs
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
+import { summarizeMobileRenderReadiness } from "../src/mobileRenderReadinessData.mjs";
 import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
 import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
 import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
@@ -284,6 +285,7 @@ export const readiness = {
   observability: summarizeObservabilityReadiness(),
   retailFulfillment: summarizeRetailFulfillmentReadiness(),
   paymentReadiness: summarizePaymentReadiness(),
+  mobileRenderReadiness: summarizeMobileRenderReadiness(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -661,6 +663,16 @@ function validateApiServerContract() {
   if (readiness.paymentReadiness.cardDataStored !== 0) blockers.push("Payment readiness cannot store card data.");
   if (readiness.paymentReadiness.pciScopeApproved !== 0) blockers.push("Payment readiness cannot claim PCI approval.");
   if (readiness.paymentReadiness.blockers.length > 0) blockers.push("Payment readiness summary has blockers.");
+  if (readiness.mobileRenderReadiness.total < 8) blockers.push("Mobile render readiness must track native render proof evidence.");
+  if (readiness.mobileRenderReadiness.repoLocalReady < 5) blockers.push("Mobile render readiness must keep source-render contracts ready.");
+  if (readiness.mobileRenderReadiness.viewportProfiles < 4) blockers.push("Mobile render readiness must cover small, standard, large, and tablet portrait viewports.");
+  if (readiness.mobileRenderReadiness.nativeBuildProfiles < 3) blockers.push("Mobile render readiness must cover development, preview, and production native profiles.");
+  if (readiness.mobileRenderReadiness.emulatorRenderProofs !== 0) blockers.push("Mobile render readiness cannot claim emulator render proof.");
+  if (readiness.mobileRenderReadiness.signedArtifacts !== 0) blockers.push("Mobile render readiness cannot claim signed native artifacts.");
+  if (readiness.mobileRenderReadiness.externalNetworkCalls !== 0) blockers.push("Mobile render readiness cannot require live external network calls.");
+  if (readiness.mobileRenderReadiness.realOrdersEnabled !== 0) blockers.push("Mobile render readiness cannot enable real orders.");
+  if (readiness.mobileRenderReadiness.liveProviderCalls !== 0) blockers.push("Mobile render readiness cannot enable live provider calls.");
+  if (readiness.mobileRenderReadiness.blockers.length > 0) blockers.push("Mobile render readiness summary has blockers.");
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

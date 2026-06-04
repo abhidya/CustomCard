@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Settings,
   ShieldCheck,
+  Smartphone,
   Store,
   Search,
   Trash2,
@@ -118,6 +119,12 @@ import {
   type PaymentReadinessItem,
   type PaymentReadinessSummary
 } from "./paymentReadiness";
+import {
+  mobileRenderReadinessItems,
+  summarizeMobileRenderReadiness,
+  type MobileRenderReadinessItem,
+  type MobileRenderReadinessSummary
+} from "./mobileRenderReadiness";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -203,6 +210,7 @@ function App() {
   const observabilitySummary = useMemo(() => summarizeObservabilityReadiness(), []);
   const retailFulfillmentSummary = useMemo(() => summarizeRetailFulfillmentReadiness(), []);
   const paymentReadinessSummary = useMemo(() => summarizePaymentReadiness(), []);
+  const mobileRenderReadinessSummary = useMemo(() => summarizeMobileRenderReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -501,6 +509,8 @@ function App() {
             retailFulfillmentSummary={retailFulfillmentSummary}
             paymentReadinessItems={paymentReadinessItems}
             paymentReadinessSummary={paymentReadinessSummary}
+            mobileRenderReadinessItems={mobileRenderReadinessItems}
+            mobileRenderReadinessSummary={mobileRenderReadinessSummary}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -1170,6 +1180,8 @@ function AdminPanelView({
   retailFulfillmentSummary,
   paymentReadinessItems,
   paymentReadinessSummary,
+  mobileRenderReadinessItems,
+  mobileRenderReadinessSummary,
   runtimeReadiness
 }: {
   aiProviderReadinessItems: AiProviderReadinessItem[];
@@ -1190,6 +1202,8 @@ function AdminPanelView({
   retailFulfillmentSummary: RetailFulfillmentReadinessSummary;
   paymentReadinessItems: PaymentReadinessItem[];
   paymentReadinessSummary: PaymentReadinessSummary;
+  mobileRenderReadinessItems: MobileRenderReadinessItem[];
+  mobileRenderReadinessSummary: MobileRenderReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1229,6 +1243,8 @@ function AdminPanelView({
         <Metric label="Direct orders" value={`${retailFulfillmentSummary.directOrderEnabled}`} />
         <Metric label="Payment contracts" value={`${paymentReadinessSummary.paymentProviderContracts}`} />
         <Metric label="Live charges" value={`${paymentReadinessSummary.liveChargesEnabled}`} />
+        <Metric label="Mobile screens" value={`${mobileRenderReadinessSummary.screenSections}`} />
+        <Metric label="Native proofs" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
       </div>
 
       <div className="adminGrid">
@@ -1374,6 +1390,31 @@ function AdminPanelView({
           <E2eCoverageList items={e2eCoverageItems} />
           <p className="panelNote">
             The 100% figure is limited to repo-local reviewer workflows and CI-gated doctors; live production auth, real payments, direct printer orders, signed native artifacts, and external audits remain outside this proof.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Mobile</p>
+              <h3>Mobile render readiness</h3>
+            </div>
+            <StatusChip icon={Smartphone} label="Emulator proof missing" tone="red" />
+          </div>
+          <div className="runtimeGrid" aria-label="Mobile native render readiness">
+            <Metric label="Items" value={`${mobileRenderReadinessSummary.total}`} />
+            <Metric label="Screens" value={`${mobileRenderReadinessSummary.screenSections}`} />
+            <Metric label="Viewports" value={`${mobileRenderReadinessSummary.viewportProfiles}`} />
+            <Metric label="Profiles" value={`${mobileRenderReadinessSummary.nativeBuildProfiles}`} />
+            <Metric label="Emulator req." value={`${mobileRenderReadinessSummary.emulatorRequired}`} />
+            <Metric label="Emulator proof" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
+            <Metric label="Signed artifacts" value={`${mobileRenderReadinessSummary.signedArtifacts}`} />
+            <Metric label="Live calls" value={`${mobileRenderReadinessSummary.liveProviderCalls}`} />
+          </div>
+          <MobileRenderReadinessList items={mobileRenderReadinessItems} />
+          <p className="panelNote">
+            These are source-render, viewport, customer-flow, RTL, preview-profile, emulator, and signed-artifact
+            readiness contracts; not an emulator render proof or signed native build.
           </p>
         </article>
 
@@ -1795,6 +1836,26 @@ function PaymentReadinessList({ items }: { items: PaymentReadinessItem[] }) {
       ))}
     </div>
   );
+}
+
+function MobileRenderReadinessList({ items }: { items: MobileRenderReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${mobileRenderReadinessStatusClass(item.status)}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.emulatorRenderProofAttached || item.nativeArtifactSigned ? "Proof attached" : "Proof missing"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function mobileRenderReadinessStatusClass(status: MobileRenderReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  if (status === "artifact-blocked") return "blocked";
+  return "credential-gated";
 }
 
 function paymentReadinessStatusClass(status: PaymentReadinessItem["status"]): ProviderStatus {

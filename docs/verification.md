@@ -163,13 +163,20 @@ it after each meaningful implementation pass.
   1 no-payment fallback, 23 ledger events, admin/API surfaces, docs, CI wiring,
   and zero live charges, refunds, captures, external network calls, stored card
   data, or PCI approval claims.
+- Mobile render readiness is checked by `npm run mobile:render:doctor`, which
+  verifies the 8-item mobile render readiness register, 21 screen sections, 4
+  viewport profiles, 3 native build profiles, admin/API surfaces, docs, CI
+  wiring, and zero emulator render proof claims, signed artifact claims, live
+  provider calls, external network calls, or real orders. It is not an emulator
+  render proof or signed native build.
 - `npm run mobile:release:doctor` covers the Expo/EAS native release contract:
   iOS/Android identifiers, development/preview/production build profiles,
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
   production API endpoint.
 - Coverage is measured for core, API, artifact handoff/store, payment readiness,
-  localization, pricing, print export, persistence, orchestration, and mobile
-  contract modules with V8 thresholds enforced by `npm run check`: 90%
+  mobile render readiness, localization, pricing, print export, persistence,
+  orchestration, and mobile contract modules with V8 thresholds enforced by
+  `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
@@ -191,6 +198,7 @@ npm run security:doctor
 npm run external:audit:doctor
 npm run e2e:coverage:doctor
 npm run payment:doctor
+npm run mobile:render:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -219,9 +227,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 28 test files passed, 174 tests passed.
+- Vitest: 29 test files passed, 178 tests passed.
 - Coverage: 26 core/API/persistence/infra/mobile test files passed, 165 tests passed; V8 report measured
-  91.49% statements, 85.11% branches, 97.52% functions, and 94.91% lines across
+  91.63% statements, 85.4% branches, 97.6% functions, and 95% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -279,8 +287,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 24 repo-local journeys, 100% repo-local
-coverage, 24 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 25 repo-local journeys, 100% repo-local
+coverage, 25 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 
@@ -313,6 +321,16 @@ docs, CI, and evidence lanes `ready`; it verified 8 payment readiness items, 4
 sandbox payment provider contracts, 1 no-payment fallback, 23 ledger events,
 zero live charges, zero live refunds, zero live captures, zero external network
 calls, zero stored card data, and zero PCI approval claims.
+
+```text
+npm run mobile:render:doctor
+```
+
+Result: passed. The JSON report marked register, tests, mobile-source,
+native-profiles, surfaces, docs, CI, and evidence lanes `ready`; it verified 8
+mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native
+build profiles, zero emulator render proof claims, zero signed artifact claims,
+zero live provider calls, zero external network calls, and zero real orders.
 
 ```text
 npm run retail:doctor
@@ -543,7 +561,11 @@ hosted-auth, contact-import, CRM, workflow-integration, notification, payment,
 and observability catalog passes the catalog contains 18 ready-local, 69
 credential-gated, 9 contract-only, and 6 blocked adapters. The web mobile
 customer panel appears before the navigation rail with zero horizontal overflow
-at 1440px desktop and 390px mobile widths.
+at 1440px desktop and 390px mobile widths. The mobile render readiness admin
+card was also rendered at 1440x1000 and 390x900 with the emulator-proof-missing
+state, signed-artifact gap, required proof rows, and zero horizontal overflow;
+screenshots were saved to `/tmp/customcard-mobile-render-readiness-desktop.png`
+and `/tmp/customcard-mobile-render-readiness-mobile.png`.
 
 ```text
 Final package audit
@@ -579,9 +601,9 @@ documentation claims found during the audit were corrected.
   output QA run, or production AI traffic is claimed.
 - No physical print certification.
 - No external legal/security/privacy/accessibility audit.
-- No React Native render test, mobile emulator run, actual EAS/native build, or
-  signed iOS/Android artifact; EAS profile and release-doctor contracts are
-  covered.
+- No actual mobile emulator run, native screenshot, EAS/native build, or signed
+  iOS/Android artifact; mobile render readiness, EAS profile, and release-doctor
+  contracts are covered.
 - Provider docs were checked at the contract/link level only; no vendor sandbox
   credentials or market/commercial terms were verified.
 - Browser UI smoke tests are not included in the V8 unit coverage percentages;

@@ -241,6 +241,10 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Live charges off");
     expect(result.adminText).toContain("Ledger events");
     expect(result.adminText).toContain("Refund void and dispute drills");
+    expect(result.adminText).toContain("Mobile render readiness");
+    expect(result.adminText).toContain("Emulator proof missing");
+    expect(result.adminText).toContain("Native shell source render contract");
+    expect(result.adminText).toContain("Signed native artifact proof");
     expect(result.adminText).toContain("External audit readiness");
     expect(result.adminText).toContain("End-to-end coverage");
     expect(result.adminText).toContain("CRM and workflow integrations");

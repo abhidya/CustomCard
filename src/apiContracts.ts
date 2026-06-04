@@ -54,6 +54,13 @@ import {
   type PaymentReadinessSummary
 } from "./paymentReadiness";
 import {
+  mobileRenderReadinessItems,
+  summarizeMobileRenderReadiness,
+  validateMobileRenderReadiness,
+  type MobileRenderReadinessItem,
+  type MobileRenderReadinessSummary
+} from "./mobileRenderReadiness";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -113,6 +120,7 @@ export interface ApiReadinessSummary {
   observability: ObservabilityReadinessSummary;
   retailFulfillment: RetailFulfillmentReadinessSummary;
   paymentReadiness: PaymentReadinessSummary;
+  mobileRenderReadiness: MobileRenderReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -162,6 +170,10 @@ export interface ApiBootstrapPayload {
   paymentReadiness: {
     items: PaymentReadinessItem[];
     summary: PaymentReadinessSummary;
+  };
+  mobileRenderReadiness: {
+    items: MobileRenderReadinessItem[];
+    summary: MobileRenderReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -263,6 +275,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "observability",
       "retailFulfillment",
       "paymentReadiness",
+      "mobileRenderReadiness",
       "runtime",
       "blockedProviders",
       "requiredEnv"
@@ -451,6 +464,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     observability: summarizeObservabilityReadiness(),
     retailFulfillment: summarizeRetailFulfillmentReadiness(),
     paymentReadiness: summarizePaymentReadiness(),
+    mobileRenderReadiness: summarizeMobileRenderReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -497,6 +511,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     paymentReadiness: {
       items: paymentReadinessItems,
       summary: summarizePaymentReadiness()
+    },
+    mobileRenderReadiness: {
+      items: mobileRenderReadinessItems,
+      summary: summarizeMobileRenderReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -611,6 +629,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const paymentReadinessIssue of validatePaymentReadiness()) {
     issues.push(paymentReadinessIssue);
+  }
+  for (const mobileRenderReadinessIssue of validateMobileRenderReadiness()) {
+    issues.push(mobileRenderReadinessIssue);
   }
 
   return issues;

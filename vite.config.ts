@@ -23,6 +23,8 @@ export default defineConfig({
         "src/retailFulfillmentReadinessData.mjs",
         "src/paymentReadiness.ts",
         "src/paymentReadinessData.mjs",
+        "src/mobileRenderReadiness.ts",
+        "src/mobileRenderReadinessData.mjs",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",

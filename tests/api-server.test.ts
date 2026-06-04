@@ -113,6 +113,20 @@ describe("api server wrapper", () => {
           pciScopeApproved: number;
           blockers: string[];
         };
+        mobileRenderReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          artifactBlocked: number;
+          screenSections: number;
+          viewportProfiles: number;
+          nativeBuildProfiles: number;
+          emulatorRenderProofs: number;
+          signedArtifacts: number;
+          realOrdersEnabled: number;
+          liveProviderCalls: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -194,10 +208,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 24,
-      covered: 24,
+      total: 25,
+      covered: 25,
       repoLocalCoveragePercent: 100,
-      ciGated: 24,
+      ciGated: 25,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -257,6 +271,20 @@ describe("api server wrapper", () => {
       externalNetworkCalls: 0,
       cardDataStored: 0,
       pciScopeApproved: 0,
+      blockers: []
+    });
+    expect(report.readiness.mobileRenderReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 5,
+      evidenceMissing: 2,
+      artifactBlocked: 1,
+      screenSections: 21,
+      viewportProfiles: 4,
+      nativeBuildProfiles: 3,
+      emulatorRenderProofs: 0,
+      signedArtifacts: 0,
+      realOrdersEnabled: 0,
+      liveProviderCalls: 0,
       blockers: []
     });
     expect(report.readiness.capacity).toMatchObject({
@@ -407,8 +435,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 24,
-        covered: 24,
+        total: 25,
+        covered: 25,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -468,6 +496,19 @@ describe("api server wrapper", () => {
         externalNetworkCalls: 0,
         cardDataStored: 0,
         pciScopeApproved: 0,
+        blockers: []
+      });
+      expect(readiness.mobileRenderReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 5,
+        evidenceMissing: 2,
+        artifactBlocked: 1,
+        viewportProfiles: 4,
+        nativeBuildProfiles: 3,
+        emulatorRenderProofs: 0,
+        signedArtifacts: 0,
+        realOrdersEnabled: 0,
+        liveProviderCalls: 0,
         blockers: []
       });
       expect(readiness.capacity).toMatchObject({

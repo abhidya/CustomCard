@@ -46,6 +46,11 @@ skeleton for the production path. It includes:
 - A tested customer mobile app contract that mirrors the web customer panel and
   adds queue items, approval controls, review-only pricing previews, and offline
   idempotent sync at the product boundary.
+- Mobile render readiness for native shell source rendering, customer-flow
+  screen state, print-proof rows, viewport constraints, RTL render review, Expo
+  preview profile readiness, emulator proof, and signed native artifact proof;
+  `npm run mobile:render:doctor` keeps emulator proof claims, signed artifacts,
+  live provider calls, external network calls, and real orders at zero.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
 - Executable service-kernel contracts for provider import, approved memory,
   card-project creation, print validation, order recovery, and regional policy.
@@ -109,8 +114,9 @@ skeleton for the production path. It includes:
   sampling, retention, provider-contract, alert-route, and incident-review
   gates; no live observability ingestion, alert delivery, retention enforcement,
   or incident-response drill is claimed.
-- No React Native render test, emulator run, actual EAS/native build, or signed
-  mobile artifact; EAS profiles and release doctor are covered.
+- No actual emulator run, native screenshot, EAS/native build, or signed mobile
+  artifact; mobile render readiness, EAS profiles, and release doctors are
+  covered as contracts.
 - No physical print certification.
 - No measured production capacity benchmark, live autoscaler report, provider
   spend report, or hosted database throughput proof; capacity profiles are
@@ -149,9 +155,10 @@ skeleton for the production path. It includes:
 21. Run `npm run persistence:doctor`.
 22. Run `npm run demo:doctor`.
 23. Run the worker and mobile doctor commands in `docs/verification.md`.
-24. Run `npm run mobile:release:doctor`.
-25. Inspect the app with `npm run dev`.
-26. In the app, start a local workspace, scan the sample invite, generate a card,
+24. Run `npm run mobile:render:doctor`.
+25. Run `npm run mobile:release:doctor`.
+26. Inspect the app with `npm run dev`.
+27. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

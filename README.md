@@ -73,8 +73,8 @@ environment configuration instead of static placeholders.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
-  readiness, retail fulfillment readiness, payment readiness, cloud runtime
-  readiness, and blocked live-vendor adapters.
+  readiness, retail fulfillment readiness, payment readiness, mobile render
+  readiness, cloud runtime readiness, and blocked live-vendor adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
@@ -105,8 +105,16 @@ environment configuration instead of static placeholders.
   reconciliation while keeping live charges, refunds, captures, card storage,
   PCI approval claims, and live external network requirements disabled. Run
   `npm run payment:doctor`; it is not live payment processing.
+- Mobile render readiness register in `src/mobileRenderReadiness.ts` and
+  `src/mobileRenderReadinessData.mjs` for native shell source rendering,
+  customer-flow screen state, print-proof rows, viewport constraints, RTL render
+  review, Expo preview profile readiness, emulator proof, and signed native
+  artifact proof while keeping emulator proofs, signed artifacts, live provider
+  calls, external network calls, and real orders at zero. Run `npm run
+  mobile:render:doctor`; it is not an emulator render proof or signed native
+  build.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 24 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 25 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -282,6 +290,7 @@ npm run security:doctor
 npm run external:audit:doctor
 npm run e2e:coverage:doctor
 npm run payment:doctor
+npm run mobile:render:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -309,7 +318,8 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/externalAuditReadiness.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
 `src/localization.ts`, `src/paymentReadiness.ts`,
-`src/paymentReadinessData.mjs`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
+`src/paymentReadinessData.mjs`, `src/mobileRenderReadiness.ts`,
+`src/mobileRenderReadinessData.mjs`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
 `src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
 verified through Chrome smoke tests.
@@ -341,12 +351,17 @@ delivery proof.
 payment sandbox provider contracts, no-payment fallback, admin/API surfaces,
 documentation, CI wiring, and the zero live charge/refund/capture, zero card
 storage, zero PCI-approval-claim boundary. It is not live payment processing.
+`npm run mobile:render:doctor` verifies the committed mobile render readiness
+register, Expo customer app source, native build profile signals, admin/API
+surfaces, documentation, CI wiring, and the zero emulator-proof/signed-artifact
+boundary. It is not an emulator render proof or signed native build.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
 accessibility baseline doctor, external audit readiness doctor, provider cost
 governance doctor, end-to-end coverage doctor, AI provider readiness doctor,
-observability readiness doctor, payment readiness doctor,
+observability readiness doctor, payment readiness doctor, mobile render
+readiness doctor,
 capacity profile doctor, printer pricing research doctor,
 localization readiness doctor,
 memory-runtime API doctor,
@@ -383,8 +398,8 @@ retail-printer ordering, live telemetry ingestion/alerting, live-applied cloud
 bucket/IAM proof beyond the static AWS IaC contract and CI/local MinIO doctor,
 deployed production Postgres API integration, production hosted account-token
 verification outside the isolated live Postgres doctors, professional
-translation QA or live translation providers, a produced/signed native mobile
-artifact or emulator render proof, public Vercel DB-backed route proof, external
+translation QA or live translation providers, actual emulator/native screenshot
+evidence, a produced/signed native mobile artifact, public Vercel DB-backed route proof, external
 legal/security/privacy/accessibility audit, or physical print certification.
 Those paths are represented in `src/productionReadiness.ts` as admin-visible
 contracts and in `src/externalAuditReadiness.ts` as explicit evidence-register

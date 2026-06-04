@@ -10,6 +10,7 @@ const requiredCoverageIds = [
   "api-postgres-http-integration",
   "account-auth-storage-recovery",
   "mobile-customer-shell",
+  "mobile-render-readiness",
   "mobile-native-release-profile",
   "artifact-store-handoff",
   "deployment-iac-readiness",
@@ -168,6 +169,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run test -- --run tests/mobile-contract.test.ts", "npm --prefix apps/mobile run doctor", "npm run check"],
     evidence: ["Next-action summary covered", "Memory review covered", "Print proof checks covered", "Offline sync posture covered"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "mobile-render-readiness",
+    label: "Mobile render readiness",
+    surface: "mobile",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run mobile:render:doctor", "npm run test -- --run src/mobileRenderReadiness.test.ts", "npm run check"],
+    evidence: ["Native shell source render covered", "Viewport profiles tracked", "Emulator proof remains unclaimed", "Signed artifact remains unclaimed"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

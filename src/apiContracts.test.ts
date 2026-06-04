@@ -97,10 +97,10 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 24,
-      covered: 24,
+      total: 25,
+      covered: 25,
       repoLocalCoveragePercent: 100,
-      ciGated: 24,
+      ciGated: 25,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
@@ -164,6 +164,19 @@ describe("api contracts", () => {
       pciScopeApproved: 0,
       blockers: []
     });
+    expect(summary.mobileRenderReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 5,
+      evidenceMissing: 2,
+      artifactBlocked: 1,
+      viewportProfiles: 4,
+      nativeBuildProfiles: 3,
+      emulatorRenderProofs: 0,
+      signedArtifacts: 0,
+      realOrdersEnabled: 0,
+      liveProviderCalls: 0,
+      blockers: []
+    });
     expect(summary.runtime.localReady).toBeGreaterThanOrEqual(16);
     expect(summary.runtime.blocked).toBeGreaterThan(0);
     expect(summary.mobile.customerVisibleSections).toBeGreaterThanOrEqual(8);
@@ -221,7 +234,7 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 24,
+      total: 25,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
@@ -230,6 +243,7 @@ describe("api contracts", () => {
         "customer-workspace-to-handoff",
         "admin-panel-readiness",
         "mobile-customer-shell",
+        "mobile-render-readiness",
         "ai-provider-readiness",
         "observability-alerting-readiness",
         "retail-fulfillment-readiness",
@@ -288,6 +302,16 @@ describe("api contracts", () => {
     expect(payload.paymentReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["sandbox-payment-contracts", "live-charge-capture-approval", "refund-void-dispute-drills"])
     );
+    expect(payload.mobileRenderReadiness.summary).toMatchObject({
+      total: 8,
+      screenSections: 21,
+      viewportProfiles: 4,
+      emulatorRenderProofs: 0,
+      signedArtifacts: 0
+    });
+    expect(payload.mobileRenderReadiness.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["native-shell-source-render-contract", "native-emulator-render-proof", "signed-native-artifact-proof"])
+    );
     expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
@@ -318,7 +342,7 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 24,
+        total: 25,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
       },
@@ -343,6 +367,11 @@ describe("api contracts", () => {
         liveChargesEnabled: 0,
         liveRefundsEnabled: 0,
         pciScopeApproved: 0
+      },
+      mobileRenderReadiness: {
+        total: 8,
+        emulatorRenderProofs: 0,
+        signedArtifacts: 0
       }
     });
     expect(resolveApiContractResponse("/api/admin/provider-governance")).toMatchObject({
