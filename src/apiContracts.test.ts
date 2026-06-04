@@ -297,6 +297,18 @@ describe("api contracts", () => {
     expect(payload.mobile.fulfillmentRecommendations.map((recommendation) => recommendation.kind)).toEqual(
       expect.arrayContaining(["cheapest-known-price", "fastest-pickup", "cheapest-shipped"])
     );
+    expect(payload.fulfillmentRecommendations).toMatchObject({
+      liveQuote: false,
+      directOrderEnabled: false,
+      blockers: []
+    });
+    expect(payload.fulfillmentRecommendations.recommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "cheapest-known-price", vendorName: "Walmart Photo", subtotalLabel: "$1.42" }),
+        expect.objectContaining({ kind: "fastest-pickup", vendorName: "Walmart Photo", etaLabel: "same-day pickup candidate" }),
+        expect.objectContaining({ kind: "cheapest-shipped", vendorName: "FedEx Office", subtotalLabel: "$22.99" })
+      ])
+    );
     expect(payload.mobile.queueItems.every((item) => item.panelCount === 4)).toBe(true);
     expect(payload.mobile.approvalActions.every((action) => action.idempotencyRequired)).toBe(true);
     expect(payload.mobile.memoryReviewItems.every((item) => item.customerVisible && !item.rawContentStored)).toBe(true);
@@ -556,6 +568,13 @@ describe("api contracts", () => {
       memoryReviewItems: expect.arrayContaining([expect.objectContaining({ usage: "approved", rawContentStored: false })]),
       printProofChecks: expect.arrayContaining([expect.objectContaining({ id: "proof-order-gate", passed: true })]),
       syncState: { authMode: "customer-session", idempotencyRequired: true }
+    });
+    expect(resolveApiContractResponse("/api/customer/bootstrap")).toMatchObject({
+      fulfillmentRecommendations: {
+        recommendations: expect.arrayContaining([
+          expect.objectContaining({ kind: "cheapest-known-price", liveQuote: false, directOrderEnabled: false })
+        ])
+      }
     });
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();
   });

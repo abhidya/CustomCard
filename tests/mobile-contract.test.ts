@@ -1,6 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { buildFulfillmentRecommendations } from "../src/fulfillmentRecommendation";
+import { buildPrinterPricingComparison } from "../src/printerPricing";
 import {
   mobileAccountOptions,
   mobileApprovalActions,
@@ -114,10 +116,45 @@ describe("mobile customer experience contract", () => {
     );
     expect(mobileFulfillmentRecommendations).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "cheapest-known-price", label: "Cheapest known price", liveQuote: false, liveOrder: false }),
-        expect.objectContaining({ kind: "fastest-pickup", label: "Fastest pickup candidate", liveQuote: false, liveOrder: false }),
-        expect.objectContaining({ kind: "cheapest-shipped", label: "Cheapest shipped option", liveQuote: false, liveOrder: false })
+        expect.objectContaining({
+          kind: "cheapest-known-price",
+          label: "Cheapest known price",
+          vendorName: "Walmart Photo",
+          liveQuote: false,
+          liveOrder: false
+        }),
+        expect.objectContaining({
+          kind: "fastest-pickup",
+          label: "Fastest pickup candidate",
+          vendorName: "Walmart Photo",
+          liveQuote: false,
+          liveOrder: false
+        }),
+        expect.objectContaining({
+          kind: "cheapest-shipped",
+          label: "Cheapest shipped option",
+          vendorName: "FedEx Office",
+          liveQuote: false,
+          liveOrder: false
+        })
       ])
+    );
+    expect(
+      mobileFulfillmentRecommendations.map((recommendation) => ({
+        kind: recommendation.kind,
+        label: recommendation.label,
+        vendorName: recommendation.vendorName,
+        totalCents: recommendation.totalCents,
+        etaLabel: recommendation.etaLabel
+      }))
+    ).toEqual(
+      buildFulfillmentRecommendations(buildPrinterPricingComparison("walgreens")).recommendations.map((recommendation) => ({
+        kind: recommendation.kind,
+        label: recommendation.label,
+        vendorName: recommendation.vendorName,
+        totalCents: recommendation.subtotalCents,
+        etaLabel: recommendation.etaLabel
+      }))
     );
     expect(mobilePrintProofChecks).toEqual(
       expect.arrayContaining([
