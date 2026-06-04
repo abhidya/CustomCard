@@ -15,6 +15,7 @@ const requiredCoverageIds = [
   "artifact-store-handoff",
   "deployment-iac-readiness",
   "hosted-api-proof-readiness",
+  "reviewer-db-seed-readiness",
   "business-engagement-readiness",
   "security-privacy-accessibility",
   "external-audit-evidence-register",
@@ -236,6 +237,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run hosted:api:doctor", "npm run test -- --run src/hostedApiReadiness.test.ts", "npm run check"],
     evidence: ["Vercel deployment metadata tracked", "Hosted env proof gaps tracked", "Public DB route proof remains unclaimed", "Hosted token proof remains unclaimed"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "reviewer-db-seed-readiness",
+    label: "Reviewer DB seed readiness",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run reviewer:db:seed:doctor", "npm run test -- --run src/reviewerDbSeedReadiness.test.ts", "npm run check"],
+    evidence: ["Demo seed tables covered", "Reviewer session tokens covered", "Hosted seed proof remains unclaimed", "Rollback drill evidence required"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

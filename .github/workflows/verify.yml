@@ -86,6 +86,9 @@ jobs:
       - name: Validate hosted API proof readiness
         run: npm run hosted:api:doctor
 
+      - name: Validate reviewer DB seed readiness
+        run: npm run reviewer:db:seed:doctor
+
       - name: Validate business engagement readiness
         run: npm run business:engagement:doctor
 

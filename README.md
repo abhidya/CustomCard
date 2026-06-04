@@ -131,8 +131,17 @@ environment configuration instead of static placeholders.
   protection bypass, live provider calls, external network calls, and real
   orders at zero. Run `npm run hosted:api:doctor`; it is not public DB-backed
   Vercel proof.
+- Reviewer DB seed readiness register in `src/reviewerDbSeedReadiness.ts` and
+  `src/reviewerDbSeedReadinessData.mjs` for deterministic reviewer seed plans,
+  customer/admin session-token contracts, SQL preview safety, hosted migration
+  prerequisites, Vercel env sync, hosted seed execution proof, hosted token
+  probes, and rollback drills while keeping hosted seed proof, hosted token
+  proof, Vercel env proof, destructive live mutations, live provider calls,
+  external network calls, and real orders at zero. Run `npm run
+  reviewer:db:seed:doctor`; it is not hosted reviewer DB mutation or hosted
+  account-token proof.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 27 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 28 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -310,6 +319,7 @@ npm run e2e:coverage:doctor
 npm run payment:doctor
 npm run mobile:render:doctor
 npm run hosted:api:doctor
+npm run reviewer:db:seed:doctor
 npm run business:engagement:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
@@ -340,7 +350,8 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
 `src/localization.ts`, `src/paymentReadiness.ts`,
 `src/paymentReadinessData.mjs`, `src/mobileRenderReadiness.ts`,
-`src/mobileRenderReadinessData.mjs`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
+`src/mobileRenderReadinessData.mjs`, `src/reviewerDbSeedReadiness.ts`,
+`src/reviewerDbSeedReadinessData.mjs`, `src/persistenceContracts.ts`, `src/printerPricing.ts`,
 `src/printExport.ts`, `src/providerCatalog.ts`, `src/providerGovernance.ts`,
 `src/providerRuntime.ts`, and `src/serviceKernel.ts`; browser UI behavior is
 verified through Chrome smoke tests.
@@ -381,6 +392,12 @@ register, Vercel/serverless source contracts, hosted env/DB/token proof gaps,
 deployment evidence boundary, admin/API surfaces, documentation, CI wiring, and
 the zero public-route-proof/hosted-DB-proof/env-sync-proof boundary. It is not
 public DB-backed Vercel proof.
+`npm run reviewer:db:seed:doctor` verifies the committed Reviewer DB seed
+readiness register, deterministic seed plan, SQL preview, customer/admin
+session-token contract, hosted migration/env/probe proof gaps, rollback drill
+requirements, admin/API surfaces, documentation, CI wiring, and the zero
+hosted-seed-proof/hosted-token-proof/Vercel-env-proof boundary. It is not
+hosted reviewer DB mutation or hosted account-token proof.
 `npm run business:engagement:doctor` verifies the committed Business
 engagement readiness register, CRM/workflow/notification adapter coverage,
 provider runtime no-network contracts, admin/API surfaces, documentation, CI

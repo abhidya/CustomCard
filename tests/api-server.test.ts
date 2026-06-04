@@ -147,6 +147,26 @@ describe("api server wrapper", () => {
           liveProviderCalls: number;
           blockers: string[];
         };
+        reviewerDbSeedReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          hostedDatabaseRequired: number;
+          hostedSeedExecutionRequired: number;
+          hostedTokenProbeRequired: number;
+          vercelEnvSyncRequired: number;
+          tableContracts: number;
+          routeContracts: number;
+          requiredEnvVars: number;
+          hostedSeedProofs: number;
+          hostedTokenProbeProofs: number;
+          vercelEnvSyncProofs: number;
+          destructiveLiveMutations: number;
+          externalNetworkCalls: number;
+          liveProviderCalls: number;
+          realOrdersEnabled: number;
+          blockers: string[];
+        };
         businessEngagementReadiness: {
           total: number;
           repoLocalReady: number;
@@ -244,10 +264,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 27,
-      covered: 27,
+      total: 28,
+      covered: 28,
       repoLocalCoveragePercent: 100,
-      ciGated: 27,
+      ciGated: 28,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -341,6 +361,26 @@ describe("api server wrapper", () => {
       deploymentProtectionBypasses: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
+      blockers: []
+    });
+    expect(report.readiness.reviewerDbSeedReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 3,
+      evidenceMissing: 5,
+      hostedDatabaseRequired: 5,
+      hostedSeedExecutionRequired: 3,
+      hostedTokenProbeRequired: 4,
+      vercelEnvSyncRequired: 5,
+      tableContracts: 14,
+      routeContracts: 5,
+      requiredEnvVars: 6,
+      hostedSeedProofs: 0,
+      hostedTokenProbeProofs: 0,
+      vercelEnvSyncProofs: 0,
+      destructiveLiveMutations: 0,
+      externalNetworkCalls: 0,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0,
       blockers: []
     });
     expect(report.readiness.businessEngagementReadiness).toMatchObject({
@@ -507,8 +547,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 27,
-        covered: 27,
+        total: 28,
+        covered: 28,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -599,6 +639,17 @@ describe("api server wrapper", () => {
         deploymentProtectionBypasses: 0,
         realOrdersEnabled: 0,
         liveProviderCalls: 0,
+        blockers: []
+      });
+      expect(readiness.reviewerDbSeedReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 3,
+        evidenceMissing: 5,
+        hostedSeedProofs: 0,
+        hostedTokenProbeProofs: 0,
+        vercelEnvSyncProofs: 0,
+        externalNetworkCalls: 0,
+        realOrdersEnabled: 0,
         blockers: []
       });
       expect(readiness.businessEngagementReadiness).toMatchObject({

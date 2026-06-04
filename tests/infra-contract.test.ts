@@ -312,6 +312,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"payment:doctor\": \"node scripts/payment-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"mobile:render:doctor\": \"node scripts/mobile-render-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"hosted:api:doctor\": \"node scripts/hosted-api-readiness-doctor.mjs\"");
+    expect(packageJson).toContain("\"reviewer:db:seed:doctor\": \"node scripts/reviewer-db-seed-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"business:engagement:doctor\": \"node scripts/business-engagement-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
@@ -333,6 +334,8 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/mobileRenderReadinessData.mjs");
     expect(viteConfig).toContain("src/hostedApiReadiness.ts");
     expect(viteConfig).toContain("src/hostedApiReadinessData.mjs");
+    expect(viteConfig).toContain("src/reviewerDbSeedReadiness.ts");
+    expect(viteConfig).toContain("src/reviewerDbSeedReadinessData.mjs");
     expect(viteConfig).toContain("src/businessEngagementReadiness.ts");
     expect(viteConfig).toContain("src/businessEngagementReadinessData.mjs");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
@@ -400,6 +403,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run payment:doctor");
     expect(workflow).toContain("npm run mobile:render:doctor");
     expect(workflow).toContain("npm run hosted:api:doctor");
+    expect(workflow).toContain("npm run reviewer:db:seed:doctor");
     expect(workflow).toContain("npm run business:engagement:doctor");
     expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
@@ -736,9 +740,9 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-e2e-coverage-doctor",
       status: "ready",
-      journeys: 27,
+      journeys: 28,
       repoLocalCoveragePercent: 100,
-      ciGated: 27,
+      ciGated: 28,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -1043,6 +1047,70 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "register", status: "ready" }),
         expect.objectContaining({ lane: "vercel-source", status: "ready" }),
         expect.objectContaining({ lane: "hosted-env", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "docs", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
+
+  it("emits a reviewer DB seed readiness report", () => {
+    const output = execFileSync("npm", ["run", "reviewer:db:seed:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      items: number;
+      repoLocalReady: number;
+      evidenceMissing: number;
+      hostedDatabaseRequired: number;
+      hostedSeedExecutionRequired: number;
+      hostedTokenProbeRequired: number;
+      vercelEnvSyncRequired: number;
+      tableContracts: number;
+      routeContracts: number;
+      requiredEnvVars: number;
+      hostedSeedProofs: number;
+      hostedTokenProbeProofs: number;
+      vercelEnvSyncProofs: number;
+      destructiveLiveMutations: number;
+      externalNetworkCalls: number;
+      liveProviderCalls: number;
+      realOrdersEnabled: number;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-reviewer-db-seed-readiness-doctor",
+      status: "ready",
+      items: 8,
+      repoLocalReady: 3,
+      evidenceMissing: 5,
+      hostedDatabaseRequired: 5,
+      hostedSeedExecutionRequired: 3,
+      hostedTokenProbeRequired: 4,
+      vercelEnvSyncRequired: 5,
+      tableContracts: 14,
+      routeContracts: 5,
+      requiredEnvVars: 6,
+      hostedSeedProofs: 0,
+      hostedTokenProbeProofs: 0,
+      vercelEnvSyncProofs: 0,
+      destructiveLiveMutations: 0,
+      externalNetworkCalls: 0,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "register", status: "ready" }),
+        expect.objectContaining({ lane: "seed-contract", status: "ready" }),
+        expect.objectContaining({ lane: "token-contract", status: "ready" }),
+        expect.objectContaining({ lane: "hosted-proof-boundary", status: "ready" }),
         expect.objectContaining({ lane: "surfaces", status: "ready" }),
         expect.objectContaining({ lane: "docs", status: "ready" }),
         expect.objectContaining({ lane: "ci", status: "ready" })

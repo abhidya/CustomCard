@@ -11,6 +11,7 @@ import { summarizeHostedApiReadiness } from "../src/hostedApiReadinessData.mjs";
 import { summarizeMobileRenderReadiness } from "../src/mobileRenderReadinessData.mjs";
 import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
 import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
+import { summarizeReviewerDbSeedReadiness } from "../src/reviewerDbSeedReadinessData.mjs";
 import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
@@ -289,6 +290,7 @@ export const readiness = {
   paymentReadiness: summarizePaymentReadiness(),
   mobileRenderReadiness: summarizeMobileRenderReadiness(),
   hostedApiReadiness: summarizeHostedApiReadiness(),
+  reviewerDbSeedReadiness: summarizeReviewerDbSeedReadiness(),
   businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
   safety: {
     externalNetworkCalls: false,
@@ -700,6 +702,51 @@ function validateApiServerContract() {
   if (readiness.hostedApiReadiness.realOrdersEnabled !== 0) blockers.push("Hosted API readiness cannot enable real orders.");
   if (readiness.hostedApiReadiness.liveProviderCalls !== 0) blockers.push("Hosted API readiness cannot enable live provider calls.");
   if (readiness.hostedApiReadiness.blockers.length > 0) blockers.push("Hosted API readiness summary has blockers.");
+  if (readiness.reviewerDbSeedReadiness.total < 8) {
+    blockers.push("Reviewer DB seed readiness must track hosted reviewer seed proof evidence.");
+  }
+  if (readiness.reviewerDbSeedReadiness.repoLocalReady < 3) {
+    blockers.push("Reviewer DB seed readiness must keep seed plan, token, and SQL preview contracts ready.");
+  }
+  if (readiness.reviewerDbSeedReadiness.tableContracts < 14) {
+    blockers.push("Reviewer DB seed readiness must cover all reviewer seed tables.");
+  }
+  if (readiness.reviewerDbSeedReadiness.requiredEnvVars < 6) {
+    blockers.push("Reviewer DB seed readiness must track required hosted env vars.");
+  }
+  if (readiness.reviewerDbSeedReadiness.hostedDatabaseRequired < 5) {
+    blockers.push("Reviewer DB seed readiness must identify hosted database proof requirements.");
+  }
+  if (readiness.reviewerDbSeedReadiness.hostedSeedExecutionRequired < 3) {
+    blockers.push("Reviewer DB seed readiness must identify hosted seed execution proof requirements.");
+  }
+  if (readiness.reviewerDbSeedReadiness.hostedTokenProbeRequired < 4) {
+    blockers.push("Reviewer DB seed readiness must identify hosted token probe requirements.");
+  }
+  if (readiness.reviewerDbSeedReadiness.hostedSeedProofs !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot claim hosted seed execution proof.");
+  }
+  if (readiness.reviewerDbSeedReadiness.hostedTokenProbeProofs !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot claim hosted token probe proof.");
+  }
+  if (readiness.reviewerDbSeedReadiness.vercelEnvSyncProofs !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot claim Vercel env sync proof.");
+  }
+  if (readiness.reviewerDbSeedReadiness.destructiveLiveMutations !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot enable destructive live mutations.");
+  }
+  if (readiness.reviewerDbSeedReadiness.externalNetworkCalls !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot require live external network calls.");
+  }
+  if (readiness.reviewerDbSeedReadiness.liveProviderCalls !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot enable live provider calls.");
+  }
+  if (readiness.reviewerDbSeedReadiness.realOrdersEnabled !== 0) {
+    blockers.push("Reviewer DB seed readiness cannot enable real orders.");
+  }
+  if (readiness.reviewerDbSeedReadiness.blockers.length > 0) {
+    blockers.push("Reviewer DB seed readiness summary has blockers.");
+  }
   if (readiness.businessEngagementReadiness.total < 8) {
     blockers.push("Business engagement readiness must track CRM lifecycle campaign evidence.");
   }

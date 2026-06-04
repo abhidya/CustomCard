@@ -97,10 +97,10 @@ describe("api contracts", () => {
       externalArtifactsAttached: 0
     });
     expect(summary.e2eCoverage).toMatchObject({
-      total: 27,
-      covered: 27,
+      total: 28,
+      covered: 28,
       repoLocalCoveragePercent: 100,
-      ciGated: 27,
+      ciGated: 28,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0
@@ -197,6 +197,26 @@ describe("api contracts", () => {
       liveProviderCalls: 0,
       blockers: []
     });
+    expect(summary.reviewerDbSeedReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 3,
+      evidenceMissing: 5,
+      hostedDatabaseRequired: 5,
+      hostedSeedExecutionRequired: 3,
+      hostedTokenProbeRequired: 4,
+      vercelEnvSyncRequired: 5,
+      tableContracts: 14,
+      routeContracts: 5,
+      requiredEnvVars: 6,
+      hostedSeedProofs: 0,
+      hostedTokenProbeProofs: 0,
+      vercelEnvSyncProofs: 0,
+      destructiveLiveMutations: 0,
+      externalNetworkCalls: 0,
+      liveProviderCalls: 0,
+      realOrdersEnabled: 0,
+      blockers: []
+    });
     expect(summary.businessEngagementReadiness).toMatchObject({
       total: 8,
       repoLocalReady: 4,
@@ -270,7 +290,7 @@ describe("api contracts", () => {
       expect.arrayContaining(["security-assessment", "accessibility-audit", "physical-print-certification"])
     );
     expect(payload.e2eCoverage.summary).toMatchObject({
-      total: 27,
+      total: 28,
       repoLocalCoveragePercent: 100,
       liveProductionProofs: 0
     });
@@ -361,6 +381,16 @@ describe("api contracts", () => {
     expect(payload.hostedApiReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["vercel-project-link", "public-db-backed-route-proof", "hosted-account-token-verification"])
     );
+    expect(payload.reviewerDbSeedReadiness.summary).toMatchObject({
+      total: 8,
+      tableContracts: 14,
+      requiredEnvVars: 6,
+      hostedSeedProofs: 0,
+      hostedTokenProbeProofs: 0
+    });
+    expect(payload.reviewerDbSeedReadiness.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["reviewer-seed-plan-contract", "hosted-seed-execution-proof", "rollback-cleanup-drill"])
+    );
     expect(payload.businessEngagementReadiness.summary).toMatchObject({
       total: 8,
       crmAdapterContracts: 7,
@@ -402,7 +432,7 @@ describe("api contracts", () => {
         externalArtifactsAttached: 0
       },
       e2eCoverage: {
-        total: 27,
+        total: 28,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0
       },
@@ -438,6 +468,12 @@ describe("api contracts", () => {
         publicRouteProofs: 0,
         hostedDbProofs: 0,
         hostedTokenVerificationProofs: 0
+      },
+      reviewerDbSeedReadiness: {
+        total: 8,
+        hostedSeedProofs: 0,
+        hostedTokenProbeProofs: 0,
+        externalNetworkCalls: 0
       },
       businessEngagementReadiness: {
         total: 8,

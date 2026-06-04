@@ -48,6 +48,11 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   trigger normalization, card-opportunity review, workflow payload, customer
   message channel, consent/suppression, and feedback-loop gates. Run `npm run
   business:engagement:doctor`. This is not live CRM OAuth, customer messaging, CRM writeback, or production campaign analytics proof.
+- Reviewer DB seed readiness: `src/reviewerDbSeedReadiness.ts` and
+  `src/reviewerDbSeedReadinessData.mjs` track deterministic reviewer seed
+  plans, customer/admin session-token contracts, SQL preview safety, Vercel env
+  sync, hosted migration, hosted seed execution, hosted token probes, and
+  rollback drills. Run `npm run reviewer:db:seed:doctor`. This is not hosted reviewer DB mutation or hosted account-token proof.
 - Text chat: deterministic local chat plus OpenAI Responses, Anthropic
   Messages, Azure OpenAI, Amazon Bedrock Converse, Google Gemini, Hugging Face,
   Mistral, Cohere, Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks,
@@ -386,10 +391,17 @@ The runtime remains fail-closed:
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
 - `npm run e2e:coverage:doctor` verifies End-to-end coverage in
-  `src/e2eCoverage.ts`, the 27-item repo-local end-to-end coverage matrix,
+  `src/e2eCoverage.ts`, the 28-item repo-local end-to-end coverage matrix,
   admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
   "not live production proof" disclaimer while keeping live production proofs,
   real orders, and live external network requirements at zero.
+- `npm run reviewer:db:seed:doctor` verifies Reviewer DB seed readiness in
+  `src/reviewerDbSeedReadiness.ts`, deterministic seed-plan and SQL-preview
+  contracts, customer/admin session-token requirements, hosted migration/env
+  proof gaps, admin/API exposure, CI wiring, and the "not hosted reviewer DB
+  mutation or hosted account-token proof" disclaimer while keeping hosted seed
+  proof, hosted token proof, Vercel env proof, destructive live mutations, live
+  external network calls, live provider calls, and real orders at zero.
 - `npm run business:engagement:doctor` verifies Business engagement readiness in
   `src/businessEngagementReadiness.ts`, CRM/workflow/notification adapter
   coverage, provider runtime no-network contracts, admin/API exposure, CI
@@ -502,6 +514,11 @@ Implemented checks:
   workflow payload contracts, customer message channel contracts,
   consent/suppression privacy gates, campaign feedback evidence, and zero live
   customer sends or CRM writes.
+- `src/reviewerDbSeedReadiness.test.ts` and
+  `npm run reviewer:db:seed:doctor` validate reviewer seed table coverage,
+  customer/admin session-token requirements, SQL preview safety, hosted seed
+  proof gaps, hosted token probe gaps, Vercel env proof gaps, rollback
+  requirements, and zero destructive live mutations.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.

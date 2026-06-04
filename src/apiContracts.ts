@@ -68,6 +68,13 @@ import {
   type HostedApiReadinessSummary
 } from "./hostedApiReadiness";
 import {
+  reviewerDbSeedReadinessItems,
+  summarizeReviewerDbSeedReadiness,
+  validateReviewerDbSeedReadiness,
+  type ReviewerDbSeedReadinessItem,
+  type ReviewerDbSeedReadinessSummary
+} from "./reviewerDbSeedReadiness";
+import {
   businessEngagementReadinessItems,
   summarizeBusinessEngagementReadiness,
   validateBusinessEngagementReadiness,
@@ -136,6 +143,7 @@ export interface ApiReadinessSummary {
   paymentReadiness: PaymentReadinessSummary;
   mobileRenderReadiness: MobileRenderReadinessSummary;
   hostedApiReadiness: HostedApiReadinessSummary;
+  reviewerDbSeedReadiness: ReviewerDbSeedReadinessSummary;
   businessEngagementReadiness: BusinessEngagementReadinessSummary;
   runtime: {
     localReady: number;
@@ -194,6 +202,10 @@ export interface ApiBootstrapPayload {
   hostedApiReadiness: {
     items: HostedApiReadinessItem[];
     summary: HostedApiReadinessSummary;
+  };
+  reviewerDbSeedReadiness: {
+    items: ReviewerDbSeedReadinessItem[];
+    summary: ReviewerDbSeedReadinessSummary;
   };
   businessEngagementReadiness: {
     items: BusinessEngagementReadinessItem[];
@@ -491,6 +503,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     paymentReadiness: summarizePaymentReadiness(),
     mobileRenderReadiness: summarizeMobileRenderReadiness(),
     hostedApiReadiness: summarizeHostedApiReadiness(),
+    reviewerDbSeedReadiness: summarizeReviewerDbSeedReadiness(),
     businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
@@ -546,6 +559,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     hostedApiReadiness: {
       items: hostedApiReadinessItems,
       summary: summarizeHostedApiReadiness()
+    },
+    reviewerDbSeedReadiness: {
+      items: reviewerDbSeedReadinessItems,
+      summary: summarizeReviewerDbSeedReadiness()
     },
     businessEngagementReadiness: {
       items: businessEngagementReadinessItems,
@@ -670,6 +687,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const hostedApiReadinessIssue of validateHostedApiReadiness()) {
     issues.push(hostedApiReadinessIssue);
+  }
+  for (const reviewerDbSeedReadinessIssue of validateReviewerDbSeedReadiness()) {
+    issues.push(reviewerDbSeedReadinessIssue);
   }
   for (const businessEngagementReadinessIssue of validateBusinessEngagementReadiness()) {
     issues.push(businessEngagementReadinessIssue);

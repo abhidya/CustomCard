@@ -132,6 +132,12 @@ import {
   type HostedApiReadinessSummary
 } from "./hostedApiReadiness";
 import {
+  reviewerDbSeedReadinessItems,
+  summarizeReviewerDbSeedReadiness,
+  type ReviewerDbSeedReadinessItem,
+  type ReviewerDbSeedReadinessSummary
+} from "./reviewerDbSeedReadiness";
+import {
   businessEngagementReadinessItems,
   summarizeBusinessEngagementReadiness,
   type BusinessEngagementReadinessItem,
@@ -224,6 +230,7 @@ function App() {
   const paymentReadinessSummary = useMemo(() => summarizePaymentReadiness(), []);
   const mobileRenderReadinessSummary = useMemo(() => summarizeMobileRenderReadiness(), []);
   const hostedApiReadinessSummary = useMemo(() => summarizeHostedApiReadiness(), []);
+  const reviewerDbSeedReadinessSummary = useMemo(() => summarizeReviewerDbSeedReadiness(), []);
   const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
@@ -527,6 +534,8 @@ function App() {
             mobileRenderReadinessSummary={mobileRenderReadinessSummary}
             hostedApiReadinessItems={hostedApiReadinessItems}
             hostedApiReadinessSummary={hostedApiReadinessSummary}
+            reviewerDbSeedReadinessItems={reviewerDbSeedReadinessItems}
+            reviewerDbSeedReadinessSummary={reviewerDbSeedReadinessSummary}
             businessEngagementReadinessItems={businessEngagementReadinessItems}
             businessEngagementReadinessSummary={businessEngagementReadinessSummary}
             runtimeReadiness={runtimeReadiness}
@@ -1202,6 +1211,8 @@ function AdminPanelView({
   mobileRenderReadinessSummary,
   hostedApiReadinessItems,
   hostedApiReadinessSummary,
+  reviewerDbSeedReadinessItems,
+  reviewerDbSeedReadinessSummary,
   businessEngagementReadinessItems,
   businessEngagementReadinessSummary,
   runtimeReadiness
@@ -1228,6 +1239,8 @@ function AdminPanelView({
   mobileRenderReadinessSummary: MobileRenderReadinessSummary;
   hostedApiReadinessItems: HostedApiReadinessItem[];
   hostedApiReadinessSummary: HostedApiReadinessSummary;
+  reviewerDbSeedReadinessItems: ReviewerDbSeedReadinessItem[];
+  reviewerDbSeedReadinessSummary: ReviewerDbSeedReadinessSummary;
   businessEngagementReadinessItems: BusinessEngagementReadinessItem[];
   businessEngagementReadinessSummary: BusinessEngagementReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
@@ -1273,6 +1286,8 @@ function AdminPanelView({
         <Metric label="Native proofs" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
         <Metric label="Hosted routes" value={`${hostedApiReadinessSummary.routeContracts}`} />
         <Metric label="Public DB proof" value={`${hostedApiReadinessSummary.publicRouteProofs}`} />
+        <Metric label="Seed tables" value={`${reviewerDbSeedReadinessSummary.tableContracts}`} />
+        <Metric label="Hosted seed" value={`${reviewerDbSeedReadinessSummary.hostedSeedProofs}`} />
         <Metric label="Business CRM" value={`${businessEngagementReadinessSummary.crmAdapterContracts}`} />
         <Metric label="Live sends" value={`${businessEngagementReadinessSummary.liveMessagesEnabled}`} />
       </div>
@@ -1470,6 +1485,31 @@ function AdminPanelView({
           <p className="panelNote">
             These are Vercel deployment, serverless route, environment, hosted Postgres, token verification, and backup
             readiness contracts; not public DB-backed Vercel proof or hosted account-token verification.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Reviewer database</p>
+              <h3>Reviewer DB seed readiness</h3>
+            </div>
+            <StatusChip icon={KeyRound} label="Hosted seed proof missing" tone="red" />
+          </div>
+          <div className="runtimeGrid" aria-label="Reviewer database seed and account-token proof readiness">
+            <Metric label="Items" value={`${reviewerDbSeedReadinessSummary.total}`} />
+            <Metric label="Tables" value={`${reviewerDbSeedReadinessSummary.tableContracts}`} />
+            <Metric label="Routes" value={`${reviewerDbSeedReadinessSummary.routeContracts}`} />
+            <Metric label="Env vars" value={`${reviewerDbSeedReadinessSummary.requiredEnvVars}`} />
+            <Metric label="Seed req." value={`${reviewerDbSeedReadinessSummary.hostedSeedExecutionRequired}`} />
+            <Metric label="Token req." value={`${reviewerDbSeedReadinessSummary.hostedTokenProbeRequired}`} />
+            <Metric label="Seed proof" value={`${reviewerDbSeedReadinessSummary.hostedSeedProofs}`} />
+            <Metric label="Token proof" value={`${reviewerDbSeedReadinessSummary.hostedTokenProbeProofs}`} />
+          </div>
+          <ReviewerDbSeedReadinessList items={reviewerDbSeedReadinessItems} />
+          <p className="panelNote">
+            These are reviewer seed-plan, SQL-preview, Vercel env, hosted migration, token-probe, and rollback
+            contracts; not hosted reviewer DB mutation or hosted account-token proof.
           </p>
         </article>
 
@@ -1950,6 +1990,20 @@ function HostedApiReadinessList({ items }: { items: HostedApiReadinessItem[] }) 
   );
 }
 
+function ReviewerDbSeedReadinessList({ items }: { items: ReviewerDbSeedReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${reviewerDbSeedReadinessStatusClass(item.status)}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.hostedSeedExecuted || item.hostedTokenProbeAttached ? "Proof attached" : "Proof missing"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function BusinessEngagementReadinessList({ items }: { items: BusinessEngagementReadinessItem[] }) {
   return (
     <div className="adapterMiniList">
@@ -1973,6 +2027,11 @@ function businessEngagementReadinessStatusClass(status: BusinessEngagementReadin
 function hostedApiReadinessStatusClass(status: HostedApiReadinessItem["status"]): ProviderStatus {
   if (status === "repo-local-ready") return "ready-local";
   if (status === "protection-blocked") return "blocked";
+  return "credential-gated";
+}
+
+function reviewerDbSeedReadinessStatusClass(status: ReviewerDbSeedReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
   return "credential-gated";
 }
 

@@ -58,6 +58,12 @@ skeleton for the production path. It includes:
   route proof, hosted DB proof, env sync proof, hosted token proof, backup
   policy proof, deployment-protection bypass, live provider calls, external
   network calls, and real orders at zero.
+- Reviewer DB seed readiness for deterministic reviewer seed plans,
+  customer/admin session-token contracts, SQL preview safety, hosted migration
+  prerequisites, Vercel env sync, hosted seed execution proof, hosted token
+  probes, and rollback drills; `npm run reviewer:db:seed:doctor` keeps hosted
+  seed proof, hosted token proof, Vercel env proof, destructive live mutations,
+  live provider calls, external network calls, and real orders at zero.
 - Business engagement readiness for CRM lifecycle source, trigger
   normalization, card-opportunity review, workflow payloads, customer message
   channels, consent/suppression gates, and campaign feedback; `npm run
@@ -169,10 +175,11 @@ skeleton for the production path. It includes:
 23. Run the worker and mobile doctor commands in `docs/verification.md`.
 24. Run `npm run mobile:render:doctor`.
 25. Run `npm run hosted:api:doctor`.
-26. Run `npm run business:engagement:doctor`.
-27. Run `npm run mobile:release:doctor`.
-28. Inspect the app with `npm run dev`.
-29. In the app, start a local workspace, scan the sample invite, generate a card,
+26. Run `npm run reviewer:db:seed:doctor`.
+27. Run `npm run business:engagement:doctor`.
+28. Run `npm run mobile:release:doctor`.
+29. Inspect the app with `npm run dev`.
+30. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

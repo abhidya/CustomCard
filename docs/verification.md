@@ -136,6 +136,14 @@ it after each meaningful implementation pass.
   surfaces, docs, CI wiring, and zero public DB-backed route proof, hosted DB
   connectivity proof, hosted token verification proof, backup policy proof, or
   deployment-protection bypass claims.
+- Reviewer DB seed readiness is checked by `npm run reviewer:db:seed:doctor`,
+  which verifies the 8-item reviewer seed proof register, deterministic seed
+  plan, 14-table fixture coverage, customer/admin session-token contract, SQL
+  preview safety, hosted migration/env/probe evidence gaps, rollback drill
+  requirements, admin/API surfaces, docs, CI wiring, and zero hosted seed proof,
+  hosted token proof, Vercel env proof, destructive live mutations, live
+  provider calls, live external network calls, or real orders.
+  It is not hosted reviewer DB mutation or hosted account-token proof.
 - Business engagement readiness is checked by `npm run business:engagement:doctor`,
   which verifies the 8-item CRM lifecycle engagement register, CSV plus popular
   CRM contracts, workflow payload contracts, customer message channel contracts,
@@ -159,7 +167,7 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 27-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 28-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
@@ -213,6 +221,7 @@ npm run e2e:coverage:doctor
 npm run payment:doctor
 npm run mobile:render:doctor
 npm run hosted:api:doctor
+npm run reviewer:db:seed:doctor
 npm run business:engagement:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
@@ -242,9 +251,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 31 test files passed, 186 tests passed.
-- Coverage: 29 core/API/persistence/infra/mobile test files passed, 177 tests passed; V8 report measured
-  91.98% statements, 86.01% branches, 97.76% functions, and 95.22% lines across
+- Vitest: 32 test files passed, 190 tests passed.
+- Coverage: 30 core/API/persistence/infra/mobile test files passed, 181 tests passed; V8 report measured
+  92.19% statements, 86.37% branches, 97.84% functions, and 95.36% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -254,7 +263,11 @@ Result: passed.
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
   `src/freeMvp.ts`, `src/localization.ts`, `src/observabilityReadiness.ts`,
   `src/observabilityReadinessData.mjs`, `src/paymentReadiness.ts`,
-  `src/paymentReadinessData.mjs`,
+  `src/paymentReadinessData.mjs`, `src/mobileRenderReadiness.ts`,
+  `src/mobileRenderReadinessData.mjs`, `src/hostedApiReadiness.ts`,
+  `src/hostedApiReadinessData.mjs`, `src/reviewerDbSeedReadiness.ts`,
+  `src/reviewerDbSeedReadinessData.mjs`, `src/retailFulfillmentReadiness.ts`,
+  `src/retailFulfillmentReadinessData.mjs`,
   `src/persistenceContracts.ts`, `src/printerPricing.ts`, `src/printExport.ts`,
   `src/providerCatalog.ts`, `src/providerGovernance.ts`,
   `src/providerRuntime.ts`, and `src/serviceKernel.ts`.
@@ -303,8 +316,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 27 repo-local journeys, 100% repo-local
-coverage, 27 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 28 repo-local journeys, 100% repo-local
+coverage, 28 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 
@@ -360,6 +373,20 @@ claims, zero hosted DB proof claims, zero public DB-backed route proof claims,
 zero hosted account-token verification proof claims, zero backup policy claims,
 zero deployment-protection bypass claims, zero live provider calls, zero
 external network calls, and zero real orders.
+
+```text
+npm run reviewer:db:seed:doctor
+```
+
+Result: passed. The JSON report marked register, tests, seed-contract,
+token-contract, hosted-proof-boundary, surfaces, e2e, docs, CI, coverage, and
+evidence lanes `ready`; it verified 8 reviewer DB seed readiness items, 14 seed
+table contracts, 5 route contracts, 6 required hosted env vars, 3 hosted seed
+execution requirements, 4 hosted token probe requirements, 5 Vercel env sync
+requirements, zero hosted seed proofs, zero hosted token probe proofs, zero
+Vercel env sync proofs, zero destructive live mutations, zero live provider
+calls, zero live external network calls, and zero real orders. It is not hosted
+reviewer DB mutation or hosted account-token proof.
 
 ```text
 npm run business:engagement:doctor
