@@ -49,7 +49,15 @@ describe("mobile render readiness", () => {
     const signed = mobileRenderReadinessItems.find((item) => item.id === "signed-native-artifact-proof");
 
     expect(shell?.screenSectionIds).toEqual(
-      expect.arrayContaining(["card-queue", "approval-controls", "text-interface", "print-proof", "offline-api-sync"])
+      expect.arrayContaining([
+        "sign-in-import",
+        "card-queue",
+        "approval-controls",
+        "text-interface",
+        "best-available-options",
+        "print-proof",
+        "offline-sync"
+      ])
     );
     expect(shell?.viewportProfiles).toEqual(
       expect.arrayContaining(["iphone-se", "standard-phone", "large-phone", "tablet-portrait"])

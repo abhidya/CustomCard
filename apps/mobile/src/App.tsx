@@ -1,14 +1,16 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
+  mobileAccountOptions,
   mobileApprovalActions,
   mobileCardQueueItems,
   mobileChatTranscript,
   mobileExperienceSections,
+  mobileFulfillmentRecommendations,
   mobileHandoffSteps,
+  mobileImportActions,
   mobileLocaleOptions,
   mobileMemoryReviewItems,
-  mobilePricingPreviews,
   mobilePrintProofChecks,
   mobileRenderChoices,
   mobileSafetyBanner,
@@ -27,8 +29,7 @@ export default function App() {
           <Text style={styles.eyebrow}>Customer mobile panel</Text>
           <Text style={styles.title}>CustomCard</Text>
           <Text style={styles.subtitle}>
-            Event-aware card creation, memory review, local chat, SVG render, and manual pickup handoff share the web
-            service contracts.
+            Sign in, import events, approve a card, and compare pickup or shipped options before checkout.
           </Text>
         </View>
 
@@ -53,6 +54,28 @@ export default function App() {
               <Text style={styles.summaryLabel}>proofs</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Sign in and import</Text>
+          {mobileAccountOptions.map((option) => (
+            <View key={option.provider} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{option.label}</Text>
+                <Text style={styles.cardCopy}>{option.detail}</Text>
+              </View>
+              <Text style={styles.modePill}>Review</Text>
+            </View>
+          ))}
+          {mobileImportActions.map((action) => (
+            <View key={action.kind} style={styles.compactRow}>
+              <View style={styles.compactCopy}>
+                <Text style={styles.compactTitle}>{action.label}</Text>
+                <Text style={styles.cardCopy}>{action.detail}</Text>
+              </View>
+              <Text style={styles.modePill}>{action.sourceMode === "local-paste" ? "Local" : "Consent"}</Text>
+            </View>
+          ))}
         </View>
 
         <View style={styles.todayCard}>
@@ -148,7 +171,7 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Render choices</Text>
+          <Text style={styles.groupTitle}>Card proof path</Text>
           {mobileRenderChoices.map((choice) => (
             <View key={choice.label} style={styles.compactRow}>
               <View style={styles.compactCopy}>
@@ -161,16 +184,17 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Pricing preview</Text>
-          {mobilePricingPreviews.map((preview) => (
-            <View key={preview.vendor} style={styles.compactRow}>
+          <Text style={styles.groupTitle}>Best available options</Text>
+          {mobileFulfillmentRecommendations.map((recommendation) => (
+            <View key={recommendation.kind} style={styles.compactRow}>
               <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{preview.vendor}</Text>
+                <Text style={styles.compactTitle}>{recommendation.label}</Text>
                 <Text style={styles.cardCopy}>
-                  {preview.product}; ${(preview.estimatedTotalCents / 100).toFixed(2)} review-only estimate.
+                  ${(recommendation.totalCents / 100).toFixed(2)} at {recommendation.vendorName};{" "}
+                  {recommendation.etaLabel}. {recommendation.confirmationCopy}
                 </Text>
               </View>
-              <Text style={styles.modePill}>{preview.liveQuote ? "Quote" : "Manual"}</Text>
+              <Text style={styles.modePill}>Confirm</Text>
             </View>
           ))}
         </View>
@@ -189,7 +213,7 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Manual handoff</Text>
+          <Text style={styles.groupTitle}>Checkout confirmation</Text>
           {mobileHandoffSteps.map((step) => (
             <View key={step.label} style={styles.compactRow}>
               <View style={styles.compactCopy}>
@@ -202,18 +226,19 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Offline API sync</Text>
+          <Text style={styles.groupTitle}>Offline sync</Text>
           <View style={styles.compactRow}>
             <View style={styles.compactCopy}>
               <Text style={styles.compactTitle}>Customer session</Text>
               <Text style={styles.cardCopy}>
-                API base URL required, {mobileSyncState.authMode} auth, {mobileSyncState.retryPolicy} retry, idempotency on.
+                Customer actions stay queued offline and replay safely when your session is available.
               </Text>
             </View>
             <Text style={styles.modePill}>{mobileSyncState.offlineQueueEnabled ? "Queued" : "Off"}</Text>
           </View>
-          <Text style={styles.smallMeta}>Allowed mutations: {mobileSyncState.pendingMutationTypes.join(", ")}</Text>
-          <Text style={styles.smallMeta}>Forbidden mutations: {mobileSyncState.forbiddenMutationTypes.join(", ")}</Text>
+          <Text style={styles.smallMeta}>
+            No automatic order, charge, or raw memory upload can run from this mobile shell.
+          </Text>
         </View>
 
         <View style={styles.group}>

@@ -1,4 +1,5 @@
 export const requiredMobileCapabilities = [
+  "account-import",
   "card-queue",
   "approval-controls",
   "memory-review",
@@ -14,6 +15,9 @@ export type MobileExperienceStatus = "Ready" | "Approved" | "Local" | "Free" | "
 export type MobileCardQueueStatus = "needs-approval" | "approved" | "ready-for-handoff";
 export type MobileApprovalActionKind = "approve" | "edit-tone" | "snooze" | "dismiss" | "request-regeneration";
 export type MobileMutationType = "approve-card" | "update-tone" | "snooze-card" | "dismiss-card" | "prepare-handoff";
+export type MobileAccountProvider = "Google" | "Apple";
+export type MobileImportActionKind = "calendar" | "email" | "invite";
+export type MobileFulfillmentRecommendationKind = "cheapest-known-price" | "fastest-pickup" | "cheapest-shipped";
 
 export interface MobileExperienceSection {
   id: MobileExperienceCapability;
@@ -45,6 +49,22 @@ export interface MobileCardQueueItem {
   nextAction: MobileApprovalActionKind;
   panelCount: number;
   source: "ics-import" | "manual-entry" | "crm-lifecycle";
+  customerVisible: boolean;
+}
+
+export interface MobileAccountOption {
+  provider: MobileAccountProvider;
+  label: string;
+  detail: string;
+  liveOAuthEnabled: false;
+  customerVisible: boolean;
+}
+
+export interface MobileImportAction {
+  kind: MobileImportActionKind;
+  label: string;
+  detail: string;
+  sourceMode: "contract-gated" | "local-paste";
   customerVisible: boolean;
 }
 
@@ -90,6 +110,18 @@ export interface MobilePricingPreview {
   liveQuote: boolean;
 }
 
+export interface MobileFulfillmentRecommendation {
+  kind: MobileFulfillmentRecommendationKind;
+  label: string;
+  vendorName: string;
+  totalCents: number;
+  etaLabel: string;
+  confirmationCopy: string;
+  liveQuote: false;
+  liveOrder: false;
+  customerVisible: boolean;
+}
+
 export interface MobileHandoffStep {
   label: string;
   detail: string;
@@ -133,12 +165,15 @@ export interface MobileExperienceModel {
   safetyBanner: MobileSafetyBanner;
   todaySummary: MobileTodaySummary;
   sections: MobileExperienceSection[];
+  accountOptions: MobileAccountOption[];
+  importActions: MobileImportAction[];
   queueItems: MobileCardQueueItem[];
   approvalActions: MobileApprovalAction[];
   chatTranscript: MobileChatMessage[];
   memoryReviewItems: MobileMemoryReviewItem[];
   renderChoices: MobileRenderChoice[];
   pricingPreviews: MobilePricingPreview[];
+  fulfillmentRecommendations: MobileFulfillmentRecommendation[];
   printProofChecks: MobilePrintProofCheck[];
   handoffSteps: MobileHandoffStep[];
   localeOptions: MobileLocaleOption[];
@@ -146,8 +181,8 @@ export interface MobileExperienceModel {
 }
 
 export const mobileSafetyBanner = {
-  label: "Real orders disabled",
-  detail: "Live provider, payment, and vendor APIs stay behind admin gates."
+  label: "Confirm before checkout",
+  detail: "No automatic charge, live quote, or direct order runs from the mobile shell."
 } as const;
 
 export const mobileTodaySummary: MobileTodaySummary = {
@@ -165,6 +200,13 @@ export const mobileTodaySummary: MobileTodaySummary = {
 
 export const mobileExperienceSections: MobileExperienceSection[] = [
   {
+    id: "account-import",
+    title: "Sign in and import",
+    detail: "Google, Apple, calendar, email, and invite paths start the customer flow without exposing integration setup.",
+    status: "Ready",
+    customerVisible: true
+  },
+  {
     id: "card-queue",
     title: "Card queue",
     detail: "Upcoming card candidates show event source, approval state, due date, and next customer action.",
@@ -174,7 +216,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "approval-controls",
     title: "Approval controls",
-    detail: "Approve, edit tone, snooze, dismiss, or request local regeneration before any paid provider is used.",
+    detail: "Approve, edit tone, snooze, dismiss, or request local regeneration before any paid generation is used.",
     status: "Manual",
     customerVisible: true
   },
@@ -188,28 +230,28 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "text-chat",
     title: "Customer chat",
-    detail: "Local scripted assistant explains event, memory, render, and handoff state.",
+    detail: "Local scripted assistant explains event, memory, artwork, and checkout state.",
     status: "Local",
     customerVisible: true
   },
   {
     id: "image-render",
-    title: "Image/render",
-    detail: "Browser SVG renderer is the free path; AI image providers require admin credentials and review.",
+    title: "Card proof path",
+    detail: "Template artwork is ready now; AI artwork stays off until account, review, and spend controls exist.",
     status: "Free",
     customerVisible: true
   },
   {
     id: "pricing-preview",
-    title: "Pricing preview",
-    detail: "Retail printer prices are review-only estimates; live quotes and direct orders remain disabled.",
+    title: "Fulfillment options",
+    detail: "The app compares cheapest known price, fastest pickup, and cheapest shipped options before checkout.",
     status: "Manual",
     customerVisible: true
   },
   {
     id: "handoff",
-    title: "Handoff",
-    detail: "Manual upload stays active while retail print live orders are blocked.",
+    title: "Checkout confirmation",
+    detail: "Manual upload stays active while automatic retail checkout remains blocked.",
     status: "Manual",
     customerVisible: true
   },
@@ -218,6 +260,47 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
     title: "Offline sync",
     detail: "Customer actions queue locally and replay through idempotent API mutations when the session is available.",
     status: "Local",
+    customerVisible: true
+  }
+];
+
+export const mobileAccountOptions: MobileAccountOption[] = [
+  {
+    provider: "Google",
+    label: "Continue with Google",
+    detail: "Use calendar and Gmail signals after consent.",
+    liveOAuthEnabled: false,
+    customerVisible: true
+  },
+  {
+    provider: "Apple",
+    label: "Continue with Apple",
+    detail: "Use Apple account and calendar signals after consent.",
+    liveOAuthEnabled: false,
+    customerVisible: true
+  }
+];
+
+export const mobileImportActions: MobileImportAction[] = [
+  {
+    kind: "calendar",
+    label: "Import calendar",
+    detail: "Birthdays, anniversaries, weddings, trips, and renewals.",
+    sourceMode: "contract-gated",
+    customerVisible: true
+  },
+  {
+    kind: "email",
+    label: "Scan email receipts",
+    detail: "Purchases, warranties, deliveries, and subscription dates.",
+    sourceMode: "contract-gated",
+    customerVisible: true
+  },
+  {
+    kind: "invite",
+    label: "Paste invite",
+    detail: "Use the no-account local path for an event or note.",
+    sourceMode: "local-paste",
     customerVisible: true
   }
 ];
@@ -251,7 +334,7 @@ export const mobileApprovalActions: MobileApprovalAction[] = [
   {
     kind: "approve",
     label: "Approve card",
-    detail: "Moves the prepared card to manual handoff readiness.",
+    detail: "Moves the prepared card to checkout confirmation readiness.",
     mutationType: "approve-card",
     idempotencyRequired: true,
     networkMode: "local-first-api",
@@ -260,7 +343,7 @@ export const mobileApprovalActions: MobileApprovalAction[] = [
   {
     kind: "edit-tone",
     label: "Edit tone",
-    detail: "Stores a customer-approved tone adjustment without calling paid AI.",
+    detail: "Stores a customer-approved tone adjustment without calling paid generation.",
     mutationType: "update-tone",
     idempotencyRequired: true,
     networkMode: "local-first-api",
@@ -287,7 +370,7 @@ export const mobileApprovalActions: MobileApprovalAction[] = [
   {
     kind: "request-regeneration",
     label: "Regenerate locally",
-    detail: "Uses deterministic local copy/rendering until admin enables paid model providers.",
+    detail: "Uses deterministic local copy and artwork until paid generation is enabled.",
     mutationType: "update-tone",
     idempotencyRequired: true,
     networkMode: "local-only",
@@ -309,12 +392,12 @@ export const mobileChatTranscript: MobileChatMessage[] = [
   {
     speaker: "assistant",
     source: "local-script",
-    text: "Local scripted assistant can draft and explain the card before any live model is connected."
+    text: "Local scripted assistant can draft and explain the card before any live generation is connected."
   },
   {
     speaker: "assistant",
     source: "local-script",
-    text: "Live AI and vendor orders stay off until admin credentials and certification gates pass."
+    text: "Live AI and automatic orders stay off until account, review, and certification gates pass."
   }
 ];
 
@@ -343,13 +426,13 @@ export const mobileMemoryReviewItems: MobileMemoryReviewItem[] = [
 
 export const mobileRenderChoices: MobileRenderChoice[] = [
   {
-    label: "Browser SVG renderer",
+    label: "Template card proof",
     detail: "Free 5x7 panel rendering mirrors the web customer path.",
     mode: "free-local"
   },
   {
-    label: "AI image providers",
-    detail: "OpenAI, Gemini, Stability, Hugging Face, Replicate, Together, Ideogram, and Leonardo remain credential-gated.",
+    label: "AI artwork",
+    detail: "Paid artwork generation remains account-gated, spend-limited, and review-gated.",
     mode: "credential-gated"
   }
 ];
@@ -381,11 +464,47 @@ export const mobilePricingPreviews: MobilePricingPreview[] = [
   }
 ];
 
+export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[] = [
+  {
+    kind: "cheapest-known-price",
+    label: "Cheapest known price",
+    vendorName: "Walmart Photo",
+    totalCents: 142,
+    etaLabel: "same-day pickup candidate",
+    confirmationCopy: "Public price before tax, coupons, stock, and checkout confirmation.",
+    liveQuote: false,
+    liveOrder: false,
+    customerVisible: true
+  },
+  {
+    kind: "fastest-pickup",
+    label: "Fastest pickup candidate",
+    vendorName: "Walmart Photo",
+    totalCents: 142,
+    etaLabel: "same-day pickup candidate",
+    confirmationCopy: "Closest store ETA needs live location and inventory confirmation.",
+    liveQuote: false,
+    liveOrder: false,
+    customerVisible: true
+  },
+  {
+    kind: "cheapest-shipped",
+    label: "Cheapest shipped option",
+    vendorName: "FedEx Office",
+    totalCents: 2299,
+    etaLabel: "ships in days",
+    confirmationCopy: "Shipping dates and delivery fees require checkout confirmation.",
+    liveQuote: false,
+    liveOrder: false,
+    customerVisible: true
+  }
+];
+
 export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
   {
     id: "proof-size",
     label: "5x7 format",
-    detail: "Four SVG panels match the manual vendor upload package.",
+    detail: "Four SVG panels match the customer print package.",
     passed: true,
     realOrderState: "manual",
     customerVisible: true
@@ -409,7 +528,7 @@ export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
   {
     id: "proof-order-gate",
     label: "Order gate",
-    detail: "Retail-printer submission stays blocked until certification evidence exists.",
+    detail: "Automatic retail checkout stays blocked until certification evidence exists.",
     passed: true,
     realOrderState: "disabled",
     customerVisible: true
@@ -419,12 +538,12 @@ export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
 export const mobileHandoffSteps: MobileHandoffStep[] = [
   {
     label: "Download SVG set",
-    detail: "Customer can export four panels for manual vendor upload.",
+    detail: "Customer can export four panels for manual upload.",
     realOrderState: "manual"
   },
   {
-    label: "Confirm pickup manually",
-    detail: "Walgreens, CVS, FedEx, Walmart, Staples, and Office Depot live order APIs are blocked in this shell.",
+    label: "Confirm pickup or shipping",
+    detail: "Automatic checkout is blocked until live quote, payment, and certification evidence exists.",
     realOrderState: "disabled"
   }
 ];
@@ -478,12 +597,15 @@ export const mobileExperience: MobileExperienceModel = {
   safetyBanner: mobileSafetyBanner,
   todaySummary: mobileTodaySummary,
   sections: mobileExperienceSections,
+  accountOptions: mobileAccountOptions,
+  importActions: mobileImportActions,
   queueItems: mobileCardQueueItems,
   approvalActions: mobileApprovalActions,
   chatTranscript: mobileChatTranscript,
   memoryReviewItems: mobileMemoryReviewItems,
   renderChoices: mobileRenderChoices,
   pricingPreviews: mobilePricingPreviews,
+  fulfillmentRecommendations: mobileFulfillmentRecommendations,
   printProofChecks: mobilePrintProofChecks,
   handoffSteps: mobileHandoffSteps,
   localeOptions: mobileLocaleOptions,
@@ -494,6 +616,9 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
   return {
     capabilityCount: new Set(model.sections.map((section) => section.id)).size,
     customerVisibleSections: model.sections.filter((section) => section.customerVisible).length,
+    accountOptions: model.accountOptions.length,
+    liveOAuthOptions: model.accountOptions.filter((option) => option.liveOAuthEnabled).length,
+    importActions: model.importActions.length,
     todayPrimaryActions: model.todaySummary.customerVisible ? 1 : 0,
     queueItems: model.queueItems.length,
     pendingApprovalItems: model.queueItems.filter((item) => item.status === "needs-approval").length,
@@ -503,6 +628,10 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
     approvedMemoryReviewItems: model.memoryReviewItems.filter((item) => item.usage === "approved").length,
     freeRenderChoices: model.renderChoices.filter((choice) => choice.mode === "free-local").length,
     reviewOnlyPricingOptions: model.pricingPreviews.filter((preview) => preview.sourceMode === "review-only-public-price").length,
+    fulfillmentRecommendations: model.fulfillmentRecommendations.length,
+    liveFulfillmentRecommendations: model.fulfillmentRecommendations.filter(
+      (recommendation) => recommendation.liveQuote || recommendation.liveOrder
+    ).length,
     printProofChecks: model.printProofChecks.length,
     passedPrintProofChecks: model.printProofChecks.filter((check) => check.passed).length,
     disabledHandoffSteps: model.handoffSteps.filter((step) => step.realOrderState === "disabled").length,
@@ -529,6 +658,25 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
 
   if (model.sections.length < requiredMobileCapabilities.length) {
     issues.push("Mobile experience does not expose enough customer sections.");
+  }
+
+  const accountProviders = new Set(model.accountOptions.map((option) => option.provider));
+  for (const provider of ["Google", "Apple"] as const) {
+    if (!accountProviders.has(provider)) issues.push(`Missing mobile account option: ${provider}`);
+  }
+  if (model.accountOptions.some((option) => !option.customerVisible)) {
+    issues.push("Every mobile account option must be customer-visible.");
+  }
+  if (model.accountOptions.some((option) => option.liveOAuthEnabled)) {
+    issues.push("Mobile account options must not claim live OAuth.");
+  }
+
+  const importActions = new Set(model.importActions.map((action) => action.kind));
+  for (const action of ["calendar", "email", "invite"] as const) {
+    if (!importActions.has(action)) issues.push(`Missing mobile import action: ${action}`);
+  }
+  if (model.importActions.some((action) => !action.customerVisible)) {
+    issues.push("Every mobile import action must be customer-visible.");
   }
 
   const queueItemIds = new Set(model.queueItems.map((item) => item.id));
@@ -570,8 +718,8 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
     issues.push("Mobile chat must identify the local scripted assistant path.");
   }
 
-  if (!model.chatTranscript.some((message) => message.text.includes("Live AI and vendor orders stay off"))) {
-    issues.push("Mobile chat must disclose that live AI and vendor orders are off.");
+  if (!model.chatTranscript.some((message) => message.text.includes("Live AI and automatic orders stay off"))) {
+    issues.push("Mobile chat must disclose that live AI and automatic orders are off.");
   }
 
   if (model.memoryReviewItems.length < 2) {
@@ -588,12 +736,12 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
     issues.push("Mobile memory review must include approved and review-required states.");
   }
 
-  if (!model.renderChoices.some((choice) => choice.mode === "free-local" && choice.label === "Browser SVG renderer")) {
-    issues.push("Mobile render choices must include the free browser SVG renderer.");
+  if (!model.renderChoices.some((choice) => choice.mode === "free-local" && choice.label === "Template card proof")) {
+    issues.push("Mobile card proof path must include the free template renderer.");
   }
 
   if (!model.renderChoices.some((choice) => choice.mode === "credential-gated")) {
-    issues.push("Mobile render choices must keep AI image providers credential-gated.");
+    issues.push("Mobile card proof path must keep AI artwork credential-gated.");
   }
 
   if (model.pricingPreviews.length < 2) {
@@ -601,6 +749,20 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
   if (model.pricingPreviews.some((preview) => preview.liveQuote || !preview.manualConfirmationRequired)) {
     issues.push("Mobile pricing previews must stay review-only and manually confirmed.");
+  }
+
+  const fulfillmentKinds = new Set(model.fulfillmentRecommendations.map((recommendation) => recommendation.kind));
+  for (const kind of ["cheapest-known-price", "fastest-pickup", "cheapest-shipped"] as const) {
+    if (!fulfillmentKinds.has(kind)) issues.push(`Missing mobile fulfillment recommendation: ${kind}`);
+  }
+  if (model.fulfillmentRecommendations.some((recommendation) => !recommendation.customerVisible)) {
+    issues.push("Every mobile fulfillment recommendation must be customer-visible.");
+  }
+  if (model.fulfillmentRecommendations.some((recommendation) => recommendation.liveQuote || recommendation.liveOrder)) {
+    issues.push("Mobile fulfillment recommendations must not claim live quotes or direct orders.");
+  }
+  if (model.fulfillmentRecommendations.some((recommendation) => recommendation.totalCents <= 0)) {
+    issues.push("Mobile fulfillment recommendations must expose positive estimated totals.");
   }
 
   if (model.printProofChecks.length < 4) {
@@ -622,11 +784,11 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
 
   if (!model.handoffSteps.every((step) => step.realOrderState !== "disabled" || step.detail.includes("blocked"))) {
-    issues.push("Disabled mobile handoff steps must explain blocked live order APIs.");
+    issues.push("Disabled mobile handoff steps must explain blocked automatic checkout.");
   }
 
-  if (model.safetyBanner.label !== "Real orders disabled") {
-    issues.push("Mobile safety banner must keep real orders disabled.");
+  if (model.safetyBanner.label !== "Confirm before checkout") {
+    issues.push("Mobile safety banner must require checkout confirmation.");
   }
   if (!model.syncState.apiBaseUrlRequired || model.syncState.authMode !== "customer-session") {
     issues.push("Mobile sync must require the configured API base URL and customer session auth.");
@@ -654,6 +816,10 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
       const unsafeClaim = `Unsafe mobile live-provider claim: ${phrase}`;
       if (!issues.includes(unsafeClaim)) issues.push(unsafeClaim);
     }
+    if (/\b(adapter|provider|vendor api|retail-printer|browser svg renderer|ai image providers)\b/i.test(phrase)) {
+      const jargonClaim = `Mobile customer text must not expose provider/adapters: ${phrase}`;
+      if (!issues.includes(jargonClaim)) issues.push(jargonClaim);
+    }
   }
 
   return issues;
@@ -669,12 +835,21 @@ function collectMobileExperienceText(model: MobileExperienceModel): string[] {
     model.todaySummary.primaryAction,
     model.todaySummary.riskBadge,
     ...model.sections.flatMap((section) => [section.title, section.detail, section.status]),
+    ...model.accountOptions.flatMap((option) => [option.provider, option.label, option.detail]),
+    ...model.importActions.flatMap((action) => [action.kind, action.label, action.detail, action.sourceMode]),
     ...model.queueItems.flatMap((item) => [item.recipientLabel, item.eventLabel, item.status, item.source]),
     ...model.approvalActions.flatMap((action) => [action.label, action.detail, action.networkMode, action.mutationType]),
     ...model.chatTranscript.map((message) => message.text),
     ...model.memoryReviewItems.flatMap((item) => [item.recipientLabel, item.memoryLabel, item.usage]),
     ...model.renderChoices.flatMap((choice) => [choice.label, choice.detail, choice.mode]),
     ...model.pricingPreviews.flatMap((preview) => [preview.vendor, preview.product, preview.sourceMode]),
+    ...model.fulfillmentRecommendations.flatMap((recommendation) => [
+      recommendation.kind,
+      recommendation.label,
+      recommendation.vendorName,
+      recommendation.etaLabel,
+      recommendation.confirmationCopy
+    ]),
     ...model.printProofChecks.flatMap((check) => [check.label, check.detail, check.realOrderState]),
     ...model.handoffSteps.flatMap((step) => [step.label, step.detail, step.realOrderState]),
     ...model.localeOptions.flatMap((locale) => [locale.locale, locale.label, locale.cardLanguage, locale.writingDirection]),

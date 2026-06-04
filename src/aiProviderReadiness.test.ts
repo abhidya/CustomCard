@@ -16,7 +16,7 @@ describe("AI provider readiness", () => {
       repoLocalReady: 4,
       evidenceMissing: 4,
       textProviderContracts: 15,
-      imageProviderContracts: 12,
+      imageProviderContracts: 15,
       localFallbacks: 2,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -50,7 +50,16 @@ describe("AI provider readiness", () => {
       ])
     );
     expect(inventory?.imageAdapterIds).toEqual(
-      expect.arrayContaining(["openai-images", "stability-stable-image", "replicate-image", "fal-image", "bfl-flux-image"])
+      expect.arrayContaining([
+        "openai-images",
+        "stability-stable-image",
+        "replicate-image",
+        "fal-image",
+        "bfl-flux-image",
+        "adobe-firefly-image",
+        "recraft-image",
+        "luma-image"
+      ])
     );
     expect(inventory?.localFallbackAdapterIds).toEqual(
       expect.arrayContaining(["deterministic-customer-chat", "browser-svg-renderer"])

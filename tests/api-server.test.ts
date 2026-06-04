@@ -266,12 +266,12 @@ describe("api server wrapper", () => {
     expect(report.service).toBe("customcard-api-doctor");
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
-    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(102);
+    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(121);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 102,
-      budgetCapped: 76,
+      total: 121,
+      budgetCapped: 95,
       blockedZeroSpend: 6,
-      fallbackCovered: 102,
+      fallbackCovered: 121,
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
@@ -303,7 +303,7 @@ describe("api server wrapper", () => {
       repoLocalReady: 4,
       evidenceMissing: 4,
       textProviderContracts: 15,
-      imageProviderContracts: 12,
+      imageProviderContracts: 15,
       localFallbacks: 2,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -438,9 +438,9 @@ describe("api server wrapper", () => {
       repoLocalReady: 4,
       evidenceMissing: 3,
       approvalBlocked: 1,
-      crmAdapterContracts: 7,
-      workflowAdapterContracts: 8,
-      notificationAdapterContracts: 10,
+      crmAdapterContracts: 14,
+      workflowAdapterContracts: 11,
+      notificationAdapterContracts: 16,
       lifecycleTriggerKinds: 3,
       liveOAuthRequired: 1,
       liveMessagesEnabled: 0,
@@ -566,11 +566,11 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 15, admin: 5, idempotentMutations: 7 });
-      expect(readiness.providers).toMatchObject({ total: 102, readyLocal: 18, credentialGated: 69, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 121, readyLocal: 18, credentialGated: 88, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 102,
-        fallbackCovered: 102,
-        budgetCapped: 76,
+        total: 121,
+        fallbackCovered: 121,
+        budgetCapped: 95,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -609,7 +609,7 @@ describe("api server wrapper", () => {
         repoLocalReady: 4,
         evidenceMissing: 4,
         textProviderContracts: 15,
-        imageProviderContracts: 12,
+        imageProviderContracts: 15,
         localFallbacks: 2,
         promptAuditRequired: 6,
         humanReviewRequired: 5,
@@ -724,9 +724,9 @@ describe("api server wrapper", () => {
         repoLocalReady: 4,
         evidenceMissing: 3,
         approvalBlocked: 1,
-        crmAdapterContracts: 7,
-        workflowAdapterContracts: 8,
-        notificationAdapterContracts: 10,
+        crmAdapterContracts: 14,
+        workflowAdapterContracts: 11,
+        notificationAdapterContracts: 16,
         lifecycleTriggerKinds: 3,
         liveMessagesEnabled: 0,
         crmWritesEnabled: 0,
@@ -773,12 +773,12 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 102,
-        monthlyBudgetCents: 110800,
+        total: 121,
+        monthlyBudgetCents: 133200,
         maxPerRequestBudgetCents: 75,
-        rateLimited: 96,
-        queueRequired: 70,
-        fallbackCovered: 102,
+        rateLimited: 115,
+        queueRequired: 86,
+        fallbackCovered: 121,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []

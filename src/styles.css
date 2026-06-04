@@ -121,6 +121,11 @@ textarea {
 .blockedBox,
 .adapterRow,
 .downloadTile,
+.customerAuthButton,
+.importAction,
+.eventRow,
+.fulfillmentOptionHeader,
+.confirmationNotice,
 .quickAction,
 .adapterMini,
 .iconTextButton,
@@ -429,6 +434,9 @@ h3 {
 .handoffPanel,
 .adaptersView,
 .surfaceCard,
+.customerStartCard,
+.eventQueueCard,
+.fulfillmentRecommendation,
 .chatConsole {
   min-width: 0;
   border: 1px solid #d5dee0;
@@ -442,11 +450,15 @@ h3 {
 .handoffPanel,
 .adaptersView,
 .surfaceCard,
+.customerStartCard,
+.eventQueueCard,
+.fulfillmentRecommendation,
 .chatConsole {
   padding: 16px;
 }
 
-.surfaceCard.wide {
+.surfaceCard.wide,
+.customerStartCard.wide {
   grid-column: 1 / -1;
 }
 
@@ -625,6 +637,155 @@ h3 {
 
 .cloudProofRow.ready-local small {
   color: #1b5b4d;
+}
+
+.customerStartCard {
+  background: #ffffff;
+}
+
+.authProviderGrid,
+.importActionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fulfillmentOptionGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.authProviderGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 10px;
+}
+
+.customerAuthButton,
+.importAction {
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid #ced8db;
+  border-radius: 8px;
+  color: #203038;
+  background: #f9fbfb;
+  text-align: left;
+}
+
+.customerAuthButton {
+  min-height: 88px;
+  background: #eef8f4;
+}
+
+.customerAuthButton svg,
+.importAction svg,
+.fulfillmentOptionHeader svg {
+  color: #258477;
+}
+
+.customerAuthButton span,
+.importAction span,
+.eventRow strong,
+.fulfillmentOption strong {
+  font-weight: 880;
+}
+
+.customerAuthButton small,
+.importAction small,
+.eventRow small,
+.eventRow span,
+.fulfillmentOption small,
+.fulfillmentOption em,
+.confirmationNotice span {
+  color: #5f7076;
+  font-size: 0.76rem;
+  font-weight: 760;
+}
+
+.eventQueueCard {
+  background: #ffffff;
+}
+
+.eventRow {
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #dbe4e6;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.eventRow div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.eventRow strong,
+.eventRow span,
+.eventRow small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fulfillmentRecommendation {
+  background: #ffffff;
+}
+
+.fulfillmentOption {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dbe4e6;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.fulfillmentOptionHeader {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fulfillmentOptionHeader span {
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #174c42;
+  background: #dff2eb;
+  font-size: 0.72rem;
+  font-weight: 860;
+}
+
+.fulfillmentOption > span {
+  color: #174c42;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.fulfillmentOption em {
+  font-style: normal;
+}
+
+.confirmationNotice {
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #eadcae;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.confirmationNotice svg {
+  flex: 0 0 auto;
+  color: #8b6f25;
 }
 
 .quickActionGrid {
@@ -1409,6 +1570,7 @@ h3 {
   }
 
   .surfaceCard.wide,
+  .customerStartCard.wide,
   .adminWide {
     grid-column: auto;
   }
@@ -1465,6 +1627,18 @@ h3 {
     flex-direction: column;
   }
 
+  .customerPanel > .sectionHeader,
+  .customerStartCard .sectionHeader,
+  .eventQueueCard .sectionHeader,
+  .fulfillmentRecommendation .sectionHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .customerPanel .sectionHeader .statusChip {
+    max-width: 100%;
+  }
+
   .topStatus {
     width: 100%;
     justify-content: flex-start;
@@ -1496,6 +1670,9 @@ h3 {
   .formGrid,
   .metricStrip,
   .adminSummaryGrid,
+  .authProviderGrid,
+  .importActionGrid,
+  .fulfillmentOptionGrid,
   .quickActionGrid,
   .downloadGrid,
   .adapterToolbar,
@@ -1549,16 +1726,25 @@ h3 {
   }
 
   .decisionRow,
+  .eventRow,
   .topStatus {
     width: 100%;
   }
 
   .decisionRow button,
+  .eventRow button,
   .topStatus .statusChip,
   .adapterStrip span,
+  .customerAuthButton,
+  .importAction,
   .quickAction {
     width: 100%;
     flex-basis: 100%;
+  }
+
+  .eventRow {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .envChipGrid {

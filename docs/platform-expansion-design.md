@@ -14,6 +14,11 @@ credential-gated provider work explicit and testable.
 
 The system remains adapter-first:
 
+- Customer UX is outcome-first: sign in with Google/Apple entry points, import
+  calendar/email/invite signals, review card-worthy events, approve a card, and
+  choose between cheapest known public price, fastest pickup candidate, and
+  cheapest shipped option. Customer screens must not expose adapter inventory,
+  credential gates, or provider runtime jargon.
 - Customer surfaces consume capability groups: event import, text chat,
   image/render, memory, localization, and handoff.
 - Admin surfaces consume the same adapter catalog to see readiness, required
@@ -40,8 +45,9 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   Graph contacts, generic CardDAV address books, and iCloud vCard manual
   fallback.
 - Business CRM integration: admin-only CRM CSV lifecycle import plus gated
-  Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify
-  customer lifecycle contracts for birthday, purchase-anniversary, and
+  Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, Shopify,
+  Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce, Square, and
+  Intercom customer lifecycle contracts for birthday, purchase-anniversary, and
   warranty-anniversary campaigns.
 - Business engagement readiness: `src/businessEngagementReadiness.ts` and
   `src/businessEngagementReadinessData.mjs` track CRM lifecycle source,
@@ -65,9 +71,10 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   and self-hosted OpenAI-compatible endpoints.
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
   Gemini image generation, Azure OpenAI, Amazon Bedrock, Stability AI, Hugging
-  Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, local
-  print package export, local filesystem object-store render-packet writes, and
-  injected plus live MinIO/S3-compatible render-packet write/read contracts.
+  Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, Adobe
+  Firefly, Recraft, Luma, local print package export, local filesystem
+  object-store render-packet writes, and injected plus live MinIO/S3-compatible
+  render-packet write/read contracts.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
   and Office Depot live ordering blocked.
@@ -75,14 +82,20 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   card observations ready for manual comparison, with official-source collection
   rules and 30-day freshness reporting; live quotes, taxes, coupons, stock, and
   pickup windows remain manual-confirmation work.
+- Customer fulfillment recommendation: the web customer panel uses the public
+  pricing comparison to show cheapest known price, fastest pickup candidate, and
+  cheapest shipped option without surfacing retail-printer adapter internals.
+  Closest-store ETA, live tax, stock, delivery fee, payment, and direct order
+  submission remain gated behind live quote/order/payment adapters.
 - Retail fulfillment readiness: `src/retailFulfillmentReadiness.ts` and
   `src/retailFulfillmentReadinessData.mjs` track manual handoff, public
   pricing, live quote contracts, vendor certification, order kill switch,
   pickup/cancel recovery, payment/refund boundary, and physical print QA. Run
   `npm run retail:doctor`; this is not live retail ordering.
 - Notifications: local UI status ready; credential-gated Resend, SendGrid,
-  Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, and Firebase
-  Cloud Messaging contracts; generic transactional email contract gated.
+  Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, Firebase Cloud
+  Messaging, Customer.io, Braze, OneSignal, Courier, Knock, and Novu contracts;
+  generic transactional email contract gated.
 - Payments: local no-payment gate ready; credential-gated Stripe Checkout,
   PayPal Orders, Square Payments, and Adyen Checkout sandbox contracts. Live
   charges, captures, refunds, disputes, taxes, and settlement remain unverified.
@@ -161,6 +174,9 @@ Official documentation anchors used for the adapter contracts:
 - Leonardo image generation API: https://docs.leonardo.ai/reference/creategeneration
 - fal queue endpoints: https://fal.ai/docs/documentation/model-apis/inference/queue
 - Black Forest Labs image generation: https://docs.us.bfl.ai/quick_start/generating_images
+- Adobe Firefly Services API: https://developer.adobe.com/firefly-services/docs/firefly-api/api/
+- Recraft API endpoints: https://www.recraft.ai/docs/api-reference/endpoints
+- Luma image generation API: https://docs.lumalabs.ai/docs/image-generation
 - Gmail API guides: https://developers.google.com/gmail/api/guides
 - Google Calendar API overview: https://developers.google.com/calendar/api/guides/overview
 - Microsoft Graph Outlook mail: https://learn.microsoft.com/en-us/graph/outlook-mail-concept-overview
@@ -171,6 +187,13 @@ Official documentation anchors used for the adapter contracts:
 - Pipedrive Persons API: https://developers.pipedrive.com/docs/api/v1/Persons
 - Microsoft Dataverse Web API query: https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/query/overview
 - Shopify Admin GraphQL customers: https://shopify.dev/docs/api/admin-graphql/latest/queries/customers
+- Klaviyo profiles API: https://developers.klaviyo.com/en/reference/get_profiles
+- Mailchimp list members API: https://mailchimp.com/developer/marketing/api/list-members/list-members-info/
+- ActiveCampaign contacts API: https://developers.activecampaign.com/reference/list-all-contacts
+- BigCommerce customers API: https://docs.bigcommerce.com/developer/api-reference/rest/admin/management/customers/v3/get-customers
+- WooCommerce customers API: https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-customers
+- Square customers search API: https://developer.squareup.com/reference/square/customers-api/search-customers
+- Intercom contacts search API: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/contacts/searchcontacts
 - Zapier Webhooks trigger: https://help.zapier.com/hc/en-us/articles/8496288690317-Trigger-Zaps-from-webhooks
 - Make webhooks: https://help.make.com/webhooks
 - Slack chat.postMessage: https://docs.slack.dev/reference/methods/chat.postMessage/
@@ -178,6 +201,9 @@ Official documentation anchors used for the adapter contracts:
 - Notion create page: https://developers.notion.com/reference/post-page
 - Airtable create records: https://airtable.com/developers/web/api/create-records
 - Google Sheets append values: https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets.values/append
+- n8n webhook node: https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/
+- Workato webhooks: https://docs.workato.com/connectors/workato_app/workato-webhooks.html
+- Pipedream workflow triggers: https://pipedream.com/docs/workflows/steps/triggers/
 - Hugging Face Inference Providers: https://huggingface.co/docs/inference-providers/index
 - Stability image API: https://platform.stability.ai/docs/getting-started/stable-image
 - Replicate HTTP API: https://replicate.com/docs/reference/http
@@ -189,6 +215,12 @@ Official documentation anchors used for the adapter contracts:
 - WhatsApp Cloud API message API: https://developers.facebook.com/documentation/business-messaging/whatsapp/reference/whatsapp-business-phone-number/message-api
 - Expo push notification sending: https://docs.expo.dev/push-notifications/sending-notifications/
 - Firebase Cloud Messaging HTTP v1: https://firebase.google.com/docs/cloud-messaging/send/v1-api
+- Customer.io transactional API examples: https://docs.customer.io/journeys/transactional-api-examples/
+- Braze send messages API: https://www.braze.com/docs/api/endpoints/messaging/send_messages/post_send_messages/
+- OneSignal create message API: https://documentation.onesignal.com/reference/create-message
+- Courier Send API: https://www.courier.com/docs/reference/send
+- Knock workflow trigger API: https://docs.knock.app/send-notifications/triggering-workflows/api
+- Novu trigger event API: https://docs.novu.co/api-reference/events/trigger-event
 - Stripe Checkout Session creation: https://docs.stripe.com/api/checkout/sessions/create
 - PayPal Orders API create order: https://developer.paypal.com/docs/api/orders/v2/#orders_create
 - Square Payments API overview: https://developer.squareup.com/docs/payments-api/take-payments
@@ -294,10 +326,11 @@ mobile bootstrap, admin readiness, provider catalog, admin demo reset, import
 preview, card project creation, render packets, manual vendor handoff, and data
 requests. Customer, admin, and mobile bootstrap payloads include localization
 readiness so clients can render the same launch-locale state. The mobile
-bootstrap also exposes the same customer app contract used by Expo: next-action
-summary, queue items, approval actions, memory review items, render choices,
-review-only pricing previews, print-proof checks, manual handoff steps, and
-offline idempotent sync state.
+bootstrap also exposes the same customer app contract used by Expo: Google/Apple
+entry points, calendar/email/invite import actions, next-action summary, queue
+items, approval actions, memory review items, card proof path, best available
+fulfillment recommendations, print-proof checks, checkout confirmation steps,
+and offline idempotent sync state.
 
 Hosted API proof readiness in `src/hostedApiReadiness.ts` and
 `src/hostedApiReadinessData.mjs` tracks the Vercel project link, serverless API

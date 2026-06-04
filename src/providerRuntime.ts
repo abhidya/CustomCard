@@ -239,13 +239,23 @@ const providerScopes: Record<string, string[]> = {
   "pipedrive-crm-lifecycle": ["persons:read", "deals:read"],
   "dynamics-crm-lifecycle": ["https://{DYNAMICS_RESOURCE_URL}/.default"],
   "shopify-crm-lifecycle": ["read_customers", "read_orders"],
+  "klaviyo-profile-lifecycle": ["profiles:read"],
+  "mailchimp-audience-lifecycle": ["lists:read", "members:read"],
+  "activecampaign-contact-lifecycle": ["contacts:read"],
+  "bigcommerce-customer-lifecycle": ["store_v2_customers_read_only"],
+  "woocommerce-customer-lifecycle": ["customers:read", "orders:read"],
+  "square-customer-lifecycle": ["CUSTOMERS_READ"],
+  "intercom-contact-lifecycle": ["read:contacts"],
   "zapier-webhook-workflow": ["webhook:write"],
   "make-webhook-workflow": ["webhook:write"],
   "slack-workflow-notification": ["chat:write"],
   "teams-workflow-notification": ["incoming-webhook"],
   "notion-customer-database-sync": ["pages.write", "databases.read"],
   "airtable-customer-base-sync": ["data.records:write"],
-  "google-sheets-lifecycle-sync": ["https://www.googleapis.com/auth/spreadsheets"]
+  "google-sheets-lifecycle-sync": ["https://www.googleapis.com/auth/spreadsheets"],
+  "n8n-webhook-workflow": ["webhook:write"],
+  "workato-webhook-workflow": ["webhook:write"],
+  "pipedream-webhook-workflow": ["webhook:write"]
 };
 
 export function buildProviderAdapterRuntime(
@@ -1205,6 +1215,61 @@ function buildImageRequest(
     );
   }
 
+  if (adapter.id === "adobe-firefly-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://firefly-api.adobe.io/v3/images/generate",
+      ["ADOBE_FIREFLY_CLIENT_ID", "ADOBE_FIREFLY_CLIENT_SECRET", "ADOBE_FIREFLY_API_KEY"],
+      {
+        prompt,
+        numVariations: 1,
+        size: { width: 1024, height: 1536 },
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      {
+        authorization: "Bearer {adobe-firefly-access-token}",
+        "x-api-key": "{ADOBE_FIREFLY_API_KEY}",
+        "x-customcard-adobe-client": "{ADOBE_FIREFLY_CLIENT_ID}"
+      }
+    );
+  }
+
+  if (adapter.id === "recraft-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://external.api.recraft.ai/v1/images/generations",
+      ["RECRAFT_API_KEY"],
+      {
+        prompt,
+        size: "1024x1536",
+        style: "digital_illustration",
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      { authorization: "Bearer {RECRAFT_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "luma-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.lumalabs.ai/dream-machine/v1/generations/image",
+      ["LUMA_API_KEY"],
+      {
+        prompt,
+        aspect_ratio: "2:3",
+        model: "admin-selected-luma-image-model",
+        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      },
+      [],
+      { authorization: "Bearer {LUMA_API_KEY}" }
+    );
+  }
+
   return request(adapter, "POST", "https://api.replicate.com/v1/predictions", ["REPLICATE_API_TOKEN"], {
     version: "admin-allowlisted-image-model-version",
     input: { prompt },
@@ -1424,21 +1489,139 @@ function buildCrmRequest(adapter: ProviderAdapter, input: CrmRuntimeInput): Runt
     );
   }
 
+  if (adapter.id === "shopify-crm-lifecycle") {
+    return request(
+      adapter,
+      "POST",
+      "https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2026-04/graphql.json",
+      ["SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ADMIN_ACCESS_TOKEN"],
+      {
+        query:
+          "query CustomCardCustomerLifecycle($query: String!) { customers(first: 100, query: $query) { nodes { id displayName email emailMarketingConsent { marketingState } orders(first: 10, sortKey: PROCESSED_AT, reverse: true) { nodes { id processedAt warrantyEndDate: metafield(namespace: \"customcard\", key: \"warranty_end_date\") { value } } } } } }",
+        variables: {
+          query: `updated_at:>=${input.fromIso} updated_at:<=${input.toIso}`
+        },
+        metadata: lifecycleMetadata
+      },
+      scopes,
+      { "x-shopify-access-token": "{SHOPIFY_ADMIN_ACCESS_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "klaviyo-profile-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      `https://a.klaviyo.com/api/profiles/?${new URLSearchParams({
+        "filter": `greater-than(updated,${input.fromIso}),less-than(updated,${input.toIso})`,
+        "fields[profile]": "email,first_name,last_name,birthday,subscriptions",
+        page_size: "100"
+      }).toString()}`,
+      ["KLAVIYO_PRIVATE_API_KEY", "KLAVIYO_REVISION"],
+      undefined,
+      scopes,
+      {
+        authorization: "Klaviyo-API-Key {KLAVIYO_PRIVATE_API_KEY}",
+        revision: "{KLAVIYO_REVISION}"
+      }
+    );
+  }
+
+  if (adapter.id === "mailchimp-audience-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "https://{MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/{MAILCHIMP_AUDIENCE_ID}/members?count=100&fields=members.id,members.email_address,members.status,members.merge_fields,members.timestamp_opt,members.last_changed",
+      ["MAILCHIMP_API_KEY", "MAILCHIMP_SERVER_PREFIX", "MAILCHIMP_AUDIENCE_ID"],
+      undefined,
+      scopes,
+      { authorization: "Basic anystring:{MAILCHIMP_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "activecampaign-contact-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "{ACTIVECAMPAIGN_BASE_URL}/api/3/contacts?limit=100&orders[cdate]=DESC",
+      ["ACTIVECAMPAIGN_BASE_URL", "ACTIVECAMPAIGN_API_KEY"],
+      undefined,
+      scopes,
+      { "Api-Token": "{ACTIVECAMPAIGN_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "bigcommerce-customer-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "https://api.bigcommerce.com/stores/{BIGCOMMERCE_STORE_HASH}/v3/customers?limit=100&include=formfields,storecredit",
+      ["BIGCOMMERCE_STORE_HASH", "BIGCOMMERCE_ACCESS_TOKEN"],
+      undefined,
+      scopes,
+      {
+        "x-auth-token": "{BIGCOMMERCE_ACCESS_TOKEN}",
+        accept: "application/json"
+      }
+    );
+  }
+
+  if (adapter.id === "woocommerce-customer-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      "{WOOCOMMERCE_STORE_URL}/wp-json/wc/v3/customers?per_page=100&orderby=modified&order=desc",
+      ["WOOCOMMERCE_STORE_URL", "WOOCOMMERCE_CONSUMER_KEY", "WOOCOMMERCE_CONSUMER_SECRET"],
+      undefined,
+      scopes,
+      { authorization: "Basic {WOOCOMMERCE_CONSUMER_KEY}:{WOOCOMMERCE_CONSUMER_SECRET}" }
+    );
+  }
+
+  if (adapter.id === "square-customer-lifecycle") {
+    return request(
+      adapter,
+      "POST",
+      "https://connect.squareup.com/v2/customers/search",
+      ["SQUARE_ACCESS_TOKEN", "SQUARE_LOCATION_ID"],
+      {
+        query: {
+          filter: {
+            updated_at: {
+              start_at: input.fromIso,
+              end_at: input.toIso
+            }
+          }
+        },
+        limit: 100,
+        metadata: lifecycleMetadata
+      },
+      scopes,
+      { authorization: "Bearer {SQUARE_ACCESS_TOKEN}" }
+    );
+  }
+
   return request(
     adapter,
     "POST",
-    "https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2026-04/graphql.json",
-    ["SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ADMIN_ACCESS_TOKEN"],
+    "https://api.intercom.io/contacts/search",
+    ["INTERCOM_ACCESS_TOKEN"],
     {
-      query:
-        "query CustomCardCustomerLifecycle($query: String!) { customers(first: 100, query: $query) { nodes { id displayName email emailMarketingConsent { marketingState } orders(first: 10, sortKey: PROCESSED_AT, reverse: true) { nodes { id processedAt warrantyEndDate: metafield(namespace: \"customcard\", key: \"warranty_end_date\") { value } } } } } }",
-      variables: {
-        query: `updated_at:>=${input.fromIso} updated_at:<=${input.toIso}`
+      query: {
+        operator: "AND",
+        value: [
+          { field: "updated_at", operator: ">", value: "{from_unix_timestamp}" },
+          { field: "updated_at", operator: "<", value: "{to_unix_timestamp}" }
+        ]
       },
+      pagination: { per_page: 100 },
       metadata: lifecycleMetadata
     },
     scopes,
-    { "x-shopify-access-token": "{SHOPIFY_ADMIN_ACCESS_TOKEN}" }
+    {
+      authorization: "Bearer {INTERCOM_ACCESS_TOKEN}",
+      "Intercom-Version": "2.13"
+    }
   );
 }
 
@@ -1609,19 +1792,62 @@ function buildWorkflowIntegrationRequest(
     );
   }
 
+  if (adapter.id === "google-sheets-lifecycle-sync") {
+    return request(
+      adapter,
+      "POST",
+      "https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_SPREADSHEET_ID}/values/CustomCardQueue!A:F:append?valueInputOption=USER_ENTERED",
+      ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_SHEETS_SPREADSHEET_ID"],
+      {
+        range: "CustomCardQueue!A:F",
+        majorDimension: "ROWS",
+        values: [[metadata.campaign_id, "Needs review", input.fromIso, input.toIso, sourceSummary, "live_send_disabled"]],
+        metadata
+      },
+      scopes,
+      { authorization: "Bearer {google-oauth-access-token}" }
+    );
+  }
+
+  if (adapter.id === "n8n-webhook-workflow") {
+    return request(
+      adapter,
+      "POST",
+      "{N8N_WEBHOOK_URL}",
+      ["N8N_WEBHOOK_URL", "N8N_WEBHOOK_SECRET"],
+      queuePayload,
+      scopes,
+      {
+        "x-customcard-signature": "HMAC-SHA256 {N8N_WEBHOOK_SECRET}"
+      }
+    );
+  }
+
+  if (adapter.id === "workato-webhook-workflow") {
+    return request(
+      adapter,
+      "POST",
+      "{WORKATO_WEBHOOK_URL}",
+      ["WORKATO_WEBHOOK_URL", "WORKATO_API_TOKEN"],
+      queuePayload,
+      scopes,
+      {
+        authorization: "Bearer {WORKATO_API_TOKEN}",
+        "x-customcard-live-send": "disabled"
+      }
+    );
+  }
+
   return request(
     adapter,
     "POST",
-    "https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_SPREADSHEET_ID}/values/CustomCardQueue!A:F:append?valueInputOption=USER_ENTERED",
-    ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_SHEETS_SPREADSHEET_ID"],
-    {
-      range: "CustomCardQueue!A:F",
-      majorDimension: "ROWS",
-      values: [[metadata.campaign_id, "Needs review", input.fromIso, input.toIso, sourceSummary, "live_send_disabled"]],
-      metadata
-    },
+    "{PIPEDREAM_WORKFLOW_URL}",
+    ["PIPEDREAM_WORKFLOW_URL", "PIPEDREAM_SIGNING_SECRET"],
+    queuePayload,
     scopes,
-    { authorization: "Bearer {google-oauth-access-token}" }
+    {
+      "x-customcard-signature": "HMAC-SHA256 {PIPEDREAM_SIGNING_SECRET}"
+    }
   );
 }
 
@@ -1763,28 +1989,139 @@ function buildNotificationRequest(
     });
   }
 
+  if (adapter.id === "firebase-cloud-messaging") {
+    return request(
+      adapter,
+      "POST",
+      "https://fcm.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/messages:send",
+      ["FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT_JSON"],
+      {
+        message: {
+          token: "{firebase-registration-token}",
+          notification: { title: subject, body: message },
+          data: {
+            customcard_adapter: adapter.id,
+            channel,
+            live_send: "disabled"
+          }
+        },
+        metadata
+      },
+      [],
+      {
+        authorization: "Bearer {firebase-oauth-access-token}",
+        "x-customcard-service-account": "{FIREBASE_SERVICE_ACCOUNT_JSON}"
+      }
+    );
+  }
+
+  if (adapter.id === "customerio-transactional-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.customer.io/v1/send/email",
+      ["CUSTOMERIO_APP_API_KEY", "CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID"],
+      {
+        transactional_message_id: "{CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID}",
+        identifiers: { id: "{customcard-customer-reference}" },
+        to: "{verified-recipient}",
+        subject,
+        message_data: { message, metadata },
+        disable_message_retention: true
+      },
+      [],
+      { authorization: "Bearer {CUSTOMERIO_APP_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "braze-canvas-notification") {
+    return request(
+      adapter,
+      "POST",
+      "{BRAZE_REST_ENDPOINT}/messages/send",
+      ["BRAZE_REST_ENDPOINT", "BRAZE_REST_API_KEY", "BRAZE_CANVAS_ID"],
+      {
+        canvas_id: "{BRAZE_CANVAS_ID}",
+        recipients: [{ external_user_id: "{customcard-customer-reference}" }],
+        messages: {
+          [channel]: {
+            subject,
+            body: message
+          }
+        },
+        metadata
+      },
+      [],
+      { authorization: "Bearer {BRAZE_REST_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "onesignal-message-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.onesignal.com/notifications",
+      ["ONESIGNAL_APP_ID", "ONESIGNAL_REST_API_KEY"],
+      {
+        app_id: "{ONESIGNAL_APP_ID}",
+        include_aliases: { external_id: ["{customcard-customer-reference}"] },
+        target_channel: channel === "push" ? "push" : "email",
+        headings: { en: subject },
+        contents: { en: message },
+        custom_data: metadata
+      },
+      [],
+      { authorization: "Key {ONESIGNAL_REST_API_KEY}" }
+    );
+  }
+
+  if (adapter.id === "courier-send-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.courier.com/send",
+      ["COURIER_AUTH_TOKEN", "COURIER_TEMPLATE_ID"],
+      {
+        message: {
+          template: "{COURIER_TEMPLATE_ID}",
+          to: { user_id: "{customcard-customer-reference}" },
+          data: { subject, message, metadata },
+          routing: { method: "single", channels: [channel] }
+        }
+      },
+      [],
+      { authorization: "Bearer {COURIER_AUTH_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "knock-workflow-notification") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.knock.app/v1/workflows/{KNOCK_WORKFLOW_KEY}/trigger",
+      ["KNOCK_API_KEY", "KNOCK_WORKFLOW_KEY"],
+      {
+        recipients: ["{customcard-customer-reference}"],
+        data: { subject, message, metadata },
+        actor: "{customcard-service}"
+      },
+      [],
+      { authorization: "Bearer {KNOCK_API_KEY}" }
+    );
+  }
+
   return request(
     adapter,
     "POST",
-    "https://fcm.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/messages:send",
-    ["FIREBASE_PROJECT_ID", "FIREBASE_SERVICE_ACCOUNT_JSON"],
+    "https://api.novu.co/v1/events/trigger",
+    ["NOVU_API_KEY", "NOVU_WORKFLOW_ID"],
     {
-      message: {
-        token: "{firebase-registration-token}",
-        notification: { title: subject, body: message },
-        data: {
-          customcard_adapter: adapter.id,
-          channel,
-          live_send: "disabled"
-        }
-      },
-      metadata
+      name: "{NOVU_WORKFLOW_ID}",
+      to: { subscriberId: "{customcard-customer-reference}" },
+      payload: { subject, message, metadata }
     },
     [],
-    {
-      authorization: "Bearer {firebase-oauth-access-token}",
-      "x-customcard-service-account": "{FIREBASE_SERVICE_ACCOUNT_JSON}"
-    }
+    { authorization: "ApiKey {NOVU_API_KEY}" }
   );
 }
 
@@ -1792,6 +2129,9 @@ function notificationChannelForAdapter(adapterId: string, fallback: Notification
   if (adapterId.includes("email")) return "email";
   if (adapterId.includes("sms")) return "sms";
   if (adapterId.includes("whatsapp")) return "whatsapp";
+  if (adapterId.includes("customerio") || adapterId.includes("braze") || adapterId.includes("courier") || adapterId.includes("knock") || adapterId.includes("novu")) {
+    return fallback;
+  }
   if (adapterId.includes("push") || adapterId.includes("messaging")) return "push";
   return fallback;
 }

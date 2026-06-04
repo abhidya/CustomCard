@@ -41,7 +41,7 @@ export const productionLaunchGates: ProductionLaunchGate[] = [
     status: "evidence-missing",
     liveEnabled: false,
     requiredEvidence: ["Provider OAuth app review", "Scoped consent screenshots", "Revocation drill", "Metadata schema validation"],
-    currentEvidence: ["Google, Microsoft, CardDAV, Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, and Shopify contracts"],
+    currentEvidence: ["Google, Microsoft, CardDAV, Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce, Square, and Intercom contracts"],
     blocker: "Live OAuth app approvals and revocation evidence are not present.",
     adminAction: "Record provider approvals, scoped consent, and revocation test evidence before enabling live sync."
   },

@@ -30,7 +30,7 @@ describe("provider catalog", () => {
     ];
     const summary = summarizeProviderCoverage();
 
-    expect(summary.total).toBeGreaterThanOrEqual(102);
+    expect(summary.total).toBeGreaterThanOrEqual(121);
     expect(summary.capabilityCount).toBe(requiredCapabilities.length);
 
     for (const capability of requiredCapabilities) {
@@ -57,6 +57,13 @@ describe("provider catalog", () => {
       "Pipedrive CRM lifecycle sync",
       "Dynamics 365 Sales lifecycle sync",
       "Shopify customer lifecycle sync",
+      "Klaviyo profile lifecycle sync",
+      "Mailchimp audience lifecycle sync",
+      "ActiveCampaign contact lifecycle sync",
+      "BigCommerce customer lifecycle sync",
+      "WooCommerce customer lifecycle sync",
+      "Square customer lifecycle sync",
+      "Intercom contact lifecycle sync",
       "Zapier webhook workflow",
       "Make webhook workflow",
       "Slack workflow notification",
@@ -64,6 +71,9 @@ describe("provider catalog", () => {
       "Notion customer database sync",
       "Airtable customer base sync",
       "Google Sheets lifecycle sync",
+      "n8n webhook workflow",
+      "Workato webhook workflow",
+      "Pipedream workflow trigger",
       "Resend email notification",
       "SendGrid email notification",
       "Postmark email notification",
@@ -72,6 +82,12 @@ describe("provider catalog", () => {
       "WhatsApp Cloud notification",
       "Expo push notification",
       "Firebase Cloud Messaging",
+      "Customer.io transactional notification",
+      "Braze Canvas notification",
+      "OneSignal message notification",
+      "Courier send notification",
+      "Knock workflow notification",
+      "Novu trigger notification",
       "Stripe Checkout payment",
       "PayPal Orders payment",
       "Square Payments sandbox",
@@ -107,6 +123,9 @@ describe("provider catalog", () => {
       "Leonardo image",
       "fal image",
       "Black Forest Labs image",
+      "Adobe Firefly image",
+      "Recraft image",
+      "Luma image",
       "Gmail metadata adapter",
       "Google Calendar events",
       "Microsoft Graph mail",
@@ -167,6 +186,12 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("DYNAMICS_CLIENT_SECRET");
     expect(admin.coverage.requiredEnv).toContain("SHOPIFY_SHOP_DOMAIN");
     expect(admin.coverage.requiredEnv).toContain("SHOPIFY_ADMIN_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("KLAVIYO_PRIVATE_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("MAILCHIMP_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("ACTIVECAMPAIGN_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("BIGCOMMERCE_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("WOOCOMMERCE_CONSUMER_KEY");
+    expect(admin.coverage.requiredEnv).toContain("INTERCOM_ACCESS_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("ZAPIER_WEBHOOK_URL");
     expect(admin.coverage.requiredEnv).toContain("ZAPIER_SIGNING_SECRET");
     expect(admin.coverage.requiredEnv).toContain("MAKE_WEBHOOK_URL");
@@ -182,6 +207,9 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("AIRTABLE_BASE_ID");
     expect(admin.coverage.requiredEnv).toContain("AIRTABLE_TABLE_ID");
     expect(admin.coverage.requiredEnv).toContain("GOOGLE_SHEETS_SPREADSHEET_ID");
+    expect(admin.coverage.requiredEnv).toContain("N8N_WEBHOOK_URL");
+    expect(admin.coverage.requiredEnv).toContain("WORKATO_WEBHOOK_URL");
+    expect(admin.coverage.requiredEnv).toContain("PIPEDREAM_WORKFLOW_URL");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_ENDPOINT");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("AZURE_OPENAI_CHAT_DEPLOYMENT");
@@ -207,6 +235,9 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("LEONARDO_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("FAL_KEY");
     expect(admin.coverage.requiredEnv).toContain("BFL_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("ADOBE_FIREFLY_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("RECRAFT_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("LUMA_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("RESEND_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("SENDGRID_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("POSTMARK_SERVER_TOKEN");
@@ -218,6 +249,12 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("WHATSAPP_ACCESS_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("WHATSAPP_PHONE_NUMBER_ID");
     expect(admin.coverage.requiredEnv).toContain("EXPO_ACCESS_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("CUSTOMERIO_APP_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("BRAZE_REST_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("ONESIGNAL_REST_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("COURIER_AUTH_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("KNOCK_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("NOVU_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("STRIPE_SECRET_KEY");
     expect(admin.coverage.requiredEnv).toContain("STRIPE_WEBHOOK_SECRET");
     expect(admin.coverage.requiredEnv).toContain("CUSTOMCARD_PAYMENT_SUCCESS_URL");
@@ -271,14 +308,18 @@ describe("provider catalog", () => {
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Business CRM CSV lifecycle import");
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Local workflow payload export");
     expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Salesforce CRM lifecycle sync");
+    expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Klaviyo profile lifecycle sync");
+    expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Customer.io transactional notification");
     expect(admin.gatedProviders.map((adapter) => adapter.label)).toContain("Zapier webhook workflow");
     expect(admin.integrationAdapters.map((adapter) => adapter.label)).toEqual(
       expect.arrayContaining([
         "Business CRM CSV lifecycle import",
         "Local workflow payload export",
         "Salesforce CRM lifecycle sync",
+        "Klaviyo profile lifecycle sync",
         "Zapier webhook workflow",
-        "Google Sheets lifecycle sync"
+        "Google Sheets lifecycle sync",
+        "n8n webhook workflow"
       ])
     );
   });
@@ -306,8 +347,8 @@ describe("provider catalog", () => {
     );
     expect(customer.importProviders.map((adapter) => adapter.label)).not.toContain("Salesforce CRM lifecycle sync");
     expect(customer.chatProviders.length).toBeGreaterThanOrEqual(15);
-    expect(customer.imageProviders.length).toBeGreaterThanOrEqual(14);
-    expect(transcript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
+    expect(customer.imageProviders.length).toBeGreaterThanOrEqual(17);
+    expect(transcript.map((message) => message.text).join(" ")).toContain("Live AI and automatic checkout stay off");
   });
 
   it("passes the catalog integrity validator", () => {

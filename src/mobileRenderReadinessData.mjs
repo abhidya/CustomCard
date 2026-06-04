@@ -22,22 +22,32 @@ export const mobileRenderReadinessItems = [
     screenSectionIds: [
       "header",
       "status-band",
+      "sign-in-import",
       "today-card",
       "workflow-coverage",
       "card-queue",
       "memory-review",
       "approval-controls",
       "text-interface",
-      "render-choices",
-      "pricing-preview",
+      "card-proof-path",
+      "best-available-options",
       "print-proof",
-      "manual-handoff",
-      "offline-api-sync",
+      "checkout-confirmation",
+      "offline-sync",
       "locale-readiness"
     ],
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: [],
-    requiredSourceSignals: ["SafeAreaView", "ScrollView", "StyleSheet.create", "mobileExperienceSections", "summarizeMobileExperience"],
+    requiredSourceSignals: [
+      "SafeAreaView",
+      "ScrollView",
+      "StyleSheet.create",
+      "mobileAccountOptions",
+      "mobileImportActions",
+      "mobileExperienceSections",
+      "mobileFulfillmentRecommendations",
+      "summarizeMobileExperience"
+    ],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -57,17 +67,26 @@ export const mobileRenderReadinessItems = [
     status: "repo-local-ready",
     screenSectionIds: [
       "today-card",
+      "sign-in-import",
       "workflow-coverage",
       "card-queue",
       "approval-controls",
       "text-interface",
-      "render-choices",
-      "pricing-preview",
-      "offline-api-sync"
+      "best-available-options",
+      "offline-sync"
     ],
     viewportProfiles: ["standard-phone", "large-phone"],
     nativeBuildProfileIds: [],
-    requiredSourceSignals: ["mobileTodaySummary", "mobileCardQueueItems", "mobileApprovalActions", "mobileChatTranscript", "mobileSyncState"],
+    requiredSourceSignals: [
+      "mobileAccountOptions",
+      "mobileImportActions",
+      "mobileTodaySummary",
+      "mobileCardQueueItems",
+      "mobileApprovalActions",
+      "mobileChatTranscript",
+      "mobileFulfillmentRecommendations",
+      "mobileSyncState"
+    ],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -85,7 +104,7 @@ export const mobileRenderReadinessItems = [
     label: "Mobile print proof render",
     lane: "print-proof",
     status: "repo-local-ready",
-    screenSectionIds: ["print-proof", "manual-handoff", "render-choices"],
+    screenSectionIds: ["print-proof", "checkout-confirmation", "card-proof-path"],
     viewportProfiles: ["standard-phone", "large-phone"],
     nativeBuildProfileIds: [],
     requiredSourceSignals: ["mobilePrintProofChecks", "proof-size", "proof-resolution", "proof-safe-zone", "proof-order-gate"],
@@ -97,8 +116,8 @@ export const mobileRenderReadinessItems = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     liveProviderCalls: false,
-    currentEvidence: ["four print proof checks", "manual handoff steps", "real-order disabled proof gate"],
-    requiredEvidence: ["Native print proof screenshot", "Device-safe-zone screenshot", "Retail handoff visual QA"],
+    currentEvidence: ["four print proof checks", "checkout confirmation steps", "real-order disabled proof gate"],
+    requiredEvidence: ["Native print proof screenshot", "Device-safe-zone screenshot", "Checkout confirmation visual QA"],
     blocker: "Print proof rows are represented in source; no native screenshot or device visual QA evidence is attached."
   },
   {
@@ -106,7 +125,7 @@ export const mobileRenderReadinessItems = [
     label: "Mobile responsive layout constraints",
     lane: "viewport-layout",
     status: "repo-local-ready",
-    screenSectionIds: ["status-band", "today-card", "card-queue", "pricing-preview", "locale-readiness"],
+    screenSectionIds: ["status-band", "sign-in-import", "today-card", "card-queue", "best-available-options", "locale-readiness"],
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: [],
     requiredSourceSignals: ["flex: 1", "ScrollView", "gap:", "maxWidth: 92", "lineHeight"],
@@ -169,7 +188,7 @@ export const mobileRenderReadinessItems = [
     label: "Native emulator render proof",
     lane: "emulator-proof",
     status: "evidence-missing",
-    screenSectionIds: ["customer-home", "admin-safe-gates", "print-proof"],
+    screenSectionIds: ["customer-home", "sign-in-import", "print-proof"],
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: ["development", "preview"],
     requiredSourceSignals: ["CUSTOMCARD_API_BASE_URL", "REAL_ORDER_KILL_SWITCH", "expo", "react-native"],
@@ -269,7 +288,16 @@ export function validateMobileRenderReadiness(items = mobileRenderReadinessItems
   const shell = itemsById.get("native-shell-source-render-contract");
   if (shell) {
     assertCoversViewportProfiles(shell, issues, "Mobile native shell render contract");
-    for (const section of ["card-queue", "approval-controls", "text-interface", "print-proof", "offline-api-sync", "locale-readiness"]) {
+    for (const section of [
+      "sign-in-import",
+      "card-queue",
+      "approval-controls",
+      "text-interface",
+      "best-available-options",
+      "print-proof",
+      "offline-sync",
+      "locale-readiness"
+    ]) {
       if (!shell.screenSectionIds.includes(section)) {
         issues.push(`Mobile native shell render contract must include section: ${section}.`);
       }

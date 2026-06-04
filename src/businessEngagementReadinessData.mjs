@@ -16,7 +16,14 @@ const requiredCrmAdapterIds = [
   "zoho-crm-lifecycle",
   "pipedrive-crm-lifecycle",
   "dynamics-crm-lifecycle",
-  "shopify-crm-lifecycle"
+  "shopify-crm-lifecycle",
+  "klaviyo-profile-lifecycle",
+  "mailchimp-audience-lifecycle",
+  "activecampaign-contact-lifecycle",
+  "bigcommerce-customer-lifecycle",
+  "woocommerce-customer-lifecycle",
+  "square-customer-lifecycle",
+  "intercom-contact-lifecycle"
 ];
 
 const requiredWorkflowAdapterIds = [
@@ -27,7 +34,10 @@ const requiredWorkflowAdapterIds = [
   "teams-workflow-notification",
   "notion-customer-database-sync",
   "airtable-customer-base-sync",
-  "google-sheets-lifecycle-sync"
+  "google-sheets-lifecycle-sync",
+  "n8n-webhook-workflow",
+  "workato-webhook-workflow",
+  "pipedream-webhook-workflow"
 ];
 
 const requiredNotificationAdapterIds = [
@@ -40,6 +50,12 @@ const requiredNotificationAdapterIds = [
   "whatsapp-cloud-notification",
   "expo-push-notification",
   "firebase-cloud-messaging",
+  "customerio-transactional-notification",
+  "braze-canvas-notification",
+  "onesignal-message-notification",
+  "courier-send-notification",
+  "knock-workflow-notification",
+  "novu-trigger-notification",
   "transactional-email-contract"
 ];
 
@@ -87,7 +103,7 @@ export const businessEngagementReadinessItems = [
     crmWritesEnabled: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
-    currentEvidence: ["Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, and Shopify request contracts"],
+    currentEvidence: ["Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce, Square, and Intercom request contracts"],
     requiredEvidence: ["Provider OAuth approval", "Revocation drill", "Tenant data mapping review", "Least-privilege scope screenshot"],
     blocker: "Live CRM OAuth credentials, tenant approvals, and revocation evidence are not attached."
   },
@@ -153,7 +169,7 @@ export const businessEngagementReadinessItems = [
     crmWritesEnabled: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
-    currentEvidence: ["Local workflow payload export", "Zapier, Make, Slack, Teams, Notion, Airtable, and Sheets contracts"],
+    currentEvidence: ["Local workflow payload export", "Zapier, Make, Slack, Teams, Notion, Airtable, Sheets, n8n, Workato, and Pipedream contracts"],
     requiredEvidence: ["Workflow owner approval", "Webhook signature proof", "Rate-limit drill", "Destination retention policy"],
     blocker: "Workflow payloads are prepared but no live workflow send or webhook delivery proof is attached."
   },
@@ -175,7 +191,7 @@ export const businessEngagementReadinessItems = [
     crmWritesEnabled: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
-    currentEvidence: ["Browser status notification", "Email, SMS, WhatsApp, and push request contracts"],
+    currentEvidence: ["Browser status notification", "Email, SMS, WhatsApp, push, and customer-messaging request contracts"],
     requiredEvidence: ["Sender-domain verification", "Opt-in proof sample", "Suppression replay", "Template approval", "Live send dry-run transcript"],
     blocker: "Email, SMS, WhatsApp, and push providers are request contracts only; no live customer send proof is attached."
   },

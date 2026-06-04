@@ -11,15 +11,16 @@ skeleton for the production path. It includes:
   handoff, local SVG/PDF print package export, customer panel, admin panel, and
   adapter readiness.
 - A tested provider catalog covering local/free fallbacks plus credential-gated
-  OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability, Replicate,
-  notification, business CRM, workflow automation, vendor, and cloud-runtime
-  adapters.
+  OpenAI, Anthropic, Google, Microsoft Graph, Hugging Face, Stability,
+  Replicate, Adobe Firefly, Recraft, Luma, notification, customer messaging,
+  business CRM, workflow automation, vendor, and cloud-runtime adapters.
 - Admin-only business CRM lifecycle readiness for CSV export plus Salesforce,
-  HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify customer
-  lifecycle contracts.
+  HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, Shopify, Klaviyo,
+  Mailchimp, ActiveCampaign, BigCommerce, WooCommerce, Square, and Intercom
+  customer lifecycle contracts.
 - Admin-only business workflow readiness for local payload export plus Zapier,
-  Make, Slack, Microsoft Teams, Notion, Airtable, and Google Sheets lifecycle
-  queue contracts.
+  Make, Slack, Microsoft Teams, Notion, Airtable, Google Sheets, n8n, Workato,
+  and Pipedream lifecycle queue contracts.
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot, with 12 official-source observations,
   freshness reporting, and live quote/order claims kept separate.

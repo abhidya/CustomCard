@@ -69,8 +69,8 @@ describe("api contracts", () => {
     expect(summary.status).toBe("ready");
     expect(summary.routes.total).toBe(apiRouteContracts.length);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
-    expect(summary.providers.total).toBeGreaterThanOrEqual(102);
-    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(69);
+    expect(summary.providers.total).toBeGreaterThanOrEqual(121);
+    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(88);
     expect(summary.governance.total).toBe(summary.providers.total);
     expect(summary.governance.blockers).toEqual([]);
     expect(summary.governance.fallbackCovered).toBe(summary.providers.total);
@@ -108,7 +108,7 @@ describe("api contracts", () => {
     expect(summary.aiProviderReadiness).toMatchObject({
       total: 8,
       textProviderContracts: 15,
-      imageProviderContracts: 12,
+      imageProviderContracts: 15,
       localFallbacks: 2,
       liveProviderCallsEnabled: 0,
       externalNetworkCalls: 0,
@@ -247,9 +247,9 @@ describe("api contracts", () => {
       repoLocalReady: 4,
       evidenceMissing: 3,
       approvalBlocked: 1,
-      crmAdapterContracts: 7,
-      workflowAdapterContracts: 8,
-      notificationAdapterContracts: 10,
+      crmAdapterContracts: 14,
+      workflowAdapterContracts: 11,
+      notificationAdapterContracts: 16,
       lifecycleTriggerKinds: 3,
       liveOAuthRequired: 1,
       liveMessagesEnabled: 0,
@@ -277,8 +277,8 @@ describe("api contracts", () => {
     expect(payload.customer.primaryActions.map((action) => action.capability)).toEqual(
       expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
     );
-    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(102);
-    expect(payload.mobile.safetyBanner.label).toBe("Real orders disabled");
+    expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(121);
+    expect(payload.mobile.safetyBanner.label).toBe("Confirm before checkout");
     expect(payload.mobile.todaySummary).toMatchObject({
       cardQueueItemId: "card_anniversary_sara_ahmed",
       primaryAction: "approve",
@@ -286,7 +286,16 @@ describe("api contracts", () => {
       customerVisible: true
     });
     expect(payload.mobile.sections.map((section) => section.id)).toEqual(
-      expect.arrayContaining(["approval-controls", "pricing-preview", "offline-sync"])
+      expect.arrayContaining(["account-import", "approval-controls", "pricing-preview", "offline-sync"])
+    );
+    expect(payload.mobile.accountOptions.map((option) => option.provider)).toEqual(
+      expect.arrayContaining(["Google", "Apple"])
+    );
+    expect(payload.mobile.importActions.map((action) => action.kind)).toEqual(
+      expect.arrayContaining(["calendar", "email", "invite"])
+    );
+    expect(payload.mobile.fulfillmentRecommendations.map((recommendation) => recommendation.kind)).toEqual(
+      expect.arrayContaining(["cheapest-known-price", "fastest-pickup", "cheapest-shipped"])
     );
     expect(payload.mobile.queueItems.every((item) => item.panelCount === 4)).toBe(true);
     expect(payload.mobile.approvalActions.every((action) => action.idempotencyRequired)).toBe(true);
@@ -337,7 +346,7 @@ describe("api contracts", () => {
     expect(payload.aiProviderReadiness.summary).toMatchObject({
       total: 8,
       textProviderContracts: 15,
-      imageProviderContracts: 12,
+      imageProviderContracts: 15,
       liveProviderCallsEnabled: 0,
       productionTrafficEnabled: 0
     });
@@ -431,16 +440,16 @@ describe("api contracts", () => {
     );
     expect(payload.businessEngagementReadiness.summary).toMatchObject({
       total: 8,
-      crmAdapterContracts: 7,
-      workflowAdapterContracts: 8,
-      notificationAdapterContracts: 10,
+      crmAdapterContracts: 14,
+      workflowAdapterContracts: 11,
+      notificationAdapterContracts: 16,
       liveMessagesEnabled: 0,
       crmWritesEnabled: 0
     });
     expect(payload.businessEngagementReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["popular-crm-oauth-contracts", "customer-message-channel-contracts", "consent-suppression-privacy-gate"])
     );
-    expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and vendor orders stay off");
+    expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and automatic checkout stay off");
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
       liveQuote: false,
@@ -537,8 +546,13 @@ describe("api contracts", () => {
     });
     expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);
     expect(resolveApiContractResponse("/api/mobile/bootstrap")).toMatchObject({
-      safetyBanner: { label: "Real orders disabled" },
+      safetyBanner: { label: "Confirm before checkout" },
       todaySummary: { primaryAction: "approve", realOrdersEnabled: false },
+      accountOptions: expect.arrayContaining([expect.objectContaining({ provider: "Google", liveOAuthEnabled: false })]),
+      importActions: expect.arrayContaining([expect.objectContaining({ kind: "calendar", customerVisible: true })]),
+      fulfillmentRecommendations: expect.arrayContaining([
+        expect.objectContaining({ kind: "cheapest-shipped", liveQuote: false, liveOrder: false })
+      ]),
       memoryReviewItems: expect.arrayContaining([expect.objectContaining({ usage: "approved", rawContentStored: false })]),
       printProofChecks: expect.arrayContaining([expect.objectContaining({ id: "proof-order-gate", passed: true })]),
       syncState: { authMode: "customer-session", idempotencyRequired: true }

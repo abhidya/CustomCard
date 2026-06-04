@@ -83,12 +83,10 @@ import {
 import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
-  buildCustomerPanelModel,
   capabilityLabels,
   providerCatalog,
   providerStatusLabel,
   type AdminPanelModel,
-  type CustomerPanelModel,
   type ProviderAdapter,
   type ProviderCapability,
   type ProviderStatus
@@ -157,7 +155,15 @@ import {
   type ProductionLaunchGate,
   type ProductionReadinessSummary
 } from "./productionReadiness";
-import { buildPrinterPricingComparison, type PrinterPricingComparison } from "./printerPricing";
+import {
+  buildPrinterPricingComparison,
+  type PrinterPricingComparison
+} from "./printerPricing";
+import {
+  buildFulfillmentRecommendations,
+  type FulfillmentRecommendation,
+  type FulfillmentRecommendationSet
+} from "./fulfillmentRecommendation";
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
 
 type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
@@ -221,6 +227,10 @@ function App() {
   const validation = useMemo(() => validateCardDraft(draft), [draft]);
   const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
   const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
+  const fulfillmentRecommendationSet = useMemo(
+    () => buildFulfillmentRecommendations(pricingComparison),
+    [pricingComparison]
+  );
   const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
   const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
@@ -239,12 +249,12 @@ function App() {
   const reviewerDbSeedReadinessSummary = useMemo(() => summarizeReviewerDbSeedReadiness(), []);
   const cloudArtifactProofReadinessSummary = useMemo(() => summarizeCloudArtifactProofReadiness(), []);
   const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
-  const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
     () => buildCustomerChatTranscript(opportunity.recipient),
     [opportunity.recipient]
   );
+  const opsView = activeView === "admin" || activeView === "adapters";
 
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
@@ -369,8 +379,8 @@ function App() {
         <div className="railStatus">
           <Lock size={18} />
           <div>
-            <strong>Real orders disabled</strong>
-            <span>No paid APIs</span>
+            <strong>Checkout confirmation</strong>
+            <span>No automatic charge</span>
           </div>
         </div>
       </aside>
@@ -382,83 +392,102 @@ function App() {
             <h1>CustomCard</h1>
           </div>
           <div className="topStatus" aria-label="MVP safety status">
-            <StatusChip icon={ShieldCheck} label="Local auth" tone="green" />
-            <StatusChip icon={FileDown} label="SVG export" tone="blue" />
-            <StatusChip icon={XCircle} label="Live orders off" tone="red" />
+            {opsView ? (
+              <>
+                <StatusChip icon={ShieldCheck} label="Local auth" tone="green" />
+                <StatusChip icon={FileDown} label="SVG export" tone="blue" />
+                <StatusChip icon={XCircle} label="Live orders off" tone="red" />
+              </>
+            ) : (
+              <>
+                <StatusChip icon={ShieldCheck} label="Private review" tone="green" />
+                <StatusChip icon={Calendar} label="Event scan" tone="blue" />
+                <StatusChip icon={Store} label="Best option" tone="blue" />
+              </>
+            )}
           </div>
         </header>
 
         {activeView === "customer" && (
           <CustomerPanelView
             chatTranscript={customerTranscript}
-            customerModel={customerPanelModel}
             handoff={handoff}
             localizationSummary={localizationSummary}
             onLocale={chooseLocale}
             onNavigate={setActiveView}
+            onGenerateCard={() => {
+              setOpportunityDecision("accepted");
+              setActiveView("studio");
+            }}
+            onStartWorkspace={startWorkspace}
             opportunity={opportunity}
             panelCount={draft.panels.length}
+            fulfillmentRecommendationSet={fulfillmentRecommendationSet}
             productionReadiness={productionReadiness}
             selectedLocale={selectedLocale}
             workspace={workspace}
           />
         )}
 
-        <section className="workspaceBand" aria-label="Workspace">
-          <div className="workspaceIdentity">
-            <div className="iconBadge">
-              <UserRound size={22} />
+        {activeView !== "customer" && (
+          <section className="workspaceBand" aria-label="Workspace">
+            <div className="workspaceIdentity">
+              <div className="iconBadge">
+                <UserRound size={22} />
+              </div>
+              <div>
+                <span>{workspace ? "Signed in locally" : "Demo auth"}</span>
+                <strong>{workspace?.name ?? "Create a local workspace"}</strong>
+                <small>{workspace?.email ?? "No external provider required"}</small>
+              </div>
             </div>
-            <div>
-              <span>{workspace ? "Signed in locally" : "Demo auth"}</span>
-              <strong>{workspace?.name ?? "Create a local workspace"}</strong>
-              <small>{workspace?.email ?? "No external provider required"}</small>
-            </div>
-          </div>
 
-          {workspace ? (
-            <div className="workspaceActions">
-              <button className="quietButton" type="button" onClick={() => setActiveView("memory")}>
-                <Heart size={16} />
-                {workspace.memories.length} memories
-              </button>
-              <button className="dangerButton" type="button" onClick={() => saveWorkspace(undefined)}>
-                <Trash2 size={16} />
-                Clear
-              </button>
-            </div>
-          ) : (
-            <div className="authInline">
-              <label>
-                <span>Name</span>
-                <input
-                  value={authForm.name}
-                  onChange={(event) => setAuthForm((current) => ({ ...current, name: event.target.value }))}
-                />
-              </label>
-              <label>
-                <span>Email</span>
-                <input
-                  value={authForm.email}
-                  onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
-                />
-              </label>
-              <button className="primaryButton" type="button" onClick={startWorkspace}>
-                <KeyRound size={16} />
-                Start local workspace
-              </button>
-            </div>
-          )}
-        </section>
+            {workspace ? (
+              <div className="workspaceActions">
+                <button className="quietButton" type="button" onClick={() => setActiveView("memory")}>
+                  <Heart size={16} />
+                  {workspace.memories.length} memories
+                </button>
+                <button className="dangerButton" type="button" onClick={() => saveWorkspace(undefined)}>
+                  <Trash2 size={16} />
+                  Clear
+                </button>
+              </div>
+            ) : (
+              <div className="authInline">
+                <label>
+                  <span>Name</span>
+                  <input
+                    value={authForm.name}
+                    onChange={(event) => setAuthForm((current) => ({ ...current, name: event.target.value }))}
+                  />
+                </label>
+                <label>
+                  <span>Email</span>
+                  <input
+                    value={authForm.email}
+                    onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
+                  />
+                </label>
+                <button className="primaryButton" type="button" onClick={startWorkspace}>
+                  <KeyRound size={16} />
+                  Start local workspace
+                </button>
+              </div>
+            )}
+          </section>
+        )}
 
-        <section className="adapterStrip" aria-label="Free MVP adapters">
-          {freeAdapterLabels.map((label) => (
-            <span key={label}>
-              <Check size={14} />
-              {label}
-            </span>
-          ))}
-        </section>
+        {opsView && (
+          <section className="adapterStrip" aria-label="Free MVP adapters">
+            {freeAdapterLabels.map((label) => (
+              <span key={label}>
+                <Check size={14} />
+                {label}
+              </span>
+            ))}
+          </section>
+        )}
 
         {activeView === "opportunities" && (
           <OpportunitiesView
@@ -559,37 +588,46 @@ function App() {
 
 function CustomerPanelView({
   chatTranscript,
-  customerModel,
   handoff,
   localizationSummary,
   onLocale,
+  onGenerateCard,
   onNavigate,
+  onStartWorkspace,
   opportunity,
   panelCount,
+  fulfillmentRecommendationSet,
   productionReadiness,
   selectedLocale,
   workspace
 }: {
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
-  customerModel: CustomerPanelModel;
   handoff: VendorHandoff;
   localizationSummary: LocalizationReadinessSummary;
   onLocale: (locale: SupportedLocaleCode) => void;
+  onGenerateCard: () => void;
   onNavigate: (view: ViewId) => void;
+  onStartWorkspace: () => void;
   opportunity: CardOpportunity;
   panelCount: number;
+  fulfillmentRecommendationSet: FulfillmentRecommendationSet;
   productionReadiness: ProductionReadinessSummary;
   selectedLocale: SupportedLocale;
   workspace: LocalWorkspace | undefined;
 }) {
-  const targetByCapability: Partial<Record<ProviderCapability, ViewId>> = {
-    "event-import": "opportunities",
-    "text-chat": "customer",
-    "image-generation": "studio",
-    "render-export": "handoff",
-    "vendor-handoff": "handoff",
-    memory: "memory"
-  };
+  const recommendationByKind = new Map(
+    fulfillmentRecommendationSet.recommendations.map((recommendation) => [recommendation.kind, recommendation])
+  );
+  const cheapestOption = recommendationByKind.get("cheapest-known-price");
+  const fastestPickup = recommendationByKind.get("fastest-pickup");
+  const cheapestShipped = recommendationByKind.get("cheapest-shipped");
+  const customerActions: Array<{ label: string; detail: string; icon: LucideIcon; target: ViewId }> = [
+    { label: "Import events", detail: "Calendar, email, or invite", icon: Calendar, target: "opportunities" },
+    { label: "Review card", detail: "Copy, artwork, and language", icon: WandSparkles, target: "studio" },
+    { label: "Add memory", detail: "Only approved details are reused", icon: Heart, target: "memory" },
+    { label: "Choose fulfillment", detail: "Pickup or shipped recommendation", icon: Store, target: "handoff" },
+    { label: "Export proof", detail: "Print-ready local package", icon: FileDown, target: "handoff" }
+  ];
 
   return (
     <section className="customerPanel">
@@ -602,35 +640,133 @@ function CustomerPanelView({
       </div>
 
       <div className="customerGrid">
-        <article className="surfaceCard wide">
+        <article className="customerStartCard wide">
           <div className="sectionHeader">
             <div>
-              <p className="eyebrow">Next card</p>
-              <h3>{opportunity.title}</h3>
+              <p className="eyebrow">Start</p>
+              <h3>Sign in and import events</h3>
+            </div>
+            <StatusChip icon={ShieldCheck} label={workspace ? "Connected locally" : "Choose account"} tone="green" />
+          </div>
+
+          <div className="authProviderGrid" aria-label="Customer sign in options">
+            <button className="customerAuthButton" type="button" onClick={onStartWorkspace}>
+              <KeyRound size={18} />
+              <span>Continue with Google</span>
+              <small>Calendar and Gmail import contract</small>
+            </button>
+            <button className="customerAuthButton" type="button" onClick={onStartWorkspace}>
+              <Lock size={18} />
+              <span>Continue with Apple</span>
+              <small>Calendar and iCloud import contract</small>
+            </button>
+          </div>
+
+          <div className="importActionGrid" aria-label="Customer import actions">
+            <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
+              <Calendar size={18} />
+              <span>Import calendar</span>
+              <small>Birthdays, anniversaries, weddings, trips</small>
+            </button>
+            <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
+              <MessageCircle size={18} />
+              <span>Scan email receipts</span>
+              <small>Purchases, warranties, renewals, deliveries</small>
+            </button>
+            <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
+              <ClipboardCheck size={18} />
+              <span>Paste invite</span>
+              <small>Use the no-account local path</small>
+            </button>
+          </div>
+        </article>
+
+        <article className="eventQueueCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Events</p>
+              <h3>Card opportunities</h3>
             </div>
             <span className={opportunity.status === "ready" ? "statePill ready" : "statePill hold"}>
               {opportunity.status === "ready" ? "Ready" : "Needs detail"}
             </span>
           </div>
 
-          <div className="metricStrip">
-            <Metric label="Workspace" value={workspace?.name ?? "Demo customer"} />
-            <Metric label="Date" value={opportunity.dateLabel} />
-            <Metric label="Panels" value={`${panelCount} SVG`} />
-            <Metric label="Handoff" value={handoff.vendorName} />
+          <div className="eventRow">
+            <div>
+              <strong>{opportunity.title}</strong>
+              <span>{opportunity.dateLabel}</span>
+              <small>{opportunity.recommendedPath}</small>
+            </div>
+            <button className="primaryButton" type="button" onClick={onGenerateCard}>
+              <WandSparkles size={16} />
+              Make card
+            </button>
           </div>
 
+          <div className="metricStrip">
+            <Metric label="Confidence" value={`${opportunity.confidence}%`} />
+            <Metric label="Panels" value={`${panelCount}`} />
+            <Metric label="Memory" value={opportunity.memoryIds.length > 0 ? "Matched" : "None"} />
+            <Metric label="Checkout" value={handoff.canPlaceRealOrder ? "Ready" : "Confirm"} />
+          </div>
+        </article>
+
+        <article className="fulfillmentRecommendation">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Fulfillment</p>
+              <h3>Best available options</h3>
+            </div>
+            <StatusChip icon={Store} label="Customer view" tone="blue" />
+          </div>
+
+          <div className="fulfillmentOptionGrid" aria-label="Customer fulfillment recommendation">
+            <FulfillmentOption
+              recommendation={cheapestOption}
+              icon={CreditCard}
+              label="Cheapest known price"
+              tag="Cost"
+            />
+            <FulfillmentOption
+              recommendation={fastestPickup}
+              icon={Store}
+              label="Fastest pickup candidate"
+              tag="Pickup"
+            />
+            <FulfillmentOption
+              recommendation={cheapestShipped}
+              icon={PackageCheck}
+              label="Cheapest shipped option"
+              tag="Ship"
+            />
+          </div>
+
+          <div className="confirmationNotice">
+            <XCircle size={16} />
+            <span>{fulfillmentRecommendationSet.disclaimer}</span>
+          </div>
+        </article>
+
+        <article className="surfaceCard">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Next steps</p>
+              <h3>Customer workflow</h3>
+            </div>
+            <Check size={18} />
+          </div>
           <div className="quickActionGrid">
-            {customerModel.primaryActions.map((action) => (
+            {customerActions.map((action) => (
               <button
                 className="quickAction"
-                key={action.adapterId}
-                onClick={() => onNavigate(targetByCapability[action.capability] ?? "customer")}
+                key={action.label}
+                onClick={() => onNavigate(action.target)}
                 type="button"
               >
-                {iconForCapability(action.capability)}
+                <action.icon size={18} />
                 <span>{action.label}</span>
-                <small>{providerStatusLabel(action.status)}</small>
+                <small>{action.detail}</small>
               </button>
             ))}
           </div>
@@ -657,23 +793,33 @@ function CustomerPanelView({
         <article className="surfaceCard">
           <div className="sectionHeader compact">
             <div>
-              <p className="eyebrow">Image path</p>
-              <h3>Render choices</h3>
+              <p className="eyebrow">Artwork</p>
+              <h3>Card proof path</h3>
             </div>
             <Image size={18} />
           </div>
-          <AdapterMiniList adapters={customerModel.imageProviders.slice(0, 5)} />
+          <div className="runtimeGrid compactMetrics" aria-label="Customer artwork proof path">
+            <Metric label="Artwork" value="Template" />
+            <Metric label="AI images" value="Off" />
+            <Metric label="Print size" value="5x7" />
+            <Metric label="Approval" value="User" />
+          </div>
         </article>
 
         <article className="surfaceCard">
           <div className="sectionHeader compact">
             <div>
-              <p className="eyebrow">Ready paths</p>
-              <h3>Free fallbacks</h3>
+              <p className="eyebrow">Privacy</p>
+              <h3>Data controls</h3>
             </div>
             <Check size={18} />
           </div>
-          <AdapterMiniList adapters={customerModel.readyFallbacks.slice(0, 6)} />
+          <div className="runtimeGrid compactMetrics" aria-label="Customer privacy controls">
+            <Metric label="Memory" value="Approved" />
+            <Metric label="Import" value="Review" />
+            <Metric label="Checkout" value="Confirm" />
+            <Metric label="Payments" value="Off" />
+          </div>
         </article>
 
         <article className="surfaceCard">
@@ -715,6 +861,45 @@ function CustomerPanelView({
         </article>
       </div>
     </section>
+  );
+}
+
+function FulfillmentOption({
+  recommendation,
+  icon: Icon,
+  label,
+  tag
+}: {
+  recommendation: FulfillmentRecommendation | undefined;
+  icon: LucideIcon;
+  label: string;
+  tag: string;
+}) {
+  return (
+    <div className="fulfillmentOption">
+      <div className="fulfillmentOptionHeader">
+        <Icon size={18} />
+        <span>{tag}</span>
+      </div>
+      <strong>{label}</strong>
+      {recommendation ? (
+        <>
+          <span>
+            {recommendation.subtotalLabel} at {recommendation.vendorName}
+          </span>
+          <small>
+            {recommendation.etaLabel} / {recommendation.pricedQuantity} card
+            {recommendation.pricedQuantity === 1 ? "" : "s"} priced
+          </small>
+          <em>{recommendation.confirmationCopy}</em>
+        </>
+      ) : (
+        <>
+          <span>Manual quote required</span>
+          <small>No public price observation is ready for this path.</small>
+        </>
+      )}
+    </div>
   );
 }
 

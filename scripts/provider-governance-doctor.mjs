@@ -21,8 +21,8 @@ const usageBasedCount = countMatches(catalogText, /cost: "usage-based"/g);
 const blockedCount = countMatches(catalogText, /status: "blocked"/g);
 
 const checks = [
-  checkMinimum("catalog", "expanded-adapter-catalog", adapterCount, 102),
-  checkMinimum("catalog", "usage-based-adapters-present", usageBasedCount, 30),
+  checkMinimum("catalog", "expanded-adapter-catalog", adapterCount, 121),
+  checkMinimum("catalog", "usage-based-adapters-present", usageBasedCount, 57),
   checkExact("catalog", "blocked-live-vendor-count", blockedCount, 6),
   checkIncludes("governance", "budget-rate-fallback-policy", contents.governance, [
     "ProviderGovernancePolicy",

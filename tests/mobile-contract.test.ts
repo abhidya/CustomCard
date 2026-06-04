@@ -2,12 +2,15 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  mobileAccountOptions,
   mobileApprovalActions,
   mobileCardQueueItems,
   mobileChatTranscript,
   mobileExperience,
   mobileExperienceSections,
+  mobileFulfillmentRecommendations,
   mobileHandoffSteps,
+  mobileImportActions,
   mobileLocaleOptions,
   mobileMemoryReviewItems,
   mobilePricingPreviews,
@@ -30,6 +33,9 @@ describe("mobile customer experience contract", () => {
     expect(validateMobileExperience()).toEqual([]);
     expect(summary.capabilityCount).toBe(requiredMobileCapabilities.length);
     expect(summary.customerVisibleSections).toBe(requiredMobileCapabilities.length);
+    expect(summary.accountOptions).toBe(2);
+    expect(summary.liveOAuthOptions).toBe(0);
+    expect(summary.importActions).toBe(3);
     expect(summary.localeOptions).toBe(4);
     expect(summary.rtlLocales).toBe(2);
     expect(summary.copyReviewRequiredLocales).toBe(3);
@@ -40,6 +46,8 @@ describe("mobile customer experience contract", () => {
     expect(summary.memoryReviewItems).toBeGreaterThanOrEqual(2);
     expect(summary.approvedMemoryReviewItems).toBeGreaterThanOrEqual(1);
     expect(summary.reviewOnlyPricingOptions).toBe(mobilePricingPreviews.length);
+    expect(summary.fulfillmentRecommendations).toBe(3);
+    expect(summary.liveFulfillmentRecommendations).toBe(0);
     expect(summary.printProofChecks).toBeGreaterThanOrEqual(4);
     expect(summary.passedPrintProofChecks).toBe(mobilePrintProofChecks.length);
     expect(summary.offlineMutationTypes).toBeGreaterThanOrEqual(5);
@@ -48,7 +56,20 @@ describe("mobile customer experience contract", () => {
     );
   });
 
-  it("keeps mobile queue, approval, chat, render, pricing, and handoff paths local or gated", () => {
+  it("keeps mobile sign-in, import, queue, chat, fulfillment, and checkout paths local or gated", () => {
+    expect(mobileAccountOptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ provider: "Google", label: "Continue with Google", liveOAuthEnabled: false }),
+        expect.objectContaining({ provider: "Apple", label: "Continue with Apple", liveOAuthEnabled: false })
+      ])
+    );
+    expect(mobileImportActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "calendar", label: "Import calendar", customerVisible: true }),
+        expect.objectContaining({ kind: "email", label: "Scan email receipts", customerVisible: true }),
+        expect.objectContaining({ kind: "invite", label: "Paste invite", sourceMode: "local-paste" })
+      ])
+    );
     expect(mobileTodaySummary).toMatchObject({
       cardQueueItemId: "card_anniversary_sara_ahmed",
       primaryAction: "approve",
@@ -71,7 +92,7 @@ describe("mobile customer experience contract", () => {
       ])
     );
     expect(mobileChatTranscript.map((message) => message.text).join(" ")).toContain(
-      "Live AI and vendor orders stay off"
+      "Live AI and automatic orders stay off"
     );
     expect(mobileMemoryReviewItems).toEqual(
       expect.arrayContaining([
@@ -81,14 +102,21 @@ describe("mobile customer experience contract", () => {
     );
     expect(mobileRenderChoices).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ label: "Browser SVG renderer", mode: "free-local" }),
-        expect.objectContaining({ label: "AI image providers", mode: "credential-gated" })
+        expect.objectContaining({ label: "Template card proof", mode: "free-local" }),
+        expect.objectContaining({ label: "AI artwork", mode: "credential-gated" })
       ])
     );
     expect(mobilePricingPreviews).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ vendor: "Walgreens", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false }),
         expect.objectContaining({ vendor: "CVS", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false })
+      ])
+    );
+    expect(mobileFulfillmentRecommendations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "cheapest-known-price", label: "Cheapest known price", liveQuote: false, liveOrder: false }),
+        expect.objectContaining({ kind: "fastest-pickup", label: "Fastest pickup candidate", liveQuote: false, liveOrder: false }),
+        expect.objectContaining({ kind: "cheapest-shipped", label: "Cheapest shipped option", liveQuote: false, liveOrder: false })
       ])
     );
     expect(mobilePrintProofChecks).toEqual(
@@ -100,7 +128,7 @@ describe("mobile customer experience contract", () => {
     expect(mobileHandoffSteps).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ label: "Download SVG set", realOrderState: "manual" }),
-        expect.objectContaining({ label: "Confirm pickup manually", realOrderState: "disabled" })
+        expect.objectContaining({ label: "Confirm pickup or shipping", realOrderState: "disabled" })
       ])
     );
     expect(mobileLocaleOptions).toEqual(
@@ -225,6 +253,16 @@ describe("mobile customer experience contract", () => {
           detail: "live order ready"
         }
       ],
+      accountOptions: [
+        {
+          provider: "Google",
+          label: "Google",
+          detail: "provider adapter connected",
+          liveOAuthEnabled: true as never,
+          customerVisible: false
+        }
+      ],
+      importActions: [],
       queueItems: [
         {
           ...mobileExperience.queueItems[0],
@@ -266,6 +304,16 @@ describe("mobile customer experience contract", () => {
           manualConfirmationRequired: false
         }
       ],
+      fulfillmentRecommendations: [
+        {
+          ...mobileExperience.fulfillmentRecommendations[0],
+          liveQuote: true,
+          liveOrder: true,
+          customerVisible: false,
+          totalCents: 0,
+          confirmationCopy: "vendor api connected"
+        }
+      ],
       printProofChecks: [
         {
           ...mobileExperience.printProofChecks[0],
@@ -303,6 +351,7 @@ describe("mobile customer experience contract", () => {
     expect(validateMobileExperience(unsafeModel)).toEqual(
       expect.arrayContaining([
         "Missing mobile customer capability: approval-controls",
+        "Missing mobile customer capability: card-queue",
         "Missing mobile customer capability: memory-review",
         "Missing mobile customer capability: text-chat",
         "Missing mobile customer capability: image-render",
@@ -311,6 +360,12 @@ describe("mobile customer experience contract", () => {
         "Missing mobile customer capability: offline-sync",
         "Every mobile experience section must be customer-visible.",
         "Mobile experience does not expose enough customer sections.",
+        "Missing mobile account option: Apple",
+        "Every mobile account option must be customer-visible.",
+        "Mobile account options must not claim live OAuth.",
+        "Missing mobile import action: calendar",
+        "Missing mobile import action: email",
+        "Missing mobile import action: invite",
         "Mobile today summary must be customer-visible with real orders disabled.",
         "Mobile today summary must point at a queued card.",
         "Mobile today summary must use a four-panel card.",
@@ -322,20 +377,25 @@ describe("mobile customer experience contract", () => {
         "Every mobile approval action must require idempotency.",
         "Mobile today summary primary action must exist in approval controls.",
         "Mobile chat must identify the local scripted assistant path.",
-        "Mobile chat must disclose that live AI and vendor orders are off.",
+        "Mobile chat must disclose that live AI and automatic orders are off.",
         "Mobile memory review must expose at least two customer memory items.",
         "Every mobile memory review item must be customer-visible.",
         "Mobile memory review must not store raw memory content.",
         "Mobile memory review must include approved and review-required states.",
-        "Mobile render choices must include the free browser SVG renderer.",
+        "Mobile card proof path must include the free template renderer.",
         "Mobile pricing preview must expose multiple retail-printer choices.",
         "Mobile pricing previews must stay review-only and manually confirmed.",
+        "Missing mobile fulfillment recommendation: fastest-pickup",
+        "Missing mobile fulfillment recommendation: cheapest-shipped",
+        "Every mobile fulfillment recommendation must be customer-visible.",
+        "Mobile fulfillment recommendations must not claim live quotes or direct orders.",
+        "Mobile fulfillment recommendations must expose positive estimated totals.",
         "Mobile print proof must expose at least four checks.",
         "Every mobile print proof check must be customer-visible.",
         "Mobile print proof checks must pass before handoff.",
         "Mobile handoff must keep a manual upload path.",
-        "Disabled mobile handoff steps must explain blocked live order APIs.",
-        "Mobile safety banner must keep real orders disabled.",
+        "Disabled mobile handoff steps must explain blocked automatic checkout.",
+        "Mobile safety banner must require checkout confirmation.",
         "Mobile sync must require the configured API base URL and customer session auth.",
         "Mobile sync must keep offline queueing and idempotency enabled.",
         "Mobile sync must forbid live order, payment, and raw-memory mutations.",
@@ -348,7 +408,9 @@ describe("mobile customer experience contract", () => {
         "Unsafe mobile live-provider claim: payment active",
         "Unsafe mobile live-provider claim: live order ready",
         "Unsafe mobile live-provider claim: paid ai active",
-        "Unsafe mobile live-provider claim: vendor api connected"
+        "Unsafe mobile live-provider claim: vendor api connected",
+        "Mobile customer text must not expose provider/adapters: provider adapter connected",
+        "Mobile customer text must not expose provider/adapters: vendor api connected"
       ])
     );
 
@@ -357,13 +419,13 @@ describe("mobile customer experience contract", () => {
         ...mobileExperience,
         renderChoices: [
           {
-            label: "Browser SVG renderer",
+            label: "Template card proof",
             detail: "Free renderer stays available.",
             mode: "free-local"
           }
         ]
       })
-    ).toContain("Mobile render choices must keep AI image providers credential-gated.");
+    ).toContain("Mobile card proof path must keep AI artwork credential-gated.");
 
     expect(
       validateMobileExperience({

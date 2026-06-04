@@ -67,7 +67,7 @@ it after each meaningful implementation pass.
   live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
   reads every object back, verifies checksums, writes the manifest, cleans up the
   isolated bucket, and keeps external vendor calls plus real orders disabled.
-- Provider adapter coverage currently includes 102 adapters: 18 ready-local, 69
+- Provider adapter coverage currently includes 121 adapters: 18 ready-local, 88
   credential-gated, 9 contract-only, and 6 blocked.
 - Production readiness tests cover 13 launch gates for live auth, OAuth,
   AI/image generation, vendor quotes, payments/refunds, direct retail ordering,
@@ -79,10 +79,11 @@ it after each meaningful implementation pass.
 - Infra contract tests inspect database migration, Docker Compose, Kubernetes,
   env examples, runtime checks, CI workflow gates, coverage scope, and the
   mobile shell/customer contract boundary.
-- Mobile contract tests cover the Expo customer experience model: next-action
-  summary, card queue items, approval controls, memory review items,
-  print-proof checks, local chat, render choices, review-only printer pricing
-  previews, offline idempotent API sync, locale readiness, manual handoff, and
+- Mobile contract tests cover the Expo customer experience model: Google/Apple
+  entry points, calendar/email/invite import actions, next-action summary, card
+  queue items, approval controls, memory review items, print-proof checks,
+  local chat, card proof path, best available fulfillment recommendations,
+  offline idempotent sync, locale readiness, checkout confirmation, and
   real-order kill-switch doctor behavior.
 - Agent-contract tests cover the typed orchestration surface and fail-closed
   default policy.
@@ -180,7 +181,7 @@ it after each meaningful implementation pass.
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
-  8-item text/image provider readiness register, 15 text provider contracts, 12
+  8-item text/image provider readiness register, 15 text provider contracts, 15
   image provider contracts, 2 local fallbacks, prompt/human-review gates,
   admin/API surfaces, docs, CI wiring, and zero live provider calls, production
   AI traffic, or live external network requirements.
@@ -353,7 +354,7 @@ npm run ai:doctor
 
 Result: passed. The JSON report marked register, provider-contracts, surfaces,
 docs, CI, and evidence lanes `ready`; it verified 8 AI readiness items, 15 text
-provider contracts, 12 image provider contracts, 2 local fallbacks, 6 prompt
+provider contracts, 15 image provider contracts, 2 local fallbacks, 6 prompt
 audit gates, 5 human-review gates, zero live provider calls, zero production AI
 traffic, and zero live external network requirements.
 
@@ -420,8 +421,8 @@ npm run business:engagement:doctor
 
 Result: passed. The JSON report marked register, tests, provider-catalog,
 provider-runtime, surfaces, e2e, docs, CI, and evidence lanes `ready`; it
-verified 8 business engagement readiness items, 7 CRM adapter contracts, 8
-workflow adapter contracts, 10 notification adapter contracts, 3 lifecycle
+verified 8 business engagement readiness items, 14 CRM adapter contracts, 11
+workflow adapter contracts, 16 notification adapter contracts, 3 lifecycle
 trigger kinds, zero live customer messages, zero CRM writes, zero live external
 network calls, and zero real orders. It is not live CRM OAuth, customer
 messaging, CRM writeback, or production campaign analytics proof.
@@ -442,7 +443,7 @@ npm run provider:governance:doctor
 ```
 
 Result: passed. The JSON report marked catalog, governance, tests, surfaces,
-CI, and safety lanes `ready`; it verified 102 adapters, 45 usage-based adapters,
+CI, and safety lanes `ready`; it verified 121 adapters, 57 usage-based adapters,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
 
@@ -480,7 +481,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 15 routes, 7 idempotent mutation contracts,
-102 providers, provider governance for all 102 adapters, 13 schema-backed routes,
+121 providers, provider governance for all 121 adapters, 13 schema-backed routes,
 relationship-memory repository readiness, render-packet artifact manifests,
 signed artifact URL contracts, contract runtime mode, no live external calls,
 no real vendor orders, no raw content storage, 13 production launch gates with

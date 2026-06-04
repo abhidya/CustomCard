@@ -122,7 +122,7 @@ describeWithChrome("CustomCard UI smoke", () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         };
 
-        await clickByText("Start local workspace");
+        await clickByText("Continue with Google");
         await clickByText("Opportunities");
         await clickByText("Scan free import");
         const opportunityText = document.body.textContent;
@@ -217,9 +217,19 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.customerText).toContain("Customer panel");
+    expect(result.customerText).toContain("Sign in and import events");
+    expect(result.customerText).toContain("Continue with Google");
+    expect(result.customerText).toContain("Continue with Apple");
+    expect(result.customerText).toContain("Import calendar");
+    expect(result.customerText).toContain("Scan email receipts");
+    expect(result.customerText).toContain("Card opportunities");
+    expect(result.customerText).toContain("Best available options");
+    expect(result.customerText).toContain("Cheapest known price");
+    expect(result.customerText).toContain("Fastest pickup candidate");
+    expect(result.customerText).toContain("Cheapest shipped option");
     expect(result.customerText).toContain("Text interface");
-    expect(result.customerText).toContain("Render choices");
-    expect(result.customerText).toContain("Manual vendor handoff");
+    expect(result.customerText).toContain("Card proof path");
+    expect(result.customerText).toContain("Data controls");
     expect(result.customerText).toContain("Language readiness");
     expect(result.customerText).toContain("Production safety");
     expect(result.customerText).toContain("Ar EG");

@@ -5,8 +5,8 @@ engine.
 
 The product is intended to watch for meaningful events from connected email and
 calendar sources, help the user generate a relationship-aware card, produce
-print-ready 5x7 assets, and route fulfillment through vendor-neutral handoff
-layers.
+print-ready 5x7 assets, and recommend the cheapest shipped or fastest pickup
+fulfillment path before checkout confirmation.
 
 ## Core Thesis
 
@@ -21,10 +21,10 @@ This is not just AI greeting cards. The defensible product is:
 
 This repo now contains a runnable Vite, React, and TypeScript free local MVP plus
 a repo-local production skeleton. The web app opens on the actual reviewer
-workflow: local demo auth, manual/ICS event import, opportunity approval,
+workflow: Google/Apple-style entry points, local demo auth, manual/ICS event import, opportunity approval,
 relationship memory review, deterministic card generation, 5x7 SVG panel export,
-local SVG/PDF print package export, manual vendor handoff, customer/admin
-panels, and catalog-driven adapter readiness.
+local SVG/PDF print package export, customer/admin panels, customer-facing
+fulfillment recommendations, and catalog-driven adapter readiness.
 
 The service kernel still executes the critical backend contracts in code:
 metadata-only provider import, approved relationship memory, layout-safe 5x7
@@ -51,9 +51,10 @@ environment configuration instead of static placeholders.
 - Manual invite text and `.ics` paste import.
 - Local vCard and CSV contact/address import.
 - Admin-only business CRM CSV lifecycle import plus gated Salesforce, HubSpot,
-  Zoho CRM, Pipedrive, Dynamics 365 Sales, and Shopify customer lifecycle sync
-  contracts for birthday, purchase-anniversary, and warranty-anniversary card
-  campaigns.
+  Zoho CRM, Pipedrive, Dynamics 365 Sales, Shopify, Klaviyo, Mailchimp,
+  ActiveCampaign, BigCommerce, WooCommerce, Square, and Intercom customer
+  lifecycle sync contracts for birthday, purchase-anniversary, and
+  warranty-anniversary card campaigns.
 - Business engagement readiness register in `src/businessEngagementReadiness.ts`
   and `src/businessEngagementReadinessData.mjs` for CRM lifecycle sources,
   trigger normalization, card-opportunity review, workflow payloads, customer
@@ -68,16 +69,18 @@ environment configuration instead of static placeholders.
 - Four 1500 x 2100 SVG panels for front, inside-left, inside-right, and back.
 - Local print package export with the four SVG panels, a combined 5x7 PDF proof,
   and a checksum manifest.
-- Manual handoff checklist for Walgreens, CVS, FedEx Office, Walmart, Staples,
-  Office Depot, or a local printer.
+- Checkout confirmation checklist for Walgreens, CVS, FedEx Office, Walmart,
+  Staples, Office Depot, or a local printer when automatic ordering is disabled.
 - Review-only public printer pricing comparison for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot manual handoff, with 12 official-source
   observations, freshness checks, and checkout confirmation still required.
 - Localization readiness for English (US), Spanish (US), Urdu, and Arabic
   across customer, admin, API, and mobile surfaces, with RTL layout review and
   human copy-review gates before non-English or RTL copy can be marked ready.
-- Customer panel with local chat transcript, next-card state, render choices,
-  and free workflow actions.
+- Customer panel with Google/Apple entry points, calendar/email/invite import
+  actions, next-card opportunities, local chat, card proof path, and customer
+  fulfillment recommendations for cheapest known price, fastest pickup, and
+  cheapest shipped option.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
@@ -165,13 +168,15 @@ environment configuration instead of static placeholders.
   Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
   Bedrock, Google, Google People, Microsoft Graph, CardDAV, Mistral, Cohere,
   Perplexity, xAI, Together, Groq, DeepSeek, Fireworks, Hugging Face, Stability,
-  Replicate, Ideogram, Leonardo, fal, Black Forest Labs, Resend, SendGrid,
-  Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, Firebase Cloud
-  Messaging, Stripe Checkout, PayPal Orders, Square Payments, Adyen Checkout,
+  Replicate, Ideogram, Leonardo, fal, Black Forest Labs, Adobe Firefly, Recraft,
+  Luma, Resend, SendGrid, Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API,
+  Expo Push, Firebase Cloud Messaging, Customer.io, Braze, OneSignal, Courier,
+  Knock, Novu, Stripe Checkout, PayPal Orders, Square Payments, Adyen Checkout,
   Sentry, PostHog, OpenTelemetry OTLP, Grafana Cloud, Datadog Logs, Better
   Stack Logs, Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales,
-  Shopify Admin, Zapier, Make, Slack, Microsoft Teams, Notion, Airtable, Google
-  Sheets, and vendor contracts.
+  Shopify Admin, Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce,
+  Square Customers, Intercom, Zapier, Make, Slack, Microsoft Teams, Notion,
+  Airtable, Google Sheets, n8n, Workato, Pipedream, and vendor contracts.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
@@ -179,8 +184,8 @@ environment configuration instead of static placeholders.
   and per-request budget ceilings, rate limits, queue posture, and ready local
   fallbacks before any live network provider can be enabled.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
-  mobile bootstrap with next-action, queue, memory-review, print-proof,
-  pricing, and offline-sync state, provider
+  mobile bootstrap with sign-in/import, next-action, queue, memory-review,
+  print-proof, fulfillment recommendation, and offline-sync state, provider
   readiness, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
   isolated live Postgres route-scoped auth/idempotency/audit/queue runtime
@@ -296,15 +301,19 @@ Provider credentials such as `AUTH0_DOMAIN`, `CLERK_SECRET_KEY`,
 `TOGETHER_API_KEY`, `GROQ_API_KEY`, `DEEPSEEK_API_KEY`,
 `FIREWORKS_API_KEY`, `STABILITY_API_KEY`, `HUGGINGFACE_API_TOKEN`,
 `REPLICATE_API_TOKEN`, `IDEOGRAM_API_KEY`, `LEONARDO_API_KEY`, `FAL_KEY`,
-`BFL_API_KEY`, `RESEND_API_KEY`, `SENDGRID_API_KEY`,
+`BFL_API_KEY`, `ADOBE_FIREFLY_API_KEY`, `RECRAFT_API_KEY`, `LUMA_API_KEY`,
+`RESEND_API_KEY`, `SENDGRID_API_KEY`,
 `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `TWILIO_ACCOUNT_SID`,
-`WHATSAPP_ACCESS_TOKEN`, `EXPO_ACCESS_TOKEN`, `STRIPE_SECRET_KEY`,
+`WHATSAPP_ACCESS_TOKEN`, `EXPO_ACCESS_TOKEN`, `CUSTOMERIO_APP_API_KEY`,
+`BRAZE_REST_API_KEY`, `ONESIGNAL_REST_API_KEY`, `COURIER_AUTH_TOKEN`,
+`KNOCK_API_KEY`, `NOVU_API_KEY`, `STRIPE_SECRET_KEY`,
 `PAYPAL_CLIENT_ID`, `SQUARE_ACCESS_TOKEN`, `ADYEN_API_KEY`, `SENTRY_DSN`,
 `POSTHOG_PROJECT_API_KEY`, `OTEL_EXPORTER_OTLP_ENDPOINT`,
 `GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `BETTERSTACK_SOURCE_TOKEN`,
-Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, and Microsoft Graph
-keys, plus Zapier, Make, Slack, Teams, Notion, Airtable, and Google Sheets
-workflow keys are documented in `infra/env/.env.example`, but live OAuth,
+Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, Klaviyo, Mailchimp,
+ActiveCampaign, BigCommerce, WooCommerce, Square, Intercom, and Microsoft Graph
+keys, plus Zapier, Make, Slack, Teams, Notion, Airtable, Google Sheets, n8n,
+Workato, and Pipedream workflow keys are documented in `infra/env/.env.example`, but live OAuth,
 AI/image calls, notification sends, payment charges/refunds, telemetry
 ingestion, CRM sync, workflow sends, live retail quotes, and direct vendor
 ordering are not implemented in this repo state.

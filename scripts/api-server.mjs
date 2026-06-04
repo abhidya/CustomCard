@@ -213,22 +213,22 @@ export const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 102,
+    total: 121,
     readyLocal: 18,
-    credentialGated: 69,
+    credentialGated: 88,
     contractOnly: 9,
     blocked: 6
   },
   providerGovernance: {
-    total: 102,
+    total: 121,
     zeroPlatformSpend: 20,
-    budgetCapped: 76,
+    budgetCapped: 95,
     blockedZeroSpend: 6,
-    monthlyBudgetCents: 110800,
+    monthlyBudgetCents: 133200,
     maxPerRequestBudgetCents: 75,
-    rateLimited: 96,
-    queueRequired: 70,
-    fallbackCovered: 102,
+    rateLimited: 115,
+    queueRequired: 86,
+    fallbackCovered: 121,
     liveNetworkDefault: false,
     realOrdersEnabled: false,
     blockers: []
@@ -563,7 +563,7 @@ function validateApiServerContract() {
   if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
     blockers.push("Every mutation route must require idempotency.");
   }
-  if (readiness.providers.total < 102) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providers.total < 121) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (readiness.providerGovernance.total !== readiness.providers.total) {
     blockers.push("Provider governance summary must cover every adapter.");
   }
@@ -600,7 +600,7 @@ function validateApiServerContract() {
   if (readiness.aiProviderReadiness.textProviderContracts < 15) {
     blockers.push("AI provider readiness must cover every text provider contract.");
   }
-  if (readiness.aiProviderReadiness.imageProviderContracts < 12) {
+  if (readiness.aiProviderReadiness.imageProviderContracts < 15) {
     blockers.push("AI provider readiness must cover every image provider contract.");
   }
   if (readiness.aiProviderReadiness.localFallbacks < 2) blockers.push("AI provider readiness must keep local fallbacks.");
@@ -800,13 +800,13 @@ function validateApiServerContract() {
   if (readiness.businessEngagementReadiness.total < 8) {
     blockers.push("Business engagement readiness must track CRM lifecycle campaign evidence.");
   }
-  if (readiness.businessEngagementReadiness.crmAdapterContracts < 7) {
+  if (readiness.businessEngagementReadiness.crmAdapterContracts < 14) {
     blockers.push("Business engagement readiness must cover CSV plus popular CRM lifecycle adapters.");
   }
-  if (readiness.businessEngagementReadiness.workflowAdapterContracts < 8) {
+  if (readiness.businessEngagementReadiness.workflowAdapterContracts < 11) {
     blockers.push("Business engagement readiness must cover workflow payload adapters.");
   }
-  if (readiness.businessEngagementReadiness.notificationAdapterContracts < 10) {
+  if (readiness.businessEngagementReadiness.notificationAdapterContracts < 16) {
     blockers.push("Business engagement readiness must cover customer message channel adapters.");
   }
   if (readiness.businessEngagementReadiness.lifecycleTriggerKinds !== 3) {

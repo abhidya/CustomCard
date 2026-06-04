@@ -21,6 +21,11 @@ import {
 } from "./providerRuntime";
 
 const readyEnv: ProviderRuntimeEnv = {
+  ACTIVECAMPAIGN_API_KEY: "configured-activecampaign-api-key",
+  ACTIVECAMPAIGN_BASE_URL: "https://customcard.activehosted.com",
+  ADOBE_FIREFLY_API_KEY: "configured-adobe-firefly-api-key",
+  ADOBE_FIREFLY_CLIENT_ID: "configured-adobe-firefly-client-id",
+  ADOBE_FIREFLY_CLIENT_SECRET: "configured-adobe-firefly-client-secret",
   ANTHROPIC_API_KEY: "configured-anthropic-key",
   ADYEN_API_KEY: "configured-adyen-api-key",
   ADYEN_HMAC_KEY: "configured-adyen-hmac-key",
@@ -43,8 +48,13 @@ const readyEnv: ProviderRuntimeEnv = {
   BEDROCK_IMAGE_MODEL_ID: "amazon.titan-image-generator-v2:0",
   BEDROCK_TEXT_MODEL_ID: "anthropic.claude-3-5-haiku-20241022-v1:0",
   BFL_API_KEY: "configured-bfl-key",
+  BIGCOMMERCE_ACCESS_TOKEN: "configured-bigcommerce-access-token",
+  BIGCOMMERCE_STORE_HASH: "configured-bigcommerce-store-hash",
   BETTERSTACK_INGESTING_HOST: "in.logs.betterstack.com",
   BETTERSTACK_SOURCE_TOKEN: "configured-betterstack-source-token",
+  BRAZE_CANVAS_ID: "configured-braze-canvas-id",
+  BRAZE_REST_API_KEY: "configured-braze-api-key",
+  BRAZE_REST_ENDPOINT: "https://rest.iad-01.braze.com",
   CARDDAV_ADDRESSBOOK_PATH: "addressbooks/users/customcard/contacts",
   CARDDAV_APP_PASSWORD: "configured-carddav-app-password",
   CARDDAV_BASE_URL: "https://contacts.customcard.test",
@@ -56,7 +66,11 @@ const readyEnv: ProviderRuntimeEnv = {
   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
   COGNITO_DOMAIN: "customcard-auth",
   COGNITO_USER_POOL_ID: "us-east-1_customcard",
+  COURIER_AUTH_TOKEN: "configured-courier-token",
+  COURIER_TEMPLATE_ID: "configured-courier-template",
   CUSTOMCARD_AUTH_CALLBACK_URL: "https://customcard.test/auth/callback",
+  CUSTOMERIO_APP_API_KEY: "configured-customerio-app-api-key",
+  CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID: "configured-customerio-transactional-message-id",
   CUSTOMCARD_PAYMENT_CANCEL_URL: "https://customcard.test/payment/cancel",
   CUSTOMCARD_PAYMENT_SUCCESS_URL: "https://customcard.test/payment/success",
   CVS_VENDOR_MODE: "certification-configured-only",
@@ -87,9 +101,18 @@ const readyEnv: ProviderRuntimeEnv = {
   HUBSPOT_PORTAL_ID: "configured-hubspot-portal-id",
   HUBSPOT_PRIVATE_APP_TOKEN: "configured-hubspot-token",
   IDEOGRAM_API_KEY: "configured-ideogram-key",
+  INTERCOM_ACCESS_TOKEN: "configured-intercom-access-token",
+  KLAVIYO_PRIVATE_API_KEY: "configured-klaviyo-private-api-key",
+  KLAVIYO_REVISION: "2026-02-15",
+  KNOCK_API_KEY: "configured-knock-api-key",
+  KNOCK_WORKFLOW_KEY: "configured-knock-workflow-key",
   LEONARDO_API_KEY: "configured-leonardo-key",
+  LUMA_API_KEY: "configured-luma-api-key",
   MAKE_SIGNING_SECRET: "configured-make-signing-secret",
   MAKE_WEBHOOK_URL: "https://hook.make.com/customcard",
+  MAILCHIMP_API_KEY: "configured-mailchimp-api-key",
+  MAILCHIMP_AUDIENCE_ID: "configured-mailchimp-audience-id",
+  MAILCHIMP_SERVER_PREFIX: "us21",
   MICROSOFT_CLIENT_ID: "configured-microsoft-client-id",
   MICROSOFT_CLIENT_SECRET: "configured-microsoft-client-secret",
   MICROSOFT_TENANT_ID: "configured-microsoft-tenant-id",
@@ -103,7 +126,13 @@ const readyEnv: ProviderRuntimeEnv = {
   OBJECT_STORE_URL: "file:///tmp/customcard-object-store",
   NOTION_API_KEY: "configured-notion-key",
   NOTION_CUSTOMER_DATABASE_ID: "configured-notion-database",
+  N8N_WEBHOOK_SECRET: "configured-n8n-webhook-secret",
+  N8N_WEBHOOK_URL: "https://n8n.customcard.test/webhook/customcard",
+  NOVU_API_KEY: "configured-novu-api-key",
+  NOVU_WORKFLOW_ID: "configured-novu-workflow-id",
   OPENAI_API_KEY: "configured-openai-key",
+  ONESIGNAL_APP_ID: "configured-onesignal-app-id",
+  ONESIGNAL_REST_API_KEY: "configured-onesignal-rest-api-key",
   OTEL_EXPORTER_OTLP_ENDPOINT: "https://otel-collector.customcard.test",
   OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Bearer configured-otel-token",
   PAYPAL_CLIENT_ID: "configured-paypal-client-id",
@@ -112,11 +141,14 @@ const readyEnv: ProviderRuntimeEnv = {
   PERPLEXITY_API_KEY: "configured-perplexity-key",
   PIPEDRIVE_API_TOKEN: "configured-pipedrive-token",
   PIPEDRIVE_COMPANY_DOMAIN: "customcard-test",
+  PIPEDREAM_SIGNING_SECRET: "configured-pipedream-signing-secret",
+  PIPEDREAM_WORKFLOW_URL: "https://eo12345.m.pipedream.net",
   POSTMARK_SERVER_TOKEN: "configured-postmark-server-token",
   POSTHOG_HOST: "https://us.i.posthog.com",
   POSTHOG_PROJECT_API_KEY: "configured-posthog-project-api-key",
   POSTGRES_PASSWORD: "configured-postgres-password",
   QUEUE_URL: "redis://localhost:6379",
+  RECRAFT_API_KEY: "configured-recraft-api-key",
   REPLICATE_API_TOKEN: "configured-replicate-token",
   RESEND_API_KEY: "configured-resend-key",
   SALESFORCE_CLIENT_ID: "configured-salesforce-client-id",
@@ -154,6 +186,11 @@ const readyEnv: ProviderRuntimeEnv = {
   WALMART_VENDOR_MODE: "certification-configured-only",
   WHATSAPP_ACCESS_TOKEN: "configured-whatsapp-token",
   WHATSAPP_PHONE_NUMBER_ID: "configured-whatsapp-phone-number-id",
+  WOOCOMMERCE_CONSUMER_KEY: "configured-woocommerce-consumer-key",
+  WOOCOMMERCE_CONSUMER_SECRET: "configured-woocommerce-consumer-secret",
+  WOOCOMMERCE_STORE_URL: "https://store.customcard.test",
+  WORKATO_API_TOKEN: "configured-workato-api-token",
+  WORKATO_WEBHOOK_URL: "https://webhooks.workato.com/customcard",
   XAI_API_KEY: "configured-xai-key",
   ZAPIER_SIGNING_SECRET: "configured-zapier-signing-secret",
   ZAPIER_WEBHOOK_URL: "https://hooks.zapier.com/hooks/catch/customcard",
@@ -477,7 +514,10 @@ describe("provider runtime contracts", () => {
       "ideogram-image",
       "leonardo-image",
       "fal-image",
-      "bfl-flux-image"
+      "bfl-flux-image",
+      "adobe-firefly-image",
+      "recraft-image",
+      "luma-image"
     ];
 
     for (const providerId of providerIds) {
@@ -515,6 +555,15 @@ describe("provider runtime contracts", () => {
     expect(buildImageGenerationRuntime("bfl-flux-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-key": "{BFL_API_KEY}"
     });
+    expect(buildImageGenerationRuntime("adobe-firefly-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "x-api-key": "{ADOBE_FIREFLY_API_KEY}"
+    });
+    expect(buildImageGenerationRuntime("recraft-image", imageInput, readyEnv, openGates).request?.url).toBe(
+      "https://external.api.recraft.ai/v1/images/generations"
+    );
+    expect(buildImageGenerationRuntime("luma-image", imageInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.lumalabs.ai/dream-machine/v1/generations/image"
+    );
   });
 
   it("keeps provider imports metadata-only and omits raw source text", () => {
@@ -579,7 +628,14 @@ describe("provider runtime contracts", () => {
       "zoho-crm-lifecycle",
       "pipedrive-crm-lifecycle",
       "dynamics-crm-lifecycle",
-      "shopify-crm-lifecycle"
+      "shopify-crm-lifecycle",
+      "klaviyo-profile-lifecycle",
+      "mailchimp-audience-lifecycle",
+      "activecampaign-contact-lifecycle",
+      "bigcommerce-customer-lifecycle",
+      "woocommerce-customer-lifecycle",
+      "square-customer-lifecycle",
+      "intercom-contact-lifecycle"
     ];
 
     for (const providerId of providerIds) {
@@ -628,6 +684,28 @@ describe("provider runtime contracts", () => {
       url: "https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2026-04/graphql.json",
       headers: expect.objectContaining({ "x-shopify-access-token": "{SHOPIFY_ADMIN_ACCESS_TOKEN}" })
     });
+    expect(buildCrmRuntime("klaviyo-profile-lifecycle", crmInput, readyEnv, openGates).request).toMatchObject({
+      method: "GET",
+      headers: expect.objectContaining({ revision: "{KLAVIYO_REVISION}" })
+    });
+    expect(buildCrmRuntime("mailchimp-audience-lifecycle", crmInput, readyEnv, openGates).request?.url).toContain(
+      "https://{MAILCHIMP_SERVER_PREFIX}.api.mailchimp.com/3.0/lists/{MAILCHIMP_AUDIENCE_ID}/members"
+    );
+    expect(buildCrmRuntime("activecampaign-contact-lifecycle", crmInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "Api-Token": "{ACTIVECAMPAIGN_API_KEY}"
+    });
+    expect(buildCrmRuntime("bigcommerce-customer-lifecycle", crmInput, readyEnv, openGates).request?.url).toContain(
+      "/stores/{BIGCOMMERCE_STORE_HASH}/v3/customers"
+    );
+    expect(buildCrmRuntime("woocommerce-customer-lifecycle", crmInput, readyEnv, openGates).request?.headers).toMatchObject({
+      authorization: "Basic {WOOCOMMERCE_CONSUMER_KEY}:{WOOCOMMERCE_CONSUMER_SECRET}"
+    });
+    expect(buildCrmRuntime("square-customer-lifecycle", crmInput, readyEnv, openGates).request?.url).toBe(
+      "https://connect.squareup.com/v2/customers/search"
+    );
+    expect(buildCrmRuntime("intercom-contact-lifecycle", crmInput, readyEnv, openGates).request?.headers).toMatchObject({
+      "Intercom-Version": "2.13"
+    });
   });
 
   it("blocks CRM lifecycle sync when opt-in and review gates are absent", () => {
@@ -660,7 +738,10 @@ describe("provider runtime contracts", () => {
       "teams-workflow-notification",
       "notion-customer-database-sync",
       "airtable-customer-base-sync",
-      "google-sheets-lifecycle-sync"
+      "google-sheets-lifecycle-sync",
+      "n8n-webhook-workflow",
+      "workato-webhook-workflow",
+      "pipedream-webhook-workflow"
     ];
 
     for (const providerId of providerIds) {
@@ -707,6 +788,18 @@ describe("provider runtime contracts", () => {
       url: "https://sheets.googleapis.com/v4/spreadsheets/{GOOGLE_SHEETS_SPREADSHEET_ID}/values/CustomCardQueue!A:F:append?valueInputOption=USER_ENTERED",
       headers: expect.objectContaining({ authorization: "Bearer {google-oauth-access-token}" })
     });
+    expect(buildWorkflowIntegrationRuntime("n8n-webhook-workflow", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "{N8N_WEBHOOK_URL}",
+      headers: expect.objectContaining({ "x-customcard-signature": "HMAC-SHA256 {N8N_WEBHOOK_SECRET}" })
+    });
+    expect(buildWorkflowIntegrationRuntime("workato-webhook-workflow", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "{WORKATO_WEBHOOK_URL}",
+      headers: expect.objectContaining({ authorization: "Bearer {WORKATO_API_TOKEN}" })
+    });
+    expect(buildWorkflowIntegrationRuntime("pipedream-webhook-workflow", workflowInput, readyEnv, openGates).request).toMatchObject({
+      url: "{PIPEDREAM_WORKFLOW_URL}",
+      headers: expect.objectContaining({ "x-customcard-signature": "HMAC-SHA256 {PIPEDREAM_SIGNING_SECRET}" })
+    });
   });
 
   it("blocks workflow integrations when opt-in and suppression gates are absent", () => {
@@ -738,7 +831,13 @@ describe("provider runtime contracts", () => {
       "twilio-sms-notification",
       "whatsapp-cloud-notification",
       "expo-push-notification",
-      "firebase-cloud-messaging"
+      "firebase-cloud-messaging",
+      "customerio-transactional-notification",
+      "braze-canvas-notification",
+      "onesignal-message-notification",
+      "courier-send-notification",
+      "knock-workflow-notification",
+      "novu-trigger-notification"
     ];
 
     for (const providerId of providerIds) {
@@ -784,6 +883,25 @@ describe("provider runtime contracts", () => {
     );
     expect(buildNotificationRuntime("firebase-cloud-messaging", notificationInput, readyEnv, openGates).request?.url).toBe(
       "https://fcm.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/messages:send"
+    );
+    expect(buildNotificationRuntime("customerio-transactional-notification", notificationInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.customer.io/v1/send/email",
+      credentialRefs: expect.arrayContaining(["CUSTOMERIO_APP_API_KEY", "CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID"])
+    });
+    expect(buildNotificationRuntime("braze-canvas-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "{BRAZE_REST_ENDPOINT}/messages/send"
+    );
+    expect(buildNotificationRuntime("onesignal-message-notification", notificationInput, readyEnv, openGates).request?.headers).toMatchObject({
+      authorization: "Key {ONESIGNAL_REST_API_KEY}"
+    });
+    expect(buildNotificationRuntime("courier-send-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.courier.com/send"
+    );
+    expect(buildNotificationRuntime("knock-workflow-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.knock.app/v1/workflows/{KNOCK_WORKFLOW_KEY}/trigger"
+    );
+    expect(buildNotificationRuntime("novu-trigger-notification", notificationInput, readyEnv, openGates).request?.url).toBe(
+      "https://api.novu.co/v1/events/trigger"
     );
   });
 

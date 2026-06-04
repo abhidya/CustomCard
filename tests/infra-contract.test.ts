@@ -843,7 +843,7 @@ describe("production infrastructure contract", () => {
       status: "ready",
       items: 8,
       textProviderContracts: 15,
-      imageProviderContracts: 12,
+      imageProviderContracts: 15,
       localFallbacks: 2,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -1206,9 +1206,9 @@ describe("production infrastructure contract", () => {
       repoLocalReady: 4,
       evidenceMissing: 3,
       approvalBlocked: 1,
-      crmAdapterContracts: 7,
-      workflowAdapterContracts: 8,
-      notificationAdapterContracts: 10,
+      crmAdapterContracts: 14,
+      workflowAdapterContracts: 11,
+      notificationAdapterContracts: 16,
       lifecycleTriggerKinds: 3,
       liveMessagesEnabled: 0,
       crmWritesEnabled: 0,
@@ -1285,14 +1285,14 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-provider-governance-doctor",
       status: "ready",
-      adapterCount: 102,
+      adapterCount: 121,
       usageBasedCount: expect.any(Number),
       blockedCount: 6,
       liveProviderCalls: false,
       realOrdersEnabled: false,
       blockers: []
     });
-    expect(report.usageBasedCount).toBeGreaterThanOrEqual(30);
+    expect(report.usageBasedCount).toBeGreaterThanOrEqual(57);
     expect(report.lanes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ lane: "catalog", status: "ready" }),
@@ -1410,12 +1410,17 @@ describe("production infrastructure contract", () => {
     expect(mobileApp).toContain("CustomCard");
     expect(mobileApp).toContain("Customer mobile panel");
     expect(mobileApp).toContain("Text interface");
+    expect(mobileApp).toContain("Sign in and import");
+    expect(mobileApp).toContain("Best available options");
     expect(mobileApp).toContain("mobileChatTranscript");
     expect(mobileApp).toContain("mobileRenderChoices");
+    expect(mobileApp).toContain("mobileAccountOptions");
+    expect(mobileApp).toContain("mobileImportActions");
+    expect(mobileApp).toContain("mobileFulfillmentRecommendations");
     expect(mobileApp).toContain("mobileHandoffSteps");
     expect(mobileExperience).toContain("requiredMobileCapabilities");
     expect(mobileExperience).toContain("validateMobileExperience");
-    expect(mobileExperience).toContain("Live AI and vendor orders stay off");
+    expect(mobileExperience).toContain("Live AI and automatic orders stay off");
     const doctorOutput = execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
       encoding: "utf8",
       env: { ...process.env, CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173", REAL_ORDER_KILL_SWITCH: "disabled" },

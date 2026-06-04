@@ -16,9 +16,9 @@ describe("business engagement readiness", () => {
       repoLocalReady: 4,
       evidenceMissing: 3,
       approvalBlocked: 1,
-      crmAdapterContracts: 7,
-      workflowAdapterContracts: 8,
-      notificationAdapterContracts: 10,
+      crmAdapterContracts: 14,
+      workflowAdapterContracts: 11,
+      notificationAdapterContracts: 16,
       lifecycleTriggerKinds: 3,
       liveOAuthRequired: 1,
       optInRequired: 8,
@@ -54,7 +54,14 @@ describe("business engagement readiness", () => {
         "zoho-crm-lifecycle",
         "pipedrive-crm-lifecycle",
         "dynamics-crm-lifecycle",
-        "shopify-crm-lifecycle"
+        "shopify-crm-lifecycle",
+        "klaviyo-profile-lifecycle",
+        "mailchimp-audience-lifecycle",
+        "activecampaign-contact-lifecycle",
+        "bigcommerce-customer-lifecycle",
+        "woocommerce-customer-lifecycle",
+        "square-customer-lifecycle",
+        "intercom-contact-lifecycle"
       ])
     );
     expect(workflowContracts?.workflowAdapterIds).toEqual(
@@ -65,7 +72,10 @@ describe("business engagement readiness", () => {
         "teams-workflow-notification",
         "notion-customer-database-sync",
         "airtable-customer-base-sync",
-        "google-sheets-lifecycle-sync"
+        "google-sheets-lifecycle-sync",
+        "n8n-webhook-workflow",
+        "workato-webhook-workflow",
+        "pipedream-webhook-workflow"
       ])
     );
     expect(channelContracts?.notificationAdapterIds).toEqual(
@@ -75,7 +85,13 @@ describe("business engagement readiness", () => {
         "twilio-sms-notification",
         "whatsapp-cloud-notification",
         "expo-push-notification",
-        "firebase-cloud-messaging"
+        "firebase-cloud-messaging",
+        "customerio-transactional-notification",
+        "braze-canvas-notification",
+        "onesignal-message-notification",
+        "courier-send-notification",
+        "knock-workflow-notification",
+        "novu-trigger-notification"
       ])
     );
     expect(consentGate).toMatchObject({

@@ -39,7 +39,10 @@ const requiredImageAdapterIds = [
   "ideogram-image",
   "leonardo-image",
   "fal-image",
-  "bfl-flux-image"
+  "bfl-flux-image",
+  "adobe-firefly-image",
+  "recraft-image",
+  "luma-image"
 ];
 
 const requiredLocalFallbackAdapterIds = ["deterministic-customer-chat", "browser-svg-renderer"];

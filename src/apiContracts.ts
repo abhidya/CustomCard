@@ -104,6 +104,7 @@ import {
   type ProductionReadinessSummary
 } from "./productionReadiness.ts";
 import { buildPrinterPricingComparison } from "./printerPricing.ts";
+import { buildFulfillmentRecommendations } from "./fulfillmentRecommendation.ts";
 
 export type ApiMethod = "GET" | "POST";
 export type ApiAudience = "public" | "customer" | "admin";
@@ -225,6 +226,7 @@ export interface ApiBootstrapPayload {
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
+  fulfillmentRecommendations: ReturnType<typeof buildFulfillmentRecommendations>;
 }
 
 export const apiRouteContracts: ApiRouteContract[] = [
@@ -266,7 +268,14 @@ export const apiRouteContracts: ApiRouteContract[] = [
     auth: "customer-session",
     runtimeMode: "durable-api",
     requestSchema: ["session"],
-    responseSchema: ["primaryActions", "readyFallbacks", "chatTranscript", "printerPricing", "localization"],
+    responseSchema: [
+      "primaryActions",
+      "readyFallbacks",
+      "chatTranscript",
+      "printerPricing",
+      "fulfillmentRecommendations",
+      "localization"
+    ],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -283,6 +292,8 @@ export const apiRouteContracts: ApiRouteContract[] = [
     requestSchema: ["session", "platform"],
     responseSchema: [
       "sections",
+      "accountOptions",
+      "importActions",
       "todaySummary",
       "queueItems",
       "approvalActions",
@@ -290,6 +301,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "memoryReviewItems",
       "renderChoices",
       "pricingPreviews",
+      "fulfillmentRecommendations",
       "printProofChecks",
       "handoffSteps",
       "syncState",
@@ -526,6 +538,8 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
 }
 
 export function buildApiBootstrapPayload(): ApiBootstrapPayload {
+  const printerPricing = buildPrinterPricingComparison("walgreens");
+
   return {
     customer: buildCustomerPanelModel(),
     admin: buildAdminPanelModel(),
@@ -587,7 +601,8 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
       summary: summarizeBusinessEngagementReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
-    printerPricing: buildPrinterPricingComparison("walgreens")
+    printerPricing,
+    fulfillmentRecommendations: buildFulfillmentRecommendations(printerPricing)
   };
 }
 
