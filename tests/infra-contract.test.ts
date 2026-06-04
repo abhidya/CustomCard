@@ -308,6 +308,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"e2e:coverage:doctor\": \"node scripts/e2e-coverage-doctor.mjs\"");
     expect(packageJson).toContain("\"ai:doctor\": \"node scripts/ai-provider-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"observability:doctor\": \"node scripts/observability-readiness-doctor.mjs\"");
+    expect(packageJson).toContain("\"retail:doctor\": \"node scripts/retail-fulfillment-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
     expect(packageJson).toContain("\"capacity:doctor\": \"node scripts/capacity-plan-doctor.mjs\"");
@@ -320,6 +321,8 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/aiProviderReadinessData.mjs");
     expect(viteConfig).toContain("src/observabilityReadiness.ts");
     expect(viteConfig).toContain("src/observabilityReadinessData.mjs");
+    expect(viteConfig).toContain("src/retailFulfillmentReadiness.ts");
+    expect(viteConfig).toContain("src/retailFulfillmentReadinessData.mjs");
     expect(packageJson).toContain("\"mobile:release:doctor\": \"npm --prefix apps/mobile run release:doctor\"");
     expect(viteConfig).toContain("apps/mobile/src/customerExperience.ts");
     expect(viteConfig).toContain("src/agentContracts.ts");
@@ -381,6 +384,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run e2e:coverage:doctor");
     expect(workflow).toContain("npm run ai:doctor");
     expect(workflow).toContain("npm run observability:doctor");
+    expect(workflow).toContain("npm run retail:doctor");
     expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
     expect(workflow).toContain("npm run capacity:doctor");
@@ -716,9 +720,9 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-e2e-coverage-doctor",
       status: "ready",
-      journeys: 22,
+      journeys: 23,
       repoLocalCoveragePercent: 100,
-      ciGated: 22,
+      ciGated: 23,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -815,6 +819,52 @@ describe("production infrastructure contract", () => {
       expect.arrayContaining([
         expect.objectContaining({ lane: "register", status: "ready" }),
         expect.objectContaining({ lane: "provider-runtime", status: "ready" }),
+        expect.objectContaining({ lane: "surfaces", status: "ready" }),
+        expect.objectContaining({ lane: "docs", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
+
+  it("emits a retail fulfillment readiness report", () => {
+    const output = execFileSync("npm", ["run", "retail:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      items: number;
+      liveVendorAdapterContracts: number;
+      manualFallbacks: number;
+      recoveryDrillEvents: number;
+      liveQuoteEnabled: number;
+      directOrderEnabled: number;
+      externalNetworkCalls: number;
+      realPaymentsEnabled: number;
+      physicalCertificationAttached: number;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-retail-fulfillment-readiness-doctor",
+      status: "ready",
+      items: 8,
+      liveVendorAdapterContracts: 6,
+      manualFallbacks: 2,
+      recoveryDrillEvents: 21,
+      liveQuoteEnabled: 0,
+      directOrderEnabled: 0,
+      externalNetworkCalls: 0,
+      realPaymentsEnabled: 0,
+      physicalCertificationAttached: 0,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "register", status: "ready" }),
+        expect.objectContaining({ lane: "provider-contracts", status: "ready" }),
         expect.objectContaining({ lane: "surfaces", status: "ready" }),
         expect.objectContaining({ lane: "docs", status: "ready" }),
         expect.objectContaining({ lane: "ci", status: "ready" })

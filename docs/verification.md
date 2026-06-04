@@ -206,9 +206,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 26 test files passed, 166 tests passed.
-- Coverage: 24 core/API/persistence/infra/mobile test files passed, 157 tests passed; V8 report measured
-  91.27% statements, 84.61% branches, 97.35% functions, and 94.94% lines across
+- Vitest: 27 test files passed, 170 tests passed.
+- Coverage: 25 core/API/persistence/infra/mobile test files passed, 161 tests passed; V8 report measured
+  91.40% statements, 84.87% branches, 97.44% functions, and 94.93% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -265,8 +265,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 22 repo-local journeys, 100% repo-local
-coverage, 22 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 23 repo-local journeys, 100% repo-local
+coverage, 23 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 
@@ -288,6 +288,17 @@ Result: passed. The JSON report marked register, provider-runtime, surfaces,
 docs, CI, and evidence lanes `ready`; it verified 7 telemetry/alerting readiness
 items, 6 observability provider contracts, 4 alert-route-required controls, zero
 live ingestion, zero production alerts, and zero live external network
+requirements.
+
+```text
+npm run retail:doctor
+```
+
+Result: passed. The JSON report marked register, provider-contracts, surfaces,
+docs, CI, and evidence lanes `ready`; it verified 8 retail fulfillment
+readiness items, 6 blocked retail-printer adapter contracts, 2 manual fallbacks,
+21 recovery events, zero live quotes, zero direct orders, zero real payments,
+zero physical certification claims, and zero live external network
 requirements.
 
 ```text

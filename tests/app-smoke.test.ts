@@ -234,6 +234,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("AI provider readiness");
     expect(result.adminText).toContain("Live AI off");
     expect(result.adminText).toContain("Prompt audits");
+    expect(result.adminText).toContain("Retail fulfillment readiness");
+    expect(result.adminText).toContain("Direct orders off");
+    expect(result.adminText).toContain("Recovery events");
     expect(result.adminText).toContain("External audit readiness");
     expect(result.adminText).toContain("End-to-end coverage");
     expect(result.adminText).toContain("CRM and workflow integrations");

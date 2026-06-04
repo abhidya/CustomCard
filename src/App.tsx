@@ -105,6 +105,12 @@ import {
   type ObservabilityReadinessItem,
   type ObservabilityReadinessSummary
 } from "./observabilityReadiness";
+import {
+  retailFulfillmentReadinessItems,
+  summarizeRetailFulfillmentReadiness,
+  type RetailFulfillmentReadinessItem,
+  type RetailFulfillmentReadinessSummary
+} from "./retailFulfillmentReadiness";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -188,6 +194,7 @@ function App() {
   const aiProviderReadinessSummary = useMemo(() => summarizeAiProviderReadiness(), []);
   const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
   const observabilitySummary = useMemo(() => summarizeObservabilityReadiness(), []);
+  const retailFulfillmentSummary = useMemo(() => summarizeRetailFulfillmentReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -482,6 +489,8 @@ function App() {
             observabilitySummary={observabilitySummary}
             providerGovernance={providerGovernance}
             productionReadiness={productionReadiness}
+            retailFulfillmentItems={retailFulfillmentReadinessItems}
+            retailFulfillmentSummary={retailFulfillmentSummary}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -1147,6 +1156,8 @@ function AdminPanelView({
   observabilitySummary,
   providerGovernance,
   productionReadiness,
+  retailFulfillmentItems,
+  retailFulfillmentSummary,
   runtimeReadiness
 }: {
   aiProviderReadinessItems: AiProviderReadinessItem[];
@@ -1163,6 +1174,8 @@ function AdminPanelView({
   observabilitySummary: ObservabilityReadinessSummary;
   providerGovernance: ProviderGovernanceSummary;
   productionReadiness: ProductionReadinessSummary;
+  retailFulfillmentItems: RetailFulfillmentReadinessItem[];
+  retailFulfillmentSummary: RetailFulfillmentReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1198,6 +1211,8 @@ function AdminPanelView({
         <Metric label="Live AI" value={`${aiProviderReadinessSummary.liveProviderCallsEnabled}`} />
         <Metric label="Alert routes" value={`${observabilitySummary.alertRoutesRequired}`} />
         <Metric label="Live telemetry" value={`${observabilitySummary.liveIngestionEnabled}`} />
+        <Metric label="Retail contracts" value={`${retailFulfillmentSummary.liveVendorAdapterContracts}`} />
+        <Metric label="Direct orders" value={`${retailFulfillmentSummary.directOrderEnabled}`} />
       </div>
 
       <div className="adminGrid">
@@ -1392,6 +1407,31 @@ function AdminPanelView({
           <p className="panelNote">
             These are schema, redaction, sampling, retention, provider, and alert-route contracts; no live telemetry
             ingestion or production alert delivery is claimed.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Fulfillment</p>
+              <h3>Retail fulfillment readiness</h3>
+            </div>
+            <StatusChip icon={Store} label="Direct orders off" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="Retail quote order and print fulfillment readiness">
+            <Metric label="Items" value={`${retailFulfillmentSummary.total}`} />
+            <Metric label="Retail adapters" value={`${retailFulfillmentSummary.liveVendorAdapterContracts}`} />
+            <Metric label="Manual fallbacks" value={`${retailFulfillmentSummary.manualFallbacks}`} />
+            <Metric label="Recovery events" value={`${retailFulfillmentSummary.recoveryDrillEvents}`} />
+            <Metric label="Live quotes" value={`${retailFulfillmentSummary.liveQuoteEnabled}`} />
+            <Metric label="Direct orders" value={`${retailFulfillmentSummary.directOrderEnabled}`} />
+            <Metric label="Real payments" value={`${retailFulfillmentSummary.realPaymentsEnabled}`} />
+            <Metric label="Print certs" value={`${retailFulfillmentSummary.physicalCertificationAttached}`} />
+          </div>
+          <RetailFulfillmentReadinessList items={retailFulfillmentItems} />
+          <p className="panelNote">
+            These are manual handoff, public pricing, quote, certification, kill-switch, recovery, payment, and
+            physical-QA contracts; not live retail ordering or physical print certification.
           </p>
         </article>
 
@@ -1686,6 +1726,26 @@ function AiProviderReadinessList({ items }: { items: AiProviderReadinessItem[] }
       ))}
     </div>
   );
+}
+
+function RetailFulfillmentReadinessList({ items }: { items: RetailFulfillmentReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${retailFulfillmentStatusClass(item.status)}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>{item.directOrderEnabled ? "Direct orders" : "Orders off"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function retailFulfillmentStatusClass(status: RetailFulfillmentReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  if (status === "certification-blocked") return "blocked";
+  return "credential-gated";
 }
 
 function e2eAutomationLabel(type: E2eCoverageItem["automationType"]): string {

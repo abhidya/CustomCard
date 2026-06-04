@@ -23,6 +23,11 @@ skeleton for the production path. It includes:
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot, with 12 official-source observations,
   freshness reporting, and live quote/order claims kept separate.
+- Retail fulfillment readiness for manual handoff, public pricing, live quote
+  contracts, vendor certification, order kill switch, pickup/cancel recovery,
+  payment/refund boundaries, and physical print QA; `npm run retail:doctor`
+  keeps live quotes, direct retail ordering, real payments, and print
+  certification claims at zero.
 - Localization readiness for English (US), Spanish (US), Urdu, and Arabic across
   customer/admin web panels, API payloads, and the mobile shell, with RTL layout
   review and human copy-review gates before non-English or RTL copy is marked

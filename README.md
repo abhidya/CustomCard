@@ -73,7 +73,8 @@ environment configuration instead of static placeholders.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
-  readiness, cloud runtime readiness, and blocked live-vendor adapters.
+  readiness, retail fulfillment readiness, cloud runtime readiness, and blocked
+  live-vendor adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
@@ -90,8 +91,15 @@ environment configuration instead of static placeholders.
   sampling, retention, alert-route drill, provider request contracts, and
   incident-review evidence while keeping live ingestion and production alerts
   disabled.
+- Retail fulfillment readiness register in
+  `src/retailFulfillmentReadiness.ts` and
+  `src/retailFulfillmentReadinessData.mjs` for manual handoff, public pricing,
+  live quote contracts, vendor certification, order kill switch, pickup/cancel
+  recovery, payment/refund boundary, and physical print QA while keeping live
+  quotes, direct retail orders, real payments, and physical certification
+  claims disabled. Run `npm run retail:doctor`; it is not live retail ordering.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 22 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 23 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -228,8 +236,8 @@ Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, and Microsoft Graph
 keys, plus Zapier, Make, Slack, Teams, Notion, Airtable, and Google Sheets
 workflow keys are documented in `infra/env/.env.example`, but live OAuth,
 AI/image calls, notification sends, payment charges/refunds, telemetry
-ingestion, CRM sync, workflow sends, and vendor ordering are not implemented in
-this repo state.
+ingestion, CRM sync, workflow sends, live retail quotes, and direct vendor
+ordering are not implemented in this repo state.
 
 ## Architecture
 

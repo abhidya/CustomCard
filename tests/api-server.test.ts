@@ -82,6 +82,21 @@ describe("api server wrapper", () => {
           productionAlertsEnabled: number;
           blockers: string[];
         };
+        retailFulfillment: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          certificationBlocked: number;
+          liveVendorAdapterContracts: number;
+          manualFallbacks: number;
+          recoveryDrillEvents: number;
+          liveQuoteEnabled: number;
+          directOrderEnabled: number;
+          externalNetworkCalls: number;
+          realPaymentsEnabled: number;
+          physicalCertificationAttached: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -163,10 +178,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 22,
-      covered: 22,
+      total: 23,
+      covered: 23,
       repoLocalCoveragePercent: 100,
-      ciGated: 22,
+      ciGated: 23,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -195,6 +210,21 @@ describe("api server wrapper", () => {
       liveIngestionEnabled: 0,
       externalNetworkCalls: 0,
       productionAlertsEnabled: 0,
+      blockers: []
+    });
+    expect(report.readiness.retailFulfillment).toMatchObject({
+      total: 8,
+      repoLocalReady: 3,
+      evidenceMissing: 3,
+      certificationBlocked: 2,
+      liveVendorAdapterContracts: 6,
+      manualFallbacks: 2,
+      recoveryDrillEvents: 21,
+      liveQuoteEnabled: 0,
+      directOrderEnabled: 0,
+      externalNetworkCalls: 0,
+      realPaymentsEnabled: 0,
+      physicalCertificationAttached: 0,
       blockers: []
     });
     expect(report.readiness.capacity).toMatchObject({
@@ -345,8 +375,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 22,
-        covered: 22,
+        total: 23,
+        covered: 23,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -375,6 +405,21 @@ describe("api server wrapper", () => {
         liveIngestionEnabled: 0,
         externalNetworkCalls: 0,
         productionAlertsEnabled: 0,
+        blockers: []
+      });
+      expect(readiness.retailFulfillment).toMatchObject({
+        total: 8,
+        repoLocalReady: 3,
+        evidenceMissing: 3,
+        certificationBlocked: 2,
+        liveVendorAdapterContracts: 6,
+        manualFallbacks: 2,
+        recoveryDrillEvents: 21,
+        liveQuoteEnabled: 0,
+        directOrderEnabled: 0,
+        externalNetworkCalls: 0,
+        realPaymentsEnabled: 0,
+        physicalCertificationAttached: 0,
         blockers: []
       });
       expect(readiness.capacity).toMatchObject({

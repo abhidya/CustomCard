@@ -40,6 +40,13 @@ import {
   type ObservabilityReadinessSummary
 } from "./observabilityReadiness";
 import {
+  retailFulfillmentReadinessItems,
+  summarizeRetailFulfillmentReadiness,
+  validateRetailFulfillmentReadiness,
+  type RetailFulfillmentReadinessItem,
+  type RetailFulfillmentReadinessSummary
+} from "./retailFulfillmentReadiness";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -97,6 +104,7 @@ export interface ApiReadinessSummary {
   aiProviderReadiness: AiProviderReadinessSummary;
   capacity: CapacityPlanSummary;
   observability: ObservabilityReadinessSummary;
+  retailFulfillment: RetailFulfillmentReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -138,6 +146,10 @@ export interface ApiBootstrapPayload {
   observability: {
     items: ObservabilityReadinessItem[];
     summary: ObservabilityReadinessSummary;
+  };
+  retailFulfillment: {
+    items: RetailFulfillmentReadinessItem[];
+    summary: RetailFulfillmentReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -237,6 +249,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "aiProviderReadiness",
       "capacity",
       "observability",
+      "retailFulfillment",
       "runtime",
       "blockedProviders",
       "requiredEnv"
@@ -423,6 +436,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     aiProviderReadiness: summarizeAiProviderReadiness(),
     capacity: summarizeCapacityPlan(),
     observability: summarizeObservabilityReadiness(),
+    retailFulfillment: summarizeRetailFulfillmentReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -461,6 +475,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     observability: {
       items: observabilityReadinessItems,
       summary: summarizeObservabilityReadiness()
+    },
+    retailFulfillment: {
+      items: retailFulfillmentReadinessItems,
+      summary: summarizeRetailFulfillmentReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -569,6 +587,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const observabilityIssue of validateObservabilityReadiness()) {
     issues.push(observabilityIssue);
+  }
+  for (const retailFulfillmentIssue of validateRetailFulfillmentReadiness()) {
+    issues.push(retailFulfillmentIssue);
   }
 
   return issues;

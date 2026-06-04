@@ -19,6 +19,8 @@ export default defineConfig({
         "src/aiProviderReadinessData.mjs",
         "src/observabilityReadiness.ts",
         "src/observabilityReadinessData.mjs",
+        "src/retailFulfillmentReadiness.ts",
+        "src/retailFulfillmentReadinessData.mjs",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",

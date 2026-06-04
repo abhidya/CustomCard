@@ -7,6 +7,7 @@ import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
 import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
+import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
@@ -280,6 +281,7 @@ export const readiness = {
   aiProviderReadiness: summarizeAiProviderReadiness(),
   capacity: summarizeCapacityPlan(),
   observability: summarizeObservabilityReadiness(),
+  retailFulfillment: summarizeRetailFulfillmentReadiness(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -614,6 +616,34 @@ function validateApiServerContract() {
     blockers.push("Observability readiness cannot enable production alerts.");
   }
   if (readiness.observability.blockers.length > 0) blockers.push("Observability readiness summary has blockers.");
+  if (readiness.retailFulfillment.total < 8) {
+    blockers.push("Retail fulfillment readiness must track direct ordering launch evidence.");
+  }
+  if (readiness.retailFulfillment.liveVendorAdapterContracts < 6) {
+    blockers.push("Retail fulfillment readiness must cover every blocked live vendor adapter.");
+  }
+  if (readiness.retailFulfillment.manualFallbacks < 2) {
+    blockers.push("Retail fulfillment readiness must keep manual handoff and pricing fallbacks.");
+  }
+  if (readiness.retailFulfillment.recoveryDrillEvents < 12) {
+    blockers.push("Retail fulfillment readiness must track pickup, cancellation, refund, and print QA drills.");
+  }
+  if (readiness.retailFulfillment.liveQuoteEnabled !== 0) {
+    blockers.push("Retail fulfillment readiness cannot enable live quotes.");
+  }
+  if (readiness.retailFulfillment.directOrderEnabled !== 0) {
+    blockers.push("Retail fulfillment readiness cannot enable direct retail orders.");
+  }
+  if (readiness.retailFulfillment.externalNetworkCalls !== 0) {
+    blockers.push("Retail fulfillment readiness cannot require live external network calls.");
+  }
+  if (readiness.retailFulfillment.realPaymentsEnabled !== 0) {
+    blockers.push("Retail fulfillment readiness cannot enable real payment/refund traffic.");
+  }
+  if (readiness.retailFulfillment.physicalCertificationAttached !== 0) {
+    blockers.push("Retail fulfillment readiness cannot claim physical print certification.");
+  }
+  if (readiness.retailFulfillment.blockers.length > 0) blockers.push("Retail fulfillment readiness summary has blockers.");
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

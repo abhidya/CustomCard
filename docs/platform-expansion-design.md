@@ -59,6 +59,11 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   card observations ready for manual comparison, with official-source collection
   rules and 30-day freshness reporting; live quotes, taxes, coupons, stock, and
   pickup windows remain manual-confirmation work.
+- Retail fulfillment readiness: `src/retailFulfillmentReadiness.ts` and
+  `src/retailFulfillmentReadinessData.mjs` track manual handoff, public
+  pricing, live quote contracts, vendor certification, order kill switch,
+  pickup/cancel recovery, payment/refund boundary, and physical print QA. Run
+  `npm run retail:doctor`; this is not live retail ordering.
 - Notifications: local UI status ready; credential-gated Resend, SendGrid,
   Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API, Expo Push, and Firebase
   Cloud Messaging contracts; generic transactional email contract gated.
@@ -219,6 +224,9 @@ The admin panel turns the adapter catalog into an operations surface:
   quotes, live payments/refunds, direct retail orders, telemetry, applied
   bucket/IAM proof, deployed Postgres API, Vercel DB access, signed native
   mobile proof, external audits, and physical print certification.
+- Retail fulfillment readiness for six blocked live vendor adapter contracts,
+  two manual fallbacks, recovery drills, quote/order/payment/certification
+  evidence gaps, and zero direct-order enablement.
 - Local print package export readiness for source SVGs, a combined PDF proof,
   and checksum manifest.
 
@@ -410,6 +418,13 @@ Implemented checks:
   source-backed public price observations, collection rules, freshness blocking,
   minimum-quantity totals, manual-confirmation requirements, UI/API exposure, CI
   wiring, and the no-live-quote boundary.
+- `src/retailFulfillmentReadiness.test.ts` and `npm run retail:doctor` validate
+  Retail fulfillment readiness for six blocked retail-printer adapter contracts,
+  manual handoff and review-only pricing fallbacks, live quote and order
+  certification gaps, pickup/cancel/recovery drills, payment/refund boundaries,
+  physical print QA requirements, admin/API surfaces, CI wiring, and zero live
+  quotes, direct orders, real payments, external network calls, or physical
+  certification claims. This is not live retail ordering.
 - `src/localization.test.ts` and `npm run localization:doctor` validate the 4
   launch locales, complete message bundles, RTL layout-review gates, human
   copy-review gates, web/API/mobile parity, CI wiring, no live translation
@@ -431,10 +446,10 @@ Implemented checks:
   admin panel, adapter matrix, API contracts, memory runtime, Postgres runtime,
   Postgres HTTP integration, account-auth storage/recovery, mobile shell, native
   release profiles, artifact handoff, deployment IaC, security/privacy/
-  accessibility, external audit readiness, observability/alerting readiness,
-  capacity/cost, localization/RTL, printer pricing, demo reset, and worker
-  readiness. The matrix reports 100% repo-local coverage only; it is not live
-  production proof.
+  accessibility, external audit readiness, AI provider readiness,
+  observability/alerting readiness, retail fulfillment readiness, capacity/cost,
+  localization/RTL, printer pricing, demo reset, and worker readiness. The
+  matrix reports 100% repo-local coverage only; it is not live production proof.
 - `src/printExport.test.ts` validates source SVG artifacts, the combined 5x7
   PDF proof, checksum manifest validation, preflight failures, and no-order
   export summaries.
