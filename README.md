@@ -211,11 +211,28 @@ environment configuration instead of static placeholders.
 ## Run
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
 Open the Vite URL printed by the dev server. The app opens directly into the
+free local MVP workflow and does not require paid AI, payment, retail, email,
+CRM, or cloud credentials.
+
+## Reviewer Demo Path
+
+1. Run `npm ci` and `npm run dev`.
+2. Use the local demo auth controls to enter the customer workspace.
+3. Paste an invite or `.ics` event, approve the detected opportunity, and review
+   the relationship memory before generation.
+4. Generate the deterministic 5x7 card panels, export the local print package,
+   and review the checksum manifest/manual vendor handoff checklist.
+5. Open the admin panel to inspect provider gates, launch-readiness doctors, and
+   blocked live-order/payment/vendor statuses.
+
+For a no-server verification pass, run `npm run test -- --run` or the broader
+`npm run check` when audit/network policy checks are acceptable in the current
+environment.
 free local workflow, not a marketing landing page.
 
 ## Vercel Deployment Contract
