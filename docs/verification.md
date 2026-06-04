@@ -130,6 +130,12 @@ it after each meaningful implementation pass.
   `dpl_Gh1VhQEDsYh5wf7o3Pz27vJHFwy4`, and serverless function
   `api/[...path]`; public `/` and `/api/health` returned Vercel deployment
   protection 401 responses, and `vercel env ls` showed no project env vars.
+- Hosted API proof readiness is checked by `npm run hosted:api:doctor`, which
+  verifies the 8-item Vercel/hosted DB proof register, serverless source
+  contract, hosted env requirements, deployment evidence boundary, admin/API
+  surfaces, docs, CI wiring, and zero public DB-backed route proof, hosted DB
+  connectivity proof, hosted token verification proof, backup policy proof, or
+  deployment-protection bypass claims.
 - Cloud artifact IaC is checked by `npm run cloud:doctor`, which statically
   verifies `infra/aws/artifact-store` for private S3 bucket posture, encryption,
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
@@ -146,7 +152,7 @@ it after each meaningful implementation pass.
   admin/API surfaces, CI wiring, no public production claims, and no attached
   external audit artifacts. It is not an external audit report.
 - End-to-end coverage readiness is checked by `npm run e2e:coverage:doctor`,
-  which verifies the 24-item repo-local matrix, backing browser/API/mobile/infra
+  which verifies the 26-item repo-local matrix, backing browser/API/mobile/infra
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
@@ -174,9 +180,9 @@ it after each meaningful implementation pass.
   environment-sourced API URL, disabled real-order kill switch, and no hardcoded
   production API endpoint.
 - Coverage is measured for core, API, artifact handoff/store, payment readiness,
-  mobile render readiness, localization, pricing, print export, persistence,
-  orchestration, and mobile contract modules with V8 thresholds enforced by
-  `npm run check`: 90%
+  mobile render readiness, hosted API proof readiness, localization, pricing,
+  print export, persistence, orchestration, and mobile contract modules with V8
+  thresholds enforced by `npm run check`: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 - CI verification is defined in `.github/workflows/verify.yml` for pushes to
   `main` and pull requests.
@@ -227,9 +233,9 @@ npm run check
 
 Result: passed.
 
-- Vitest: 29 test files passed, 178 tests passed.
+- Vitest: 30 test files passed, 182 tests passed.
 - Coverage: 26 core/API/persistence/infra/mobile test files passed, 165 tests passed; V8 report measured
-  91.63% statements, 85.4% branches, 97.6% functions, and 95% lines across
+  91.85% statements, 85.82% branches, 97.69% functions, and 95.13% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
   `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
   `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
@@ -287,8 +293,8 @@ npm run e2e:coverage:doctor
 ```
 
 Result: passed. The JSON report marked matrix, surfaces, tests, docs, CI, and
-safety lanes `ready`; it verified 25 repo-local journeys, 100% repo-local
-coverage, 25 CI-gated coverage items, admin/API surfaces, backing browser/API/
+safety lanes `ready`; it verified 26 repo-local journeys, 100% repo-local
+coverage, 26 CI-gated coverage items, admin/API surfaces, backing browser/API/
 mobile/infra test files, documentation signals, zero live production proofs,
 zero real orders, and zero live external network requirements.
 
@@ -331,6 +337,19 @@ native-profiles, surfaces, docs, CI, and evidence lanes `ready`; it verified 8
 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native
 build profiles, zero emulator render proof claims, zero signed artifact claims,
 zero live provider calls, zero external network calls, and zero real orders.
+
+```text
+npm run hosted:api:doctor
+```
+
+Result: passed. The JSON report marked register, tests, vercel-source,
+hosted-env, surfaces, deployment-evidence, docs, CI, and evidence lanes
+`ready`; it verified 8 hosted API proof readiness items, 5 hosted-DB-required
+items, 5 route contracts, 6 required hosted env vars, zero env sync proof
+claims, zero hosted DB proof claims, zero public DB-backed route proof claims,
+zero hosted account-token verification proof claims, zero backup policy claims,
+zero deployment-protection bypass claims, zero live provider calls, zero
+external network calls, and zero real orders.
 
 ```text
 npm run retail:doctor

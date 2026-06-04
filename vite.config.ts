@@ -25,6 +25,8 @@ export default defineConfig({
         "src/paymentReadinessData.mjs",
         "src/mobileRenderReadiness.ts",
         "src/mobileRenderReadinessData.mjs",
+        "src/hostedApiReadiness.ts",
+        "src/hostedApiReadinessData.mjs",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",

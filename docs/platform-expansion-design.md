@@ -283,6 +283,12 @@ summary, queue items, approval actions, memory review items, render choices,
 review-only pricing previews, print-proof checks, manual handoff steps, and
 offline idempotent sync state.
 
+Hosted API proof readiness in `src/hostedApiReadiness.ts` and
+`src/hostedApiReadinessData.mjs` tracks the Vercel project link, serverless API
+route contract, deployment-protection boundary, hosted env sync, hosted Postgres
+connectivity, public DB-backed route proof, hosted account-token verification,
+and backup policy. Run `npm run hosted:api:doctor`. This is not public DB-backed Vercel proof, hosted account-token verification, or hosted database backup evidence.
+
 `scripts/api-server.mjs` is the deployable no-dependency Node wrapper for those
 contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,
 `/api/routes`, `/api/customer/bootstrap`, `/api/mobile/bootstrap`,
@@ -375,7 +381,7 @@ The runtime remains fail-closed:
   exposure, CI wiring, and the "not an external audit report" disclaimer while
   keeping public production claims and attached external artifact counts at zero.
 - `npm run e2e:coverage:doctor` verifies End-to-end coverage in
-  `src/e2eCoverage.ts`, the 24-item repo-local end-to-end coverage matrix,
+  `src/e2eCoverage.ts`, the 26-item repo-local end-to-end coverage matrix,
   admin/API exposure, backing browser/API/mobile/infra tests, CI wiring, and the
   "not live production proof" disclaimer while keeping live production proofs,
   real orders, and live external network requirements at zero.
@@ -534,11 +540,13 @@ Implemented checks:
   Postgres integration doctor, Postgres API HTTP doctor, account-auth doctor,
   cloud artifact IaC doctor, localization doctor, artifact-store doctor, live
   MinIO/S3-compatible artifact doctor, persistence doctor, demo reset doctor,
-  worker readiness, mobile doctor, mobile render readiness doctor, and mobile
-  release doctor for pushes to `main` and pull requests.
+  worker readiness, mobile doctor, mobile render readiness doctor, hosted API
+  proof readiness doctor, and mobile release doctor for pushes to `main` and
+  pull requests.
 - `npm run test:coverage` enforces V8 coverage thresholds for core, API,
-  artifact handoff/store, mobile render readiness, localization, pricing,
-  print-export, persistence, orchestration, and mobile contract modules: 90%
+  artifact handoff/store, mobile render readiness, hosted API proof readiness,
+  localization, pricing, print-export, persistence, orchestration, and mobile
+  contract modules: 90%
   statements, 80% branches, 90% functions, and 90% lines.
 
 Remaining high-risk work:

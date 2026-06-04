@@ -32,6 +32,7 @@
     "retail:doctor": "node scripts/retail-fulfillment-readiness-doctor.mjs",
     "payment:doctor": "node scripts/payment-readiness-doctor.mjs",
     "mobile:render:doctor": "node scripts/mobile-render-readiness-doctor.mjs",
+    "hosted:api:doctor": "node scripts/hosted-api-readiness-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
     "capacity:doctor": "node scripts/capacity-plan-doctor.mjs",

@@ -6,6 +6,7 @@ import { summarizeAiProviderReadiness } from "../src/aiProviderReadinessData.mjs
 import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
 import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
 import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
+import { summarizeHostedApiReadiness } from "../src/hostedApiReadinessData.mjs";
 import { summarizeMobileRenderReadiness } from "../src/mobileRenderReadinessData.mjs";
 import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
 import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
@@ -286,6 +287,7 @@ export const readiness = {
   retailFulfillment: summarizeRetailFulfillmentReadiness(),
   paymentReadiness: summarizePaymentReadiness(),
   mobileRenderReadiness: summarizeMobileRenderReadiness(),
+  hostedApiReadiness: summarizeHostedApiReadiness(),
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -673,6 +675,29 @@ function validateApiServerContract() {
   if (readiness.mobileRenderReadiness.realOrdersEnabled !== 0) blockers.push("Mobile render readiness cannot enable real orders.");
   if (readiness.mobileRenderReadiness.liveProviderCalls !== 0) blockers.push("Mobile render readiness cannot enable live provider calls.");
   if (readiness.mobileRenderReadiness.blockers.length > 0) blockers.push("Mobile render readiness summary has blockers.");
+  if (readiness.hostedApiReadiness.total < 8) blockers.push("Hosted API readiness must track Vercel and hosted DB proof evidence.");
+  if (readiness.hostedApiReadiness.repoLocalReady < 2) blockers.push("Hosted API readiness must keep deployment and serverless contracts ready.");
+  if (readiness.hostedApiReadiness.hostedDbRequired < 5) blockers.push("Hosted API readiness must identify hosted DB proof requirements.");
+  if (readiness.hostedApiReadiness.publicRouteProofRequired < 3) {
+    blockers.push("Hosted API readiness must identify public hosted route proof requirements.");
+  }
+  if (readiness.hostedApiReadiness.requiredEnvVars < 6) blockers.push("Hosted API readiness must track required hosted env vars.");
+  if (readiness.hostedApiReadiness.envSyncProofs !== 0) blockers.push("Hosted API readiness cannot claim hosted env sync proof.");
+  if (readiness.hostedApiReadiness.hostedDbProofs !== 0) blockers.push("Hosted API readiness cannot claim hosted DB connectivity.");
+  if (readiness.hostedApiReadiness.publicRouteProofs !== 0) blockers.push("Hosted API readiness cannot claim public DB-backed route proof.");
+  if (readiness.hostedApiReadiness.hostedTokenVerificationProofs !== 0) {
+    blockers.push("Hosted API readiness cannot claim hosted token verification proof.");
+  }
+  if (readiness.hostedApiReadiness.backupPolicies !== 0) blockers.push("Hosted API readiness cannot claim hosted backup policy.");
+  if (readiness.hostedApiReadiness.deploymentProtectionBypasses !== 0) {
+    blockers.push("Hosted API readiness cannot claim deployment protection bypass proof.");
+  }
+  if (readiness.hostedApiReadiness.externalNetworkCalls !== 0) {
+    blockers.push("Hosted API readiness cannot require live external network calls.");
+  }
+  if (readiness.hostedApiReadiness.realOrdersEnabled !== 0) blockers.push("Hosted API readiness cannot enable real orders.");
+  if (readiness.hostedApiReadiness.liveProviderCalls !== 0) blockers.push("Hosted API readiness cannot enable live provider calls.");
+  if (readiness.hostedApiReadiness.blockers.length > 0) blockers.push("Hosted API readiness summary has blockers.");
   if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
   if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
   if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");

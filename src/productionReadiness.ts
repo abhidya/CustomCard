@@ -134,7 +134,8 @@ export const productionLaunchGates: ProductionLaunchGate[] = [
       "Deployment readiness doctor",
       "Env template",
       "Vercel project linked",
-      "Protected production deployment inspected"
+      "Protected production deployment inspected",
+      "Hosted API proof readiness register"
     ],
     blocker: "Vercel deployment exists, but hosted DB env vars and public DB doctor output are not present.",
     adminAction: "Set Vercel Postgres env vars, disable or bypass deployment protection for verification, and run the hosted API DB doctor."

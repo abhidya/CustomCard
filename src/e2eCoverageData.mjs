@@ -14,6 +14,7 @@ const requiredCoverageIds = [
   "mobile-native-release-profile",
   "artifact-store-handoff",
   "deployment-iac-readiness",
+  "hosted-api-proof-readiness",
   "security-privacy-accessibility",
   "external-audit-evidence-register",
   "ai-provider-readiness",
@@ -221,6 +222,19 @@ export const e2eCoverageItems = [
     ciGated: true,
     testCommands: ["npm run deployment:doctor", "npm run cloud:doctor", "npm run check"],
     evidence: ["Local dev lane ready", "Cheap droplet lane ready", "Cloud-native lane ready", "Static AWS artifact-store IaC verified"],
+    liveProductionProof: false,
+    realOrdersEnabled: false,
+    externalNetworkCalls: false
+  },
+  {
+    id: "hosted-api-proof-readiness",
+    label: "Hosted API proof readiness",
+    surface: "infra",
+    automationType: "doctor",
+    status: "covered",
+    ciGated: true,
+    testCommands: ["npm run hosted:api:doctor", "npm run test -- --run src/hostedApiReadiness.test.ts", "npm run check"],
+    evidence: ["Vercel deployment metadata tracked", "Hosted env proof gaps tracked", "Public DB route proof remains unclaimed", "Hosted token proof remains unclaimed"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

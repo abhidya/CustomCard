@@ -127,6 +127,26 @@ describe("api server wrapper", () => {
           liveProviderCalls: number;
           blockers: string[];
         };
+        hostedApiReadiness: {
+          total: number;
+          repoLocalReady: number;
+          evidenceMissing: number;
+          protectionBlocked: number;
+          routeContracts: number;
+          requiredEnvVars: number;
+          hostedDbRequired: number;
+          publicRouteProofRequired: number;
+          hostedTokenVerificationRequired: number;
+          envSyncProofs: number;
+          hostedDbProofs: number;
+          publicRouteProofs: number;
+          hostedTokenVerificationProofs: number;
+          backupPolicies: number;
+          deploymentProtectionBypasses: number;
+          realOrdersEnabled: number;
+          liveProviderCalls: number;
+          blockers: string[];
+        };
         capacity: {
           total: number;
           localProfiles: number;
@@ -208,10 +228,10 @@ describe("api server wrapper", () => {
       externalArtifactsAttached: 0
     });
     expect(report.readiness.e2eCoverage).toMatchObject({
-      total: 25,
-      covered: 25,
+      total: 26,
+      covered: 26,
       repoLocalCoveragePercent: 100,
-      ciGated: 25,
+      ciGated: 26,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
@@ -283,6 +303,26 @@ describe("api server wrapper", () => {
       nativeBuildProfiles: 3,
       emulatorRenderProofs: 0,
       signedArtifacts: 0,
+      realOrdersEnabled: 0,
+      liveProviderCalls: 0,
+      blockers: []
+    });
+    expect(report.readiness.hostedApiReadiness).toMatchObject({
+      total: 8,
+      repoLocalReady: 2,
+      evidenceMissing: 5,
+      protectionBlocked: 1,
+      routeContracts: 5,
+      requiredEnvVars: 6,
+      hostedDbRequired: 5,
+      publicRouteProofRequired: 3,
+      hostedTokenVerificationRequired: 3,
+      envSyncProofs: 0,
+      hostedDbProofs: 0,
+      publicRouteProofs: 0,
+      hostedTokenVerificationProofs: 0,
+      backupPolicies: 0,
+      deploymentProtectionBypasses: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
@@ -435,8 +475,8 @@ describe("api server wrapper", () => {
         externalArtifactsAttached: 0
       });
       expect(readiness.e2eCoverage).toMatchObject({
-        total: 25,
-        covered: 25,
+        total: 26,
+        covered: 26,
         repoLocalCoveragePercent: 100,
         liveProductionProofs: 0,
         realOrdersEnabled: 0,
@@ -507,6 +547,24 @@ describe("api server wrapper", () => {
         nativeBuildProfiles: 3,
         emulatorRenderProofs: 0,
         signedArtifacts: 0,
+        realOrdersEnabled: 0,
+        liveProviderCalls: 0,
+        blockers: []
+      });
+      expect(readiness.hostedApiReadiness).toMatchObject({
+        total: 8,
+        repoLocalReady: 2,
+        evidenceMissing: 5,
+        protectionBlocked: 1,
+        routeContracts: 5,
+        requiredEnvVars: 6,
+        hostedTokenVerificationRequired: 3,
+        envSyncProofs: 0,
+        hostedDbProofs: 0,
+        publicRouteProofs: 0,
+        hostedTokenVerificationProofs: 0,
+        backupPolicies: 0,
+        deploymentProtectionBypasses: 0,
         realOrdersEnabled: 0,
         liveProviderCalls: 0,
         blockers: []

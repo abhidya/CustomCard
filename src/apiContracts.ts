@@ -61,6 +61,13 @@ import {
   type MobileRenderReadinessSummary
 } from "./mobileRenderReadiness";
 import {
+  hostedApiReadinessItems,
+  summarizeHostedApiReadiness,
+  validateHostedApiReadiness,
+  type HostedApiReadinessItem,
+  type HostedApiReadinessSummary
+} from "./hostedApiReadiness";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -121,6 +128,7 @@ export interface ApiReadinessSummary {
   retailFulfillment: RetailFulfillmentReadinessSummary;
   paymentReadiness: PaymentReadinessSummary;
   mobileRenderReadiness: MobileRenderReadinessSummary;
+  hostedApiReadiness: HostedApiReadinessSummary;
   runtime: {
     localReady: number;
     requestReady: number;
@@ -174,6 +182,10 @@ export interface ApiBootstrapPayload {
   mobileRenderReadiness: {
     items: MobileRenderReadinessItem[];
     summary: MobileRenderReadinessSummary;
+  };
+  hostedApiReadiness: {
+    items: HostedApiReadinessItem[];
+    summary: HostedApiReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
@@ -276,6 +288,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "retailFulfillment",
       "paymentReadiness",
       "mobileRenderReadiness",
+      "hostedApiReadiness",
       "runtime",
       "blockedProviders",
       "requiredEnv"
@@ -465,6 +478,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     retailFulfillment: summarizeRetailFulfillmentReadiness(),
     paymentReadiness: summarizePaymentReadiness(),
     mobileRenderReadiness: summarizeMobileRenderReadiness(),
+    hostedApiReadiness: summarizeHostedApiReadiness(),
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -515,6 +529,10 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     mobileRenderReadiness: {
       items: mobileRenderReadinessItems,
       summary: summarizeMobileRenderReadiness()
+    },
+    hostedApiReadiness: {
+      items: hostedApiReadinessItems,
+      summary: summarizeHostedApiReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     printerPricing: buildPrinterPricingComparison("walgreens")
@@ -632,6 +650,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const mobileRenderReadinessIssue of validateMobileRenderReadiness()) {
     issues.push(mobileRenderReadinessIssue);
+  }
+  for (const hostedApiReadinessIssue of validateHostedApiReadiness()) {
+    issues.push(hostedApiReadinessIssue);
   }
 
   return issues;

@@ -125,6 +125,12 @@ import {
   type MobileRenderReadinessItem,
   type MobileRenderReadinessSummary
 } from "./mobileRenderReadiness";
+import {
+  hostedApiReadinessItems,
+  summarizeHostedApiReadiness,
+  type HostedApiReadinessItem,
+  type HostedApiReadinessSummary
+} from "./hostedApiReadiness";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -211,6 +217,7 @@ function App() {
   const retailFulfillmentSummary = useMemo(() => summarizeRetailFulfillmentReadiness(), []);
   const paymentReadinessSummary = useMemo(() => summarizePaymentReadiness(), []);
   const mobileRenderReadinessSummary = useMemo(() => summarizeMobileRenderReadiness(), []);
+  const hostedApiReadinessSummary = useMemo(() => summarizeHostedApiReadiness(), []);
   const customerPanelModel = useMemo(() => buildCustomerPanelModel(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const customerTranscript = useMemo(
@@ -511,6 +518,8 @@ function App() {
             paymentReadinessSummary={paymentReadinessSummary}
             mobileRenderReadinessItems={mobileRenderReadinessItems}
             mobileRenderReadinessSummary={mobileRenderReadinessSummary}
+            hostedApiReadinessItems={hostedApiReadinessItems}
+            hostedApiReadinessSummary={hostedApiReadinessSummary}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -1182,6 +1191,8 @@ function AdminPanelView({
   paymentReadinessSummary,
   mobileRenderReadinessItems,
   mobileRenderReadinessSummary,
+  hostedApiReadinessItems,
+  hostedApiReadinessSummary,
   runtimeReadiness
 }: {
   aiProviderReadinessItems: AiProviderReadinessItem[];
@@ -1204,6 +1215,8 @@ function AdminPanelView({
   paymentReadinessSummary: PaymentReadinessSummary;
   mobileRenderReadinessItems: MobileRenderReadinessItem[];
   mobileRenderReadinessSummary: MobileRenderReadinessSummary;
+  hostedApiReadinessItems: HostedApiReadinessItem[];
+  hostedApiReadinessSummary: HostedApiReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
@@ -1245,6 +1258,8 @@ function AdminPanelView({
         <Metric label="Live charges" value={`${paymentReadinessSummary.liveChargesEnabled}`} />
         <Metric label="Mobile screens" value={`${mobileRenderReadinessSummary.screenSections}`} />
         <Metric label="Native proofs" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
+        <Metric label="Hosted routes" value={`${hostedApiReadinessSummary.routeContracts}`} />
+        <Metric label="Public DB proof" value={`${hostedApiReadinessSummary.publicRouteProofs}`} />
       </div>
 
       <div className="adminGrid">
@@ -1415,6 +1430,31 @@ function AdminPanelView({
           <p className="panelNote">
             These are source-render, viewport, customer-flow, RTL, preview-profile, emulator, and signed-artifact
             readiness contracts; not an emulator render proof or signed native build.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Hosted API</p>
+              <h3>Hosted API proof readiness</h3>
+            </div>
+            <StatusChip icon={Cloud} label="Public DB proof missing" tone="red" />
+          </div>
+          <div className="runtimeGrid" aria-label="Hosted API Vercel and database proof readiness">
+            <Metric label="Items" value={`${hostedApiReadinessSummary.total}`} />
+            <Metric label="Routes" value={`${hostedApiReadinessSummary.routeContracts}`} />
+            <Metric label="Env vars" value={`${hostedApiReadinessSummary.requiredEnvVars}`} />
+            <Metric label="Hosted DB req." value={`${hostedApiReadinessSummary.hostedDbRequired}`} />
+            <Metric label="Public proof req." value={`${hostedApiReadinessSummary.publicRouteProofRequired}`} />
+            <Metric label="Env proof" value={`${hostedApiReadinessSummary.envSyncProofs}`} />
+            <Metric label="DB proof" value={`${hostedApiReadinessSummary.hostedDbProofs}`} />
+            <Metric label="Token proof" value={`${hostedApiReadinessSummary.hostedTokenVerificationProofs}`} />
+          </div>
+          <HostedApiReadinessList items={hostedApiReadinessItems} />
+          <p className="panelNote">
+            These are Vercel deployment, serverless route, environment, hosted Postgres, token verification, and backup
+            readiness contracts; not public DB-backed Vercel proof or hosted account-token verification.
           </p>
         </article>
 
@@ -1850,6 +1890,30 @@ function MobileRenderReadinessList({ items }: { items: MobileRenderReadinessItem
       ))}
     </div>
   );
+}
+
+function HostedApiReadinessList({ items }: { items: HostedApiReadinessItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${hostedApiReadinessStatusClass(item.status)}`} key={item.id}>
+          <span>{item.lane}</span>
+          <strong>{item.label}</strong>
+          <small>
+            {item.publicRouteProofAttached || item.hostedDbConnected || item.hostedTokenVerificationAttached
+              ? "Proof attached"
+              : "Proof missing"}
+          </small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function hostedApiReadinessStatusClass(status: HostedApiReadinessItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  if (status === "protection-blocked") return "blocked";
+  return "credential-gated";
 }
 
 function mobileRenderReadinessStatusClass(status: MobileRenderReadinessItem["status"]): ProviderStatus {

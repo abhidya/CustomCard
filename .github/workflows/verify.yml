@@ -83,6 +83,9 @@ jobs:
       - name: Validate mobile render readiness
         run: npm run mobile:render:doctor
 
+      - name: Validate hosted API proof readiness
+        run: npm run hosted:api:doctor
+
       - name: Validate localization readiness
         run: npm run localization:doctor
 

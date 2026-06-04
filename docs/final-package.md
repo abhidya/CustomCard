@@ -145,19 +145,20 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 29 test files, 178 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.63% statements, 85.4% branches, 97.6% functions, 95% lines across account auth, core, API, artifact handoff/store, demo seed, E2E coverage, external audit readiness, AI provider readiness, observability readiness, retail fulfillment readiness, payment readiness, mobile render readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-03: 30 test files, 182 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 91.85% statements, 85.82% branches, 97.69% functions, 95.13% lines across account auth, core, API, artifact handoff/store, demo seed, E2E coverage, external audit readiness, AI provider readiness, observability readiness, retail fulfillment readiness, payment readiness, mobile render readiness, hosted API proof readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`, `/tmp/customcard-payment-readiness-*.png`, and `/tmp/customcard-mobile-render-readiness-*.png`. | Passed; latest visual pass covered customer/admin panels, mobile render readiness admin panel content, and desktop/mobile viewports with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |
 | Cloud artifact IaC | `npm run cloud:doctor` | Passed; statically verified `infra/aws/artifact-store` private S3 bucket posture, versioning, AES256 encryption, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, `projects/*` writer IAM policy, app/worker role attachments, runtime env outputs, and no live cloud calls. |
 | Security/privacy/accessibility baseline | `npm run security:doctor` | Passed; statically verified API security headers and CSP posture, non-root/container-hardened deployment manifests, raw-content storage blocks, signed-artifact share controls, app-shell landmarks, skip-link behavior, and no live provider calls or real orders; external audit and legal review remain unclaimed. |
 | External audit readiness | `npm run external:audit:doctor` | Passed; verified 15 production-blocking external evidence items, production-gate mappings, admin/API surfaces, CI wiring, documentation, zero public production claims, and zero attached external audit artifacts. |
-| End-to-end coverage readiness | `npm run e2e:coverage:doctor` | Passed; verified 25 repo-local reviewer journeys, 100% repo-local coverage, 25 CI-gated coverage items, admin/API surfaces, backing browser/API/mobile/infra tests, zero live production proofs, zero real orders, and zero live external network requirements. |
+| End-to-end coverage readiness | `npm run e2e:coverage:doctor` | Passed; verified 26 repo-local reviewer journeys, 100% repo-local coverage, 26 CI-gated coverage items, admin/API surfaces, backing browser/API/mobile/infra tests, zero live production proofs, zero real orders, and zero live external network requirements. |
 | AI provider readiness | `npm run ai:doctor` | Passed; verified 8 AI readiness items, 15 text provider contracts, 12 image provider contracts, 2 local fallbacks, 6 prompt-audit gates, 5 human-review gates, admin/API surfaces, docs, CI wiring, zero live provider calls, zero production AI traffic, and zero live external network requirements. |
 | Observability readiness | `npm run observability:doctor` | Passed; verified 7 telemetry/alerting readiness items, 6 observability provider contracts, 4 alert-route-required controls, admin/API surfaces, docs, CI wiring, zero live ingestion, zero production alerts, and zero live external network requirements. |
 | Retail fulfillment readiness | `npm run retail:doctor` | Passed; verified 8 retail fulfillment readiness items, 6 blocked retail-printer adapter contracts, 2 manual fallbacks, 21 recovery events, admin/API surfaces, docs, CI wiring, zero live quotes, zero direct retail orders, zero real payments, zero external network calls, and zero physical certification claims. |
 | Payment readiness | `npm run payment:doctor` | Passed; verified 8 payment readiness items, 4 sandbox payment provider contracts, 1 no-payment fallback, 23 ledger events, admin/API surfaces, docs, CI wiring, zero live charges, zero live refunds, zero live captures, zero external network calls, zero card data storage, and zero PCI approval claims. |
+| Hosted API proof readiness | `npm run hosted:api:doctor` | Passed; verified 8 hosted API proof readiness items, 5 hosted-DB-required items, 5 route contracts, 6 required hosted env vars, Vercel/serverless source signals, deployment evidence boundary, admin/API surfaces, docs, CI wiring, zero public DB-backed route proof claims, zero hosted DB proof claims, zero hosted token verification proof claims, zero backup policy claims, zero deployment-protection bypass claims, zero live provider calls, and zero real orders. |
 | Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 102 adapters, 45 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
 | Capacity planning | `npm run capacity:doctor` | Passed; verified 4 local/cheap/cloud/SaaS profiles, finite daily card/image limits, admin/API surfaces, CI wiring, documentation, and no live provider calls or real orders. |
 | Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
@@ -176,7 +177,7 @@
 | Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, admin/API surfaces, docs, CI wiring, zero emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |
-| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, mobile render readiness, and mobile native release gates with safe repo-local env. |
+| CI workflow | `.github/workflows/verify.yml` inspected by `tests/infra-contract.test.ts`. | Covered; workflow runs check, deployment, cloud artifact IaC, contract API, localization readiness, capacity planning, memory API, Postgres contract API, live Postgres integration, Postgres API HTTP, account auth, artifact store, live MinIO/S3-compatible artifact writes, persistence, demo reset, worker, mobile, mobile render readiness, hosted API proof readiness, and mobile native release gates with safe repo-local env. |
 | Docs/readme check | README, traceability, verification, handoff, completion audit reviewed. | Covered; stale claims found in this audit were corrected. |
 
 ## Requirement Coverage
@@ -229,9 +230,10 @@
 24. Run `npm run demo:doctor`.
 25. Run the worker and mobile doctor commands in `docs/verification.md`.
 26. Run `npm run mobile:render:doctor`.
-27. Run `npm run mobile:release:doctor`.
-28. Inspect `.github/workflows/verify.yml`.
-29. Inspect screenshots in `docs/evidence/` and known gaps in
+27. Run `npm run hosted:api:doctor`.
+28. Run `npm run mobile:release:doctor`.
+29. Inspect `.github/workflows/verify.yml`.
+30. Inspect screenshots in `docs/evidence/` and known gaps in
    `docs/handoff-notes.md`.
 
 ## Known Gaps
@@ -240,8 +242,10 @@
   account identity and hashed recovery challenge storage are covered by doctor.
 - No live Gmail, Google Calendar, Outlook, or iCloud OAuth flow.
 - No production Postgres deployment or production hosted account-token
-  verification; isolated live Postgres route-auth/migration/runtime integration
-  and process-level API HTTP verification are covered by doctors.
+  verification; hosted API proof readiness tracks Vercel deployment evidence,
+  hosted env/DB/token/backup proof gaps, and deployment-protection boundary,
+  while isolated live Postgres route-auth/migration/runtime integration and
+  process-level API HTTP verification are covered by doctors.
 - AI provider readiness is covered as repo-local text/image adapter inventory,
   model allowlist, prompt safety, privacy, print QA, spend, evaluation, and
   rollout gates; no live AI text/image generation, model output QA run, or

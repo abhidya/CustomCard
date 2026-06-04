@@ -51,6 +51,13 @@ skeleton for the production path. It includes:
   preview profile readiness, emulator proof, and signed native artifact proof;
   `npm run mobile:render:doctor` keeps emulator proof claims, signed artifacts,
   live provider calls, external network calls, and real orders at zero.
+- Hosted API proof readiness for Vercel deployment metadata, serverless API
+  route contracts, deployment-protection boundary, hosted env sync, hosted
+  Postgres connectivity, public DB-backed route proof, hosted account-token
+  verification, and backup policy; `npm run hosted:api:doctor` keeps public
+  route proof, hosted DB proof, env sync proof, hosted token proof, backup
+  policy proof, deployment-protection bypass, live provider calls, external
+  network calls, and real orders at zero.
 - Typed storyboard, architecture, agent, print-adapter, and risk contracts.
 - Executable service-kernel contracts for provider import, approved memory,
   card-project creation, print validation, order recovery, and regional policy.
@@ -156,9 +163,10 @@ skeleton for the production path. It includes:
 22. Run `npm run demo:doctor`.
 23. Run the worker and mobile doctor commands in `docs/verification.md`.
 24. Run `npm run mobile:render:doctor`.
-25. Run `npm run mobile:release:doctor`.
-26. Inspect the app with `npm run dev`.
-27. In the app, start a local workspace, scan the sample invite, generate a card,
+25. Run `npm run hosted:api:doctor`.
+26. Run `npm run mobile:release:doctor`.
+27. Inspect the app with `npm run dev`.
+28. In the app, start a local workspace, scan the sample invite, generate a card,
    prepare handoff, inspect the customer panel, inspect the admin panel, and
    inspect adapter readiness.
 

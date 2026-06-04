@@ -74,7 +74,8 @@ environment configuration instead of static placeholders.
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
   readiness, retail fulfillment readiness, payment readiness, mobile render
-  readiness, cloud runtime readiness, and blocked live-vendor adapters.
+  readiness, hosted API proof readiness, cloud runtime readiness, and blocked
+  live-vendor adapters.
 - External audit evidence register in `src/externalAuditReadiness.ts` and
   `src/externalAuditReadinessData.mjs` for legal, security, privacy,
   accessibility, hosted auth, OAuth, AI QA, payments, telemetry, hosted DB,
@@ -113,8 +114,17 @@ environment configuration instead of static placeholders.
   calls, external network calls, and real orders at zero. Run `npm run
   mobile:render:doctor`; it is not an emulator render proof or signed native
   build.
+- Hosted API proof readiness register in `src/hostedApiReadiness.ts` and
+  `src/hostedApiReadinessData.mjs` for Vercel deployment evidence, serverless
+  route contracts, deployment-protection boundary, hosted env sync, hosted
+  Postgres connectivity, public DB-backed route proof, hosted account-token
+  verification, and backup policy while keeping env sync, hosted DB proof,
+  public route proof, hosted token verification, backup policy, deployment
+  protection bypass, live provider calls, external network calls, and real
+  orders at zero. Run `npm run hosted:api:doctor`; it is not public DB-backed
+  Vercel proof.
 - End-to-end coverage matrix in `src/e2eCoverage.ts` and
-  `src/e2eCoverageData.mjs` that maps 25 repo-local reviewer journeys across
+  `src/e2eCoverageData.mjs` that maps 26 repo-local reviewer journeys across
   customer web, admin web, adapters, API, identity, mobile, infra, and
   governance to browser smoke tests, contract tests, doctors, and CI gates.
   This is repo-local coverage; live production proofs remain at zero.
@@ -291,6 +301,7 @@ npm run external:audit:doctor
 npm run e2e:coverage:doctor
 npm run payment:doctor
 npm run mobile:render:doctor
+npm run hosted:api:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
@@ -355,13 +366,18 @@ storage, zero PCI-approval-claim boundary. It is not live payment processing.
 register, Expo customer app source, native build profile signals, admin/API
 surfaces, documentation, CI wiring, and the zero emulator-proof/signed-artifact
 boundary. It is not an emulator render proof or signed native build.
+`npm run hosted:api:doctor` verifies the committed hosted API proof readiness
+register, Vercel/serverless source contracts, hosted env/DB/token proof gaps,
+deployment evidence boundary, admin/API surfaces, documentation, CI wiring, and
+the zero public-route-proof/hosted-DB-proof/env-sync-proof boundary. It is not
+public DB-backed Vercel proof.
 
 `.github/workflows/verify.yml` runs the same repository check, deployment
 doctor, cloud artifact IaC doctor, contract API doctor, security/privacy/
 accessibility baseline doctor, external audit readiness doctor, provider cost
 governance doctor, end-to-end coverage doctor, AI provider readiness doctor,
 observability readiness doctor, payment readiness doctor, mobile render
-readiness doctor,
+readiness doctor, hosted API proof readiness doctor,
 capacity profile doctor, printer pricing research doctor,
 localization readiness doctor,
 memory-runtime API doctor,
