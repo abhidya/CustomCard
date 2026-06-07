@@ -137,7 +137,7 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
-- The June 7, 2026 operator render opened the exact Walgreens and CVS 5x7 print
+- The June 7, 2026 21:34 UTC operator render opened the exact Walgreens and CVS 5x7 print
   entrypoints without login, upload, cart, payment, or order action. CVS exposed
   `JUNESW` in visible rendered text alongside the 5x7 folded-card product
   signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
@@ -210,13 +210,13 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-19:24 UTC `operator-chromium-rendered-read` check against the exact print
-links. A repeat operator collection at 19:39 UTC with
-`CUSTOMCARD_COUPON_RENDER_PRINT_LINKS=1` produced the same status: CVS rendered
-the `JUNESW` code visibly on the 5x7 folded card page, so the browser-evidence
-Module reports `operator-browser-proof-attached` when that evidence is attached
-or generated. Walgreens rendered the 5x7 product and $3.49 price visibly, while
-`CRISPCARD` was present in page HTML but not visible text; the Module reports
+21:34 UTC `operator-chromium-rendered-read` check against the exact print
+links. A matching visible browser read opened both print links after the
+collector run. CVS rendered the `JUNESW` code visibly on the 5x7 folded card
+page, so the browser-evidence Module reports
+`operator-browser-proof-attached` when that evidence is attached or generated.
+Walgreens rendered the 5x7 product and $3.49 price visibly, while `CRISPCARD`
+was present in page HTML but not visible text; the Module reports
 `operator-browser-html-signal-attached-visible-proof-still-required`. The raw
 CVS public page can drift between offers and may contain unrelated promo-code
 signals such as `SAMEDAY65`, a navigation/category heading such as
