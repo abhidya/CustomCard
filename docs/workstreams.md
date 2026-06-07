@@ -11,6 +11,8 @@ No worker branch is currently awaiting integration. Recent merged lanes:
 
 | Lane | Owner | Main commit | Scope | Validation |
 | --- | --- | --- | --- | --- |
+| Coupon source targets | Lead agent | `3c7543d` | Official Walgreens/CVS coupon sources, exact rendered print-link proof targets, and credential-gated FMTC provider-feed reporting. | Full `npm run check`, pricing doctor, coupon collector, focused pricing/API/app tests. |
+| Retail operation blueprints | Lead agent | `e1d74d2` | Retail printer operations now carry blocked request/evidence blueprints for future certified price fetch, image upload, and order placement. | Full `npm run check`, retail doctor, focused retail/runtime tests. |
 | Coupon portal evidence | Anscombe | `6ffd44d` | Structured same-cart provider-portal coupon evidence before best-price coupon ranking. | Full `npm run check`, pricing doctor, script syntax checks, focused pricing/API/fulfillment tests. |
 | Demo/bootstrap boundary | Huygens | `dd71043` | Demo bootstrap values moved out of the primary React shell without behavior change. | Browser smoke tests and build. |
 | Orchestration/workstream map | Lead agent | `c14c401` | Repo-local workstream map, branch hygiene, integration, and validation sequencing. | Infra contract test and diff whitespace check. |
