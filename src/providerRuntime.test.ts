@@ -1178,13 +1178,20 @@ describe("provider runtime contracts", () => {
       selectedVendorId: "walgreens",
       refreshReport: expect.objectContaining({
         liveQuote: false,
-        sourceCount: 7
+        sourceCount: 8
       }),
       disclaimer: expect.stringContaining("not live quotes")
     });
   });
 
   it("never prepares live vendor order requests even with credentials and gates", () => {
+    const retailOperationByAdapterId = new Map([
+      ["walgreens-live-order", "upload-image"],
+      ["cvs-live-order", "place-order"],
+      ["fedex-live-print", "fetch-price"],
+      ["walmart-live-print", "upload-image"]
+    ]);
+
     for (const adapterId of [
       "walgreens-live-order",
       "cvs-live-order",
@@ -1199,6 +1206,7 @@ describe("provider runtime contracts", () => {
           vendorId: "walgreens",
           quoteCents: 699,
           storeId: "store-123",
+          operation: retailOperationByAdapterId.get(adapterId) as "fetch-price" | "upload-image" | "place-order" | undefined,
           certificationRecorded: true,
           externalShareApproved: true,
           physicalPrintQaRecorded: true
@@ -1210,6 +1218,24 @@ describe("provider runtime contracts", () => {
       expect(result.mode, adapterId).toBe("blocked");
       expect(result.request, adapterId).toBeUndefined();
       expect(result.readiness.blockedReasons.join(" ")).toContain("Live vendor orders remain disabled");
+      if (retailOperationByAdapterId.has(adapterId)) {
+        expect(result.localResult, adapterId).toMatchObject({
+          selectedOperation: retailOperationByAdapterId.get(adapterId),
+          noNetwork: true,
+          realOrdersEnabled: false,
+          liveQuoteEnabled: false,
+          imageUploadEnabled: false,
+          orderPlacementEnabled: false,
+          operation: expect.objectContaining({
+            status: "blocked",
+            noNetwork: true,
+            preparesRequest: false
+          })
+        });
+        expect(JSON.stringify(result.localResult), adapterId).toContain("https://");
+      } else {
+        expect(result.localResult, adapterId).toBeUndefined();
+      }
     }
   });
 

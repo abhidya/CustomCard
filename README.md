@@ -73,7 +73,8 @@ environment configuration instead of static placeholders.
   Staples, Office Depot, or a local printer when automatic ordering is disabled.
 - Review-only public printer pricing comparison for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot manual handoff, with 12 official-source
-  observations, freshness checks, and checkout confirmation still required.
+  observations across 8 persisted source links, freshness checks, and checkout
+  confirmation still required.
 - Localization readiness for English (US), Spanish (US), Urdu, and Arabic
   across customer, admin, API, and mobile surfaces, with RTL layout review and
   human copy-review gates before non-English or RTL copy can be marked ready.

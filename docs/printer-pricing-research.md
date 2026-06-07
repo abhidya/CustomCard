@@ -4,24 +4,36 @@ This file records review-only public price observations for manual fulfillment.
 It is not a live quote feed, a checkout integration, or a promise that a store
 has stock at checkout time.
 
-Observed on: June 3, 2026.
+Observed on: June 7, 2026.
 
 ## Public Observations
 
 | Vendor | Observed product | Public price captured | Source |
 | --- | --- | --- | --- |
-| Walgreens | 5x7 folded card | $2.99 each | [Walgreens photo product catalog](https://developer.walgreens.com/support/photo-product-catalog) |
+| Walgreens Photo | 5x7 folded cards, standard cardstock 85lb | $3.49 each from JSON-LD offer for `CommerceProduct_33272`; checkout confirmation required | [Walgreens Photo 5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) |
 | CVS Photo | 5x7 double-sided cardstock card | $1.99 each with a 20-card minimum in the app contract | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
 | CVS Photo | 5x7 photo card | $1.09 each with a 20-card minimum in the app contract | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
 | CVS Photo | Same Day 5x7 Premium card | $2.49 each with a 20-card minimum in the app contract | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
-| CVS Photo | 5x7 folded card | $2.99 each | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
-| FedEx Office | Quick 5x7 single-sided greeting card | $13.99 for 10, represented as a package-start observation | [FedEx Office greeting cards](https://www.office.fedex.com/default/greeting-cards) |
-| FedEx Office | Quick 5x7 double-sided greeting card | $17.99 for 10, represented as a package-start observation | [FedEx Office greeting cards](https://www.office.fedex.com/default/greeting-cards) |
-| FedEx Office | Premium 5x7 folded greeting card | $22.99 for 20 folded, represented as a package-start observation | [FedEx Office greeting cards](https://www.office.fedex.com/default/greeting-cards) |
-| Walmart Photo | Same-day folded photo card | $1.42 each, marked public-ambiguous until checkout confirms the local store price | [Walmart Photo same-day folded photo card](https://business.walmart.com/ip/Same-Day-Folded-Photo-Card/15907786) |
+| CVS Photo | Folded greeting card, 5x7 | $8.98 each from JSON-LD offer for `CommerceProduct_26126`; quantity, pickup, tax, and availability require checkout confirmation | [CVS Photo 5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) |
+| FedEx Office | Quick 5x7 single-sided greeting card | $13.99 for 10, represented as a package-start observation; quick page now documents upload-file formats and same-day/24-hour pickup, while live checkout confirms current price | [FedEx Office quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) |
+| FedEx Office | Quick 5x7 double-sided greeting card | $17.99 for 10, represented as a package-start observation; quick page now documents upload-file formats and same-day/24-hour pickup, while live checkout confirms current price | [FedEx Office quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) |
+| FedEx Office | Premium 5x7 folded greeting card | $22.99 for 20 folded, represented as a package-start observation; quick page now documents upload-file formats and same-day/24-hour pickup, while live checkout confirms current price | [FedEx Office quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) |
+| Walmart Photo | 5x7 folded card upload your design | $0.56 each for one card; the page also lists larger quantity tiers such as 60 for $33.60 | [Walmart Photo 5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) |
 | Staples Print | 5x7 folded card bundle | $49.99 for 25, represented as a package-start observation with coupon/window confirmation required | [Staples folded cards](https://www.staples.com/services/printing/cards-invitations-announcements/folded-cards/) |
 | Staples Print | 5x7 same-day card bundle | $49.99 pre-tax base for 25; coupon prices excluded until checkout confirmation | [Staples same-day cards](https://www.staples.com/services/printing/cards-invitations-announcements/same-day-cards/) |
 | Office Depot | 7x5 custom photo holiday card bundle | $77.60 for 25, represented as a package-start observation | [Office Depot custom photo holiday cards](https://www.officedepot.com/a/products/7395368/Custom-Photo-Holiday-Cards-With-Envelopes/) |
+
+## Retail Adapter Source Links
+
+These links are persisted in `src/retailPrinterAdapters.ts`, `src/providerCatalog.ts`,
+and `src/printerPricing.ts`.
+
+| Vendor | Product link | Price fetch | Image upload | Order placement |
+| --- | --- | --- | --- | --- |
+| Walmart Photo | [5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) | Blocked no-network operation using review-only public observation | Blocked until certified Walmart Photo upload contract or reviewed browser-session automation exists | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| FedEx Office | [Quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) | Blocked no-network operation; live checkout confirms final current price | Blocked until FedEx upload-file contract, file acceptance, and crop/fold preview evidence exist | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| CVS Photo | [5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | Blocked no-network operation using review-only public observation | Blocked until CVS Photo/Snapfish project creation and preview evidence exist | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| Walgreens Photo | [5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | Blocked no-network operation using review-only public observation | Blocked until Walgreens Photo/Snapfish project creation and preview evidence exist | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
 
 ## Collection Contract
 

@@ -464,8 +464,9 @@ npm run printer:pricing:doctor
 
 Result: passed. The JSON report marked catalog, safety, collection, tests,
 surfaces, docs, and CI lanes `ready`; it verified 12 official-source printer
-price observations, 9 collection rules, manual confirmation on every
-observation, UI/API exposure, CI wiring, and no live quote or real-order claims.
+price observations across 8 persisted source links, 9 collection rules, manual
+confirmation on every observation, UI/API exposure, CI wiring, and no live quote
+or real-order claims.
 
 ```text
 npm run localization:doctor

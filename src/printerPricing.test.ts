@@ -10,7 +10,7 @@ import {
   type PrinterPriceObservation
 } from "./printerPricing";
 
-const reviewedAt = new Date("2026-06-03T12:00:00.000Z");
+const reviewedAt = new Date("2026-06-07T12:00:00.000Z");
 
 describe("printer pricing research", () => {
   it("keeps public printer pricing review-only and source-backed", () => {
@@ -51,8 +51,8 @@ describe("printer pricing research", () => {
     });
     expect(estimatePrinterSubtotal(walgreensSingle!, 1)).toMatchObject({
       pricedQuantity: 1,
-      subtotalCents: 299,
-      subtotalLabel: "$2.99"
+      subtotalCents: 349,
+      subtotalLabel: "$3.49"
     });
   });
 
@@ -61,17 +61,17 @@ describe("printer pricing research", () => {
 
     expect(comparison.liveQuote).toBe(false);
     expect(comparison.selectedVendorOptions[0].observation.vendorId).toBe("walgreens");
-    expect(comparison.selectedVendorOptions[0].subtotalLabel).toBe("$2.99");
+    expect(comparison.selectedVendorOptions[0].subtotalLabel).toBe("$3.49");
     expect(comparison.refreshReport).toMatchObject({
       totalObservations: printerPriceCatalog.length,
-      sourceCount: 7,
-      freshSources: 7,
+      sourceCount: 8,
+      freshSources: 8,
       canShowComparison: true,
       liveQuote: false
     });
     expect(comparison.rankedKnownPrices[0]).toMatchObject({
       observation: expect.objectContaining({ vendorId: "walmart" }),
-      subtotalLabel: "$1.42"
+      subtotalLabel: "$0.56"
     });
     expect(comparison.manualConfirmationVendors).toEqual(
       expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"])
@@ -181,7 +181,7 @@ describe("printer pricing research", () => {
     const ruleUrls = new Set(printerPricingCollectionRules.map((rule) => rule.url));
     const sourceUrls = new Set(printerPriceCatalog.map((observation) => observation.source.url));
 
-    expect(printerPricingCollectionRules.length).toBeGreaterThanOrEqual(7);
+    expect(printerPricingCollectionRules.length).toBeGreaterThanOrEqual(8);
     expect([...sourceUrls].every((url) => ruleUrls.has(url))).toBe(true);
     expect(printerPricingCollectionRules.every((rule) => rule.noNetworkRuntime)).toBe(true);
     expect(printerPricingCollectionRules.flatMap((rule) => rule.blockedFields)).toEqual(
@@ -194,6 +194,6 @@ describe("printer pricing research", () => {
 
     expect(staleReport.canShowComparison).toBe(false);
     expect(staleReport.staleSources.length).toBe(staleReport.sourceCount);
-    expect(staleReport.blockers[0]).toContain("source is 63 days old");
+    expect(staleReport.blockers[0]).toContain("source is 59 days old");
   });
 });

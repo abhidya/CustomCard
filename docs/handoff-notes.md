@@ -23,7 +23,8 @@ skeleton for the production path. It includes:
   and Pipedream lifecycle queue contracts.
 - Review-only public printer pricing research for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot, with 12 official-source observations,
-  freshness reporting, and live quote/order claims kept separate.
+  8 persisted source links, freshness reporting, and live quote/order claims
+  kept separate.
 - Retail fulfillment readiness for manual handoff, public pricing, live quote
   contracts, vendor certification, order kill switch, pickup/cancel recovery,
   payment/refund boundaries, and physical print QA; `npm run retail:doctor`

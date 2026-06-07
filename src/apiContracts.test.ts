@@ -317,7 +317,7 @@ describe("api contracts", () => {
     });
     expect(payload.fulfillmentRecommendations.recommendations).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "cheapest-known-price", vendorName: "Walmart Photo", subtotalLabel: "$1.42" }),
+        expect.objectContaining({ kind: "cheapest-known-price", vendorName: "Walmart Photo", subtotalLabel: "$0.56" }),
         expect.objectContaining({ kind: "fastest-pickup", vendorName: "Walmart Photo", etaLabel: "same-day pickup candidate" }),
         expect.objectContaining({ kind: "cheapest-shipped", vendorName: "FedEx Office", subtotalLabel: "$22.99" })
       ])
@@ -479,7 +479,7 @@ describe("api contracts", () => {
       selectedVendorId: "walgreens",
       liveQuote: false,
       refreshReport: expect.objectContaining({
-        sourceCount: 7
+        sourceCount: 8
       })
     });
   });

@@ -47,6 +47,7 @@ export default defineConfig({
         "src/productionReadiness.ts",
         "src/providerCatalog.ts",
         "src/providerGovernance.ts",
+        "src/retailPrinterAdapters.ts",
         "src/providerRuntime.ts",
         "src/serviceKernel.ts"
       ],

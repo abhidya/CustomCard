@@ -1440,7 +1440,9 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["Physical print certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
     roleSurface: ["admin"],
     priority: 90,
-    detail: "Hard blocked until partner certification and print QA exist."
+    detail: "Models Walgreens Photo price fetch, image upload, and order placement, all blocked until partner certification and print QA exist.",
+    docsUrl:
+      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery"
   },
   {
     id: "cvs-live-order",
@@ -1454,7 +1456,9 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["Vendor certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
     roleSurface: ["admin"],
     priority: 91,
-    detail: "Modeled as a future adapter, not a live ordering path."
+    detail: "Models CVS Photo price fetch, image upload, and order placement, all blocked until certified vendor-browser or API evidence exists.",
+    docsUrl:
+      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery"
   },
   {
     id: "fedex-live-print",
@@ -1468,7 +1472,8 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["Vendor certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
     roleSurface: ["admin"],
     priority: 92,
-    detail: "Modeled as a future adapter after print QA and order recovery are verified."
+    detail: "Models FedEx Office price fetch, file upload, and order placement, all blocked until print QA and order recovery are verified.",
+    docsUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html"
   },
   {
     id: "walmart-live-print",
@@ -1482,7 +1487,9 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["Vendor certification", "Live quote", "Explicit approval", "Kill switch disabled only after certification"],
     roleSurface: ["admin"],
     priority: 93,
-    detail: "Modeled as a future retail photo adapter; pricing research remains manual and review-only."
+    detail: "Models Walmart Photo price fetch, image upload, and order placement, all blocked while pricing research remains manual and review-only.",
+    docsUrl:
+      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2"
   },
   {
     id: "staples-live-print",

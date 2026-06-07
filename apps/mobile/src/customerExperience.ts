@@ -476,7 +476,7 @@ export const mobilePricingPreviews: MobilePricingPreview[] = [
   {
     vendor: "Walgreens",
     product: "5x7 folded card",
-    estimatedTotalCents: 299,
+    estimatedTotalCents: 349,
     sourceMode: "review-only-public-price",
     manualConfirmationRequired: true,
     liveQuote: false
@@ -484,7 +484,7 @@ export const mobilePricingPreviews: MobilePricingPreview[] = [
   {
     vendor: "CVS",
     product: "5x7 folded card",
-    estimatedTotalCents: 299,
+    estimatedTotalCents: 898,
     sourceMode: "review-only-public-price",
     manualConfirmationRequired: true,
     liveQuote: false
@@ -504,7 +504,7 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     kind: "cheapest-known-price",
     label: "Cheapest known price",
     vendorName: "Walmart Photo",
-    totalCents: 142,
+    totalCents: 56,
     etaLabel: "same-day pickup candidate",
     confirmationCopy: "Public price before tax, coupons, stock, and checkout confirmation.",
     liveQuote: false,
@@ -515,7 +515,7 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     kind: "fastest-pickup",
     label: "Fastest pickup candidate",
     vendorName: "Walmart Photo",
-    totalCents: 142,
+    totalCents: 56,
     etaLabel: "same-day pickup candidate",
     confirmationCopy: "Closest store ETA needs live location and inventory confirmation.",
     liveQuote: false,
