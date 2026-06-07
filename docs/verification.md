@@ -14,14 +14,15 @@ it after each meaningful implementation pass.
 - UI smoke tests exercise mobile horizontal overflow, the local auth -> import ->
   studio -> handoff workflow, customer/admin panels, no-network runtime
   readiness, and adapter readiness when Chrome is available.
-- Provider-catalog tests cover adapter capability breadth, free local fallbacks,
+- Provider-catalog tests cover adapter capability breadth, explicit local adapters,
   external provider docs/env gates, admin/customer panel models, deterministic
   local chat, and blocked live-vendor status.
 - Provider-runtime tests cover every catalog adapter with no-network dry runs,
   placeholder-secret rejection, redacted chat/image/notification/payment/
   observability request contracts, metadata-only event/contact import contracts,
   metadata-only CRM lifecycle and workflow-integration contracts, free local
-  fallbacks, and hard-blocked live vendor ordering.
+  adapters, missing-source blocking for local import/export paths, and
+  hard-blocked live vendor ordering.
 - AI provider readiness tests and `npm run ai:doctor` cover text/image adapter
   inventory, local chat/render fallbacks, model allowlist gates, prompt and
   brand-safety review evidence, PII/memory minimization, image print QA, spend

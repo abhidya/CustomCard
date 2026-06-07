@@ -363,7 +363,9 @@ The provider runtime adds a no-network execution boundary for the adapter
 catalog: future OAuth, text-chat, image-generation, CRM, workflow integration,
 notification, payment, observability, and vendor paths can be reviewed as
 redacted request contracts without placing API calls, charges, telemetry events,
-workflow sends, or orders.
+workflow sends, or orders. Local import and workflow-export adapters require
+explicit caller source text; blank source text fails closed instead of falling
+back to bundled sample data.
 
 Verification:
 

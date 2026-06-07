@@ -605,6 +605,42 @@ describe("provider runtime contracts", () => {
     }
   });
 
+  it("requires explicit source text for local import and workflow export adapters", () => {
+    const eventResult = buildEventImportRuntime("ics-paste-import", importInput);
+    const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
+    const crmResult = buildCrmRuntime("crm-csv-lifecycle-import", crmInput);
+    const workflowResult = buildWorkflowIntegrationRuntime("local-workflow-payload-export", workflowInput);
+
+    expect(eventResult).toMatchObject({
+      mode: "local-result",
+      localResult: expect.objectContaining({ source: "manual-note", title: "Private body should not be uploaded to provider APIs" })
+    });
+    expect(contactResult).toMatchObject({
+      mode: "local-result",
+      localResult: expect.objectContaining({ parser: "vcard", contactCount: 1, rawNotesStored: false })
+    });
+    expect(crmResult).toMatchObject({
+      mode: "local-result",
+      localResult: expect.objectContaining({ parser: "crm-csv-lifecycle", customerCount: 1, metadataOnly: true })
+    });
+    expect(workflowResult).toMatchObject({
+      mode: "local-result",
+      localResult: expect.objectContaining({ exporter: "local-workflow-payload", customerCount: 1, liveWorkflowSend: false })
+    });
+
+    for (const result of [
+      buildEventImportRuntime("ics-paste-import", { ...importInput, sourceText: "   " }),
+      buildContactImportRuntime("vcard-contact-import", { ...contactInput, sourceText: "   " }),
+      buildCrmRuntime("crm-csv-lifecycle-import", { ...crmInput, sourceText: "   " }),
+      buildWorkflowIntegrationRuntime("local-workflow-payload-export", { ...workflowInput, sourceText: "   " })
+    ]) {
+      expect(result.mode).toBe("blocked");
+      expect(result.localResult).toBeUndefined();
+      expect(result.request).toBeUndefined();
+      expect(result.readiness.blockedReasons).toContain("Missing required source text for local import/export.");
+    }
+  });
+
   it("keeps contact imports metadata-only and omits local source text", () => {
     const providerIds = ["google-people-contacts", "microsoft-graph-contacts", "carddav-address-book"];
 

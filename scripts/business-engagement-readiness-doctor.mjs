@@ -96,6 +96,8 @@ const checks = [
     "buildWorkflowIntegrationRuntime",
     "buildNotificationRuntime",
     "parseCrmLifecycleImport",
+    "requires explicit source text for local import and workflow export adapters",
+    "Missing required source text for local import/export.",
     "lifecycleTriggers",
     "live_workflow_send",
     "blocks CRM lifecycle sync when opt-in and review gates are absent",

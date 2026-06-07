@@ -463,12 +463,15 @@ export function buildEventImportRuntime(
 
   if (adapter.id === "ics-paste-import" || adapter.id === "manual-note-import" || adapter.id === "icloud-ics-fallback") {
     const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    const sourceText = requireRuntimeSourceText(input.sourceText);
+    if (!sourceText) return blockedForMissingRuntimeSource(adapter, readiness);
+
     return {
       adapterId: adapter.id,
       capability: adapter.capability,
       mode: "local-result",
       readiness,
-      localResult: parseFreeImport(input.sourceText || sampleInviteText)
+      localResult: parseFreeImport(sourceText)
     };
   }
 
@@ -492,12 +495,15 @@ export function buildContactImportRuntime(
 
   if (adapter.id === "vcard-contact-import" || adapter.id === "csv-address-import" || adapter.id === "icloud-vcard-contact-fallback") {
     const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    const sourceText = requireRuntimeSourceText(input.sourceText);
+    if (!sourceText) return blockedForMissingRuntimeSource(adapter, readiness);
+
     return {
       adapterId: adapter.id,
       capability: adapter.capability,
       mode: "local-result",
       readiness,
-      localResult: parseContactImport(input.sourceText || sampleContactText)
+      localResult: parseContactImport(sourceText)
     };
   }
 
@@ -520,12 +526,15 @@ export function buildCrmRuntime(
 
   if (adapter.id === "crm-csv-lifecycle-import") {
     const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+    const sourceText = requireRuntimeSourceText(input.sourceText);
+    if (!sourceText) return blockedForMissingRuntimeSource(adapter, readiness);
+
     return {
       adapterId: adapter.id,
       capability: adapter.capability,
       mode: "local-result",
       readiness,
-      localResult: parseCrmLifecycleImport(input.sourceText || sampleCrmText)
+      localResult: parseCrmLifecycleImport(sourceText)
     };
   }
 
@@ -556,12 +565,15 @@ export function buildWorkflowIntegrationRuntime(
       metadataOnly: true,
       adminReviewedExport: true
     });
+    const sourceText = requireRuntimeSourceText(input.sourceText);
+    if (!sourceText) return blockedForMissingRuntimeSource(adapter, readiness);
+
     return {
       adapterId: adapter.id,
       capability: adapter.capability,
       mode: "local-result",
       readiness,
-      localResult: buildLocalWorkflowPayload(input.sourceText || sampleWorkflowIntegrationText, input)
+      localResult: buildLocalWorkflowPayload(sourceText, input)
     };
   }
 
@@ -2714,6 +2726,26 @@ function telemetryAttributes(values: Record<string, unknown>) {
 
 function uniqueSorted(values: string[]): string[] {
   return Array.from(new Set(values.filter(Boolean))).sort((first, second) => first.localeCompare(second));
+}
+
+const missingRuntimeSourceTextReason = "Missing required source text for local import/export.";
+
+function requireRuntimeSourceText(sourceText: string): string | undefined {
+  const normalized = sourceText.trim();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function blockedForMissingRuntimeSource<T>(adapter: ProviderAdapter, readiness: RuntimeReadiness): RuntimeResult<T> {
+  return {
+    adapterId: adapter.id,
+    capability: adapter.capability,
+    mode: "blocked",
+    readiness: {
+      ...readiness,
+      mode: "blocked",
+      blockedReasons: uniqueSorted([...readiness.blockedReasons, missingRuntimeSourceTextReason])
+    }
+  };
 }
 
 function parseContactImport(sourceText: string) {
