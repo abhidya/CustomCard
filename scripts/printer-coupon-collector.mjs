@@ -17,18 +17,47 @@ try {
   const allowedTargets = printerCouponCollectionTargets.filter(
     (target) => target.sourceProvider === "retailer" && target.readiness === "ready-public-page"
   );
+  const providerFeedTargets = printerCouponCollectionTargets
+    .filter((target) => target.role === "provider-feed")
+    .map((target) => ({
+      id: target.id,
+      vendorIds: target.vendorIds,
+      collectionMethod: target.collectionMethod,
+      readiness: target.readiness,
+      url: target.url,
+      credentialEnvKeys: target.credentialEnvKeys,
+      verificationSignals: target.verificationSignals,
+      legalReviewRequired: target.legalReviewRequired,
+      fetched: false,
+      reason: "Credential-gated provider feed; run only with approved server/operator credentials."
+    }));
   const fetchedTargets = [];
   const sourceOffers = [];
 
   for (const target of allowedTargets) {
     const response = await fetch(target.url, { headers: { "user-agent": userAgent } });
     const body = await response.text();
-    const matchedCodes = [...new Set([...body.matchAll(/(?:Coupon code|Promo Code|Promo code):\s*([A-Z0-9]+)/g)].map((match) => match[1]))];
+    const matchedCodes = [
+      ...new Set(
+        [
+          ...body.matchAll(
+            /(?:Coupon code|Promo Code|Promo code):\s*([A-Z0-9]+)|(?:promo code|code)\s+([A-Z0-9]+)\s+to receive/gi
+          )
+        ]
+          .map((match) => match[1] ?? match[2])
+          .filter(Boolean)
+      )
+    ];
 
     fetchedTargets.push({
       id: target.id,
       role: target.role,
       vendorIds: target.vendorIds,
+      collectionMethod: target.collectionMethod,
+      expectedOfferCodes: target.expectedOfferCodes,
+      verificationSignals: target.verificationSignals,
+      renderedBrowserReadRequired: target.collectionMethod === "rendered-browser-read",
+      legalReviewRequired: target.legalReviewRequired,
       status: response.status,
       ok: response.ok,
       url: target.url,
@@ -36,7 +65,7 @@ try {
       bytes: body.length
     });
 
-    if (!response.ok || target.role !== "coupon-source") continue;
+    if (!response.ok || target.role !== "coupon-source" || target.collectionMethod !== "server-fetch-html") continue;
 
     for (const vendorId of target.vendorIds) {
       const source = vendorId === "walgreens" ? printerCouponSources.walgreensPhotoDeals : printerCouponSources.cvsPhotoCoupons;
@@ -72,10 +101,13 @@ try {
       return {
         id: target.id,
         vendorIds: target.vendorIds,
+        collectionMethod: target.collectionMethod,
         ok: target.ok,
-        expectedCodes,
+        expectedCodes: target.expectedOfferCodes.length > 0 ? target.expectedOfferCodes : expectedCodes,
         matchedCodes: target.matchedCodes,
-        sameCodeVisible: expectedCodes.some((code) => target.matchedCodes.includes(code))
+        staticHtmlCodeVisible: expectedCodes.some((code) => target.matchedCodes.includes(code)),
+        renderedBrowserReadRequired: target.renderedBrowserReadRequired,
+        verificationSignals: target.verificationSignals
       };
     });
 
@@ -87,6 +119,10 @@ try {
         networkRuntime: "operator-script-only",
         fetchedTargetCount: fetchedTargets.length,
         couponSourceOfferCount: sourceOffers.length,
+        collectionMethods: [...new Set(fetchedTargets.map((target) => target.collectionMethod))],
+        renderedBrowserReadTargetCount: fetchedTargets.filter((target) => target.renderedBrowserReadRequired).length,
+        credentialGatedProviderTargetCount: providerFeedTargets.length,
+        providerFeedTargets,
         providerPortalApplicationProof: false,
         providerPortalCartTermsEvidenceRequired: true,
         bestPriceDiscountingAllowed: false,

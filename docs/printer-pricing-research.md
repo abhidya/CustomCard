@@ -55,10 +55,11 @@ are forbidden from every operation.
   exposure, and CI wiring.
 - `npm run printer:coupons:collect` is an operator-run collector for the
   explicit coupon targets in `src/printerPricing.ts`. It fetches public
-  retailer pages and print entrypoints, extracts source-listed codes, and still
-  returns `bestPriceDiscountingAllowed: false` until checkout proves a code
-  applied to the same cart. The collector does not log in, submit payment, place
-  an order, or claim live checkout automation.
+  retailer coupon pages, records rendered-browser proof targets for the exact
+  Walgreens/CVS print links, extracts source-listed codes, and still returns
+  `bestPriceDiscountingAllowed: false` until checkout proves a code applied to
+  the same cart. The collector does not log in, submit payment, place an order,
+  or claim live checkout automation.
 - The customer bootstrap exposes only a safe pricing preview: selected vendor,
   known public price count, source count, maximum source age policy, and
   `liveQuote: false`.
@@ -74,6 +75,12 @@ provider portal/cart before ranking a best available price. Coupon discounts
 are applied only after provider-portal evidence proves the code worked for the
 same product, quantity, fulfillment mode, and account state.
 
+Coupon collection targets distinguish static and rendered sources. Official
+deal/coupon pages use `server-fetch-html`. The exact print/product links use
+`rendered-browser-read` because customer-visible banners and product widgets may
+be hydrated client-side. Retailer scraping and provider-feed usage both keep
+`legalReviewRequired: true`.
+
 That proof is modeled as structured `PrinterCouponPortalApplicationEvidence`:
 provider portal URL, source price observation ID, pre-coupon subtotal, discount,
 post-coupon subtotal, same-cart terms, `sameCartTermsProven: true`, and
@@ -83,12 +90,12 @@ the evidence to the public price observation and subtotal math.
 
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |
-| Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
-| CVS Photo | [CVS Photo coupons](https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo) plus [CVS Photo prints](https://www.cvs.com/photo/prints) print entrypoint | `JUNESW`, 50% off sitewide photo products, listed with June 20, 2026 expiration; the print entrypoint also shows the same code in weekly offers | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
+| Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) plus the [5x7 folded card design-detail print link](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration; the print link was opened and confirmed as the 5x7 folded-card product with $3.49 public price | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
+| CVS Photo | [CVS Photo coupons](https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo) plus the [5x7 folded greeting card design-detail print link](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | `JUNESW`, 50% off sitewide photo products, listed with June 20, 2026 expiration; the rendered print link showed the same code in its promo banner and the $4.49 folded-card price | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
 
 | Provider-feed target | Current treatment |
 | --- | --- |
-| [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. |
+| [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`, `provider-api-feed`, and verification signals for status plus code/link verification timestamps; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. |
 
 The handoff UI and API bootstrap show coupon-source counts and portal-proof
 status. They show active source-listed offers separately from portal-applied

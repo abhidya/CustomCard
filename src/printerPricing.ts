@@ -13,6 +13,8 @@ export type PrinterCouponCollectionTargetRole = "coupon-source" | "print-entrypo
 export type PrinterCouponCollectionReadiness = "ready-public-page" | "credential-gated";
 export type PrinterCouponFulfillmentMode = "pickup" | "shipping";
 export type PrinterCouponAccountState = "logged-in" | "guest-or-public";
+export type PrinterCouponSourceAuthority = "official-retailer" | "credentialed-coupon-provider";
+export type PrinterCouponCollectionMethod = "server-fetch-html" | "rendered-browser-read" | "provider-api-feed";
 
 export interface PrinterPricingSource {
   label: string;
@@ -131,6 +133,8 @@ export interface PrinterCouponSource {
   url: string;
   observedAtIso: string;
   mode: PrinterCouponCollectionMode;
+  authority: PrinterCouponSourceAuthority;
+  preferredCollectionMethod: PrinterCouponCollectionMethod;
   notes: string;
   confirmationUrls?: string[];
 }
@@ -143,10 +147,14 @@ export interface PrinterCouponCollectionTarget {
   role: PrinterCouponCollectionTargetRole;
   readiness: PrinterCouponCollectionReadiness;
   url: string;
+  collectionMethod: PrinterCouponCollectionMethod;
   credentialEnvKeys: string[];
   sourceProvider: "retailer" | "affiliate-provider";
   maxAgeHours: number;
+  expectedOfferCodes: string[];
   extractHints: string[];
+  verificationSignals: string[];
+  legalReviewRequired: boolean;
   blockedFields: string[];
   noNetworkRuntime: true;
 }
@@ -161,6 +169,7 @@ export interface PrinterCouponOffer {
   startsAtIso: string;
   endsAtIso: string;
   source: PrinterCouponSource;
+  sourceTargetIds: string[];
   evidenceStatus: PrinterCouponEvidenceStatus;
   portalApplicationEvidence?: PrinterCouponPortalApplicationEvidence;
   requiresLoggedInAccount: boolean;
@@ -325,9 +334,12 @@ export const printerCouponSources = {
     url: "https://photo.walgreens.com/store/deals?tab=photo_downsplash_top",
     observedAtIso,
     mode: "retailer-public-coupon-page",
+    authority: "official-retailer",
+    preferredCollectionMethod: "server-fetch-html",
     notes:
       "Official Walgreens Photo deals page listed active card and stationery coupon terms; code must be entered in the logged-in photo account, kiosk, or mobile checkout.",
     confirmationUrls: [
+      printerPricingSources.walgreensProductCatalog.url,
       "https://photo.walgreens.com/store/cards?tab=Photo_Deals2",
       "https://photo.walgreens.com/store/cards?tab=PhotoNav%7CSameDayPickup%7CAllCards"
     ]
@@ -337,15 +349,19 @@ export const printerCouponSources = {
     url: "https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo",
     observedAtIso,
     mode: "retailer-public-coupon-page",
+    authority: "official-retailer",
+    preferredCollectionMethod: "server-fetch-html",
     notes:
       "Official CVS Photo coupons page listed sitewide photo coupon terms; code must be entered at checkout and only one discount may apply per item.",
-    confirmationUrls: ["https://www.cvs.com/photo/prints", "https://www.cvs.com/photo/cards"]
+    confirmationUrls: [printerPricingSources.cvsFoldedDesignDetail.url, "https://www.cvs.com/photo/prints", "https://www.cvs.com/photo/cards"]
   },
   fmtcProviderFeed: {
     label: "FMTC Deal Feed provider coupon API",
     url: "https://docs.fmtc.co/kb/deals-4-2-0",
     observedAtIso,
     mode: "coupon-provider-feed",
+    authority: "credentialed-coupon-provider",
+    preferredCollectionMethod: "provider-api-feed",
     notes:
       "Recommended provider-feed candidate for discovery and affiliate metadata; provider-fed coupons must still be confirmed against official retailer pages or checkout before discounting."
   }
@@ -360,25 +376,33 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     role: "coupon-source",
     readiness: "ready-public-page",
     url: printerCouponSources.walgreensPhotoDeals.url,
+    collectionMethod: "server-fetch-html",
     credentialEnvKeys: [],
     sourceProvider: "retailer",
     maxAgeHours: 24,
+    expectedOfferCodes: ["CRISPCARD"],
     extractHints: ["Coupon code:", "All Photo Cards and Premium Stationery", "Offer expires", "logged in registered Walgreens.com/Photo"],
+    verificationSignals: ["CRISPCARD", "60% OFF All Photo Cards & Premium Stationery", "Offer expires at 11:59 p.m. CT"],
+    legalReviewRequired: true,
     blockedFields: ["login session", "cart subtotal", "coupon application proof", "tax", "shipping", "store availability"],
     noNetworkRuntime: true
   },
   {
-    id: "walgreens-photo-cards-print-entrypoint",
-    label: "Walgreens Photo cards print entrypoint",
+    id: "walgreens-photo-card-design-entrypoint",
+    label: "Walgreens Photo 5x7 folded card design-detail print entrypoint",
     vendorIds: ["walgreens"],
     mode: "retailer-public-coupon-page",
     role: "print-entrypoint",
     readiness: "ready-public-page",
     url: printerCouponSources.walgreensPhotoDeals.confirmationUrls![0],
+    collectionMethod: "rendered-browser-read",
     credentialEnvKeys: [],
     sourceProvider: "retailer",
     maxAgeHours: 24,
-    extractHints: ["Cards", "Same Day Pickup", "Photo Deals", "coupon", "CRISPCARD"],
+    expectedOfferCodes: ["CRISPCARD"],
+    extractHints: ["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272", "Create now"],
+    verificationSignals: ["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272"],
+    legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
     noNetworkRuntime: true
   },
@@ -390,25 +414,33 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     role: "coupon-source",
     readiness: "ready-public-page",
     url: printerCouponSources.cvsPhotoCoupons.url,
+    collectionMethod: "server-fetch-html",
     credentialEnvKeys: [],
     sourceProvider: "retailer",
     maxAgeHours: 24,
+    expectedOfferCodes: ["JUNESW"],
     extractHints: ["Promo code:", "50% off Sitewide", "JUNESW", "Offer starts", "Offer valid online and in the CVS Health app"],
+    verificationSignals: ["JUNESW", "50% off Sitewide", "Offer valid online and in the CVS Health app"],
+    legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "shipping", "store availability"],
     noNetworkRuntime: true
   },
   {
-    id: "cvs-photo-prints-entrypoint",
-    label: "CVS Photo print entrypoint",
+    id: "cvs-photo-card-design-entrypoint",
+    label: "CVS Photo 5x7 folded greeting card design-detail print entrypoint",
     vendorIds: ["cvs"],
     mode: "retailer-public-coupon-page",
     role: "print-entrypoint",
     readiness: "ready-public-page",
     url: printerCouponSources.cvsPhotoCoupons.confirmationUrls![0],
+    collectionMethod: "rendered-browser-read",
     credentialEnvKeys: [],
     sourceProvider: "retailer",
     maxAgeHours: 24,
-    extractHints: ["Weekly offers end", "50% off Sitewide", "Promo Code: JUNESW", "Photo Offer Terms"],
+    expectedOfferCodes: ["JUNESW"],
+    extractHints: ["5x7 Folded Greeting Cards", "Price $4.49 each", "50% off Sitewide with promo code JUNESW", "Offer ends 6/20/2026"],
+    verificationSignals: ["5x7 Folded Greeting Cards", "Price $4.49 each", "50% off Sitewide with promo code JUNESW"],
+    legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
     noNetworkRuntime: true
   },
@@ -420,10 +452,14 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     role: "provider-feed",
     readiness: "credential-gated",
     url: printerCouponSources.fmtcProviderFeed.url,
+    collectionMethod: "provider-api-feed",
     credentialEnvKeys: ["FMTC_API_TOKEN"],
     sourceProvider: "affiliate-provider",
     maxAgeHours: 12,
+    expectedOfferCodes: [],
     extractHints: ["merchant", "code", "code_verified_at", "link_verified_at", "valid_from", "valid_to"],
+    verificationSignals: ["status", "code_verified_at", "link_verified_at", "end_date"],
+    legalReviewRequired: true,
     blockedFields: [
       "provider credentials in client",
       "unapproved affiliate campaign",
@@ -447,6 +483,7 @@ export const printerCouponOffers: PrinterCouponOffer[] = [
     startsAtIso: "2026-06-07T00:00:00.000-05:00",
     endsAtIso: "2026-06-13T23:59:00.000-05:00",
     source: printerCouponSources.walgreensPhotoDeals,
+    sourceTargetIds: ["walgreens-photo-official-deals", "walgreens-photo-card-design-entrypoint"],
     evidenceStatus: "source-listed",
     requiresLoggedInAccount: true,
     excludes: ["previous purchases", "taxes", "shipping charges", "account product credits"]
@@ -461,6 +498,7 @@ export const printerCouponOffers: PrinterCouponOffer[] = [
     startsAtIso: "2026-06-07T00:01:00.000-04:00",
     endsAtIso: "2026-06-20T23:59:00.000-04:00",
     source: printerCouponSources.cvsPhotoCoupons,
+    sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
     evidenceStatus: "source-listed",
     requiresLoggedInAccount: false,
     excludes: [
@@ -1073,6 +1111,7 @@ export function validatePrinterPricingCatalog(
   }
 
   errors.push(...validatePrinterCouponPolicy());
+  errors.push(...validatePrinterCouponSources());
   errors.push(...validatePrinterCouponCollectionTargets());
   errors.push(...validatePrinterCouponOffers(printerCouponOffers, options.now ?? new Date(observedAtIso)));
 
@@ -1121,6 +1160,28 @@ export function validatePrinterCouponPolicy(policy: PrinterCouponPolicy = printe
   return errors;
 }
 
+export function validatePrinterCouponSources(sources: PrinterCouponSource[] = Object.values(printerCouponSources)): string[] {
+  const errors: string[] = [];
+
+  for (const source of sources) {
+    if (!source.url.startsWith("https://")) errors.push(`Printer coupon source ${source.label} must cite an HTTPS URL.`);
+    if (source.authority === "official-retailer" && source.preferredCollectionMethod !== "server-fetch-html") {
+      errors.push(`Printer coupon source ${source.label} must use server-fetch HTML as its primary public-page collection method.`);
+    }
+    if (source.authority === "credentialed-coupon-provider" && source.preferredCollectionMethod !== "provider-api-feed") {
+      errors.push(`Printer coupon source ${source.label} must use a provider API feed collection method.`);
+    }
+    if (source.mode === "coupon-provider-feed" && source.authority !== "credentialed-coupon-provider") {
+      errors.push(`Printer coupon source ${source.label} must be marked as a credentialed coupon provider.`);
+    }
+    if (source.mode === "retailer-public-coupon-page" && source.authority !== "official-retailer") {
+      errors.push(`Printer coupon source ${source.label} must be marked as an official retailer source.`);
+    }
+  }
+
+  return errors;
+}
+
 export function validatePrinterCouponCollectionTargets(
   targets: PrinterCouponCollectionTarget[] = printerCouponCollectionTargets
 ): string[] {
@@ -1138,6 +1199,27 @@ export function validatePrinterCouponCollectionTargets(
     }
     if (target.readiness === "ready-public-page" && target.credentialEnvKeys.length > 0) {
       errors.push(`Printer coupon collection target ${target.id} must not require credentials.`);
+    }
+    if (target.sourceProvider === "retailer" && !target.legalReviewRequired) {
+      errors.push(`Printer coupon collection target ${target.id} must keep legal review attached to retailer scraping.`);
+    }
+    if (target.sourceProvider === "affiliate-provider" && !target.legalReviewRequired) {
+      errors.push(`Printer coupon collection target ${target.id} must keep legal review attached to provider feeds.`);
+    }
+    if (target.role === "coupon-source" && target.collectionMethod !== "server-fetch-html") {
+      errors.push(`Printer coupon collection target ${target.id} must collect official coupon pages with server-fetch HTML.`);
+    }
+    if (target.role === "print-entrypoint" && target.collectionMethod !== "rendered-browser-read") {
+      errors.push(`Printer coupon collection target ${target.id} must require rendered browser reads for print entrypoints.`);
+    }
+    if (target.role === "provider-feed" && target.collectionMethod !== "provider-api-feed") {
+      errors.push(`Printer coupon collection target ${target.id} must use provider API feed collection.`);
+    }
+    if (target.sourceProvider === "retailer" && target.expectedOfferCodes.length === 0) {
+      errors.push(`Printer coupon collection target ${target.id} must name expected offer codes.`);
+    }
+    if (target.verificationSignals.length === 0) {
+      errors.push(`Printer coupon collection target ${target.id} must include verification signals.`);
     }
     if (target.extractHints.length === 0) errors.push(`Printer coupon collection target ${target.id} must include extraction hints.`);
     if (!target.blockedFields.includes("coupon application proof")) {
@@ -1169,6 +1251,7 @@ export function validatePrinterCouponOffers(
   const errors: string[] = [];
   const ids = new Set<string>();
   const vendors = new Set(offers.map((offer) => offer.vendorId));
+  const targetById = new Map(printerCouponCollectionTargets.map((target) => [target.id, target]));
 
   for (const offer of offers) {
     if (ids.has(offer.id)) errors.push(`Duplicate printer coupon id: ${offer.id}`);
@@ -1179,6 +1262,30 @@ export function validatePrinterCouponOffers(
     }
     if (!offer.source.url.startsWith("https://")) {
       errors.push(`Printer coupon ${offer.id} must cite an HTTPS source.`);
+    }
+    if (offer.sourceTargetIds.length < 2) {
+      errors.push(`Printer coupon ${offer.id} must cite official source and print-entrypoint targets.`);
+    }
+    const sourceTargets = offer.sourceTargetIds.map((targetId) => targetById.get(targetId));
+    for (let index = 0; index < sourceTargets.length; index += 1) {
+      const targetId = offer.sourceTargetIds[index];
+      const target = sourceTargets[index];
+      if (!target) {
+        errors.push(`Printer coupon ${offer.id} cites unknown source target ${targetId}.`);
+        continue;
+      }
+      if (!target.vendorIds.includes(offer.vendorId)) {
+        errors.push(`Printer coupon ${offer.id} source target ${target.id} must include vendor ${offer.vendorId}.`);
+      }
+      if (target.sourceProvider === "retailer" && !target.expectedOfferCodes.includes(offer.code)) {
+        errors.push(`Printer coupon ${offer.id} source target ${target.id} must expect code ${offer.code}.`);
+      }
+    }
+    if (!sourceTargets.some((target) => target?.role === "coupon-source" && target.sourceProvider === "retailer")) {
+      errors.push(`Printer coupon ${offer.id} must cite an official retailer coupon source target.`);
+    }
+    if (!sourceTargets.some((target) => target?.role === "print-entrypoint")) {
+      errors.push(`Printer coupon ${offer.id} must cite a print-entrypoint confirmation target.`);
     }
     if (new Date(offer.startsAtIso).getTime() > new Date(offer.endsAtIso).getTime()) {
       errors.push(`Printer coupon ${offer.id} must start before it ends.`);
@@ -1299,6 +1406,7 @@ function extractWalgreensCouponOffers(
       startsAtIso: startOfObservedDayIso(extractedAtIso, "-05:00"),
       endsAtIso: couponDateEndIso(endDate, "-05:00"),
       source,
+      sourceTargetIds: ["walgreens-photo-official-deals", "walgreens-photo-card-design-entrypoint"],
       evidenceStatus: "source-listed",
       requiresLoggedInAccount: /logged in registered Walgreens\.com\/Photo/i.test(text),
       excludes: ["previous purchases", "taxes", "shipping charges", "account product credits"]
@@ -1327,6 +1435,7 @@ function extractCvsCouponOffers(text: string, source: PrinterCouponSource, extra
       startsAtIso: startsOn ? couponDateStartIso(startsOn, "-04:00", "00:01") : startOfObservedDayIso(extractedAtIso, "-04:00"),
       endsAtIso: couponDateEndIso(endsOn, "-04:00"),
       source,
+      sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
       evidenceStatus: "source-listed",
       requiresLoggedInAccount: false,
       excludes: [

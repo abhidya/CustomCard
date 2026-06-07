@@ -143,8 +143,9 @@ Requirement types:
   Walgreens/CVS/FedEx/Walmart/Staples/Office Depot observations across 8 source
   links, reports source freshness, keeps `liveQuote: false`, requires checkout
   confirmation, collects provider-fed and official retailer page coupon
-  candidates, and applies coupons to best-price ranking only when structured
-  provider-portal evidence proves the same cart terms.
+  candidates, keeps exact rendered Walgreens/CVS print-link coupon proof targets,
+  and applies coupons to best-price ranking only when structured provider-portal
+  evidence proves the same cart terms.
 - Customer/admin panels expose the local customer path and provider operations state.
 - Customer/admin panels expose localization readiness, including RTL and human
   copy-review counts.
@@ -190,8 +191,8 @@ Requirement types:
   or incident-response drill is claimed.
 - Public printer prices are review-only observations with a 30-day source
   freshness contract and coupon-source collection. Coupon collection includes
-  official Walgreens/CVS pages, CVS print entrypoint evidence, and a
-  credential-gated FMTC provider-feed target. They are not live quote, tax,
+  official Walgreens/CVS pages, exact rendered Walgreens/CVS print entrypoint
+  evidence, and a credential-gated FMTC provider-feed target. They are not live quote, tax,
   stock, pickup-window, live checkout automation, or coupon provider-portal
   application guarantees. Coupon discounts require structured same-product,
   quantity, fulfillment mode, account state, subtotal, and no-order-placed

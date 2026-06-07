@@ -14,6 +14,7 @@ import {
   printerCouponSources,
   printerPriceCatalog,
   printerPricingCollectionRules,
+  printerPricingSources,
   validatePrinterCouponCollectionTargets,
   validatePrinterCouponOffers,
   validatePrinterPricingCatalog,
@@ -216,9 +217,9 @@ describe("printer pricing research", () => {
           noNetworkRuntime: true
         }),
         expect.objectContaining({
-          id: "cvs-photo-prints-entrypoint",
+          id: "cvs-photo-card-design-entrypoint",
           role: "print-entrypoint",
-          url: "https://www.cvs.com/photo/prints",
+          url: printerPricingSources.cvsFoldedDesignDetail.url,
           noNetworkRuntime: true
         }),
         expect.objectContaining({
@@ -256,6 +257,62 @@ describe("printer pricing research", () => {
         })
       ],
       warnings: []
+    });
+  });
+
+  it("treats proper provider feeds and rendered print links as explicit coupon proof targets", () => {
+    const walgreensPrintTarget = printerCouponCollectionTargets.find((target) => target.id === "walgreens-photo-card-design-entrypoint");
+    const cvsPrintTarget = printerCouponCollectionTargets.find((target) => target.id === "cvs-photo-card-design-entrypoint");
+    const providerFeedTarget = printerCouponCollectionTargets.find((target) => target.id === "fmtc-deal-feed");
+    const walgreensOffer = printerCouponOffers.find((offer) => offer.code === "CRISPCARD");
+    const cvsOffer = printerCouponOffers.find((offer) => offer.code === "JUNESW");
+
+    expect(printerCouponSources.walgreensPhotoDeals).toMatchObject({
+      authority: "official-retailer",
+      preferredCollectionMethod: "server-fetch-html"
+    });
+    expect(printerCouponSources.cvsPhotoCoupons).toMatchObject({
+      authority: "official-retailer",
+      preferredCollectionMethod: "server-fetch-html"
+    });
+    expect(printerCouponSources.fmtcProviderFeed).toMatchObject({
+      authority: "credentialed-coupon-provider",
+      preferredCollectionMethod: "provider-api-feed"
+    });
+
+    expect(walgreensPrintTarget).toMatchObject({
+      url: printerPricingSources.walgreensProductCatalog.url,
+      role: "print-entrypoint",
+      collectionMethod: "rendered-browser-read",
+      expectedOfferCodes: ["CRISPCARD"],
+      verificationSignals: expect.arrayContaining(["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272"]),
+      legalReviewRequired: true,
+      noNetworkRuntime: true
+    });
+    expect(cvsPrintTarget).toMatchObject({
+      url: printerPricingSources.cvsFoldedDesignDetail.url,
+      role: "print-entrypoint",
+      collectionMethod: "rendered-browser-read",
+      expectedOfferCodes: ["JUNESW"],
+      verificationSignals: expect.arrayContaining([
+        "5x7 Folded Greeting Cards",
+        "Price $4.49 each",
+        "50% off Sitewide with promo code JUNESW"
+      ]),
+      legalReviewRequired: true,
+      noNetworkRuntime: true
+    });
+    expect(providerFeedTarget).toMatchObject({
+      collectionMethod: "provider-api-feed",
+      credentialEnvKeys: ["FMTC_API_TOKEN"],
+      legalReviewRequired: true,
+      verificationSignals: expect.arrayContaining(["status", "code_verified_at", "link_verified_at"])
+    });
+    expect(walgreensOffer).toMatchObject({
+      sourceTargetIds: ["walgreens-photo-official-deals", "walgreens-photo-card-design-entrypoint"]
+    });
+    expect(cvsOffer).toMatchObject({
+      sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"]
     });
   });
 
