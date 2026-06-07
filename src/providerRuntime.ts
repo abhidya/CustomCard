@@ -1,4 +1,4 @@
-import { buildVendorHandoff, parseFreeImport, sampleInviteText, type VendorId } from "./freeMvp";
+import { buildVendorHandoff, parseFreeImport, type VendorId } from "./freeMvp";
 import {
   buildCustomerChatTranscript,
   getProviderAdapter,
@@ -303,6 +303,8 @@ const providerScopes: Record<string, string[]> = {
   "pipedream-webhook-workflow": ["webhook:write"]
 };
 
+const defaultCrmLifecycleKinds: CrmLifecycleKind[] = ["birthday", "purchase-anniversary", "warranty-anniversary"];
+
 export const providerRuntimeSeams: ProviderRuntimeSeam[] = [
   { capability: "auth", inputKey: "auth", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
   { capability: "event-import", inputKey: "eventImport", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
@@ -321,26 +323,26 @@ export const providerRuntimeSeams: ProviderRuntimeSeam[] = [
 ];
 
 const providerRuntimeHandlers: Record<ProviderCapability, ProviderRuntimeHandler> = {
-  auth: (adapterId, input, env, gates) => buildAuthRuntime(adapterId, input.auth ?? defaultAuthInput, env, gates),
+  auth: (adapterId, input, env, gates) => buildAuthRuntime(adapterId, requireRuntimeInput(input, "auth"), env, gates),
   "event-import": (adapterId, input, env, gates) =>
-    buildEventImportRuntime(adapterId, input.eventImport ?? defaultEventImportInput, env, gates),
+    buildEventImportRuntime(adapterId, requireRuntimeInput(input, "eventImport"), env, gates),
   "contact-import": (adapterId, input, env, gates) =>
-    buildContactImportRuntime(adapterId, input.contactImport ?? defaultContactImportInput, env, gates),
-  "crm-integration": (adapterId, input, env, gates) => buildCrmRuntime(adapterId, input.crm ?? defaultCrmInput, env, gates),
+    buildContactImportRuntime(adapterId, requireRuntimeInput(input, "contactImport"), env, gates),
+  "crm-integration": (adapterId, input, env, gates) => buildCrmRuntime(adapterId, requireRuntimeInput(input, "crm"), env, gates),
   "workflow-integration": (adapterId, input, env, gates) =>
-    buildWorkflowIntegrationRuntime(adapterId, input.workflowIntegration ?? defaultWorkflowIntegrationInput, env, gates),
-  "text-chat": (adapterId, input, env, gates) => buildTextChatRuntime(adapterId, input.textChat ?? defaultTextChatInput, env, gates),
+    buildWorkflowIntegrationRuntime(adapterId, requireRuntimeInput(input, "workflowIntegration"), env, gates),
+  "text-chat": (adapterId, input, env, gates) => buildTextChatRuntime(adapterId, requireRuntimeInput(input, "textChat"), env, gates),
   "image-generation": (adapterId, input, env, gates) =>
-    buildImageGenerationRuntime(adapterId, input.image ?? defaultImageInput, env, gates),
+    buildImageGenerationRuntime(adapterId, requireRuntimeInput(input, "image"), env, gates),
   "render-export": (adapterId, _input, env, gates) => buildDefaultRuntime(adapterId, env, gates),
   memory: (adapterId, _input, env, gates) => buildDefaultRuntime(adapterId, env, gates),
-  "vendor-handoff": (adapterId, input, env, gates) => buildVendorRuntime(adapterId, input.vendor ?? defaultVendorInput, env, gates),
+  "vendor-handoff": (adapterId, input, env, gates) => buildVendorRuntime(adapterId, requireRuntimeInput(input, "vendor"), env, gates),
   "cloud-runtime": (adapterId, _input, env, gates) => buildDefaultRuntime(adapterId, env, gates),
   notification: (adapterId, input, env, gates) =>
-    buildNotificationRuntime(adapterId, input.notification ?? defaultNotificationInput, env, gates),
-  payment: (adapterId, input, env, gates) => buildPaymentRuntime(adapterId, input.payment ?? defaultPaymentInput, env, gates),
+    buildNotificationRuntime(adapterId, requireRuntimeInput(input, "notification"), env, gates),
+  payment: (adapterId, input, env, gates) => buildPaymentRuntime(adapterId, requireRuntimeInput(input, "payment"), env, gates),
   observability: (adapterId, input, env, gates) =>
-    buildObservabilityRuntime(adapterId, input.observability ?? defaultObservabilityInput, env, gates)
+    buildObservabilityRuntime(adapterId, requireRuntimeInput(input, "observability"), env, gates)
 };
 
 export function buildProviderAdapterRuntime(
@@ -350,6 +352,10 @@ export function buildProviderAdapterRuntime(
   gates: ProviderGateState = {}
 ): RuntimeResult {
   const adapter = requireAdapter(adapterId);
+  const seam = providerRuntimeSeams.find((candidate) => candidate.capability === adapter.capability);
+  if (seam?.inputKey && input[seam.inputKey] === undefined) {
+    return blockedForMissingRuntimeInput(adapter, getProviderRuntimeReadiness(adapter.id, env, gates), seam.inputKey);
+  }
   return providerRuntimeHandlers[adapter.capability](adapter.id, input, env, gates);
 }
 
@@ -1634,7 +1640,7 @@ function buildContactImportRequest(
 
 function buildCrmRequest(adapter: ProviderAdapter, input: CrmRuntimeInput): RuntimeRequestContract {
   const scopes = providerScopes[adapter.id] ?? [];
-  const lifecycleKinds = input.lifecycleKinds.length > 0 ? input.lifecycleKinds : defaultCrmInput.lifecycleKinds;
+  const lifecycleKinds = input.lifecycleKinds.length > 0 ? input.lifecycleKinds : defaultCrmLifecycleKinds;
   const lifecycleMetadata = {
     lifecycle_kinds: lifecycleKinds,
     from_iso: input.fromIso,
@@ -2912,7 +2918,15 @@ function uniqueSorted(values: string[]): string[] {
   return Array.from(new Set(values.filter(Boolean))).sort((first, second) => first.localeCompare(second));
 }
 
+function requireRuntimeInput<Key extends keyof ProviderRuntimeInput>(
+  input: ProviderRuntimeInput,
+  key: Key
+): NonNullable<ProviderRuntimeInput[Key]> {
+  return input[key] as NonNullable<ProviderRuntimeInput[Key]>;
+}
+
 const missingRuntimeSourceTextReason = "Missing required source text for local import/export.";
+const missingRuntimeInputReasonPrefix = "Missing required runtime input:";
 
 function requireRuntimeSourceText(sourceText: string): string | undefined {
   const normalized = sourceText.trim();
@@ -2928,6 +2942,23 @@ function blockedForMissingRuntimeSource<T>(adapter: ProviderAdapter, readiness: 
       ...readiness,
       mode: "blocked",
       blockedReasons: uniqueSorted([...readiness.blockedReasons, missingRuntimeSourceTextReason])
+    }
+  };
+}
+
+function blockedForMissingRuntimeInput(
+  adapter: ProviderAdapter,
+  readiness: RuntimeReadiness,
+  inputKey: keyof ProviderRuntimeInput
+): RuntimeResult {
+  return {
+    adapterId: adapter.id,
+    capability: adapter.capability,
+    mode: "blocked",
+    readiness: {
+      ...readiness,
+      mode: "blocked",
+      blockedReasons: uniqueSorted([...readiness.blockedReasons, `${missingRuntimeInputReasonPrefix} ${inputKey}.`])
     }
   };
 }
@@ -3010,116 +3041,3 @@ function summarizeWorkflowSource(sourceText: string): string {
   const triggers = parsed.lifecycleTriggers.length > 0 ? parsed.lifecycleTriggers.join(", ") : "lifecycle review";
   return `${parsed.customerCount} metadata rows queued for ${triggers}; raw customer fields withheld.`;
 }
-
-const sampleContactText = [
-  "BEGIN:VCARD",
-  "VERSION:3.0",
-  "FN:Sara Ahmed",
-  "EMAIL:sara@example.com",
-  "ADR:;;123 Garden St;Brooklyn;NY;11201;US",
-  "BDAY:1990-07-10",
-  "END:VCARD"
-].join("\n");
-
-const sampleCrmText = [
-  "customer_id,email,first_name,last_name,birthday,last_purchase_date,warranty_end_date,marketing_opt_in",
-  "cust_123,sara@example.com,Sara,Ahmed,1990-07-10,2025-06-03,2027-06-03,true"
-].join("\n");
-
-const sampleWorkflowIntegrationText = [
-  "campaign_id,customer_id,email,first_name,lifecycle_kind,lifecycle_date,marketing_opt_in",
-  "campaign_2026_06,cust_123,sara@example.com,Sara,purchase-anniversary,2026-06-03,true"
-].join("\n");
-
-const defaultTextChatInput: TextChatRuntimeInput = {
-  customerMessage: "Please make a warm anniversary card and keep fulfillment manual.",
-  recipientName: "Sara and Ahmed",
-  approvedMemoryNotes: ["They like botanical cards and quiet humor."],
-  locale: "en-US"
-};
-
-const defaultAuthInput: AuthRuntimeInput = {
-  requestedRole: "customer",
-  returnToPath: "/customer"
-};
-
-const defaultImageInput: ImageRuntimeInput = {
-  prompt: "Warm botanical anniversary artwork with room for editable text.",
-  recipientName: "Sara and Ahmed",
-  occasion: "anniversary",
-  style: "botanical",
-  locale: "en-US",
-  printApproved: false
-};
-
-const defaultEventImportInput: EventImportRuntimeInput = {
-  sourceText: sampleInviteText,
-  fromIso: "2026-07-01T00:00:00.000Z",
-  toIso: "2026-07-31T23:59:59.999Z"
-};
-
-const defaultContactImportInput: ContactImportRuntimeInput = {
-  sourceText: sampleContactText,
-  providerAccountId: "me"
-};
-
-const defaultCrmInput: CrmRuntimeInput = {
-  sourceText: sampleCrmText,
-  fromIso: "2026-06-01T00:00:00.000Z",
-  toIso: "2026-07-01T00:00:00.000Z",
-  lifecycleKinds: ["birthday", "purchase-anniversary", "warranty-anniversary"],
-  optInRecorded: false
-};
-
-const defaultWorkflowIntegrationInput: WorkflowIntegrationRuntimeInput = {
-  sourceText: sampleWorkflowIntegrationText,
-  destination: "workspace-table",
-  campaignId: "campaign-2026-06",
-  fromIso: "2026-06-01T00:00:00.000Z",
-  toIso: "2026-07-01T00:00:00.000Z",
-  optInRecorded: false
-};
-
-const defaultNotificationInput: NotificationRuntimeInput = {
-  channel: "email",
-  recipient: "sara@example.com",
-  subject: "CustomCard status update",
-  message: "Your card export is ready for review. Live sending remains disabled.",
-  locale: "en-US",
-  optInRecorded: false
-};
-
-const defaultPaymentInput: PaymentRuntimeInput = {
-  amountCents: 699,
-  currency: "USD",
-  projectId: "project-contract",
-  customerId: "customer-contract",
-  description: "CustomCard print package",
-  successPath: "/customer/payment/success",
-  cancelPath: "/customer/payment/cancel",
-  sandboxMode: false,
-  idempotencyKey: undefined,
-  refundPathDocumented: false
-};
-
-const defaultObservabilityInput: ObservabilityRuntimeInput = {
-  eventType: "health",
-  serviceName: "customcard-api",
-  release: "local-contract",
-  environment: "contract",
-  route: "/api/health",
-  message: "CustomCard runtime contract is ready.",
-  severity: "info",
-  traceId: "contract-trace",
-  metricName: "customcard.runtime.ready",
-  value: 1,
-  piiFree: false,
-  sampled: false
-};
-
-const defaultVendorInput: VendorRuntimeInput = {
-  vendorId: "walgreens",
-  certificationRecorded: false,
-  externalShareApproved: false,
-  physicalPrintQaRecorded: false
-};

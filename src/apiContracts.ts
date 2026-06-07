@@ -111,7 +111,7 @@ import {
 } from "./providerCatalog.ts";
 import { buildCustomerChatSession } from "./customerChat.ts";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance.ts";
-import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime.ts";
+import { getProviderRuntimeReadiness, type RuntimeReadiness } from "./providerRuntime.ts";
 import {
   productionLaunchGates,
   summarizeProductionReadiness,
@@ -595,7 +595,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
 ];
 
 export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteContracts): ApiReadinessSummary {
-  const runtimeReadiness = providerCatalog.map((adapter) => buildProviderAdapterRuntime(adapter.id).readiness);
+  const runtimeReadiness = providerCatalog.map((adapter) => getProviderRuntimeReadiness(adapter.id));
   const blockers = validateApiContracts(routes);
 
   return {

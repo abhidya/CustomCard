@@ -18,7 +18,8 @@ import {
   sanitizeText,
   validateRuntimeCoverage,
   type ProviderGateState,
-  type ProviderRuntimeEnv
+  type ProviderRuntimeEnv,
+  type ProviderRuntimeInput
 } from "./providerRuntime";
 
 const readyEnv: ProviderRuntimeEnv = {
@@ -346,6 +347,20 @@ const observabilityInput = {
   sampled: true
 };
 
+const completeRuntimeInput: ProviderRuntimeInput = {
+  auth: { requestedRole: "customer", returnToPath: "/customer/cards" },
+  eventImport: importInput,
+  contactImport: contactInput,
+  crm: crmInput,
+  workflowIntegration: workflowInput,
+  textChat: textInput,
+  image: imageInput,
+  notification: notificationInput,
+  payment: paymentInput,
+  observability: observabilityInput,
+  vendor: { vendorId: "walgreens" }
+};
+
 describe("provider runtime contracts", () => {
   it("keeps runtime dispatch behind explicit no-network capability seams", () => {
     const seamCapabilities = providerRuntimeSeams.map((seam) => seam.capability);
@@ -366,7 +381,9 @@ describe("provider runtime contracts", () => {
     expect(validateRuntimeCoverage()).toEqual([]);
 
     for (const adapter of providerCatalog) {
-      const result = buildProviderAdapterRuntime(adapter.id, {}, readyEnv, openGates);
+      const seam = providerRuntimeSeams.find((candidate) => candidate.capability === adapter.capability);
+      const explicitInput = seam?.inputKey ? { [seam.inputKey]: completeRuntimeInput[seam.inputKey] } : {};
+      const result = buildProviderAdapterRuntime(adapter.id, explicitInput, readyEnv, openGates);
 
       expect(result.adapterId).toBe(adapter.id);
       expect(result.capability).toBe(adapter.capability);
@@ -380,6 +397,20 @@ describe("provider runtime contracts", () => {
         expect(result.mode).toBe("blocked");
         expect(result.request).toBeUndefined();
       }
+    }
+  });
+
+  it("blocks generic runtime dispatch when declared capability input is omitted", () => {
+    for (const adapter of providerCatalog) {
+      const seam = providerRuntimeSeams.find((candidate) => candidate.capability === adapter.capability);
+      if (!seam?.inputKey) continue;
+
+      const result = buildProviderAdapterRuntime(adapter.id, {}, readyEnv, openGates);
+
+      expect(result.mode, adapter.id).toBe("blocked");
+      expect(result.request, adapter.id).toBeUndefined();
+      expect(result.localResult, adapter.id).toBeUndefined();
+      expect(result.readiness.blockedReasons, adapter.id).toContain(`Missing required runtime input: ${seam.inputKey}.`);
     }
   });
 

@@ -164,7 +164,7 @@ import {
 } from "../apps/mobile/src/customerExperience";
 import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
-import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
+import { getProviderRuntimeReadiness, type RuntimeReadiness } from "./providerRuntime";
 import { buildAdminOperationsWorkflow, type AdminOperationsWorkflow, type AdminOperationTask } from "./adminOperations";
 import {
   productionLaunchGates,
@@ -3003,8 +3003,7 @@ function decisionLabel(decision: OpportunityDecision): string {
 function buildRuntimeReadinessMap(): Map<string, RuntimeReadiness> {
   return new Map(
     providerCatalog.map((adapter) => {
-      const runtime = buildProviderAdapterRuntime(adapter.id);
-      return [adapter.id, runtime.readiness];
+      return [adapter.id, getProviderRuntimeReadiness(adapter.id)];
     })
   );
 }
