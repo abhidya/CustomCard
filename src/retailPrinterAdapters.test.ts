@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { printerPriceCatalog } from "./printerPricing";
 import {
   buildRetailPrinterAdapterPlan,
+  createRetailPrinterOperationAdapter,
   getRetailPrinterAdapter,
   getRetailPrinterAdapterForProvider,
   retailPrinterAdapters,
@@ -31,6 +32,13 @@ describe("retail printer adapters", () => {
       expect(adapter.liveQuoteEnabled).toBe(false);
       expect(adapter.imageUploadEnabled).toBe(false);
       expect(adapter.orderPlacementEnabled).toBe(false);
+      expect(adapter.sourceLinks.map((sourceLink) => sourceLink.purpose)).toEqual([
+        "product",
+        "fetch-price",
+        "upload-image",
+        "place-order"
+      ]);
+      expect(adapter.sourceLinks.every((sourceLink) => sourceLink.url === expectedRetailSources[adapter.vendorId])).toBe(true);
       expect(printerPriceCatalog.some((observation) => observation.id === adapter.pricingObservationId)).toBe(true);
       expect(adapter.operations.map((operation) => operation.kind)).toEqual([
         "fetch-price",
@@ -87,8 +95,56 @@ describe("retail printer adapters", () => {
       })
     });
     expect(plan.operations).toHaveLength(3);
+    expect(plan.sourceLinks.map((sourceLink) => sourceLink.purpose)).toEqual([
+      "product",
+      "fetch-price",
+      "upload-image",
+      "place-order"
+    ]);
     expect(getRetailPrinterAdapter("cvs").productSku).toBe("CommerceProduct_26126");
     expect(getRetailPrinterAdapterForProvider("walmart-live-print")?.productUrl).toBe(expectedRetailSources.walmart);
+  });
+
+  it("exposes executable no-network adapters for price, upload, and order attempts", () => {
+    const adapter = createRetailPrinterOperationAdapter("fedex");
+    const price = adapter.fetchPrice({
+      quantity: 10,
+      fulfillmentMode: "pickup",
+      storeOrShippingZip: "10001",
+      couponCode: "JUNESW"
+    });
+    const upload = adapter.uploadImages({
+      renderPacketArtifactUris: ["s3://customcard-review/render-packets/fedex-front.png"],
+      panelManifestChecksum: "sha256:fedex-review-packet",
+      customerApprovalId: "approval-fedex-upload-1",
+      providerAccountReference: "provider-account-redacted"
+    });
+    const order = adapter.placeOrder({
+      providerCartId: "cart-fedex-redacted",
+      quoteEvidenceId: "quote-fedex-1",
+      paymentAuthorizationReference: "payment-auth-redacted",
+      customerApprovalId: "approval-fedex-order-1",
+      cancellationRecoveryPlanId: "recovery-fedex-1"
+    });
+
+    for (const result of [price, upload, order]) {
+      expect(result).toMatchObject({
+        vendorId: "fedex",
+        providerAdapterId: "fedex-live-print",
+        status: "blocked",
+        networkAttempted: false,
+        requestPrepared: false,
+        productUrl: expectedRetailSources.fedex,
+        sourceLink: expect.objectContaining({ url: expectedRetailSources.fedex }),
+        forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
+      });
+      expect(result.missingEvidence).toEqual(expect.arrayContaining(result.requiredEvidence));
+      expect(result.blockedReason.toLowerCase()).toMatch(/certification|disabled|review-only/);
+    }
+    expect(price.operation).toBe("fetch-price");
+    expect(upload.operation).toBe("upload-image");
+    expect(order.operation).toBe("place-order");
+    expect(order.missingEvidence).toEqual(expect.arrayContaining(["Vendor certification", "Payment and cancellation recovery proof"]));
   });
 
   it("keeps operation blueprints specific to price, upload, and order contracts", () => {

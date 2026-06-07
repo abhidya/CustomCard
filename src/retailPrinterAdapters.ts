@@ -3,6 +3,7 @@ import type { VendorId } from "./freeMvp";
 export type RetailPrinterVendorId = Extract<VendorId, "walgreens" | "cvs" | "fedex" | "walmart">;
 export type RetailPrinterOperationKind = "fetch-price" | "upload-image" | "place-order";
 export type RetailPrinterOperationStatus = "blocked";
+export type RetailPrinterSourceLinkPurpose = "product" | RetailPrinterOperationKind;
 export type RetailPrinterOperationFieldSource =
   | "customer-approval"
   | "operator"
@@ -11,6 +12,14 @@ export type RetailPrinterOperationFieldSource =
   | "provider-account"
   | "provider-portal"
   | "render-packet";
+export type RetailPrinterFulfillmentMode = "pickup" | "shipping";
+
+export interface RetailPrinterSourceLink {
+  purpose: RetailPrinterSourceLinkPurpose;
+  label: string;
+  url: string;
+  sourceKind: "retailer-product-page";
+}
 
 export interface RetailPrinterOperationContract {
   kind: RetailPrinterOperationKind;
@@ -50,6 +59,7 @@ export interface RetailPrinterAdapterContract {
   productUrl: string;
   pricingObservationId: string;
   uploadAssetExpectation: string;
+  sourceLinks: RetailPrinterSourceLink[];
   checkoutMode: "vendor-browser-session";
   realOrdersEnabled: false;
   liveQuoteEnabled: false;
@@ -63,6 +73,7 @@ export interface RetailPrinterAdapterPlan {
   vendorName: string;
   productName: string;
   productUrl: string;
+  sourceLinks: RetailPrinterSourceLink[];
   selectedOperation: RetailPrinterOperationKind;
   operation: RetailPrinterOperationContract;
   operations: RetailPrinterOperationContract[];
@@ -71,6 +82,53 @@ export interface RetailPrinterAdapterPlan {
   liveQuoteEnabled: false;
   imageUploadEnabled: false;
   orderPlacementEnabled: false;
+}
+
+export interface RetailPrinterPriceAttemptInput {
+  quantity: number;
+  fulfillmentMode: RetailPrinterFulfillmentMode;
+  storeOrShippingZip: string;
+  couponCode?: string;
+}
+
+export interface RetailPrinterImageUploadAttemptInput {
+  renderPacketArtifactUris: string[];
+  panelManifestChecksum: string;
+  customerApprovalId: string;
+  providerAccountReference: string;
+}
+
+export interface RetailPrinterOrderAttemptInput {
+  providerCartId: string;
+  quoteEvidenceId: string;
+  paymentAuthorizationReference: string;
+  customerApprovalId: string;
+  cancellationRecoveryPlanId: string;
+}
+
+export interface RetailPrinterBlockedOperationResult {
+  vendorId: RetailPrinterVendorId;
+  providerAdapterId: string;
+  operation: RetailPrinterOperationKind;
+  status: RetailPrinterOperationStatus;
+  productUrl: string;
+  sourceLink: RetailPrinterSourceLink;
+  networkAttempted: false;
+  requestPrepared: false;
+  requiredEvidence: string[];
+  missingEvidence: string[];
+  forbiddenFields: string[];
+  requestFieldNames: string[];
+  receivedFieldNames: string[];
+  blockedReason: string;
+}
+
+export interface RetailPrinterOperationAdapter {
+  vendorId: RetailPrinterVendorId;
+  providerAdapterId: string;
+  fetchPrice(input: RetailPrinterPriceAttemptInput): RetailPrinterBlockedOperationResult;
+  uploadImages(input: RetailPrinterImageUploadAttemptInput): RetailPrinterBlockedOperationResult;
+  placeOrder(input: RetailPrinterOrderAttemptInput): RetailPrinterBlockedOperationResult;
 }
 
 const vendorEvidence = {
@@ -97,6 +155,10 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
       "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
     pricingObservationId: "walmart-5x7-same-day-folded-card",
     uploadAssetExpectation: "One or more 5x7 print-ready image/PDF assets through Walmart Photo's upload-your-design flow.",
+    sourceLinks: buildSourceLinks(
+      "Walmart Photo",
+      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2"
+    ),
     checkoutMode: "vendor-browser-session",
     realOrdersEnabled: false,
     liveQuoteEnabled: false,
@@ -116,6 +178,7 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
     productUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html",
     pricingObservationId: "fedex-quick-5x7-single-sided-card",
     uploadAssetExpectation: "PDF or image files uploaded through FedEx Office quick-card setup, with double-sided files split or combined as required.",
+    sourceLinks: buildSourceLinks("FedEx Office", "https://www.office.fedex.com/default/greeting-cards-quick.html"),
     checkoutMode: "vendor-browser-session",
     realOrdersEnabled: false,
     liveQuoteEnabled: false,
@@ -133,6 +196,10 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
       "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
     pricingObservationId: "cvs-5x7-folded-card",
     uploadAssetExpectation: "Images routed through CVS Photo/Snapfish project creation after the customer signs in or continues as guest where allowed.",
+    sourceLinks: buildSourceLinks(
+      "CVS Photo",
+      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery"
+    ),
     checkoutMode: "vendor-browser-session",
     realOrdersEnabled: false,
     liveQuoteEnabled: false,
@@ -153,6 +220,10 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
       "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
     pricingObservationId: "walgreens-5x7-folded-card",
     uploadAssetExpectation: "Images routed through Walgreens Photo/Snapfish project creation after customer sign-in and preview review.",
+    sourceLinks: buildSourceLinks(
+      "Walgreens Photo",
+      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery"
+    ),
     checkoutMode: "vendor-browser-session",
     realOrdersEnabled: false,
     liveQuoteEnabled: false,
@@ -187,6 +258,7 @@ export function buildRetailPrinterAdapterPlan(
     vendorName: adapter.vendorName,
     productName: adapter.productName,
     productUrl: adapter.productUrl,
+    sourceLinks: adapter.sourceLinks,
     selectedOperation: operation.kind,
     operation,
     operations: adapter.operations,
@@ -195,6 +267,24 @@ export function buildRetailPrinterAdapterPlan(
     liveQuoteEnabled: false,
     imageUploadEnabled: false,
     orderPlacementEnabled: false
+  };
+}
+
+export function createRetailPrinterOperationAdapter(vendorId: RetailPrinterVendorId): RetailPrinterOperationAdapter {
+  const adapter = getRetailPrinterAdapter(vendorId);
+
+  return {
+    vendorId: adapter.vendorId,
+    providerAdapterId: adapter.providerAdapterId,
+    fetchPrice(input: RetailPrinterPriceAttemptInput) {
+      return buildBlockedOperationResult(adapter, "fetch-price", input);
+    },
+    uploadImages(input: RetailPrinterImageUploadAttemptInput) {
+      return buildBlockedOperationResult(adapter, "upload-image", input);
+    },
+    placeOrder(input: RetailPrinterOrderAttemptInput) {
+      return buildBlockedOperationResult(adapter, "place-order", input);
+    }
   };
 }
 
@@ -207,6 +297,7 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
     vendorIds.add(adapter.vendorId);
     if (!adapter.productUrl.startsWith("https://")) issues.push(`${adapter.vendorId} adapter must persist an HTTPS product URL.`);
     if (!adapter.pricingObservationId) issues.push(`${adapter.vendorId} adapter must point at a pricing observation.`);
+    issues.push(...validateRetailPrinterSourceLinks(adapter));
     if (adapter.realOrdersEnabled || adapter.liveQuoteEnabled || adapter.imageUploadEnabled || adapter.orderPlacementEnabled) {
       issues.push(`${adapter.vendorId} adapter must not enable live retail operations.`);
     }
@@ -233,6 +324,29 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
 
   for (const requiredVendorId of ["walmart", "fedex", "cvs", "walgreens"] satisfies RetailPrinterVendorId[]) {
     if (!vendorIds.has(requiredVendorId)) issues.push(`Missing retail printer adapter: ${requiredVendorId}`);
+  }
+
+  return issues;
+}
+
+export function validateRetailPrinterSourceLinks(adapter: RetailPrinterAdapterContract): string[] {
+  const issues: string[] = [];
+  const purposes = new Set(adapter.sourceLinks.map((sourceLink) => sourceLink.purpose));
+
+  for (const purpose of ["product", "fetch-price", "upload-image", "place-order"] satisfies RetailPrinterSourceLinkPurpose[]) {
+    if (!purposes.has(purpose)) issues.push(`${adapter.vendorId} adapter must persist source link purpose: ${purpose}.`);
+  }
+
+  for (const sourceLink of adapter.sourceLinks) {
+    if (!sourceLink.url.startsWith("https://")) {
+      issues.push(`${adapter.vendorId} ${sourceLink.purpose} source link must cite an HTTPS URL.`);
+    }
+    if (sourceLink.url !== adapter.productUrl) {
+      issues.push(`${adapter.vendorId} ${sourceLink.purpose} source link must use the persisted adapter product URL.`);
+    }
+    if (sourceLink.sourceKind !== "retailer-product-page") {
+      issues.push(`${adapter.vendorId} ${sourceLink.purpose} source link must be a retailer product page.`);
+    }
   }
 
   return issues;
@@ -280,6 +394,63 @@ export function validateRetailPrinterOperationBlueprint(
   return issues;
 }
 
+function buildSourceLinks(vendorName: string, productUrl: string): RetailPrinterSourceLink[] {
+  return [
+    {
+      purpose: "product",
+      label: `${vendorName} product page`,
+      url: productUrl,
+      sourceKind: "retailer-product-page"
+    },
+    {
+      purpose: "fetch-price",
+      label: `${vendorName} price source`,
+      url: productUrl,
+      sourceKind: "retailer-product-page"
+    },
+    {
+      purpose: "upload-image",
+      label: `${vendorName} image upload source`,
+      url: productUrl,
+      sourceKind: "retailer-product-page"
+    },
+    {
+      purpose: "place-order",
+      label: `${vendorName} order source`,
+      url: productUrl,
+      sourceKind: "retailer-product-page"
+    }
+  ];
+}
+
+function buildBlockedOperationResult(
+  adapter: RetailPrinterAdapterContract,
+  kind: RetailPrinterOperationKind,
+  input: RetailPrinterPriceAttemptInput | RetailPrinterImageUploadAttemptInput | RetailPrinterOrderAttemptInput
+): RetailPrinterBlockedOperationResult {
+  const operation = adapter.operations.find((candidate) => candidate.kind === kind);
+  if (!operation) throw new Error(`Retail printer adapter ${adapter.vendorId} is missing operation: ${kind}`);
+  const sourceLink = adapter.sourceLinks.find((candidate) => candidate.purpose === kind);
+  if (!sourceLink) throw new Error(`Retail printer adapter ${adapter.vendorId} is missing source link: ${kind}`);
+
+  return {
+    vendorId: adapter.vendorId,
+    providerAdapterId: adapter.providerAdapterId,
+    operation: kind,
+    status: "blocked",
+    productUrl: adapter.productUrl,
+    sourceLink,
+    networkAttempted: false,
+    requestPrepared: false,
+    requiredEvidence: operation.requiredEvidence,
+    missingEvidence: operation.requiredEvidence,
+    forbiddenFields: operation.requestBlueprint.forbiddenFields,
+    requestFieldNames: operation.requestBlueprint.requestFields.map((field) => field.name),
+    receivedFieldNames: Object.keys(input).sort(),
+    blockedReason: operation.blockedReason
+  };
+}
+
 function buildOperations(vendorName: string, productUrl: string): RetailPrinterOperationContract[] {
   return [
     {
@@ -304,7 +475,7 @@ function buildOperations(vendorName: string, productUrl: string): RetailPrinterO
       requiredEvidence: vendorEvidence.upload,
       certificationGateIds: sharedGateIds,
       requestBlueprint: buildUploadBlueprint(),
-      blockedReason: "Image upload requires a certified vendor API or reviewed browser-session automation contract."
+      blockedReason: "Image upload requires vendor certification plus a certified API or reviewed browser-session automation contract."
     },
     {
       kind: "place-order",

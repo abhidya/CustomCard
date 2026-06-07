@@ -28,20 +28,23 @@ Observed on: June 7, 2026.
 These links are persisted in `src/retailPrinterAdapters.ts`, `src/providerCatalog.ts`,
 and `src/printerPricing.ts`.
 
-| Vendor | Product link | Price fetch | Image upload | Order placement |
+| Vendor | Product link | Price fetch source | Image upload source | Order placement source |
 | --- | --- | --- | --- | --- |
-| Walmart Photo | [5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) | Blocked no-network operation using review-only public observation | Blocked until certified Walmart Photo upload contract or reviewed browser-session automation exists | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
-| FedEx Office | [Quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) | Blocked no-network operation; live checkout confirms final current price | Blocked until FedEx upload-file contract, file acceptance, and crop/fold preview evidence exist | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
-| CVS Photo | [5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | Blocked no-network operation using review-only public observation | Blocked until CVS Photo/Snapfish project creation and preview evidence exist | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
-| Walgreens Photo | [5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | Blocked no-network operation using review-only public observation | Blocked until Walgreens Photo/Snapfish project creation and preview evidence exist | Blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| Walmart Photo | [5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) | Same persisted product link; blocked no-network operation using review-only public observation | Same persisted product link; blocked until certified Walmart Photo upload contract or reviewed browser-session automation exists | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| FedEx Office | [Quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) | Same persisted product link; blocked no-network operation while live checkout confirms final current price | Same persisted product link; blocked until FedEx upload-file contract, file acceptance, and crop/fold preview evidence exist | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| CVS Photo | [5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | Same persisted product link; blocked no-network operation using review-only public observation | Same persisted product link; blocked until CVS Photo/Snapfish project creation and preview evidence exist | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| Walgreens Photo | [5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | Same persisted product link; blocked no-network operation using review-only public observation | Same persisted product link; blocked until Walgreens Photo/Snapfish project creation and preview evidence exist | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
 
-Each operation now carries a blocked request blueprint. The blueprint names the
-future certified transport, required request fields, response evidence,
-forbidden data fields, and success criteria for `fetch-price`, `upload-image`,
-and `place-order`. This deepens the adapter seam without preparing a live
-request: `preparesRequest` remains `false`, `noNetwork` remains `true`, and
-raw relationship memories, raw payment card data, and unapproved recipient PII
-are forbidden from every operation.
+Each retail adapter now persists source links for `product`, `fetch-price`,
+`upload-image`, and `place-order`. Each operation also carries a blocked
+request blueprint that names the future certified transport, required request
+fields, response evidence, forbidden data fields, and success criteria. The
+`createRetailPrinterOperationAdapter` Interface exposes callable no-network
+methods for price, upload, and order attempts, but every result keeps
+`requestPrepared: false`, `networkAttempted: false`, and the operation status
+`blocked` until certification evidence exists. Raw relationship memories, raw
+payment card data, and unapproved recipient PII are forbidden from every
+operation.
 
 ## Collection Contract
 
