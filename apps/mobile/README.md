@@ -9,6 +9,15 @@ sync, locale readiness, and checkout confirmation. The customer state lives in
 `src/customerExperience.ts`, a pure contract module tested by the root Vitest
 suite and inspected by the mobile doctor.
 
+## Current proof boundary
+
+The mobile proof is deterministic and repo-local. It proves that the native shell
+source and customer contract align with the web customer flow stages:
+account/import, event review, card approval, proof review, fulfillment review,
+and checkout confirmation. The `mobileProofBoundary` contract intentionally
+blocks native emulator render proof, signed native artifact proof, app-store
+review proof, and live retail-order proof.
+
 It uses static demo state because the repo-local verification loop does not run a
 hosted API server, native emulator, or signed platform build.
 The launch locale options mirror the web/API contract: English (US), Spanish
@@ -28,5 +37,19 @@ Repo-local validation:
 
 ```sh
 CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
+npm test -- --run tests/mobile-contract.test.ts src/mobileRenderReadiness.test.ts
+npm run mobile:render:doctor
 npm run mobile:release:doctor
+git diff --check
 ```
+
+Live-proof blockers:
+
+- Native emulator proof: requires iOS Simulator or Android Emulator boot logs,
+  screenshots, and a native smoke transcript.
+- Signed native artifact proof: requires EAS artifact URLs and signing evidence
+  for iOS and Android.
+- App-store proof: requires store-review submission evidence outside this
+  repo-local loop.
+- Live order proof: requires approved quote, payment, and retail-order mutation
+  evidence with the kill switch intentionally changed by a release owner.

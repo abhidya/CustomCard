@@ -18,6 +18,13 @@ export type MobileMutationType = "approve-card" | "update-tone" | "snooze-card" 
 export type MobileAccountProvider = "Google" | "Apple";
 export type MobileImportActionKind = "calendar" | "email" | "invite";
 export type MobileFulfillmentRecommendationKind = "cheapest-known-price" | "fastest-pickup" | "cheapest-shipped";
+export type MobileCustomerFlowStage =
+  | "account-import"
+  | "event-review"
+  | "card-approval"
+  | "proof-review"
+  | "fulfillment-review"
+  | "checkout-confirmation";
 
 export interface MobileExperienceSection {
   id: MobileExperienceCapability;
@@ -161,8 +168,19 @@ export interface MobileSyncState {
   retryPolicy: "exponential-backoff";
 }
 
+export interface MobileProofBoundary {
+  deterministicProofMode: "repo-local-contract";
+  webCustomerFlowStages: MobileCustomerFlowStage[];
+  repoLocalEvidence: string[];
+  blockedLiveProofs: Array<"native-emulator-render" | "signed-native-artifact" | "app-store-review" | "live-retail-order">;
+  emulatorProofClaimed: false;
+  signedArtifactClaimed: false;
+  liveOrderClaimed: false;
+}
+
 export interface MobileExperienceModel {
   safetyBanner: MobileSafetyBanner;
+  proofBoundary: MobileProofBoundary;
   todaySummary: MobileTodaySummary;
   sections: MobileExperienceSection[];
   accountOptions: MobileAccountOption[];
@@ -184,6 +202,23 @@ export const mobileSafetyBanner = {
   label: "Confirm before checkout",
   detail: "No automatic charge, live quote, or direct order runs from the mobile shell."
 } as const;
+
+export const mobileProofBoundary: MobileProofBoundary = {
+  deterministicProofMode: "repo-local-contract",
+  webCustomerFlowStages: [
+    "account-import",
+    "event-review",
+    "card-approval",
+    "proof-review",
+    "fulfillment-review",
+    "checkout-confirmation"
+  ],
+  repoLocalEvidence: ["mobile contract tests", "mobile render readiness data", "mobile doctor scripts"],
+  blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
+  emulatorProofClaimed: false,
+  signedArtifactClaimed: false,
+  liveOrderClaimed: false
+};
 
 export const mobileTodaySummary: MobileTodaySummary = {
   cardQueueItemId: "card_anniversary_sara_ahmed",
@@ -595,6 +630,7 @@ export const mobileSyncState: MobileSyncState = {
 
 export const mobileExperience: MobileExperienceModel = {
   safetyBanner: mobileSafetyBanner,
+  proofBoundary: mobileProofBoundary,
   todaySummary: mobileTodaySummary,
   sections: mobileExperienceSections,
   accountOptions: mobileAccountOptions,
@@ -638,7 +674,9 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
     localeOptions: model.localeOptions.length,
     rtlLocales: model.localeOptions.filter((locale) => locale.writingDirection === "rtl").length,
     copyReviewRequiredLocales: model.localeOptions.filter((locale) => locale.copyReviewRequired).length,
-    offlineMutationTypes: model.syncState.pendingMutationTypes.length
+    offlineMutationTypes: model.syncState.pendingMutationTypes.length,
+    webCustomerFlowStages: model.proofBoundary.webCustomerFlowStages.length,
+    blockedLiveProofs: model.proofBoundary.blockedLiveProofs.length
   };
 }
 
@@ -789,6 +827,36 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
 
   if (model.safetyBanner.label !== "Confirm before checkout") {
     issues.push("Mobile safety banner must require checkout confirmation.");
+  }
+  if (model.proofBoundary.deterministicProofMode !== "repo-local-contract") {
+    issues.push("Mobile proof boundary must stay repo-local and deterministic.");
+  }
+  for (const stage of [
+    "account-import",
+    "event-review",
+    "card-approval",
+    "proof-review",
+    "fulfillment-review",
+    "checkout-confirmation"
+  ] as const) {
+    if (!model.proofBoundary.webCustomerFlowStages.includes(stage)) {
+      issues.push(`Mobile proof boundary missing web customer flow stage: ${stage}.`);
+    }
+  }
+  if (model.proofBoundary.repoLocalEvidence.length < 3) {
+    issues.push("Mobile proof boundary must list repo-local evidence.");
+  }
+  for (const liveProof of ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"] as const) {
+    if (!model.proofBoundary.blockedLiveProofs.includes(liveProof)) {
+      issues.push(`Mobile proof boundary must block live proof: ${liveProof}.`);
+    }
+  }
+  if (
+    model.proofBoundary.emulatorProofClaimed ||
+    model.proofBoundary.signedArtifactClaimed ||
+    model.proofBoundary.liveOrderClaimed
+  ) {
+    issues.push("Mobile proof boundary must not claim emulator, signed artifact, or live order proof.");
   }
   if (!model.syncState.apiBaseUrlRequired || model.syncState.authMode !== "customer-session") {
     issues.push("Mobile sync must require the configured API base URL and customer session auth.");

@@ -17,6 +17,7 @@ import {
   mobileMemoryReviewItems,
   mobilePricingPreviews,
   mobilePrintProofChecks,
+  mobileProofBoundary,
   mobileRenderChoices,
   mobileSyncState,
   mobileTodaySummary,
@@ -41,6 +42,8 @@ describe("mobile customer experience contract", () => {
     expect(summary.localeOptions).toBe(4);
     expect(summary.rtlLocales).toBe(2);
     expect(summary.copyReviewRequiredLocales).toBe(3);
+    expect(summary.webCustomerFlowStages).toBe(6);
+    expect(summary.blockedLiveProofs).toBe(4);
     expect(summary.todayPrimaryActions).toBe(1);
     expect(summary.queueItems).toBeGreaterThanOrEqual(2);
     expect(summary.pendingApprovalItems).toBeGreaterThanOrEqual(1);
@@ -72,6 +75,21 @@ describe("mobile customer experience contract", () => {
         expect.objectContaining({ kind: "invite", label: "Paste invite", sourceMode: "local-paste" })
       ])
     );
+    expect(mobileProofBoundary).toMatchObject({
+      deterministicProofMode: "repo-local-contract",
+      webCustomerFlowStages: [
+        "account-import",
+        "event-review",
+        "card-approval",
+        "proof-review",
+        "fulfillment-review",
+        "checkout-confirmation"
+      ],
+      blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
+      emulatorProofClaimed: false,
+      signedArtifactClaimed: false,
+      liveOrderClaimed: false
+    });
     expect(mobileTodaySummary).toMatchObject({
       cardQueueItemId: "card_anniversary_sara_ahmed",
       primaryAction: "approve",
@@ -231,6 +249,8 @@ describe("mobile customer experience contract", () => {
       status: string;
       platforms: string[];
       nativeBuildProfiles: string[];
+      proofBoundary: string;
+      blockedLiveProofs: string[];
       signedArtifactBuilt: boolean;
       liveProviderCalls: boolean;
       realOrdersEnabled: boolean;
@@ -261,6 +281,8 @@ describe("mobile customer experience contract", () => {
       status: "ready",
       platforms: ["ios", "android"],
       nativeBuildProfiles: ["development", "preview", "production"],
+      proofBoundary: "repo-local-contract",
+      blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
       signedArtifactBuilt: false,
       liveProviderCalls: false,
       realOrdersEnabled: false,
@@ -273,6 +295,16 @@ describe("mobile customer experience contract", () => {
       safetyBanner: {
         label: "Real orders enabled",
         detail: "payment active"
+      },
+      proofBoundary: {
+        ...mobileExperience.proofBoundary,
+        deterministicProofMode: "repo-local-contract",
+        webCustomerFlowStages: ["account-import"],
+        repoLocalEvidence: ["mobile contract tests"],
+        blockedLiveProofs: ["native-emulator-render"],
+        emulatorProofClaimed: true,
+        signedArtifactClaimed: true,
+        liveOrderClaimed: true
       },
       todaySummary: {
         ...mobileExperience.todaySummary,
@@ -433,6 +465,16 @@ describe("mobile customer experience contract", () => {
         "Mobile handoff must keep a manual upload path.",
         "Disabled mobile handoff steps must explain blocked automatic checkout.",
         "Mobile safety banner must require checkout confirmation.",
+        "Mobile proof boundary missing web customer flow stage: event-review.",
+        "Mobile proof boundary missing web customer flow stage: card-approval.",
+        "Mobile proof boundary missing web customer flow stage: proof-review.",
+        "Mobile proof boundary missing web customer flow stage: fulfillment-review.",
+        "Mobile proof boundary missing web customer flow stage: checkout-confirmation.",
+        "Mobile proof boundary must list repo-local evidence.",
+        "Mobile proof boundary must block live proof: signed-native-artifact.",
+        "Mobile proof boundary must block live proof: app-store-review.",
+        "Mobile proof boundary must block live proof: live-retail-order.",
+        "Mobile proof boundary must not claim emulator, signed artifact, or live order proof.",
         "Mobile sync must require the configured API base URL and customer session auth.",
         "Mobile sync must keep offline queueing and idempotency enabled.",
         "Mobile sync must forbid live order, payment, and raw-memory mutations.",

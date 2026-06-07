@@ -20,6 +20,8 @@ describe("mobile render readiness", () => {
       screenSections: 21,
       viewportProfiles: 4,
       nativeBuildProfiles: 3,
+      deterministicProofBoundaries: 8,
+      blockedLiveProofs: 4,
       emulatorRequired: 2,
       signedArtifactRequired: 1,
       emulatorRenderProofs: 0,
@@ -63,6 +65,13 @@ describe("mobile render readiness", () => {
       expect.arrayContaining(["iphone-se", "standard-phone", "large-phone", "tablet-portrait"])
     );
     expect(preview?.nativeBuildProfileIds).toEqual(expect.arrayContaining(["development", "preview", "production"]));
+    expect(shell).toMatchObject({
+      deterministicProofBoundary: "repo-local-source-contract",
+      blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"]
+    });
+    expect(mobileRenderReadinessItems.every((item) => item.emulatorRenderProofAttached === false)).toBe(true);
+    expect(mobileRenderReadinessItems.every((item) => item.nativeArtifactSigned === false)).toBe(true);
+    expect(mobileRenderReadinessItems.every((item) => item.blockedLiveProofs.length > 0)).toBe(true);
     expect(rtl).toMatchObject({
       status: "evidence-missing",
       requiresEmulatorProof: true,
@@ -92,6 +101,8 @@ describe("mobile render readiness", () => {
         liveProviderCalls: true,
         screenSectionIds: [],
         requiredSourceSignals: ["one"],
+        deterministicProofBoundary: "",
+        blockedLiveProofs: [],
         currentEvidence: [],
         requiredEvidence: ["one"],
         blocker: ""
@@ -106,6 +117,8 @@ describe("mobile render readiness", () => {
         "Duplicate mobile render readiness item: native-shell-source-render-contract.",
         "Mobile render readiness item native-shell-source-render-contract must list screen sections.",
         "Mobile render readiness item native-shell-source-render-contract must list source signals.",
+        "Mobile render readiness item native-shell-source-render-contract must name its deterministic proof boundary.",
+        "Mobile render readiness item native-shell-source-render-contract must list blocked live proof claims.",
         "Mobile render readiness item native-shell-source-render-contract must list current repo-local evidence.",
         "Mobile render readiness item native-shell-source-render-contract must list at least two required evidence items.",
         "Mobile render readiness item native-shell-source-render-contract must explain its blocker.",

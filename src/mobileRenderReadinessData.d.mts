@@ -18,6 +18,8 @@ export interface MobileRenderReadinessItem {
   viewportProfiles: string[];
   nativeBuildProfileIds: string[];
   requiredSourceSignals: string[];
+  deterministicProofBoundary: string;
+  blockedLiveProofs: string[];
   customerVisible: boolean;
   requiresEmulatorProof: boolean;
   requiresSignedArtifact: boolean;
@@ -41,6 +43,8 @@ export interface MobileRenderReadinessSummary {
   viewportProfiles: number;
   nativeBuildProfiles: number;
   sourceSignals: number;
+  deterministicProofBoundaries: number;
+  blockedLiveProofs: number;
   emulatorRequired: number;
   signedArtifactRequired: number;
   emulatorRenderProofs: number;

@@ -12,6 +12,7 @@ import {
   mobileLocaleOptions,
   mobileMemoryReviewItems,
   mobilePrintProofChecks,
+  mobileProofBoundary,
   mobileRenderChoices,
   mobileSafetyBanner,
   mobileSyncState,
@@ -54,6 +55,24 @@ export default function App() {
               <Text style={styles.summaryLabel}>proofs</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Proof boundary</Text>
+          <View style={styles.compactRow}>
+            <View style={styles.compactCopy}>
+              <Text style={styles.compactTitle}>Deterministic repo proof</Text>
+              <Text style={styles.cardCopy}>
+                Mirrors the web customer flow through sign-in/import, review, approval, proof, fulfillment, and checkout
+                confirmation without emulator, signed build, store review, or live order claims.
+              </Text>
+            </View>
+            <Text style={styles.modePill}>Local</Text>
+          </View>
+          <Text style={styles.smallMeta}>
+            {mobileProofBoundary.webCustomerFlowStages.length} flow stages aligned;{" "}
+            {mobileProofBoundary.blockedLiveProofs.length} live proof claims blocked.
+          </Text>
         </View>
 
         <View style={styles.group}>

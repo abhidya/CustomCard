@@ -46,8 +46,11 @@ export const mobileRenderReadinessItems = [
       "mobileImportActions",
       "mobileExperienceSections",
       "mobileFulfillmentRecommendations",
+      "mobileProofBoundary",
       "summarizeMobileExperience"
     ],
+    deterministicProofBoundary: "repo-local-source-contract",
+    blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -78,6 +81,7 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: ["standard-phone", "large-phone"],
     nativeBuildProfileIds: [],
     requiredSourceSignals: [
+      "mobileProofBoundary",
       "mobileAccountOptions",
       "mobileImportActions",
       "mobileTodaySummary",
@@ -87,6 +91,8 @@ export const mobileRenderReadinessItems = [
       "mobileFulfillmentRecommendations",
       "mobileSyncState"
     ],
+    deterministicProofBoundary: "repo-local-customer-flow-contract",
+    blockedLiveProofs: ["native-emulator-render", "live-retail-order"],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -108,6 +114,8 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: ["standard-phone", "large-phone"],
     nativeBuildProfileIds: [],
     requiredSourceSignals: ["mobilePrintProofChecks", "proof-size", "proof-resolution", "proof-safe-zone", "proof-order-gate"],
+    deterministicProofBoundary: "repo-local-print-proof-contract",
+    blockedLiveProofs: ["native-emulator-render", "live-retail-order"],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -129,6 +137,8 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: [],
     requiredSourceSignals: ["flex: 1", "ScrollView", "gap:", "maxWidth: 92", "lineHeight"],
+    deterministicProofBoundary: "repo-local-layout-source-contract",
+    blockedLiveProofs: ["native-emulator-render"],
     customerVisible: true,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -150,6 +160,8 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: ["standard-phone", "large-phone"],
     nativeBuildProfileIds: [],
     requiredSourceSignals: ["ar-EG", "ur-PK", "writingDirection", "copyReviewRequired", "rtl"],
+    deterministicProofBoundary: "repo-local-locale-contract",
+    blockedLiveProofs: ["native-emulator-render", "app-store-review"],
     customerVisible: true,
     requiresEmulatorProof: true,
     requiresSignedArtifact: false,
@@ -171,6 +183,8 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: ["standard-phone"],
     nativeBuildProfileIds: requiredNativeBuildProfileIds,
     requiredSourceSignals: ["developmentClient", "ios.simulator", "android.buildType", "autoIncrement", "REAL_ORDER_KILL_SWITCH"],
+    deterministicProofBoundary: "repo-local-eas-profile-contract",
+    blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review"],
     customerVisible: false,
     requiresEmulatorProof: false,
     requiresSignedArtifact: false,
@@ -192,6 +206,8 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: ["development", "preview"],
     requiredSourceSignals: ["CUSTOMCARD_API_BASE_URL", "REAL_ORDER_KILL_SWITCH", "expo", "react-native"],
+    deterministicProofBoundary: "missing-native-emulator-proof",
+    blockedLiveProofs: ["native-emulator-render"],
     customerVisible: true,
     requiresEmulatorProof: true,
     requiresSignedArtifact: false,
@@ -213,6 +229,8 @@ export const mobileRenderReadinessItems = [
     viewportProfiles: [],
     nativeBuildProfileIds: ["production"],
     requiredSourceSignals: ["bundleIdentifier", "package: \"com.customcard.app\"", "submit", "production"],
+    deterministicProofBoundary: "missing-signed-native-artifact-proof",
+    blockedLiveProofs: ["signed-native-artifact", "app-store-review"],
     customerVisible: false,
     requiresEmulatorProof: false,
     requiresSignedArtifact: true,
@@ -238,6 +256,8 @@ export function summarizeMobileRenderReadiness(items = mobileRenderReadinessItem
     viewportProfiles: new Set(items.flatMap((item) => item.viewportProfiles)).size,
     nativeBuildProfiles: new Set(items.flatMap((item) => item.nativeBuildProfileIds)).size,
     sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
+    deterministicProofBoundaries: new Set(items.map((item) => item.deterministicProofBoundary)).size,
+    blockedLiveProofs: new Set(items.flatMap((item) => item.blockedLiveProofs)).size,
     emulatorRequired: items.filter((item) => item.requiresEmulatorProof).length,
     signedArtifactRequired: items.filter((item) => item.requiresSignedArtifact).length,
     emulatorRenderProofs: items.filter((item) => item.emulatorRenderProofAttached).length,
@@ -261,6 +281,12 @@ export function validateMobileRenderReadiness(items = mobileRenderReadinessItems
     if (!allowedStatuses.has(item.status)) issues.push(`Mobile render readiness item ${item.id} has unsupported status.`);
     if (item.screenSectionIds.length < 1) issues.push(`Mobile render readiness item ${item.id} must list screen sections.`);
     if (item.requiredSourceSignals.length < 2) issues.push(`Mobile render readiness item ${item.id} must list source signals.`);
+    if (!item.deterministicProofBoundary) {
+      issues.push(`Mobile render readiness item ${item.id} must name its deterministic proof boundary.`);
+    }
+    if (!Array.isArray(item.blockedLiveProofs) || item.blockedLiveProofs.length < 1) {
+      issues.push(`Mobile render readiness item ${item.id} must list blocked live proof claims.`);
+    }
     if (item.currentEvidence.length < 1) issues.push(`Mobile render readiness item ${item.id} must list current repo-local evidence.`);
     if (item.requiredEvidence.length < 2) issues.push(`Mobile render readiness item ${item.id} must list at least two required evidence items.`);
     if (!item.blocker) issues.push(`Mobile render readiness item ${item.id} must explain its blocker.`);

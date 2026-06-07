@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const mobileRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const appConfigSource = readFileSync(resolve(mobileRoot, "app.config.js"), "utf8");
+const customerExperienceSource = readFileSync(resolve(mobileRoot, "src/customerExperience.ts"), "utf8");
 const eas = JSON.parse(readFileSync(resolve(mobileRoot, "eas.json"), "utf8"));
 const packageJson = JSON.parse(readFileSync(resolve(mobileRoot, "package.json"), "utf8"));
 
@@ -44,6 +45,23 @@ const checks = [
     '"expo"',
     '"react-native"'
   ]),
+  checkIncludes("proof-boundary", "deterministic-customer-proof-boundary", customerExperienceSource, [
+    "mobileProofBoundary",
+    'deterministicProofMode: "repo-local-contract"',
+    '"account-import"',
+    '"event-review"',
+    '"card-approval"',
+    '"proof-review"',
+    '"fulfillment-review"',
+    '"checkout-confirmation"',
+    '"native-emulator-render"',
+    '"signed-native-artifact"',
+    '"app-store-review"',
+    '"live-retail-order"',
+    "emulatorProofClaimed: false",
+    "signedArtifactClaimed: false",
+    "liveOrderClaimed: false"
+  ]),
   checkAbsent("safety", "no-hardcoded-mobile-api-or-live-order", `${appConfigSource}\n${JSON.stringify(eas, null, 2)}`, [
     "https://api.customcard",
     "customcard-prod.example",
@@ -71,6 +89,8 @@ console.log(
       status: failed.length === 0 ? "ready" : "blocked",
       platforms: ["ios", "android"],
       nativeBuildProfiles: ["development", "preview", "production"],
+      proofBoundary: "repo-local-contract",
+      blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
       signedArtifactBuilt: false,
       liveProviderCalls: false,
       realOrdersEnabled: false,
