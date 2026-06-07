@@ -163,6 +163,7 @@ const checks = [
     "npm ci --omit=dev",
     "COPY --from=build /app/dist ./dist",
     "COPY src ./src",
+    "COPY apps/mobile/App.tsx ./apps/mobile/App.tsx",
     "COPY apps/mobile/src ./apps/mobile/src",
     'CMD ["node", "scripts/api-server.mjs"]'
   ]),

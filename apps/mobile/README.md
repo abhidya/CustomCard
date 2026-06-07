@@ -7,7 +7,8 @@ approval controls, approved memory review, local scripted chat, card proof path,
 best available pickup/shipped fulfillment recommendations, offline idempotent
 sync, locale readiness, and checkout confirmation. The customer state lives in
 `src/customerExperience.ts`, a pure contract module tested by the root Vitest
-suite and inspected by the mobile doctor.
+suite and inspected by the mobile doctor. `App.tsx` is the Expo root entrypoint
+and re-exports the native shell from `src/App.tsx`.
 
 ## Current proof boundary
 
@@ -32,6 +33,19 @@ Running an EAS build and platform signing still requires Expo/React Native
 tooling and credentials outside this repo-local Vite verification loop. Real
 ordering, live quotes, live OAuth, and paid generation remain disabled until
 their production evidence gates pass.
+
+## Demo paths
+
+Native Expo preview:
+
+```sh
+npm --prefix apps/mobile install
+CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run start
+```
+
+Open the QR code in Expo Go or launch the configured iOS/Android simulator from
+the Expo terminal. A desktop browser pointed at the native Expo server can show a
+JSON manifest; that is not the app UI.
 
 Repo-local validation:
 

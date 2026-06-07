@@ -30,6 +30,22 @@ import {
 const shellDoctorTimeoutMs = 15_000;
 
 describe("mobile customer experience contract", () => {
+  it("exposes the Expo root entrypoint and native launch scripts", () => {
+    const rootApp = readFileSync("apps/mobile/App.tsx", "utf8");
+    const packageJson = JSON.parse(readFileSync("apps/mobile/package.json", "utf8")) as {
+      scripts: Record<string, string>;
+    };
+
+    expect(rootApp.trim()).toBe('export { default } from "./src/App";');
+    expect(packageJson.scripts).toMatchObject({
+      start: "expo start",
+      ios: "expo start --ios",
+      android: "expo start --android",
+      doctor: "node ./scripts/doctor.mjs",
+      "release:doctor": "node ./scripts/release-doctor.mjs"
+    });
+  });
+
   it("covers the required customer app capabilities with visible sections", () => {
     const summary = summarizeMobileExperience();
 

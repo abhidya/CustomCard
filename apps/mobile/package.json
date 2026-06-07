@@ -4,6 +4,9 @@
   "private": true,
   "description": "CustomCard iOS/Android app shell targeting the shared API and service contracts.",
   "scripts": {
+    "start": "expo start",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
     "doctor": "node ./scripts/doctor.mjs",
     "release:doctor": "node ./scripts/release-doctor.mjs"
   },

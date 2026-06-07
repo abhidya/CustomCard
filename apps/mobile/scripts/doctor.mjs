@@ -34,6 +34,10 @@ if (missing.length > 0 || sourceIssues.length > 0) {
 function inspectMobileSources() {
   const checks = [
     {
+      path: "App.tsx",
+      patterns: ['export { default } from "./src/App";']
+    },
+    {
       path: "src/customerExperience.ts",
       patterns: [
         "requiredMobileCapabilities",

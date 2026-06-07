@@ -89,6 +89,7 @@ describe("production infrastructure contract", () => {
     expect(dropletCompose.match(/customcard-objects:\/data\/objects/g)?.length).toBe(2);
     expect(dockerfile).toContain("node\", \"scripts/api-server.mjs");
     expect(dockerfile).toContain("COPY src ./src");
+    expect(dockerfile).toContain("COPY apps/mobile/App.tsx ./apps/mobile/App.tsx");
     expect(dockerfile).toContain("COPY apps/mobile/src ./apps/mobile/src");
     expect(dockerfile).toContain("COPY infra ./infra");
     expect(dockerfile).toContain("USER node");
@@ -1389,12 +1390,17 @@ describe("production infrastructure contract", () => {
     const appConfig = read("apps/mobile/app.config.js");
     const easConfig = read("apps/mobile/eas.json");
     const releaseDoctor = read("apps/mobile/scripts/release-doctor.mjs");
+    const mobileRootApp = read("apps/mobile/App.tsx");
     const mobileApp = read("apps/mobile/src/App.tsx");
     const mobileExperience = read("apps/mobile/src/customerExperience.ts");
 
     expect(mobilePackage).toContain("\"expo\"");
     expect(mobilePackage).toContain("\"react-native\"");
+    expect(mobilePackage).toContain("\"start\": \"expo start\"");
+    expect(mobilePackage).toContain("\"ios\": \"expo start --ios\"");
+    expect(mobilePackage).toContain("\"android\": \"expo start --android\"");
     expect(mobilePackage).toContain("\"release:doctor\": \"node ./scripts/release-doctor.mjs\"");
+    expect(mobileRootApp.trim()).toBe('export { default } from "./src/App";');
     expect(appConfig).toContain('platforms: ["ios", "android"]');
     expect(appConfig).toContain("process.env.CUSTOMCARD_API_BASE_URL");
     expect(appConfig).not.toContain("${CUSTOMCARD_API_BASE_URL}");
