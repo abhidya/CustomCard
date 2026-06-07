@@ -482,6 +482,7 @@ function App() {
             }}
             onStartWorkspace={startWorkspace}
             opportunity={opportunity}
+            opportunityDecision={opportunityDecision}
             panelCount={draft.panels.length}
             fulfillmentRecommendationSet={fulfillmentRecommendationSet}
             productionReadiness={productionReadiness}
@@ -659,6 +660,7 @@ function CustomerPanelView({
   onNavigate,
   onStartWorkspace,
   opportunity,
+  opportunityDecision,
   panelCount,
   fulfillmentRecommendationSet,
   productionReadiness,
@@ -676,6 +678,7 @@ function CustomerPanelView({
   onNavigate: (view: ViewId) => void;
   onStartWorkspace: () => void;
   opportunity: CardOpportunity;
+  opportunityDecision: OpportunityDecision;
   panelCount: number;
   fulfillmentRecommendationSet: FulfillmentRecommendationSet;
   productionReadiness: ProductionReadinessSummary;
@@ -688,12 +691,72 @@ function CustomerPanelView({
   const cheapestOption = recommendationByKind.get("cheapest-known-price");
   const fastestPickup = recommendationByKind.get("fastest-pickup");
   const cheapestShipped = recommendationByKind.get("cheapest-shipped");
-  const customerActions: Array<{ label: string; detail: string; icon: LucideIcon; target: ViewId }> = [
-    { label: "Import events", detail: "Calendar, email, or invite", icon: Calendar, target: "opportunities" },
-    { label: "Review card", detail: "Copy, artwork, and language", icon: WandSparkles, target: "studio" },
-    { label: "Add memory", detail: "Only approved details are reused", icon: Heart, target: "memory" },
-    { label: "Choose fulfillment", detail: "Pickup or shipped recommendation", icon: Store, target: "handoff" },
-    { label: "Export proof", detail: "Print-ready local package", icon: FileDown, target: "handoff" }
+  const hasWorkspace = Boolean(workspace);
+  const cardReviewStarted = opportunityDecision === "accepted";
+  const customerActions: Array<{
+    label: string;
+    detail: string;
+    icon: LucideIcon;
+    onClick: () => void;
+    primary?: boolean;
+  }> = !hasWorkspace
+    ? [
+        {
+          label: "Create local workspace",
+          detail: "Private browser storage for memories and draft state",
+          icon: KeyRound,
+          onClick: onStartWorkspace,
+          primary: true
+        },
+        {
+          label: "Paste invite only",
+          detail: "Continue without connecting an account",
+          icon: ClipboardCheck,
+          onClick: () => onNavigate("opportunities")
+        }
+      ]
+    : cardReviewStarted
+      ? [
+          {
+            label: "Continue proof review",
+            detail: "Card copy, language, and artwork checks",
+            icon: WandSparkles,
+            onClick: () => onNavigate("studio"),
+            primary: true
+          },
+          {
+            label: "Choose fulfillment",
+            detail: "Compare pickup and shipped options",
+            icon: Store,
+            onClick: () => onNavigate("handoff")
+          },
+          {
+            label: "Add memory",
+            detail: "Approved details only",
+            icon: Heart,
+            onClick: () => onNavigate("memory")
+          }
+        ]
+      : [
+          {
+            label: "Review imported event",
+            detail: "Confirm recipient, date, and source evidence",
+            icon: Calendar,
+            onClick: () => onNavigate("opportunities"),
+            primary: true
+          },
+          {
+            label: "Make card",
+            detail: "Start the local deterministic draft",
+            icon: WandSparkles,
+            onClick: onGenerateCard
+          },
+          {
+            label: "Add memory",
+            detail: "Attach only details you approve",
+            icon: Heart,
+            onClick: () => onNavigate("memory")
+          }
   ];
 
   return (
@@ -710,42 +773,59 @@ function CustomerPanelView({
         <article className="customerStartCard wide">
           <div className="sectionHeader">
             <div>
-              <p className="eyebrow">Start</p>
-              <h3>Sign in and import events</h3>
+              <p className="eyebrow">{hasWorkspace ? "Workspace" : "Start"}</p>
+              <h3>{hasWorkspace ? "Signed in locally" : "Create private workspace"}</h3>
             </div>
-            <StatusChip icon={ShieldCheck} label={workspace ? "Connected locally" : "Choose account"} tone="green" />
+            <StatusChip icon={ShieldCheck} label={hasWorkspace ? "Local storage active" : "No account required"} tone="green" />
           </div>
 
-          <div className="authProviderGrid" aria-label="Customer sign in options">
-            <button className="customerAuthButton" type="button" onClick={onStartWorkspace}>
-              <KeyRound size={18} />
-              <span>Continue with Google</span>
-              <small>Calendar and Gmail import contract</small>
-            </button>
-            <button className="customerAuthButton" type="button" onClick={onStartWorkspace}>
-              <Lock size={18} />
-              <span>Continue with Apple</span>
-              <small>Calendar and iCloud import contract</small>
-            </button>
-          </div>
+          {hasWorkspace ? (
+            <div className="workspaceSummary" aria-label="Local customer workspace">
+              <div>
+                <span>Customer</span>
+                <strong>{workspace?.name}</strong>
+                <small>{workspace?.email}</small>
+              </div>
+              <div>
+                <span>Next source</span>
+                <strong>{opportunity.title}</strong>
+                <small>{opportunity.evidence.length} local evidence items ready for review</small>
+              </div>
+            </div>
+          ) : (
+            <div className="authProviderGrid" aria-label="Customer local workspace options">
+              <button className="customerAuthButton primaryLocal" type="button" onClick={onStartWorkspace}>
+                <KeyRound size={18} />
+                <span>Create local workspace</span>
+                <small>Stores memories and drafts in this browser only</small>
+              </button>
+              <button className="customerAuthButton" type="button" onClick={() => onNavigate("opportunities")}>
+                <ClipboardCheck size={18} />
+                <span>Paste invite only</span>
+                <small>Use the no-account local import path</small>
+              </button>
+            </div>
+          )}
 
-          <div className="importActionGrid" aria-label="Customer import actions">
-            <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
-              <Calendar size={18} />
-              <span>Import calendar</span>
-              <small>Birthdays, anniversaries, weddings, trips</small>
-            </button>
-            <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
-              <MessageCircle size={18} />
-              <span>Scan email receipts</span>
-              <small>Purchases, warranties, renewals, deliveries</small>
-            </button>
-            <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
-              <ClipboardCheck size={18} />
-              <span>Paste invite</span>
-              <small>Use the no-account local path</small>
-            </button>
-          </div>
+          {hasWorkspace && (
+            <div className="importActionGrid" aria-label="Customer import actions">
+              <button className="importAction" type="button" onClick={() => onNavigate("opportunities")}>
+                <Calendar size={18} />
+                <span>Review event import</span>
+                <small>Calendar text, invite paste, or manual note</small>
+              </button>
+              <button className="importAction" type="button" onClick={() => onNavigate("memory")}>
+                <Heart size={18} />
+                <span>Review memories</span>
+                <small>Approved personal details only</small>
+              </button>
+              <button className="importAction" type="button" onClick={cardReviewStarted ? () => onNavigate("handoff") : onGenerateCard}>
+                {cardReviewStarted ? <Store size={18} /> : <WandSparkles size={18} />}
+                <span>{cardReviewStarted ? "Compare fulfillment" : "Start card draft"}</span>
+                <small>{cardReviewStarted ? "Manual handoff after proof review" : "Local template generation"}</small>
+              </button>
+            </div>
+          )}
         </article>
 
         <article className="eventQueueCard">
@@ -765,10 +845,17 @@ function CustomerPanelView({
               <span>{opportunity.dateLabel}</span>
               <small>{opportunity.recommendedPath}</small>
             </div>
-            <button className="primaryButton" type="button" onClick={onGenerateCard}>
-              <WandSparkles size={16} />
-              Make card
-            </button>
+            {hasWorkspace ? (
+              <button className="primaryButton" type="button" onClick={cardReviewStarted ? () => onNavigate("studio") : onGenerateCard}>
+                <WandSparkles size={16} />
+                {cardReviewStarted ? "Continue review" : "Review and make card"}
+              </button>
+            ) : (
+              <button className="quietButton" type="button" onClick={() => onNavigate("opportunities")}>
+                <ClipboardCheck size={16} />
+                Review import
+              </button>
+            )}
           </div>
 
           <div className="metricStrip">
@@ -783,31 +870,41 @@ function CustomerPanelView({
           <div className="sectionHeader compact">
             <div>
               <p className="eyebrow">Fulfillment</p>
-              <h3>Best available options</h3>
+              <h3>{cardReviewStarted ? "Best available options" : "Fulfillment after proof"}</h3>
             </div>
-            <StatusChip icon={Store} label="Customer view" tone="blue" />
+            <StatusChip icon={Store} label={cardReviewStarted ? "Customer view" : "Queued"} tone="blue" />
           </div>
 
-          <div className="fulfillmentOptionGrid" aria-label="Customer fulfillment recommendation">
-            <FulfillmentOption
-              recommendation={cheapestOption}
-              icon={CreditCard}
-              label="Cheapest known price"
-              tag="Cost"
-            />
-            <FulfillmentOption
-              recommendation={fastestPickup}
-              icon={Store}
-              label="Fastest pickup candidate"
-              tag="Pickup"
-            />
-            <FulfillmentOption
-              recommendation={cheapestShipped}
-              icon={PackageCheck}
-              label="Cheapest shipped option"
-              tag="Ship"
-            />
-          </div>
+          {cardReviewStarted ? (
+            <div className="fulfillmentOptionGrid" aria-label="Customer fulfillment recommendation">
+              <FulfillmentOption
+                recommendation={cheapestOption}
+                icon={CreditCard}
+                label="Cheapest known price"
+                tag="Cost"
+              />
+              <FulfillmentOption
+                recommendation={fastestPickup}
+                icon={Store}
+                label="Fastest pickup candidate"
+                tag="Pickup"
+              />
+              <FulfillmentOption
+                recommendation={cheapestShipped}
+                icon={PackageCheck}
+                label="Cheapest shipped option"
+                tag="Ship"
+              />
+            </div>
+          ) : (
+            <div className="fulfillmentHold" aria-label="Fulfillment hold">
+              <Printer size={18} />
+              <div>
+                <strong>Manual print options unlock after the card proof exists.</strong>
+                <span>Prices remain review-only public pricing; no live quote or order API is connected.</span>
+              </div>
+            </div>
+          )}
 
           <div className="confirmationNotice">
             <XCircle size={16} />
@@ -818,17 +915,17 @@ function CustomerPanelView({
         <article className="surfaceCard">
           <div className="sectionHeader compact">
             <div>
-              <p className="eyebrow">Next steps</p>
-              <h3>Customer workflow</h3>
+              <p className="eyebrow">Next action</p>
+              <h3>{cardReviewStarted ? "Proof and fulfillment" : hasWorkspace ? "Event to card" : "Local setup"}</h3>
             </div>
             <Check size={18} />
           </div>
-          <div className="quickActionGrid">
+          <div className="journeyActionGrid">
             {customerActions.map((action) => (
               <button
-                className="quickAction"
+                className={action.primary ? "journeyAction primary" : "journeyAction"}
                 key={action.label}
-                onClick={() => onNavigate(action.target)}
+                onClick={action.onClick}
                 type="button"
               >
                 <action.icon size={18} />
@@ -837,6 +934,13 @@ function CustomerPanelView({
               </button>
             ))}
           </div>
+          <p className="panelNote">
+            {cardReviewStarted
+              ? "Manual export and vendor handoff are available after the proof is reviewed."
+              : hasWorkspace
+                ? "Fulfillment and export stay out of the primary path until the card draft exists."
+                : "Provider sign-in and live import adapters remain gated; this path is local and free."}
+          </p>
         </article>
 
         <article className="chatConsole">

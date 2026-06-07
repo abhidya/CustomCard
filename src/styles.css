@@ -126,7 +126,9 @@ textarea {
 .eventRow,
 .fulfillmentOptionHeader,
 .confirmationNotice,
+.fulfillmentHold,
 .quickAction,
+.journeyAction,
 .adapterMini,
 .iconTextButton,
 .primaryButton,
@@ -682,16 +684,28 @@ h3 {
   background: #eef8f4;
 }
 
+.customerAuthButton.primaryLocal {
+  color: #ffffff;
+  background: #172927;
+  border-color: #172927;
+}
+
 .customerAuthButton svg,
 .importAction svg,
-.fulfillmentOptionHeader svg {
+.fulfillmentOptionHeader svg,
+.journeyAction svg {
   color: #258477;
+}
+
+.customerAuthButton.primaryLocal svg {
+  color: #f3c84d;
 }
 
 .customerAuthButton span,
 .importAction span,
 .eventRow strong,
-.fulfillmentOption strong {
+.fulfillmentOption strong,
+.fulfillmentHold strong {
   font-weight: 880;
 }
 
@@ -701,7 +715,57 @@ h3 {
 .eventRow span,
 .fulfillmentOption small,
 .fulfillmentOption em,
+.fulfillmentHold span,
 .confirmationNotice span {
+  color: #5f7076;
+  font-size: 0.76rem;
+  font-weight: 760;
+}
+
+.customerAuthButton.primaryLocal small {
+  color: #d4e5e0;
+}
+
+.workspaceSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.workspaceSummary div,
+.fulfillmentHold {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dbe4e6;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.workspaceSummary span,
+.workspaceSummary strong,
+.workspaceSummary small,
+.fulfillmentHold strong,
+.fulfillmentHold span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.workspaceSummary span {
+  color: #617178;
+  font-size: 0.76rem;
+  font-weight: 820;
+}
+
+.workspaceSummary strong {
+  margin-top: 2px;
+  color: #1f2b30;
+  font-weight: 900;
+}
+
+.workspaceSummary small {
+  margin-top: 2px;
   color: #5f7076;
   font-size: 0.76rem;
   font-weight: 760;
@@ -773,6 +837,21 @@ h3 {
   font-style: normal;
 }
 
+.fulfillmentHold {
+  align-items: flex-start;
+  gap: 10px;
+  background: #eef8f4;
+}
+
+.fulfillmentHold svg {
+  flex: 0 0 auto;
+  color: #258477;
+}
+
+.fulfillmentHold strong {
+  color: #173a34;
+}
+
 .confirmationNotice {
   align-items: flex-start;
   gap: 8px;
@@ -795,6 +874,13 @@ h3 {
   margin-top: 12px;
 }
 
+.journeyActionGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.9fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .quickAction {
   flex-direction: column;
   align-items: flex-start;
@@ -809,16 +895,38 @@ h3 {
   text-align: left;
 }
 
+.journeyAction {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 118px;
+  padding: 12px;
+  border: 1px solid #ced8db;
+  border-radius: 8px;
+  color: #213139;
+  background: #ffffff;
+  text-align: left;
+}
+
+.journeyAction.primary {
+  color: #ffffff;
+  background: #172927;
+  border-color: #172927;
+}
+
 .quickAction svg {
   color: #258477;
 }
 
 .quickAction span,
+.journeyAction span,
 .adapterMini strong {
   font-weight: 880;
 }
 
 .quickAction small,
+.journeyAction small,
 .adapterMini small,
 .adapterMini span,
 .adapterRow small,
@@ -827,6 +935,14 @@ h3 {
   color: #63737a;
   font-size: 0.74rem;
   font-weight: 780;
+}
+
+.journeyAction.primary svg {
+  color: #f3c84d;
+}
+
+.journeyAction.primary small {
+  color: #d4e5e0;
 }
 
 .runtimeHint {
@@ -1712,6 +1828,8 @@ h3 {
   .importActionGrid,
   .fulfillmentOptionGrid,
   .quickActionGrid,
+  .journeyActionGrid,
+  .workspaceSummary,
   .chatComposer,
   .downloadGrid,
   .adapterToolbar,
@@ -1776,7 +1894,8 @@ h3 {
   .adapterStrip span,
   .customerAuthButton,
   .importAction,
-  .quickAction {
+  .quickAction,
+  .journeyAction {
     width: 100%;
     flex-basis: 100%;
   }

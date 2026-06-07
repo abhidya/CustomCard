@@ -122,7 +122,7 @@ describeWithChrome("CustomCard UI smoke", () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         };
 
-        await clickByText("Continue with Google");
+        await clickByText("Create local workspace");
         await clickByText("Opportunities");
         await clickByText("Scan free import");
         const opportunityText = document.body.textContent;
@@ -199,14 +199,25 @@ describeWithChrome("CustomCard UI smoke", () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         };
 
+        const initialCustomerText = document.body.textContent;
+        const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         await clickByText("Send");
-        const customerText = document.body.textContent;
-        const quickActions = document.querySelectorAll(".quickAction").length;
+        await clickByText("Create local workspace");
+        const workspaceText = document.body.textContent;
+        const workspaceJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
+        await clickByText("Review and make card");
+        await clickByText("Customer panel");
+        const reviewedCustomerText = document.body.textContent;
+        const reviewedJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const chatBubbles = document.querySelectorAll(".chatBubble").length;
         await clickByText("Admin panel");
         return {
-          customerText,
-          quickActions,
+          initialCustomerText,
+          initialJourneyActions,
+          workspaceText,
+          workspaceJourneyActions,
+          reviewedCustomerText,
+          reviewedJourneyActions,
           chatBubbles,
           adminText: document.body.textContent,
           metricCount: document.querySelectorAll(".adminSummaryGrid .metric").length,
@@ -217,27 +228,39 @@ describeWithChrome("CustomCard UI smoke", () => {
       })()`
     );
 
-    expect(result.customerText).toContain("Customer panel");
-    expect(result.customerText).toContain("Sign in and import events");
-    expect(result.customerText).toContain("Continue with Google");
-    expect(result.customerText).toContain("Continue with Apple");
-    expect(result.customerText).toContain("Import calendar");
-    expect(result.customerText).toContain("Scan email receipts");
-    expect(result.customerText).toContain("Card opportunities");
-    expect(result.customerText).toContain("Best available options");
-    expect(result.customerText).toContain("Cheapest known price");
-    expect(result.customerText).toContain("Fastest pickup candidate");
-    expect(result.customerText).toContain("Cheapest shipped option");
-    expect(result.customerText).toContain("Text interface");
-    expect(result.customerText).toContain("No live model call");
-    expect(result.customerText).toContain("provider adapters gated");
-    expect(result.customerText).toContain("No live model call or external transcript storage was used.");
-    expect(result.customerText).toContain("Card proof path");
-    expect(result.customerText).toContain("Data controls");
-    expect(result.customerText).toContain("Language readiness");
-    expect(result.customerText).toContain("Production safety");
-    expect(result.customerText).toContain("Ar EG");
-    expect(result.quickActions).toBeGreaterThanOrEqual(5);
+    expect(result.initialCustomerText).toContain("Customer panel");
+    expect(result.initialCustomerText).toContain("Create private workspace");
+    expect(result.initialCustomerText).toContain("Create local workspace");
+    expect(result.initialCustomerText).toContain("Paste invite only");
+    expect(result.initialCustomerText).not.toContain("Continue with Google");
+    expect(result.initialCustomerText).not.toContain("Continue with Apple");
+    expect(result.initialCustomerText).toContain("Fulfillment after proof");
+    expect(result.initialCustomerText).not.toContain("Cheapest known price");
+    expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
+    expect(result.initialJourneyActions.join(" ")).toContain("Paste invite only");
+    expect(result.initialJourneyActions).toHaveLength(2);
+    expect(result.workspaceText).toContain("Signed in locally");
+    expect(result.workspaceText).toContain("Review event import");
+    expect(result.workspaceText).toContain("Review and make card");
+    expect(result.workspaceJourneyActions.join(" ")).toContain("Review imported event");
+    expect(result.workspaceJourneyActions.join(" ")).toContain("Make card");
+    expect(result.workspaceJourneyActions).toHaveLength(3);
+    expect(result.reviewedCustomerText).toContain("Best available options");
+    expect(result.reviewedCustomerText).toContain("Cheapest known price");
+    expect(result.reviewedCustomerText).toContain("Fastest pickup candidate");
+    expect(result.reviewedCustomerText).toContain("Cheapest shipped option");
+    expect(result.reviewedCustomerText).toContain("Continue proof review");
+    expect(result.reviewedJourneyActions.join(" ")).toContain("Choose fulfillment");
+    expect(result.reviewedJourneyActions).toHaveLength(3);
+    expect(result.reviewedCustomerText).toContain("Text interface");
+    expect(result.reviewedCustomerText).toContain("No live model call");
+    expect(result.reviewedCustomerText).toContain("provider adapters gated");
+    expect(result.reviewedCustomerText).toContain("No live model call or external transcript storage was used.");
+    expect(result.reviewedCustomerText).toContain("Card proof path");
+    expect(result.reviewedCustomerText).toContain("Data controls");
+    expect(result.reviewedCustomerText).toContain("Language readiness");
+    expect(result.reviewedCustomerText).toContain("Production safety");
+    expect(result.reviewedCustomerText).toContain("Ar EG");
     expect(result.chatBubbles).toBeGreaterThanOrEqual(6);
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Required env");
