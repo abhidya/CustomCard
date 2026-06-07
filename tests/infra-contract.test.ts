@@ -1373,6 +1373,7 @@ describe("production infrastructure contract", () => {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
+    const pricingResearch = read("docs/printer-pricing-research.md");
     const report = JSON.parse(output) as {
       service: string;
       status: string;
@@ -1407,6 +1408,12 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "ci", status: "ready" })
       ])
     );
+    expect(pricingResearch).toContain("FMTC Deal Feed");
+    expect(pricingResearch).toContain("Rakuten Advertising Coupon Feed API");
+    expect(pricingResearch).toMatch(/official Walgreens Photo\s+deals page/);
+    expect(pricingResearch).toMatch(/official CVS Photo coupons page/);
+    expect(pricingResearch).toMatch(/keep The Coupon Bureau out of this\s+retailer photo-card promo-code flow/);
+    expect(pricingResearch).toContain("22:28 UTC `operator-chromium-rendered-read`");
   }, shellDoctorTimeoutMs);
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {

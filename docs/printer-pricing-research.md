@@ -144,7 +144,7 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
-- The June 7, 2026 22:07 UTC operator render opened the exact Walgreens and CVS 5x7 print
+- The June 7, 2026 22:28 UTC operator render opened the exact Walgreens and CVS 5x7 print
   entrypoints without login, upload, cart, payment, or order action. CVS exposed
   `JUNESW` in visible rendered text alongside the 5x7 folded-card product
   signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
@@ -198,6 +198,16 @@ server-side future validation provider. It requires `apiKey`, `affId`,
 for Walgreens once partner credentials and certification exist, but it is still
 blocked from runtime and cannot submit uploads, payment, or orders.
 
+The June 7, 2026 provider/source decision is: use FMTC Deal Feed and Rakuten
+Advertising Coupon Feed API as the only registered third-party coupon-provider
+feeds for Walgreens/CVS photo-card discovery; use the official Walgreens Photo
+deals page, official CVS Photo coupons page, and exact Walgreens/CVS 5x7 print
+links as read-only retailer scrape targets; keep The Coupon Bureau out of this
+retailer photo-card promo-code flow unless a future product is actually backed
+by Universal Coupon AI (8112) eligibility. This keeps provider feeds, retailer
+scrape evidence, and provider-portal application proof as separate Adapter
+evidence types.
+
 The Coupon Bureau Universal Coupons network is a proper coupon-provider
 infrastructure lane for manufacturer Universal Coupons, but it is separate from
 Walgreens/CVS photo promo codes. Model it as a future generic coupon provider
@@ -221,7 +231,7 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-22:07 UTC `operator-chromium-rendered-read` check against the exact print
+22:28 UTC `operator-chromium-rendered-read` check against the exact print
 links. A matching visible browser read opened both print links after the
 collector run. CVS rendered the `JUNESW` code visibly on the 5x7 folded card
 page, so the browser-evidence Module reports
