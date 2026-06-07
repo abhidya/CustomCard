@@ -100,6 +100,12 @@ describe("retail printer operation start packets", () => {
     const fedex = packets.find((packet) => packet.id === "fedex-fetch-price-operation-start");
 
     expect(walgreens?.couponCollectionPlan).toMatchObject({
+      collectionPriority: [
+        expect.objectContaining({ id: "credentialed-coupon-provider-feed", collectionMethod: "provider-api-feed" }),
+        expect.objectContaining({ id: "official-retailer-coupon-page", collectionMethod: "server-fetch-html" }),
+        expect.objectContaining({ id: "exact-rendered-print-link", collectionMethod: "rendered-browser-read" }),
+        expect.objectContaining({ id: "same-cart-provider-portal-proof", canAffectBestPrice: true })
+      ],
       collectionTargetIds: [
         "fmtc-deal-feed",
         "rakuten-coupon-feed",
@@ -110,7 +116,11 @@ describe("retail printer operation start packets", () => {
       retailerCouponTargetIds: ["walgreens-photo-official-deals"],
       printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
       candidateOfferCodes: ["CRISPCARD"],
-      portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"]
+      portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"],
+      couponProviderFeedPreferred: true,
+      retailerScrapeFallbackAllowed: true,
+      printLinkRenderFallbackAllowed: true,
+      providerPortalApplicationRequired: true
     });
     expect(walgreens?.couponCollectionPlan.providerFeedTargets).toEqual(
       expect.arrayContaining([

@@ -134,6 +134,69 @@ const couponProviderFeedTargets = [
   }
 ];
 
+const couponCollectionPriority = [
+  {
+    id: "credentialed-coupon-provider-feed",
+    order: 1,
+    label: "Credentialed coupon provider feed",
+    collectionMode: "coupon-provider-feed",
+    collectionMethod: "provider-api-feed",
+    evidenceRole: "coupon-discovery",
+    targetRoles: ["provider-feed"],
+    requiresCredentials: true,
+    fallbackAllowed: false,
+    canAffectBestPrice: false,
+    requiredEvidence: ["provider feed response with coupon code, link, expiration, and verification metadata"],
+    noNetworkRuntime: true
+  },
+  {
+    id: "official-retailer-coupon-page",
+    order: 2,
+    label: "Official retailer coupon page",
+    collectionMode: "retailer-public-coupon-page",
+    collectionMethod: "server-fetch-html",
+    evidenceRole: "retailer-source-confirmation",
+    targetRoles: ["coupon-source"],
+    requiresCredentials: false,
+    fallbackAllowed: true,
+    canAffectBestPrice: false,
+    requiredEvidence: ["official retailer coupon page code, product scope, terms, and expiration"],
+    noNetworkRuntime: true
+  },
+  {
+    id: "exact-rendered-print-link",
+    order: 3,
+    label: "Exact rendered Walgreens/CVS print link",
+    collectionMode: "retailer-public-coupon-page",
+    collectionMethod: "rendered-browser-read",
+    evidenceRole: "product-code-price-proof",
+    targetRoles: ["print-entrypoint"],
+    requiresCredentials: false,
+    fallbackAllowed: true,
+    canAffectBestPrice: false,
+    requiredEvidence: ["visible coupon text plus matching product, price, and SKU signals from the exact print link"],
+    noNetworkRuntime: true
+  },
+  {
+    id: "same-cart-provider-portal-proof",
+    order: 4,
+    label: "Same-cart provider portal proof",
+    collectionMode: "provider-portal-checkout",
+    collectionMethod: "provider-portal-cart-evidence",
+    evidenceRole: "best-price-discount-proof",
+    targetRoles: [],
+    requiresCredentials: false,
+    fallbackAllowed: false,
+    canAffectBestPrice: true,
+    requiredEvidence: [
+      "provider portal checkout subtotal after coupon application",
+      "same product, quantity, fulfillment mode, account state, and subtotal math",
+      "no payment or order submission"
+    ],
+    noNetworkRuntime: true
+  }
+];
+
 const couponCollectionContracts = {
   walgreens: {
     retailerCouponTargets: [
@@ -560,6 +623,15 @@ function validateOperationStartCouponCollectionPlan(packet, productLink) {
     ...expectedPrintEntrypointTargetIds
   ];
 
+  if (!sameStringArray(plan.collectionPriority?.map((step) => step.id), couponCollectionPriority.map((step) => step.id))) {
+    errors.push(`Retail printer operation start packet ${packet.id} must expose the coupon collection priority contract.`);
+  }
+  if (plan.couponProviderFeedPreferred !== true || plan.retailerScrapeFallbackAllowed !== true || plan.printLinkRenderFallbackAllowed !== true) {
+    errors.push(`Retail printer operation start packet ${packet.id} must keep provider-first coupon collection with retailer and print-link fallbacks.`);
+  }
+  if (plan.providerPortalApplicationRequired !== true) {
+    errors.push(`Retail printer operation start packet ${packet.id} must require provider portal coupon application.`);
+  }
   if (!sameStringArray(plan.providerFeedTargetIds, expectedProviderFeedTargetIds)) {
     errors.push(`Retail printer operation start packet ${packet.id} must use registered coupon provider feed target ids.`);
   }
@@ -762,6 +834,7 @@ function buildCouponCollectionPlan(productLink, operation) {
   return {
     vendorId: productLink.vendorId,
     quantity,
+    collectionPriority: couponCollectionPriority,
     collectionTargetIds: [...providerFeedTargetIds, ...retailerCouponTargetIds, ...printEntrypointTargetIds],
     providerFeedTargetIds,
     retailerCouponTargetIds,
@@ -779,6 +852,10 @@ function buildCouponCollectionPlan(productLink, operation) {
       sameCartEvidenceRequired: true,
       noBestPriceRankingWithoutPortalProof: true
     },
+    couponProviderFeedPreferred: true,
+    retailerScrapeFallbackAllowed: true,
+    printLinkRenderFallbackAllowed: true,
+    providerPortalApplicationRequired: true,
     bestPriceRequiresProviderPortalEvidence: true,
     canAffectBestPriceBeforePortalEvidence: false,
     noNetworkRuntime: true,

@@ -24,6 +24,7 @@ try {
     extractPrinterCouponOffers,
     isPrinterCouponActive,
     printerCouponOffers,
+    printerCouponCollectionPriority,
     printerCouponCollectionTargets,
     printerCouponValidationProviders,
     printerPriceCatalog,
@@ -230,12 +231,8 @@ try {
         providerPortalEvidenceImport: providerPortalEvidenceImportSummary,
         credentialGatedProviderTargetCount: providerFeedTargets.length,
         providerFeedTargets,
-        couponProviderCollectionPriority: [
-          "credentialed coupon provider feed",
-          "official retailer coupon page",
-          "exact rendered Walgreens/CVS print link",
-          "provider portal same-cart coupon application packet"
-        ],
+        couponProviderCollectionPriority: printerCouponCollectionPriority,
+        couponProviderCollectionPriorityLabels: printerCouponCollectionPriority.map((step) => step.label),
         couponProviderCandidateCount: providerFeedTargets.length,
         couponValidationProviderCount: printerCouponValidationProviders.length,
         couponValidationProviders: printerCouponValidationProviders,

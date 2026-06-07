@@ -147,7 +147,8 @@ Requirement types:
   Walgreens/CVS/FedEx/Walmart/Staples/Office Depot observations across 8 source
   links, reports source freshness, keeps `liveQuote: false`, requires checkout
   confirmation, collects credentialed FMTC/Rakuten provider-feed and official
-  retailer page coupon candidates, keeps exact rendered Walgreens/CVS print-link
+  retailer page coupon candidates through a shared provider-first
+  `collectionPriority` contract, keeps exact rendered Walgreens/CVS print-link
   coupon proof targets with visible-code and product/price/SKU signal gates, and
   applies coupons to best-price ranking only when structured provider-portal
   evidence proves the same cart terms.
@@ -201,8 +202,9 @@ Requirement types:
   freshness contract and coupon-source collection. Coupon collection includes
   official Walgreens/CVS pages, exact rendered Walgreens/CVS print entrypoint
   evidence with visible-code and product/price/SKU signal gates, and
-  credential-gated FMTC/Rakuten provider-feed targets. They are not live quote,
-  tax, stock, pickup-window, live checkout automation, or coupon provider-portal
+  credential-gated FMTC/Rakuten provider-feed targets in the shared
+  provider-first `collectionPriority` contract. They are not live quote, tax,
+  stock, pickup-window, live checkout automation, or coupon provider-portal
   application guarantees. Coupon discounts require structured same-product,
   quantity, fulfillment mode, account state, subtotal, and no-order-placed
   provider-portal evidence before best-price ranking can use them.

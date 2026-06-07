@@ -1430,7 +1430,7 @@ describe("production infrastructure contract", () => {
     expect(pricingResearch).toMatch(/official Walgreens Photo\s+deals page/);
     expect(pricingResearch).toMatch(/official CVS Photo coupons page/);
     expect(pricingResearch).toMatch(/keep The Coupon Bureau out of this\s+retailer photo-card promo-code flow/);
-    expect(pricingResearch).toContain("23:08 UTC `operator-chromium-rendered-read`");
+    expect(pricingResearch).toContain("23:28 UTC `operator-chromium-rendered-read`");
   }, shellDoctorTimeoutMs);
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {

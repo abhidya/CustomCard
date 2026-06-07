@@ -12,6 +12,7 @@ import {
   hasMatchingProviderPortalCouponEvidence,
   isPrinterCouponActive,
   printerCouponCollectionTargets,
+  printerCouponCollectionPriority,
   printerCouponOffers,
   printerCouponPolicy,
   printerCouponSources,
@@ -20,6 +21,7 @@ import {
   printerPricingCollectionRules,
   printerPricingSources,
   validatePrinterCouponCollectionTargets,
+  validatePrinterCouponCollectionPriority,
   validatePrinterCouponOffers,
   validatePrinterCouponPortalApplicationPackets,
   validatePrinterPricingCatalog,
@@ -151,6 +153,7 @@ describe("printer pricing research", () => {
   it("requires coupon collection and portal application proof before discounting", () => {
     expect(validatePrinterCouponPolicy()).toEqual([]);
     expect(validatePrinterCouponCollectionTargets()).toEqual([]);
+    expect(validatePrinterCouponCollectionPriority()).toEqual([]);
     expect(validatePrinterCouponOffers()).toEqual([]);
     expect(validatePrinterCouponPortalApplicationPackets()).toEqual([]);
     expect(printerCouponPolicy).toMatchObject({
@@ -205,6 +208,56 @@ describe("printer pricing research", () => {
         "Printer coupon policy must require structured provider portal application evidence."
       ])
     );
+  });
+
+  it("locks provider-first coupon collection before retailer scraping and portal discounting", () => {
+    expect(printerCouponCollectionPriority.map((step) => step.id)).toEqual([
+      "credentialed-coupon-provider-feed",
+      "official-retailer-coupon-page",
+      "exact-rendered-print-link",
+      "same-cart-provider-portal-proof"
+    ]);
+    expect(printerCouponCollectionPriority.map((step) => step.canAffectBestPrice)).toEqual([false, false, false, true]);
+    expect(printerCouponCollectionPriority[0]).toMatchObject({
+      collectionMethod: "provider-api-feed",
+      evidenceRole: "coupon-discovery",
+      requiresCredentials: true
+    });
+    expect(printerCouponCollectionPriority[2]).toMatchObject({
+      collectionMethod: "rendered-browser-read",
+      evidenceRole: "product-code-price-proof",
+      fallbackAllowed: true,
+      requiredEvidence: expect.arrayContaining([
+        "visible coupon text plus matching product, price, and SKU signals from the exact print link"
+      ])
+    });
+    expect(printerCouponCollectionPriority[3]).toMatchObject({
+      collectionMode: "provider-portal-checkout",
+      collectionMethod: "provider-portal-cart-evidence",
+      evidenceRole: "best-price-discount-proof",
+      requiredEvidence: expect.arrayContaining([
+        "provider portal checkout subtotal after coupon application",
+        "same product, quantity, fulfillment mode, account state, and subtotal math",
+        "no payment or order submission"
+      ])
+    });
+    expect(
+      validatePrinterCouponCollectionPriority([
+        { ...printerCouponCollectionPriority[1], order: 1 },
+        printerCouponCollectionPriority[0],
+        printerCouponCollectionPriority[2],
+        printerCouponCollectionPriority[3]
+      ])
+    ).toContain(
+      "Printer coupon collection priority must run provider feed, official retailer page, exact rendered print link, then same-cart portal proof."
+    );
+    expect(
+      validatePrinterCouponCollectionPriority(
+        printerCouponCollectionPriority.map((step) =>
+          step.id === "same-cart-provider-portal-proof" ? { ...step, canAffectBestPrice: false } : step
+        )
+      )
+    ).toContain("Printer coupon final priority step must be the only step allowed to affect best price.");
   });
 
   it("builds provider-portal coupon application packets for exact same-cart operator collection", () => {
@@ -280,12 +333,17 @@ describe("printer pricing research", () => {
     expect(walgreens).toMatchObject({
       vendorId: "walgreens",
       quantity: 1,
+      collectionPriority: printerCouponCollectionPriority,
       providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
       retailerCouponTargetIds: ["walgreens-photo-official-deals"],
       printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
       credentialEnvKeys: ["FMTC_API_TOKEN", "RAKUTEN_ADVERTISING_API_TOKEN"],
       candidateOfferCodes: ["CRISPCARD"],
       portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"],
+      couponProviderFeedPreferred: true,
+      retailerScrapeFallbackAllowed: true,
+      printLinkRenderFallbackAllowed: true,
+      providerPortalApplicationRequired: true,
       bestPriceRequiresProviderPortalEvidence: true,
       canAffectBestPriceBeforePortalEvidence: false,
       noNetworkRuntime: true

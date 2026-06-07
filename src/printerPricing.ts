@@ -23,6 +23,17 @@ export type PrinterCouponSourceAuthority = "official-retailer" | "credentialed-c
 export type PrinterCouponCollectionMethod = "server-fetch-html" | "rendered-browser-read" | "provider-api-feed";
 export type PrinterCouponValidationProviderAuthority = "official-developer-api";
 export type PrinterCouponValidationProviderReadiness = "credential-gated";
+export type PrinterCouponCollectionPriorityStepId =
+  | "credentialed-coupon-provider-feed"
+  | "official-retailer-coupon-page"
+  | "exact-rendered-print-link"
+  | "same-cart-provider-portal-proof";
+export type PrinterCouponPriorityCollectionMethod = PrinterCouponCollectionMethod | "provider-portal-cart-evidence";
+export type PrinterCouponPriorityEvidenceRole =
+  | "coupon-discovery"
+  | "retailer-source-confirmation"
+  | "product-code-price-proof"
+  | "best-price-discount-proof";
 
 export interface PrinterPricingSource {
   label: string;
@@ -105,6 +116,7 @@ export interface PrinterPricingRefreshReport {
   couponSources: PrinterCouponSource[];
   couponOffers: PrinterCouponOffer[];
   couponPortalApplicationPackets: PrinterCouponPortalApplicationPacket[];
+  couponCollectionPriority: PrinterCouponCollectionPriorityStep[];
   couponPolicy: PrinterCouponPolicy;
   blockers: string[];
   canShowComparison: boolean;
@@ -137,6 +149,21 @@ export interface PrinterCouponPolicy {
   blockedFields: string[];
   requiredEvidence: string[];
   confirmationCopy: string;
+}
+
+export interface PrinterCouponCollectionPriorityStep {
+  id: PrinterCouponCollectionPriorityStepId;
+  order: number;
+  label: string;
+  collectionMode: PrinterCouponCollectionMode;
+  collectionMethod: PrinterCouponPriorityCollectionMethod;
+  evidenceRole: PrinterCouponPriorityEvidenceRole;
+  targetRoles: PrinterCouponCollectionTargetRole[];
+  requiresCredentials: boolean;
+  fallbackAllowed: boolean;
+  canAffectBestPrice: boolean;
+  requiredEvidence: string[];
+  noNetworkRuntime: true;
 }
 
 export interface PrinterCouponSource {
@@ -263,6 +290,7 @@ export interface PrinterCouponPortalApplicationPacket {
 export interface PrinterCouponCollectionPlan {
   vendorId: VendorId;
   quantity: number;
+  collectionPriority: PrinterCouponCollectionPriorityStep[];
   collectionTargetIds: string[];
   providerFeedTargetIds: string[];
   retailerCouponTargetIds: string[];
@@ -275,6 +303,10 @@ export interface PrinterCouponCollectionPlan {
   printEntrypointTargets: PrinterCouponCollectionTarget[];
   portalApplicationPackets: PrinterCouponPortalApplicationPacket[];
   couponPolicy: PrinterCouponPolicy;
+  couponProviderFeedPreferred: true;
+  retailerScrapeFallbackAllowed: true;
+  printLinkRenderFallbackAllowed: true;
+  providerPortalApplicationRequired: true;
   bestPriceRequiresProviderPortalEvidence: true;
   canAffectBestPriceBeforePortalEvidence: false;
   noNetworkRuntime: true;
@@ -458,6 +490,69 @@ export const printerCouponPolicy: PrinterCouponPolicy = {
   confirmationCopy:
     "Coupons are collected and tested during provider-portal pricing; best-price ranking uses a coupon only after the portal applies it to the same product, quantity, fulfillment mode, and account state."
 };
+
+export const printerCouponCollectionPriority: PrinterCouponCollectionPriorityStep[] = [
+  {
+    id: "credentialed-coupon-provider-feed",
+    order: 1,
+    label: "Credentialed coupon provider feed",
+    collectionMode: "coupon-provider-feed",
+    collectionMethod: "provider-api-feed",
+    evidenceRole: "coupon-discovery",
+    targetRoles: ["provider-feed"],
+    requiresCredentials: true,
+    fallbackAllowed: false,
+    canAffectBestPrice: false,
+    requiredEvidence: ["provider feed response with coupon code, link, expiration, and verification metadata"],
+    noNetworkRuntime: true
+  },
+  {
+    id: "official-retailer-coupon-page",
+    order: 2,
+    label: "Official retailer coupon page",
+    collectionMode: "retailer-public-coupon-page",
+    collectionMethod: "server-fetch-html",
+    evidenceRole: "retailer-source-confirmation",
+    targetRoles: ["coupon-source"],
+    requiresCredentials: false,
+    fallbackAllowed: true,
+    canAffectBestPrice: false,
+    requiredEvidence: ["official retailer coupon page code, product scope, terms, and expiration"],
+    noNetworkRuntime: true
+  },
+  {
+    id: "exact-rendered-print-link",
+    order: 3,
+    label: "Exact rendered Walgreens/CVS print link",
+    collectionMode: "retailer-public-coupon-page",
+    collectionMethod: "rendered-browser-read",
+    evidenceRole: "product-code-price-proof",
+    targetRoles: ["print-entrypoint"],
+    requiresCredentials: false,
+    fallbackAllowed: true,
+    canAffectBestPrice: false,
+    requiredEvidence: ["visible coupon text plus matching product, price, and SKU signals from the exact print link"],
+    noNetworkRuntime: true
+  },
+  {
+    id: "same-cart-provider-portal-proof",
+    order: 4,
+    label: "Same-cart provider portal proof",
+    collectionMode: "provider-portal-checkout",
+    collectionMethod: "provider-portal-cart-evidence",
+    evidenceRole: "best-price-discount-proof",
+    targetRoles: [],
+    requiresCredentials: false,
+    fallbackAllowed: false,
+    canAffectBestPrice: true,
+    requiredEvidence: [
+      "provider portal checkout subtotal after coupon application",
+      "same product, quantity, fulfillment mode, account state, and subtotal math",
+      "no payment or order submission"
+    ],
+    noNetworkRuntime: true
+  }
+];
 
 export const printerCouponValidationProviders: PrinterCouponValidationProvider[] = [
   {
@@ -1146,6 +1241,7 @@ export function buildPrinterPricingRefreshReport(
     couponSources: Object.values(printerCouponSources),
     couponOffers: printerCouponOffers,
     couponPortalApplicationPackets,
+    couponCollectionPriority: printerCouponCollectionPriority,
     couponPolicy: printerCouponPolicy,
     blockers,
     canShowComparison: blockers.length === 0,
@@ -1180,6 +1276,7 @@ export function buildPrinterCouponCollectionPlan(
   return {
     vendorId,
     quantity,
+    collectionPriority: printerCouponCollectionPriority,
     collectionTargetIds: targets.map((target) => target.id),
     providerFeedTargetIds: providerFeedTargets.map((target) => target.id),
     retailerCouponTargetIds: retailerCouponTargets.map((target) => target.id),
@@ -1192,6 +1289,10 @@ export function buildPrinterCouponCollectionPlan(
     printEntrypointTargets,
     portalApplicationPackets,
     couponPolicy: printerCouponPolicy,
+    couponProviderFeedPreferred: true,
+    retailerScrapeFallbackAllowed: true,
+    printLinkRenderFallbackAllowed: true,
+    providerPortalApplicationRequired: true,
     bestPriceRequiresProviderPortalEvidence: true,
     canAffectBestPriceBeforePortalEvidence: false,
     noNetworkRuntime: true,
@@ -1563,6 +1664,7 @@ export function validatePrinterPricingCatalog(
   errors.push(...validatePrinterCouponPolicy());
   errors.push(...validatePrinterCouponSources());
   errors.push(...validatePrinterCouponCollectionTargets());
+  errors.push(...validatePrinterCouponCollectionPriority());
   errors.push(...validatePrinterCouponOffers(printerCouponOffers, options.now ?? new Date(observedAtIso)));
   errors.push(...validatePrinterCouponPortalApplicationPackets());
 
@@ -1702,6 +1804,91 @@ export function validatePrinterCouponCollectionTargets(
 
   if (!targets.some((target) => target.role === "provider-feed" && target.sourceProvider === "affiliate-provider")) {
     errors.push("Missing credential-gated coupon provider feed target.");
+  }
+
+  return errors;
+}
+
+export function validatePrinterCouponCollectionPriority(
+  priority: PrinterCouponCollectionPriorityStep[] = printerCouponCollectionPriority
+): string[] {
+  const errors: string[] = [];
+  const expectedIds: PrinterCouponCollectionPriorityStepId[] = [
+    "credentialed-coupon-provider-feed",
+    "official-retailer-coupon-page",
+    "exact-rendered-print-link",
+    "same-cart-provider-portal-proof"
+  ];
+  const expectedOrders = [1, 2, 3, 4];
+  const ids = new Set<string>();
+
+  if (priority.length !== expectedIds.length) {
+    errors.push("Printer coupon collection priority must define provider, retailer, print-link, and portal-proof steps.");
+  }
+
+  for (let index = 0; index < priority.length; index += 1) {
+    const step = priority[index];
+    if (ids.has(step.id)) errors.push(`Duplicate printer coupon collection priority step: ${step.id}`);
+    ids.add(step.id);
+    if (step.id !== expectedIds[index] || step.order !== expectedOrders[index]) {
+      errors.push("Printer coupon collection priority must run provider feed, official retailer page, exact rendered print link, then same-cart portal proof.");
+    }
+    if (!step.noNetworkRuntime) {
+      errors.push(`Printer coupon collection priority step ${step.id} must stay out of app runtime networking.`);
+    }
+    if (step.id === "credentialed-coupon-provider-feed") {
+      if (step.collectionMethod !== "provider-api-feed" || step.collectionMode !== "coupon-provider-feed") {
+        errors.push("Printer coupon collection priority must start with credentialed provider API feeds.");
+      }
+      if (!step.requiresCredentials || step.fallbackAllowed || step.canAffectBestPrice) {
+        errors.push("Printer coupon provider-feed priority step must require credentials and remain discovery-only.");
+      }
+      if (!step.targetRoles.includes("provider-feed")) {
+        errors.push("Printer coupon provider-feed priority step must target provider-feed collection targets.");
+      }
+    }
+    if (step.id === "official-retailer-coupon-page") {
+      if (step.collectionMethod !== "server-fetch-html" || step.collectionMode !== "retailer-public-coupon-page") {
+        errors.push("Printer coupon retailer priority step must collect official retailer coupon pages with server-fetch HTML.");
+      }
+      if (step.requiresCredentials || !step.fallbackAllowed || step.canAffectBestPrice) {
+        errors.push("Printer coupon retailer priority step must be a no-credential fallback that cannot affect best price.");
+      }
+      if (!step.targetRoles.includes("coupon-source")) {
+        errors.push("Printer coupon retailer priority step must target coupon-source collection targets.");
+      }
+    }
+    if (step.id === "exact-rendered-print-link") {
+      if (step.collectionMethod !== "rendered-browser-read" || step.collectionMode !== "retailer-public-coupon-page") {
+        errors.push("Printer coupon print-link priority step must use rendered browser reads of exact print links.");
+      }
+      if (step.requiresCredentials || !step.fallbackAllowed || step.canAffectBestPrice) {
+        errors.push("Printer coupon print-link priority step must be a no-credential fallback that cannot affect best price.");
+      }
+      if (!step.targetRoles.includes("print-entrypoint")) {
+        errors.push("Printer coupon print-link priority step must target print-entrypoint collection targets.");
+      }
+      if (!step.requiredEvidence.some((evidence) => /visible coupon text/i.test(evidence))) {
+        errors.push("Printer coupon print-link priority step must require visible coupon text.");
+      }
+    }
+    if (step.id === "same-cart-provider-portal-proof") {
+      if (step.collectionMethod !== "provider-portal-cart-evidence" || step.collectionMode !== "provider-portal-checkout") {
+        errors.push("Printer coupon final priority step must use same-cart provider portal evidence.");
+      }
+      if (step.requiresCredentials || step.fallbackAllowed || !step.canAffectBestPrice) {
+        errors.push("Printer coupon final priority step must be the only step allowed to affect best price.");
+      }
+      for (const requiredEvidence of [
+        "provider portal checkout subtotal after coupon application",
+        "same product, quantity, fulfillment mode, account state, and subtotal math",
+        "no payment or order submission"
+      ]) {
+        if (!step.requiredEvidence.includes(requiredEvidence)) {
+          errors.push(`Printer coupon final priority step must require ${requiredEvidence}.`);
+        }
+      }
+    }
   }
 
   return errors;

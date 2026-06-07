@@ -121,7 +121,8 @@ certification-blocked.
   local headless browser, optionally polls the credential-gated FMTC Deal Feed
   when `FMTC_API_TOKEN` is present, optionally polls the credential-gated
   Rakuten Advertising Coupon Feed API when `RAKUTEN_ADVERTISING_API_TOKEN` is
-  present, and still returns
+  present, emits the shared `printerCouponCollectionPriority` contract from the
+  pricing Module, and still returns
   `bestPriceDiscountingAllowed: false` until checkout proves a code applied to
   the same cart. The collector does not log in, upload files, submit payment,
   place an order, print provider credentials, or claim live checkout automation.
@@ -144,7 +145,7 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
-- The June 7, 2026 23:08 UTC operator render opened the exact Walgreens and CVS 5x7 print
+- The June 7, 2026 23:28 UTC operator render opened the exact Walgreens and CVS 5x7 print
   entrypoints without login, upload, cart, payment, or order action. CVS exposed
   `JUNESW` in visible rendered text alongside the 5x7 folded-card product
   signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
@@ -186,9 +187,15 @@ a best available price. Coupon discounts are applied only after provider-portal
 evidence proves the code worked for the same product, quantity, fulfillment
 mode, and account state.
 
-The proper provider-feed candidates remain FMTC and Rakuten for discovery, but
-they do not prove final cart price by themselves. Walgreens also publishes an
-official Native Photo Prints coupon-validation API path at
+The proper provider-feed candidates that are registered and tested today remain
+FMTC and Rakuten for discovery, but they do not prove final cart price by
+themselves. Sovrn Product Promo Codes and CJ Link Search are researched next
+provider candidates: Sovrn exposes `https://viglink.io/coupons/product` for
+ranked product-specific promo codes using a site API key and original retailer
+product URL, while CJ Link Search can filter active publisher links by coupon
+code and deep-link capability. They should become collection targets only when
+their credentials, advertiser relationships, and Adapter tests are added.
+Walgreens also publishes an official Native Photo Prints coupon-validation API path at
 `https://services.walgreens.com/api/photo/order/coupon/v3`; the repo models
 that as `walgreens-native-photo-coupon-validation`, a credential-gated
 server-side future validation provider. It requires `apiKey`, `affId`,
@@ -200,7 +207,8 @@ blocked from runtime and cannot submit uploads, payment, or orders.
 
 The June 7, 2026 provider/source decision is: use FMTC Deal Feed and Rakuten
 Advertising Coupon Feed API as the only registered third-party coupon-provider
-feeds for Walgreens/CVS photo-card discovery; use the official Walgreens Photo
+feeds for Walgreens/CVS photo-card discovery; keep Sovrn and CJ as documented
+next candidates until their adapters exist; use the official Walgreens Photo
 deals page, official CVS Photo coupons page, and exact Walgreens/CVS 5x7 print
 links as read-only retailer scrape targets; keep The Coupon Bureau out of this
 retailer photo-card promo-code flow unless a future product is actually backed
@@ -231,7 +239,7 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-23:08 UTC `operator-chromium-rendered-read` check against the exact print
+23:28 UTC `operator-chromium-rendered-read` check against the exact print
 links. A matching visible browser read opened both print links after the
 collector run. CVS rendered the `JUNESW` code visibly on the 5x7 folded card
 page, so the browser-evidence Module reports
@@ -254,14 +262,18 @@ post-coupon subtotal, same-cart terms, `sameCartTermsProven: true`, and
 enough to discount or rank; `hasMatchingProviderPortalCouponEvidence` must match
 the evidence to the public price observation and subtotal math.
 
-`buildPrinterCouponCollectionPlan()` now wraps the provider-feed targets,
-retailer coupon targets, exact print-entrypoint targets, candidate source-listed
-codes, and `buildPrinterCouponPortalApplicationPackets()` output into one
-operator plan per vendor. The current Walgreens plan points to FMTC, Rakuten,
-the Walgreens official deals page, the Walgreens exact print link, `CRISPCARD`,
-and the `walgreens-crispcard-cards-2026-06-13-portal-application-packet`. The
-current CVS plan points to FMTC, Rakuten, the CVS official coupons page, the
-CVS exact print link, `JUNESW`, and the
+`buildPrinterCouponCollectionPlan()` now wraps the shared
+`printerCouponCollectionPriority` contract, provider-feed targets, retailer
+coupon targets, exact print-entrypoint targets, candidate source-listed codes,
+and `buildPrinterCouponPortalApplicationPackets()` output into one operator
+plan per vendor. The priority order is credentialed coupon provider feed,
+official retailer coupon page, exact rendered print link, and finally same-cart
+provider-portal proof; only the final step can affect best-price ranking. The
+current Walgreens plan points to FMTC, Rakuten, the Walgreens official deals
+page, the Walgreens exact print link, `CRISPCARD`, and the
+`walgreens-crispcard-cards-2026-06-13-portal-application-packet`. The current
+CVS plan points to FMTC, Rakuten, the CVS official coupons page, the CVS exact
+print link, `JUNESW`, and the
 `cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet`. Vendors with
 no registered coupon targets return an empty no-network plan that explicitly
 blocks invented third-party coupon candidates.
@@ -337,6 +349,8 @@ Portal application evidence uses this artifact shape:
 | --- | --- |
 | [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`, `provider-api-feed`, and verification signals for status plus code/link verification timestamps; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. When the token is present, the operator collector requests JSON active code deals through the tested provider-feed seam and redacts the token from output. |
 | [Rakuten Advertising Coupon Feed API](https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API) | Credential-gated publisher coupon-feed candidate. It is represented as `rakuten-coupon-feed` with `RAKUTEN_ADVERTISING_API_TOKEN`, `provider-api-feed`, and verification signals for coupon code, promotional link, advertiser, offer start date, and offer end date. The tested provider-feed seam requests XML coupon pages with bearer authorization, redacts the token from output, and keeps provider-fed coupons as discovery evidence until official retailer or provider-portal evidence confirms applicability. |
+| [Sovrn Product Promo Codes](https://developer.sovrn.com/reference/get_product) | Researched next provider candidate, not registered as a runtime target yet. Sovrn exposes a product-specific promo-code API requiring a site API key and original retailer product URL. Add only after credentials, relationship/legal review, and tests exist. |
+| [CJ Link Search](https://developers.cj.com/docs/rest-apis/link-search) | Researched next provider candidate, not registered as a runtime target yet. CJ can surface coupon-code publisher links and deep-link capability inside approved advertiser relationships. Add only after credentials, relationship/legal review, and tests exist. |
 
 | Official coupon-validation provider | Current treatment |
 | --- | --- |
