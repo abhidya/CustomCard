@@ -32,8 +32,10 @@ describe("artifact store runtime", () => {
         service: "customcard-artifact-store",
         status: "ready",
         storageProvider: "filesystem",
+        proofLevel: "local-filesystem-readback",
         artifactCount: 6,
         noNetwork: true,
+        liveProviderCalls: false,
         realOrdersEnabled: false,
         blockers: []
       });
@@ -65,10 +67,12 @@ describe("artifact store runtime", () => {
       service: "customcard-artifact-store",
       status: "ready",
       storageProvider: "s3-compatible",
+      proofLevel: "injected-s3-compatible-readback",
       bucket: "customcard-prod",
       artifactCount: 6,
       noNetwork: true,
       cloudWritesVerified: false,
+      liveProviderCalls: false,
       realOrdersEnabled: false,
       blockers: []
     });
@@ -108,6 +112,45 @@ describe("artifact store runtime", () => {
         "Artifact handoff manifest must pass before writes.",
         "S3-compatible artifact store requires a bucket."
       ])
+    );
+  });
+
+  it("blocks S3-compatible writes when artifact URIs point at a different bucket", async () => {
+    const printPackage = buildSamplePrintExportPackage();
+    const handoff = await buildArtifactHandoffContract(printPackage, {
+      projectId: "project-demo",
+      storageProvider: "s3-compatible",
+      objectStoreUrl: "https://minio.internal:9000",
+      publicBaseUrl: "https://cdn.customcard.example/artifacts",
+      bucket: "customcard-prod",
+      signingSecret: "test-object-store-signing-secret-32",
+      expiresInMinutes: 15,
+      generatedAtIso: "2026-06-03T12:00:00.000Z"
+    });
+
+    const result = await writeS3CompatibleArtifactStore(
+      printPackage,
+      {
+        ...handoff,
+        manifest: {
+          ...handoff.manifest,
+          artifacts: handoff.manifest.artifacts.map((artifact) => ({
+            ...artifact,
+            artifactUri: artifact.artifactUri.replace("/customcard-prod/", "/customcard-other/")
+          }))
+        }
+      },
+      createInMemoryS3CompatibleArtifactClient()
+    );
+
+    expect(result).toMatchObject({
+      status: "blocked",
+      proofLevel: "injected-s3-compatible-readback",
+      cloudWritesVerified: false,
+      liveProviderCalls: false
+    });
+    expect(result.blockers).toEqual(
+      expect.arrayContaining(["S3-compatible artifact URIs must include the target bucket."])
     );
   });
 

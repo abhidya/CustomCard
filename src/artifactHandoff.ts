@@ -143,8 +143,13 @@ export function validateArtifactHandoffConfig(config: ArtifactHandoffConfig): st
       config.objectStoreUrl.startsWith("https://") ||
       config.objectStoreUrl.startsWith("http://");
     if (!validS3Base) errors.push("S3-compatible artifact storage must use s3://, https://, or http:// objectStoreUrl.");
+    if (config.bucket && !isSafeBucketName(config.bucket)) errors.push(`S3-compatible artifact bucket must be a safe bucket name: ${config.bucket}`);
     if (!config.objectStoreUrl.startsWith("s3://") && !config.bucket) {
       errors.push("S3-compatible artifact storage needs OBJECT_STORE_BUCKET when objectStoreUrl is an endpoint URL.");
+    }
+    const objectStoreBucket = parseS3ObjectStoreBucket(config.objectStoreUrl);
+    if (objectStoreBucket && config.bucket && objectStoreBucket !== config.bucket) {
+      errors.push("S3-compatible artifact bucket must match the s3:// objectStoreUrl bucket.");
     }
   }
   if (!isSafePublicBaseUrl(config.publicBaseUrl)) {
@@ -334,6 +339,14 @@ async function signArtifactPayload(secret: string, payload: string): Promise<str
 
 function isSafePathSegment(value: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9_-]{2,80}$/.test(value);
+}
+
+function isSafeBucketName(value: string): boolean {
+  return /^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(value) && !value.includes("..") && !/^\d+\.\d+\.\d+\.\d+$/.test(value);
+}
+
+function parseS3ObjectStoreBucket(value: string): string {
+  return /^s3:\/\/([^/]+)/.exec(value)?.[1] ?? "";
 }
 
 function isSafePublicBaseUrl(value: string): boolean {

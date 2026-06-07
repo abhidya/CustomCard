@@ -71,6 +71,36 @@ describe("artifact handoff contracts", () => {
     expect(handoff.manifest.bucket).toBe("customcard-prod");
   });
 
+  it("blocks unsafe or inconsistent S3-compatible bucket config before artifacts are trusted", async () => {
+    expect(
+      validateArtifactHandoffConfig({
+        ...baseConfig,
+        storageProvider: "s3-compatible",
+        objectStoreUrl: "s3://customcard-prod",
+        publicBaseUrl: "https://cdn.customcard.example/artifacts",
+        bucket: "CustomCard Prod"
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        "S3-compatible artifact bucket must be a safe bucket name: CustomCard Prod",
+        "S3-compatible artifact bucket must match the s3:// objectStoreUrl bucket."
+      ])
+    );
+
+    const mismatchedHandoff = await buildArtifactHandoffContract(buildSamplePrintExportPackage(), {
+      ...baseConfig,
+      storageProvider: "s3-compatible",
+      objectStoreUrl: "s3://customcard-prod",
+      publicBaseUrl: "https://cdn.customcard.example/artifacts",
+      bucket: "customcard-other"
+    });
+
+    expect(mismatchedHandoff.manifest.passed).toBe(false);
+    expect(await validateArtifactHandoffContract(mismatchedHandoff, baseConfig.signingSecret)).toEqual(
+      expect.arrayContaining(["Artifact handoff manifest preflight did not pass."])
+    );
+  });
+
   it("flags unsafe storage signing configuration before artifacts are trusted", async () => {
     const unsafeConfig: ArtifactHandoffConfig = {
       ...baseConfig,

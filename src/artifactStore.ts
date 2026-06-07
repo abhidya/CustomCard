@@ -20,6 +20,7 @@ export interface ArtifactStoreResult {
   service: "customcard-artifact-store";
   status: "ready" | "blocked";
   storageProvider: ArtifactStoreProvider;
+  proofLevel: "local-filesystem-readback" | "injected-s3-compatible-readback";
   rootPath: string;
   bucket?: string;
   artifactCount: number;
@@ -27,6 +28,7 @@ export interface ArtifactStoreResult {
   writes: ArtifactStoreWrite[];
   noNetwork: true;
   cloudWritesVerified: false;
+  liveProviderCalls: false;
   realOrdersEnabled: false;
   blockers: string[];
 }
@@ -59,6 +61,12 @@ export interface InMemoryS3CompatibleArtifactStoreClient extends S3CompatibleArt
   objects(): S3CompatibleStoredObject[];
 }
 
+interface ArtifactWriteTarget {
+  writeArtifact(artifact: StoredPrintArtifact, sourceFile: PrintExportFile): Promise<ArtifactStoreWrite>;
+  writeManifest(handoff: ArtifactHandoffContract, body: string): Promise<string>;
+  readManifest(path: string): Promise<string>;
+}
+
 export async function writeFilesystemArtifactStore(
   printPackage: PrintExportPackage,
   handoff: ArtifactHandoffContract
@@ -71,43 +79,41 @@ export async function writeFilesystemArtifactStore(
   const writes: ArtifactStoreWrite[] = [];
 
   if (blockers.length > 0) {
-    return buildResult("blocked", "filesystem", rootPath, "", writes, blockers);
+    return buildResult("blocked", "filesystem", "local-filesystem-readback", rootPath, "", writes, blockers);
   }
 
   await mkdir(rootPath, { recursive: true });
-
-  for (const artifact of handoff.artifacts) {
-    const sourceFile = fileByName.get(artifact.fileName);
-    if (!sourceFile) {
-      blockers.push(`Missing source file for artifact ${artifact.fileName}.`);
-      continue;
+  const manifestPath = await writeAndVerifyArtifacts(printPackage, handoff, fileByName, writes, blockers, {
+    async writeArtifact(artifact, sourceFile) {
+      const artifactPath = resolveObjectPath(rootPath, artifact.objectKey);
+      await mkdir(dirname(artifactPath), { recursive: true });
+      await writeFile(artifactPath, sourceFile.text, "utf8");
+      const writtenText = await readFile(artifactPath, "utf8");
+      return buildWriteRecord(artifact, sourceFile, writtenText, artifactPath);
+    },
+    async writeManifest(manifestHandoff, body) {
+      const path = resolveObjectPath(
+        rootPath,
+        `${manifestHandoff.projectId}/${manifestHandoff.draftId}/artifact-handoff-manifest.json`
+      );
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, body, "utf8");
+      return path;
+    },
+    readManifest(path) {
+      return readFile(path, "utf8");
     }
-    const artifactPath = resolveObjectPath(rootPath, artifact.objectKey);
-    await mkdir(dirname(artifactPath), { recursive: true });
-    await writeFile(artifactPath, sourceFile.text, "utf8");
-    const writtenText = await readFile(artifactPath, "utf8");
-    writes.push({
-      objectKey: artifact.objectKey,
-      fileName: artifact.fileName,
-      byteLength: byteLength(writtenText),
-      contentHash: contentHash(writtenText),
-      path: artifactPath,
-      verified: artifactMatchesSource(writtenText, sourceFile, artifact)
-    });
-  }
+  });
 
-  const manifestPath = resolveObjectPath(rootPath, `${handoff.projectId}/${handoff.draftId}/artifact-handoff-manifest.json`);
-  await mkdir(dirname(manifestPath), { recursive: true });
-  await writeFile(manifestPath, JSON.stringify(handoff.manifest, null, 2), "utf8");
-  const manifestText = await readFile(manifestPath, "utf8");
-  const parsedManifest = JSON.parse(manifestText) as { artifactCount?: number; realOrdersEnabled?: boolean };
-
-  if (writes.length !== handoff.artifacts.length) blockers.push("Not every handoff artifact was written.");
-  if (writes.some((write) => !write.verified)) blockers.push("One or more written artifacts failed readback verification.");
-  if (parsedManifest.artifactCount !== handoff.artifacts.length) blockers.push("Stored handoff manifest artifact count is stale.");
-  if (parsedManifest.realOrdersEnabled !== false) blockers.push("Stored handoff manifest must keep real orders disabled.");
-
-  return buildResult(blockers.length === 0 ? "ready" : "blocked", "filesystem", rootPath, manifestPath, writes, blockers);
+  return buildResult(
+    blockers.length === 0 ? "ready" : "blocked",
+    "filesystem",
+    "local-filesystem-readback",
+    rootPath,
+    manifestPath,
+    writes,
+    blockers
+  );
 }
 
 export async function cleanupFilesystemArtifactStore(result: Pick<ArtifactStoreResult, "rootPath">): Promise<void> {
@@ -127,65 +133,61 @@ export async function writeS3CompatibleArtifactStore(
   const writes: ArtifactStoreWrite[] = [];
 
   if (blockers.length > 0) {
-    return buildResult("blocked", "s3-compatible", handoff.manifest.objectStoreUrl, "", writes, blockers, bucket);
-  }
-
-  for (const artifact of handoff.artifacts) {
-    const sourceFile = fileByName.get(artifact.fileName);
-    if (!sourceFile) {
-      blockers.push(`Missing source file for artifact ${artifact.fileName}.`);
-      continue;
-    }
-    await client.putObject({
-      bucket,
-      key: artifact.objectKey,
-      body: sourceFile.text,
-      contentType: sourceFile.mimeType,
-      byteLength: sourceFile.byteLength,
-      contentHash: sourceFile.contentHash,
-      metadata: buildArtifactMetadata(handoff, sourceFile)
-    });
-    const writtenText = await client.getObjectText({ bucket, key: artifact.objectKey });
-    writes.push({
-      objectKey: artifact.objectKey,
-      fileName: artifact.fileName,
-      byteLength: byteLength(writtenText),
-      contentHash: contentHash(writtenText),
-      path: `s3://${bucket}/${artifact.objectKey}`,
-      bucket,
-      verified: artifactMatchesSource(writtenText, sourceFile, artifact)
-    });
+    return buildResult(
+      "blocked",
+      "s3-compatible",
+      "injected-s3-compatible-readback",
+      handoff.manifest.objectStoreUrl,
+      "",
+      writes,
+      blockers,
+      bucket
+    );
   }
 
   const manifestKey = buildArtifactManifestObjectKey(handoff);
-  const manifestBody = JSON.stringify(handoff.manifest, null, 2);
-  await client.putObject({
-    bucket,
-    key: manifestKey,
-    body: manifestBody,
-    contentType: "application/json",
-    byteLength: byteLength(manifestBody),
-    contentHash: contentHash(manifestBody),
-    metadata: {
-      projectId: handoff.projectId,
-      draftId: handoff.draftId,
-      artifactRole: "handoff-manifest",
-      realOrdersEnabled: "false"
+  const manifestPath = await writeAndVerifyArtifacts(printPackage, handoff, fileByName, writes, blockers, {
+    async writeArtifact(artifact, sourceFile) {
+      await client.putObject({
+        bucket,
+        key: artifact.objectKey,
+        body: sourceFile.text,
+        contentType: sourceFile.mimeType,
+        byteLength: sourceFile.byteLength,
+        contentHash: sourceFile.contentHash,
+        metadata: buildArtifactMetadata(handoff, sourceFile)
+      });
+      const writtenText = await client.getObjectText({ bucket, key: artifact.objectKey });
+      return buildWriteRecord(artifact, sourceFile, writtenText, `s3://${bucket}/${artifact.objectKey}`, bucket);
+    },
+    async writeManifest(_handoff, body) {
+      await client.putObject({
+        bucket,
+        key: manifestKey,
+        body,
+        contentType: "application/json",
+        byteLength: byteLength(body),
+        contentHash: contentHash(body),
+        metadata: {
+          projectId: handoff.projectId,
+          draftId: handoff.draftId,
+          artifactRole: "handoff-manifest",
+          realOrdersEnabled: "false"
+        }
+      });
+      return `s3://${bucket}/${manifestKey}`;
+    },
+    readManifest() {
+      return client.getObjectText({ bucket, key: manifestKey });
     }
   });
-  const manifestText = await client.getObjectText({ bucket, key: manifestKey });
-  const parsedManifest = JSON.parse(manifestText) as { artifactCount?: number; realOrdersEnabled?: boolean };
-
-  if (writes.length !== handoff.artifacts.length) blockers.push("Not every handoff artifact was written.");
-  if (writes.some((write) => !write.verified)) blockers.push("One or more written artifacts failed readback verification.");
-  if (parsedManifest.artifactCount !== handoff.artifacts.length) blockers.push("Stored handoff manifest artifact count is stale.");
-  if (parsedManifest.realOrdersEnabled !== false) blockers.push("Stored handoff manifest must keep real orders disabled.");
 
   return buildResult(
     blockers.length === 0 ? "ready" : "blocked",
     "s3-compatible",
+    "injected-s3-compatible-readback",
     handoff.manifest.objectStoreUrl,
-    `s3://${bucket}/${manifestKey}`,
+    manifestPath,
     writes,
     blockers,
     bucket
@@ -226,7 +228,7 @@ function validateS3CompatibleStoreInputs(printPackage: PrintExportPackage, hando
   if (!bucket) blockers.push("S3-compatible artifact store requires a bucket.");
   if (bucket && !isSafeBucketName(bucket)) blockers.push(`Unsafe S3-compatible bucket name: ${bucket}`);
   if (handoff.manifest.objectStoreUrl.startsWith("file://")) blockers.push("S3-compatible artifact store cannot use a file:// objectStoreUrl.");
-  if (!handoff.manifest.artifacts.every((artifact) => artifact.artifactUri.includes(bucket))) {
+  if (bucket && !handoff.manifest.artifacts.every((artifact) => artifactUriTargetsBucket(artifact.artifactUri, bucket))) {
     blockers.push("S3-compatible artifact URIs must include the target bucket.");
   }
   return blockers;
@@ -250,6 +252,7 @@ function validateSharedStoreInputs(printPackage: PrintExportPackage, handoff: Ar
 function buildResult(
   status: ArtifactStoreResult["status"],
   storageProvider: ArtifactStoreProvider,
+  proofLevel: ArtifactStoreResult["proofLevel"],
   rootPath: string,
   manifestPath: string,
   writes: ArtifactStoreWrite[],
@@ -260,6 +263,7 @@ function buildResult(
     service: "customcard-artifact-store",
     status,
     storageProvider,
+    proofLevel,
     rootPath,
     ...(bucket ? { bucket } : {}),
     artifactCount: writes.length,
@@ -267,8 +271,66 @@ function buildResult(
     writes,
     noNetwork: true,
     cloudWritesVerified: false,
+    liveProviderCalls: false,
     realOrdersEnabled: false,
     blockers
+  };
+}
+
+async function writeAndVerifyArtifacts(
+  printPackage: PrintExportPackage,
+  handoff: ArtifactHandoffContract,
+  fileByName: Map<string, PrintExportFile>,
+  writes: ArtifactStoreWrite[],
+  blockers: string[],
+  target: ArtifactWriteTarget
+): Promise<string> {
+  for (const artifact of handoff.artifacts) {
+    const sourceFile = fileByName.get(artifact.fileName);
+    if (!sourceFile) {
+      blockers.push(`Missing source file for artifact ${artifact.fileName}.`);
+      continue;
+    }
+    writes.push(await target.writeArtifact(artifact, sourceFile));
+  }
+
+  const manifestBody = JSON.stringify(handoff.manifest, null, 2);
+  const manifestPath = await target.writeManifest(handoff, manifestBody);
+  const manifestText = await target.readManifest(manifestPath);
+  verifyStoredArtifactSet(printPackage, handoff, writes, manifestText, blockers);
+  return manifestPath;
+}
+
+function verifyStoredArtifactSet(
+  printPackage: PrintExportPackage,
+  handoff: ArtifactHandoffContract,
+  writes: ArtifactStoreWrite[],
+  manifestText: string,
+  blockers: string[]
+): void {
+  const parsedManifest = JSON.parse(manifestText) as { artifactCount?: number; realOrdersEnabled?: boolean };
+  if (writes.length !== handoff.artifacts.length) blockers.push("Not every handoff artifact was written.");
+  if (writes.length !== printPackage.files.length) blockers.push("Print package file count does not match stored artifact count.");
+  if (writes.some((write) => !write.verified)) blockers.push("One or more written artifacts failed readback verification.");
+  if (parsedManifest.artifactCount !== handoff.artifacts.length) blockers.push("Stored handoff manifest artifact count is stale.");
+  if (parsedManifest.realOrdersEnabled !== false) blockers.push("Stored handoff manifest must keep real orders disabled.");
+}
+
+function buildWriteRecord(
+  artifact: StoredPrintArtifact,
+  sourceFile: PrintExportFile,
+  text: string,
+  path: string,
+  bucket?: string
+): ArtifactStoreWrite {
+  return {
+    objectKey: artifact.objectKey,
+    fileName: artifact.fileName,
+    byteLength: byteLength(text),
+    contentHash: contentHash(text),
+    path,
+    ...(bucket ? { bucket } : {}),
+    verified: artifactMatchesSource(text, sourceFile, artifact)
   };
 }
 
@@ -319,6 +381,17 @@ function resolveS3Bucket(handoff: ArtifactHandoffContract): string {
 
 function isSafeBucketName(value: string): boolean {
   return /^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(value) && !value.includes("..") && !/^\d+\.\d+\.\d+\.\d+$/.test(value);
+}
+
+function artifactUriTargetsBucket(value: string, bucket: string): boolean {
+  if (value.startsWith(`s3://${bucket}/`)) return true;
+  try {
+    const parsed = new URL(value);
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    return segments[0] === bucket;
+  } catch {
+    return false;
+  }
 }
 
 function contentHash(value: string): string {

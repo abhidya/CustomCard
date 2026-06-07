@@ -99,11 +99,14 @@ function summarizeResult(storeResult) {
   return {
     storageProvider: storeResult.storageProvider,
     status: storeResult.status,
+    proofLevel: storeResult.proofLevel,
     bucket: storeResult.bucket ?? null,
     artifactCount: storeResult.artifactCount,
     manifestStored: Boolean(storeResult.manifestPath),
     verifiedWrites: storeResult.writes.filter((write) => write.verified).length,
     noNetwork: storeResult.noNetwork,
+    cloudWritesVerified: storeResult.cloudWritesVerified,
+    liveProviderCalls: storeResult.liveProviderCalls,
     realOrdersEnabled: storeResult.realOrdersEnabled,
     blockers: storeResult.blockers
   };
