@@ -42,6 +42,13 @@ prepares print-ready files for local pickup or delivery.
 11. The system records approved card history and relationship memories for future
     personalization.
 
+The detailed production-shaped user stories, onboarding stages, and
+Google/iCloud calendar readiness contracts are captured in
+`docs/onboarding-calendar-plan.md` and `src/onboardingCalendar.ts`. Those
+contracts intentionally stop at planning and safety gates: Google Calendar is
+credential-gated, iCloud Calendar is a manual ICS export path, and no fake live
+OAuth or background sync is claimed.
+
 ## MVP Scope
 
 The smallest useful version should focus on a single end-to-end happy path:
