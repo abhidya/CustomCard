@@ -125,7 +125,7 @@ export const freeAdapterLabels = [
   "Deterministic copy templates",
   "Browser SVG export",
   "Local print package",
-  "Manual vendor handoff"
+  "Manual print checklist"
 ];
 
 export const defaultMemories: MemoryItem[] = [
@@ -366,12 +366,12 @@ export function validateCardDraft(draft: CardDraft): CardValidation {
     {
       label: "Human gate",
       passed: true,
-      detail: "User must approve before any vendor upload"
+      detail: "User must approve before opening a printer upload page"
     },
     {
       label: "Paid APIs",
       passed: true,
-      detail: "No OAuth, AI, payment, or vendor API call is required"
+      detail: "No outside account, payment, or printer checkout is required in CustomCard"
     }
   ];
   const errors = checks.filter((check) => !check.passed).map((check) => check.label);
@@ -387,7 +387,7 @@ export function buildVendorHandoff(vendorId: VendorId, validation: CardValidatio
   const vendorName = vendorNames[vendorId];
   const checklist = [
     "Download the four SVG panels.",
-    "Open the vendor uploader in a normal browser tab.",
+    "Open the printer upload page in a normal browser tab.",
     "Select 5x7 folded or double-sided card when available.",
     "Upload front, inside-left, inside-right, and back in order.",
     "Inspect crop, fold, spelling, pickup store, and date.",
@@ -403,8 +403,8 @@ export function buildVendorHandoff(vendorId: VendorId, validation: CardValidatio
     canPlaceRealOrder: false,
     checklist,
     disabledReasons: [
-      "No live vendor quote or order API is connected.",
-      "No payment flow is implemented.",
+      "Final price, pickup time, payment, and order submission happen outside CustomCard.",
+      "CustomCard does not collect card details.",
       "Physical print certification has not been completed."
     ]
   };
@@ -569,9 +569,9 @@ function computeUrgency(isoDate: string | undefined, now: Date): Urgency {
 }
 
 function recommendedPathForUrgency(urgency: Urgency): string {
-  if (urgency === "same-day") return "Generate now and use local pickup handoff.";
+  if (urgency === "same-day") return "Generate now and use a local pickup option.";
   if (urgency === "this-week") return "Generate, review, then compare pickup and shipping windows.";
-  if (urgency === "needs-date") return "Ask for the event date before choosing a vendor path.";
+  if (urgency === "needs-date") return "Ask for the event date before choosing a printer path.";
   return "Draft early and keep the final upload manual.";
 }
 

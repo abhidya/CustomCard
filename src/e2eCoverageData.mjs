@@ -36,26 +36,26 @@ const allowedAutomationTypes = new Set(["browser-smoke", "contract-test", "docto
 export const e2eCoverageItems = [
   {
     id: "customer-workspace-to-handoff",
-    label: "Customer workspace to manual handoff",
+    label: "Customer workspace to print options",
     surface: "web-customer",
     automationType: "browser-smoke",
     status: "covered",
     ciGated: true,
     testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
-    evidence: ["Starts local workspace", "Scans free import", "Generates four-panel card", "Prepares manual handoff"],
+    evidence: ["Starts local workspace", "Scans free import", "Generates four-panel card", "Prepares print options"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false
   },
   {
     id: "customer-panel-readiness",
-    label: "Customer panel readiness",
+    label: "Your cards readiness",
     surface: "web-customer",
     automationType: "browser-smoke",
     status: "covered",
     ciGated: true,
     testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
-    evidence: ["Customer panel visible", "Local chat transcript visible", "Render choices visible", "No horizontal overflow"],
+    evidence: ["Your cards view visible", "Local chat transcript visible", "Render choices visible", "No horizontal overflow"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

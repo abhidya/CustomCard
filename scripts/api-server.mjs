@@ -41,8 +41,8 @@ export const routes = [
 const mobileBootstrap = {
   service: "customcard-api",
   safetyBanner: {
-    label: "Real orders disabled",
-    detail: "Live provider, payment, and vendor APIs stay behind admin gates."
+    label: "Confirm before checkout",
+    detail: "Printing, payment, and ordering happen only after customer review."
   },
   todaySummary: {
     cardQueueItemId: "card_anniversary_sara_ahmed",
@@ -123,7 +123,7 @@ const mobileBootstrap = {
     {
       id: "proof-size",
       label: "5x7 format",
-      detail: "Four SVG panels match the manual vendor upload package.",
+      detail: "Four SVG panels match the manual print package.",
       passed: true,
       realOrderState: "manual",
       customerVisible: true
@@ -460,7 +460,7 @@ async function serveApi(request, response, path) {
     sendJson(response, 200, {
       service: "customcard-api",
       primaryActions: ["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"],
-      readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual vendor handoff"],
+      readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual print checklist"],
       localization: readiness.localization,
       printerPricing: {
         selectedVendorId: "walgreens",
@@ -649,7 +649,7 @@ function validateApiServerContract() {
     blockers.push("Retail fulfillment readiness must cover every blocked live vendor adapter.");
   }
   if (readiness.retailFulfillment.manualFallbacks < 2) {
-    blockers.push("Retail fulfillment readiness must keep manual handoff and pricing fallbacks.");
+    blockers.push("Retail fulfillment readiness must keep manual print and pricing fallbacks.");
   }
   if (readiness.retailFulfillment.recoveryDrillEvents < 12) {
     blockers.push("Retail fulfillment readiness must track pickup, cancellation, refund, and print QA drills.");

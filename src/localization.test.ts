@@ -34,7 +34,7 @@ describe("localization readiness", () => {
   });
 
   it("translates shell labels with English fallback semantics", () => {
-    expect(translate("es-US", "customerPanelTitle")).toBe("Panel de cliente");
+    expect(translate("es-US", "customerPanelTitle")).toBe("Tus tarjetas");
     expect(translate("ar-EG", "copyReviewRequired")).toBe("Human copy review required");
   });
 

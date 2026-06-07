@@ -147,7 +147,7 @@ function buildLocalAssistantReply(input: CustomerChatInput, sanitizedMessage: st
   return [
     topics[0] ?? `I can help turn this into a card plan for ${input.recipientName}.`,
     topics[1] ?? "I will keep private data out of the draft unless it is explicitly approved memory.",
-    topics[2] ?? "The next safe step is reviewing copy, artwork direction, and manual handoff before checkout.",
+    topics[2] ?? "The next safe step is reviewing copy, artwork direction, and print options before checkout.",
     "This reply stayed local and did not store an outside transcript."
   ].join(" ");
 }

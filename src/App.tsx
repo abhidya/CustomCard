@@ -212,14 +212,14 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "customer", label: "Customer panel", icon: UserRound },
+  { id: "customer", label: "Your cards", icon: UserRound },
   { id: "mobile", label: "Mobile app", icon: Smartphone },
   { id: "opportunities", label: "Opportunities", icon: Calendar },
   { id: "studio", label: "Card studio", icon: WandSparkles },
   { id: "memory", label: "Memory", icon: Heart },
-  { id: "handoff", label: "Handoff", icon: Printer },
-  { id: "admin", label: "Admin panel", icon: ShieldCheck },
-  { id: "adapters", label: "Adapters", icon: Settings }
+  { id: "handoff", label: "Print options", icon: Printer },
+  { id: "admin", label: "Operations", icon: ShieldCheck },
+  { id: "adapters", label: "Connections", icon: Settings }
 ];
 
 function App() {
@@ -405,9 +405,9 @@ function App() {
 
   async function copyChecklist() {
     const text = [
-      `${handoff.vendorName} manual handoff`,
+      `${handoff.vendorName} print checklist`,
       ...handoff.checklist.map((item, index) => `${index + 1}. ${item}`),
-      "Real orders disabled: no live quote, payment, or order API is connected."
+      "Checkout happens outside CustomCard until certified ordering is ready."
     ].join("\n");
 
     try {
@@ -444,7 +444,7 @@ function App() {
           <span className="brandSigil">CC</span>
           <div>
             <strong>CustomCard</strong>
-            <small>Free local MVP</small>
+            <small>Private card workspace</small>
           </div>
         </div>
 
@@ -474,15 +474,15 @@ function App() {
       <main className="appMain" id="main-content">
         <header className="topBar">
           <div>
-            <p className="eyebrow">Runnable product workflow</p>
+            <p className="eyebrow">Personal card workflow</p>
             <h1>CustomCard</h1>
           </div>
-          <div className="topStatus" aria-label="MVP safety status">
+          <div className="topStatus" aria-label="Checkout status">
             {opsView ? (
               <>
                 <StatusChip icon={ShieldCheck} label="Local auth" tone="green" />
                 <StatusChip icon={FileDown} label="SVG export" tone="blue" />
-                <StatusChip icon={XCircle} label="Live orders off" tone="red" />
+                <StatusChip icon={XCircle} label="Orders need confirmation" tone="red" />
               </>
             ) : (
               <>
@@ -568,7 +568,7 @@ function App() {
         )}
 
         {opsView && (
-          <section className="adapterStrip" aria-label="Free MVP adapters">
+          <section className="adapterStrip" aria-label="Available local features">
             {freeAdapterLabels.map((label) => (
               <span key={label}>
                 <Check size={14} />
@@ -689,7 +689,7 @@ function MobileAppPreviewView() {
           <Metric label="Sections" value={`${summary.customerVisibleSections}`} />
           <Metric label="Cards" value={`${summary.queueItems}`} />
           <Metric label="Locales" value={`${summary.localeOptions}`} />
-          <Metric label="Live orders" value="Off" />
+          <Metric label="Ordering" value="Confirm" />
         </div>
       </div>
 
@@ -1048,8 +1048,8 @@ function CustomerPanelView({
     <section className="customerPanel">
       <div className="sectionHeader">
         <div>
-          <p className="eyebrow">Customer workspace</p>
-          <h2>Customer panel</h2>
+          <p className="eyebrow">Your workspace</p>
+          <h2>Your cards</h2>
         </div>
         <StatusChip icon={MessageCircle} label={customerExperience.statusLabel} tone="green" />
       </div>
@@ -1147,10 +1147,6 @@ function CustomerPanelView({
               <span>{customerExperience.event.dateLabel}</span>
               <small>{customerExperience.event.recommendedPath}</small>
             </div>
-            <button className="quietButton" type="button" onClick={() => onNavigate(cardReviewStarted ? "studio" : "opportunities")}>
-              {cardReviewStarted ? <WandSparkles size={16} /> : <ClipboardCheck size={16} />}
-              {cardReviewStarted ? "Open proof" : "Open event"}
-            </button>
           </div>
 
           <div className="metricStrip">
@@ -1302,12 +1298,12 @@ function CustomerPanelView({
         <article className="surfaceCard">
           <div className="sectionHeader compact">
             <div>
-              <p className="eyebrow">Launch state</p>
-              <h3>Production safety</h3>
+              <p className="eyebrow">Ordering</p>
+              <h3>Checkout safety</h3>
             </div>
             <ShieldCheck size={18} />
           </div>
-          <div className="runtimeGrid compactMetrics" aria-label="Customer production safety">
+          <div className="runtimeGrid compactMetrics" aria-label="Customer checkout safety">
             {Object.entries(customerExperience.safetyMetrics).map(([label, value]) => (
               <Metric key={label} label={label} value={value} />
             ))}
@@ -1360,7 +1356,7 @@ function FulfillmentOption({
 function calendarChoiceStatusLabel(choice: CalendarOnboardingChoice): string {
   if (choice.status === "ready-local") return "Ready now";
   if (choice.status === "manual-export") return "Manual export";
-  return "OAuth gated";
+  return "Not connected yet";
 }
 
 function OpportunitiesView({
@@ -1563,7 +1559,7 @@ function StudioView({
 
         <button className="primaryButton wide" type="button" onClick={onExport}>
           <Upload size={16} />
-          Prepare handoff
+          Continue to print options
         </button>
       </div>
 
@@ -1716,13 +1712,13 @@ function HandoffView({
         <div className="sectionHeader">
           <div>
             <p className="eyebrow">Export</p>
-            <h2>Manual handoff</h2>
+            <h2>Print your card</h2>
           </div>
           <StatusChip icon={PackageCheck} label={exportStatus} tone="blue" />
         </div>
 
         <SegmentedControl
-          label="Vendor"
+          label="Print shop"
           options={demoDraftOptions.vendors}
           value={vendorId}
           onValue={(value) => onVendor(value as VendorId)}
@@ -1777,7 +1773,7 @@ function HandoffView({
         <div className="handoffTitle">
           <Store size={21} />
           <div>
-            <span>{handoff.mode}</span>
+            <span>Upload yourself</span>
             <h2>{handoff.vendorName}</h2>
           </div>
         </div>
@@ -1791,7 +1787,7 @@ function HandoffView({
         <div className="blockedBox">
           <XCircle size={18} />
           <div>
-            <strong>Real orders disabled</strong>
+            <strong>Checkout happens outside CustomCard</strong>
             {handoff.disabledReasons.map((reason) => (
               <span key={reason}>{reason}</span>
             ))}
@@ -1802,7 +1798,7 @@ function HandoffView({
           <div className="handoffTitle compact">
             <Printer size={19} />
             <div>
-              <span>review-only public pricing</span>
+              <span>Source-backed price check</span>
               <h3>{primaryPricing ? primaryPricing.effectiveSubtotalLabel : "Manual quote required"}</h3>
             </div>
           </div>
@@ -1824,8 +1820,8 @@ function HandoffView({
             <Metric label="Max age" value={`${refreshReport.maxAgeDays} days`} />
             <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />
             <Metric
-              label="Coupon proof"
-              value={pricingComparison.couponPolicy.providerPortalApplicationRequired ? "Portal" : "Source"}
+              label="Offer source"
+              value={pricingComparison.couponPolicy.providerPortalApplicationRequired ? "Checkout" : "Source"}
             />
           </div>
           <div className="pricingOptionList">
@@ -1835,13 +1831,14 @@ function HandoffView({
                 <span>{estimate.effectiveSubtotalLabel}</span>
                 <small>
                   {estimate.observation.speed.replace(/-/g, " ")} / {estimate.observation.confidence.replace(/-/g, " ")} /
-                  coupon {estimate.couponApplication.status.replace(/-/g, " ")} / {estimate.couponDiscountLabel}
+                  {customerCouponStatusLabel(estimate.couponApplication.status)}
                 </small>
               </div>
             ))}
           </div>
           <small>
-            {pricingComparison.disclaimer} {pricingComparison.couponPolicy.confirmationCopy}
+            Public prices are not final checkout totals. Confirm final price, available discounts, tax, pickup, and
+            shipping before ordering.
           </small>
         </div>
       </div>
@@ -3096,6 +3093,13 @@ function memoryUsageLabel(usage: MobileMemoryReviewItem["usage"]): string {
 
 function proofStatusLabel(passed: boolean): string {
   return passed ? "Passed" : "Review";
+}
+
+function customerCouponStatusLabel(status: string): string {
+  if (status === "applied") return "discount confirmed";
+  if (status === "portal-evidence-required") return "confirm offer at checkout";
+  if (status === "expired") return "offer expired";
+  return "no offer found";
 }
 
 function formatCents(cents: number): string {

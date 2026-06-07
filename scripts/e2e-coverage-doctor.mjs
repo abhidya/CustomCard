@@ -48,7 +48,7 @@ const checks = [
     "flags unsafe or weak coverage claims"
   ]),
   checkIncludes("tests", "backing-test-files", `${contents.appSmoke}\n${contents.mobileTest}\n${contents.apiServerTest}\n${contents.infraTest}`, [
-    "runs local auth, free import, card studio, and manual handoff",
+    "runs local auth, free import, card studio, and print options",
     "exposes customer and admin panels without overflow",
     "passes the mobile doctor",
     "passes its doctor contract",

@@ -1402,17 +1402,17 @@ export const providerCatalog: ProviderAdapter[] = [
   },
   {
     id: "manual-vendor-handoff",
-    label: "Manual vendor handoff",
+    label: "Manual print checklist",
     provider: "Walgreens, CVS, FedEx, Walmart, Staples, Office Depot, local print shop",
     capability: "vendor-handoff",
     lane: "Free local",
     status: "ready-local",
     cost: "manual",
     credentials: [],
-    safetyGates: ["No real order API", "User uploads files", "Checklist approval"],
+    safetyGates: ["No real order API", "User opens print shop", "Checklist approval"],
     roleSurface: ["customer", "admin"],
     priority: 8,
-    detail: "Keeps fulfillment cheap and reviewable through manual upload."
+    detail: "Keeps printing cheap and reviewable through customer-confirmed upload."
   },
   {
     id: "public-printer-pricing-research",
@@ -1769,7 +1769,7 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["No card data stored", "Real charges disabled"],
     roleSurface: ["customer", "admin"],
     priority: 9.9,
-    detail: "Keeps the free MVP in manual handoff mode with no card collection or live charge."
+    detail: "Keeps checkout customer-confirmed with no card collection or live charge."
   },
   {
     id: "stripe-checkout-payment",

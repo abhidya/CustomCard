@@ -91,7 +91,8 @@ const checks = [
     "marks stale public printer pricing before showing it as current"
   ]),
   checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.apiServer}`, [
-    "review-only public pricing",
+    "Source-backed price check",
+    "Public prices are not final checkout totals.",
     "knownPriceCount: 12",
     "sourceCount: 8",
     "couponSourceCount: 3",

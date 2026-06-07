@@ -713,7 +713,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
     hero: {
       eyebrow: "Customer mobile panel",
       title: "CustomCard",
-      subtitle: "Create a local workspace, paste an invite or ICS event, approve a card, and prepare manual handoff.",
+      subtitle: "Create a local workspace, paste an invite or ICS event, approve a card, and review print options.",
       primaryAction: {
         label: primaryAction.label,
         detail: primaryAction.detail,

@@ -93,7 +93,7 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
 
   return {
     stage,
-    eyebrow: "Customer workspace",
+    eyebrow: "Your workspace",
     title:
       stage === "setup"
         ? "Create private workspace"
@@ -134,13 +134,13 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
       confidenceLabel: `${input.opportunityConfidence}%`,
       panelLabel: `${input.panelCount}`,
       memoryLabel: input.memoryMatched ? "Matched" : "None",
-      checkoutLabel: input.checkoutMode === "ready" ? "Ready" : "Manual"
+      checkoutLabel: input.checkoutMode === "ready" ? "Ready" : "Confirm first"
     },
     fulfillment: {
-      title: stage === "proof-review" ? "Best available options" : "Fulfillment after proof",
+      title: stage === "proof-review" ? "Best available options" : "Print options after proof",
       statusLabel: stage === "proof-review" ? "Ready to compare" : "Waiting for proof",
-      holdTitle: "Manual print options unlock after the card proof exists.",
-      holdDescription: "Prices stay review-only until you confirm the final cart, coupons, pickup, and tax.",
+      holdTitle: "Print options unlock after the card proof exists.",
+      holdDescription: "Final price, coupons, tax, and pickup time are confirmed before checkout.",
       showOptions: stage === "proof-review"
     },
     panelNote:
@@ -148,7 +148,7 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
         ? "No outside account sign-in is needed for the local path."
         : stage === "event-review"
           ? "Drafting stays behind event review so the card starts from details you approve."
-          : "Manual export and fulfillment comparison are available after proof review.",
+          : "Print files and comparison are available after proof review.",
     chatTitle: "Card assistant",
     chatStatusLabel: "Private local replies",
     chatSafetyBadges: ["Runs in this browser", "No outside transcript"],
@@ -171,10 +171,10 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
       "Card language": input.cardLanguage || input.selectedLocaleLabel
     },
     safetyMetrics: {
-      Orders: "Off",
-      Charges: "Off",
-      Checks: `${input.productionGateCount}`,
-      "Before launch": `${input.productionEvidenceMissing}`
+      Ordering: "Outside app",
+      Payment: "No charge",
+      Checkout: "Confirm first",
+      "Price check": "Before print"
     }
   };
 }
@@ -188,7 +188,11 @@ export function validateCustomerWebExperience(experience: CustomerWebExperience)
   }
 
   const copy = collectCustomerWebCopy(experience).join(" ");
-  if (/\b(provider adapters?|credential-gated|no live model call|runtime|launch gates?|evidence gaps?|api)\b/i.test(copy)) {
+  if (
+    /\b(provider adapters?|credential-gated|no live model call|runtime|launch gates?|evidence gaps?|api|mvp|handoff|vendor|oauth gated|production safety|real orders disabled|coupon evidence)\b/i.test(
+      copy
+    )
+  ) {
     issues.push("Customer web copy must not expose internal readiness/provider terms.");
   }
 
@@ -272,8 +276,8 @@ function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
     },
     {
       id: "choose-fulfillment",
-      label: "Compare fulfillment",
-      detail: "Review pickup, shipping, and coupon evidence.",
+      label: "Compare print options",
+      detail: "Confirm pickup, shipping, coupons, and tax before checkout.",
       priority: "secondary"
     },
     {

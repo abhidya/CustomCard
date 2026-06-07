@@ -122,7 +122,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     }
   });
 
-  it("runs local auth, free import, card studio, and manual handoff", async () => {
+  it("runs local auth, free import, card studio, and print options", async () => {
     const sessionId = await createPage(1280, 900);
     const result = await evaluate(
       sessionId,
@@ -160,7 +160,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         const studioText = document.body.textContent;
         const panelCount = document.querySelectorAll(".panelPreview").length;
         const validationRows = [...document.querySelectorAll(".validationPanel span")].map((node) => node.textContent);
-        await clickByText("Prepare handoff");
+        await clickByText("Continue to print options");
         return {
           h1: document.querySelector("h1")?.textContent,
           opportunityText,
@@ -182,20 +182,20 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.panelCount).toBe(4);
     expect(result.validationRows.join(" ")).toContain("5x7 print size");
     expect(result.validationRows.join(" ")).toContain("Paid APIs");
-    expect(result.handoffText).toContain("Manual handoff");
+    expect(result.handoffText).toContain("Print your card");
     expect(result.handoffText).toContain("Download SVG set");
     expect(result.handoffText).toContain("Download print package");
     expect(result.handoffText).toContain("local print package");
     expect(result.handoffText).toContain("Preflight passed");
-    expect(result.handoffText).toContain("Real orders disabled");
-    expect(result.handoffText).toContain("No live vendor quote or order API is connected.");
-    expect(result.handoffText).toContain("review-only public pricing");
+    expect(result.handoffText).toContain("Checkout happens outside CustomCard");
+    expect(result.handoffText).toContain("Final price, pickup time, payment, and order submission happen outside CustomCard.");
+    expect(result.handoffText).toContain("Source-backed price check");
     expect(result.handoffText).toContain("Sources");
     expect(result.handoffText).toContain("Max age");
     expect(result.handoffText).toContain("Coupon offers");
-    expect(result.handoffText).toContain("Coupon proof");
-    expect(result.handoffText).toContain("coupon portal evidence required");
-    expect(result.handoffText).toContain("not live quotes");
+    expect(result.handoffText).toContain("Offer source");
+    expect(result.handoffText).toContain("confirm offer at checkout");
+    expect(result.handoffText).toContain("Public prices are not final checkout totals.");
     expect(result.downloadTiles).toBe(4);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
@@ -255,7 +255,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Best available options");
     expect(result.text).toContain("Checkout confirmation");
     expect(result.text).toContain("Offline sync");
-    expect(result.text).toContain("Live orders");
+    expect(result.text).toContain("Ordering");
     expect(result.text).toContain("live proof claims blocked");
     expect(result.deviceSections).toBeGreaterThanOrEqual(7);
     expect(result.contractBlocks).toBeGreaterThanOrEqual(4);
@@ -291,11 +291,11 @@ describeWithChrome("CustomCard UI smoke", () => {
         const workspaceJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         await clickByText("Review event");
         await clickByText("Generate card");
-        await clickByText("Customer panel");
+        await clickByText("Your cards");
         const reviewedCustomerText = document.body.textContent;
         const reviewedJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const chatBubbles = document.querySelectorAll(".chatBubble").length;
-        await clickByText("Admin panel");
+        await clickByText("Operations");
         return {
           initialCustomerText,
           initialJourneyActions,
@@ -313,16 +313,16 @@ describeWithChrome("CustomCard UI smoke", () => {
       })()`
     );
 
-    expect(result.initialCustomerText).toContain("Customer panel");
+    expect(result.initialCustomerText).toContain("Your cards");
     expect(result.initialCustomerText).toContain("Create private workspace");
     expect(result.initialCustomerText).toContain("Create local workspace");
     expect(result.initialCustomerText).toContain("Paste invite or ICS");
     expect(result.initialCustomerText).toContain("Google Calendar connection");
     expect(result.initialCustomerText).toContain("Apple Calendar ICS export");
-    expect(result.initialCustomerText).toContain("OAuth gated");
+    expect(result.initialCustomerText).toContain("Not connected yet");
     expect(result.initialCustomerText).not.toContain("Continue with Google");
     expect(result.initialCustomerText).not.toContain("Continue with Apple");
-    expect(result.initialCustomerText).toContain("Fulfillment after proof");
+    expect(result.initialCustomerText).toContain("Print options after proof");
     expect(result.initialCustomerText).not.toContain("Cheapest known price");
     expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
     expect(result.initialJourneyActions.join(" ")).toContain("Paste invite or ICS");
@@ -339,7 +339,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("Fastest pickup candidate");
     expect(result.reviewedCustomerText).toContain("Cheapest shipped option");
     expect(result.reviewedCustomerText).toContain("Continue proof review");
-    expect(result.reviewedJourneyActions.join(" ")).toContain("Compare fulfillment");
+    expect(result.reviewedJourneyActions.join(" ")).toContain("Compare print options");
     expect(result.reviewedJourneyActions).toHaveLength(3);
     expect(result.reviewedCustomerText).toContain("Card assistant");
     expect(result.reviewedCustomerText).toContain("Private local replies");
@@ -351,7 +351,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("Card proof path");
     expect(result.reviewedCustomerText).toContain("Data controls");
     expect(result.reviewedCustomerText).toContain("Language readiness");
-    expect(result.reviewedCustomerText).toContain("Production safety");
+    expect(result.reviewedCustomerText).toContain("Checkout safety");
     expect(result.reviewedCustomerText).toContain("Ar EG");
     expect(result.chatBubbles).toBeGreaterThanOrEqual(6);
     expect(result.adminText).toContain("Admin panel");
@@ -411,7 +411,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.adminText).toContain("Physical print certification");
     expect(result.adminText).toContain("External security assessment");
     expect(result.adminText).toContain("Public claims");
-    expect(result.adminText).toContain("Customer workspace to manual handoff");
+    expect(result.adminText).toContain("Customer workspace to print options");
     expect(result.adminText).toContain("Postgres HTTP integration workflow");
     expect(result.adminText).toContain("Live proofs");
     expect(result.adminText).toContain("RTL review");
@@ -435,7 +435,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       sessionId,
       `(async () => {
         const adaptersButton = [...document.querySelectorAll("button")].find((node) =>
-          node.textContent.includes("Adapters")
+          node.textContent.includes("Connections")
         );
         adaptersButton.click();
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));

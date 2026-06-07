@@ -370,7 +370,7 @@ describe("provider catalog", () => {
         "Local customer chat",
         "Browser SVG renderer",
         "Local print package export",
-        "Manual vendor handoff",
+        "Manual print checklist",
         "Public printer pricing research",
         "vCard contact import",
         "No-payment checkout gate"

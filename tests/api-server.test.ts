@@ -788,7 +788,7 @@ describe("api server wrapper", () => {
       expect(mobile.sections).toEqual(
         expect.arrayContaining(["card-queue", "approval-controls", "text-chat", "pricing-preview", "handoff", "offline-sync"])
       );
-      expect(mobile.safetyBanner).toMatchObject({ label: "Real orders disabled" });
+      expect(mobile.safetyBanner).toMatchObject({ label: "Confirm before checkout" });
       expect(mobile.todaySummary).toMatchObject({
         cardQueueItemId: "card_anniversary_sara_ahmed",
         primaryAction: "approve",

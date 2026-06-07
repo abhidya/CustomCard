@@ -63,7 +63,7 @@ const checks = [
     'href="#main-content"',
     'aria-label="CustomCard navigation"',
     '<main className="appMain" id="main-content">',
-    'aria-label="MVP safety status"',
+    'aria-label="Checkout status"',
     "aria-label={`${capability.label} ready-local adapter coverage`}"
   ]),
   checkIncludes("accessibility", "skip-link-focus-style", contents.styles, [

@@ -36,6 +36,13 @@ describe("customer web experience contract", () => {
       expect.objectContaining({ id: "create-workspace", label: "Create local workspace" })
     ]);
     expect(experience.actions.map((action) => action.id)).toEqual(["create-workspace", "paste-invite"]);
+    expect(experience.eyebrow).toBe("Your workspace");
+    expect(experience.safetyMetrics).toMatchObject({
+      Ordering: "Outside app",
+      Payment: "No charge",
+      Checkout: "Confirm first",
+      "Price check": "Before print"
+    });
     expect(validateCustomerWebExperience(experience)).toEqual([]);
     expect(collectCustomerWebCopy(experience)).toEqual(expect.arrayContaining(["Create private workspace"]));
   });
@@ -72,6 +79,15 @@ describe("customer web experience contract", () => {
       "add-memory"
     ]);
     expect(experience.fulfillment.title).toBe("Best available options");
+    expect(experience.actions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "choose-fulfillment",
+          label: "Compare print options",
+          detail: "Confirm pickup, shipping, coupons, and tax before checkout."
+        })
+      ])
+    );
     expect(validateCustomerWebExperience(experience)).toEqual([]);
   });
 
@@ -83,7 +99,8 @@ describe("customer web experience contract", () => {
         ...experience.actions,
         { ...experience.actions[1], priority: "primary" as const, label: "Provider adapters gated" }
       ],
-      chatSafetyBadges: [...experience.chatSafetyBadges, "No live model call"]
+      chatSafetyBadges: [...experience.chatSafetyBadges, "No live model call"],
+      fulfillment: { ...experience.fulfillment, holdDescription: "OAuth gated vendor coupon evidence" }
     };
 
     expect(validateCustomerWebExperience(unsafeExperience)).toEqual(

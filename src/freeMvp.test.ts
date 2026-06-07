@@ -72,7 +72,7 @@ describe("free MVP workflow", () => {
     expect(handoff.realOrdersEnabled).toBe(false);
     expect(handoff.canPlaceRealOrder).toBe(false);
     expect(handoff.disabledReasons).toEqual(
-      expect.arrayContaining(["No live vendor quote or order API is connected."])
+      expect.arrayContaining(["Final price, pickup time, payment, and order submission happen outside CustomCard."])
     );
   });
 

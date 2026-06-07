@@ -118,7 +118,7 @@ export const supportedLocales: SupportedLocale[] = [
 
 export const localizationBundles: Record<SupportedLocaleCode, Record<LocalizationMessageKey, string>> = {
   "en-US": {
-    customerPanelTitle: "Customer panel",
+    customerPanelTitle: "Your cards",
     adminPanelTitle: "Admin panel",
     textInterface: "Text interface",
     renderChoices: "Card proof path",
@@ -129,7 +129,7 @@ export const localizationBundles: Record<SupportedLocaleCode, Record<Localizatio
     copyReviewRequired: "Copy review clear"
   },
   "es-US": {
-    customerPanelTitle: "Panel de cliente",
+    customerPanelTitle: "Tus tarjetas",
     adminPanelTitle: "Panel de admin",
     textInterface: "Interfaz de texto",
     renderChoices: "Ruta de prueba de tarjeta",
@@ -140,7 +140,7 @@ export const localizationBundles: Record<SupportedLocaleCode, Record<Localizatio
     copyReviewRequired: "Revision humana requerida"
   },
   "ur-PK": {
-    customerPanelTitle: "Customer panel - Urdu review",
+    customerPanelTitle: "Your cards - Urdu review",
     adminPanelTitle: "Admin panel - Urdu review",
     textInterface: "Text interface - Urdu review",
     renderChoices: "Card proof path - Urdu review",
@@ -151,7 +151,7 @@ export const localizationBundles: Record<SupportedLocaleCode, Record<Localizatio
     copyReviewRequired: "Human copy review required"
   },
   "ar-EG": {
-    customerPanelTitle: "Customer panel - Arabic review",
+    customerPanelTitle: "Your cards - Arabic review",
     adminPanelTitle: "Admin panel - Arabic review",
     textInterface: "Text interface - Arabic review",
     renderChoices: "Card proof path - Arabic review",
