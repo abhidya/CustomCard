@@ -11,6 +11,7 @@ import {
   sampleInviteText,
   validateCardDraft
 } from "./freeMvp";
+import { customerVisibleImplementationTermPattern } from "./customerWebExperience";
 
 describe("free MVP workflow", () => {
   it("creates a local workspace without requiring paid or external auth", () => {
@@ -58,6 +59,10 @@ describe("free MVP workflow", () => {
     expect(draft.panels.map((panel) => panel.id)).toEqual(["front", "inside-left", "inside-right", "back"]);
     expect(draft.memoryCitations).toEqual(["mem-sara-ahmed-10-year-thread"]);
     expect(validation.passed).toBe(true);
+    expect(validation.checks.map((check) => check.label)).toContain("No paid services");
+    expect(validation.checks.flatMap((check) => [check.label, check.detail]).join(" ")).not.toMatch(
+      customerVisibleImplementationTermPattern
+    );
   });
 
   it("keeps vendor handoff manual and blocks real orders", () => {

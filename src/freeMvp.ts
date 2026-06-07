@@ -369,7 +369,7 @@ export function validateCardDraft(draft: CardDraft): CardValidation {
       detail: "User must approve before opening a printer upload page"
     },
     {
-      label: "Paid APIs",
+      label: "No paid services",
       passed: true,
       detail: "No outside account, payment, or printer checkout is required in CustomCard"
     }

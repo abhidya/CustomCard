@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type ViteDevServer } from "vite";
+import { customerVisibleImplementationTermPattern } from "../src/customerWebExperience";
 
 const chromePath = resolveChromePath();
 const describeWithChrome = existsSync(chromePath) ? describe : describe.skip;
@@ -186,7 +187,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.studioText).toContain("Card draft");
     expect(result.panelCount).toBe(4);
     expect(result.validationRows.join(" ")).toContain("5x7 print size");
-    expect(result.validationRows.join(" ")).toContain("Paid APIs");
+    expect(result.validationRows.join(" ")).toContain("No paid services");
+    expect(result.validationRows.join(" ")).not.toMatch(customerVisibleImplementationTermPattern);
     expect(result.handoffText).toContain("Print your card");
     expect(result.handoffText).toContain("Download SVG set");
     expect(result.handoffText).toContain("Download print package");
@@ -360,6 +362,9 @@ describeWithChrome("CustomCard UI smoke", () => {
         const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const initialPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
         const initialSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const initialPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
+          node.getAttribute("placeholder")
+        );
         const initialSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         const chatComposer = document.querySelector('textarea[aria-label="Customer chat message"]');
         if (!chatComposer) throw new Error("Missing customer chat composer");
@@ -373,6 +378,9 @@ describeWithChrome("CustomCard UI smoke", () => {
         const workspaceJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const workspacePrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
         const workspaceSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const workspacePlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
+          node.getAttribute("placeholder")
+        );
         const workspaceSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         await clickByText("Review event");
         await clickByText("Generate card");
@@ -381,6 +389,9 @@ describeWithChrome("CustomCard UI smoke", () => {
         const reviewedJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const reviewedPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
         const reviewedSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const reviewedPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
+          node.getAttribute("placeholder")
+        );
         const reviewedSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         const chatBubbles = document.querySelectorAll(".chatBubble").length;
         await clickByText("Operations");
@@ -390,16 +401,19 @@ describeWithChrome("CustomCard UI smoke", () => {
           initialPrimaryActions,
           initialSupportingActions,
           initialSupportingPrimaryActions,
+          initialPlaceholders,
           workspaceText,
           workspaceJourneyActions,
           workspacePrimaryActions,
           workspaceSupportingActions,
           workspaceSupportingPrimaryActions,
+          workspacePlaceholders,
           reviewedCustomerText,
           reviewedJourneyActions,
           reviewedPrimaryActions,
           reviewedSupportingActions,
           reviewedSupportingPrimaryActions,
+          reviewedPlaceholders,
           chatBubbles,
           adminText: document.body.textContent,
           metricCount: document.querySelectorAll(".adminSummaryGrid .metric").length,
@@ -453,10 +467,15 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("This reply stayed local and did not store an outside transcript.");
     expect(result.reviewedCustomerText).not.toContain("provider adapters gated");
     expect(result.reviewedCustomerText).not.toContain("No live model call");
-    for (const customerSnapshot of [result.initialCustomerText, result.workspaceText, result.reviewedCustomerText]) {
-      expect(customerSnapshot).not.toMatch(
-        /\b(provider adapters?|credential-gated|no live model call|runtime|launch gates?|evidence gaps?|api|mvp|handoff|vendor|oauth gated|production safety|real orders disabled|coupon evidence)\b/i
-      );
+    for (const customerSnapshot of [
+      result.initialCustomerText,
+      result.initialPlaceholders.join(" "),
+      result.workspaceText,
+      result.workspacePlaceholders.join(" "),
+      result.reviewedCustomerText,
+      result.reviewedPlaceholders.join(" ")
+    ]) {
+      expect(customerSnapshot).not.toMatch(customerVisibleImplementationTermPattern);
     }
     expect(result.reviewedCustomerText).toContain("Card proof path");
     expect(result.reviewedCustomerText).toContain("Data controls");

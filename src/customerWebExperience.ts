@@ -89,6 +89,34 @@ export interface CustomerWebExperience {
   safetyMetrics: Record<string, string>;
 }
 
+const customerVisibleImplementationTermSources = [
+  "placeholders?",
+  "demos?",
+  "mock(?:ups?)?",
+  "dumm(?:y|ies)",
+  "providers?",
+  "provider[- ]portals?",
+  "handoffs?",
+  "vendors?",
+  "adapters?",
+  "apis?",
+  "oauth[- ]gated",
+  "credential[- ]gated",
+  "runtime",
+  "launch[- ]gates?",
+  "evidence[- ]gaps?",
+  "mvp",
+  "no live model call",
+  "production safety",
+  "real orders disabled",
+  "coupon evidence"
+];
+
+export const customerVisibleImplementationTermPattern = new RegExp(
+  `\\b(?:${customerVisibleImplementationTermSources.join("|")})\\b`,
+  "i"
+);
+
 export function buildCustomerWebExperience(input: CustomerWebExperienceInput): CustomerWebExperience {
   const stage = resolveStage(input);
   const proofApproved = stage === "proof-review" && input.proofApproved;
@@ -196,11 +224,7 @@ export function validateCustomerWebExperience(experience: CustomerWebExperience)
   }
 
   const copy = collectCustomerWebCopy(experience).join(" ");
-  if (
-    /\b(provider adapters?|credential-gated|no live model call|runtime|launch gates?|evidence gaps?|api|mvp|handoff|vendor|oauth gated|production safety|real orders disabled|coupon evidence)\b/i.test(
-      copy
-    )
-  ) {
+  if (customerVisibleImplementationTermPattern.test(copy)) {
     issues.push("Customer web copy must not expose internal readiness/provider terms.");
   }
 

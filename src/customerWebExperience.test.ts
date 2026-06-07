@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCustomerWebExperience,
   collectCustomerWebCopy,
+  customerVisibleImplementationTermPattern,
   validateCustomerWebExperience,
   type CustomerWebExperienceInput
 } from "./customerWebExperience";
@@ -27,6 +28,21 @@ const baseInput: CustomerWebExperienceInput = {
   productionGateCount: 13,
   productionEvidenceMissing: 13
 };
+
+const requestedBlockedCustomerTerms = [
+  "placeholder",
+  "demo",
+  "mock",
+  "dummy",
+  "provider-portal",
+  "handoff",
+  "adapter",
+  "API",
+  "OAuth-gated",
+  "runtime",
+  "launch gate",
+  "evidence gap"
+];
 
 describe("customer web experience contract", () => {
   it("starts with one local setup primary action and customer-safe copy", () => {
@@ -142,5 +158,21 @@ describe("customer web experience contract", () => {
         "Customer web copy must not expose internal readiness/provider terms."
       ])
     );
+  });
+
+  it("rejects the requested implementation terms from customer-visible copy", () => {
+    const experience = buildCustomerWebExperience(baseInput);
+
+    for (const term of requestedBlockedCustomerTerms) {
+      const unsafeExperience = {
+        ...experience,
+        panelNote: `${experience.panelNote} ${term}`
+      };
+
+      expect(customerVisibleImplementationTermPattern.test(term)).toBe(true);
+      expect(validateCustomerWebExperience(unsafeExperience)).toContain(
+        "Customer web copy must not expose internal readiness/provider terms."
+      );
+    }
   });
 });
