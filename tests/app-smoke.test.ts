@@ -315,6 +315,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Card actions");
     expect(result.text).toContain("Card assistant");
     expect(result.text).toContain("Printing options");
+    expect(result.text).toContain("Approve proof first");
+    expect(result.text).not.toContain("Cheapest known price");
     expect(result.text).toContain("Finish manually");
     expect(result.text).toContain("Saved offline");
     expect(result.text).toContain("Confirm pickup, shipping, payment, and coupons at checkout before ordering.");
@@ -506,6 +508,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.initialCalendarText).not.toContain("Continue with Apple");
     expect(result.initialCalendarText).not.toContain("Future calendar sync");
     expect(result.initialCustomerText).toContain("Print options after proof");
+    expect(result.initialCustomerText).not.toContain("Compare print options");
+    expect(result.initialCustomerText).not.toContain("Best available options");
     expect(result.initialCustomerText).not.toContain("Cheapest known price");
     expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
     expect(result.initialJourneyActions).toHaveLength(1);
@@ -514,6 +518,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.initialSupportingPrimaryActions).toBe(0);
     expect(result.workspaceText).toContain("Workspace ready");
     expect(result.workspaceText).toContain("Review event");
+    expect(result.workspaceText).not.toContain("Compare print options");
+    expect(result.workspaceText).not.toContain("Best available options");
+    expect(result.workspaceText).not.toContain("Cheapest known price");
     expect(result.workspaceText).not.toContain("Review and make card");
     expect(result.workspaceJourneyActions.join(" ")).toContain("Review event");
     expect(result.workspaceJourneyActions.join(" ")).not.toContain("Make card");

@@ -4,8 +4,8 @@ This is the iOS/Android customer app boundary. The current app shell mirrors the
 web customer panel and adds a mobile-specific workflow contract: Google/Apple
 entry points, calendar/email/invite import actions, card queue items, customer
 approval controls, approved memory review, local scripted chat, card proof path,
-best available pickup/shipped print recommendations, offline idempotent
-sync, locale readiness, and checkout confirmation. The customer state and
+proof-gated print recommendations, offline idempotent sync, locale readiness,
+and checkout confirmation. The customer state and
 render snapshot live in `src/customerExperience.ts`, a pure module tested by the
 root Vitest suite and inspected by the mobile doctor. `App.tsx` is the Expo root
 entrypoint and re-exports the native shell from `src/App.tsx`, which renders the
@@ -23,6 +23,7 @@ The mobile proof is deterministic and repo-local. It proves that the native shel
 source and customer contract align with the web customer flow stages:
 account/import, event review, card approval, proof review, print options review,
 and checkout confirmation. The `mobileProofBoundary` contract intentionally
+keeps print estimates and print-shop steps locked until proof approval, and it
 blocks native emulator render proof, signed native artifact proof, app-store
 review proof, and live retail-order proof.
 

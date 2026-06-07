@@ -189,6 +189,9 @@ export interface MobileSyncState {
 
 export interface MobileProofBoundary {
   deterministicProofMode: "repo-local-contract";
+  currentStage: MobileCustomerFlowStage;
+  proofApproved: boolean;
+  printOptionsUnlocked: boolean;
   webCustomerFlowStages: MobileCustomerFlowStage[];
   repoLocalEvidence: string[];
   blockedLiveProofs: Array<"native-emulator-render" | "signed-native-artifact" | "app-store-review" | "live-retail-order">;
@@ -255,6 +258,11 @@ export interface MobileRenderSection {
 
 export interface MobileRenderSnapshot {
   screenTitle: string;
+  proofGate: {
+    currentStage: MobileCustomerFlowStage;
+    proofApproved: boolean;
+    printOptionsUnlocked: boolean;
+  };
   hero: {
     eyebrow: string;
     title: string;
@@ -277,6 +285,9 @@ export const mobileSafetyBanner = {
 
 export const mobileProofBoundary: MobileProofBoundary = {
   deterministicProofMode: "repo-local-contract",
+  currentStage: "proof-review",
+  proofApproved: false,
+  printOptionsUnlocked: false,
   webCustomerFlowStages: [
     "account-import",
     "event-review",
@@ -749,13 +760,18 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
 
   return {
     screenTitle: "CustomCard",
+    proofGate: {
+      currentStage: model.proofBoundary.currentStage,
+      proofApproved: model.proofBoundary.proofApproved,
+      printOptionsUnlocked: model.proofBoundary.printOptionsUnlocked
+    },
     hero: {
       eyebrow: "Your card assistant",
       title: "CustomCard",
-      subtitle: "Create a local workspace, paste an invite or ICS event, approve a card, and review print options.",
+      subtitle: "Create a local workspace, paste an invite or ICS event, approve the proof, then review print options.",
       primaryAction: {
         label: `Review ${model.todaySummary.recipientLabel}'s card`,
-        detail: "Check event details, memory, proof, and print options before approving.",
+        detail: "Check event details, memory, copy, language, and artwork before printing.",
         modeLabel: "Ready to review",
         actionKind: primaryAction.kind
       }
@@ -849,11 +865,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       {
         id: "best-available-options",
         title: "Printing options",
-        rows: model.fulfillmentRecommendations.map((recommendation) => ({
-          title: recommendation.label,
-          detail: `${formatCents(recommendation.totalCents)} at ${recommendation.vendorName}; ${recommendation.etaLabel}. ${recommendation.confirmationCopy}`,
-          modeLabel: "Confirm"
-        }))
+        rows: buildMobilePrintOptionRows(model)
       },
       {
         id: "print-proof",
@@ -867,11 +879,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       {
         id: "checkout-confirmation",
         title: "Finish manually",
-        rows: model.handoffSteps.map((step) => ({
-          title: step.label,
-          detail: step.detail,
-          modeLabel: step.realOrderState === "manual" ? "Manual" : "Off"
-        }))
+        rows: buildMobileHandoffRows(model)
       },
       {
         id: "offline-sync",
@@ -920,7 +928,9 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
     copyReviewRequiredLocales: model.localeOptions.filter((locale) => locale.copyReviewRequired).length,
     offlineMutationTypes: model.syncState.pendingMutationTypes.length,
     webCustomerFlowStages: model.proofBoundary.webCustomerFlowStages.length,
-    blockedLiveProofs: model.proofBoundary.blockedLiveProofs.length
+    blockedLiveProofs: model.proofBoundary.blockedLiveProofs.length,
+    proofApproved: model.proofBoundary.proofApproved,
+    printOptionsUnlocked: model.proofBoundary.printOptionsUnlocked
   };
 }
 
@@ -953,6 +963,9 @@ export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mo
   if (!snapshot.hero.primaryAction.label || !snapshot.hero.primaryAction.actionKind) {
     issues.push("Mobile render snapshot must expose a primary customer action.");
   }
+  if (!snapshot.proofGate.proofApproved && snapshot.proofGate.printOptionsUnlocked) {
+    issues.push("Mobile render snapshot must not unlock print options before proof approval.");
+  }
   if (snapshot.safetyBand.label !== "Confirm before checkout") {
     issues.push("Mobile render snapshot must keep checkout confirmation in the safety band.");
   }
@@ -977,13 +990,23 @@ export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mo
     if (!sectionIds.has(sectionId)) issues.push(`Mobile render snapshot missing section: ${sectionId}.`);
   }
   if (summary.sectionCount !== 11) issues.push("Mobile render snapshot must expose 11 rendered sections.");
-  if (summary.rowCount < 30) issues.push("Mobile render snapshot must expose the full customer workflow rows.");
+  if (summary.rowCount < 28) issues.push("Mobile render snapshot must expose the full customer workflow rows.");
   if (summary.primaryActionCount < 2) issues.push("Mobile render snapshot must place the primary approval action in hero and workflow.");
   if (summary.footerSafetyMessages < 2) issues.push("Mobile render snapshot must keep safety footer messages.");
   if (summary.blockedLiveActionCount > 0) issues.push("Mobile render snapshot must not claim live order, payment, or paid AI actions.");
   if (summary.internalProofTermCount > 0) issues.push("Mobile render snapshot must not expose internal proof terms to customers.");
   if (snapshot.sections.some((section) => section.rows.length === 0)) {
     issues.push("Mobile render snapshot sections must not be empty.");
+  }
+  if (!snapshot.proofGate.printOptionsUnlocked) {
+    const printRows = snapshot.sections.find((section) => section.id === "best-available-options")?.rows ?? [];
+    const checkoutRows = snapshot.sections.find((section) => section.id === "checkout-confirmation")?.rows ?? [];
+    if (printRows.length !== 1 || printRows[0]?.title !== "Approve proof first") {
+      issues.push("Mobile render snapshot must keep print estimates locked until proof approval.");
+    }
+    if (checkoutRows.length !== 1 || checkoutRows[0]?.title !== "Approve proof first") {
+      issues.push("Mobile render snapshot must keep print shop steps locked until proof approval.");
+    }
   }
   if (snapshot.sections.flatMap((section) => section.rows).some((row) => !row.title.trim() || !row.detail.trim() || !row.modeLabel.trim())) {
     issues.push("Mobile render snapshot rows must include title, detail, and mode label.");
@@ -1191,6 +1214,12 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   if (model.proofBoundary.deterministicProofMode !== "repo-local-contract") {
     issues.push("Mobile proof boundary must stay repo-local and deterministic.");
   }
+  if (model.proofBoundary.printOptionsUnlocked && !model.proofBoundary.proofApproved) {
+    issues.push("Mobile print options must stay locked until proof approval.");
+  }
+  if (model.proofBoundary.proofApproved && model.proofBoundary.currentStage === "proof-review" && !model.proofBoundary.printOptionsUnlocked) {
+    issues.push("Mobile proof boundary must move to print review after proof approval.");
+  }
   for (const stage of [
     "account-import",
     "event-review",
@@ -1362,6 +1391,42 @@ function queueStatusLabel(status: MobileCardQueueStatus): string {
   if (status === "needs-approval") return "Review";
   if (status === "ready-for-handoff") return "Ready to print";
   return "Approved";
+}
+
+function buildMobilePrintOptionRows(model: MobileExperienceModel): MobileRenderRow[] {
+  if (!model.proofBoundary.printOptionsUnlocked) {
+    return [
+      {
+        title: "Approve proof first",
+        detail: "Print estimates unlock after you approve copy, language, and artwork.",
+        modeLabel: "After proof"
+      }
+    ];
+  }
+
+  return model.fulfillmentRecommendations.map((recommendation) => ({
+    title: recommendation.label,
+    detail: `${formatCents(recommendation.totalCents)} at ${recommendation.vendorName}; ${recommendation.etaLabel}. ${recommendation.confirmationCopy}`,
+    modeLabel: "Confirm"
+  }));
+}
+
+function buildMobileHandoffRows(model: MobileExperienceModel): MobileRenderRow[] {
+  if (!model.proofBoundary.printOptionsUnlocked) {
+    return [
+      {
+        title: "Approve proof first",
+        detail: "Download and print shop steps unlock after proof approval.",
+        modeLabel: "After proof"
+      }
+    ];
+  }
+
+  return model.handoffSteps.map((step) => ({
+    title: step.label,
+    detail: step.detail,
+    modeLabel: step.realOrderState === "manual" ? "Manual" : "Off"
+  }));
 }
 
 function formatCents(cents: number): string {

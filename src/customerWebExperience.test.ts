@@ -97,6 +97,8 @@ describe("customer web experience contract", () => {
       expect.objectContaining({ id: "continue-proof", label: "Continue proof review" })
     ]);
     expect(experience.actions.map((action) => action.id)).toEqual(["continue-proof", "add-memory"]);
+    expect(experience.actions.map((action) => action.id)).not.toContain("choose-fulfillment");
+    expect(experience.supportingActions.map((action) => action.id)).not.toContain("choose-fulfillment");
     expect(experience.fulfillment).toMatchObject({
       title: "Print options after proof",
       statusLabel: "Waiting for proof approval",
@@ -121,6 +123,8 @@ describe("customer web experience contract", () => {
       expect.objectContaining({ id: "choose-fulfillment", label: "Compare print options" })
     ]);
     expect(experience.actions.map((action) => action.id)).toEqual(["choose-fulfillment", "add-memory"]);
+    expect(experience.actions.filter((action) => action.id === "choose-fulfillment")).toHaveLength(1);
+    expect(experience.supportingActions.map((action) => action.id)).not.toContain("choose-fulfillment");
     expect(experience.fulfillment.title).toBe("Best available options");
     expect(experience.fulfillment.showOptions).toBe(true);
     expect(experience.flowSteps.map((step) => step.state)).toEqual(["complete", "complete", "complete", "current"]);

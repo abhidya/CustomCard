@@ -66,6 +66,8 @@ describe("mobile customer experience contract", () => {
     expect(summary.copyReviewRequiredLocales).toBe(3);
     expect(summary.webCustomerFlowStages).toBe(6);
     expect(summary.blockedLiveProofs).toBe(4);
+    expect(summary.proofApproved).toBe(false);
+    expect(summary.printOptionsUnlocked).toBe(false);
     expect(summary.todayPrimaryActions).toBe(1);
     expect(summary.queueItems).toBeGreaterThanOrEqual(2);
     expect(summary.pendingApprovalItems).toBeGreaterThanOrEqual(1);
@@ -262,6 +264,11 @@ describe("mobile customer experience contract", () => {
     expect(mobileSyncState.forbiddenMutationTypes).toEqual(
       expect.arrayContaining(["submit-live-order", "charge-payment", "upload-raw-memory"])
     );
+    expect(mobileProofBoundary).toMatchObject({
+      currentStage: "proof-review",
+      proofApproved: false,
+      printOptionsUnlocked: false
+    });
   });
 
   it("keeps customer-visible mobile copy free of implementation-stage jargon", () => {
@@ -304,7 +311,7 @@ describe("mobile customer experience contract", () => {
     expect(source).not.toContain("mobileAccountOptions");
     expect(summary).toMatchObject({
       sectionCount: 11,
-      rowCount: 31,
+      rowCount: 28,
       primaryActionCount: 2,
       footerSafetyMessages: 2,
       blockedLiveActionCount: 0,
@@ -312,6 +319,11 @@ describe("mobile customer experience contract", () => {
     });
     expect(mobileRenderSnapshot).toMatchObject({
       screenTitle: "CustomCard",
+      proofGate: {
+        currentStage: "proof-review",
+        proofApproved: false,
+        printOptionsUnlocked: false
+      },
       hero: expect.objectContaining({
         eyebrow: "Your card assistant",
         title: "CustomCard",
@@ -344,14 +356,28 @@ describe("mobile customer experience contract", () => {
         "Queued",
         "Free",
         "Later",
-        "Confirm",
-        "Manual",
-        "Off",
+        "After proof",
         "Not connected",
         "Ready to review",
         "Saved offline"
       ])
     );
+    expect(mobileRenderSnapshot.sections.find((section) => section.id === "best-available-options")?.rows).toEqual([
+      {
+        title: "Approve proof first",
+        detail: "Print estimates unlock after you approve copy, language, and artwork.",
+        modeLabel: "After proof"
+      }
+    ]);
+    expect(mobileRenderSnapshot.sections.find((section) => section.id === "checkout-confirmation")?.rows).toEqual([
+      {
+        title: "Approve proof first",
+        detail: "Download and print shop steps unlock after proof approval.",
+        modeLabel: "After proof"
+      }
+    ]);
+    expect(JSON.stringify(mobileRenderSnapshot)).not.toContain("Cheapest known price");
+    expect(JSON.stringify(mobileRenderSnapshot)).not.toContain("Download print package");
     expect(mobileRenderSnapshot.footerSafetyMessages.join(" ")).toContain("No automatic order");
     expect(JSON.stringify(mobileRenderSnapshot)).not.toMatch(
       /repo-local-contract|native-emulator-render|signed-native-artifact|app-store-review|adapter|provider|vendor api|retail-printer|oauth[- ]gated|credential[- ]gated|handoff|fulfillment/i
@@ -452,6 +478,8 @@ describe("mobile customer experience contract", () => {
       proofBoundary: {
         ...mobileExperience.proofBoundary,
         deterministicProofMode: "repo-local-contract",
+        proofApproved: false,
+        printOptionsUnlocked: true,
         webCustomerFlowStages: ["account-import"],
         repoLocalEvidence: ["mobile contract tests"],
         blockedLiveProofs: ["native-emulator-render"],
@@ -621,6 +649,7 @@ describe("mobile customer experience contract", () => {
         "Mobile print proof checks must pass before handoff.",
         "Mobile handoff must keep a manual upload path.",
         "Disabled mobile handoff steps must explain blocked automatic checkout.",
+        "Mobile print options must stay locked until proof approval.",
         "Mobile safety banner must require checkout confirmation.",
         "Mobile proof boundary missing web customer flow stage: event-review.",
         "Mobile proof boundary missing web customer flow stage: card-approval.",
