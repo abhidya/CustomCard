@@ -154,6 +154,8 @@ export interface PrinterCouponCollectionTarget {
   expectedOfferCodes: string[];
   extractHints: string[];
   verificationSignals: string[];
+  staticHtmlSignalAllowed: boolean;
+  browserRenderProofRequired: boolean;
   legalReviewRequired: boolean;
   blockedFields: string[];
   noNetworkRuntime: true;
@@ -383,6 +385,8 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     expectedOfferCodes: ["CRISPCARD"],
     extractHints: ["Coupon code:", "All Photo Cards and Premium Stationery", "Offer expires", "logged in registered Walgreens.com/Photo"],
     verificationSignals: ["CRISPCARD", "60% OFF All Photo Cards & Premium Stationery", "Offer expires at 11:59 p.m. CT"],
+    staticHtmlSignalAllowed: true,
+    browserRenderProofRequired: false,
     legalReviewRequired: true,
     blockedFields: ["login session", "cart subtotal", "coupon application proof", "tax", "shipping", "store availability"],
     noNetworkRuntime: true
@@ -402,6 +406,8 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     expectedOfferCodes: ["CRISPCARD"],
     extractHints: ["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272", "Create now"],
     verificationSignals: ["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"],
+    staticHtmlSignalAllowed: true,
+    browserRenderProofRequired: true,
     legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
     noNetworkRuntime: true
@@ -421,6 +427,8 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     expectedOfferCodes: ["JUNESW"],
     extractHints: ["Promo code:", "50% off Sitewide", "JUNESW", "Offer starts", "Offer valid online and in the CVS Health app"],
     verificationSignals: ["JUNESW", "50% off Sitewide", "Offer valid online and in the CVS Health app"],
+    staticHtmlSignalAllowed: true,
+    browserRenderProofRequired: false,
     legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "shipping", "store availability"],
     noNetworkRuntime: true
@@ -440,6 +448,8 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     expectedOfferCodes: ["JUNESW"],
     extractHints: ["Folded Greeting Card, 5x7", "JSON-LD price 8.98", "50% off Sitewide with promo code JUNESW", "Offer ends 6/20/2026"],
     verificationSignals: ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"],
+    staticHtmlSignalAllowed: true,
+    browserRenderProofRequired: true,
     legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
     noNetworkRuntime: true
@@ -459,6 +469,8 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     expectedOfferCodes: [],
     extractHints: ["merchant", "code", "code_verified_at", "link_verified_at", "valid_from", "valid_to"],
     verificationSignals: ["status", "code_verified_at", "link_verified_at", "end_date"],
+    staticHtmlSignalAllowed: false,
+    browserRenderProofRequired: false,
     legalReviewRequired: true,
     blockedFields: [
       "provider credentials in client",
@@ -1227,8 +1239,20 @@ export function validatePrinterCouponCollectionTargets(
     if (target.role === "print-entrypoint" && target.collectionMethod !== "rendered-browser-read") {
       errors.push(`Printer coupon collection target ${target.id} must require rendered browser reads for print entrypoints.`);
     }
+    if (target.role === "print-entrypoint" && !target.browserRenderProofRequired) {
+      errors.push(`Printer coupon collection target ${target.id} must require browser render proof for print entrypoints.`);
+    }
+    if (target.role !== "print-entrypoint" && target.browserRenderProofRequired) {
+      errors.push(`Printer coupon collection target ${target.id} must not require browser render proof outside print entrypoints.`);
+    }
     if (target.role === "provider-feed" && target.collectionMethod !== "provider-api-feed") {
       errors.push(`Printer coupon collection target ${target.id} must use provider API feed collection.`);
+    }
+    if (target.sourceProvider === "retailer" && !target.staticHtmlSignalAllowed) {
+      errors.push(`Printer coupon collection target ${target.id} must allow static HTML signals for official retailer collection.`);
+    }
+    if (target.sourceProvider === "affiliate-provider" && target.staticHtmlSignalAllowed) {
+      errors.push(`Printer coupon collection target ${target.id} must not treat provider API feeds as static HTML signals.`);
     }
     if (target.sourceProvider === "retailer" && target.expectedOfferCodes.length === 0) {
       errors.push(`Printer coupon collection target ${target.id} must name expected offer codes.`);

@@ -215,12 +215,16 @@ describe("printer pricing research", () => {
           id: "walgreens-photo-official-deals",
           role: "coupon-source",
           readiness: "ready-public-page",
+          staticHtmlSignalAllowed: true,
+          browserRenderProofRequired: false,
           noNetworkRuntime: true
         }),
         expect.objectContaining({
           id: "cvs-photo-card-design-entrypoint",
           role: "print-entrypoint",
           url: printerPricingSources.cvsFoldedDesignDetail.url,
+          staticHtmlSignalAllowed: true,
+          browserRenderProofRequired: true,
           noNetworkRuntime: true
         }),
         expect.objectContaining({
@@ -228,6 +232,8 @@ describe("printer pricing research", () => {
           role: "provider-feed",
           readiness: "credential-gated",
           credentialEnvKeys: ["FMTC_API_TOKEN"],
+          staticHtmlSignalAllowed: false,
+          browserRenderProofRequired: false,
           noNetworkRuntime: true
         })
       ])
@@ -312,6 +318,8 @@ describe("printer pricing research", () => {
       collectionMethod: "rendered-browser-read",
       expectedOfferCodes: ["CRISPCARD"],
       verificationSignals: expect.arrayContaining(["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"]),
+      staticHtmlSignalAllowed: true,
+      browserRenderProofRequired: true,
       legalReviewRequired: true,
       noNetworkRuntime: true
     });
@@ -321,12 +329,16 @@ describe("printer pricing research", () => {
       collectionMethod: "rendered-browser-read",
       expectedOfferCodes: ["JUNESW"],
       verificationSignals: expect.arrayContaining(["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"]),
+      staticHtmlSignalAllowed: true,
+      browserRenderProofRequired: true,
       legalReviewRequired: true,
       noNetworkRuntime: true
     });
     expect(providerFeedTarget).toMatchObject({
       collectionMethod: "provider-api-feed",
       credentialEnvKeys: ["FMTC_API_TOKEN"],
+      staticHtmlSignalAllowed: false,
+      browserRenderProofRequired: false,
       legalReviewRequired: true,
       verificationSignals: expect.arrayContaining(["status", "code_verified_at", "link_verified_at"])
     });
@@ -336,6 +348,18 @@ describe("printer pricing research", () => {
     expect(cvsOffer).toMatchObject({
       sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"]
     });
+    expect(
+      validatePrinterCouponCollectionTargets(
+        printerCouponCollectionTargets.map((target) =>
+          target.id === "walgreens-photo-card-design-entrypoint" ? { ...target, browserRenderProofRequired: false } : target
+        )
+      )
+    ).toContain("Printer coupon collection target walgreens-photo-card-design-entrypoint must require browser render proof for print entrypoints.");
+    expect(
+      validatePrinterCouponCollectionTargets(
+        printerCouponCollectionTargets.map((target) => (target.id === "fmtc-deal-feed" ? { ...target, staticHtmlSignalAllowed: true } : target))
+      )
+    ).toContain("Printer coupon collection target fmtc-deal-feed must not treat provider API feeds as static HTML signals.");
   });
 
   it("applies an active coupon only after provider portal evidence proves matching cart terms", () => {
