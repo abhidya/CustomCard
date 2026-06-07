@@ -303,6 +303,7 @@ describe("printer pricing research", () => {
       Walgreens Mobile App. Offer expires at 11:59 p.m. CT on June 13, 2026.</p></div>
     `;
     const cvsPrintPage = `
+      <div class="paragraph3"><h2>GRADUATION</h2></div>
       <p><b>Weekly offers end 6/20/2026 <br/> 65% off Same Day Posters |
       Promo Code: SAMEDAY65 <br/> 50% off Sitewide | Promo Code: JUNESW </b></p>
       <div class="caption text-left">Add any photo products to your cart and enter promo
@@ -376,6 +377,11 @@ describe("printer pricing research", () => {
       ],
       warnings: []
     });
+    const cvsOffer = extractPrinterCouponOffers({ vendorId: "cvs", source: printerCouponSources.cvsPhotoCoupons, documentText: cvsPrintPage })
+      .offers[0];
+    expect(cvsOffer?.code).toBe("JUNESW");
+    expect(cvsOffer?.code).not.toBe("GRADUATION");
+    expect(isPrinterCouponActive(cvsOffer!, reviewedAt)).toBe(true);
   });
 
   it("extracts expected coupon codes from exact Walgreens and CVS print links", () => {

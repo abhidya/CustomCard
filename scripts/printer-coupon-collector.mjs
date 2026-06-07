@@ -19,9 +19,11 @@ try {
     buildPrinterCouponPortalApplicationPackets,
     extractPrinterCouponCodes,
     extractPrinterCouponOffers,
+    isPrinterCouponActive,
     printerCouponCollectionTargets,
     printerCouponSources
   } = await vite.ssrLoadModule("/src/printerPricing.ts");
+  const generatedAt = new Date();
   const operatorBrowserEvidencePath = process.env.CUSTOMCARD_COUPON_BROWSER_EVIDENCE?.trim();
   const allowedTargets = printerCouponCollectionTargets.filter(
     (target) => target.sourceProvider === "retailer" && target.readiness === "ready-public-page"
@@ -87,22 +89,30 @@ try {
         vendorId,
         source,
         documentText: body,
-        observedAtIso: new Date().toISOString()
+        observedAtIso: generatedAt.toISOString()
       });
       sourceOffers.push(
-        ...extraction.offers.map((offer) => ({
-          id: offer.id,
-          vendorId: offer.vendorId,
-          code: offer.code,
-          label: offer.label,
-          discountPercent: offer.discountPercent,
-          startsAtIso: offer.startsAtIso,
-          endsAtIso: offer.endsAtIso,
-          evidenceStatus: offer.evidenceStatus,
-          portalApplicationEvidenceAttached: Boolean(offer.portalApplicationEvidence),
-          sourceUrl: offer.source.url,
-          requiresLoggedInAccount: offer.requiresLoggedInAccount
-        }))
+        ...extraction.offers.map((offer) => {
+          const activeAtCollection = isPrinterCouponActive(offer, generatedAt);
+          return {
+            id: offer.id,
+            vendorId: offer.vendorId,
+            code: offer.code,
+            label: offer.label,
+            discountPercent: offer.discountPercent,
+            startsAtIso: offer.startsAtIso,
+            endsAtIso: offer.endsAtIso,
+            evidenceStatus: offer.evidenceStatus,
+            portalApplicationEvidenceAttached: Boolean(offer.portalApplicationEvidence),
+            sourceUrl: offer.source.url,
+            requiresLoggedInAccount: offer.requiresLoggedInAccount,
+            activeAtCollection,
+            bestPriceEligibleAtCollection: false,
+            bestPriceBlocker: activeAtCollection
+              ? "provider-portal application evidence required"
+              : "coupon expired before provider-portal application"
+          };
+        })
       );
     }
   }
@@ -110,7 +120,7 @@ try {
   const codesByVendor = new Map(sourceOffers.map((offer) => [offer.vendorId, offer.code]));
   const providerPortalApplicationPackets = buildPrinterCouponPortalApplicationPackets({
     quantity: 1,
-    now: new Date()
+    now: generatedAt
   });
   const providerPortalApplicationTargetCount = providerPortalApplicationPackets.reduce(
     (total, packet) => total + packet.applicationTargets.length,
@@ -146,7 +156,7 @@ try {
     JSON.stringify(
       {
         service: "customcard-printer-coupon-collector",
-        generatedAtIso: new Date().toISOString(),
+        generatedAtIso: generatedAt.toISOString(),
         networkRuntime: "operator-script-only",
         fetchedTargetCount: fetchedTargets.length,
         couponSourceOfferCount: sourceOffers.length,

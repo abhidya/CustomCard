@@ -128,12 +128,14 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-`operator-chromium-rendered-read` check against the exact print links. CVS
-rendered the `JUNESW` code visibly on the 5x7 folded card page, so the
-collector reports `operator-browser-proof-attached` when that evidence is
-attached or generated. Walgreens rendered the 5x7 product and $3.49 price
-visibly, while `CRISPCARD` was present in page HTML but not visible text; the
-collector reports
+15:04 UTC `operator-chromium-rendered-read` check against the exact print
+links. CVS rendered the `JUNESW` code visibly on the 5x7 folded card page, so
+the collector reports `operator-browser-proof-attached` when that evidence is
+attached or generated. The raw CVS public page also contains `GRADUATION` as a
+navigation/category heading; it is not treated as coupon evidence unless it
+appears in promo-code terms with product scope and dates. Walgreens rendered
+the 5x7 product and $3.49 price visibly, while `CRISPCARD` was present in page
+HTML but not visible text; the collector reports
 `operator-browser-html-signal-attached-visible-proof-still-required`. Neither
 status is provider-portal cart evidence, and neither can discount a best-price
 ranking.
@@ -154,7 +156,10 @@ expected pre-coupon subtotal, expected discount, expected post-coupon subtotal,
 cart terms, required evidence, operator steps, and no-order blocked fields. The
 operator can use those packets to apply coupons in the provider portal during
 pricing collection, but the packet still reports `canAffectBestPrice: false`
-until matching `PrinterCouponPortalApplicationEvidence` is attached.
+until matching `PrinterCouponPortalApplicationEvidence` is attached. The
+operator collector also emits `activeAtCollection`,
+`bestPriceEligibleAtCollection`, and `bestPriceBlocker` for each scraped source
+offer so source discovery and best-price eligibility cannot be confused.
 
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |

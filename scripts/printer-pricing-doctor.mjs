@@ -92,6 +92,8 @@ const checks = [
     "fedex-quick-5x7-single-sided-card",
     "subtotalCents: 4999",
     "extractPrinterCouponOffers",
+    "GRADUATION",
+    "expect(cvsOffer?.code).not.toBe(\"GRADUATION\")",
     "marks stale public printer pricing before showing it as current"
   ]),
   checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.apiServer}`, [
@@ -131,6 +133,7 @@ const checks = [
     "Rakuten Advertising Coupon Feed API",
     "provider-api-feed",
     "provider portal",
+    "navigation/category heading",
     "Coupon discounts",
     "are applied only after",
     "$49.99 pre-tax base",
@@ -171,6 +174,11 @@ const checks = [
     "providerPortalApplicationPacketCount",
     "providerPortalApplicationTargetCount",
     "providerPortalApplicationPackets",
+    "activeAtCollection",
+    "bestPriceEligibleAtCollection",
+    "bestPriceBlocker",
+    "provider-portal application evidence required",
+    "coupon expired before provider-portal application",
     "same product, quantity, fulfillment mode, account state, and subtotal math",
     "bestPriceDiscountingAllowed: false",
     '"printer:coupons:collect": "node scripts/printer-coupon-collector.mjs"'
