@@ -185,7 +185,9 @@ Requirement types:
   gates; no live observability ingestion, alert delivery, retention enforcement,
   or incident-response drill is claimed.
 - Public printer prices are review-only observations with a 30-day source
-  freshness contract and coupon-source collection. They are not live quote, tax,
+  freshness contract and coupon-source collection. Coupon collection includes
+  official Walgreens/CVS pages, CVS print entrypoint evidence, and a
+  credential-gated FMTC provider-feed target. They are not live quote, tax,
   stock, pickup-window, or coupon provider-portal application guarantees.
 - Non-English and RTL localization is readiness-gated only; professional
   translation QA, native RTL render proof, and live translation providers are

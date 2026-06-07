@@ -4,12 +4,16 @@ import {
   buildPrinterPricingComparison,
   buildPrinterPricingRefreshReport,
   estimatePrinterSubtotal,
+  extractPrinterCouponOffers,
   getPrinterPriceOptionsForVendor,
   isPrinterCouponActive,
+  printerCouponCollectionTargets,
   printerCouponOffers,
   printerCouponPolicy,
+  printerCouponSources,
   printerPriceCatalog,
   printerPricingCollectionRules,
+  validatePrinterCouponCollectionTargets,
   validatePrinterCouponOffers,
   validatePrinterPricingCatalog,
   validatePrinterCouponPolicy,
@@ -62,10 +66,10 @@ describe("printer pricing research", () => {
       effectiveSubtotalCents: 349,
       effectiveSubtotalLabel: "$3.49",
       couponDiscountCents: 0,
-      couponDiscountLabel: "CRISPCARD expired on 2026-06-06",
+      couponDiscountLabel: "CRISPCARD found; apply and verify in provider portal before ranking as best available",
       subtotalIncludesCoupon: false,
       couponApplication: expect.objectContaining({
-        status: "expired",
+        status: "portal-evidence-required",
         offer: expect.objectContaining({ code: "CRISPCARD" })
       }),
       couponPolicy: expect.objectContaining({
@@ -84,9 +88,12 @@ describe("printer pricing research", () => {
     expect(comparison.refreshReport).toMatchObject({
       totalObservations: printerPriceCatalog.length,
       sourceCount: 8,
-      couponSourceCount: 2,
+      couponSourceCount: 3,
+      couponCollectionTargetCount: 5,
+      couponProviderTargetCount: 1,
+      retailerCouponCollectionTargetCount: 4,
       couponOfferCount: 2,
-      activeCouponOfferCount: 0,
+      activeCouponOfferCount: 2,
       portalAppliedCouponOfferCount: 0,
       freshSources: 8,
       canShowComparison: true,
@@ -121,7 +128,8 @@ describe("printer pricing research", () => {
       observation: expect.objectContaining({ vendorId: "walmart" }),
       subtotalLabel: "$0.56",
       effectiveSubtotalLabel: "$0.56",
-      subtotalIncludesCoupon: false
+      subtotalIncludesCoupon: false,
+      couponApplication: expect.objectContaining({ status: "not-found" })
     });
     expect(comparison.manualConfirmationVendors).toEqual(
       expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"])
@@ -132,6 +140,7 @@ describe("printer pricing research", () => {
 
   it("requires coupon collection and portal application proof before discounting", () => {
     expect(validatePrinterCouponPolicy()).toEqual([]);
+    expect(validatePrinterCouponCollectionTargets()).toEqual([]);
     expect(validatePrinterCouponOffers()).toEqual([]);
     expect(printerCouponPolicy).toMatchObject({
       reviewMode: "apply-during-provider-portal-collection",
@@ -177,6 +186,75 @@ describe("printer pricing research", () => {
         "Printer coupon policy must require provider portal checkout subtotal after coupon application."
       ])
     );
+  });
+
+  it("collects active coupons from official retailer pages and print entrypoint targets without runtime networking", () => {
+    const walgreensPage = `
+      <div class="tile-price info-2b gwc4a">Coupon code: CRISPCARD</div>
+      <div class="taclist"><p>Must use code <strong>CRISPCARD</strong> to receive
+      60% off All Photo Cards and Premium Stationery through a logged in registered
+      Walgreens.com/Photo online account, in store on photo kiosk or through the
+      Walgreens Mobile App. Offer expires at 11:59 p.m. CT on June 13, 2026.</p></div>
+    `;
+    const cvsPrintPage = `
+      <p><b>Weekly offers end 6/20/2026 <br/> 65% off Same Day Posters |
+      Promo Code: SAMEDAY65 <br/> 50% off Sitewide | Promo Code: JUNESW </b></p>
+      <div class="caption text-left">Add any photo products to your cart and enter promo
+      code JUNESW to receive 50% off your photo order. Offer valid online and in the
+      CVS Health app. Offer starts June 7, 2026, at 12:01 AM and ends June 20, 2026,
+      at 11:59 PM ET. Only one discount may be applied to each item.</div>
+    `;
+
+    expect(printerCouponCollectionTargets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "walgreens-photo-official-deals",
+          role: "coupon-source",
+          readiness: "ready-public-page",
+          noNetworkRuntime: true
+        }),
+        expect.objectContaining({
+          id: "cvs-photo-prints-entrypoint",
+          role: "print-entrypoint",
+          url: "https://www.cvs.com/photo/prints",
+          noNetworkRuntime: true
+        }),
+        expect.objectContaining({
+          id: "fmtc-deal-feed",
+          role: "provider-feed",
+          readiness: "credential-gated",
+          credentialEnvKeys: ["FMTC_API_TOKEN"],
+          noNetworkRuntime: true
+        })
+      ])
+    );
+
+    expect(extractPrinterCouponOffers({ vendorId: "walgreens", source: printerCouponSources.walgreensPhotoDeals, documentText: walgreensPage })).toMatchObject({
+      offers: [
+        expect.objectContaining({
+          id: "walgreens-crispcard-cards-2026-06-13",
+          code: "CRISPCARD",
+          discountPercent: 60,
+          endsAtIso: "2026-06-13T23:59:00.000-05:00",
+          requiresLoggedInAccount: true,
+          evidenceStatus: "source-listed"
+        })
+      ],
+      warnings: []
+    });
+    expect(extractPrinterCouponOffers({ vendorId: "cvs", source: printerCouponSources.cvsPhotoCoupons, documentText: cvsPrintPage })).toMatchObject({
+      offers: [
+        expect.objectContaining({
+          id: "cvs-junesw-sitewide-photo-2026-06-20",
+          code: "JUNESW",
+          discountPercent: 50,
+          startsAtIso: "2026-06-07T00:01:00.000-04:00",
+          endsAtIso: "2026-06-20T23:59:00.000-04:00",
+          evidenceStatus: "source-listed"
+        })
+      ],
+      warnings: []
+    });
   });
 
   it("applies an active coupon only after the provider portal proves it", () => {

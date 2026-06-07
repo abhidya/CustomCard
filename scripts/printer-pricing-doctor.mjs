@@ -5,6 +5,7 @@ const files = {
   pricingTest: "src/printerPricing.test.ts",
   app: "src/App.tsx",
   apiServer: "scripts/api-server.mjs",
+  couponCollector: "scripts/printer-coupon-collector.mjs",
   docs: "docs/printer-pricing-research.md",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml"
@@ -63,20 +64,29 @@ const checks = [
     "canShowComparison",
     "printerCouponSources",
     "printerCouponOffers",
+    "printerCouponCollectionTargets",
+    "fmtc-deal-feed",
+    "cvs-photo-prints-entrypoint",
     "buildPrinterCouponApplication"
   ]),
   checkIncludes("tests", "pricing-refresh-tests", contents.pricingTest, [
     "cvs-5x7-photo-card",
     "fedex-quick-5x7-single-sided-card",
     "subtotalCents: 4999",
+    "extractPrinterCouponOffers",
     "marks stale public printer pricing before showing it as current"
   ]),
   checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.apiServer}`, [
     "review-only public pricing",
     "knownPriceCount: 12",
     "sourceCount: 8",
-    "couponSourceCount: 2",
+    "couponSourceCount: 3",
+    "couponCollectionTargetCount: 5",
+    "couponProviderTargetCount: 1",
+    "retailerCouponCollectionTargetCount: 4",
     "couponOfferCount: 2",
+    "activeCouponOfferCount: 2",
+    "portalAppliedCouponOfferCount: 0",
     "providerPortalApplicationRequired: true",
     "bestAvailablePriceRequiresCouponPortalEvidence: true",
     "refreshReport.totalObservations",
@@ -90,10 +100,21 @@ const checks = [
     "$8.98 each",
     "$13.99 for 10",
     "Coupon Treatment",
+    "CRISPCARD",
+    "JUNESW",
+    "FMTC Deal Feed",
     "provider portal",
-    "coupon discounts are applied only after",
+    "Coupon discounts",
+    "are applied only after",
     "$49.99 pre-tax base",
     "coupon candidates require provider-portal application proof"
+  ]),
+  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.packageJson}`, [
+    "printer-coupon-collector",
+    "extractPrinterCouponOffers",
+    "printEntrypointChecks",
+    "bestPriceDiscountingAllowed: false",
+    '"printer:coupons:collect": "node scripts/printer-coupon-collector.mjs"'
   ]),
   checkIncludes("ci", "pricing-doctor-is-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
     '"printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs"',

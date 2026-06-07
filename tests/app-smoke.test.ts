@@ -180,7 +180,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.handoffText).toContain("Max age");
     expect(result.handoffText).toContain("Coupon offers");
     expect(result.handoffText).toContain("Coupon proof");
-    expect(result.handoffText).toContain("coupon expired");
+    expect(result.handoffText).toContain("coupon portal evidence required");
     expect(result.handoffText).toContain("not live quotes");
     expect(result.downloadTiles).toBe(4);
     expect(result.scrollWidth).toBe(result.clientWidth);

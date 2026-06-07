@@ -45,6 +45,11 @@ and `src/printerPricing.ts`.
 - `npm run printer:pricing:doctor` verifies the observed official-source
   catalog, no-network collection rules, manual-confirmation posture, UI/API
   exposure, and CI wiring.
+- `npm run printer:coupons:collect` is an operator-run collector for the
+  explicit coupon targets in `src/printerPricing.ts`. It fetches public
+  retailer pages and print entrypoints, extracts source-listed codes, and still
+  returns `bestPriceDiscountingAllowed: false` until checkout proves a code
+  applied to the same cart.
 - The customer bootstrap exposes only a safe pricing preview: selected vendor,
   known public price count, source count, maximum source age policy, and
   `liveQuote: false`.
@@ -53,19 +58,25 @@ and `src/printerPricing.ts`.
 
 ## Coupon Treatment
 
-Coupons are part of pricing collection. The collector may use a proper coupon
-provider feed or scrape retailer public coupon pages, then must apply candidate
-codes in the provider portal/cart before ranking a best available price.
-coupon discounts are applied only after provider-portal evidence proves the
-code worked for the same product, quantity, fulfillment mode, and account state.
+Coupons are part of pricing collection. The safest production shape is a
+licensed coupon provider feed for discovery plus official retailer coupon pages
+for Walgreens/CVS promo terms. Candidate codes must still be applied in the
+provider portal/cart before ranking a best available price. Coupon discounts
+are applied only after provider-portal evidence proves the code worked for the
+same product, quantity, fulfillment mode, and account state.
 
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |
-| Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 6, 2026 expiration | Stored as source-listed evidence only on June 7, 2026; not applied unless a provider-portal checkout session still applies it |
-| CVS Photo | [CVS Photo coupons](https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-l2-bnrshop-fs-photo) | `GRADUATION`, 60% off premium cards, listed with June 6, 2026 expiration | Stored as source-listed evidence only on June 7, 2026; not applied unless a provider-portal checkout session still applies it |
+| Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
+| CVS Photo | [CVS Photo coupons](https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo) plus [CVS Photo prints](https://www.cvs.com/photo/prints) print entrypoint | `JUNESW`, 50% off sitewide photo products, listed with June 20, 2026 expiration; the print entrypoint also shows the same code in weekly offers | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
+
+| Provider-feed target | Current treatment |
+| --- | --- |
+| [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. |
 
 The handoff UI and API bootstrap show coupon-source counts and portal-proof
-status. They must not show a discounted total as best available until the vendor
+status. They show active source-listed offers separately from portal-applied
+offers. They must not show a discounted total as best available until the vendor
 checkout confirms the discount on the same product, quantity, store, pickup or
 shipping path, and customer account state.
 
