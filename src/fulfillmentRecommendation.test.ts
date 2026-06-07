@@ -33,8 +33,9 @@ describe("fulfillment recommendations", () => {
       liveQuote: false,
       directOrderEnabled: false,
       requiresManualConfirmation: true,
-      confirmationCopy: expect.stringContaining("provider-portal-applied coupons")
+      confirmationCopy: expect.stringContaining("discounts confirmed at checkout")
     });
+    expect(recommendationSet.recommendations[0].confirmationCopy).not.toMatch(/provider-portal|gated/i);
     expect(recommendationSet.recommendations[1]).toMatchObject({
       label: "Fastest pickup candidate",
       vendorName: "Walmart Photo",

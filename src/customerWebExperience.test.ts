@@ -9,6 +9,7 @@ import {
 const baseInput: CustomerWebExperienceInput = {
   hasWorkspace: false,
   cardReviewStarted: false,
+  proofApproved: false,
   opportunityTitle: "Anniversary card for Sara and Ahmed",
   opportunityDateLabel: "July 12, 2026",
   opportunityStatus: "ready",
@@ -66,7 +67,7 @@ describe("customer web experience contract", () => {
     expect(validateCustomerWebExperience(experience)).toEqual([]);
   });
 
-  it("unlocks proof and fulfillment only after the card review starts", () => {
+  it("keeps print comparison locked while proof review is still active", () => {
     const experience = buildCustomerWebExperience({
       ...baseInput,
       hasWorkspace: true,
@@ -75,22 +76,44 @@ describe("customer web experience contract", () => {
 
     expect(experience.stage).toBe("proof-review");
     expect(experience.primaryAction).toMatchObject({ id: "continue-proof", label: "Continue proof review" });
-    expect(experience.supportingActions.map((action) => action.id)).toEqual(["choose-fulfillment", "add-memory"]);
+    expect(experience.supportingActions.map((action) => action.id)).toEqual(["add-memory"]);
     expect(experience.actions.filter((action) => action.priority === "primary")).toEqual([
       expect.objectContaining({ id: "continue-proof", label: "Continue proof review" })
     ]);
-    expect(experience.actions.map((action) => action.id)).toEqual([
-      "continue-proof",
-      "choose-fulfillment",
-      "add-memory"
+    expect(experience.actions.map((action) => action.id)).toEqual(["continue-proof", "add-memory"]);
+    expect(experience.fulfillment).toMatchObject({
+      title: "Print options after proof",
+      statusLabel: "Waiting for proof approval",
+      showOptions: false
+    });
+    expect(experience.flowSteps.map((step) => step.state)).toEqual(["complete", "complete", "current", "next"]);
+    expect(validateCustomerWebExperience(experience)).toEqual([]);
+  });
+
+  it("makes print comparison the primary action after proof approval", () => {
+    const experience = buildCustomerWebExperience({
+      ...baseInput,
+      hasWorkspace: true,
+      cardReviewStarted: true,
+      proofApproved: true
+    });
+
+    expect(experience.stage).toBe("proof-review");
+    expect(experience.primaryAction).toMatchObject({ id: "choose-fulfillment", label: "Compare print options" });
+    expect(experience.supportingActions.map((action) => action.id)).toEqual(["add-memory"]);
+    expect(experience.actions.filter((action) => action.priority === "primary")).toEqual([
+      expect.objectContaining({ id: "choose-fulfillment", label: "Compare print options" })
     ]);
+    expect(experience.actions.map((action) => action.id)).toEqual(["choose-fulfillment", "add-memory"]);
     expect(experience.fulfillment.title).toBe("Best available options");
+    expect(experience.fulfillment.showOptions).toBe(true);
+    expect(experience.flowSteps.map((step) => step.state)).toEqual(["complete", "complete", "complete", "current"]);
     expect(experience.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: "choose-fulfillment",
-          label: "Compare print options after proof",
-          detail: "Prices, discounts, and pickup are checked before checkout."
+          label: "Compare print options",
+          detail: "Review the estimate, then finish on the print shop site."
         })
       ])
     );

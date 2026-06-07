@@ -1,17 +1,20 @@
 import {
   buildRetailPrinterAdapterContract,
   buildRetailPrinterCertificationPacket,
+  getRetailPrinterOperationPolicy,
   isPlaceholderRetailProductUrl,
   retailPrinterOperationKinds,
   retailPrinterProductLinks,
   retailPrinterRequiredVendorIds,
   validateRetailPrinterOperationBlueprint,
+  validateRetailPrinterOperationPolicy,
   validateRetailPrinterProductUrl,
   type RetailPrinterAdapterContract,
   type RetailPrinterCertificationPacket,
   type RetailPrinterFulfillmentMode,
   type RetailPrinterOperationContract,
   type RetailPrinterOperationKind,
+  type RetailPrinterOperationPolicy,
   type RetailPrinterOperationStatus,
   type RetailPrinterSourceLink,
   type RetailPrinterSourceLinkPurpose,
@@ -21,19 +24,27 @@ import {
 export {
   getRetailPrinterProductLink,
   getRetailPrinterProductLinkByProvider,
+  getRetailPrinterOperationPolicy,
+  getRetailPrinterVendorOperationPolicy,
   retailPrinterProductLinks,
+  retailPrinterVendorOperationPolicies,
   type RetailPrinterAdapterContract,
   type RetailPrinterCertificationPacket,
+  type RetailPrinterCouponProof,
   type RetailPrinterFulfillmentMode,
   type RetailPrinterOperationContract,
   type RetailPrinterOperationFieldSource,
   type RetailPrinterOperationKind,
+  type RetailPrinterOperationPolicy,
   type RetailPrinterOperationRequestBlueprint,
   type RetailPrinterOperationRequestField,
   type RetailPrinterOperationStatus,
   type RetailPrinterProductLinkContract,
+  type RetailPrinterProviderAccountMode,
   type RetailPrinterSourceLink,
   type RetailPrinterSourceLinkPurpose,
+  type RetailPrinterUploadArtifactKind,
+  type RetailPrinterVendorOperationPolicy,
   type RetailPrinterVendorId
 } from "./retailPrinterContracts";
 
@@ -111,6 +122,8 @@ export interface RetailPrinterOperationPacket {
   sourceBackedFields: string[];
   receivedInputFields: string[];
   missingInputFields: string[];
+  policyViolations: string[];
+  operationPolicy: RetailPrinterOperationPolicy;
   evidenceChecklist: string[];
   operatorSteps: string[];
   safetyChecks: string[];
@@ -215,6 +228,7 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
     if (!adapter.productUrl.startsWith("https://")) issues.push(`${adapter.vendorId} adapter must persist an HTTPS product URL.`);
     issues.push(...validateRetailPrinterProductUrl(adapter));
     if (!adapter.pricingObservationId) issues.push(`${adapter.vendorId} adapter must point at a pricing observation.`);
+    issues.push(...validateRetailPrinterOperationPolicy(adapter));
     issues.push(...validateRetailPrinterSourceLinks(adapter));
     if (adapter.realOrdersEnabled || adapter.liveQuoteEnabled || adapter.imageUploadEnabled || adapter.orderPlacementEnabled) {
       issues.push(`${adapter.vendorId} adapter must not enable live retail operations.`);
@@ -311,6 +325,7 @@ function buildOperationPacket(
   input: RetailPrinterPriceAttemptInput | RetailPrinterImageUploadAttemptInput | RetailPrinterOrderAttemptInput
 ): RetailPrinterOperationPacket {
   const expectedInputFields = operation.requestBlueprint.requestFields.map((field) => field.name);
+  const operationPolicy = getRetailPrinterOperationPolicy(adapter.vendorId, operation.kind);
   const sourceBackedFields = operation.requestBlueprint.requestFields
     .filter((field) => field.source === "pricing-observation")
     .map((field) => field.name);
@@ -337,8 +352,10 @@ function buildOperationPacket(
     missingInputFields: operation.requestBlueprint.requestFields
       .filter((field) => field.required && field.source !== "pricing-observation" && !received.has(field.name))
       .map((field) => field.name),
+    policyViolations: buildPolicyViolations(adapter, operation.kind, input, operationPolicy),
+    operationPolicy,
     evidenceChecklist: operation.requiredEvidence,
-    operatorSteps: buildOperatorSteps(adapter, operation.kind, sourceLink),
+    operatorSteps: buildOperatorSteps(adapter, operation.kind, sourceLink, operationPolicy),
     safetyChecks: buildOperationSafetyChecks(operation),
     forbiddenFields: operation.requestBlueprint.forbiddenFields,
     certificationPacket: buildRetailPrinterCertificationPacket(adapter, operation, sourceLink)
@@ -357,31 +374,95 @@ function getSourceLink(
 function buildOperatorSteps(
   adapter: RetailPrinterAdapterContract,
   kind: RetailPrinterOperationKind,
-  sourceLink: RetailPrinterSourceLink
+  sourceLink: RetailPrinterSourceLink,
+  operationPolicy: RetailPrinterOperationPolicy
 ): string[] {
   if (kind === "fetch-price") {
+    const pricePolicy = operationPolicy.kind === "fetch-price" ? operationPolicy : adapter.operationPolicy.price;
     return [
       `Open ${sourceLink.label}: ${sourceLink.url}`,
       `Confirm the product is ${adapter.productName} with SKU/design code ${adapter.productSku}.`,
+      `Use adapter policy: minimum quantity ${pricePolicy.minimumQuantity}, quantity increment ${pricePolicy.quantityIncrement}, fulfillment modes ${pricePolicy.supportedFulfillmentModes.join(" or ")}.`,
       "Enter the customer-approved quantity, fulfillment mode, ZIP or store context, and candidate coupon in the provider portal.",
       "Record subtotal, tax status, coupon application status, and pickup or shipping window as evidence before showing a final price."
     ];
   }
 
   if (kind === "upload-image") {
+    const uploadPolicy = operationPolicy.kind === "upload-image" ? operationPolicy : adapter.operationPolicy.upload;
     return [
       `Open ${sourceLink.label}: ${sourceLink.url}`,
       `Use only the approved render packet for ${adapter.productName}: ${adapter.uploadAssetExpectation}`,
+      `Use adapter policy: accepted artifacts ${uploadPolicy.acceptedArtifactKinds.join(", ")}; account mode ${uploadPolicy.providerAccountMode}.`,
       "Upload the print-ready files in the provider portal without advancing to payment.",
       "Record the provider preview, asset acceptance result, and crop/fold state before asking for final customer approval."
     ];
   }
 
+  const orderPolicy = operationPolicy.kind === "place-order" ? operationPolicy : adapter.operationPolicy.order;
   return [
     `Open ${sourceLink.label}: ${sourceLink.url}`,
     "Verify the provider cart still matches the approved card proof, quote evidence, pickup or shipping path, and coupon state.",
+    `Use adapter policy: required approvals ${orderPolicy.requiredApprovalFields.join(", ")}; recovery evidence ${orderPolicy.recoveryEvidenceFields.join(", ")}.`,
     "Use only a tokenized payment authorization reference and confirm the cancellation or wrong-store recovery plan.",
     "Record the order confirmation, pickup or shipping commitment, and audit event IDs after customer final approval."
+  ];
+}
+
+function buildPolicyViolations(
+  adapter: RetailPrinterAdapterContract,
+  kind: RetailPrinterOperationKind,
+  input: RetailPrinterPriceAttemptInput | RetailPrinterImageUploadAttemptInput | RetailPrinterOrderAttemptInput,
+  operationPolicy: RetailPrinterOperationPolicy
+): string[] {
+  if (kind === "fetch-price") {
+    const priceInput = input as RetailPrinterPriceAttemptInput;
+    const pricePolicy = operationPolicy.kind === "fetch-price" ? operationPolicy : adapter.operationPolicy.price;
+    const violations: string[] = [];
+    if (!Number.isFinite(priceInput.quantity) || priceInput.quantity < pricePolicy.minimumQuantity) {
+      violations.push(`${adapter.vendorId} fetch-price quantity must be at least ${pricePolicy.minimumQuantity}.`);
+    } else if ((priceInput.quantity - pricePolicy.minimumQuantity) % pricePolicy.quantityIncrement !== 0) {
+      violations.push(`${adapter.vendorId} fetch-price quantity must follow increment ${pricePolicy.quantityIncrement}.`);
+    }
+    if (!pricePolicy.supportedFulfillmentModes.includes(priceInput.fulfillmentMode)) {
+      violations.push(
+        `${adapter.vendorId} fetch-price fulfillment mode ${priceInput.fulfillmentMode} is not supported for this product link.`
+      );
+    }
+    if (!String(priceInput.storeOrShippingZip ?? "").trim()) {
+      violations.push(`${adapter.vendorId} fetch-price requires store or shipping context before provider portal collection.`);
+    }
+    return violations;
+  }
+
+  if (kind === "upload-image") {
+    const uploadInput = input as RetailPrinterImageUploadAttemptInput;
+    return [
+      ...(uploadInput.renderPacketArtifactUris.length === 0
+        ? [`${adapter.vendorId} upload-image requires approved render packet artifacts.`]
+        : []),
+      ...(!String(uploadInput.panelManifestChecksum ?? "").trim()
+        ? [`${adapter.vendorId} upload-image requires a render manifest checksum.`]
+        : []),
+      ...(!String(uploadInput.providerAccountReference ?? "").trim()
+        ? [`${adapter.vendorId} upload-image requires provider account or guest session reference.`]
+        : [])
+    ];
+  }
+
+  const orderInput = input as RetailPrinterOrderAttemptInput;
+  return [
+    ...(!String(orderInput.providerCartId ?? "").trim() ? [`${adapter.vendorId} place-order requires provider cart id.`] : []),
+    ...(!String(orderInput.quoteEvidenceId ?? "").trim() ? [`${adapter.vendorId} place-order requires quote evidence id.`] : []),
+    ...(!String(orderInput.paymentAuthorizationReference ?? "").trim()
+      ? [`${adapter.vendorId} place-order requires tokenized payment authorization reference.`]
+      : []),
+    ...(!String(orderInput.customerApprovalId ?? "").trim()
+      ? [`${adapter.vendorId} place-order requires final customer approval id.`]
+      : []),
+    ...(!String(orderInput.cancellationRecoveryPlanId ?? "").trim()
+      ? [`${adapter.vendorId} place-order requires cancellation recovery plan id.`]
+      : [])
   ];
 }
 

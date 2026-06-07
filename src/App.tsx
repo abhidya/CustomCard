@@ -537,6 +537,7 @@ function App() {
             fulfillmentRecommendationSet={fulfillmentRecommendationSet}
             productionReadiness={productionReadiness}
             selectedLocale={selectedLocale}
+            validation={validation}
             workspace={workspace}
           />
         )}
@@ -876,6 +877,7 @@ function CustomerPanelView({
   fulfillmentRecommendationSet,
   productionReadiness,
   selectedLocale,
+  validation,
   workspace
 }: {
   calendarChoices: CalendarOnboardingChoice[];
@@ -894,6 +896,7 @@ function CustomerPanelView({
   fulfillmentRecommendationSet: FulfillmentRecommendationSet;
   productionReadiness: ProductionReadinessSummary;
   selectedLocale: SupportedLocale;
+  validation: CardValidation;
   workspace: LocalWorkspace | undefined;
 }) {
   const recommendationByKind = new Map(
@@ -907,6 +910,7 @@ function CustomerPanelView({
   const customerExperience = buildCustomerWebExperience({
     hasWorkspace,
     cardReviewStarted,
+    proofApproved: validation.passed,
     opportunityTitle: opportunity.title,
     opportunityDateLabel: opportunity.dateLabel,
     opportunityStatus: opportunity.status,

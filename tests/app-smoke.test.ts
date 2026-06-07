@@ -439,11 +439,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("Cheapest known price");
     expect(result.reviewedCustomerText).toContain("Fastest pickup candidate");
     expect(result.reviewedCustomerText).toContain("Cheapest shipped option");
-    expect(result.reviewedCustomerText).toContain("Continue proof review");
-    expect(result.reviewedJourneyActions.join(" ")).toContain("Continue proof review");
+    expect(result.reviewedCustomerText).toContain("Compare print options");
+    expect(result.reviewedJourneyActions.join(" ")).toContain("Compare print options");
     expect(result.reviewedJourneyActions).toHaveLength(1);
     expect(result.reviewedPrimaryActions).toBe(1);
-    expect(result.reviewedSupportingActions.join(" ")).toContain("Compare print options");
+    expect(result.reviewedSupportingActions.join(" ")).not.toContain("Compare print options");
     expect(result.reviewedSupportingActions.join(" ")).toContain("Add memory");
     expect(result.reviewedSupportingPrimaryActions).toBe(0);
     expect(result.reviewedCustomerText).toContain("Card assistant");

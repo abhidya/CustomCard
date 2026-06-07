@@ -352,7 +352,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "offline-sync",
     title: "Saved offline",
-    detail: "Customer actions queue locally and replay through idempotent API mutations when the session is available.",
+    detail: "Customer actions stay saved locally and replay safely when the session is available.",
     status: "Local",
     customerVisible: true
   }

@@ -30,8 +30,9 @@ These links are owned by `retailPrinterProductLinks` in
 printer `docsUrl` values through `getRetailPrinterProductLinkByProvider()`, and
 `src/retailPrinterAdapters.ts` consumes the same contract module when building
 blocked operation packets. That keeps provider identity, exact product URLs,
-operation blueprints, certification packets, admin catalog links, and docs from
-drifting to generic category pages or placeholder links.
+provider-specific operation policy, operation blueprints, certification packets,
+admin catalog links, and docs from drifting to generic category pages or
+placeholder links.
 
 | Vendor | Product link | Price fetch source | Image upload source | Order placement source |
 | --- | --- | --- | --- | --- |
@@ -48,11 +49,17 @@ fields, response evidence, forbidden data fields, and success criteria. The
 methods for price, upload, and order attempts. Each method returns an
 `operationPacket` with the persisted product link, pricing observation, evidence
 checklist, operator steps, safety checks, source-backed fields, and missing
-input fields. The packet is an operator evidence checklist, not a provider API
-payload: every result keeps `requestPrepared: false`, `networkAttempted: false`,
-and the operation status `blocked` until certification evidence exists. Raw
-relationship memories, raw payment card data, and unapproved recipient PII are
-forbidden from every operation.
+input fields. The packet now also includes an `operationPolicy` and
+`policyViolations` list so provider-specific rules stay inside the Adapter
+Module instead of leaking into customer or admin callers. Those policies encode
+minimum quantity, quantity increment, supported pickup/shipping modes,
+same-cart checkout discount proof, accepted print artifacts, provider account
+mode, required approval fields, and recovery evidence. The packet is an
+operator evidence checklist, not a provider API payload: every result keeps
+`requestPrepared: false`, `networkAttempted: false`, and the operation status
+`blocked` until certification evidence exists. Raw relationship memories, raw
+payment card data, and unapproved recipient PII are forbidden from every
+operation.
 
 Each operation packet also carries a `certificationPacket` for the future
 certification review. It records the exact provider portal URL, product SKU,

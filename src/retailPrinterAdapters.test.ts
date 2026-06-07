@@ -41,6 +41,27 @@ describe("retail printer adapters", () => {
       expect(adapter.liveQuoteEnabled).toBe(false);
       expect(adapter.imageUploadEnabled).toBe(false);
       expect(adapter.orderPlacementEnabled).toBe(false);
+      expect(adapter.operationPolicy).toMatchObject({
+        vendorId: adapter.vendorId,
+        providerAdapterId: adapter.providerAdapterId,
+        productUrl: expectedRetailSources[adapter.vendorId],
+        productSku: adapter.productSku,
+        price: expect.objectContaining({
+          couponProof: "same-cart-provider-portal",
+          requiredEvidenceFields: expect.arrayContaining(["subtotal", "taxStatus", "pickupOrShippingWindow"])
+        }),
+        upload: expect.objectContaining({
+          acceptedArtifactKinds: expect.arrayContaining(["combined-pdf-proof", "svg-panel-set"]),
+          previewEvidenceFields: expect.arrayContaining(["providerPreviewScreenshot", "cropFoldState"])
+        }),
+        order: expect.objectContaining({
+          requiredApprovalFields: expect.arrayContaining(["customerApprovalId", "quoteEvidenceId"]),
+          recoveryEvidenceFields: expect.arrayContaining(["cancellationRecoveryPlanId", "wrongStoreRecoveryPlanId"])
+        })
+      });
+      expect(adapter.operationPolicy.productIdentityTokens).toEqual(
+        expect.arrayContaining(retailPrinterProductLinks[adapter.vendorId].requiredUrlTokens)
+      );
       expect(adapter.sourceLinks.map((sourceLink) => sourceLink.purpose)).toEqual([
         "product",
         "fetch-price",
@@ -202,6 +223,12 @@ describe("retail printer adapters", () => {
         sourceLink: expect.objectContaining({ purpose: result.operation, url: expectedRetailSources.fedex }),
         forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
       });
+      expect(result.operationPacket.operationPolicy).toEqual(expect.any(Object));
+      if (result.operation === "fetch-price") {
+        expect(result.operationPacket.operationPolicy).toMatchObject({
+          supportedFulfillmentModes: ["pickup", "shipping"]
+        });
+      }
       expect(result.operationPacket.certificationPacket).toMatchObject({
         packetId: `fedex-${result.operation}-certification-packet`,
         vendorId: "fedex",
@@ -233,6 +260,7 @@ describe("retail printer adapters", () => {
         result.operation === "place-order" ? ["quoteEvidenceId"] : expect.arrayContaining(["productSku"])
       );
       expect(result.operationPacket.missingInputFields).toEqual([]);
+      expect(result.operationPacket.policyViolations).toEqual([]);
       expect(result.missingEvidence).toEqual(expect.arrayContaining(result.requiredEvidence));
       expect(result.blockedReason.toLowerCase()).toMatch(/certification|disabled|review-only/);
     }
@@ -240,6 +268,43 @@ describe("retail printer adapters", () => {
     expect(upload.operation).toBe("upload-image");
     expect(order.operation).toBe("place-order");
     expect(order.missingEvidence).toEqual(expect.arrayContaining(["Vendor certification", "Payment and cancellation recovery proof"]));
+  });
+
+  it("keeps provider-specific operation rules inside the retail adapter packet", () => {
+    const walmart = createRetailPrinterOperationAdapter("walmart");
+    const invalidShipping = walmart.fetchPrice({
+      quantity: 0,
+      fulfillmentMode: "shipping",
+      storeOrShippingZip: ""
+    });
+
+    expect(invalidShipping.operationPacket.operationPolicy).toMatchObject({
+      minimumQuantity: 1,
+      quantityIncrement: 1,
+      supportedFulfillmentModes: ["pickup"],
+      couponProof: "same-cart-provider-portal"
+    });
+    expect(invalidShipping.operationPacket.policyViolations).toEqual(
+      expect.arrayContaining([
+        "walmart fetch-price quantity must be at least 1.",
+        "walmart fetch-price fulfillment mode shipping is not supported for this product link.",
+        "walmart fetch-price requires store or shipping context before provider portal collection."
+      ])
+    );
+    expect(invalidShipping.networkAttempted).toBe(false);
+    expect(invalidShipping.requestPrepared).toBe(false);
+
+    const fedex = createRetailPrinterOperationAdapter("fedex").fetchPrice({
+      quantity: 10,
+      fulfillmentMode: "shipping",
+      storeOrShippingZip: "10001"
+    });
+
+    expect(fedex.operationPacket.operationPolicy).toMatchObject({
+      minimumQuantity: 10,
+      supportedFulfillmentModes: ["pickup", "shipping"]
+    });
+    expect(fedex.operationPacket.policyViolations).toEqual([]);
   });
 
   it("builds operation packets for every retail vendor operation without preparing provider requests", () => {

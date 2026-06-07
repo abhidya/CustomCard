@@ -14,6 +14,7 @@ export type CustomerWebStepState = "complete" | "current" | "next";
 export interface CustomerWebExperienceInput {
   hasWorkspace: boolean;
   cardReviewStarted: boolean;
+  proofApproved: boolean;
   opportunityTitle: string;
   opportunityDateLabel: string;
   opportunityStatus: "ready" | "needs-more-detail";
@@ -90,7 +91,8 @@ export interface CustomerWebExperience {
 
 export function buildCustomerWebExperience(input: CustomerWebExperienceInput): CustomerWebExperience {
   const stage = resolveStage(input);
-  const actions = buildActions(stage);
+  const proofApproved = stage === "proof-review" && input.proofApproved;
+  const actions = buildActions(stage, proofApproved);
   const primaryAction = actions.find((action) => action.priority === "primary");
   if (!primaryAction) throw new Error(`Customer web stage ${stage} is missing a primary action.`);
   const localeReviewLabel = input.selectedLocaleReviewState === "ready" ? "Ready" : "Review";
@@ -131,7 +133,7 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
     actions,
     primaryAction,
     supportingActions: actions.filter((action) => action.priority === "secondary"),
-    flowSteps: buildFlowSteps(stage),
+    flowSteps: buildFlowSteps(stage, proofApproved),
     event: {
       title: input.opportunityTitle,
       dateLabel: input.opportunityDateLabel,
@@ -143,11 +145,11 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
       checkoutLabel: input.checkoutMode === "ready" ? "Ready" : "Confirm first"
     },
     fulfillment: {
-      title: stage === "proof-review" ? "Best available options" : "Print options after proof",
-      statusLabel: stage === "proof-review" ? "Ready to compare" : "Waiting for proof",
-      holdTitle: "Print options unlock after the card proof exists.",
+      title: proofApproved ? "Best available options" : "Print options after proof",
+      statusLabel: proofApproved ? "Ready to compare" : "Waiting for proof approval",
+      holdTitle: "Print options unlock after the proof passes review.",
       holdDescription: "Final price, coupons, tax, and pickup time are confirmed before checkout.",
-      showOptions: stage === "proof-review"
+      showOptions: proofApproved
     },
     panelNote:
       stage === "setup"
@@ -249,7 +251,7 @@ function resolveStage(input: CustomerWebExperienceInput): CustomerWebStage {
   return "proof-review";
 }
 
-function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
+function buildActions(stage: CustomerWebStage, proofApproved = false): CustomerWebAction[] {
   if (stage === "setup") {
     return [
       {
@@ -284,18 +286,29 @@ function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
     ];
   }
 
+  if (!proofApproved) {
+    return [
+      {
+        id: "continue-proof",
+        label: "Continue proof review",
+        detail: "Check copy, language, and artwork before export.",
+        priority: "primary"
+      },
+      {
+        id: "add-memory",
+        label: "Add memory",
+        detail: "Optional: save details for future cards.",
+        priority: "secondary"
+      }
+    ];
+  }
+
   return [
     {
-      id: "continue-proof",
-      label: "Continue proof review",
-      detail: "Check copy, language, and artwork before export.",
-      priority: "primary"
-    },
-    {
       id: "choose-fulfillment",
-      label: "Compare print options after proof",
-      detail: "Prices, discounts, and pickup are checked before checkout.",
-      priority: "secondary"
+      label: "Compare print options",
+      detail: "Review the estimate, then finish on the print shop site.",
+      priority: "primary"
     },
     {
       id: "add-memory",
@@ -306,7 +319,7 @@ function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
   ];
 }
 
-function buildFlowSteps(stage: CustomerWebStage): CustomerWebStep[] {
+function buildFlowSteps(stage: CustomerWebStage, proofApproved = false): CustomerWebStep[] {
   if (stage === "setup") {
     return [
       { label: "Create workspace", detail: "Local browser storage", state: "current" },
@@ -328,7 +341,7 @@ function buildFlowSteps(stage: CustomerWebStage): CustomerWebStep[] {
   return [
     { label: "Workspace", detail: "Ready in this browser", state: "complete" },
     { label: "Event", detail: "Approved for drafting", state: "complete" },
-    { label: "Proof card", detail: "Current step", state: "current" },
-    { label: "Print options", detail: "After proof review", state: "next" }
+    { label: "Proof card", detail: proofApproved ? "Approved" : "Current step", state: proofApproved ? "complete" : "current" },
+    { label: "Print options", detail: proofApproved ? "Current step" : "After proof review", state: proofApproved ? "current" : "next" }
   ];
 }

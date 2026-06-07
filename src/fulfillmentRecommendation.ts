@@ -47,7 +47,7 @@ export function buildFulfillmentRecommendations(comparison: PrinterPricingCompar
       "cheapest-known-price",
       "Cheapest known price",
       cheapestKnown,
-      "Effective price includes only provider-portal-applied coupons; tax, stock, and checkout confirmation remain gated."
+      "Effective price includes only discounts confirmed at checkout; tax, stock, and checkout still need review."
     ),
     buildRecommendation(
       "fastest-pickup",
@@ -154,7 +154,7 @@ function buildRecommendation(
     directOrderEnabled: false,
     requiresManualConfirmation: true,
     confirmationCopy,
-    blocker: "Live tax, stock, pickup slot, shipping fee, payment, and direct order submission remain gated."
+    blocker: "Live tax, stock, pickup slot, shipping fee, payment, and direct order submission still need review."
   };
 }
 
