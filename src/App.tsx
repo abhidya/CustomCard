@@ -723,7 +723,7 @@ function MobileAppPreviewView() {
               </div>
             </section>
 
-            <MobileSection title="Sign in and import">
+            <MobileSection title="Start with an event">
               <div className="mobileActionGrid">
                 {mobileAccountOptions.map((option) => (
                   <MobileActionTile
@@ -744,13 +744,13 @@ function MobileAppPreviewView() {
               </div>
             </MobileSection>
 
-            <MobileSection title="Card queue">
+            <MobileSection title="Cards to review">
               {mobileCardQueueItems.map((item) => (
                 <MobileQueueRow key={item.id} item={item} />
               ))}
             </MobileSection>
 
-            <MobileSection title="Approval controls">
+            <MobileSection title="Card actions">
               <div className="mobilePillGrid">
                 {mobileApprovalActions.map((action) => (
                   <span key={action.kind}>{action.label}</span>
@@ -766,19 +766,19 @@ function MobileAppPreviewView() {
               </div>
             </MobileSection>
 
-            <MobileSection title="Best available options">
+            <MobileSection title="Printing options">
               {mobileFulfillmentRecommendations.map((recommendation) => (
                 <MobileFulfillmentRow key={recommendation.kind} recommendation={recommendation} />
               ))}
             </MobileSection>
 
-            <MobileSection title="Checkout confirmation">
+            <MobileSection title="Finish manually">
               {mobileHandoffSteps.map((step) => (
                 <MobileHandoffRow key={step.label} step={step} />
               ))}
             </MobileSection>
 
-            <MobileSection title="Offline sync">
+            <MobileSection title="Saved offline">
               <div className="mobileSyncBox">
                 <Lock size={16} />
                 <span>

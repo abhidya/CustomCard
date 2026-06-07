@@ -257,19 +257,19 @@ describeWithChrome("CustomCard UI smoke", () => {
 
     expect(result.h2).toBe("Mobile app");
     expect(result.text).toContain("Customer mobile panel");
-    expect(result.text).toContain("Google Calendar connection");
+    expect(result.text).toContain("Google Calendar is not connected yet");
     expect(result.text).toContain("Apple Calendar ICS export");
     expect(result.text).toContain("Review calendar options");
     expect(result.text).toContain("Paste invite or ICS");
     expect(result.text).not.toContain("Future calendar sync");
     expect(result.text).not.toContain("Continue with Google");
     expect(result.text).not.toContain("Continue with Apple");
-    expect(result.text).toContain("Card queue");
-    expect(result.text).toContain("Approval controls");
+    expect(result.text).toContain("Cards to review");
+    expect(result.text).toContain("Card actions");
     expect(result.text).toContain("Card assistant");
-    expect(result.text).toContain("Best available options");
-    expect(result.text).toContain("Checkout confirmation");
-    expect(result.text).toContain("Offline sync");
+    expect(result.text).toContain("Printing options");
+    expect(result.text).toContain("Finish manually");
+    expect(result.text).toContain("Saved offline");
     expect(result.text).toContain("Ordering");
     expect(result.text).toContain("live proof claims blocked");
     expect(result.deviceSections).toBeGreaterThanOrEqual(7);

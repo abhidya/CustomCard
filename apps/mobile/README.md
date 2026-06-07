@@ -4,7 +4,7 @@ This is the iOS/Android customer app boundary. The current app shell mirrors the
 web customer panel and adds a mobile-specific workflow contract: Google/Apple
 entry points, calendar/email/invite import actions, card queue items, customer
 approval controls, approved memory review, local scripted chat, card proof path,
-best available pickup/shipped fulfillment recommendations, offline idempotent
+best available pickup/shipped print recommendations, offline idempotent
 sync, locale readiness, and checkout confirmation. The customer state and
 render snapshot live in `src/customerExperience.ts`, a pure module tested by the
 root Vitest suite and inspected by the mobile doctor. `App.tsx` is the Expo root
@@ -12,7 +12,7 @@ entrypoint and re-exports the native shell from `src/App.tsx`, which renders the
 `mobileRenderSnapshot` instead of importing raw contract arrays directly.
 
 Calendar import is intentionally explicit in the mobile shell: paste invite/ICS
-is the ready local path, Google Calendar is shown as OAuth-readiness gated, and
+is the ready local path, Google Calendar is shown as not connected yet, and
 Apple Calendar is shown as manual ICS export. The mobile app does not prepare a
 Google request URL, store calendar credentials, request Apple credentials, or
 claim native calendar sync.
@@ -21,7 +21,7 @@ claim native calendar sync.
 
 The mobile proof is deterministic and repo-local. It proves that the native shell
 source and customer contract align with the web customer flow stages:
-account/import, event review, card approval, proof review, fulfillment review,
+account/import, event review, card approval, proof review, print options review,
 and checkout confirmation. The `mobileProofBoundary` contract intentionally
 blocks native emulator render proof, signed native artifact proof, app-store
 review proof, and live retail-order proof.
@@ -42,7 +42,7 @@ tooling and credentials outside this repo-local Vite verification loop. Real
 ordering, live quotes, live OAuth, and paid generation remain disabled until
 their production evidence gates pass.
 
-## Demo paths
+## Preview paths
 
 Browser preview through the main Vite app:
 

@@ -1424,9 +1424,10 @@ describe("production infrastructure contract", () => {
     expect(mobileExperience).toContain("mobileRenderSnapshot");
     expect(mobileExperience).toContain("buildMobileRenderSnapshot");
     expect(mobileExperience).toContain("validateMobileRenderSnapshot");
+    expect(mobileExperience).toContain("collectMobileCustomerCopy");
     expect(mobileExperience).toContain("Card assistant");
-    expect(mobileExperience).toContain("Sign in and import");
-    expect(mobileExperience).toContain("Best available options");
+    expect(mobileExperience).toContain("Start with an event");
+    expect(mobileExperience).toContain("Printing options");
     expect(mobileExperience).toContain("mobileChatTranscript");
     expect(mobileExperience).toContain("mobileRenderChoices");
     expect(mobileExperience).toContain("mobileAccountOptions");

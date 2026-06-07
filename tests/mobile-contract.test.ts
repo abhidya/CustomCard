@@ -24,6 +24,7 @@ import {
   mobileTodaySummary,
   summarizeMobileRenderSnapshot,
   requiredMobileCapabilities,
+  collectMobileCustomerCopy,
   validateMobileRenderSnapshot,
   summarizeMobileExperience,
   validateMobileExperience,
@@ -80,12 +81,12 @@ describe("mobile customer experience contract", () => {
     );
   });
 
-  it("keeps mobile sign-in, import, queue, chat, fulfillment, and checkout paths local or gated", () => {
+  it("keeps mobile sign-in, import, queue, chat, print options, and checkout paths local or gated", () => {
     expect(mobileAccountOptions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           provider: "Google",
-          label: "Google Calendar connection",
+          label: "Google Calendar",
           liveOAuthEnabled: false,
           sourceMode: "oauth-readiness",
           canStartNow: false,
@@ -104,7 +105,7 @@ describe("mobile customer experience contract", () => {
     expect(mobileImportActions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ kind: "calendar", label: "Review calendar options", customerVisible: true }),
-        expect.objectContaining({ kind: "email", label: "Future email receipts", customerVisible: true }),
+        expect.objectContaining({ kind: "email", label: "Email receipts later", customerVisible: true }),
         expect.objectContaining({ kind: "invite", label: "Paste invite or ICS", sourceMode: "local-paste" })
       ])
     );
@@ -217,7 +218,7 @@ describe("mobile customer experience contract", () => {
     );
     expect(mobileHandoffSteps).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ label: "Download SVG set", realOrderState: "manual" }),
+        expect.objectContaining({ label: "Download print package", realOrderState: "manual" }),
         expect.objectContaining({ label: "Confirm pickup or shipping", realOrderState: "disabled" })
       ])
     );
@@ -242,6 +243,17 @@ describe("mobile customer experience contract", () => {
     );
   });
 
+  it("keeps customer-visible mobile copy free of implementation-stage jargon", () => {
+    const customerCopy = collectMobileCustomerCopy().join(" ");
+
+    expect(validateMobileExperience()).toEqual([]);
+    expect(customerCopy).toContain("Google Calendar is not connected yet");
+    expect(customerCopy).toContain("Print options");
+    expect(customerCopy).toContain("Download print package");
+    expect(customerCopy).toContain("Discounts are confirmed at checkout");
+    expect(customerCopy).not.toMatch(/\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i);
+  });
+
   it("builds a render snapshot for the native app shell without exposing contract internals", () => {
     const source = readFileSync("apps/mobile/src/App.tsx", "utf8");
     const summary = summarizeMobileRenderSnapshot();
@@ -260,11 +272,11 @@ describe("mobile customer experience contract", () => {
     expect(mobileRenderSnapshot).toMatchObject({
       screenTitle: "CustomCard",
       hero: expect.objectContaining({
-        eyebrow: "Customer mobile panel",
+        eyebrow: "Your card assistant",
         title: "CustomCard",
         primaryAction: expect.objectContaining({
-          label: "Approve card",
-          modeLabel: "Queued"
+          label: "Review Sara and Ahmed's card",
+          modeLabel: "Ready to review"
         })
       }),
       safetyBand: expect.objectContaining({
@@ -277,19 +289,32 @@ describe("mobile customer experience contract", () => {
         ]
       }),
       sections: expect.arrayContaining([
-        expect.objectContaining({ title: "Sign in and import" }),
-        expect.objectContaining({ title: "Card queue" }),
+        expect.objectContaining({ title: "Start with an event" }),
+        expect.objectContaining({ title: "Cards to review" }),
         expect.objectContaining({ title: "Card assistant" }),
-        expect.objectContaining({ title: "Best available options" }),
-        expect.objectContaining({ title: "Checkout confirmation" }),
-        expect.objectContaining({ title: "Offline sync" })
+        expect.objectContaining({ title: "Printing options" }),
+        expect.objectContaining({ title: "Finish manually" }),
+        expect.objectContaining({ title: "Saved offline" })
       ])
     });
     expect(mobileRenderSnapshot.sections.flatMap((section) => section.rows).map((row) => row.modeLabel)).toEqual(
-      expect.arrayContaining(["Local", "Queued", "Free", "Gated", "Confirm", "Manual", "Off"])
+      expect.arrayContaining([
+        "Local",
+        "Queued",
+        "Free",
+        "Later",
+        "Confirm",
+        "Manual",
+        "Off",
+        "Not connected",
+        "Ready to review",
+        "Saved offline"
+      ])
     );
     expect(mobileRenderSnapshot.footerSafetyMessages.join(" ")).toContain("No automatic order");
-    expect(JSON.stringify(mobileRenderSnapshot)).not.toMatch(/repo-local-contract|native-emulator-render|signed-native-artifact|app-store-review|adapter|provider|vendor api|retail-printer/i);
+    expect(JSON.stringify(mobileRenderSnapshot)).not.toMatch(
+      /repo-local-contract|native-emulator-render|signed-native-artifact|app-store-review|adapter|provider|vendor api|retail-printer|oauth[- ]gated|credential[- ]gated|handoff|fulfillment/i
+    );
     expect(JSON.stringify(mobileRenderSnapshot)).not.toContain("Future calendar sync");
     expect(JSON.stringify(mobileRenderSnapshot)).toContain("Review calendar options");
   });

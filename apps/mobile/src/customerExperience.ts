@@ -259,7 +259,7 @@ export interface MobileRenderSnapshot {
 
 export const mobileSafetyBanner = {
   label: "Confirm before checkout",
-  detail: "No automatic charge, live quote, or direct order runs from the mobile shell."
+  detail: "Prices, payment, pickup, and ordering are confirmed before checkout."
 } as const;
 
 export const mobileProofBoundary: MobileProofBoundary = {
@@ -285,7 +285,7 @@ export const mobileTodaySummary: MobileTodaySummary = {
   eventLabel: "Anniversary",
   dueLabel: "Today by 5:00 PM",
   primaryAction: "approve",
-  riskBadge: "Review before handoff",
+  riskBadge: "Ready to review",
   panelCount: 4,
   offlineReady: true,
   realOrdersEnabled: false,
@@ -295,21 +295,21 @@ export const mobileTodaySummary: MobileTodaySummary = {
 export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "account-import",
-    title: "Sign in and import",
-    detail: "Paste invite/ICS is ready now; Google stays OAuth-gated and Apple uses manual ICS export.",
+    title: "Start with an event",
+    detail: "Paste invite/ICS works now; Google Calendar is not connected yet, and Apple uses manual ICS export.",
     status: "Ready",
     customerVisible: true
   },
   {
     id: "card-queue",
-    title: "Card queue",
+    title: "Cards to review",
     detail: "Upcoming card candidates show event source, approval state, due date, and next customer action.",
     status: "Ready",
     customerVisible: true
   },
   {
     id: "approval-controls",
-    title: "Approval controls",
+    title: "Card actions",
     detail: "Approve, edit tone, snooze, dismiss, or request local regeneration before any paid generation is used.",
     status: "Manual",
     customerVisible: true
@@ -337,21 +337,21 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   },
   {
     id: "pricing-preview",
-    title: "Fulfillment options",
+    title: "Print options",
     detail: "The app compares cheapest known price, fastest pickup, and cheapest shipped options before checkout.",
     status: "Manual",
     customerVisible: true
   },
   {
     id: "handoff",
-    title: "Checkout confirmation",
+    title: "Finish manually",
     detail: "Manual upload stays active while automatic retail checkout remains blocked.",
     status: "Manual",
     customerVisible: true
   },
   {
     id: "offline-sync",
-    title: "Offline sync",
+    title: "Saved offline",
     detail: "Customer actions queue locally and replay through idempotent API mutations when the session is available.",
     status: "Local",
     customerVisible: true
@@ -361,12 +361,12 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
 export const mobileAccountOptions: MobileAccountOption[] = [
   {
     provider: "Google",
-    label: "Google Calendar connection",
-    detail: "Requires OAuth setup, consent copy, token storage, and revocation handling before use; paste remains available now.",
+    label: "Google Calendar",
+    detail: "Google Calendar is not connected yet. Paste invite/ICS works now while consent and revocation controls are finished.",
     sourceMode: "oauth-readiness",
     canStartNow: false,
     dataBoundary: "Event metadata only after explicit consent; raw calendar descriptions stay out of storage.",
-    credentialBoundary: "No OAuth token, refresh token, redirect callback, or Google provider request is prepared by the mobile shell.",
+    credentialBoundary: "No calendar access credential, refresh credential, redirect callback, or Google request is prepared by the mobile shell.",
     liveOAuthEnabled: false,
     customerVisible: true,
     blockedReason: "No live OAuth consent flow is implemented in this repository state."
@@ -388,13 +388,13 @@ export const mobileImportActions: MobileImportAction[] = [
   {
     kind: "calendar",
     label: "Review calendar options",
-    detail: "Paste invite/ICS works now; Google stays OAuth-gated; Apple uses manual ICS export.",
+    detail: "Paste invite/ICS works now; Google Calendar is not connected yet, and Apple uses manual ICS export.",
     sourceMode: "contract-gated",
     customerVisible: true
   },
   {
     kind: "email",
-    label: "Future email receipts",
+    label: "Email receipts later",
     detail: "Email receipt review requires consent, metadata limits, and retention review.",
     sourceMode: "contract-gated",
     customerVisible: true
@@ -437,7 +437,7 @@ export const mobileApprovalActions: MobileApprovalAction[] = [
   {
     kind: "approve",
     label: "Approve card",
-    detail: "Moves the prepared card to checkout confirmation readiness.",
+    detail: "Moves the prepared card to print review.",
     mutationType: "approve-card",
     idempotencyRequired: true,
     networkMode: "local-first-api",
@@ -535,7 +535,7 @@ export const mobileRenderChoices: MobileRenderChoice[] = [
   },
   {
     label: "AI artwork",
-    detail: "Paid artwork generation remains account-gated, spend-limited, and review-gated.",
+    detail: "AI artwork is available later after account, budget, and review controls are ready.",
     mode: "credential-gated"
   }
 ];
@@ -559,7 +559,7 @@ export const mobilePricingPreviews: MobilePricingPreview[] = [
   },
   {
     vendor: "FedEx",
-    product: "5x7 card print handoff",
+    product: "5x7 card print option",
     estimatedTotalCents: 329,
     sourceMode: "review-only-public-price",
     manualConfirmationRequired: true,
@@ -575,7 +575,7 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     totalCents: 56,
     etaLabel: "same-day pickup candidate",
     confirmationCopy:
-      "Effective price includes only checkout-applied coupons; tax, stock, and checkout confirmation remain gated.",
+      "Discounts are confirmed at checkout; tax, stock, and pickup still need review.",
     liveQuote: false,
     liveOrder: false,
     customerVisible: true
@@ -616,7 +616,7 @@ export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
   {
     id: "proof-resolution",
     label: "300 DPI export",
-    detail: "Render packet keeps print dimensions and checksum evidence together.",
+    detail: "The print package keeps print dimensions and checksum evidence together.",
     passed: true,
     realOrderState: "manual",
     customerVisible: true
@@ -631,8 +631,8 @@ export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
   },
   {
     id: "proof-order-gate",
-    label: "Order gate",
-    detail: "Automatic retail checkout stays blocked until certification evidence exists.",
+    label: "Checkout review",
+    detail: "Automatic checkout stays off; confirm print shop, price, and pickup before ordering.",
     passed: true,
     realOrderState: "disabled",
     customerVisible: true
@@ -641,13 +641,13 @@ export const mobilePrintProofChecks: MobilePrintProofCheck[] = [
 
 export const mobileHandoffSteps: MobileHandoffStep[] = [
   {
-    label: "Download SVG set",
-    detail: "Customer can export four panels for manual upload.",
+    label: "Download print package",
+    detail: "Download the 5x7 PDF proof and four SVG panels for print shop upload.",
     realOrderState: "manual"
   },
   {
     label: "Confirm pickup or shipping",
-    detail: "Automatic checkout is blocked until live quote, payment, and certification evidence exists.",
+    detail: "Automatic checkout is blocked; confirm pickup, shipping, price, and payment on the print shop site.",
     realOrderState: "disabled"
   }
 ];
@@ -726,13 +726,13 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
   return {
     screenTitle: "CustomCard",
     hero: {
-      eyebrow: "Customer mobile panel",
+      eyebrow: "Your card assistant",
       title: "CustomCard",
       subtitle: "Create a local workspace, paste an invite or ICS event, approve a card, and review print options.",
       primaryAction: {
-        label: primaryAction.label,
-        detail: primaryAction.detail,
-        modeLabel: actionModeLabel(primaryAction),
+        label: `Review ${model.todaySummary.recipientLabel}'s card`,
+        detail: "Check event details, memory, proof, and print options before approving.",
+        modeLabel: "Ready to review",
         actionKind: primaryAction.kind
       }
     },
@@ -749,26 +749,26 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
     sections: [
       {
         id: "sign-in-import",
-        title: "Sign in and import",
+        title: "Start with an event",
         rows: [
           ...model.accountOptions.map((option) => ({
             title: option.label,
             detail: option.detail,
-            modeLabel: option.canStartNow ? "Manual" : "OAuth off"
+            modeLabel: option.canStartNow ? "Manual" : "Not connected"
           })),
           ...model.importActions.map((action) => ({
             title: action.label,
             detail: action.detail,
-            modeLabel: action.sourceMode === "local-paste" ? "Local" : "Gated"
+            modeLabel: action.sourceMode === "local-paste" ? "Local" : "Later"
           }))
         ]
       },
       {
         id: "next-action",
-        title: "Next action",
+        title: "Today's card",
         rows: [
           {
-            title: model.todaySummary.recipientLabel,
+            title: `Review ${model.todaySummary.recipientLabel}'s card`,
             detail: `${model.todaySummary.eventLabel} - ${model.todaySummary.dueLabel}`,
             modeLabel: model.todaySummary.riskBadge,
             actionKind: model.todaySummary.primaryAction
@@ -777,7 +777,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "card-queue",
-        title: "Card queue",
+        title: "Cards to review",
         rows: model.queueItems.map((item) => ({
           title: item.recipientLabel,
           detail: `${item.eventLabel} due ${item.dueIso.slice(0, 10)} from ${sourceLabel(item.source)}; ${item.panelCount} panels ready.`,
@@ -787,7 +787,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "memory-review",
-        title: "Memory review",
+        title: "People and memories",
         rows: model.memoryReviewItems.map((item) => ({
           title: item.recipientLabel,
           detail: item.memoryLabel,
@@ -796,7 +796,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "approval-controls",
-        title: "Approval controls",
+        title: "Card actions",
         rows: model.approvalActions.map((action) => ({
           title: action.label,
           detail: action.detail,
@@ -815,16 +815,16 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "card-proof-path",
-        title: "Card proof path",
+        title: "Preview the card",
         rows: model.renderChoices.map((choice) => ({
           title: choice.label,
           detail: choice.detail,
-          modeLabel: choice.mode === "free-local" ? "Free" : "Gated"
+          modeLabel: choice.mode === "free-local" ? "Free" : "Later"
         }))
       },
       {
         id: "best-available-options",
-        title: "Best available options",
+        title: "Printing options",
         rows: model.fulfillmentRecommendations.map((recommendation) => ({
           title: recommendation.label,
           detail: `${formatCents(recommendation.totalCents)} at ${recommendation.vendorName}; ${recommendation.etaLabel}. ${recommendation.confirmationCopy}`,
@@ -833,7 +833,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "print-proof",
-        title: "Print proof",
+        title: "Print file checks",
         rows: model.printProofChecks.map((check) => ({
           title: check.label,
           detail: check.detail,
@@ -842,7 +842,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "checkout-confirmation",
-        title: "Checkout confirmation",
+        title: "Finish manually",
         rows: model.handoffSteps.map((step) => ({
           title: step.label,
           detail: step.detail,
@@ -851,12 +851,12 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
       },
       {
         id: "offline-sync",
-        title: "Offline sync",
+        title: "Saved offline",
         rows: [
           {
             title: "Customer session",
             detail: "Customer actions stay queued offline and replay safely when your session is available.",
-            modeLabel: model.syncState.offlineQueueEnabled ? "Queued" : "Off"
+            modeLabel: model.syncState.offlineQueueEnabled ? "Saved offline" : "Off"
           }
         ]
       }
@@ -1193,6 +1193,17 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
     issues.push("RTL mobile locale options must require copy review.");
   }
 
+  for (const phrase of collectMobileCustomerCopy(model)) {
+    if (
+      /\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i.test(
+        phrase
+      )
+    ) {
+      const customerCopyIssue = `Mobile customer copy must not expose implementation-stage terms: ${phrase}`;
+      if (!issues.includes(customerCopyIssue)) issues.push(customerCopyIssue);
+    }
+  }
+
   for (const phrase of collectMobileExperienceText(model)) {
     if (/\b(live order ready|real orders enabled|payment active|vendor api connected|paid ai active)\b/i.test(phrase)) {
       const unsafeClaim = `Unsafe mobile live-provider claim: ${phrase}`;
@@ -1205,6 +1216,36 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
 
   return issues;
+}
+
+export function collectMobileCustomerCopy(model: MobileExperienceModel = mobileExperience): string[] {
+  return [
+    model.safetyBanner.label,
+    model.safetyBanner.detail,
+    model.todaySummary.recipientLabel,
+    model.todaySummary.eventLabel,
+    model.todaySummary.dueLabel,
+    model.todaySummary.riskBadge,
+    ...model.sections.flatMap((section) => [section.title, section.detail, section.status]),
+    ...model.accountOptions.flatMap((option) => [option.label, option.detail]),
+    ...model.importActions.flatMap((action) => [action.label, action.detail]),
+    ...model.queueItems.flatMap((item) => [item.recipientLabel, item.eventLabel]),
+    ...model.approvalActions.flatMap((action) => [action.label, action.detail]),
+    ...model.chatTranscript.map((message) => message.text),
+    ...model.memoryReviewItems.flatMap((item) => [item.recipientLabel, item.memoryLabel, item.usage]),
+    ...model.renderChoices.flatMap((choice) => [choice.label, choice.detail]),
+    ...model.pricingPreviews.flatMap((preview) => [preview.vendor, preview.product]),
+    ...model.fulfillmentRecommendations.flatMap((recommendation) => [
+      recommendation.label,
+      recommendation.vendorName,
+      recommendation.etaLabel,
+      recommendation.confirmationCopy
+    ]),
+    ...model.printProofChecks.flatMap((check) => [check.label, check.detail]),
+    ...model.handoffSteps.flatMap((step) => [step.label, step.detail]),
+    ...model.localeOptions.flatMap((locale) => [locale.label, locale.cardLanguage]),
+    ...collectMobileRenderSnapshotText(buildMobileRenderSnapshot(model))
+  ];
 }
 
 function collectMobileExperienceText(model: MobileExperienceModel): string[] {
@@ -1273,7 +1314,7 @@ function sourceLabel(source: MobileCardQueueItem["source"]): string {
 
 function queueStatusLabel(status: MobileCardQueueStatus): string {
   if (status === "needs-approval") return "Review";
-  if (status === "ready-for-handoff") return "Handoff";
+  if (status === "ready-for-handoff") return "Ready to print";
   return "Approved";
 }
 
