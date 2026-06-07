@@ -3,6 +3,14 @@ import type { VendorId } from "./freeMvp";
 export type RetailPrinterVendorId = Extract<VendorId, "walgreens" | "cvs" | "fedex" | "walmart">;
 export type RetailPrinterOperationKind = "fetch-price" | "upload-image" | "place-order";
 export type RetailPrinterOperationStatus = "blocked";
+export type RetailPrinterOperationFieldSource =
+  | "customer-approval"
+  | "operator"
+  | "payment-processor"
+  | "pricing-observation"
+  | "provider-account"
+  | "provider-portal"
+  | "render-packet";
 
 export interface RetailPrinterOperationContract {
   kind: RetailPrinterOperationKind;
@@ -12,7 +20,25 @@ export interface RetailPrinterOperationContract {
   noNetwork: true;
   preparesRequest: false;
   requiredEvidence: string[];
+  certificationGateIds: string[];
+  requestBlueprint: RetailPrinterOperationRequestBlueprint;
   blockedReason: string;
+}
+
+export interface RetailPrinterOperationRequestBlueprint {
+  transport: "future-certified-api-or-reviewed-browser-session";
+  requestFields: RetailPrinterOperationRequestField[];
+  responseEvidence: string[];
+  forbiddenFields: string[];
+  successCriteria: string[];
+}
+
+export interface RetailPrinterOperationRequestField {
+  name: string;
+  label: string;
+  source: RetailPrinterOperationFieldSource;
+  required: true;
+  pii: boolean;
 }
 
 export interface RetailPrinterAdapterContract {
@@ -56,6 +82,9 @@ const vendorEvidence = {
   upload: ["Vendor upload API or certified browser automation contract", "Asset-size acceptance proof", "Crop/fold preview screenshot"],
   order: ["Vendor certification", "Explicit customer approval record", "Payment and cancellation recovery proof"]
 };
+
+const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
+const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
 
 export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
   {
@@ -196,6 +225,9 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
       if (operation && operation.requiredEvidence.length < 3) {
         issues.push(`${adapter.vendorId} ${kind} operation must list required evidence.`);
       }
+      if (operation) {
+        issues.push(...validateRetailPrinterOperationBlueprint(adapter.vendorId, operation));
+      }
     }
   }
 
@@ -203,6 +235,48 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
     if (!vendorIds.has(requiredVendorId)) issues.push(`Missing retail printer adapter: ${requiredVendorId}`);
   }
 
+  return issues;
+}
+
+export function validateRetailPrinterOperationBlueprint(
+  vendorId: RetailPrinterVendorId,
+  operation: RetailPrinterOperationContract
+): string[] {
+  const issues: string[] = [];
+  if (!operation.certificationGateIds.includes("vendor-certification")) {
+    issues.push(`${vendorId} ${operation.kind} operation must require vendor certification.`);
+  }
+  if (!operation.certificationGateIds.includes("real-order-kill-switch")) {
+    issues.push(`${vendorId} ${operation.kind} operation must require real-order kill-switch evidence.`);
+  }
+  if (!operation.certificationGateIds.includes("customer-approval")) {
+    issues.push(`${vendorId} ${operation.kind} operation must require customer approval.`);
+  }
+  if (operation.kind === "place-order") {
+    for (const gateId of ["payment-certification", "cancellation-recovery", "physical-print-qa"]) {
+      if (!operation.certificationGateIds.includes(gateId)) issues.push(`${vendorId} place-order operation must require ${gateId}.`);
+    }
+  }
+  if (operation.requestBlueprint.transport !== "future-certified-api-or-reviewed-browser-session") {
+    issues.push(`${vendorId} ${operation.kind} operation must use the future certified transport blueprint.`);
+  }
+  if (operation.requestBlueprint.requestFields.length < 4) {
+    issues.push(`${vendorId} ${operation.kind} operation must define request fields.`);
+  }
+  if (operation.requestBlueprint.requestFields.some((field) => !field.required)) {
+    issues.push(`${vendorId} ${operation.kind} operation request fields must be required.`);
+  }
+  if (operation.requestBlueprint.responseEvidence.length < 3) {
+    issues.push(`${vendorId} ${operation.kind} operation must define response evidence.`);
+  }
+  for (const forbiddenField of sharedForbiddenFields) {
+    if (!operation.requestBlueprint.forbiddenFields.includes(forbiddenField)) {
+      issues.push(`${vendorId} ${operation.kind} operation must forbid ${forbiddenField}.`);
+    }
+  }
+  if (operation.requestBlueprint.successCriteria.length < 2) {
+    issues.push(`${vendorId} ${operation.kind} operation must define success criteria.`);
+  }
   return issues;
 }
 
@@ -216,6 +290,8 @@ function buildOperations(vendorName: string, productUrl: string): RetailPrinterO
       noNetwork: true,
       preparesRequest: false,
       requiredEvidence: vendorEvidence.price,
+      certificationGateIds: sharedGateIds,
+      requestBlueprint: buildPriceBlueprint(),
       blockedReason: "Only review-only public price observations are available; no certified live quote endpoint is configured."
     },
     {
@@ -226,6 +302,8 @@ function buildOperations(vendorName: string, productUrl: string): RetailPrinterO
       noNetwork: true,
       preparesRequest: false,
       requiredEvidence: vendorEvidence.upload,
+      certificationGateIds: sharedGateIds,
+      requestBlueprint: buildUploadBlueprint(),
       blockedReason: "Image upload requires a certified vendor API or reviewed browser-session automation contract."
     },
     {
@@ -236,7 +314,92 @@ function buildOperations(vendorName: string, productUrl: string): RetailPrinterO
       noNetwork: true,
       preparesRequest: false,
       requiredEvidence: vendorEvidence.order,
+      certificationGateIds: [...sharedGateIds, "payment-certification", "cancellation-recovery", "physical-print-qa"],
+      requestBlueprint: buildOrderBlueprint(),
       blockedReason: "Order placement remains disabled until vendor certification, payment, recovery, and kill-switch gates are proven."
     }
   ];
+}
+
+function buildPriceBlueprint(): RetailPrinterOperationRequestBlueprint {
+  return {
+    transport: "future-certified-api-or-reviewed-browser-session",
+    requestFields: [
+      requestField("productUrl", "Persisted vendor product URL", "pricing-observation", false),
+      requestField("productSku", "Vendor product SKU or design code", "pricing-observation", false),
+      requestField("quantity", "Customer selected quantity", "customer-approval", false),
+      requestField("fulfillmentMode", "Pickup or shipping path", "customer-approval", false),
+      requestField("storeOrShippingZip", "Store identifier or shipping ZIP", "customer-approval", true),
+      requestField("couponCode", "Candidate coupon code for portal proof", "operator", false)
+    ],
+    responseEvidence: [
+      "Quoted subtotal",
+      "Tax estimate or tax blocked reason",
+      "Coupon application status",
+      "Pickup or shipping window"
+    ],
+    forbiddenFields: sharedForbiddenFields,
+    successCriteria: [
+      "Quote evidence matches the persisted product URL and SKU",
+      "No payment or order submission occurs while fetching price"
+    ]
+  };
+}
+
+function buildUploadBlueprint(): RetailPrinterOperationRequestBlueprint {
+  return {
+    transport: "future-certified-api-or-reviewed-browser-session",
+    requestFields: [
+      requestField("renderPacketArtifactUris", "Approved render packet artifact URIs", "render-packet", false),
+      requestField("panelManifestChecksum", "Render manifest checksum", "render-packet", false),
+      requestField("productSku", "Vendor product SKU or design code", "pricing-observation", false),
+      requestField("customerApprovalId", "Explicit customer approval record", "customer-approval", false),
+      requestField("providerAccountReference", "Provider account or guest session reference", "provider-account", true)
+    ],
+    responseEvidence: [
+      "Vendor preview screenshot",
+      "Asset acceptance result",
+      "Crop/fold preview state",
+      "Provider project or cart reference without order submission"
+    ],
+    forbiddenFields: sharedForbiddenFields,
+    successCriteria: [
+      "Preview shows the intended 5x7 panels",
+      "No raw memory text leaves the system",
+      "No provider project is advanced to payment without customer approval"
+    ]
+  };
+}
+
+function buildOrderBlueprint(): RetailPrinterOperationRequestBlueprint {
+  return {
+    transport: "future-certified-api-or-reviewed-browser-session",
+    requestFields: [
+      requestField("providerCartId", "Provider cart or project identifier", "provider-portal", true),
+      requestField("quoteEvidenceId", "Matching live quote evidence identifier", "pricing-observation", false),
+      requestField("paymentAuthorizationReference", "Tokenized payment authorization reference", "payment-processor", true),
+      requestField("customerApprovalId", "Explicit customer final approval record", "customer-approval", false),
+      requestField("cancellationRecoveryPlanId", "Cancellation and wrong-store recovery proof", "operator", false)
+    ],
+    responseEvidence: [
+      "Provider order confirmation",
+      "Pickup or shipping commitment",
+      "Cancellation/refund policy snapshot",
+      "Audit event IDs for approval, payment, and order submission"
+    ],
+    forbiddenFields: sharedForbiddenFields,
+    successCriteria: [
+      "Order confirmation references the approved cart and quote evidence",
+      "Payment capture, cancellation, and recovery audit events are persisted"
+    ]
+  };
+}
+
+function requestField(
+  name: string,
+  label: string,
+  source: RetailPrinterOperationFieldSource,
+  pii: boolean
+): RetailPrinterOperationRequestField {
+  return { name, label, source, required: true, pii };
 }

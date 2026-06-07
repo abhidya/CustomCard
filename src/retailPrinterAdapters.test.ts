@@ -44,6 +44,17 @@ describe("retail printer adapters", () => {
         expect(operation.noNetwork).toBe(true);
         expect(operation.preparesRequest).toBe(false);
         expect(operation.requiredEvidence.length).toBeGreaterThanOrEqual(3);
+        expect(operation.certificationGateIds).toEqual(
+          expect.arrayContaining(["vendor-certification", "real-order-kill-switch", "customer-approval"])
+        );
+        expect(operation.requestBlueprint.transport).toBe("future-certified-api-or-reviewed-browser-session");
+        expect(operation.requestBlueprint.requestFields.length).toBeGreaterThanOrEqual(4);
+        expect(operation.requestBlueprint.requestFields.every((field) => field.required)).toBe(true);
+        expect(operation.requestBlueprint.responseEvidence.length).toBeGreaterThanOrEqual(3);
+        expect(operation.requestBlueprint.forbiddenFields).toEqual(
+          expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
+        );
+        expect(operation.requestBlueprint.successCriteria.length).toBeGreaterThanOrEqual(2);
         expect(operation.blockedReason.toLowerCase()).toMatch(/certified|certification|review-only|disabled/);
       }
     }
@@ -65,11 +76,44 @@ describe("retail printer adapters", () => {
       operation: expect.objectContaining({
         kind: "upload-image",
         status: "blocked",
-        preparesRequest: false
+        preparesRequest: false,
+        requestBlueprint: expect.objectContaining({
+          requestFields: expect.arrayContaining([
+            expect.objectContaining({ name: "renderPacketArtifactUris", source: "render-packet" }),
+            expect.objectContaining({ name: "customerApprovalId", source: "customer-approval" })
+          ]),
+          responseEvidence: expect.arrayContaining(["Vendor preview screenshot", "Asset acceptance result"])
+        })
       })
     });
     expect(plan.operations).toHaveLength(3);
     expect(getRetailPrinterAdapter("cvs").productSku).toBe("CommerceProduct_26126");
     expect(getRetailPrinterAdapterForProvider("walmart-live-print")?.productUrl).toBe(expectedRetailSources.walmart);
+  });
+
+  it("keeps operation blueprints specific to price, upload, and order contracts", () => {
+    const walmart = getRetailPrinterAdapter("walmart");
+    const price = walmart.operations.find((operation) => operation.kind === "fetch-price");
+    const upload = walmart.operations.find((operation) => operation.kind === "upload-image");
+    const order = walmart.operations.find((operation) => operation.kind === "place-order");
+
+    expect(price?.requestBlueprint.requestFields.map((field) => field.name)).toEqual(
+      expect.arrayContaining(["productUrl", "productSku", "quantity", "fulfillmentMode", "storeOrShippingZip", "couponCode"])
+    );
+    expect(price?.requestBlueprint.responseEvidence).toEqual(
+      expect.arrayContaining(["Quoted subtotal", "Tax estimate or tax blocked reason", "Coupon application status"])
+    );
+    expect(upload?.requestBlueprint.requestFields.map((field) => field.name)).toEqual(
+      expect.arrayContaining(["renderPacketArtifactUris", "panelManifestChecksum", "productSku", "customerApprovalId"])
+    );
+    expect(upload?.requestBlueprint.successCriteria).toEqual(
+      expect.arrayContaining(["Preview shows the intended 5x7 panels", "No raw memory text leaves the system"])
+    );
+    expect(order?.requestBlueprint.requestFields.map((field) => field.name)).toEqual(
+      expect.arrayContaining(["providerCartId", "quoteEvidenceId", "paymentAuthorizationReference", "customerApprovalId"])
+    );
+    expect(order?.certificationGateIds).toEqual(
+      expect.arrayContaining(["payment-certification", "cancellation-recovery", "physical-print-qa"])
+    );
   });
 });

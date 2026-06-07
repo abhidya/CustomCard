@@ -12,6 +12,7 @@ const files = {
   apiServer: "scripts/api-server.mjs",
   providerCatalog: "src/providerCatalog.ts",
   providerRuntime: "src/providerRuntime.ts",
+  retailPrinterAdapters: "src/retailPrinterAdapters.ts",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
   docs: "docs/platform-expansion-design.md"
@@ -60,7 +61,7 @@ const checks = [
     "directOrderEnabled",
     "physicalCertificationAttached"
   ]),
-  checkIncludes("provider-contracts", "retail-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}`, [
+  checkIncludes("provider-contracts", "retail-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}\n${contents.retailPrinterAdapters}`, [
     "manual-vendor-handoff",
     "public-printer-pricing-research",
     "walgreens-live-order",
@@ -69,6 +70,11 @@ const checks = [
     "walmart-live-print",
     "staples-live-print",
     "office-depot-live-print",
+    "RetailPrinterOperationRequestBlueprint",
+    "future-certified-api-or-reviewed-browser-session",
+    "raw relationship memories",
+    "raw payment card data",
+    "paymentAuthorizationReference",
     "Live vendor orders remain disabled"
   ]),
   checkIncludes("docs", "retail-readiness-docs", contents.docs, [

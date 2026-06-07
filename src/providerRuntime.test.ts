@@ -1229,9 +1229,16 @@ describe("provider runtime contracts", () => {
           operation: expect.objectContaining({
             status: "blocked",
             noNetwork: true,
-            preparesRequest: false
+            preparesRequest: false,
+            certificationGateIds: expect.arrayContaining(["vendor-certification", "real-order-kill-switch", "customer-approval"]),
+            requestBlueprint: expect.objectContaining({
+              transport: "future-certified-api-or-reviewed-browser-session",
+              forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data"]),
+              responseEvidence: expect.any(Array)
+            })
           })
         });
+        expect(result.readiness.blockedReasons.join(" "), adapterId).toMatch(/review-only|certified|certification|disabled/);
         expect(JSON.stringify(result.localResult), adapterId).toContain("https://");
       } else {
         expect(result.localResult, adapterId).toBeUndefined();
