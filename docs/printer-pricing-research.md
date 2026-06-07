@@ -58,16 +58,20 @@ operation.
   exposure, and CI wiring.
 - `npm run printer:coupons:collect` is an operator-run collector for the
   explicit coupon targets in `src/printerPricing.ts`. It fetches public
-  retailer coupon pages, records whether expected codes and product-price
-  signals are visible on the exact Walgreens/CVS print links, optionally polls
-  the credential-gated FMTC Deal Feed when `FMTC_API_TOKEN` is present, and
-  still returns `bestPriceDiscountingAllowed: false` until checkout proves a
-  code applied to the same cart. The collector does not log in, submit payment,
+  retailer coupon pages, can open the exact Walgreens/CVS print links with a
+  local headless browser, optionally polls the credential-gated FMTC Deal Feed
+  when `FMTC_API_TOKEN` is present, and still returns
+  `bestPriceDiscountingAllowed: false` until checkout proves a code applied to
+  the same cart. The collector does not log in, upload files, submit payment,
   place an order, print provider credentials, or claim live checkout automation.
 - Set `CUSTOMCARD_COUPON_BROWSER_EVIDENCE=docs/printer-coupon-browser-evidence.json`
   when the operator wants the collector to attach the read-only browser proof
   from the exact print links. The artifact records no login, upload, cart,
   payment, or order action.
+- Set `CUSTOMCARD_COUPON_RENDER_PRINT_LINKS=1` to have the collector launch
+  local Chrome/Chromium and read the exact print entrypoints. Add
+  `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
+  to refresh the persisted evidence artifact from that operator run.
 - The customer bootstrap exposes only a safe pricing preview: selected vendor,
   known public price count, source count, maximum source age policy, and
   `liveQuote: false`.
@@ -93,12 +97,13 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 `browserRenderProofRequired` so the collector cannot mistake scraped HTML for a
 visible browser proof.
 
-`docs/printer-coupon-browser-evidence.json` records the June 7, 2026 read-only
-browser check against the exact print links. CVS rendered the `JUNESW` code
-visibly on the 5x7 folded card page, so the collector reports
-`operator-browser-proof-attached` when that evidence file is supplied. Walgreens
-rendered the 5x7 product and $3.49 price visibly, while `CRISPCARD` was present
-in page HTML but not visible text; the collector reports
+`docs/printer-coupon-browser-evidence.json` records the June 7, 2026
+`operator-chromium-rendered-read` check against the exact print links. CVS
+rendered the `JUNESW` code visibly on the 5x7 folded card page, so the
+collector reports `operator-browser-proof-attached` when that evidence is
+attached or generated. Walgreens rendered the 5x7 product and $3.49 price
+visibly, while `CRISPCARD` was present in page HTML but not visible text; the
+collector reports
 `operator-browser-html-signal-attached-visible-proof-still-required`. Neither
 status is provider-portal cart evidence, and neither can discount a best-price
 ranking.
@@ -112,7 +117,7 @@ the evidence to the public price observation and subtotal math.
 
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |
-| Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) plus the [5x7 folded card design-detail print link](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration; the print link contains the expected code, `CommerceProduct_33272`, and the $3.49 public price signal | Stored as active source-listed evidence on June 7, 2026; browser artifact confirms product/price visible and code in page HTML, but visible code proof is still required before calling the print link rendered-code proof |
+| Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) plus the [5x7 folded card design-detail print link](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration; the print link contains the expected code, `CommerceProduct_33272`, and the $3.49 public price signal | Stored as active source-listed evidence on June 7, 2026; browser artifact confirms product/price visible and code in page HTML, but visible code proof is still required before treating the print link as visible-code proof |
 | CVS Photo | [CVS Photo coupons](https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo) plus the [5x7 folded greeting card design-detail print link](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | `JUNESW`, 50% off sitewide photo products, listed with June 20, 2026 expiration; the print link contains the expected code, `CommerceProduct_26126`, and the $8.98 JSON-LD public price signal | Stored as active source-listed evidence on June 7, 2026; browser artifact confirms visible code/product/price proof, but discounting still requires provider-portal checkout evidence |
 
 | Provider-feed target | Current treatment |
