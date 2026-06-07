@@ -1,4 +1,5 @@
 import type { PrinterCouponCollectionTarget } from "./printerPricing";
+import { couponSignalTextIncludes } from "./printerCouponSignals";
 
 export const printerCouponBrowserEvidenceServiceName = "customcard-printer-coupon-browser-evidence";
 
@@ -233,6 +234,5 @@ export function normalizePrinterCouponSignalList(value: unknown): string[] {
 }
 
 function signalListIncludes(signals: string[], expected: string): boolean {
-  const normalizedExpected = expected.toLowerCase();
-  return signals.some((signal) => signal.toLowerCase().includes(normalizedExpected));
+  return signals.some((signal) => couponSignalTextIncludes(signal, expected));
 }

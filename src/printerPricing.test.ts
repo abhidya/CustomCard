@@ -373,7 +373,7 @@ describe("printer pricing research", () => {
       <h2>50% off Sitewide:</h2>
       <div class="caption text-left">Add any photo products to your cart and enter promo
       code JUNESW to receive 50% off your photo order. Offer valid online and in the
-      CVS Health app. Offer starts June 7, 2026, at 12:01 AM and ends June 20, 2026,
+      CVS Health\u00ae app. Offer starts June 7, 2026, at 12:01 AM and ends June 20, 2026,
       at 11:59 PM ET. Only one discount may be applied to each item.</div>
     `;
 
@@ -468,7 +468,7 @@ describe("printer pricing research", () => {
           sourceType: "official-retailer-public-page",
           rawSnippet: expect.stringContaining("JUNESW"),
           rawSnippetHash: expect.stringMatching(/^fnv1a32:[0-9a-f]{8}$/),
-          matchedTerms: expect.arrayContaining(["JUNESW", "50% off Sitewide"])
+          matchedTerms: expect.arrayContaining(["JUNESW", "50% off Sitewide", "Offer valid online and in the CVS Health app"])
         })
       ],
       warnings: []

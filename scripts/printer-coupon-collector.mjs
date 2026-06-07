@@ -32,6 +32,7 @@ try {
   couponProviderFeedCollectors = await vite.ssrLoadModule("/src/printerCouponProviderFeeds.ts");
   couponPortalEvidenceImporter = await vite.ssrLoadModule("/src/printerCouponPortalEvidence.ts");
   couponBrowserEvidence = await vite.ssrLoadModule("/src/printerCouponBrowserEvidence.ts");
+  const { matchPrinterCouponSignals } = await vite.ssrLoadModule("/src/printerCouponSignals.ts");
   const {
     combinePrinterCouponBrowserEvidence,
     findPrinterCouponBrowserEvidenceTarget,
@@ -73,7 +74,7 @@ try {
     const response = await fetch(target.url, { headers: { "user-agent": userAgent } });
     const body = await response.text();
     const matchedCodes = extractPrinterCouponCodes(body);
-    const matchedVerificationSignals = target.verificationSignals.filter((signal) => body.toLowerCase().includes(signal.toLowerCase()));
+    const matchedVerificationSignals = matchPrinterCouponSignals(body, target.verificationSignals);
     const missingVerificationSignals = target.verificationSignals.filter((signal) => !matchedVerificationSignals.includes(signal));
     const staticHtmlExpectedCodeVisible = target.expectedOfferCodes.length > 0 && target.expectedOfferCodes.every((code) => matchedCodes.includes(code));
     const browserEvidence = summarizePrinterCouponBrowserEvidence(
@@ -433,7 +434,19 @@ async function readRenderedCouponTarget(target, controller) {
     const signals = [...new Set([...target.expectedOfferCodes, ...target.verificationSignals])];
     const expression = `(() => {
       const signals = ${JSON.stringify(signals)};
-      const includesSignal = (text, signal) => text.toLowerCase().includes(signal.toLowerCase());
+      const normalizeSignal = (value) => String(value ?? "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&(?:reg|trade|copy);|&#(?:174|8482|169);/gi, "")
+        .replace(/[\\u00ae\\u2122\\u2120\\u00a9]/g, "")
+        .replace(/[^\\S\\r\\n]+/g, " ")
+        .replace(/\\s+/g, " ")
+        .trim()
+        .toLowerCase();
+      const includesSignal = (text, signal) => {
+        const normalizedSignal = normalizeSignal(signal);
+        return normalizedSignal.length > 0 && normalizeSignal(text).includes(normalizedSignal);
+      };
       const visibleText = document.body?.innerText ?? "";
       const pageHtml = document.documentElement?.outerHTML ?? "";
       return {

@@ -1,4 +1,5 @@
 import type { VendorId } from "./freeMvp";
+import { couponSignalTextIncludes } from "./printerCouponSignals";
 
 export type PrinterPricingConfidence = "public-current" | "public-ambiguous" | "manual-estimate";
 export type PrinterPricingSpeed = "same-day" | "24-hour" | "ships-in-days" | "manual-confirm";
@@ -2054,7 +2055,7 @@ function buildPrinterCouponSourceEvidence(
     offer.source.authority === "credentialed-coupon-provider" ? "credentialed-coupon-provider-feed" : "official-retailer-public-page";
   const matchedTerms = offer.sourceTargetIds
     .flatMap((targetId) => printerCouponCollectionTargets.find((target) => target.id === targetId)?.verificationSignals ?? [])
-    .filter((signal, index, signals) => signals.indexOf(signal) === index && rawSnippet.toLowerCase().includes(signal.toLowerCase()));
+    .filter((signal, index, signals) => signals.indexOf(signal) === index && couponSignalTextIncludes(rawSnippet, signal));
 
   return {
     vendorId: offer.vendorId,

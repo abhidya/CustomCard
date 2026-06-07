@@ -142,6 +142,34 @@ describe("printer coupon browser evidence", () => {
     );
   });
 
+  it("normalizes retailer trademark marks when matching verification signals", () => {
+    const evidence = summarizePrinterCouponBrowserEvidence(
+      {
+        targetId: "cvs-photo-card-design-entrypoint",
+        observedAtIso: "2026-06-07T17:25:07.637Z",
+        url: cvsPrintTarget.url,
+        finalUrl: cvsPrintTarget.url,
+        renderedTitle: "Folded Greeting Card, 5x7 | Cards | Cards & Stationery | CVS Photo",
+        visibleTextSignals: ["JUNESW", "Offer valid online and in the CVS Health\u00ae app"],
+        pageHtmlSignals: ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126"],
+        noCheckoutAction: true,
+        noUploadAction: true,
+        noOrderPlaced: true
+      },
+      {
+        ...cvsPrintTarget,
+        verificationSignals: [...cvsPrintTarget.verificationSignals, "Offer valid online and in the CVS Health app"]
+      }
+    );
+
+    expect(evidence).toMatchObject({
+      matchedVerificationSignals: expect.arrayContaining(["Offer valid online and in the CVS Health app"]),
+      missingVerificationSignals: [],
+      allVerificationSignalsMatched: true,
+      validForRenderedProof: true
+    });
+  });
+
   it("rejects unsafe or mismatched rendered print-link evidence", () => {
     const unsafeArtifact: PrinterCouponBrowserEvidenceArtifact = {
       ...renderedPrintLinkArtifact,

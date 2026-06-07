@@ -137,13 +137,17 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
-- The June 7, 2026 21:34 UTC operator render opened the exact Walgreens and CVS 5x7 print
+- The June 7, 2026 22:07 UTC operator render opened the exact Walgreens and CVS 5x7 print
   entrypoints without login, upload, cart, payment, or order action. CVS exposed
   `JUNESW` in visible rendered text alongside the 5x7 folded-card product
   signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
   `CommerceProduct_33272` and `$3.49`, but not as visible text; that remains
   `operator-browser-html-signal-attached-visible-proof-still-required`, not full
   rendered proof.
+- Coupon signal matching normalizes retailer typography such as registered and
+  trademark marks before comparing evidence, so live text like `CVS Health(R)
+  app` can satisfy the canonical `CVS Health app` verification signal without
+  weakening the provider-portal proof requirement.
 - Scraped source offers now include `sourceEvidence` with source label, source
   URL, source authority, source type, observed timestamp, raw evidence snippet,
   deterministic `rawSnippetHash`, and matched source terms. The collector also
@@ -210,7 +214,7 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-21:34 UTC `operator-chromium-rendered-read` check against the exact print
+22:07 UTC `operator-chromium-rendered-read` check against the exact print
 links. A matching visible browser read opened both print links after the
 collector run. CVS rendered the `JUNESW` code visibly on the 5x7 folded card
 page, so the browser-evidence Module reports
