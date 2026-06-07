@@ -224,8 +224,31 @@ const navItems: NavItem[] = [
   { id: "adapters", label: "Connections", icon: Settings }
 ];
 
+const viewIds = new Set<ViewId>(navItems.map((item) => item.id));
+
+function isViewId(value: string | null | undefined): value is ViewId {
+  return Boolean(value && viewIds.has(value as ViewId));
+}
+
+function initialViewFromLocation(): ViewId {
+  if (typeof window === "undefined") return "customer";
+  const requestedView = new URLSearchParams(window.location.search).get("view");
+  if (isViewId(requestedView)) return requestedView;
+  const hashView = window.location.hash.replace(/^#\/?/, "");
+  if (isViewId(hashView)) return hashView;
+  return "customer";
+}
+
+function updateViewRoute(view: ViewId) {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("view", view);
+  url.hash = "";
+  window.history.pushState({ customCardView: view }, "", url);
+}
+
 function App() {
-  const [activeView, setActiveView] = useState<ViewId>("customer");
+  const [activeView, setActiveView] = useState<ViewId>(() => initialViewFromLocation());
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
   const [authForm, setAuthForm] = useState(demoInitialAuthForm);
   const [inviteText, setInviteText] = useState("");
@@ -324,9 +347,26 @@ function App() {
   );
   const opsView = activeView === "admin" || activeView === "adapters";
 
+  function openView(view: ViewId) {
+    setActiveView(view);
+    if (initialViewFromLocation() !== view) {
+      updateViewRoute(view);
+    }
+  }
+
   useEffect(() => {
     setCustomerChatMessages(undefined);
   }, [localeCode, opportunity.id]);
+
+  useEffect(() => {
+    const syncView = () => setActiveView(initialViewFromLocation());
+    window.addEventListener("popstate", syncView);
+    window.addEventListener("hashchange", syncView);
+    return () => {
+      window.removeEventListener("popstate", syncView);
+      window.removeEventListener("hashchange", syncView);
+    };
+  }, []);
 
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
@@ -454,8 +494,9 @@ function App() {
           {navItems.map((item) => (
             <button
               className={activeView === item.id ? "navButton active" : "navButton"}
+              aria-current={activeView === item.id ? "page" : undefined}
               key={item.id}
-              onClick={() => setActiveView(item.id)}
+              onClick={() => openView(item.id)}
               type="button"
             >
               <item.icon size={18} />
@@ -506,7 +547,7 @@ function App() {
             onChatInput={setCustomerChatInput}
             onChatSend={sendCustomerChat}
             onLocale={chooseLocale}
-            onNavigate={setActiveView}
+            onNavigate={openView}
             onStartWorkspace={startWorkspace}
             opportunity={opportunity}
             opportunityDecision={opportunityDecision}
@@ -535,7 +576,7 @@ function App() {
 
             {workspace ? (
               <div className="workspaceActions">
-                <button className="quietButton" type="button" onClick={() => setActiveView("memory")}>
+                <button className="quietButton" type="button" onClick={() => openView("memory")}>
                   <Heart size={16} />
                   {workspace.memories.length} memories
                 </button>
@@ -588,7 +629,7 @@ function App() {
             onScan={scanImport}
             onStartCard={() => {
               setOpportunityDecision("accepted");
-              setActiveView("studio");
+              openView("studio");
             }}
             opportunity={opportunity}
             decision={opportunityDecision}
@@ -601,7 +642,7 @@ function App() {
           <StudioView
             draftInput={draftInput}
             memories={memories}
-            onExport={() => setActiveView("handoff")}
+            onExport={() => openView("handoff")}
             onUpdate={updateDraft}
             opportunity={opportunity}
             panels={draft.panels}

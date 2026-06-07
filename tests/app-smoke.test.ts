@@ -246,8 +246,13 @@ describeWithChrome("CustomCard UI smoke", () => {
         return {
           h2: document.querySelector("h2")?.textContent,
           text: document.body.textContent,
+          hasMobileShell: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
+          hasContractPanel: !!document.querySelector('[aria-label="Mobile app contract"]'),
+          contentType: document.contentType,
+          bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
           deviceSections: document.querySelectorAll(".mobileSection").length,
           contractBlocks: document.querySelectorAll(".mobileContractBlock").length,
+          currentSearch: window.location.search,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth,
           bodyScrollWidth: document.body.scrollWidth
@@ -256,6 +261,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.h2).toBe("Mobile app");
+    expect(result.hasMobileShell).toBe(true);
+    expect(result.hasContractPanel).toBe(true);
+    expect(result.contentType).toBe("text/html");
+    expect(result.bodyIsJson).toBe(false);
+    expect(result.currentSearch).toBe("?view=mobile");
     expect(result.text).toContain("Customer mobile panel");
     expect(result.text).toContain("Google Calendar is not connected yet");
     expect(result.text).toContain("Apple Calendar ICS export");
@@ -274,6 +284,40 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("live proof claims blocked");
     expect(result.deviceSections).toBeGreaterThanOrEqual(7);
     expect(result.contractBlocks).toBeGreaterThanOrEqual(4);
+    expect(result.bodyScrollWidth).toBe(result.clientWidth);
+    expect(result.scrollWidth).toBe(result.clientWidth);
+  }, 30000);
+
+  it("opens the mobile UI directly from the browser demo route", async () => {
+    const sessionId = await createPage(390, 900, "?view=mobile");
+    const result = await evaluate(
+      sessionId,
+      `(() => ({
+        h1: document.querySelector("h1")?.textContent,
+        h2: document.querySelector("h2")?.textContent,
+        text: document.body.textContent,
+        hasMobileShell: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
+        hasContractPanel: !!document.querySelector('[aria-label="Mobile app contract"]'),
+        activeNav: document.querySelector('.navButton.active')?.textContent,
+        contentType: document.contentType,
+        bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        bodyScrollWidth: document.body.scrollWidth
+      }))()`
+    );
+
+    expect(result.h1).toBe("CustomCard");
+    expect(result.h2).toBe("Mobile app");
+    expect(result.hasMobileShell).toBe(true);
+    expect(result.hasContractPanel).toBe(true);
+    expect(result.activeNav).toContain("Mobile app");
+    expect(result.contentType).toBe("text/html");
+    expect(result.bodyIsJson).toBe(false);
+    expect(result.text).toContain("Customer mobile panel");
+    expect(result.text).toContain("Cards to review");
+    expect(result.text).not.toContain("ExpoManifest");
+    expect(result.text).not.toContain("bundleUrl");
     expect(result.bodyScrollWidth).toBe(result.clientWidth);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
@@ -493,7 +537,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  async function createPage(width: number, height: number): Promise<string> {
+  async function createPage(width: number, height: number, path = ""): Promise<string> {
     const { targetId } = await send("Target.createTarget", { url: "about:blank" });
     const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
     await send("Page.enable", {}, sessionId);
@@ -504,7 +548,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       sessionId
     );
     const loaded = waitEvent("Page.loadEventFired", sessionId, 10000).catch(() => undefined);
-    await send("Page.navigate", { url: baseUrl }, sessionId);
+    await send("Page.navigate", { url: new URL(path, baseUrl).toString() }, sessionId);
     await loaded;
     await evaluate(sessionId, "new Promise((resolve) => requestAnimationFrame(() => resolve(true)))");
     await evaluate(sessionId, "localStorage.clear(); true");

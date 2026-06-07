@@ -233,6 +233,17 @@ Open the Vite URL printed by the dev server. The app opens directly into the
 free local MVP workflow and does not require paid AI, payment, retail, email,
 CRM, or cloud credentials.
 
+To open the mobile customer UI directly in a desktop browser:
+
+```sh
+npm run mobile:web:demo
+```
+
+That launches the same Vite app at `/?view=mobile`, where the page should show
+`Mobile app`, `Customer mobile panel`, and the phone-shaped customer workflow.
+The Expo dev-server URL is for native runtime metadata in desktop browsers and
+can show a JSON manifest; it is not the browser UI review path.
+
 ## Reviewer Demo Path
 
 1. Run `npm ci` and `npm run dev`.
@@ -243,8 +254,9 @@ CRM, or cloud credentials.
    and review the checksum manifest/manual vendor handoff checklist.
 5. Open the admin panel to inspect provider gates, launch-readiness doctors, and
    blocked live-order/payment/vendor statuses.
-6. Open the Mobile app tab to inspect the browser preview of the shared Expo
-   customer contract; use Expo Go or a simulator for native rendering.
+6. Open the Mobile app tab, or run `npm run mobile:web:demo`, to inspect the
+   browser preview of the shared Expo customer contract; use Expo Go or a
+   simulator for native rendering.
 
 For a no-server verification pass, run `npm run test -- --run` or the broader
 `npm run check` when audit/network policy checks are acceptable in the current

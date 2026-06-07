@@ -44,7 +44,21 @@ their production evidence gates pass.
 
 ## Preview paths
 
-Browser preview through the main Vite app:
+### Reviewer browser lane
+
+Use this path for desktop UI review. It renders the mobile customer workflow as
+HTML inside the main Vite app instead of opening the Expo dev-server metadata
+endpoint:
+
+```sh
+npm run mobile:web:demo
+```
+
+Expected screen signals: `Mobile app`, `Customer mobile panel`, the phone-shaped
+customer workflow, and the `Mobile app contract` panel. The direct URL is
+`/?view=mobile`.
+
+The same lane is reachable through the normal app:
 
 ```sh
 npm run dev
@@ -54,7 +68,7 @@ Open the Vite URL and choose `Mobile app` in the left navigation. That preview
 uses the same `apps/mobile/src/customerExperience.ts` contract as the Expo shell,
 so it is useful for quick desktop inspection without a simulator.
 
-Native Expo preview:
+### Native Expo preview
 
 ```sh
 npm --prefix apps/mobile install

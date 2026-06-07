@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "mobile:web:demo": "vite --host 127.0.0.1 --open /?view=mobile",
     "build": "tsc -b && vite build",
     "check": "npm run test -- --run && npm run test:coverage && npm run build && npm audit --audit-level=high",
     "test": "vitest run",
