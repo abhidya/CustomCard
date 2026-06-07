@@ -366,7 +366,11 @@ describeWithChrome("CustomCard UI smoke", () => {
         const initialCalendarChoices = [...document.querySelectorAll(".calendarChoice")].map((node) => ({
           text: node.textContent,
           status: node.querySelector("em")?.textContent,
-          className: node.className
+          className: node.className,
+          startMode: node.getAttribute("data-start-mode"),
+          startRoute: node.getAttribute("data-start-route"),
+          nextRoute: node.getAttribute("data-next-route"),
+          clientProviderRequest: node.getAttribute("data-client-provider-request")
         }));
         const initialPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
           node.getAttribute("placeholder")
@@ -445,16 +449,28 @@ describeWithChrome("CustomCard UI smoke", () => {
       expect.objectContaining({
         className: expect.stringContaining("ready-local"),
         status: "Ready now",
+        startMode: "metadata-import",
+        startRoute: "/api/calendar/connections/start",
+        nextRoute: "/api/import-preview",
+        clientProviderRequest: "false",
         text: expect.stringContaining("Customer-provided invite text or ICS event metadata only.")
       }),
       expect.objectContaining({
         className: expect.stringContaining("credential-gated"),
         status: "Not connected yet",
+        startMode: "oauth-evidence-required",
+        startRoute: "/api/calendar/connections/start",
+        nextRoute: "",
+        clientProviderRequest: "false",
         text: expect.stringContaining("Event metadata only after explicit consent; raw descriptions stay out of storage.")
       }),
       expect.objectContaining({
         className: expect.stringContaining("manual-export"),
         status: "Manual export",
+        startMode: "manual-export-guide",
+        startRoute: "/api/calendar/connections/start",
+        nextRoute: "/api/import-preview",
+        clientProviderRequest: "false",
         text: expect.stringContaining(
           "Customer exports an .ics file or downloads a temporary iCloud.com ICS copy, then pastes selected event data."
         )

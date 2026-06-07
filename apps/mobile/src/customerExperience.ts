@@ -1,3 +1,9 @@
+import {
+  buildCalendarConnectionStartPackets,
+  type CalendarConnectionStartMode,
+  type CalendarConnectionStartPacket
+} from "../../../src/onboardingCalendar";
+
 export const requiredMobileCapabilities = [
   "account-import",
   "card-queue",
@@ -65,10 +71,17 @@ export interface MobileAccountOption {
   label: string;
   detail: string;
   sourceMode: Extract<MobileCalendarSourceMode, "oauth-readiness" | "manual-export">;
+  startMode: Extract<CalendarConnectionStartMode, "oauth-evidence-required" | "manual-export-guide">;
+  startRoute: CalendarConnectionStartPacket["apiRoute"];
+  nextApiRoute: CalendarConnectionStartPacket["nextApiRoute"];
+  clientMayPrepareProviderRequest: false;
   canStartNow: boolean;
   dataBoundary: string;
   credentialBoundary: string;
   liveOAuthEnabled: false;
+  networkRequestPrepared: false;
+  credentialStorageEnabled: false;
+  providerRequestUrl: null;
   customerVisible: boolean;
   blockedReason?: string;
 }
@@ -358,31 +371,42 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   }
 ];
 
-export const mobileAccountOptions: MobileAccountOption[] = [
-  {
-    provider: "Google",
-    label: "Google Calendar",
-    detail: "Google Calendar is not connected yet. Paste invite/ICS works now while consent and revocation controls are finished.",
-    sourceMode: "oauth-readiness",
-    canStartNow: false,
-    dataBoundary: "Event metadata only after explicit consent; raw calendar descriptions stay out of storage.",
-    credentialBoundary: "No calendar access credential, refresh credential, redirect callback, or Google request is prepared by the mobile shell.",
-    liveOAuthEnabled: false,
-    customerVisible: true,
-    blockedReason: "No live OAuth consent flow is implemented in this repository state."
-  },
-  {
-    provider: "Apple",
-    label: "Apple Calendar ICS export",
-    detail: "Export an ICS event or calendar copy, then paste selected event details locally.",
-    sourceMode: "manual-export",
-    canStartNow: true,
-    dataBoundary: "Customer-controlled ICS export or selected event details only.",
-    credentialBoundary: "No Apple ID, app-specific password, CalDAV session, or native Apple Calendar sync.",
-    liveOAuthEnabled: false,
-    customerVisible: true
-  }
-];
+export const mobileCalendarConnectionStartPackets = buildCalendarConnectionStartPackets().filter(
+  (packet) => packet.id === "google-calendar-events" || packet.id === "icloud-ics-fallback"
+);
+
+export function buildMobileAccountOptions(
+  startPackets: CalendarConnectionStartPacket[] = mobileCalendarConnectionStartPackets
+): MobileAccountOption[] {
+  return startPackets.map((packet) => {
+    const provider = packet.id === "google-calendar-events" ? "Google" : "Apple";
+
+    return {
+      provider,
+      label: provider === "Google" ? "Google Calendar" : "Apple Calendar ICS export",
+      detail:
+        provider === "Google"
+          ? "Google Calendar is not connected yet. Paste invite/ICS works now while consent and revocation controls are finished."
+          : "Export an ICS event or calendar copy, then paste selected event details locally.",
+      sourceMode: packet.sourceMode === "manual-export" ? "manual-export" : "oauth-readiness",
+      startMode: packet.startMode === "manual-export-guide" ? "manual-export-guide" : "oauth-evidence-required",
+      startRoute: packet.apiRoute,
+      nextApiRoute: packet.nextApiRoute,
+      clientMayPrepareProviderRequest: false,
+      canStartNow: packet.canStartNow,
+      dataBoundary: packet.dataBoundary,
+      credentialBoundary: packet.credentialBoundary,
+      liveOAuthEnabled: false,
+      networkRequestPrepared: false,
+      credentialStorageEnabled: false,
+      providerRequestUrl: null,
+      customerVisible: packet.customerVisible,
+      blockedReason: packet.blockedReason
+    };
+  });
+}
+
+export const mobileAccountOptions: MobileAccountOption[] = buildMobileAccountOptions();
 
 export const mobileImportActions: MobileImportAction[] = [
   {
@@ -996,19 +1020,41 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   if (model.accountOptions.some((option) => option.liveOAuthEnabled)) {
     issues.push("Mobile account options must not claim live OAuth.");
   }
+  if (
+    model.accountOptions.some(
+      (option) =>
+        option.startRoute !== "/api/calendar/connections/start" ||
+        option.clientMayPrepareProviderRequest ||
+        option.networkRequestPrepared ||
+        option.credentialStorageEnabled ||
+        option.providerRequestUrl !== null
+    )
+  ) {
+    issues.push("Mobile account options must be derived from server-owned calendar start packets.");
+  }
   if (model.accountOptions.some((option) => option.label.startsWith("Continue with"))) {
     issues.push("Mobile account options must not expose live-provider sign-in CTAs.");
   }
   if (
     !model.accountOptions.some(
-      (option) => option.provider === "Google" && option.sourceMode === "oauth-readiness" && option.canStartNow === false
+      (option) =>
+        option.provider === "Google" &&
+        option.sourceMode === "oauth-readiness" &&
+        option.startMode === "oauth-evidence-required" &&
+        option.nextApiRoute === null &&
+        option.canStartNow === false
     )
   ) {
     issues.push("Mobile Google Calendar option must stay OAuth-readiness gated.");
   }
   if (
     !model.accountOptions.some(
-      (option) => option.provider === "Apple" && option.sourceMode === "manual-export" && option.canStartNow === true
+      (option) =>
+        option.provider === "Apple" &&
+        option.sourceMode === "manual-export" &&
+        option.startMode === "manual-export-guide" &&
+        option.nextApiRoute === "/api/import-preview" &&
+        option.canStartNow === true
     )
   ) {
     issues.push("Mobile Apple Calendar option must stay manual-export ready.");

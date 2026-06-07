@@ -94,7 +94,9 @@ background sync, create card opportunities, or call provider networks.
 The API contract is listed in `src/apiContracts.ts`, validated in
 `src/onboardingCalendar.test.ts` and `tests/api-server.test.ts`, and mapped to
 idempotent customer-session persistence/audit guardrails in
-`src/persistenceContracts.ts`.
+`src/persistenceContracts.ts`. The customer web panel and mobile customer model
+consume these same start packets for Google/Apple readiness display, so client
+code cannot drift into preparing provider URLs or credentials locally.
 
 ## Evidence Requirements
 
@@ -120,6 +122,11 @@ The customer web panel and mobile app show the same readiness split:
 | Paste invite or ICS | Ready now | Use the local no-account import path; the server parses pasted invite/ICS text into metadata-only preview fields. |
 | Google Calendar connection | Not connected yet | Tell the user Google requires connection setup; do not show a live sign-in CTA until OAuth app setup, consent copy, token storage, and revocation handling exist. |
 | Apple Calendar ICS export | Manual ICS export | Ask the user to export/download ICS and paste selected event data; never ask for Apple ID, app-specific password, CalDAV, or native sync credentials in this repo state. |
+
+Implementation rule: web and mobile clients may render `CalendarConnectionStartPacket`
+fields, but provider start policy remains server-owned. Client code must keep
+`clientMayPrepareProviderRequest`, `networkRequestPrepared`,
+`credentialStorageEnabled`, and `providerRequestUrl` false/null.
 
 ## Guardrails
 

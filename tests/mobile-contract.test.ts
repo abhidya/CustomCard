@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 import { buildFulfillmentRecommendations } from "../src/fulfillmentRecommendation";
 import { buildPrinterPricingComparison } from "../src/printerPricing";
 import {
+  buildMobileAccountOptions,
   mobileAccountOptions,
   mobileApprovalActions,
+  mobileCalendarConnectionStartPackets,
   mobileCardQueueItems,
   mobileChatTranscript,
   mobileExperience,
@@ -89,6 +91,13 @@ describe("mobile customer experience contract", () => {
           label: "Google Calendar",
           liveOAuthEnabled: false,
           sourceMode: "oauth-readiness",
+          startMode: "oauth-evidence-required",
+          startRoute: "/api/calendar/connections/start",
+          nextApiRoute: null,
+          clientMayPrepareProviderRequest: false,
+          networkRequestPrepared: false,
+          credentialStorageEnabled: false,
+          providerRequestUrl: null,
           canStartNow: false,
           blockedReason: "No live OAuth consent flow is implemented in this repository state."
         }),
@@ -97,10 +106,22 @@ describe("mobile customer experience contract", () => {
           label: "Apple Calendar ICS export",
           liveOAuthEnabled: false,
           sourceMode: "manual-export",
+          startMode: "manual-export-guide",
+          startRoute: "/api/calendar/connections/start",
+          nextApiRoute: "/api/import-preview",
+          clientMayPrepareProviderRequest: false,
+          networkRequestPrepared: false,
+          credentialStorageEnabled: false,
+          providerRequestUrl: null,
           canStartNow: true
         })
       ])
     );
+    expect(mobileCalendarConnectionStartPackets.map((packet) => packet.id)).toEqual([
+      "google-calendar-events",
+      "icloud-ics-fallback"
+    ]);
+    expect(buildMobileAccountOptions(mobileCalendarConnectionStartPackets)).toEqual(mobileAccountOptions);
     expect(mobileAccountOptions.every((option) => option.dataBoundary.length > 0 && option.credentialBoundary.length > 0)).toBe(true);
     expect(mobileImportActions).toEqual(
       expect.arrayContaining([
@@ -252,6 +273,26 @@ describe("mobile customer experience contract", () => {
     expect(customerCopy).toContain("Download print package");
     expect(customerCopy).toContain("Discounts are checked at checkout");
     expect(customerCopy).not.toMatch(/\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i);
+  });
+
+  it("rejects mobile calendar account options that drift from server-owned start packets", () => {
+    expect(
+      validateMobileExperience({
+        ...mobileExperience,
+        accountOptions: mobileExperience.accountOptions.map((option) =>
+          option.provider === "Google"
+            ? {
+                ...option,
+                startRoute: "/api/import-preview" as never,
+                clientMayPrepareProviderRequest: true as never,
+                networkRequestPrepared: true as never
+              }
+            : option
+        )
+      })
+    ).toEqual(
+      expect.arrayContaining(["Mobile account options must be derived from server-owned calendar start packets."])
+    );
   });
 
   it("builds a render snapshot for the native app shell without exposing contract internals", () => {

@@ -162,7 +162,7 @@ import {
   type MobileRenderRow,
   type MobileRenderSection
 } from "../apps/mobile/src/customerExperience";
-import { buildCalendarOnboardingChoices, type CalendarOnboardingChoice } from "./onboardingCalendar";
+import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import { buildAdminOperationsWorkflow, type AdminOperationsWorkflow, type AdminOperationTask } from "./adminOperations";
@@ -293,7 +293,7 @@ function App() {
   const reviewerDbSeedReadinessSummary = useMemo(() => summarizeReviewerDbSeedReadiness(), []);
   const cloudArtifactProofReadinessSummary = useMemo(() => summarizeCloudArtifactProofReadiness(), []);
   const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
-  const calendarOnboardingChoices = useMemo(() => buildCalendarOnboardingChoices(), []);
+  const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const seededCustomerChat = useMemo(
     () =>
@@ -523,7 +523,7 @@ function App() {
           <CustomerPanelView
             chatInput={customerChatInput}
             chatSession={customerChatSession}
-            calendarChoices={calendarOnboardingChoices}
+            calendarChoices={calendarConnectionStartPackets}
             handoff={handoff}
             localizationSummary={localizationSummary}
             onChatInput={setCustomerChatInput}
@@ -880,7 +880,7 @@ function CustomerPanelView({
   validation,
   workspace
 }: {
-  calendarChoices: CalendarOnboardingChoice[];
+  calendarChoices: CalendarConnectionStartPacket[];
   chatInput: string;
   chatSession: CustomerChatSession;
   handoff: VendorHandoff;
@@ -990,7 +990,14 @@ function CustomerPanelView({
 
           <div className="calendarOnboardingBox" aria-label="Calendar onboarding choices">
             {calendarChoices.map((choice) => (
-              <div className={`calendarChoice ${choice.status}`} key={choice.id}>
+              <div
+                className={`calendarChoice ${choice.status}`}
+                data-client-provider-request={String(choice.clientMayPrepareProviderRequest)}
+                data-next-route={choice.nextApiRoute ?? ""}
+                data-start-mode={choice.startMode}
+                data-start-route={choice.apiRoute}
+                key={choice.id}
+              >
                 <div>
                   <strong>{choice.label}</strong>
                   <span>{choice.dataBoundary}</span>
@@ -1269,7 +1276,7 @@ function FulfillmentOption({
   );
 }
 
-function calendarChoiceStatusLabel(choice: CalendarOnboardingChoice): string {
+function calendarChoiceStatusLabel(choice: CalendarConnectionStartPacket): string {
   if (choice.status === "ready-local") return "Ready now";
   if (choice.status === "manual-export") return "Manual export";
   return "Not connected yet";
