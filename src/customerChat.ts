@@ -140,7 +140,7 @@ function buildLocalAssistantReply(input: CustomerChatInput, sanitizedMessage: st
       ? `I will use only ${input.approvedMemoryNotes.length} approved memory note${input.approvedMemoryNotes.length === 1 ? "" : "s"} for ${input.recipientName}.`
       : undefined,
     normalized.match(/\b(image|art|picture|style|generate|ai)\b/)
-      ? "Artwork remains template-backed locally; AI image providers are adapter-ready but credential-gated."
+      ? "Artwork remains template-backed locally; image tools stay off until you enable and review them."
       : undefined
   ].filter((topic): topic is string => Boolean(topic));
 
@@ -148,6 +148,6 @@ function buildLocalAssistantReply(input: CustomerChatInput, sanitizedMessage: st
     topics[0] ?? `I can help turn this into a card plan for ${input.recipientName}.`,
     topics[1] ?? "I will keep private data out of the draft unless it is explicitly approved memory.",
     topics[2] ?? "The next safe step is reviewing copy, artwork direction, and manual handoff before checkout.",
-    "No live model call or external transcript storage was used."
+    "This reply stayed local and did not store an outside transcript."
   ].join(" ");
 }

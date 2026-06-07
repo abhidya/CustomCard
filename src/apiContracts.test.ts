@@ -474,7 +474,9 @@ describe("api contracts", () => {
     expect(payload.businessEngagementReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["popular-crm-oauth-contracts", "customer-message-channel-contracts", "consent-suppression-privacy-gate"])
     );
-    expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain("Live AI and automatic checkout stay off");
+    expect(payload.chatTranscript.map((message) => message.text).join(" ")).toContain(
+      "Creative suggestions and checkout stay under your review"
+    );
     expect(payload.printerPricing).toMatchObject({
       selectedVendorId: "walgreens",
       liveQuote: false,

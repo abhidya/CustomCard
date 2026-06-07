@@ -41,9 +41,9 @@ describe("customer chat contract", () => {
     expect(session.messages.at(-2)?.text).not.toContain("4111 1111 1111 1111");
     expect(session.messages.at(-1)).toMatchObject({
       role: "assistant",
-      text: expect.stringContaining("No live model call")
+      text: expect.stringContaining("This reply stayed local")
     });
-    expect(session.messages.at(-1)?.text).toContain("AI image providers are adapter-ready but credential-gated");
+    expect(session.messages.at(-1)?.text).toContain("image tools stay off until you enable and review them");
     expect(session.blockedProviderReasons.join(" ")).toContain("OPENAI_API_KEY");
   });
 

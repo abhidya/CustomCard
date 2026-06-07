@@ -2152,7 +2152,7 @@ export function buildCustomerChatTranscript(recipient = "Sara and Ahmed"): ChatM
     },
     {
       role: "assistant",
-      text: "I can use the pasted event, approved memories, and the card proof path. Live AI and automatic checkout stay off until review and certification gates pass."
+      text: "I can use the pasted event, approved memories, and the card proof path. Creative suggestions and checkout stay under your review until you choose otherwise."
     },
     {
       role: "customer",

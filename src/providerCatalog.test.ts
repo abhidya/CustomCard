@@ -382,7 +382,9 @@ describe("provider catalog", () => {
     expect(customer.importProviders.map((adapter) => adapter.label)).not.toContain("Salesforce CRM lifecycle sync");
     expect(customer.chatProviders.length).toBeGreaterThanOrEqual(15);
     expect(customer.imageProviders.length).toBeGreaterThanOrEqual(17);
-    expect(transcript.map((message) => message.text).join(" ")).toContain("Live AI and automatic checkout stay off");
+    expect(transcript.map((message) => message.text).join(" ")).toContain(
+      "Creative suggestions and checkout stay under your review"
+    );
   });
 
   it("passes the catalog integrity validator", () => {

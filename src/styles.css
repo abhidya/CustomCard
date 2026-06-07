@@ -645,6 +645,38 @@ h3 {
   background: #ffffff;
 }
 
+.customerSetupCopy {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid #d7e0e2;
+  border-radius: 8px;
+  background: #eef8f4;
+}
+
+.customerSetupCopy svg {
+  flex: 0 0 auto;
+  color: #258477;
+}
+
+.customerSetupCopy strong,
+.customerFlowStep strong {
+  display: block;
+  color: #203038;
+  font-weight: 880;
+}
+
+.customerSetupCopy span,
+.customerFlowStep span {
+  display: block;
+  margin-top: 3px;
+  color: #5f7076;
+  font-size: 0.76rem;
+  font-weight: 760;
+}
+
 .authProviderGrid,
 .importActionGrid {
   display: grid;
@@ -730,6 +762,35 @@ h3 {
   display: grid;
   gap: 8px;
   margin-bottom: 10px;
+}
+
+.customerFlowSteps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.customerFlowStep {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #d8e1e3;
+  border-radius: 8px;
+  background: #fbfdfc;
+}
+
+.customerFlowStep.complete {
+  border-color: #b9d9ce;
+  background: #eff9f5;
+}
+
+.customerFlowStep.current {
+  border-color: #172927;
+  background: #f8fbfa;
+}
+
+.customerFlowStep.next {
+  background: #f6f8f9;
 }
 
 .calendarChoice {
@@ -939,7 +1000,7 @@ h3 {
 
 .journeyActionGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.9fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
@@ -2218,6 +2279,10 @@ h3 {
     justify-items: start;
     place-items: center start;
   }
+
+  .customerFlowSteps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
@@ -2299,6 +2364,7 @@ h3 {
   .adminSummaryGrid,
   .mobilePreviewMetrics,
   .authProviderGrid,
+  .customerFlowSteps,
   .importActionGrid,
   .fulfillmentOptionGrid,
   .quickActionGrid,

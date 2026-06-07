@@ -885,7 +885,7 @@ export function buildPrinterPricingComparison(
     refreshReport: buildPrinterPricingRefreshReport(catalog, now),
     couponPolicy: printerCouponPolicy,
     disclaimer:
-      "Public printer prices are review-only observations, not live quotes. Apply available coupons during provider-portal collection, then confirm tax, pickup window, and stock before upload.",
+      "Public printer prices are review-only observations, not live quotes. Apply available coupons only after the same cart is opened and verified, then confirm tax, pickup window, and stock before upload.",
     liveQuote: false
   };
 }
