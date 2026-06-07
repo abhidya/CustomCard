@@ -40,6 +40,7 @@
     "admin:operations:doctor": "node scripts/admin-operations-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "printer:coupons:collect": "node scripts/printer-coupon-collector.mjs",
+    "retail:entrypoints:collect": "node scripts/retail-printer-entrypoint-collector.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",
     "capacity:doctor": "node scripts/capacity-plan-doctor.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",

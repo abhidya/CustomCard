@@ -34,6 +34,13 @@ provider-specific operation policy, operation blueprints, certification packets,
 provider operation entrypoints, admin catalog links, and docs from drifting to
 generic category pages or placeholder links.
 
+`docs/retail-printer-entrypoint-evidence.json` records the latest operator
+public-page read of those four exact provider product URLs. Refresh it with
+`CUSTOMCARD_RETAIL_ENTRYPOINT_EVIDENCE_OUT=docs/retail-printer-entrypoint-evidence.json npm run retail:entrypoints:collect`.
+The artifact proves only source-link freshness, exact URL-token preservation,
+and no checkout/upload/order action. It is not quote, upload, cart, payment, or
+order proof.
+
 | Vendor | Product link | Price collection entrypoint | Upload preview entrypoint | Final cart review entrypoint |
 | --- | --- | --- | --- | --- |
 | Walmart Photo | [5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) | `public-product-price-review`; coupon mode `apply-during-price-collection`; blocked no-network operation using review-only public observation | `provider-project-preview-review`; coupon mode `preserve-price-collection-coupon-state`; blocked until certified Walmart Photo upload contract or reviewed browser-session automation exists | `provider-cart-final-review`; coupon mode `final-cart-coupon-recheck`; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |

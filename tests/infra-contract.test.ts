@@ -371,6 +371,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"reviewer:db:seed:doctor\": \"node scripts/reviewer-db-seed-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"business:engagement:doctor\": \"node scripts/business-engagement-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
+    expect(packageJson).toContain("\"retail:entrypoints:collect\": \"node scripts/retail-printer-entrypoint-collector.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
     expect(packageJson).toContain("\"capacity:doctor\": \"node scripts/capacity-plan-doctor.mjs\"");
     expect(viteConfig).toContain("src/capacityPlan.ts");

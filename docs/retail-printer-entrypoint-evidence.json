@@ -1,0 +1,185 @@
+{
+  "service": "customcard-retail-printer-entrypoint-evidence",
+  "generatedAtIso": "2026-06-07T22:21:46.403Z",
+  "runtime": "operator-server-fetch-html",
+  "operatorAction": "Fetched exact public Walmart, FedEx, CVS, and Walgreens product links; no login, upload, cart, payment, or order action.",
+  "targets": [
+    {
+      "targetId": "walmart-provider-product-entrypoint",
+      "vendorId": "walmart",
+      "observedAtIso": "2026-06-07T22:21:43.871Z",
+      "url": "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
+      "finalUrl": "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
+      "expectedUrlTokens": [
+        "product=361-5x7-folded-card-blank-envelope",
+        "theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card",
+        "design_code=standard.custom",
+        "selected_delivery_options=2"
+      ],
+      "expectedPageSignals": [
+        "5x7 folded card, blank envelope - upload your design",
+        "361-5x7-folded-card-blank-envelope",
+        "Photo Upload 5x7 Folded Card",
+        "$0.56",
+        "selected_delivery_options=2",
+        "Upload Photos",
+        "design_code=standard.custom",
+        "wmcards-WMT.themepack%3Awmt_custom_5x7.card",
+        "Photo Cart",
+        "Sign In"
+      ],
+      "matchedUrlTokens": [
+        "product=361-5x7-folded-card-blank-envelope",
+        "theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card",
+        "design_code=standard.custom",
+        "selected_delivery_options=2"
+      ],
+      "matchedPageSignals": [
+        "5x7 folded card, blank envelope - upload your design",
+        "361-5x7-folded-card-blank-envelope",
+        "Photo Upload 5x7 Folded Card",
+        "selected_delivery_options=2",
+        "Upload Photos",
+        "design_code=standard.custom",
+        "wmcards-WMT.themepack%3Awmt_custom_5x7.card",
+        "Photo Cart",
+        "Sign In"
+      ],
+      "status": 200,
+      "ok": true,
+      "bytes": 484938,
+      "noCheckoutAction": true,
+      "noUploadAction": true,
+      "noOrderPlaced": true
+    },
+    {
+      "targetId": "fedex-provider-product-entrypoint",
+      "vendorId": "fedex",
+      "observedAtIso": "2026-06-07T22:21:43.871Z",
+      "url": "https://www.office.fedex.com/default/greeting-cards-quick.html",
+      "expectedUrlTokens": [
+        "/default/greeting-cards-quick.html"
+      ],
+      "expectedPageSignals": [
+        "Quick greeting and holiday cards",
+        "fedex-office-quick-greeting-cards",
+        "Quick Greeting & Holiday Cards",
+        "5\" x 7\" flat card",
+        "Ready same day or within 24 hours",
+        "in-store pickup",
+        "Upload your design",
+        ".PDF",
+        ".JPG",
+        "Upload a File",
+        "one file per side",
+        "paid for",
+        "Production Time + Shipping",
+        "1-3 business days",
+        "same day"
+      ],
+      "matchedUrlTokens": [
+        "/default/greeting-cards-quick.html"
+      ],
+      "matchedPageSignals": [],
+      "noCheckoutAction": true,
+      "noUploadAction": true,
+      "noOrderPlaced": true,
+      "error": "fetch failed"
+    },
+    {
+      "targetId": "cvs-provider-product-entrypoint",
+      "vendorId": "cvs",
+      "observedAtIso": "2026-06-07T22:21:43.871Z",
+      "url": "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
+      "finalUrl": "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks",
+      "expectedUrlTokens": [
+        "/photo/design-detail",
+        "category=StoreCat_22821",
+        "designId=1f0682a2d34546bf86cbb799c3811d4e",
+        "sku=CommerceProduct_26126",
+        "productCategory=Card%20%26%20Stationery"
+      ],
+      "expectedPageSignals": [
+        "Folded greeting card, 5x7",
+        "CommerceProduct_26126",
+        "Folded Greeting Card, 5x7",
+        "8.98",
+        "productCategory=Card%20%26%20Stationery",
+        "dgview",
+        "Cards & Stationery",
+        "JUNESW"
+      ],
+      "matchedUrlTokens": [
+        "/photo/design-detail",
+        "category=StoreCat_22821",
+        "designId=1f0682a2d34546bf86cbb799c3811d4e",
+        "sku=CommerceProduct_26126",
+        "productCategory=Card%20%26%20Stationery"
+      ],
+      "matchedPageSignals": [
+        "Folded greeting card, 5x7",
+        "CommerceProduct_26126",
+        "Folded Greeting Card, 5x7",
+        "8.98",
+        "productCategory=Card%20%26%20Stationery",
+        "Cards & Stationery",
+        "JUNESW"
+      ],
+      "status": 200,
+      "ok": true,
+      "bytes": 333579,
+      "noCheckoutAction": true,
+      "noUploadAction": true,
+      "noOrderPlaced": true
+    },
+    {
+      "targetId": "walgreens-provider-product-entrypoint",
+      "vendorId": "walgreens",
+      "observedAtIso": "2026-06-07T22:21:43.871Z",
+      "url": "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
+      "finalUrl": "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us",
+      "expectedUrlTokens": [
+        "/store/design-detail",
+        "category=StoreCat_24955",
+        "designId=0c158c44e2f34d9fabc9e1b3ada2eaa6",
+        "sku=CommerceProduct_33272",
+        "productCategory=Card%20%26%20Stationery"
+      ],
+      "expectedPageSignals": [
+        "5x7 folded cards, standard cardstock 85lb",
+        "CommerceProduct_33272",
+        "5x7 Folded Cards",
+        "3.49",
+        "productCategory=Card%20%26%20Stationery",
+        "Upload Your Design",
+        "dgview",
+        "Cards & Stationery",
+        "CRISPCARD"
+      ],
+      "matchedUrlTokens": [
+        "/store/design-detail",
+        "category=StoreCat_24955",
+        "designId=0c158c44e2f34d9fabc9e1b3ada2eaa6",
+        "sku=CommerceProduct_33272",
+        "productCategory=Card%20%26%20Stationery"
+      ],
+      "matchedPageSignals": [
+        "5x7 folded cards, standard cardstock 85lb",
+        "CommerceProduct_33272",
+        "5x7 Folded Cards",
+        "3.49",
+        "productCategory=Card%20%26%20Stationery",
+        "Upload Your Design",
+        "dgview",
+        "Cards & Stationery",
+        "CRISPCARD"
+      ],
+      "status": 200,
+      "ok": true,
+      "bytes": 318468,
+      "noCheckoutAction": true,
+      "noUploadAction": true,
+      "noOrderPlaced": true
+    }
+  ]
+}
