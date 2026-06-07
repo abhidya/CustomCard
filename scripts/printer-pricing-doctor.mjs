@@ -57,7 +57,11 @@ const checks = [
     '"only-after-provider-portal-application"',
     "provider portal checkout subtotal after coupon application",
     "structured provider portal application evidence",
-    "same product, quantity, fulfillment mode, and account state"
+    "same product, quantity, fulfillment mode, and account state",
+    "official coupon-validation API or provider portal cart proof for exact product details",
+    "printerCouponValidationProviders",
+    "walgreens-native-photo-coupon-validation",
+    "https://services.walgreens.com/api/photo/order/coupon/v3"
   ]),
   checkMinimum("collection", "no-network-collection-rules", ruleCount, 8),
   checkIncludes("collection", "blocked-live-quote-fields-and-coupon-sources", contents.pricing, [
@@ -186,6 +190,7 @@ const checks = [
     "couponProviderCandidateCount",
     "tokenRedacted",
     "providerPortalCartTermsEvidenceRequired: true",
+    "official coupon-validation API or provider portal cart proof",
     "providerPortalApplicationPacketCount",
     "providerPortalApplicationTargetCount",
     "providerPortalApplicationPackets",

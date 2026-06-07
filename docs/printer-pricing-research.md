@@ -140,6 +140,18 @@ a best available price. Coupon discounts are applied only after provider-portal
 evidence proves the code worked for the same product, quantity, fulfillment
 mode, and account state.
 
+The proper provider-feed candidates remain FMTC and Rakuten for discovery, but
+they do not prove final cart price by themselves. Walgreens also publishes an
+official Native Photo Prints coupon-validation API path at
+`https://services.walgreens.com/api/photo/order/coupon/v3`; the repo models
+that as `walgreens-native-photo-coupon-validation`, a credential-gated
+server-side future validation provider. It requires `apiKey`, `affId`,
+`couponCode`, `act=getdiscount`, app/device metadata, and exact
+`productDetails[].productId` plus `productDetails[].qty`, and returns
+`orderTotalPrice`/`orderDiscountPrice` evidence. That is stronger than scraping
+for Walgreens once partner credentials and certification exist, but it is still
+blocked from runtime and cannot submit uploads, payment, or orders.
+
 Coupon collection targets distinguish static coupon sources, print entrypoints,
 and provider feeds. Official deal/coupon pages use `server-fetch-html`. The
 exact print/product links use `rendered-browser-read` because customer-visible
@@ -151,7 +163,7 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-17:25 UTC `operator-chromium-rendered-read` check against the exact print
+18:26 UTC `operator-chromium-rendered-read` check against the exact print
 links. CVS rendered the `JUNESW` code visibly on the 5x7 folded card page, so
 the browser-evidence Module reports `operator-browser-proof-attached` when that
 evidence is attached or generated. Walgreens rendered the 5x7 product and
@@ -231,6 +243,10 @@ Portal application evidence uses this artifact shape:
 | --- | --- |
 | [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`, `provider-api-feed`, and verification signals for status plus code/link verification timestamps; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. When the token is present, the operator collector requests JSON active code deals through the tested provider-feed seam and redacts the token from output. |
 | [Rakuten Advertising Coupon Feed API](https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API) | Credential-gated publisher coupon-feed candidate. It is represented as `rakuten-coupon-feed` with `RAKUTEN_ADVERTISING_API_TOKEN`, `provider-api-feed`, and verification signals for coupon code, promotional link, advertiser, offer start date, and offer end date. The tested provider-feed seam requests XML coupon pages with bearer authorization, redacts the token from output, and keeps provider-fed coupons as discovery evidence until official retailer or provider-portal evidence confirms applicability. |
+
+| Official coupon-validation provider | Current treatment |
+| --- | --- |
+| [Walgreens Native Photo Prints API](https://developer.walgreens.com/sites/default/files/v3_Native_PhotoPrintsAPI.html) | Future certified server-side validation path for Walgreens only. It is represented as `walgreens-native-photo-coupon-validation`, requires `WALGREENS_API_KEY` and `WALGREENS_AFFILIATE_ID`, and records the `coupon/v3` request/response fields needed to prove an exact `productDetails[]` discount. It is not a scraping target, is not wired to client code, and remains blocked until partner/API certification exists. |
 
 The handoff UI and API bootstrap show coupon-source counts and portal-proof
 status. The customer print panel also shows the active source-listed code for
