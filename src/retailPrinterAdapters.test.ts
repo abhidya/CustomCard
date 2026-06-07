@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { printerPriceCatalog } from "./printerPricing";
 import {
   buildRetailPrinterAdapterPlan,
+  buildRetailPrinterCertificationPackets,
   createRetailPrinterOperationAdapter,
   getRetailPrinterAdapter,
   getRetailPrinterAdapterForProvider,
@@ -201,6 +202,29 @@ describe("retail printer adapters", () => {
         sourceLink: expect.objectContaining({ purpose: result.operation, url: expectedRetailSources.fedex }),
         forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
       });
+      expect(result.operationPacket.certificationPacket).toMatchObject({
+        packetId: `fedex-${result.operation}-certification-packet`,
+        vendorId: "fedex",
+        providerAdapterId: "fedex-live-print",
+        operation: result.operation,
+        providerPortalUrl: expectedRetailSources.fedex,
+        productUrl: expectedRetailSources.fedex,
+        productSku: "fedex-office-quick-greeting-cards",
+        pricingObservationId: "fedex-quick-5x7-single-sided-card",
+        status: "certification-evidence-required",
+        requiredEvidenceArtifacts: result.requiredEvidence,
+        canEnableLiveOperation: false,
+        blockedLiveOperationFields: expect.arrayContaining([
+          "network request from CustomCard",
+          "provider API payload preparation",
+          "raw payment card data"
+        ])
+      });
+      expect(result.operationPacket.certificationPacket.requiredGateIds).toEqual(
+        expect.arrayContaining(["vendor-certification", "real-order-kill-switch", "customer-approval"])
+      );
+      expect(result.operationPacket.certificationPacket.requiredProviderEvidence.length).toBeGreaterThanOrEqual(3);
+      expect(result.operationPacket.certificationPacket.liveEnablementChecks.join(" ")).toContain(expectedRetailSources.fedex);
       expect(result.operationPacket.packetId).toBe(`fedex-${result.operation}-blocked-operation-packet`);
       expect(result.operationPacket.evidenceChecklist).toEqual(result.requiredEvidence);
       expect(result.operationPacket.operatorSteps.length).toBeGreaterThanOrEqual(4);
@@ -258,6 +282,20 @@ describe("retail printer adapters", () => {
           requestPrepared: false,
           missingInputFields: []
         });
+        expect(result.operationPacket.certificationPacket).toMatchObject({
+          packetId: `${vendorId}-${result.operation}-certification-packet`,
+          vendorId,
+          operation: result.operation,
+          providerPortalUrl: expectedRetailSources[vendorId],
+          productUrl: expectedRetailSources[vendorId],
+          status: "certification-evidence-required",
+          canEnableLiveOperation: false
+        });
+        expect(result.operationPacket.certificationPacket.requiredEvidenceArtifacts).toEqual(result.requiredEvidence);
+        expect(result.operationPacket.certificationPacket.requiredGateIds.length).toBeGreaterThanOrEqual(3);
+        expect(result.operationPacket.certificationPacket.requiredProviderEvidence).toEqual(
+          expect.arrayContaining(result.operation === "fetch-price" ? ["Coupon application status"] : [])
+        );
         expect(result.operationPacket.expectedInputFields).toEqual(result.requestFieldNames);
         expect(result.operationPacket.receivedInputFields).toEqual(result.receivedFieldNames);
         expect(result.operationPacket.operatorSteps.join(" ")).toContain(expectedRetailSources[vendorId]);
@@ -292,5 +330,46 @@ describe("retail printer adapters", () => {
     expect(order?.certificationGateIds).toEqual(
       expect.arrayContaining(["payment-certification", "cancellation-recovery", "physical-print-qa"])
     );
+  });
+
+  it("builds certification packets for every retail provider operation", () => {
+    const packets = buildRetailPrinterCertificationPackets();
+
+    expect(packets).toHaveLength(12);
+    expect(packets.map((packet) => packet.packetId)).toEqual(
+      expect.arrayContaining([
+        "walmart-fetch-price-certification-packet",
+        "fedex-upload-image-certification-packet",
+        "cvs-place-order-certification-packet",
+        "walgreens-place-order-certification-packet"
+      ])
+    );
+
+    for (const packet of packets) {
+      expect(packet.providerPortalUrl).toBe(expectedRetailSources[packet.vendorId]);
+      expect(packet.productUrl).toBe(expectedRetailSources[packet.vendorId]);
+      expect(packet.status).toBe("certification-evidence-required");
+      expect(packet.canEnableLiveOperation).toBe(false);
+      expect(packet.requiredGateIds).toEqual(
+        expect.arrayContaining(["vendor-certification", "real-order-kill-switch", "customer-approval"])
+      );
+      expect(packet.requiredEvidenceArtifacts.length).toBeGreaterThanOrEqual(3);
+      expect(packet.requiredProviderEvidence.length).toBeGreaterThanOrEqual(3);
+      expect(packet.blockedLiveOperationFields).toEqual(
+        expect.arrayContaining(["network request from CustomCard", "provider API payload preparation", "raw payment card data"])
+      );
+      expect(packet.liveEnablementChecks.join(" ")).toContain(packet.providerPortalUrl);
+      if (packet.operation === "place-order") {
+        expect(packet.requiredGateIds).toEqual(
+          expect.arrayContaining(["payment-certification", "cancellation-recovery", "physical-print-qa"])
+        );
+      }
+    }
+
+    expect(buildRetailPrinterCertificationPackets("walgreens").map((packet) => packet.vendorId)).toEqual([
+      "walgreens",
+      "walgreens",
+      "walgreens"
+    ]);
   });
 });

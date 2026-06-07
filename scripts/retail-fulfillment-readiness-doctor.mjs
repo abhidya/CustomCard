@@ -12,6 +12,7 @@ const files = {
   apiServer: "scripts/api-server.mjs",
   providerCatalog: "src/providerCatalog.ts",
   providerRuntime: "src/providerRuntime.ts",
+  retailPrinterContracts: "src/retailPrinterContracts.ts",
   retailPrinterAdapters: "src/retailPrinterAdapters.ts",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
@@ -61,7 +62,7 @@ const checks = [
     "directOrderEnabled",
     "physicalCertificationAttached"
   ]),
-  checkIncludes("provider-contracts", "retail-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}\n${contents.retailPrinterAdapters}`, [
+  checkIncludes("provider-contracts", "retail-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}\n${contents.retailPrinterContracts}\n${contents.retailPrinterAdapters}`, [
     "manual-vendor-handoff",
     "public-printer-pricing-research",
     "walgreens-live-order",
@@ -81,6 +82,11 @@ const checks = [
     "requestPrepared: false",
     "RetailPrinterOperationPacket",
     "operationPacket",
+    "RetailPrinterCertificationPacket",
+    "certificationPacket",
+    "buildRetailPrinterCertificationPackets",
+    "certification-evidence-required",
+    "canEnableLiveOperation: false",
     "operatorSteps",
     "safetyChecks",
     "sourceBackedFields",

@@ -26,10 +26,12 @@ Observed on: June 7, 2026.
 ## Retail Adapter Source Links
 
 These links are owned by `retailPrinterProductLinks` in
-`src/retailPrinterAdapters.ts`. The provider catalog derives the four live
-printer `docsUrl` values through `getRetailPrinterProductLinkByProvider()` so
-the Adapter Module, admin catalog, operation packets, and docs cannot drift to
-generic category pages or placeholder links.
+`src/retailPrinterContracts.ts`. The provider catalog derives the four live
+printer `docsUrl` values through `getRetailPrinterProductLinkByProvider()`, and
+`src/retailPrinterAdapters.ts` consumes the same contract module when building
+blocked operation packets. That keeps provider identity, exact product URLs,
+operation blueprints, certification packets, admin catalog links, and docs from
+drifting to generic category pages or placeholder links.
 
 | Vendor | Product link | Price fetch source | Image upload source | Order placement source |
 | --- | --- | --- | --- | --- |
@@ -51,6 +53,15 @@ payload: every result keeps `requestPrepared: false`, `networkAttempted: false`,
 and the operation status `blocked` until certification evidence exists. Raw
 relationship memories, raw payment card data, and unapproved recipient PII are
 forbidden from every operation.
+
+Each operation packet also carries a `certificationPacket` for the future
+certification review. It records the exact provider portal URL, product SKU,
+pricing observation, required certification gates, provider evidence fields,
+blocked live-operation fields, and live-enablement checks while keeping
+`canEnableLiveOperation: false`. `buildRetailPrinterCertificationPackets()`
+returns the 12 provider-operation certification packets for Walmart, FedEx, CVS,
+and Walgreens so a future certified transport can graduate behind the same
+Adapter Interface without changing customer/admin call sites.
 
 `validateRetailPrinterProductUrl()` rejects generic product/category pages and
 placeholder-like URLs (`example`, `localhost`, `placeholder`, `dummy`, `todo`,
