@@ -5,13 +5,15 @@ links each lane to the design source, defined task shape, current evidence, and
 remaining implementation gaps. It is intentionally stricter than a roadmap: a
 lane is not "done" until its graduation evidence exists in the repo.
 
-## Active Coordination
+## Coordination Snapshot
 
-| Lane | Current owner | Branch/worktree | Scope | Merge rule |
+No worker branch is currently awaiting integration. Recent merged lanes:
+
+| Lane | Owner | Main commit | Scope | Validation |
 | --- | --- | --- | --- | --- |
-| Coupon portal evidence | Anscombe | Worker-owned branch/worktree | Coupon collection, provider-feed evidence, and best-price coupon application policy. | Merge only after focused pricing tests, pricing doctor, docs update, and no live-order claims pass. |
-| Demo/bootstrap boundary | Huygens | Worker-owned branch/worktree | Move hardcoded demo bootstrap values out of the primary React shell without behavior change. | Merge only after browser smoke tests and build/check prove parity. |
-| Orchestration/workstream map | Lead agent | `codex/workstream-map` | Repo-local workstream map, branch hygiene, integration, and validation sequencing. | Docs-only; merge after link check and clean status. |
+| Coupon portal evidence | Anscombe | `6ffd44d` | Structured same-cart provider-portal coupon evidence before best-price coupon ranking. | Full `npm run check`, pricing doctor, script syntax checks, focused pricing/API/fulfillment tests. |
+| Demo/bootstrap boundary | Huygens | `dd71043` | Demo bootstrap values moved out of the primary React shell without behavior change. | Browser smoke tests and build. |
+| Orchestration/workstream map | Lead agent | `c14c401` | Repo-local workstream map, branch hygiene, integration, and validation sequencing. | Infra contract test and diff whitespace check. |
 
 ## Product Surface Workstreams
 
@@ -55,4 +57,3 @@ lane is not "done" until its graduation evidence exists in the repo.
    signed artifacts are attached.
 6. Main is pushed after each clean merge; if a browser/runtime issue appears
    after tests pass, it gets a separate fix before the next lane.
-
