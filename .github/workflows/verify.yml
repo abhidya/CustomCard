@@ -95,6 +95,9 @@ jobs:
       - name: Validate business engagement readiness
         run: npm run business:engagement:doctor
 
+      - name: Validate admin operations workflow
+        run: npm run admin:operations:doctor
+
       - name: Validate localization readiness
         run: npm run localization:doctor
 

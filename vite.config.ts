@@ -8,6 +8,8 @@ export default defineConfig({
       include: [
         "apps/mobile/src/customerExperience.ts",
         "src/accountAuth.ts",
+        "src/adminOperations.ts",
+        "src/adminOperationsData.mjs",
         "src/apiContracts.ts",
         "src/capacityPlan.ts",
         "src/capacityPlanData.mjs",

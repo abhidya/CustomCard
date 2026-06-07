@@ -355,6 +355,12 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("Ar EG");
     expect(result.chatBubbles).toBeGreaterThanOrEqual(6);
     expect(result.adminText).toContain("Admin panel");
+    expect(result.adminText).toContain("Integration owner workflow");
+    expect(result.adminText).toContain("Credential vault setup");
+    expect(result.adminText).toContain("Hosted account-token verification");
+    expect(result.adminText).toContain("Alert route drill");
+    expect(result.adminText).toContain("Incident review runbook");
+    expect(result.adminText).toContain("Live enabled0");
     expect(result.adminText).toContain("Required env");
     expect(result.adminText).toContain("No-network readiness");
     expect(result.adminText).toContain("Provider governance");

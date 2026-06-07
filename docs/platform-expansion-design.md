@@ -258,6 +258,12 @@ The customer path stays cheap:
 
 The admin panel turns the adapter catalog into an operations surface:
 
+- Integration owner workflow for identity/access, provider integrations,
+  commerce/fulfillment, platform infrastructure, and observability/audit
+  owners. `src/adminOperations.ts` converts launch gates, hosted API proof
+  items, retail/payment readiness, observability, external audit blockers, and
+  required env vars into concrete admin actions with required evidence. This is
+  not a live launch switch.
 - Total adapters and capability count.
 - Ready, credential-gated, contract-only, and blocked counts.
 - Per-capability local fallback coverage.
@@ -460,6 +466,12 @@ The runtime remains fail-closed:
   wiring, and the "not live CRM OAuth, customer messaging, CRM writeback, or
   production campaign analytics proof" disclaimer while keeping live customer
   sends, CRM writes, live external network calls, and real orders at zero.
+- `npm run admin:operations:doctor` verifies Admin operations workflow in
+  `src/adminOperations.ts`, owner-lane coverage for identity/access, provider
+  integrations, commerce/fulfillment, platform infrastructure, and
+  observability/audit, admin UI exposure, workflow smoke coverage, CI wiring,
+  credential-vault evidence requirements, hosted token proof, alert-route drill,
+  and incident-review runbook while keeping live production enablement at zero.
 - `npm run ai:doctor` verifies AI provider readiness in
   `src/aiProviderReadiness.ts`, the text/image adapter inventory, model
   allowlist gates, prompt and brand-safety review evidence, PII/memory

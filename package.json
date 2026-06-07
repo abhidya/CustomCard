@@ -36,6 +36,7 @@
     "hosted:api:doctor": "node scripts/hosted-api-readiness-doctor.mjs",
     "reviewer:db:seed:doctor": "node scripts/reviewer-db-seed-readiness-doctor.mjs",
     "business:engagement:doctor": "node scripts/business-engagement-readiness-doctor.mjs",
+    "admin:operations:doctor": "node scripts/admin-operations-doctor.mjs",
     "printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs",
     "printer:coupons:collect": "node scripts/printer-coupon-collector.mjs",
     "provider:governance:doctor": "node scripts/provider-governance-doctor.mjs",

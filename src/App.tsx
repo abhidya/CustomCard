@@ -182,6 +182,7 @@ import {
 import { buildCalendarOnboardingChoices, type CalendarOnboardingChoice } from "./onboardingCalendar";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
+import { buildAdminOperationsWorkflow, type AdminOperationsWorkflow, type AdminOperationTask } from "./adminOperations";
 import {
   productionLaunchGates,
   summarizeProductionReadiness,
@@ -1912,6 +1913,15 @@ function AdminPanelView({
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
   const visibleEnv = prioritizeAdminEnv(model.coverage.requiredEnv).slice(0, 24);
   const hiddenEnvCount = Math.max(model.coverage.requiredEnv.length - visibleEnv.length, 0);
+  const adminOperationsWorkflow = buildAdminOperationsWorkflow({
+    model,
+    productionGates: productionLaunchGates,
+    hostedApiReadinessItems,
+    retailFulfillmentReadinessItems: retailFulfillmentItems,
+    paymentReadinessItems,
+    observabilityReadinessItems: observabilityItems,
+    externalAuditReadinessItems: externalAuditItems
+  });
 
   return (
     <section className="adminPanel">
@@ -1959,6 +1969,8 @@ function AdminPanelView({
       </div>
 
       <div className="adminGrid">
+        <AdminOperationsWorkflowView workflow={adminOperationsWorkflow} />
+
         <article className="toolPanel">
           <div className="sectionHeader compact">
             <div>
@@ -2456,6 +2468,73 @@ function AdminPanelView({
   );
 }
 
+function AdminOperationsWorkflowView({ workflow }: { workflow: AdminOperationsWorkflow }) {
+  return (
+    <article className="toolPanel adminWide adminOperationsCard">
+      <div className="sectionHeader compact">
+        <div>
+          <p className="eyebrow">Integration ownership</p>
+          <h3>Integration owner workflow</h3>
+        </div>
+        <StatusChip icon={ClipboardCheck} label={`${workflow.summary.p0Tasks} P0 actions`} tone="red" />
+      </div>
+
+      <div className="adminOpsOverview" aria-label="Admin operations workflow summary">
+        <Metric label="Owners" value={`${workflow.summary.ownerCount}`} />
+        <Metric label="Tasks" value={`${workflow.summary.taskCount}`} />
+        <Metric label="Evidence req." value={`${workflow.summary.evidenceRequired}`} />
+        <Metric label="Credential tasks" value={`${workflow.summary.credentialTasks}`} />
+        <Metric label="Blocked" value={`${workflow.summary.blocked}`} />
+        <Metric label="Live enabled" value={`${workflow.summary.liveEnabled}`} />
+      </div>
+
+      <div className="adminOpsLaneGrid" aria-label="Admin operation owner lanes">
+        {workflow.ownerLanes.map((lane) => (
+          <div className="adminOpsLane" key={lane.id}>
+            <div>
+              <strong>{lane.label}</strong>
+              <span>{lane.description}</span>
+            </div>
+            <small>
+              {lane.p0Tasks} P0 / {lane.evidenceRequired} evidence
+            </small>
+          </div>
+        ))}
+      </div>
+
+      <div className="adminOpsTaskList" aria-label="Priority admin operation tasks">
+        {workflow.priorityTasks.map((task) => (
+          <AdminOperationTaskRow key={task.id} sourceLabel={workflow.sourceLabels[task.source]} task={task} />
+        ))}
+      </div>
+
+      <p className="panelNote">
+        This is an operator queue, not a live launch switch: every row needs attached evidence before credentials,
+        provider calls, payment, telemetry, hosted auth, or retail ordering can move past readiness.
+      </p>
+    </article>
+  );
+}
+
+function AdminOperationTaskRow({ sourceLabel, task }: { sourceLabel: string; task: AdminOperationTask }) {
+  return (
+    <div className={`adminOpsTask ${task.status}`}>
+      <div className="adminOpsTaskHeader">
+        <div>
+          <span>{sourceLabel}</span>
+          <strong>{task.label}</strong>
+        </div>
+        <em>{adminOperationStatusLabel(task.status)}</em>
+      </div>
+      <p>{task.adminAction}</p>
+      <div className="adminOpsTaskEvidence">
+        <span>{task.requiredEvidence[0]}</span>
+        {task.envVarNames.length > 0 && <small>{task.envVarNames.slice(0, 3).join(", ")}</small>}
+      </div>
+    </div>
+  );
+}
+
 function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, RuntimeReadiness> }) {
   const [statusFilter, setStatusFilter] = useState<AdapterStatusFilter>("all");
   const [capabilityFilter, setCapabilityFilter] = useState<AdapterCapabilityFilter>("all");
@@ -2936,6 +3015,17 @@ function summarizeRuntimeReadiness(readinessMap: Map<string, RuntimeReadiness>) 
     missingCredentials: readiness.reduce((total, item) => total + item.missingCredentials.length, 0),
     preparedRequest: readiness.filter((item) => item.mode === "prepared-request").length
   };
+}
+
+function adminOperationStatusLabel(status: AdminOperationTask["status"]): string {
+  const labels: Record<AdminOperationTask["status"], string> = {
+    blocked: "Blocked",
+    "certification-blocked": "Certification",
+    "evidence-required": "Evidence",
+    "protection-blocked": "Protected",
+    "repo-local-ready": "Local ready"
+  };
+  return labels[status];
 }
 
 function prioritizeAdminEnv(requiredEnv: string[]): string[] {

@@ -152,6 +152,13 @@ it after each meaningful implementation pass.
   customer messages, CRM writes, live external network calls, or real orders.
   It is not live CRM OAuth, customer messaging, CRM writeback, or production
   campaign analytics proof.
+- Admin operations workflow is checked by `npm run admin:operations:doctor`,
+  which verifies owner-lane coverage for identity/access, provider
+  integrations, commerce/fulfillment, platform infrastructure, and
+  observability/audit; credential-vault evidence; hosted account-token proof;
+  alert-route drill; incident-review runbook; admin UI exposure; docs; CI
+  wiring; and zero live production enablement. It is not a deployed admin
+  account workflow, credential vault execution, or live launch approval.
 - Cloud artifact IaC is checked by `npm run cloud:doctor`, which statically
   verifies `infra/aws/artifact-store` for private S3 bucket posture, encryption,
   versioning, lifecycle cleanup, HTTPS/encrypted-upload bucket policy, scoped
@@ -234,6 +241,7 @@ npm run mobile:render:doctor
 npm run hosted:api:doctor
 npm run reviewer:db:seed:doctor
 npm run business:engagement:doctor
+npm run admin:operations:doctor
 npm run provider:governance:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
