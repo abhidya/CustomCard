@@ -185,6 +185,48 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
   }, 30000);
 
+  it("renders the mobile app preview from the shared customer app contract", async () => {
+    const sessionId = await createPage(390, 900);
+    const result = await evaluate(
+      sessionId,
+      `(async () => {
+        const mobileButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent.includes("Mobile app")
+        );
+        if (!mobileButton) throw new Error("Missing Mobile app nav");
+        mobileButton.click();
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        return {
+          h2: document.querySelector("h2")?.textContent,
+          text: document.body.textContent,
+          deviceSections: document.querySelectorAll(".mobileSection").length,
+          contractBlocks: document.querySelectorAll(".mobileContractBlock").length,
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+          bodyScrollWidth: document.body.scrollWidth
+        };
+      })()`
+    );
+
+    expect(result.h2).toBe("Mobile app");
+    expect(result.text).toContain("Customer mobile panel");
+    expect(result.text).toContain("Continue with Google");
+    expect(result.text).toContain("Continue with Apple");
+    expect(result.text).toContain("Import calendar");
+    expect(result.text).toContain("Card queue");
+    expect(result.text).toContain("Approval controls");
+    expect(result.text).toContain("Text interface");
+    expect(result.text).toContain("Best available options");
+    expect(result.text).toContain("Checkout confirmation");
+    expect(result.text).toContain("Offline sync");
+    expect(result.text).toContain("Live orders");
+    expect(result.text).toContain("live proof claims blocked");
+    expect(result.deviceSections).toBeGreaterThanOrEqual(7);
+    expect(result.contractBlocks).toBeGreaterThanOrEqual(4);
+    expect(result.bodyScrollWidth).toBe(result.clientWidth);
+    expect(result.scrollWidth).toBe(result.clientWidth);
+  }, 30000);
+
   it("exposes customer and admin panels without overflow", async () => {
     const sessionId = await createPage(1280, 900);
     const result = await evaluate(

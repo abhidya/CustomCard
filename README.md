@@ -21,10 +21,11 @@ This is not just AI greeting cards. The defensible product is:
 
 This repo now contains a runnable Vite, React, and TypeScript free local MVP plus
 a repo-local production skeleton. The web app opens on the actual reviewer
-workflow: Google/Apple-style entry points, local demo auth, manual/ICS event import, opportunity approval,
+workflow: local demo auth, manual/ICS event import, opportunity approval,
 relationship memory review, deterministic card generation, 5x7 SVG panel export,
 local SVG/PDF print package export, customer/admin panels, customer-facing
-fulfillment recommendations, and catalog-driven adapter readiness.
+fulfillment recommendations, a browser-inspectable mobile app preview, and
+catalog-driven adapter readiness.
 
 The service kernel still executes the critical backend contracts in code:
 metadata-only provider import, approved relationship memory, layout-safe 5x7
@@ -77,9 +78,9 @@ environment configuration instead of static placeholders.
 - Localization readiness for English (US), Spanish (US), Urdu, and Arabic
   across customer, admin, API, and mobile surfaces, with RTL layout review and
   human copy-review gates before non-English or RTL copy can be marked ready.
-- Customer panel with Google/Apple entry points, calendar/email/invite import
-  actions, next-card opportunities, a sendable deterministic local chat session
-  with no live model call, card proof path, and customer fulfillment
+- Customer panel with a staged local workspace, invite import, event review,
+  next-card opportunities, a sendable deterministic local chat session with no
+  live model call, card proof path, and customer fulfillment
   recommendations for cheapest known price, fastest pickup, and cheapest
   shipped option.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
@@ -203,7 +204,8 @@ environment configuration instead of static placeholders.
 - Tested Expo customer app contract for the next-action summary, card queue,
   approval controls, memory review, print-proof checks, local chat, render
   choices, review-only pricing previews, offline idempotent API sync, locale
-  readiness, manual handoff, and real-order kill-switch posture.
+  readiness, manual handoff, real-order kill-switch posture, and a Vite browser
+  preview powered by the same mobile customer contract.
 - Tested Expo/EAS native release contract for development, preview, and
   production iOS/Android build profiles with API URL supplied by environment
   and real orders disabled.
@@ -235,11 +237,12 @@ CRM, or cloud credentials.
    and review the checksum manifest/manual vendor handoff checklist.
 5. Open the admin panel to inspect provider gates, launch-readiness doctors, and
    blocked live-order/payment/vendor statuses.
+6. Open the Mobile app tab to inspect the browser preview of the shared Expo
+   customer contract; use Expo Go or a simulator for native rendering.
 
 For a no-server verification pass, run `npm run test -- --run` or the broader
 `npm run check` when audit/network policy checks are acceptable in the current
 environment.
-free local workflow, not a marketing landing page.
 
 ## Vercel Deployment Contract
 
@@ -330,7 +333,7 @@ React free local MVP
   -> worker/migration/runtime scripts
   -> API/static production server
   -> Docker Compose or Kubernetes manifests
-  -> Expo customer mobile app contract
+  -> Vite mobile preview + Expo customer mobile app contract
 ```
 
 The service kernel models the critical backend contracts without pretending they
