@@ -259,7 +259,7 @@ export interface MobileRenderSnapshot {
 
 export const mobileSafetyBanner = {
   label: "Confirm before checkout",
-  detail: "Prices, payment, pickup, and ordering are confirmed before checkout."
+  detail: "Confirm price, pickup, payment, and ordering on the print shop site before ordering."
 } as const;
 
 export const mobileProofBoundary: MobileProofBoundary = {
@@ -575,7 +575,7 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     totalCents: 56,
     etaLabel: "same-day pickup candidate",
     confirmationCopy:
-      "Discounts are confirmed at checkout; tax, stock, and pickup still need review.",
+      "Discounts are checked at checkout; tax, stock, and pickup still need review.",
     liveQuote: false,
     liveOrder: false,
     customerVisible: true

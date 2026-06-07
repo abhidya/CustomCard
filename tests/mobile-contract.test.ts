@@ -250,7 +250,7 @@ describe("mobile customer experience contract", () => {
     expect(customerCopy).toContain("Google Calendar is not connected yet");
     expect(customerCopy).toContain("Print options");
     expect(customerCopy).toContain("Download print package");
-    expect(customerCopy).toContain("Discounts are confirmed at checkout");
+    expect(customerCopy).toContain("Discounts are checked at checkout");
     expect(customerCopy).not.toMatch(/\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i);
   });
 
