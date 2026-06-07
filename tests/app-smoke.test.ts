@@ -207,6 +207,12 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.handoffText).toContain("Discounts");
     expect(result.handoffText).toContain("Discount checks");
     expect(result.handoffText).toContain("2/5");
+    expect(result.handoffText).toContain("CRISPCARD");
+    expect(result.handoffText).toContain("60% off card products found");
+    expect(result.handoffText).toContain("Try this code at Walgreens Photo checkout by 2026-06-13.");
+    expect(result.handoffText).toContain(
+      "The estimate changes only after checkout applies it to this exact card and quantity."
+    );
     expect(result.handoffText).toContain("Confirm at");
     expect(result.handoffText).toContain("confirm offer at checkout");
     expect(result.handoffText).toContain("Public prices are not final checkout totals.");

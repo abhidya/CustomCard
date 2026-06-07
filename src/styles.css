@@ -1821,6 +1821,39 @@ h3 {
   color: #4d6268;
 }
 
+.couponCheckoutCallout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #cfe5dc;
+  border-radius: 8px;
+  background: #f1faf6;
+}
+
+.couponCheckoutCallout strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #174c42;
+  font-size: 0.92rem;
+}
+
+.couponCodePill {
+  display: inline-flex;
+  min-width: 92px;
+  justify-content: center;
+  padding: 7px 9px;
+  border: 1px solid #258477;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #174c42;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
 .pricingOptionList {
   display: grid;
   gap: 8px;
