@@ -92,14 +92,14 @@ import {
 import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
 import { buildCustomerWebExperience, type CustomerWebActionId } from "./customerWebExperience";
 import {
-  demoDraftOptions,
-  demoEmptyMemories,
-  demoInitialAuthForm,
-  demoInitialExportStatus,
-  demoInitialScanStatus,
-  demoReviewDate,
-  demoWorkspaceKey
-} from "./demoBootstrap";
+  reviewerDraftOptions,
+  reviewerEmptyMemories,
+  reviewerInitialAuthForm,
+  reviewerInitialExportStatus,
+  reviewerInitialScanStatus,
+  reviewerReferenceDate,
+  reviewerWorkspaceKey
+} from "./reviewerBootstrap";
 import {
   getSupportedLocale,
   supportedLocales,
@@ -250,22 +250,22 @@ function updateViewRoute(view: ViewId) {
 function App() {
   const [activeView, setActiveView] = useState<ViewId>(() => initialViewFromLocation());
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
-  const [authForm, setAuthForm] = useState(demoInitialAuthForm);
+  const [authForm, setAuthForm] = useState(reviewerInitialAuthForm);
   const [inviteText, setInviteText] = useState("");
-  const [scanStatus, setScanStatus] = useState(demoInitialScanStatus);
+  const [scanStatus, setScanStatus] = useState(reviewerInitialScanStatus);
   const [opportunityDecision, setOpportunityDecision] = useState<OpportunityDecision>("pending");
   const [vendorId, setVendorId] = useState<VendorId>("walgreens");
   const [localeCode, setLocaleCode] = useState<SupportedLocaleCode>("en-US");
   const [memoryForm, setMemoryForm] = useState({ recipient: "", note: "" });
-  const [exportStatus, setExportStatus] = useState(demoInitialExportStatus);
+  const [exportStatus, setExportStatus] = useState(reviewerInitialExportStatus);
   const [customerChatInput, setCustomerChatInput] = useState("");
   const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
 
-  const memories = workspace?.memories ?? demoEmptyMemories;
+  const memories = workspace?.memories ?? reviewerEmptyMemories;
   const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
-  const opportunity = useMemo(() => buildOpportunity(signal, memories, demoReviewDate), [signal, memories]);
+  const opportunity = useMemo(() => buildOpportunity(signal, memories, reviewerReferenceDate), [signal, memories]);
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
-    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], demoReviewDate))
+    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], reviewerReferenceDate))
   );
 
   useEffect(() => {
@@ -371,25 +371,25 @@ function App() {
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
     if (!nextWorkspace) {
-      localStorage.removeItem(demoWorkspaceKey);
+      localStorage.removeItem(reviewerWorkspaceKey);
       return;
     }
-    localStorage.setItem(demoWorkspaceKey, JSON.stringify(nextWorkspace));
+    localStorage.setItem(reviewerWorkspaceKey, JSON.stringify(nextWorkspace));
   }
 
   function startWorkspace() {
-    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, demoReviewDate);
+    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, reviewerReferenceDate);
     saveWorkspace(nextWorkspace);
     setScanStatus("Local workspace ready");
   }
 
   function addApprovedMemory() {
     if (!workspace) {
-      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, demoReviewDate);
-      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, demoReviewDate);
+      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, reviewerReferenceDate);
+      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, reviewerReferenceDate);
       saveWorkspace(withMemory);
     } else {
-      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, demoReviewDate));
+      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, reviewerReferenceDate));
     }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
   }
@@ -1562,7 +1562,7 @@ function StudioView({
               value={draftInput.language}
               onChange={(event) => onUpdate("language", event.target.value as LanguageChoice)}
             >
-              {demoDraftOptions.languages.map((language) => (
+              {reviewerDraftOptions.languages.map((language) => (
                 <option key={language}>{language}</option>
               ))}
             </select>
@@ -1571,13 +1571,13 @@ function StudioView({
 
         <SegmentedControl
           label="Tone"
-          options={demoDraftOptions.tones}
+          options={reviewerDraftOptions.tones}
           value={draftInput.tone}
           onValue={(value) => onUpdate("tone", value as Tone)}
         />
         <SegmentedControl
           label="Style"
-          options={demoDraftOptions.styles}
+          options={reviewerDraftOptions.styles}
           value={draftInput.style}
           onValue={(value) => onUpdate("style", value as VisualStyle)}
         />
@@ -1764,7 +1764,7 @@ function HandoffView({
 
         <SegmentedControl
           label="Print shop"
-          options={demoDraftOptions.vendors}
+          options={reviewerDraftOptions.vendors}
           value={vendorId}
           onValue={(value) => onVendor(value as VendorId)}
         />
@@ -3175,7 +3175,7 @@ function formatOption(value: string): string {
 
 function loadWorkspace(): LocalWorkspace | undefined {
   try {
-    const raw = localStorage.getItem(demoWorkspaceKey);
+    const raw = localStorage.getItem(reviewerWorkspaceKey);
     if (!raw) return undefined;
     return JSON.parse(raw) as LocalWorkspace;
   } catch {

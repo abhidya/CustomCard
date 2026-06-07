@@ -391,6 +391,7 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/hostedApiReadinessData.mjs");
     expect(viteConfig).toContain("src/reviewerDbSeedReadiness.ts");
     expect(viteConfig).toContain("src/reviewerDbSeedReadinessData.mjs");
+    expect(viteConfig).toContain("src/reviewerBootstrap.ts");
     expect(viteConfig).toContain("src/cloudArtifactProofReadiness.ts");
     expect(viteConfig).toContain("src/cloudArtifactProofReadinessData.mjs");
     expect(viteConfig).toContain("src/businessEngagementReadiness.ts");
@@ -414,6 +415,20 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("branches: 80");
     expect(viteConfig).toContain("functions: 90");
     expect(viteConfig).toContain("lines: 90");
+  });
+
+  it("keeps customer app bootstrap naming out of demo-only contracts", () => {
+    const appSource = read("src/App.tsx");
+    const reviewerBootstrap = read("src/reviewerBootstrap.ts");
+
+    expect(appSource).toContain("./reviewerBootstrap");
+    expect(appSource).toContain("reviewerInitialAuthForm");
+    expect(appSource).toContain("reviewerReferenceDate");
+    expect(appSource).not.toContain("./demoBootstrap");
+    expect(appSource).not.toContain("demoInitialAuthForm");
+    expect(reviewerBootstrap).toContain("ReviewerAuthForm");
+    expect(reviewerBootstrap).toContain("reviewerDraftOptions");
+    expect(reviewerBootstrap).not.toContain("DemoAuthForm");
   });
 
   it("defines a CI verification workflow for tests, coverage, build, deployment, worker, and mobile checks", () => {

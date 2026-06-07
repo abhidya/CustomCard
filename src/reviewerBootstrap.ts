@@ -1,18 +1,18 @@
 import type { LanguageChoice, MemoryItem, Tone, VendorId, VisualStyle } from "./freeMvp";
 
-export interface DemoAuthForm {
+export interface ReviewerAuthForm {
   name: string;
   email: string;
 }
 
-export const demoWorkspaceKey = "customcard-free-workspace-v1";
-export const demoReviewDate = new Date("2026-06-03T12:00:00.000Z");
-export const demoInitialAuthForm: DemoAuthForm = { name: "Abdul", email: "abdul@customcard.local" };
-export const demoInitialScanStatus = "Invite required";
-export const demoInitialExportStatus = "Ready to export";
-export const demoEmptyMemories: MemoryItem[] = [];
+export const reviewerWorkspaceKey = "customcard-free-workspace-v1";
+export const reviewerReferenceDate = new Date("2026-06-03T12:00:00.000Z");
+export const reviewerInitialAuthForm: ReviewerAuthForm = { name: "Abdul", email: "abdul@customcard.local" };
+export const reviewerInitialScanStatus = "Invite required";
+export const reviewerInitialExportStatus = "Ready to export";
+export const reviewerEmptyMemories: MemoryItem[] = [];
 
-export const demoDraftOptions: {
+export const reviewerDraftOptions: {
   tones: Tone[];
   styles: VisualStyle[];
   languages: LanguageChoice[];

@@ -29,6 +29,7 @@ export default defineConfig({
         "src/mobileRenderReadinessData.mjs",
         "src/hostedApiReadiness.ts",
         "src/hostedApiReadinessData.mjs",
+        "src/reviewerBootstrap.ts",
         "src/reviewerDbSeedReadiness.ts",
         "src/reviewerDbSeedReadinessData.mjs",
         "src/businessEngagementReadiness.ts",
