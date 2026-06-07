@@ -46,7 +46,7 @@ export interface RetailPrinterOperationRequestField {
   name: string;
   label: string;
   source: RetailPrinterOperationFieldSource;
-  required: true;
+  required: boolean;
   pii: boolean;
 }
 
@@ -120,7 +120,32 @@ export interface RetailPrinterBlockedOperationResult {
   forbiddenFields: string[];
   requestFieldNames: string[];
   receivedFieldNames: string[];
+  operationPacket: RetailPrinterOperationPacket;
   blockedReason: string;
+}
+
+export interface RetailPrinterOperationPacket {
+  packetId: string;
+  vendorId: RetailPrinterVendorId;
+  providerAdapterId: string;
+  operation: RetailPrinterOperationKind;
+  productName: string;
+  productSku: string;
+  productUrl: string;
+  pricingObservationId: string;
+  sourceLink: RetailPrinterSourceLink;
+  uploadAssetExpectation: string;
+  noNetwork: true;
+  networkAttempted: false;
+  requestPrepared: false;
+  expectedInputFields: string[];
+  sourceBackedFields: string[];
+  receivedInputFields: string[];
+  missingInputFields: string[];
+  evidenceChecklist: string[];
+  operatorSteps: string[];
+  safetyChecks: string[];
+  forbiddenFields: string[];
 }
 
 export interface RetailPrinterOperationAdapter {
@@ -377,8 +402,14 @@ export function validateRetailPrinterOperationBlueprint(
   if (operation.requestBlueprint.requestFields.length < 4) {
     issues.push(`${vendorId} ${operation.kind} operation must define request fields.`);
   }
-  if (operation.requestBlueprint.requestFields.some((field) => !field.required)) {
-    issues.push(`${vendorId} ${operation.kind} operation request fields must be required.`);
+  const optionalFields = operation.requestBlueprint.requestFields.filter((field) => !field.required);
+  const invalidOptionalFields = optionalFields.filter((field) => operation.kind !== "fetch-price" || field.name !== "couponCode");
+  if (invalidOptionalFields.length > 0) {
+    issues.push(
+      `${vendorId} ${operation.kind} operation has unsupported optional request fields: ${invalidOptionalFields
+        .map((field) => field.name)
+        .join(", ")}.`
+    );
   }
   if (operation.requestBlueprint.responseEvidence.length < 3) {
     issues.push(`${vendorId} ${operation.kind} operation must define response evidence.`);
@@ -447,8 +478,90 @@ function buildBlockedOperationResult(
     forbiddenFields: operation.requestBlueprint.forbiddenFields,
     requestFieldNames: operation.requestBlueprint.requestFields.map((field) => field.name),
     receivedFieldNames: Object.keys(input).sort(),
+    operationPacket: buildOperationPacket(adapter, operation, sourceLink, input),
     blockedReason: operation.blockedReason
   };
+}
+
+function buildOperationPacket(
+  adapter: RetailPrinterAdapterContract,
+  operation: RetailPrinterOperationContract,
+  sourceLink: RetailPrinterSourceLink,
+  input: RetailPrinterPriceAttemptInput | RetailPrinterImageUploadAttemptInput | RetailPrinterOrderAttemptInput
+): RetailPrinterOperationPacket {
+  const expectedInputFields = operation.requestBlueprint.requestFields.map((field) => field.name);
+  const sourceBackedFields = operation.requestBlueprint.requestFields
+    .filter((field) => field.source === "pricing-observation")
+    .map((field) => field.name);
+  const receivedInputFields = Object.keys(input).sort();
+  const received = new Set(receivedInputFields);
+
+  return {
+    packetId: `${adapter.vendorId}-${operation.kind}-blocked-operation-packet`,
+    vendorId: adapter.vendorId,
+    providerAdapterId: adapter.providerAdapterId,
+    operation: operation.kind,
+    productName: adapter.productName,
+    productSku: adapter.productSku,
+    productUrl: adapter.productUrl,
+    pricingObservationId: adapter.pricingObservationId,
+    sourceLink,
+    uploadAssetExpectation: adapter.uploadAssetExpectation,
+    noNetwork: true,
+    networkAttempted: false,
+    requestPrepared: false,
+    expectedInputFields,
+    sourceBackedFields,
+    receivedInputFields,
+    missingInputFields: operation.requestBlueprint.requestFields
+      .filter((field) => field.required && field.source !== "pricing-observation" && !received.has(field.name))
+      .map((field) => field.name),
+    evidenceChecklist: operation.requiredEvidence,
+    operatorSteps: buildOperatorSteps(adapter, operation.kind, sourceLink),
+    safetyChecks: buildOperationSafetyChecks(operation),
+    forbiddenFields: operation.requestBlueprint.forbiddenFields
+  };
+}
+
+function buildOperatorSteps(
+  adapter: RetailPrinterAdapterContract,
+  kind: RetailPrinterOperationKind,
+  sourceLink: RetailPrinterSourceLink
+): string[] {
+  if (kind === "fetch-price") {
+    return [
+      `Open ${sourceLink.label}: ${sourceLink.url}`,
+      `Confirm the product is ${adapter.productName} with SKU/design code ${adapter.productSku}.`,
+      "Enter the customer-approved quantity, fulfillment mode, ZIP or store context, and candidate coupon in the provider portal.",
+      "Record subtotal, tax status, coupon application status, and pickup or shipping window as evidence before showing a final price."
+    ];
+  }
+
+  if (kind === "upload-image") {
+    return [
+      `Open ${sourceLink.label}: ${sourceLink.url}`,
+      `Use only the approved render packet for ${adapter.productName}: ${adapter.uploadAssetExpectation}`,
+      "Upload the print-ready files in the provider portal without advancing to payment.",
+      "Record the provider preview, asset acceptance result, and crop/fold state before asking for final customer approval."
+    ];
+  }
+
+  return [
+    `Open ${sourceLink.label}: ${sourceLink.url}`,
+    "Verify the provider cart still matches the approved card proof, quote evidence, pickup or shipping path, and coupon state.",
+    "Use only a tokenized payment authorization reference and confirm the cancellation or wrong-store recovery plan.",
+    "Record the order confirmation, pickup or shipping commitment, and audit event IDs after customer final approval."
+  ];
+}
+
+function buildOperationSafetyChecks(operation: RetailPrinterOperationContract): string[] {
+  return [
+    "Do not send a network request from CustomCard.",
+    "Do not prepare a provider API payload in app runtime.",
+    "Do not upload raw relationship memories or unapproved recipient PII.",
+    "Do not submit payment or place a live order until every certification gate is proven.",
+    ...operation.certificationGateIds.map((gateId) => `Gate required: ${gateId}`)
+  ];
 }
 
 function buildOperations(vendorName: string, productUrl: string): RetailPrinterOperationContract[] {
@@ -501,7 +614,7 @@ function buildPriceBlueprint(): RetailPrinterOperationRequestBlueprint {
       requestField("quantity", "Customer selected quantity", "customer-approval", false),
       requestField("fulfillmentMode", "Pickup or shipping path", "customer-approval", false),
       requestField("storeOrShippingZip", "Store identifier or shipping ZIP", "customer-approval", true),
-      requestField("couponCode", "Candidate coupon code for portal proof", "operator", false)
+      requestField("couponCode", "Candidate coupon code for portal proof", "operator", false, false)
     ],
     responseEvidence: [
       "Quoted subtotal",
@@ -570,7 +683,8 @@ function requestField(
   name: string,
   label: string,
   source: RetailPrinterOperationFieldSource,
-  pii: boolean
+  pii: boolean,
+  required = true
 ): RetailPrinterOperationRequestField {
-  return { name, label, source, required: true, pii };
+  return { name, label, source, required, pii };
 }

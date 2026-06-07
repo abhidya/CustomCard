@@ -57,7 +57,10 @@ describe("retail printer adapters", () => {
         );
         expect(operation.requestBlueprint.transport).toBe("future-certified-api-or-reviewed-browser-session");
         expect(operation.requestBlueprint.requestFields.length).toBeGreaterThanOrEqual(4);
-        expect(operation.requestBlueprint.requestFields.every((field) => field.required)).toBe(true);
+        expect(operation.requestBlueprint.requestFields.every((field) => typeof field.required === "boolean")).toBe(true);
+        expect(operation.requestBlueprint.requestFields.filter((field) => !field.required).map((field) => field.name)).toEqual(
+          operation.kind === "fetch-price" ? ["couponCode"] : []
+        );
         expect(operation.requestBlueprint.responseEvidence.length).toBeGreaterThanOrEqual(3);
         expect(operation.requestBlueprint.forbiddenFields).toEqual(
           expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
@@ -138,6 +141,26 @@ describe("retail printer adapters", () => {
         sourceLink: expect.objectContaining({ url: expectedRetailSources.fedex }),
         forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
       });
+      expect(result.operationPacket).toMatchObject({
+        vendorId: "fedex",
+        providerAdapterId: "fedex-live-print",
+        operation: result.operation,
+        productUrl: expectedRetailSources.fedex,
+        pricingObservationId: "fedex-quick-5x7-single-sided-card",
+        noNetwork: true,
+        networkAttempted: false,
+        requestPrepared: false,
+        sourceLink: expect.objectContaining({ purpose: result.operation, url: expectedRetailSources.fedex }),
+        forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
+      });
+      expect(result.operationPacket.packetId).toBe(`fedex-${result.operation}-blocked-operation-packet`);
+      expect(result.operationPacket.evidenceChecklist).toEqual(result.requiredEvidence);
+      expect(result.operationPacket.operatorSteps.length).toBeGreaterThanOrEqual(4);
+      expect(result.operationPacket.safetyChecks.join(" ")).toContain("Do not send a network request from CustomCard.");
+      expect(result.operationPacket.sourceBackedFields).toEqual(
+        result.operation === "place-order" ? ["quoteEvidenceId"] : expect.arrayContaining(["productSku"])
+      );
+      expect(result.operationPacket.missingInputFields).toEqual([]);
       expect(result.missingEvidence).toEqual(expect.arrayContaining(result.requiredEvidence));
       expect(result.blockedReason.toLowerCase()).toMatch(/certification|disabled|review-only/);
     }
@@ -145,6 +168,56 @@ describe("retail printer adapters", () => {
     expect(upload.operation).toBe("upload-image");
     expect(order.operation).toBe("place-order");
     expect(order.missingEvidence).toEqual(expect.arrayContaining(["Vendor certification", "Payment and cancellation recovery proof"]));
+  });
+
+  it("builds operation packets for every retail vendor operation without preparing provider requests", () => {
+    for (const vendorId of Object.keys(expectedRetailSources) as RetailPrinterVendorId[]) {
+      const adapter = createRetailPrinterOperationAdapter(vendorId);
+      const results = [
+        adapter.fetchPrice({
+          quantity: 20,
+          fulfillmentMode: "pickup",
+          storeOrShippingZip: "10001"
+        }),
+        adapter.uploadImages({
+          renderPacketArtifactUris: [`s3://customcard-review/render-packets/${vendorId}-proof.pdf`],
+          panelManifestChecksum: `sha256:${vendorId}-manifest`,
+          customerApprovalId: `approval-${vendorId}-upload`,
+          providerAccountReference: "provider-account-redacted"
+        }),
+        adapter.placeOrder({
+          providerCartId: `cart-${vendorId}-redacted`,
+          quoteEvidenceId: `quote-${vendorId}`,
+          paymentAuthorizationReference: "payment-auth-redacted",
+          customerApprovalId: `approval-${vendorId}-order`,
+          cancellationRecoveryPlanId: `recovery-${vendorId}`
+        })
+      ];
+
+      expect(results.map((result) => result.operation)).toEqual(["fetch-price", "upload-image", "place-order"]);
+      for (const result of results) {
+        expect(result.networkAttempted).toBe(false);
+        expect(result.requestPrepared).toBe(false);
+        expect(result.operationPacket).toMatchObject({
+          vendorId,
+          productUrl: expectedRetailSources[vendorId],
+          sourceLink: expect.objectContaining({
+            purpose: result.operation,
+            url: expectedRetailSources[vendorId]
+          }),
+          noNetwork: true,
+          networkAttempted: false,
+          requestPrepared: false,
+          missingInputFields: []
+        });
+        expect(result.operationPacket.expectedInputFields).toEqual(result.requestFieldNames);
+        expect(result.operationPacket.receivedInputFields).toEqual(result.receivedFieldNames);
+        expect(result.operationPacket.operatorSteps.join(" ")).toContain(expectedRetailSources[vendorId]);
+        expect(result.operationPacket.safetyChecks).toEqual(
+          expect.arrayContaining(["Do not prepare a provider API payload in app runtime."])
+        );
+      }
+    }
   });
 
   it("keeps operation blueprints specific to price, upload, and order contracts", () => {

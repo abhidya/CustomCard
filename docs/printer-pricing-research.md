@@ -40,11 +40,14 @@ Each retail adapter now persists source links for `product`, `fetch-price`,
 request blueprint that names the future certified transport, required request
 fields, response evidence, forbidden data fields, and success criteria. The
 `createRetailPrinterOperationAdapter` Interface exposes callable no-network
-methods for price, upload, and order attempts, but every result keeps
-`requestPrepared: false`, `networkAttempted: false`, and the operation status
-`blocked` until certification evidence exists. Raw relationship memories, raw
-payment card data, and unapproved recipient PII are forbidden from every
-operation.
+methods for price, upload, and order attempts. Each method returns an
+`operationPacket` with the persisted product link, pricing observation, evidence
+checklist, operator steps, safety checks, source-backed fields, and missing
+input fields. The packet is an operator evidence checklist, not a provider API
+payload: every result keeps `requestPrepared: false`, `networkAttempted: false`,
+and the operation status `blocked` until certification evidence exists. Raw
+relationship memories, raw payment card data, and unapproved recipient PII are
+forbidden from every operation.
 
 ## Collection Contract
 
