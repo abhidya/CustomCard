@@ -90,6 +90,15 @@ import {
 } from "./providerCatalog";
 import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
 import {
+  demoDraftOptions,
+  demoEmptyMemories,
+  demoInitialAuthForm,
+  demoInitialExportStatus,
+  demoInitialScanStatus,
+  demoReviewDate,
+  demoWorkspaceKey
+} from "./demoBootstrap";
+import {
   getSupportedLocale,
   supportedLocales,
   summarizeLocalizationReadiness,
@@ -200,9 +209,6 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-const workspaceKey = "customcard-free-workspace-v1";
-const fixedReviewDate = new Date("2026-06-03T12:00:00.000Z");
-
 const navItems: NavItem[] = [
   { id: "customer", label: "Customer panel", icon: UserRound },
   { id: "mobile", label: "Mobile app", icon: Smartphone },
@@ -214,31 +220,25 @@ const navItems: NavItem[] = [
   { id: "adapters", label: "Adapters", icon: Settings }
 ];
 
-const tones: Tone[] = ["warm", "playful", "elegant", "reverent"];
-const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"];
-const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
-const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"];
-const emptyMemories: MemoryItem[] = [];
-
 function App() {
   const [activeView, setActiveView] = useState<ViewId>("customer");
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
-  const [authForm, setAuthForm] = useState({ name: "Abdul", email: "abdul@customcard.local" });
+  const [authForm, setAuthForm] = useState(demoInitialAuthForm);
   const [inviteText, setInviteText] = useState("");
-  const [scanStatus, setScanStatus] = useState("Invite required");
+  const [scanStatus, setScanStatus] = useState(demoInitialScanStatus);
   const [opportunityDecision, setOpportunityDecision] = useState<OpportunityDecision>("pending");
   const [vendorId, setVendorId] = useState<VendorId>("walgreens");
   const [localeCode, setLocaleCode] = useState<SupportedLocaleCode>("en-US");
   const [memoryForm, setMemoryForm] = useState({ recipient: "", note: "" });
-  const [exportStatus, setExportStatus] = useState("Ready to export");
+  const [exportStatus, setExportStatus] = useState(demoInitialExportStatus);
   const [customerChatInput, setCustomerChatInput] = useState("");
   const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
 
-  const memories = workspace?.memories ?? emptyMemories;
+  const memories = workspace?.memories ?? demoEmptyMemories;
   const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
-  const opportunity = useMemo(() => buildOpportunity(signal, memories, fixedReviewDate), [signal, memories]);
+  const opportunity = useMemo(() => buildOpportunity(signal, memories, demoReviewDate), [signal, memories]);
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
-    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], fixedReviewDate))
+    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], demoReviewDate))
   );
 
   useEffect(() => {
@@ -327,25 +327,25 @@ function App() {
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
     if (!nextWorkspace) {
-      localStorage.removeItem(workspaceKey);
+      localStorage.removeItem(demoWorkspaceKey);
       return;
     }
-    localStorage.setItem(workspaceKey, JSON.stringify(nextWorkspace));
+    localStorage.setItem(demoWorkspaceKey, JSON.stringify(nextWorkspace));
   }
 
   function startWorkspace() {
-    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, fixedReviewDate);
+    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, demoReviewDate);
     saveWorkspace(nextWorkspace);
     setScanStatus("Local workspace ready");
   }
 
   function addApprovedMemory() {
     if (!workspace) {
-      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, fixedReviewDate);
-      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, fixedReviewDate);
+      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, demoReviewDate);
+      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, demoReviewDate);
       saveWorkspace(withMemory);
     } else {
-      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, fixedReviewDate));
+      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, demoReviewDate));
     }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
   }
@@ -1592,7 +1592,7 @@ function StudioView({
               value={draftInput.language}
               onChange={(event) => onUpdate("language", event.target.value as LanguageChoice)}
             >
-              {languages.map((language) => (
+              {demoDraftOptions.languages.map((language) => (
                 <option key={language}>{language}</option>
               ))}
             </select>
@@ -1601,13 +1601,13 @@ function StudioView({
 
         <SegmentedControl
           label="Tone"
-          options={tones}
+          options={demoDraftOptions.tones}
           value={draftInput.tone}
           onValue={(value) => onUpdate("tone", value as Tone)}
         />
         <SegmentedControl
           label="Style"
-          options={styles}
+          options={demoDraftOptions.styles}
           value={draftInput.style}
           onValue={(value) => onUpdate("style", value as VisualStyle)}
         />
@@ -1792,7 +1792,7 @@ function HandoffView({
 
         <SegmentedControl
           label="Vendor"
-          options={vendors}
+          options={demoDraftOptions.vendors}
           value={vendorId}
           onValue={(value) => onVendor(value as VendorId)}
         />
@@ -3091,7 +3091,7 @@ function formatOption(value: string): string {
 
 function loadWorkspace(): LocalWorkspace | undefined {
   try {
-    const raw = localStorage.getItem(workspaceKey);
+    const raw = localStorage.getItem(demoWorkspaceKey);
     if (!raw) return undefined;
     return JSON.parse(raw) as LocalWorkspace;
   } catch {
