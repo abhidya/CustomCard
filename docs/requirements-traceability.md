@@ -141,8 +141,10 @@ Requirement types:
 - Manual vendor handoff blocks real orders and live vendor API claims.
 - Public printer pricing research compares 12 official-source
   Walgreens/CVS/FedEx/Walmart/Staples/Office Depot observations across 8 source
-  links, reports source freshness, keeps `liveQuote: false`, and requires
-  checkout confirmation.
+  links, reports source freshness, keeps `liveQuote: false`, requires checkout
+  confirmation, collects provider-fed and official retailer page coupon
+  candidates, and applies coupons to best-price ranking only when structured
+  provider-portal evidence proves the same cart terms.
 - Customer/admin panels expose the local customer path and provider operations state.
 - Customer/admin panels expose localization readiness, including RTL and human
   copy-review counts.
@@ -190,7 +192,10 @@ Requirement types:
   freshness contract and coupon-source collection. Coupon collection includes
   official Walgreens/CVS pages, CVS print entrypoint evidence, and a
   credential-gated FMTC provider-feed target. They are not live quote, tax,
-  stock, pickup-window, or coupon provider-portal application guarantees.
+  stock, pickup-window, live checkout automation, or coupon provider-portal
+  application guarantees. Coupon discounts require structured same-product,
+  quantity, fulfillment mode, account state, subtotal, and no-order-placed
+  provider-portal evidence before best-price ranking can use them.
 - Non-English and RTL localization is readiness-gated only; professional
   translation QA, native RTL render proof, and live translation providers are
   not covered.

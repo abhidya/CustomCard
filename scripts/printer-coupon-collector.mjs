@@ -56,6 +56,7 @@ try {
           startsAtIso: offer.startsAtIso,
           endsAtIso: offer.endsAtIso,
           evidenceStatus: offer.evidenceStatus,
+          portalApplicationEvidenceAttached: Boolean(offer.portalApplicationEvidence),
           sourceUrl: offer.source.url,
           requiresLoggedInAccount: offer.requiresLoggedInAccount
         }))
@@ -87,7 +88,10 @@ try {
         fetchedTargetCount: fetchedTargets.length,
         couponSourceOfferCount: sourceOffers.length,
         providerPortalApplicationProof: false,
+        providerPortalCartTermsEvidenceRequired: true,
         bestPriceDiscountingAllowed: false,
+        bestPriceDiscountingRule:
+          "A coupon can affect ranking only after structured provider-portal evidence proves the same product, quantity, fulfillment mode, account state, and subtotal math.",
         fetchedTargets,
         sourceOffers,
         printEntrypointChecks,

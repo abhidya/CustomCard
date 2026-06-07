@@ -11,6 +11,8 @@ export type PrinterCouponEvidenceStatus = "source-listed" | "provider-listed" | 
 export type PrinterCouponApplicationStatus = "applied" | "portal-evidence-required" | "expired" | "not-found";
 export type PrinterCouponCollectionTargetRole = "coupon-source" | "print-entrypoint" | "provider-feed";
 export type PrinterCouponCollectionReadiness = "ready-public-page" | "credential-gated";
+export type PrinterCouponFulfillmentMode = "pickup" | "shipping";
+export type PrinterCouponAccountState = "logged-in" | "guest-or-public";
 
 export interface PrinterPricingSource {
   label: string;
@@ -160,8 +162,32 @@ export interface PrinterCouponOffer {
   endsAtIso: string;
   source: PrinterCouponSource;
   evidenceStatus: PrinterCouponEvidenceStatus;
+  portalApplicationEvidence?: PrinterCouponPortalApplicationEvidence;
   requiresLoggedInAccount: boolean;
   excludes: string[];
+}
+
+export interface PrinterCouponPortalApplicationEvidence {
+  observedAtIso: string;
+  portalUrl: string;
+  providerPortal: true;
+  sourcePriceObservationId: string;
+  subtotalBeforeCouponCents: number;
+  discountCents: number;
+  subtotalAfterCouponCents: number;
+  cartTerms: PrinterCouponCartTerms;
+  sameCartTermsProven: true;
+  noOrderPlaced: true;
+  blockedFields: string[];
+}
+
+export interface PrinterCouponCartTerms {
+  vendorId: VendorId;
+  productKind: PrinterProductKind;
+  size: "5x7";
+  pricedQuantity: number;
+  fulfillmentMode: PrinterCouponFulfillmentMode;
+  accountState: PrinterCouponAccountState;
 }
 
 export interface PrinterCouponExtractionInput {
@@ -192,6 +218,10 @@ export interface PrinterCouponApplication {
 export interface PrinterPricingEstimateOptions {
   now?: Date;
   couponOffers?: PrinterCouponOffer[];
+}
+
+export interface PrinterCouponApplicationOptions {
+  pricedQuantity?: number;
 }
 
 const observedAtIso = "2026-06-07T12:00:00.000Z";
@@ -282,6 +312,7 @@ export const printerCouponPolicy: PrinterCouponPolicy = {
     "retailer coupon page or coupon-provider feed capture",
     "provider portal checkout subtotal after coupon application",
     "coupon code, expiration, and product-scope evidence",
+    "structured provider portal application evidence",
     "same product, quantity, fulfillment mode, and account state"
   ],
   confirmationCopy:
@@ -759,7 +790,8 @@ export function estimatePrinterSubtotal(
     observation,
     subtotalCents,
     options.now ?? new Date(observedAtIso),
-    options.couponOffers ?? printerCouponOffers
+    options.couponOffers ?? printerCouponOffers,
+    { pricedQuantity }
   );
   const couponDiscountLabel =
     couponApplication.status === "applied"
@@ -877,20 +909,22 @@ export function buildPrinterCouponApplication(
   observation: PrinterPriceObservation,
   subtotalCents: number,
   now: Date = new Date(observedAtIso),
-  offers: PrinterCouponOffer[] = printerCouponOffers
+  offers: PrinterCouponOffer[] = printerCouponOffers,
+  options: PrinterCouponApplicationOptions = {}
 ): PrinterCouponApplication {
+  const pricedQuantity = options.pricedQuantity ?? observation.minimumQuantity;
   const applicableOffers = offers.filter(
     (offer) => offer.vendorId === observation.vendorId && offer.appliesToProductKinds.includes(observation.productKind)
   );
   const activeOffers = applicableOffers.filter((offer) => isPrinterCouponActive(offer, now));
   const portalAppliedOffers = activeOffers
-    .filter((offer) => offer.evidenceStatus === "provider-portal-applied")
+    .filter((offer) => hasMatchingProviderPortalCouponEvidence(offer, observation, subtotalCents, pricedQuantity))
     .sort((first, second) => second.discountPercent - first.discountPercent);
 
   if (portalAppliedOffers[0]) {
     const offer = portalAppliedOffers[0];
-    const discountCents = Math.floor((subtotalCents * offer.discountPercent) / 100);
-    const discountedSubtotalCents = Math.max(subtotalCents - discountCents, 0);
+    const discountCents = offer.portalApplicationEvidence!.discountCents;
+    const discountedSubtotalCents = offer.portalApplicationEvidence!.subtotalAfterCouponCents;
 
     return {
       status: "applied",
@@ -899,7 +933,7 @@ export function buildPrinterCouponApplication(
       discountedSubtotalCents,
       discountedSubtotalLabel: formatCents(discountedSubtotalCents),
       evidenceRequired: [],
-      reason: `${offer.code} applied in provider portal`
+      reason: `${offer.code} applied in provider portal with matching cart terms`
     };
   }
 
@@ -912,7 +946,7 @@ export function buildPrinterCouponApplication(
       discountedSubtotalCents: subtotalCents,
       discountedSubtotalLabel: formatCents(subtotalCents),
       evidenceRequired: printerCouponPolicy.requiredEvidence,
-      reason: `${activeOffer.code} found; apply and verify in provider portal before ranking as best available`
+      reason: `${activeOffer.code} found; apply and verify same cart terms in provider portal before ranking as best available`
     };
   }
 
@@ -966,6 +1000,35 @@ export function isPrinterCouponActive(offer: PrinterCouponOffer, now: Date = new
   const current = now.getTime();
 
   return startsAt <= current && current <= endsAt;
+}
+
+export function hasMatchingProviderPortalCouponEvidence(
+  offer: PrinterCouponOffer,
+  observation: PrinterPriceObservation,
+  subtotalCents: number,
+  pricedQuantity = observation.minimumQuantity
+): boolean {
+  const evidence = offer.portalApplicationEvidence;
+  if (offer.evidenceStatus !== "provider-portal-applied" || !evidence) return false;
+  if (validatePrinterCouponPortalApplicationEvidence(offer).length > 0) return false;
+
+  const expectedDiscountCents = Math.floor((subtotalCents * offer.discountPercent) / 100);
+  const expectedAfterCouponCents = Math.max(subtotalCents - expectedDiscountCents, 0);
+  const expectedFulfillmentMode: PrinterCouponFulfillmentMode = observation.pickupEligible ? "pickup" : "shipping";
+  const expectedAccountState: PrinterCouponAccountState = offer.requiresLoggedInAccount ? "logged-in" : evidence.cartTerms.accountState;
+
+  return (
+    evidence.sourcePriceObservationId === observation.id &&
+    evidence.subtotalBeforeCouponCents === subtotalCents &&
+    evidence.discountCents === expectedDiscountCents &&
+    evidence.subtotalAfterCouponCents === expectedAfterCouponCents &&
+    evidence.cartTerms.vendorId === observation.vendorId &&
+    evidence.cartTerms.productKind === observation.productKind &&
+    evidence.cartTerms.size === observation.size &&
+    evidence.cartTerms.pricedQuantity === pricedQuantity &&
+    evidence.cartTerms.fulfillmentMode === expectedFulfillmentMode &&
+    evidence.cartTerms.accountState === expectedAccountState
+  );
 }
 
 export function validatePrinterPricingCatalog(
@@ -1045,7 +1108,11 @@ export function validatePrinterCouponPolicy(policy: PrinterCouponPolicy = printe
       errors.push(`Printer coupon policy must block ${requiredField}.`);
     }
   }
-  for (const requiredEvidence of ["provider portal checkout subtotal after coupon application", "same product, quantity, fulfillment mode, and account state"]) {
+  for (const requiredEvidence of [
+    "provider portal checkout subtotal after coupon application",
+    "structured provider portal application evidence",
+    "same product, quantity, fulfillment mode, and account state"
+  ]) {
     if (!policy.requiredEvidence.includes(requiredEvidence)) {
       errors.push(`Printer coupon policy must require ${requiredEvidence}.`);
     }
@@ -1119,10 +1186,61 @@ export function validatePrinterCouponOffers(
     if (offer.evidenceStatus === "provider-portal-applied" && !isPrinterCouponActive(offer, now)) {
       errors.push(`Printer coupon ${offer.id} cannot be portal-applied after expiration.`);
     }
+    if (offer.evidenceStatus === "provider-portal-applied") {
+      errors.push(...validatePrinterCouponPortalApplicationEvidence(offer));
+    }
+    if (offer.evidenceStatus !== "provider-portal-applied" && offer.portalApplicationEvidence) {
+      errors.push(`Printer coupon ${offer.id} must not attach portal application evidence before provider-portal-applied status.`);
+    }
   }
 
   for (const vendorId of ["walgreens", "cvs"] satisfies VendorId[]) {
     if (!vendors.has(vendorId)) errors.push(`Missing printer coupon source observation for ${vendorId}.`);
+  }
+
+  return errors;
+}
+
+export function validatePrinterCouponPortalApplicationEvidence(offer: PrinterCouponOffer): string[] {
+  const errors: string[] = [];
+  const evidence = offer.portalApplicationEvidence;
+
+  if (!evidence) return [`Printer coupon ${offer.id} must include structured provider portal application evidence.`];
+  if (!evidence.portalUrl.startsWith("https://")) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must cite an HTTPS provider portal URL.`);
+  }
+  if (!evidence.providerPortal) errors.push(`Printer coupon ${offer.id} portal evidence must come from a provider portal.`);
+  if (!evidence.sameCartTermsProven) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must prove same cart terms.`);
+  }
+  if (!evidence.noOrderPlaced) errors.push(`Printer coupon ${offer.id} portal evidence must preserve no-live-order safety.`);
+  if (evidence.subtotalBeforeCouponCents <= 0) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must include a positive pre-coupon subtotal.`);
+  }
+  if (evidence.discountCents <= 0) errors.push(`Printer coupon ${offer.id} portal evidence must include a positive discount.`);
+  if (evidence.subtotalAfterCouponCents < 0) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must not include a negative post-coupon subtotal.`);
+  }
+  if (evidence.subtotalBeforeCouponCents - evidence.discountCents !== evidence.subtotalAfterCouponCents) {
+    errors.push(`Printer coupon ${offer.id} portal evidence subtotal math must match the applied discount.`);
+  }
+  if (!evidence.blockedFields.includes("payment submission")) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must block payment submission.`);
+  }
+  if (!evidence.blockedFields.includes("live order placement")) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must block live order placement.`);
+  }
+  if (evidence.cartTerms.vendorId !== offer.vendorId) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must match the coupon vendor.`);
+  }
+  if (!offer.appliesToProductKinds.includes(evidence.cartTerms.productKind)) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must match an eligible product kind.`);
+  }
+  if (evidence.cartTerms.pricedQuantity < 1) {
+    errors.push(`Printer coupon ${offer.id} portal evidence must include a positive priced quantity.`);
+  }
+  if (offer.requiresLoggedInAccount && evidence.cartTerms.accountState !== "logged-in") {
+    errors.push(`Printer coupon ${offer.id} portal evidence must match the required logged-in account state.`);
   }
 
   return errors;

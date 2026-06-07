@@ -49,7 +49,8 @@ and `src/printerPricing.ts`.
   explicit coupon targets in `src/printerPricing.ts`. It fetches public
   retailer pages and print entrypoints, extracts source-listed codes, and still
   returns `bestPriceDiscountingAllowed: false` until checkout proves a code
-  applied to the same cart.
+  applied to the same cart. The collector does not log in, submit payment, place
+  an order, or claim live checkout automation.
 - The customer bootstrap exposes only a safe pricing preview: selected vendor,
   known public price count, source count, maximum source age policy, and
   `liveQuote: false`.
@@ -65,6 +66,13 @@ provider portal/cart before ranking a best available price. Coupon discounts
 are applied only after provider-portal evidence proves the code worked for the
 same product, quantity, fulfillment mode, and account state.
 
+That proof is modeled as structured `PrinterCouponPortalApplicationEvidence`:
+provider portal URL, source price observation ID, pre-coupon subtotal, discount,
+post-coupon subtotal, same-cart terms, `sameCartTermsProven: true`, and
+`noOrderPlaced: true`. A `provider-portal-applied` status by itself is not
+enough to discount or rank; `hasMatchingProviderPortalCouponEvidence` must match
+the evidence to the public price observation and subtotal math.
+
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |
 | Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration | Stored as active source-listed evidence on June 7, 2026; not discounted unless a provider-portal checkout session applies it |
@@ -78,7 +86,8 @@ The handoff UI and API bootstrap show coupon-source counts and portal-proof
 status. They show active source-listed offers separately from portal-applied
 offers. They must not show a discounted total as best available until the vendor
 checkout confirms the discount on the same product, quantity, store, pickup or
-shipping path, and customer account state.
+shipping path, and customer account state. This is an evidence contract only;
+the repo still does not automate a live checkout or place orders.
 
 ## Product Boundary
 

@@ -51,6 +51,7 @@ const checks = [
     "couponsAppliedToBestPrice: true",
     '"only-after-provider-portal-application"',
     "provider portal checkout subtotal after coupon application",
+    "structured provider portal application evidence",
     "same product, quantity, fulfillment mode, and account state"
   ]),
   checkMinimum("collection", "no-network-collection-rules", ruleCount, 8),
@@ -67,7 +68,10 @@ const checks = [
     "printerCouponCollectionTargets",
     "fmtc-deal-feed",
     "cvs-photo-prints-entrypoint",
-    "buildPrinterCouponApplication"
+    "buildPrinterCouponApplication",
+    "PrinterCouponPortalApplicationEvidence",
+    "hasMatchingProviderPortalCouponEvidence",
+    "validatePrinterCouponPortalApplicationEvidence"
   ]),
   checkIncludes("tests", "pricing-refresh-tests", contents.pricingTest, [
     "cvs-5x7-photo-card",
@@ -113,6 +117,8 @@ const checks = [
     "printer-coupon-collector",
     "extractPrinterCouponOffers",
     "printEntrypointChecks",
+    "providerPortalCartTermsEvidenceRequired: true",
+    "same product, quantity, fulfillment mode, account state, and subtotal math",
     "bestPriceDiscountingAllowed: false",
     '"printer:coupons:collect": "node scripts/printer-coupon-collector.mjs"'
   ]),

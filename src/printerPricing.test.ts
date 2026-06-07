@@ -6,6 +6,7 @@ import {
   estimatePrinterSubtotal,
   extractPrinterCouponOffers,
   getPrinterPriceOptionsForVendor,
+  hasMatchingProviderPortalCouponEvidence,
   isPrinterCouponActive,
   printerCouponCollectionTargets,
   printerCouponOffers,
@@ -66,7 +67,7 @@ describe("printer pricing research", () => {
       effectiveSubtotalCents: 349,
       effectiveSubtotalLabel: "$3.49",
       couponDiscountCents: 0,
-      couponDiscountLabel: "CRISPCARD found; apply and verify in provider portal before ranking as best available",
+      couponDiscountLabel: "CRISPCARD found; apply and verify same cart terms in provider portal before ranking as best available",
       subtotalIncludesCoupon: false,
       couponApplication: expect.objectContaining({
         status: "portal-evidence-required",
@@ -183,7 +184,8 @@ describe("printer pricing research", () => {
         "Printer coupon policy must include coupons only after provider portal application.",
         "Printer coupon policy must keep default applied discounts at zero.",
         "Printer coupon policy must block promo code application proof.",
-        "Printer coupon policy must require provider portal checkout subtotal after coupon application."
+        "Printer coupon policy must require provider portal checkout subtotal after coupon application.",
+        "Printer coupon policy must require structured provider portal application evidence."
       ])
     );
   });
@@ -257,16 +259,65 @@ describe("printer pricing research", () => {
     });
   });
 
-  it("applies an active coupon only after the provider portal proves it", () => {
+  it("applies an active coupon only after provider portal evidence proves matching cart terms", () => {
     const walgreensSingle = printerPriceCatalog.find((observation) => observation.id === "walgreens-5x7-folded-card");
-    const activePortalOffer = {
+    const statusOnlyPortalOffer = {
       ...printerCouponOffers.find((offer) => offer.code === "CRISPCARD")!,
       endsAtIso: "2026-06-30T23:59:00.000-05:00",
       evidenceStatus: "provider-portal-applied" as const
     };
+    const activePortalOffer = {
+      ...statusOnlyPortalOffer,
+      portalApplicationEvidence: {
+        observedAtIso: "2026-06-07T12:15:00.000Z",
+        portalUrl: "https://photo.walgreens.com/store/cart",
+        providerPortal: true as const,
+        sourcePriceObservationId: "walgreens-5x7-folded-card",
+        subtotalBeforeCouponCents: 349,
+        discountCents: 209,
+        subtotalAfterCouponCents: 140,
+        cartTerms: {
+          vendorId: "walgreens" as const,
+          productKind: "folded-card" as const,
+          size: "5x7" as const,
+          pricedQuantity: 1,
+          fulfillmentMode: "pickup" as const,
+          accountState: "logged-in" as const
+        },
+        sameCartTermsProven: true as const,
+        noOrderPlaced: true as const,
+        blockedFields: ["payment submission", "live order placement", "tax", "pickup window"]
+      }
+    };
+    const mismatchedQuantityOffer = {
+      ...activePortalOffer,
+      portalApplicationEvidence: {
+        ...activePortalOffer.portalApplicationEvidence,
+        cartTerms: {
+          ...activePortalOffer.portalApplicationEvidence.cartTerms,
+          pricedQuantity: 2
+        }
+      }
+    };
 
     expect(walgreensSingle).toBeDefined();
     expect(isPrinterCouponActive(activePortalOffer, reviewedAt)).toBe(true);
+    expect(validatePrinterCouponOffers([statusOnlyPortalOffer], reviewedAt)).toEqual(
+      expect.arrayContaining(["Printer coupon walgreens-crispcard-cards-2026-06-13 must include structured provider portal application evidence."])
+    );
+    expect(hasMatchingProviderPortalCouponEvidence(statusOnlyPortalOffer, walgreensSingle!, 349, 1)).toBe(false);
+    expect(hasMatchingProviderPortalCouponEvidence(mismatchedQuantityOffer, walgreensSingle!, 349, 1)).toBe(false);
+    expect(hasMatchingProviderPortalCouponEvidence(activePortalOffer, walgreensSingle!, 349, 1)).toBe(true);
+    expect(buildPrinterCouponApplication(walgreensSingle!, 349, reviewedAt, [statusOnlyPortalOffer])).toMatchObject({
+      status: "portal-evidence-required",
+      discountCents: 0,
+      discountedSubtotalCents: 349
+    });
+    expect(buildPrinterCouponApplication(walgreensSingle!, 349, reviewedAt, [mismatchedQuantityOffer], { pricedQuantity: 1 })).toMatchObject({
+      status: "portal-evidence-required",
+      discountCents: 0,
+      discountedSubtotalCents: 349
+    });
     expect(buildPrinterCouponApplication(walgreensSingle!, 349, reviewedAt, [activePortalOffer])).toMatchObject({
       status: "applied",
       discountCents: 209,
