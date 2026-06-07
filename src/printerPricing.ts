@@ -20,6 +20,8 @@ export type PrinterCouponFulfillmentMode = "pickup" | "shipping";
 export type PrinterCouponAccountState = "logged-in" | "guest-or-public";
 export type PrinterCouponSourceAuthority = "official-retailer" | "credentialed-coupon-provider";
 export type PrinterCouponCollectionMethod = "server-fetch-html" | "rendered-browser-read" | "provider-api-feed";
+export type PrinterCouponValidationProviderAuthority = "official-developer-api";
+export type PrinterCouponValidationProviderReadiness = "credential-gated";
 
 export interface PrinterPricingSource {
   label: string;
@@ -167,6 +169,24 @@ export interface PrinterCouponCollectionTarget {
   legalReviewRequired: boolean;
   blockedFields: string[];
   noNetworkRuntime: true;
+}
+
+export interface PrinterCouponValidationProvider {
+  id: string;
+  label: string;
+  vendorIds: VendorId[];
+  authority: PrinterCouponValidationProviderAuthority;
+  readiness: PrinterCouponValidationProviderReadiness;
+  docsUrl: string;
+  endpoint: string;
+  credentialEnvKeys: string[];
+  requestFields: string[];
+  responseEvidenceFields: string[];
+  bestPriceEvidenceRule: string;
+  blockedFields: string[];
+  legalReviewRequired: true;
+  noNetworkRuntime: true;
+  notes: string;
 }
 
 export interface PrinterCouponOffer {
@@ -378,11 +398,43 @@ export const printerCouponPolicy: PrinterCouponPolicy = {
     "provider portal checkout subtotal after coupon application",
     "coupon code, expiration, and product-scope evidence",
     "structured provider portal application evidence",
-    "same product, quantity, fulfillment mode, and account state"
+    "same product, quantity, fulfillment mode, and account state",
+    "official coupon-validation API or provider portal cart proof for exact product details"
   ],
   confirmationCopy:
     "Coupons are collected and tested during provider-portal pricing; best-price ranking uses a coupon only after the portal applies it to the same product, quantity, fulfillment mode, and account state."
 };
+
+export const printerCouponValidationProviders: PrinterCouponValidationProvider[] = [
+  {
+    id: "walgreens-native-photo-coupon-validation",
+    label: "Walgreens Native Photo Prints coupon validation API",
+    vendorIds: ["walgreens"],
+    authority: "official-developer-api",
+    readiness: "credential-gated",
+    docsUrl: "https://developer.walgreens.com/sites/default/files/v3_Native_PhotoPrintsAPI.html",
+    endpoint: "https://services.walgreens.com/api/photo/order/coupon/v3",
+    credentialEnvKeys: ["WALGREENS_API_KEY", "WALGREENS_AFFILIATE_ID"],
+    requestFields: [
+      "apiKey",
+      "affId",
+      "couponCode",
+      "act=getdiscount",
+      "appVer",
+      "devInf",
+      "productDetails[].productId",
+      "productDetails[].qty"
+    ],
+    responseEvidenceFields: ["status", "orderTotalPrice", "orderDiscountPrice", "err", "errDesc"],
+    bestPriceEvidenceRule:
+      "Can affect best-price ranking only after certified server-side validation proves the coupon against exact productDetails[] and no order submission occurs.",
+    blockedFields: ["client credentials", "uncertified API calls", "image upload", "payment submission", "live order placement"],
+    legalReviewRequired: true,
+    noNetworkRuntime: true,
+    notes:
+      "Official Walgreens developer path for exact-cart coupon validation; public Walgreens/CVS coupon pages and coupon feeds remain discovery evidence until same-cart validation exists."
+  }
+];
 
 export const printerCouponSources = {
   walgreensPhotoDeals: {

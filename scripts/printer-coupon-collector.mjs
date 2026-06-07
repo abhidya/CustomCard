@@ -25,6 +25,7 @@ try {
     isPrinterCouponActive,
     printerCouponOffers,
     printerCouponCollectionTargets,
+    printerCouponValidationProviders,
     printerPriceCatalog,
     printerCouponSources
   } = await vite.ssrLoadModule("/src/printerPricing.ts");
@@ -224,6 +225,10 @@ try {
           "provider portal same-cart coupon application packet"
         ],
         couponProviderCandidateCount: providerFeedTargets.length,
+        couponValidationProviderCount: printerCouponValidationProviders.length,
+        couponValidationProviders: printerCouponValidationProviders,
+        couponValidationProviderRule:
+          "official coupon-validation API or provider portal cart proof can affect best-price ranking only after certified server-side exact-cart evidence proves the same product details; no client credentials, upload, payment, or order action is allowed.",
         providerPortalApplicationPacketCount: providerPortalApplicationPackets.length,
         providerPortalApplicationTargetCount,
         providerPortalApplicationPackets,

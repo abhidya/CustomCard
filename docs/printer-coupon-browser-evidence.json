@@ -1,12 +1,12 @@
 {
   "service": "customcard-printer-coupon-browser-evidence",
-  "generatedAtIso": "2026-06-07T17:25:09.340Z",
+  "generatedAtIso": "2026-06-07T18:26:14.951Z",
   "runtime": "operator-chromium-rendered-read",
   "operatorAction": "Opened exact Walgreens and CVS 5x7 print links in a headless browser; no login, upload, cart, payment, or order action.",
   "targets": [
     {
       "targetId": "walgreens-photo-card-design-entrypoint",
-      "observedAtIso": "2026-06-07T17:24:53.135Z",
+      "observedAtIso": "2026-06-07T18:26:03.450Z",
       "url": "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
       "finalUrl": "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
       "renderedTitle": "5x7 Folded Cards, Standard Cardstock 85lb | Folded Cards | Cards & Stationary | Walgreens Photo",
@@ -29,7 +29,7 @@
     },
     {
       "targetId": "cvs-photo-card-design-entrypoint",
-      "observedAtIso": "2026-06-07T17:25:07.637Z",
+      "observedAtIso": "2026-06-07T18:26:13.191Z",
       "url": "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
       "finalUrl": "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
       "renderedTitle": "Folded Greeting Card, 5x7 | Cards | Cards & Stationery | CVS Photo",

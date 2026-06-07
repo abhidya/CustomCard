@@ -14,6 +14,7 @@ import {
   printerCouponOffers,
   printerCouponPolicy,
   printerCouponSources,
+  printerCouponValidationProviders,
   printerPriceCatalog,
   printerPricingCollectionRules,
   printerPricingSources,
@@ -168,6 +169,13 @@ describe("printer pricing research", () => {
         "provider portal checkout session"
       ])
     });
+    expect(printerCouponPolicy.requiredEvidence).toEqual(
+      expect.arrayContaining([
+        "structured provider portal application evidence",
+        "same product, quantity, fulfillment mode, and account state",
+        "official coupon-validation API or provider portal cart proof for exact product details"
+      ])
+    );
     expect(
       validatePrinterCouponPolicy({
         ...printerCouponPolicy,
@@ -490,6 +498,35 @@ describe("printer pricing research", () => {
         printerCouponCollectionTargets.map((target) => (target.id === "fmtc-deal-feed" ? { ...target, staticHtmlSignalAllowed: true } : target))
       )
     ).toContain("Printer coupon collection target fmtc-deal-feed must not treat provider API feeds as static HTML signals.");
+  });
+
+  it("keeps official coupon validation APIs separate from scraping and provider-feed discovery", () => {
+    expect(printerCouponValidationProviders).toEqual([
+      expect.objectContaining({
+        id: "walgreens-native-photo-coupon-validation",
+        label: "Walgreens Native Photo Prints coupon validation API",
+        vendorIds: ["walgreens"],
+        authority: "official-developer-api",
+        readiness: "credential-gated",
+        docsUrl: "https://developer.walgreens.com/sites/default/files/v3_Native_PhotoPrintsAPI.html",
+        endpoint: "https://services.walgreens.com/api/photo/order/coupon/v3",
+        credentialEnvKeys: ["WALGREENS_API_KEY", "WALGREENS_AFFILIATE_ID"],
+        requestFields: expect.arrayContaining([
+          "apiKey",
+          "affId",
+          "couponCode",
+          "act=getdiscount",
+          "productDetails[].productId",
+          "productDetails[].qty"
+        ]),
+        responseEvidenceFields: expect.arrayContaining(["status", "orderTotalPrice", "orderDiscountPrice"]),
+        blockedFields: expect.arrayContaining(["client credentials", "uncertified API calls", "payment submission", "live order placement"]),
+        legalReviewRequired: true,
+        noNetworkRuntime: true
+      })
+    ]);
+    expect(printerCouponValidationProviders[0].bestPriceEvidenceRule).toContain("exact productDetails[]");
+    expect(printerCouponCollectionTargets.map((target) => target.id)).not.toContain("walgreens-native-photo-coupon-validation");
   });
 
   it("applies an active coupon only after provider portal evidence proves matching cart terms", () => {
