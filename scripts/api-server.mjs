@@ -1007,10 +1007,10 @@ function buildMutationContractPayload(route, bodyText) {
     const payload = typeof requestBody.metadataOnlyPayload === "object" && requestBody.metadataOnlyPayload !== null
       ? requestBody.metadataOnlyPayload
       : requestBody;
-    const sourceKind = safeContractId(requestBody.sourceKind ?? payload.sourceKind, "manual-ics");
-    const title = safeContractText(payload.title ?? requestBody.title, "Imported event");
-    const recipientName = safeContractText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint, "Recipient");
-    const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at ?? requestBody.startsAt, "2030-01-01T12:00:00.000Z");
+    const sourceKind = safeContractId(requestBody.sourceKind, "");
+    const title = safeContractText(payload.title, "");
+    const recipientName = safeContractText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint, "");
+    const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at, "");
     const eventId = safeContractId(requestBody.eventId, `event-${stableContractHash(`${sourceKind}:${title}:${startsAt}`).slice(0, 8)}`);
     const opportunityId = safeContractId(requestBody.opportunityId, `opportunity-${stableContractHash(`${eventId}:${recipientName}`).slice(0, 8)}`);
     return {

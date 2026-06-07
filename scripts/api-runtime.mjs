@@ -56,7 +56,10 @@ function createContractApiRuntime({ routes }) {
         sessionId: "contract-session"
       };
     },
-    async persistMutation({ route, responsePayload }) {
+    async persistMutation({ route, bodyText, responsePayload }) {
+      const bodyValidation = validateMutationBody(route, bodyText);
+      if (bodyValidation) return bodyValidation;
+
       return {
         ok: true,
         statusCode: 202,
@@ -433,12 +436,64 @@ function prepareIdempotentMutation({ route, request, authContext, bodyText }) {
     };
   }
 
+  const bodyValidation = validateMutationBody(route, bodyText);
+  if (bodyValidation) return bodyValidation;
+
   return {
     ok: true,
     idempotencyKey,
     requestHash: requestHash(route.id, bodyText),
     recordKey: `${authContext.userId}:${route.id}:${idempotencyKey}`
   };
+}
+
+const importPreviewRequiredFields = [
+  "sourceKind",
+  "metadataOnlyPayload.title",
+  "metadataOnlyPayload.recipientName",
+  "metadataOnlyPayload.startsAt"
+];
+
+function validateMutationBody(route, bodyText) {
+  if (route.id !== "import-preview") return undefined;
+  const body = parseJsonBody(bodyText);
+  const payload = typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null && !Array.isArray(body.metadataOnlyPayload)
+    ? body.metadataOnlyPayload
+    : undefined;
+  const missingFields = [];
+
+  if (!hasRequiredText(body.sourceKind)) missingFields.push("sourceKind");
+  if (!payload || !hasRequiredText(payload.title)) missingFields.push("metadataOnlyPayload.title");
+  if (!payload || !hasRequiredText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint)) {
+    missingFields.push("metadataOnlyPayload.recipientName");
+  }
+  if (!payload || !hasValidTimestamp(payload.startsAt ?? payload.starts_at)) missingFields.push("metadataOnlyPayload.startsAt");
+
+  if (missingFields.length === 0) return undefined;
+
+  return {
+    ok: false,
+    statusCode: 400,
+    payload: {
+      service: "customcard-api",
+      status: "invalid-import-preview-payload",
+      route: route.id,
+      detail: "Import preview requires explicit metadata-only event fields before event/opportunity persistence.",
+      requiredFields: importPreviewRequiredFields,
+      missingFields,
+      rawContentStored: false
+    }
+  };
+}
+
+function hasRequiredText(value) {
+  return String(value ?? "").trim().length > 0;
+}
+
+function hasValidTimestamp(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return false;
+  return !Number.isNaN(new Date(text).getTime());
 }
 
 function replayOrConflict(record, nextRequestHash) {
@@ -823,10 +878,10 @@ function buildImportPreviewRecord({ authContext, bodyText }) {
   const payload = typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null
     ? body.metadataOnlyPayload
     : body;
-  const sourceKind = safeId(body.sourceKind ?? payload.sourceKind, "manual-ics");
-  const title = safeText(payload.title ?? body.title, "Imported event");
-  const recipientName = safeText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint ?? body.recipientName, "Recipient");
-  const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at ?? body.startsAt, "2030-01-01T12:00:00.000Z");
+  const sourceKind = safeId(body.sourceKind, "");
+  const title = safeText(payload.title, "");
+  const recipientName = safeText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint, "");
+  const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at, "");
   const timezone = safeText(payload.timezone ?? body.timezone, "UTC");
   const sourceEvidence = safeText(payload.sourceEvidence ?? payload.source_evidence ?? `${sourceKind}:metadata-only`, "metadata-only");
   const leadTimeHours = safeInteger(payload.leadTimeHours ?? body.leadTimeHours, 168, 0, 8760);

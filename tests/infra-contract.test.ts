@@ -609,6 +609,7 @@ describe("production infrastructure contract", () => {
   }, shellDoctorTimeoutMs);
 
   it("exercises the Postgres API runtime contract without external database credentials", () => {
+    const doctor = read("scripts/postgres-runtime-doctor.mjs");
     const output = execFileSync("npm", ["run", "api:doctor:postgres", "--silent"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
@@ -661,6 +662,8 @@ describe("production infrastructure contract", () => {
       },
       blockers: []
     });
+    expect(doctor).toContain("blocks import preview mutations with missing metadata");
+    expect(doctor).toContain("invalid-import-preview-payload");
   }, shellDoctorTimeoutMs);
 
   it("keeps the live Postgres integration doctor verifying route-scoped auth", () => {

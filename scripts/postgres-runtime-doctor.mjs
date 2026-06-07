@@ -114,6 +114,38 @@ await runCheck("persists repository-backed import preview mutations", async () =
   expect(fakeDb.cardOpportunities.length === 1, "card_opportunities row should be inserted");
 });
 
+await runCheck("blocks import preview mutations with missing metadata", async () => {
+  const countsBefore = {
+    idempotencyRecords: fakeDb.idempotencyRecords.size,
+    auditRecords: fakeDb.auditRecords.length,
+    providerConnections: fakeDb.providerConnections.length,
+    importedEvents: fakeDb.importedEvents.length,
+    cardOpportunities: fakeDb.cardOpportunities.length
+  };
+  const result = await runtime.persistMutation({
+    route: route("import-preview"),
+    request: request({ token: customerToken, idempotencyKey: "import-preview-postgres-missing-metadata" }),
+    authContext: customerAuth,
+    bodyText: JSON.stringify({ sourceKind: "manual-ics" }),
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: "import-preview",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    }
+  });
+
+  expect(result.statusCode === 400, "missing import-preview metadata should be rejected");
+  expect(result.payload.status === "invalid-import-preview-payload", "import-preview rejection status should be explicit");
+  expect(result.payload.requiredFields.includes("metadataOnlyPayload.title"), "rejection should list required metadata fields");
+  expect(fakeDb.idempotencyRecords.size === countsBefore.idempotencyRecords, "rejected import-preview must not persist idempotency");
+  expect(fakeDb.auditRecords.length === countsBefore.auditRecords, "rejected import-preview must not create audit records");
+  expect(fakeDb.providerConnections.length === countsBefore.providerConnections, "rejected import-preview must not create provider connections");
+  expect(fakeDb.importedEvents.length === countsBefore.importedEvents, "rejected import-preview must not create imported events");
+  expect(fakeDb.cardOpportunities.length === countsBefore.cardOpportunities, "rejected import-preview must not create card opportunities");
+});
+
 await runCheck("persists repository-backed card project mutations", async () => {
   const result = await runtime.persistMutation({
     route: route("card-projects"),

@@ -885,6 +885,23 @@ describe("api server wrapper", () => {
         }
       });
 
+      const missingImportMetadata = await postJson(
+        port,
+        "/api/import-preview",
+        { sourceKind: "manual-ics" }
+      );
+      expect(missingImportMetadata.status).toBe(400);
+      expect(await missingImportMetadata.json()).toMatchObject({
+        status: "invalid-import-preview-payload",
+        route: "import-preview",
+        requiredFields: expect.arrayContaining([
+          "sourceKind",
+          "metadataOnlyPayload.title",
+          "metadataOnlyPayload.recipientName",
+          "metadataOnlyPayload.startsAt"
+        ])
+      });
+
       const importPreview = await postJson(
         port,
         "/api/import-preview",
@@ -1129,6 +1146,27 @@ describe("api server wrapper", () => {
       const missingIdempotency = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, bearer(customerToken));
       expect(missingIdempotency.status).toBe(400);
       expect(await missingIdempotency.json()).toMatchObject({ status: "idempotency-key-required" });
+
+      const missingImportMetadata = await postJson(
+        port,
+        "/api/import-preview",
+        { sourceKind: "manual-ics" },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "import-preview-missing-metadata"
+        }
+      );
+      expect(missingImportMetadata.status).toBe(400);
+      expect(await missingImportMetadata.json()).toMatchObject({
+        status: "invalid-import-preview-payload",
+        route: "import-preview",
+        requiredFields: expect.arrayContaining([
+          "sourceKind",
+          "metadataOnlyPayload.title",
+          "metadataOnlyPayload.recipientName",
+          "metadataOnlyPayload.startsAt"
+        ])
+      });
 
       const headers = {
         ...bearer(customerToken),
