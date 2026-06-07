@@ -43,6 +43,8 @@ const requiredReviewerProbeRoutes = [
 ];
 
 const allowedStatuses = new Set(["repo-local-ready", "evidence-missing"]);
+const allowedProofScopes = new Set(["repo-local-contract", "live-hosted-required"]);
+const allowedRollbackModes = new Set(["demo-scoped-sql-preview", "hosted-isolated-db-rollback-required", "hosted-token-probe-no-rollback"]);
 
 export const reviewerDbSeedReadinessItems = [
   {
@@ -50,6 +52,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Reviewer seed plan contract",
     lane: "seed-plan",
     status: "repo-local-ready",
+    proofScope: "repo-local-contract",
     tableNames: requiredReviewerSeedTables,
     envVarNames: [],
     routeIds: ["/api/admin/demo-reset"],
@@ -59,6 +62,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: false,
     requiresVercelEnvSync: false,
     rollbackRequired: true,
+    rollbackMode: "demo-scoped-sql-preview",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -76,6 +80,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Reviewer session token contract",
     lane: "session-tokens",
     status: "repo-local-ready",
+    proofScope: "repo-local-contract",
     tableNames: ["users", "auth_sessions"],
     envVarNames: ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN", "AUTH_SESSION_SECRET"],
     routeIds: ["/api/admin/readiness", "/api/customer/bootstrap"],
@@ -85,6 +90,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: true,
     requiresVercelEnvSync: false,
     rollbackRequired: true,
+    rollbackMode: "demo-scoped-sql-preview",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -102,6 +108,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Seed SQL preview safety",
     lane: "sql-preview",
     status: "repo-local-ready",
+    proofScope: "repo-local-contract",
     tableNames: requiredReviewerSeedTables,
     envVarNames: [],
     routeIds: ["/api/admin/demo-reset"],
@@ -111,6 +118,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: false,
     requiresVercelEnvSync: false,
     rollbackRequired: true,
+    rollbackMode: "demo-scoped-sql-preview",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -128,6 +136,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Hosted database migration prerequisite",
     lane: "hosted-db",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     tableNames: requiredReviewerSeedTables,
     envVarNames: ["DATABASE_URL", "CUSTOMCARD_API_RUNTIME"],
     routeIds: ["/api/admin/readiness"],
@@ -137,6 +146,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: false,
     requiresVercelEnvSync: true,
     rollbackRequired: true,
+    rollbackMode: "hosted-isolated-db-rollback-required",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -154,6 +164,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Hosted seed execution proof",
     lane: "hosted-seed",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     tableNames: requiredReviewerSeedTables,
     envVarNames: requiredReviewerSeedEnvVars,
     routeIds: ["/api/admin/demo-reset", "/api/admin/readiness"],
@@ -163,6 +174,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: true,
     requiresVercelEnvSync: true,
     rollbackRequired: true,
+    rollbackMode: "hosted-isolated-db-rollback-required",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -180,6 +192,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Hosted admin and customer token probe",
     lane: "hosted-token-probe",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     tableNames: ["users", "auth_sessions", "audit_log"],
     envVarNames: ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN", "AUTH_SESSION_SECRET"],
     routeIds: requiredReviewerProbeRoutes,
@@ -189,6 +202,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: true,
     requiresVercelEnvSync: true,
     rollbackRequired: false,
+    rollbackMode: "hosted-token-probe-no-rollback",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -206,6 +220,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Vercel env seed sync",
     lane: "vercel-env",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     tableNames: [],
     envVarNames: requiredReviewerSeedEnvVars,
     routeIds: ["/api/health", "/api/admin/readiness"],
@@ -215,6 +230,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: true,
     requiresVercelEnvSync: true,
     rollbackRequired: false,
+    rollbackMode: "hosted-token-probe-no-rollback",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -232,6 +248,7 @@ export const reviewerDbSeedReadinessItems = [
     label: "Rollback cleanup drill",
     lane: "rollback",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     tableNames: requiredReviewerSeedTables,
     envVarNames: ["DATABASE_URL"],
     routeIds: ["/api/admin/demo-reset"],
@@ -241,6 +258,7 @@ export const reviewerDbSeedReadinessItems = [
     requiresHostedTokenProbe: false,
     requiresVercelEnvSync: true,
     rollbackRequired: true,
+    rollbackMode: "hosted-isolated-db-rollback-required",
     sqlPreviewOnly: true,
     hostedSeedExecuted: false,
     hostedTokenProbeAttached: false,
@@ -265,6 +283,11 @@ export function summarizeReviewerDbSeedReadiness(items = reviewerDbSeedReadiness
     hostedTokenProbeRequired: items.filter((item) => item.requiresHostedTokenProbe).length,
     vercelEnvSyncRequired: items.filter((item) => item.requiresVercelEnvSync).length,
     rollbackRequired: items.filter((item) => item.rollbackRequired).length,
+    repoLocalContractProofs: items.filter((item) => item.proofScope === "repo-local-contract").length,
+    liveHostedProofRequired: items.filter((item) => item.proofScope === "live-hosted-required").length,
+    sqlPreviewRollbackModes: items.filter((item) => item.rollbackMode === "demo-scoped-sql-preview").length,
+    hostedRollbackModes: items.filter((item) => item.rollbackMode === "hosted-isolated-db-rollback-required").length,
+    noRollbackProbeModes: items.filter((item) => item.rollbackMode === "hosted-token-probe-no-rollback").length,
     sqlPreviewOnly: items.filter((item) => item.sqlPreviewOnly).length,
     tableContracts: new Set(items.flatMap((item) => item.tableNames)).size,
     routeContracts: new Set(items.flatMap((item) => item.routeIds)).size,
@@ -290,6 +313,12 @@ export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessI
     itemsById.set(item.id, item);
 
     if (!allowedStatuses.has(item.status)) issues.push(`Reviewer DB seed readiness item ${item.id} has unsupported status.`);
+    if (!allowedProofScopes.has(item.proofScope)) {
+      issues.push(`Reviewer DB seed readiness item ${item.id} has unsupported proofScope.`);
+    }
+    if (!allowedRollbackModes.has(item.rollbackMode)) {
+      issues.push(`Reviewer DB seed readiness item ${item.id} has unsupported rollbackMode.`);
+    }
     if (item.requiredSourceSignals.length < 2) {
       issues.push(`Reviewer DB seed readiness item ${item.id} must list source signals.`);
     }
@@ -321,6 +350,9 @@ export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessI
     if (item.realOrdersEnabled !== false) {
       issues.push(`Reviewer DB seed readiness item ${item.id} must keep realOrdersEnabled=false.`);
     }
+    if (item.requiresHostedSeedExecution && item.rollbackRequired && item.rollbackMode !== "hosted-isolated-db-rollback-required") {
+      issues.push(`Reviewer DB seed readiness item ${item.id} must require hosted isolated DB rollback mode.`);
+    }
   }
 
   for (const requiredId of requiredReviewerDbSeedReadinessIds) {
@@ -332,6 +364,9 @@ export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessI
     assertCoversTables(seedPlan, issues, "Reviewer seed plan contract");
     if (!seedPlan.rollbackRequired || !seedPlan.sqlPreviewOnly) {
       issues.push("Reviewer seed plan contract must stay rollback-required and SQL-preview-only.");
+    }
+    if (seedPlan.proofScope !== "repo-local-contract" || seedPlan.rollbackMode !== "demo-scoped-sql-preview") {
+      issues.push("Reviewer seed plan contract must stay repo-local with demo-scoped SQL preview rollback mode.");
     }
   }
 
@@ -379,6 +414,9 @@ export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessI
     assertCoversTables(rollback, issues, "Rollback cleanup drill");
     if (!rollback.rollbackRequired || !rollback.requiresHostedSeedExecution) {
       issues.push("Rollback cleanup drill must require hosted seed execution and rollback evidence.");
+    }
+    if (rollback.rollbackMode !== "hosted-isolated-db-rollback-required") {
+      issues.push("Rollback cleanup drill must require hosted isolated DB rollback mode.");
     }
   }
 

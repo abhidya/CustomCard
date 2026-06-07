@@ -21,6 +21,11 @@ describe("reviewer DB seed readiness", () => {
       hostedTokenProbeRequired: 4,
       vercelEnvSyncRequired: 5,
       rollbackRequired: 6,
+      repoLocalContractProofs: 3,
+      liveHostedProofRequired: 5,
+      sqlPreviewRollbackModes: 3,
+      hostedRollbackModes: 3,
+      noRollbackProbeModes: 2,
       sqlPreviewOnly: 8,
       tableContracts: 14,
       routeContracts: 5,
@@ -59,6 +64,16 @@ describe("reviewer DB seed readiness", () => {
       expect.arrayContaining(["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN", "AUTH_SESSION_SECRET"])
     );
     expect(tokenContract?.routeIds).toEqual(expect.arrayContaining(["/api/admin/readiness", "/api/customer/bootstrap"]));
+    expect(seedPlan).toMatchObject({
+      proofScope: "repo-local-contract",
+      rollbackRequired: true,
+      rollbackMode: "demo-scoped-sql-preview",
+      sqlPreviewOnly: true
+    });
+    expect(tokenContract).toMatchObject({
+      proofScope: "repo-local-contract",
+      rollbackMode: "demo-scoped-sql-preview"
+    });
     expect(preview.resetSql).toHaveLength(summary.tableContracts);
     expect(preview.insertSql).toHaveLength(plan.rows.length);
     expect(preview.resetSql.join("\n")).toContain("DELETE FROM auth_sessions");
@@ -69,6 +84,8 @@ describe("reviewer DB seed readiness", () => {
     const unsafeItems: ReviewerDbSeedReadinessItem[] = [
       {
         ...reviewerDbSeedReadinessItems[0],
+        proofScope: "unsupported",
+        rollbackMode: "unsupported",
         hostedSeedExecuted: true,
         hostedTokenProbeAttached: true,
         vercelEnvSynced: true,
@@ -89,6 +106,8 @@ describe("reviewer DB seed readiness", () => {
     expect(validateReviewerDbSeedReadiness(unsafeItems)).toEqual(
       expect.arrayContaining([
         "Duplicate reviewer DB seed readiness item: reviewer-seed-plan-contract.",
+        "Reviewer DB seed readiness item reviewer-seed-plan-contract has unsupported proofScope.",
+        "Reviewer DB seed readiness item reviewer-seed-plan-contract has unsupported rollbackMode.",
         "Reviewer DB seed readiness item reviewer-seed-plan-contract must list source signals.",
         "Reviewer DB seed readiness item reviewer-seed-plan-contract must list current repo-local evidence.",
         "Reviewer DB seed readiness item reviewer-seed-plan-contract must list at least two required evidence items.",
@@ -110,7 +129,9 @@ describe("reviewer DB seed readiness", () => {
         {
           ...reviewerDbSeedReadinessItems.find((item) => item.id === "reviewer-seed-plan-contract")!,
           tableNames: ["users"],
-          rollbackRequired: false
+          rollbackRequired: false,
+          proofScope: "live-hosted-required",
+          rollbackMode: "hosted-isolated-db-rollback-required"
         },
         {
           ...reviewerDbSeedReadinessItems.find((item) => item.id === "reviewer-session-token-contract")!,
@@ -121,7 +142,8 @@ describe("reviewer DB seed readiness", () => {
           ...reviewerDbSeedReadinessItems.find((item) => item.id === "hosted-seed-execution-proof")!,
           tableNames: ["users"],
           envVarNames: ["DATABASE_URL"],
-          requiresHostedTokenProbe: false
+          requiresHostedTokenProbe: false,
+          rollbackMode: "demo-scoped-sql-preview"
         },
         {
           ...reviewerDbSeedReadinessItems.find((item) => item.id === "hosted-admin-customer-token-probe")!,
@@ -136,24 +158,28 @@ describe("reviewer DB seed readiness", () => {
         {
           ...reviewerDbSeedReadinessItems.find((item) => item.id === "rollback-cleanup-drill")!,
           tableNames: ["users"],
-          rollbackRequired: false
+          rollbackRequired: false,
+          rollbackMode: "demo-scoped-sql-preview"
         }
-      ])
+      ] as unknown as ReviewerDbSeedReadinessItem[])
     ).toEqual(
       expect.arrayContaining([
         "Reviewer seed plan contract must include table: auth_sessions.",
         "Reviewer seed plan contract must stay rollback-required and SQL-preview-only.",
+        "Reviewer seed plan contract must stay repo-local with demo-scoped SQL preview rollback mode.",
         "Reviewer session token contract must include env var: CUSTOMCARD_ADMIN_SESSION_TOKEN.",
         "Reviewer session token contract must include route: /api/customer/bootstrap.",
         "Hosted seed execution proof must include table: auth_sessions.",
         "Hosted seed execution proof must include env var: CUSTOMCARD_API_RUNTIME.",
         "Hosted seed execution proof must require hosted database, seed execution, and token probe evidence.",
+        "Reviewer DB seed readiness item hosted-seed-execution-proof must require hosted isolated DB rollback mode.",
         "Hosted admin and customer token probe must include route: /api/customer/bootstrap.",
         "Hosted admin and customer token probe must require hosted token evidence without claiming it.",
         "Vercel env seed sync must include env var: CUSTOMCARD_API_RUNTIME.",
         "Vercel env seed sync must require env sync evidence without claiming it.",
         "Rollback cleanup drill must include table: auth_sessions.",
-        "Rollback cleanup drill must require hosted seed execution and rollback evidence."
+        "Rollback cleanup drill must require hosted seed execution and rollback evidence.",
+        "Rollback cleanup drill must require hosted isolated DB rollback mode."
       ])
     );
   });

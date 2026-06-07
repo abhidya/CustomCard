@@ -26,6 +26,7 @@ const requiredHostedRouteIds = [
 ];
 
 const allowedStatuses = new Set(["repo-local-ready", "evidence-missing", "protection-blocked"]);
+const allowedProofScopes = new Set(["repo-local-contract", "live-hosted-required", "protection-blocked"]);
 
 export const hostedApiReadinessItems = [
   {
@@ -33,6 +34,7 @@ export const hostedApiReadinessItems = [
     label: "Vercel project link",
     lane: "deployment-evidence",
     status: "repo-local-ready",
+    proofScope: "repo-local-contract",
     routeIds: ["/", "/api/health"],
     envVarNames: [],
     requiredSourceSignals: ["Project: world-prize-s-projects/customcard", "Deployment ID", "Deployment URL", "Status from `vercel inspect`: `Ready`"],
@@ -40,6 +42,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: false,
     requiresBackupPolicy: false,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -58,6 +61,7 @@ export const hostedApiReadinessItems = [
     label: "Serverless API route contract",
     lane: "serverless-api",
     status: "repo-local-ready",
+    proofScope: "repo-local-contract",
     routeIds: requiredHostedRouteIds,
     envVarNames: [],
     requiredSourceSignals: ["api/[...path].mjs", "handleApiRequest", "vercel.json", "CUSTOMCARD_API_RUNTIME"],
@@ -65,6 +69,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: false,
     requiresBackupPolicy: false,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -83,6 +88,7 @@ export const hostedApiReadinessItems = [
     label: "Deployment protection boundary",
     lane: "deployment-protection",
     status: "protection-blocked",
+    proofScope: "protection-blocked",
     routeIds: ["/", "/api/health"],
     envVarNames: [],
     requiredSourceSignals: ["Public `GET /` returned HTTP 401", "Public `GET /api/health` returned HTTP 401", "deployment protection"],
@@ -90,6 +96,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: true,
     requiresHostedTokenVerification: false,
     requiresBackupPolicy: false,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -108,6 +115,7 @@ export const hostedApiReadinessItems = [
     label: "Hosted env sync",
     lane: "environment-sync",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     routeIds: [],
     envVarNames: requiredHostedEnvVars,
     requiredSourceSignals: ["vercel env ls", "infra/env/.env.example", "CUSTOMCARD_API_RUNTIME=postgres", "DATABASE_URL"],
@@ -115,6 +123,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: true,
     requiresBackupPolicy: false,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -133,6 +142,7 @@ export const hostedApiReadinessItems = [
     label: "Hosted Postgres connectivity",
     lane: "database-connectivity",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     routeIds: ["/api/admin/readiness"],
     envVarNames: ["DATABASE_URL", "CUSTOMCARD_API_RUNTIME"],
     requiredSourceSignals: ["api:doctor:postgres:live", "api:doctor:postgres:http", "migrate", "DATABASE_URL"],
@@ -140,6 +150,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: false,
     requiresBackupPolicy: true,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -158,6 +169,7 @@ export const hostedApiReadinessItems = [
     label: "Public DB-backed route proof",
     lane: "public-route-proof",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     routeIds: requiredHostedRouteIds,
     envVarNames: requiredHostedEnvVars,
     requiredSourceSignals: ["route auth probe", "idempotency/audit rows", "api:doctor:postgres:http", "Vercel deployment"],
@@ -165,6 +177,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: true,
     requiresHostedTokenVerification: true,
     requiresBackupPolicy: false,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -183,6 +196,7 @@ export const hostedApiReadinessItems = [
     label: "Hosted account-token verification",
     lane: "hosted-auth-proof",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     routeIds: ["/api/admin/readiness", "/api/customer/bootstrap"],
     envVarNames: ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN", "AUTH_SESSION_SECRET"],
     requiredSourceSignals: ["Bearer auth", "wrong-role blocking", "account:doctor:live", "admin-session", "customer-session"],
@@ -190,6 +204,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: true,
     requiresHostedTokenVerification: true,
     requiresBackupPolicy: false,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -208,6 +223,7 @@ export const hostedApiReadinessItems = [
     label: "Backup and recovery policy",
     lane: "backup-policy",
     status: "evidence-missing",
+    proofScope: "live-hosted-required",
     routeIds: [],
     envVarNames: ["DATABASE_URL"],
     requiredSourceSignals: ["Backup policy", "Migration run", "append-only audit", "data request"],
@@ -215,6 +231,7 @@ export const hostedApiReadinessItems = [
     requiresPublicRouteProof: false,
     requiresHostedTokenVerification: false,
     requiresBackupPolicy: true,
+    liveProofClaimed: false,
     environmentSynced: false,
     hostedDbConnected: false,
     publicRouteProofAttached: false,
@@ -240,6 +257,10 @@ export function summarizeHostedApiReadiness(items = hostedApiReadinessItems) {
     publicRouteProofRequired: items.filter((item) => item.requiresPublicRouteProof).length,
     hostedTokenVerificationRequired: items.filter((item) => item.requiresHostedTokenVerification).length,
     backupPolicyRequired: items.filter((item) => item.requiresBackupPolicy).length,
+    repoLocalContractProofs: items.filter((item) => item.proofScope === "repo-local-contract").length,
+    liveHostedProofRequired: items.filter((item) => item.proofScope === "live-hosted-required").length,
+    protectionBlockedProofs: items.filter((item) => item.proofScope === "protection-blocked").length,
+    liveProofClaims: items.filter((item) => item.liveProofClaimed).length,
     routeContracts: new Set(items.flatMap((item) => item.routeIds)).size,
     requiredEnvVars: new Set(items.flatMap((item) => item.envVarNames)).size,
     sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
@@ -266,6 +287,8 @@ export function validateHostedApiReadiness(items = hostedApiReadinessItems) {
     itemsById.set(item.id, item);
 
     if (!allowedStatuses.has(item.status)) issues.push(`Hosted API readiness item ${item.id} has unsupported status.`);
+    if (!allowedProofScopes.has(item.proofScope)) issues.push(`Hosted API readiness item ${item.id} has unsupported proofScope.`);
+    if (item.liveProofClaimed !== false) issues.push(`Hosted API readiness item ${item.id} must not claim liveProofClaimed.`);
     if (item.requiredSourceSignals.length < 2) issues.push(`Hosted API readiness item ${item.id} must list source signals.`);
     if (item.currentEvidence.length < 1) issues.push(`Hosted API readiness item ${item.id} must list current repo-local evidence.`);
     if (item.requiredEvidence.length < 2) issues.push(`Hosted API readiness item ${item.id} must list at least two required evidence items.`);
@@ -312,6 +335,9 @@ export function validateHostedApiReadiness(items = hostedApiReadinessItems) {
     }
     if (!protection.requiresPublicRouteProof || protection.deploymentProtectionBypassed !== false) {
       issues.push("Deployment protection boundary must require public route proof without claiming a bypass.");
+    }
+    if (protection.proofScope !== "protection-blocked") {
+      issues.push("Deployment protection boundary must keep proofScope=protection-blocked.");
     }
   }
 

@@ -20,6 +20,10 @@ describe("hosted API readiness", () => {
       publicRouteProofRequired: 3,
       hostedTokenVerificationRequired: 3,
       backupPolicyRequired: 2,
+      repoLocalContractProofs: 2,
+      liveHostedProofRequired: 5,
+      protectionBlockedProofs: 1,
+      liveProofClaims: 0,
       routeContracts: 5,
       requiredEnvVars: 6,
       envSyncProofs: 0,
@@ -66,22 +70,30 @@ describe("hosted API readiness", () => {
       expect.arrayContaining(["/api/health", "/api/admin/readiness", "/api/customer/bootstrap", "/api/render-packets"])
     );
     expect(publicProof).toMatchObject({
+      proofScope: "live-hosted-required",
       requiresHostedDb: true,
       requiresPublicRouteProof: true,
       requiresHostedTokenVerification: true,
+      liveProofClaimed: false,
       publicRouteProofAttached: false
     });
     expect(protection).toMatchObject({
       status: "protection-blocked",
+      proofScope: "protection-blocked",
       requiresPublicRouteProof: true,
+      liveProofClaimed: false,
       deploymentProtectionBypassed: false
     });
     expect(hostedToken).toMatchObject({
+      proofScope: "live-hosted-required",
       requiresHostedTokenVerification: true,
+      liveProofClaimed: false,
       hostedTokenVerificationAttached: false
     });
     expect(backup).toMatchObject({
+      proofScope: "live-hosted-required",
       requiresBackupPolicy: true,
+      liveProofClaimed: false,
       backupPolicyAttached: false
     });
   });
@@ -90,6 +102,8 @@ describe("hosted API readiness", () => {
     const unsafeItems: HostedApiReadinessItem[] = [
       {
         ...hostedApiReadinessItems[0],
+        proofScope: "unsupported",
+        liveProofClaimed: true,
         environmentSynced: true,
         hostedDbConnected: true,
         publicRouteProofAttached: true,
@@ -112,6 +126,8 @@ describe("hosted API readiness", () => {
     expect(validateHostedApiReadiness(unsafeItems)).toEqual(
       expect.arrayContaining([
         "Duplicate hosted API readiness item: vercel-project-link.",
+        "Hosted API readiness item vercel-project-link has unsupported proofScope.",
+        "Hosted API readiness item vercel-project-link must not claim liveProofClaimed.",
         "Hosted API readiness item vercel-project-link must list source signals.",
         "Hosted API readiness item vercel-project-link must list current repo-local evidence.",
         "Hosted API readiness item vercel-project-link must list at least two required evidence items.",
@@ -145,6 +161,7 @@ describe("hosted API readiness", () => {
         {
           ...hostedApiReadinessItems.find((item) => item.id === "deployment-protection-boundary")!,
           status: "evidence-missing",
+          proofScope: "live-hosted-required",
           requiresPublicRouteProof: false
         },
         {
@@ -156,7 +173,7 @@ describe("hosted API readiness", () => {
           ...hostedApiReadinessItems.find((item) => item.id === "backup-recovery-policy")!,
           requiresBackupPolicy: false
         }
-      ])
+      ] as unknown as HostedApiReadinessItem[])
     ).toEqual(
       expect.arrayContaining([
         "Hosted env sync must include env var: CUSTOMCARD_API_RUNTIME.",
@@ -165,6 +182,7 @@ describe("hosted API readiness", () => {
         "Public DB-backed route proof must require hosted DB, public route, and hosted token evidence.",
         "Deployment protection boundary must remain protection-blocked.",
         "Deployment protection boundary must require public route proof without claiming a bypass.",
+        "Deployment protection boundary must keep proofScope=protection-blocked.",
         "Hosted account-token verification must require hosted token evidence without claiming it.",
         "Hosted account-token verification must include route: /api/customer/bootstrap.",
         "Backup and recovery policy must require backup evidence without claiming it."
