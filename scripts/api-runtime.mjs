@@ -447,27 +447,89 @@ function prepareIdempotentMutation({ route, request, authContext, bodyText }) {
   };
 }
 
-const importPreviewRequiredFields = [
-  "sourceKind",
-  "metadataOnlyPayload.title",
-  "metadataOnlyPayload.recipientName",
-  "metadataOnlyPayload.startsAt"
-];
+const mutationBodyContracts = {
+  "import-preview": {
+    requiredFields: [
+      "sourceKind",
+      "metadataOnlyPayload.title",
+      "metadataOnlyPayload.recipientName",
+      "metadataOnlyPayload.startsAt"
+    ],
+    detail: "Import preview requires explicit metadata-only event fields before event/opportunity persistence.",
+    missingFields(body) {
+      const payload = metadataOnlyPayload(body);
+      const missingFields = [];
+
+      if (!hasRequiredText(body.sourceKind)) missingFields.push("sourceKind");
+      if (!payload || !hasRequiredText(payload.title)) missingFields.push("metadataOnlyPayload.title");
+      if (!payload || !hasRequiredText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint)) {
+        missingFields.push("metadataOnlyPayload.recipientName");
+      }
+      if (!payload || !hasValidTimestamp(payload.startsAt ?? payload.starts_at)) missingFields.push("metadataOnlyPayload.startsAt");
+
+      return missingFields;
+    }
+  },
+  "render-packets": {
+    requiredFields: ["projectId"],
+    detail: "Render packet creation requires an explicit card project before artifact records can be prepared.",
+    missingFields(body) {
+      return hasRequiredText(body.projectId) ? [] : ["projectId"];
+    }
+  },
+  "card-projects": {
+    requiredFields: ["opportunityId", "recipientName"],
+    detail: "Card project creation requires an explicit opportunity and recipient before project records can be prepared.",
+    missingFields(body) {
+      const missingFields = [];
+      if (!hasRequiredText(body.opportunityId)) missingFields.push("opportunityId");
+      if (!hasRequiredText(body.recipientName)) missingFields.push("recipientName");
+      return missingFields;
+    }
+  },
+  "relationship-memories": {
+    requiredFields: ["recipientName", "text", "decision"],
+    detail: "Relationship memory review requires explicit recipient, reviewed memory text, and approve/forget decision.",
+    missingFields(body) {
+      const missingFields = [];
+      if (!hasRequiredText(body.recipientName ?? body.recipient)) missingFields.push("recipientName");
+      if (!hasRequiredText(body.text ?? body.note)) missingFields.push("text");
+      if (!hasExplicitMemoryDecision(body)) missingFields.push("decision");
+      return missingFields;
+    }
+  },
+  "manual-vendor-handoff": {
+    requiredFields: ["projectId", "renderPacketId", "storeId", "externalShareApproval"],
+    detail: "Manual vendor handoff requires explicit project, render packet, selected store, and external-share approval state.",
+    missingFields(body) {
+      const missingFields = [];
+      if (!hasRequiredText(body.projectId ?? body.cardProjectId)) missingFields.push("projectId");
+      if (!hasRequiredText(body.renderPacketId)) missingFields.push("renderPacketId");
+      if (!hasRequiredText(body.storeId ?? body.vendorId ?? body.selectedVendorId)) missingFields.push("storeId");
+      if (!hasExplicitBoolean(body.externalShareApproval ?? body.externalShareApproved ?? body.consentGranted)) {
+        missingFields.push("externalShareApproval");
+      }
+      return missingFields;
+    }
+  },
+  "data-requests": {
+    requiredFields: ["requestType", "region", "consentGranted"],
+    detail: "Data request intake requires explicit request type, region, and customer confirmation before privacy records can be prepared.",
+    missingFields(body) {
+      const missingFields = [];
+      if (!hasValidDataRequestType(body.requestType ?? body.type)) missingFields.push("requestType");
+      if (!hasRequiredText(body.region)) missingFields.push("region");
+      if (!hasExplicitBoolean(body.consentGranted ?? body.requestConfirmed)) missingFields.push("consentGranted");
+      return missingFields;
+    }
+  }
+};
 
 function validateMutationBody(route, bodyText) {
-  if (route.id !== "import-preview") return undefined;
+  const contract = mutationBodyContracts[route.id];
+  if (!contract) return undefined;
   const body = parseJsonBody(bodyText);
-  const payload = typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null && !Array.isArray(body.metadataOnlyPayload)
-    ? body.metadataOnlyPayload
-    : undefined;
-  const missingFields = [];
-
-  if (!hasRequiredText(body.sourceKind)) missingFields.push("sourceKind");
-  if (!payload || !hasRequiredText(payload.title)) missingFields.push("metadataOnlyPayload.title");
-  if (!payload || !hasRequiredText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint)) {
-    missingFields.push("metadataOnlyPayload.recipientName");
-  }
-  if (!payload || !hasValidTimestamp(payload.startsAt ?? payload.starts_at)) missingFields.push("metadataOnlyPayload.startsAt");
+  const missingFields = contract.missingFields(body);
 
   if (missingFields.length === 0) return undefined;
 
@@ -476,14 +538,20 @@ function validateMutationBody(route, bodyText) {
     statusCode: 400,
     payload: {
       service: "customcard-api",
-      status: "invalid-import-preview-payload",
+      status: `invalid-${route.id}-payload`,
       route: route.id,
-      detail: "Import preview requires explicit metadata-only event fields before event/opportunity persistence.",
-      requiredFields: importPreviewRequiredFields,
+      detail: contract.detail,
+      requiredFields: contract.requiredFields,
       missingFields,
       rawContentStored: false
     }
   };
+}
+
+function metadataOnlyPayload(body) {
+  return typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null && !Array.isArray(body.metadataOnlyPayload)
+    ? body.metadataOnlyPayload
+    : undefined;
 }
 
 function hasRequiredText(value) {
@@ -494,6 +562,20 @@ function hasValidTimestamp(value) {
   const text = String(value ?? "").trim();
   if (!text) return false;
   return !Number.isNaN(new Date(text).getTime());
+}
+
+function hasExplicitBoolean(value) {
+  return value !== undefined && value !== null && String(value).trim().length > 0;
+}
+
+function hasExplicitMemoryDecision(body) {
+  const decision = String(body.decision ?? "").trim().toLowerCase();
+  return decision === "approve" || decision === "forget" || hasExplicitBoolean(body.forget);
+}
+
+function hasValidDataRequestType(value) {
+  const requestType = String(value ?? "").trim().toLowerCase().replace(/[^a-z_:-]/g, "_");
+  return ["export", "delete", "correct", "revoke_consent", "access"].includes(requestType);
 }
 
 function replayOrConflict(record, nextRequestHash) {
@@ -952,7 +1034,7 @@ function buildImportPreviewRepositoryPayload(record, runtimeMode) {
 
 function buildCardProjectRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
-  const opportunityId = safeId(body.opportunityId, "opportunity-demo");
+  const opportunityId = safeId(body.opportunityId, "");
   const locale = safeLocale(body.locale);
   const approvedMemoryIds = Array.isArray(body.approvedMemoryIds)
     ? body.approvedMemoryIds.map((value) => safeId(value, "")).filter(Boolean).slice(0, 12)
@@ -960,7 +1042,7 @@ function buildCardProjectRecord({ authContext, bodyText }) {
   return {
     projectId: safeId(body.projectId, stableRuntimeId("project", authContext.userId, opportunityId, approvedMemoryIds.join(","), locale)),
     opportunityId,
-    recipientName: safeText(body.recipientName, "Recipient"),
+    recipientName: safeText(body.recipientName, ""),
     locale,
     requiresRtlLayout: Boolean(body.requiresRtlLayout) || /^(ar|he|fa|ur)(-|$)/i.test(locale),
     approvedMemoryIds
@@ -984,7 +1066,7 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
 
 function buildRelationshipMemoryRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
-  const recipientName = safeText(body.recipientName ?? body.recipient, "Recipient");
+  const recipientName = safeText(body.recipientName ?? body.recipient, "");
   const text = safeMemoryText(body.text ?? body.note);
   const decision = safeMemoryDecision(body.decision ?? (safeBoolean(body.forget) ? "forget" : "approve"));
   const approved = decision === "approve";
@@ -1024,7 +1106,7 @@ function buildRelationshipMemoryRepositoryPayload(record, runtimeMode) {
 
 function buildRenderPacketRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
-  const projectId = safeId(body.projectId, "project-demo");
+  const projectId = safeId(body.projectId, "");
   const locale = safeLocale(body.locale);
   const direction = safeDirection(body.direction, locale);
   const renderPacketId = safeId(body.renderPacketId, stableRuntimeId("render-packet", authContext.userId, projectId, locale));
@@ -1099,10 +1181,10 @@ function buildRenderPacketRepositoryPayload(record, runtimeMode) {
 
 function buildManualVendorHandoffRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
-  const projectId = safeId(body.projectId ?? body.cardProjectId, "project-demo");
-  const renderPacketId = safeId(body.renderPacketId, stableRuntimeId("render-packet", authContext.userId, projectId));
+  const projectId = safeId(body.projectId ?? body.cardProjectId, "");
+  const renderPacketId = safeId(body.renderPacketId, "");
   const orderId = safeId(body.orderId, stableRuntimeId("order", authContext.userId, projectId, renderPacketId));
-  const storeId = safeId(body.storeId ?? body.vendorId ?? body.selectedVendorId, "manual-printer");
+  const storeId = safeId(body.storeId ?? body.vendorId ?? body.selectedVendorId, "");
   const region = safeText(body.region, "US").slice(0, 12);
   const externalShareApproval = safeBoolean(body.externalShareApproval ?? body.externalShareApproved ?? body.consentGranted);
   const status = externalShareApproval ? "vendor_handoff_ready" : "vendor_handoff_blocked";
@@ -1180,10 +1262,10 @@ function buildDataRequestRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
   const requestType = safeDataRequestType(body.requestType ?? body.type);
   const requestId = safeId(body.requestId, stableRuntimeId("data-request", authContext.userId, requestType));
-  const region = safeText(body.region, "US").slice(0, 12);
+  const region = safeText(body.region, "").slice(0, 12);
   const dueAt = safeTimestamp(body.dueAt ?? defaultDataRequestDueAt(requestType), defaultDataRequestDueAt(requestType));
   const status = safeDataRequestStatus(body.status);
-  const granted = safeBoolean(body.consentGranted ?? body.requestConfirmed ?? true);
+  const granted = safeBoolean(body.consentGranted ?? body.requestConfirmed);
   const controls = {
     requestId,
     requestType,
@@ -1344,7 +1426,7 @@ function safeArtifactUri(value, fallback) {
 
 function safeMemoryText(value) {
   const text = String(value ?? "").trim().replace(/\s+/g, " ");
-  return text.slice(0, 500) || "Customer-approved memory pending text review.";
+  return text.slice(0, 500);
 }
 
 function safeMemorySensitivity(value) {

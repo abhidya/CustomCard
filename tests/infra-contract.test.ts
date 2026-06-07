@@ -663,7 +663,10 @@ describe("production infrastructure contract", () => {
       blockers: []
     });
     expect(doctor).toContain("blocks import preview mutations with missing metadata");
+    expect(doctor).toContain("blocks non-import mutations with missing required fields");
     expect(doctor).toContain("invalid-import-preview-payload");
+    expect(doctor).toContain("invalid-render-packets-payload");
+    expect(doctor).toContain("invalid-manual-vendor-handoff-payload");
   }, shellDoctorTimeoutMs);
 
   it("keeps the live Postgres integration doctor verifying route-scoped auth", () => {

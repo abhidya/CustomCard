@@ -917,7 +917,7 @@ function buildMutationContractPayload(route, bodyText) {
   };
 
   if (route.id === "render-packets") {
-    const projectId = String(requestBody.projectId ?? "project-contract");
+    const projectId = String(requestBody.projectId ?? "").trim();
     const renderPacketId = safeContractId(requestBody.renderPacketId, `render-packet-${stableContractHash(projectId).slice(0, 8)}`);
     const checksum = `cc_${stableContractHash(`${renderPacketId}:${projectId}`).slice(0, 8)}`;
     const signedUrlExpiresAt = safeTimestamp(requestBody.signedUrlExpiresAt, "2030-01-01T00:15:00.000Z");
@@ -955,7 +955,7 @@ function buildMutationContractPayload(route, bodyText) {
   }
 
   if (route.id === "card-projects") {
-    const opportunityId = safeContractId(requestBody.opportunityId, "opportunity-contract");
+    const opportunityId = safeContractId(requestBody.opportunityId, "");
     const locale = safeLocale(requestBody.locale);
     const projectId = safeContractId(requestBody.projectId, `project-${stableContractHash(opportunityId).slice(0, 8)}`);
     const approvedMemoryIds = Array.isArray(requestBody.approvedMemoryIds)
@@ -977,8 +977,8 @@ function buildMutationContractPayload(route, bodyText) {
   }
 
   if (route.id === "relationship-memories") {
-    const recipientName = safeContractText(requestBody.recipientName, "Recipient");
-    const text = safeContractText(requestBody.text ?? requestBody.note, "Customer-approved memory");
+    const recipientName = safeContractText(requestBody.recipientName, "");
+    const text = safeContractText(requestBody.text ?? requestBody.note, "");
     const decision = safeMemoryDecision(requestBody.decision ?? (safeBoolean(requestBody.forget) ? "forget" : "approve"));
     const memoryId = safeContractId(requestBody.memoryId, `memory-${stableContractHash(`${recipientName}:${text}`).slice(0, 8)}`);
     const forgottenAt = decision === "forget" ? safeTimestamp(requestBody.forgottenAt, "2030-01-01T00:00:00.000Z") : null;
@@ -1039,8 +1039,8 @@ function buildMutationContractPayload(route, bodyText) {
   }
 
   if (route.id === "manual-vendor-handoff") {
-    const projectId = safeContractId(requestBody.projectId ?? requestBody.cardProjectId, "project-contract");
-    const renderPacketId = safeContractId(requestBody.renderPacketId, "render-packet-contract");
+    const projectId = safeContractId(requestBody.projectId ?? requestBody.cardProjectId, "");
+    const renderPacketId = safeContractId(requestBody.renderPacketId, "");
     const orderId = safeContractId(requestBody.orderId, `order-${stableContractHash(`${projectId}:${renderPacketId}`).slice(0, 8)}`);
     const externalShareApproval = safeBoolean(requestBody.externalShareApproval ?? requestBody.externalShareApproved ?? requestBody.consentGranted);
     return {
@@ -1057,7 +1057,7 @@ function buildMutationContractPayload(route, bodyText) {
           method: "GET",
           signatureVersion: "hmac-sha256-v1",
           expiresInMinutes: 15,
-          url: `contract-only://customcard/artifacts/${encodeURIComponent(String(requestBody.renderPacketId ?? "render-packet-contract"))}`
+          url: `contract-only://customcard/artifacts/${encodeURIComponent(renderPacketId)}`
         }
       ],
       disabledReasons: ["Live vendor order APIs remain disabled until certification and kill-switch gates pass."],
@@ -1075,7 +1075,7 @@ function buildMutationContractPayload(route, bodyText) {
     const requestType = safeDataRequestType(requestBody.requestType ?? requestBody.type);
     const dataRequestId = safeContractId(requestBody.requestId, `data-request-${stableContractHash(`${requestType}:contract`).slice(0, 8)}`);
     const dueAt = safeTimestamp(requestBody.dueAt, "2030-01-31T00:00:00.000Z");
-    const region = safeContractText(requestBody.region, "US").slice(0, 12);
+    const region = safeContractText(requestBody.region, "").slice(0, 12);
     return {
       ...basePayload,
       dataRequestId,
@@ -1083,7 +1083,7 @@ function buildMutationContractPayload(route, bodyText) {
       requestStatus: safeDataRequestStatus(requestBody.status),
       dueAt,
       consentRecordId: `consent-${stableContractHash(`${dataRequestId}:data-request`).slice(0, 8)}`,
-      consentGranted: safeBoolean(requestBody.consentGranted ?? requestBody.requestConfirmed ?? true),
+      consentGranted: safeBoolean(requestBody.consentGranted ?? requestBody.requestConfirmed),
       privacyControls: {
         region,
         rawContentStored: false,

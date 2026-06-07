@@ -115,13 +115,7 @@ await runCheck("persists repository-backed import preview mutations", async () =
 });
 
 await runCheck("blocks import preview mutations with missing metadata", async () => {
-  const countsBefore = {
-    idempotencyRecords: fakeDb.idempotencyRecords.size,
-    auditRecords: fakeDb.auditRecords.length,
-    providerConnections: fakeDb.providerConnections.length,
-    importedEvents: fakeDb.importedEvents.length,
-    cardOpportunities: fakeDb.cardOpportunities.length
-  };
+  const countsBefore = runtimePersistenceCounts(fakeDb);
   const result = await runtime.persistMutation({
     route: route("import-preview"),
     request: request({ token: customerToken, idempotencyKey: "import-preview-postgres-missing-metadata" }),
@@ -139,11 +133,65 @@ await runCheck("blocks import preview mutations with missing metadata", async ()
   expect(result.statusCode === 400, "missing import-preview metadata should be rejected");
   expect(result.payload.status === "invalid-import-preview-payload", "import-preview rejection status should be explicit");
   expect(result.payload.requiredFields.includes("metadataOnlyPayload.title"), "rejection should list required metadata fields");
-  expect(fakeDb.idempotencyRecords.size === countsBefore.idempotencyRecords, "rejected import-preview must not persist idempotency");
-  expect(fakeDb.auditRecords.length === countsBefore.auditRecords, "rejected import-preview must not create audit records");
-  expect(fakeDb.providerConnections.length === countsBefore.providerConnections, "rejected import-preview must not create provider connections");
-  expect(fakeDb.importedEvents.length === countsBefore.importedEvents, "rejected import-preview must not create imported events");
-  expect(fakeDb.cardOpportunities.length === countsBefore.cardOpportunities, "rejected import-preview must not create card opportunities");
+  expectRuntimeCountsUnchanged(countsBefore, runtimePersistenceCounts(fakeDb), "rejected import-preview");
+});
+
+await runCheck("blocks non-import mutations with missing required fields", async () => {
+  const countsBefore = runtimePersistenceCounts(fakeDb);
+  const cases = [
+    {
+      routeId: "render-packets",
+      idempotencyKey: "render-packets-postgres-missing-project",
+      body: {},
+      expectedStatus: "invalid-render-packets-payload"
+    },
+    {
+      routeId: "card-projects",
+      idempotencyKey: "card-projects-postgres-missing-recipient",
+      body: { opportunityId: "opportunity-postgres-contract" },
+      expectedStatus: "invalid-card-projects-payload"
+    },
+    {
+      routeId: "relationship-memories",
+      idempotencyKey: "relationship-memories-postgres-missing-fields",
+      body: { recipientName: "Sara" },
+      expectedStatus: "invalid-relationship-memories-payload"
+    },
+    {
+      routeId: "manual-vendor-handoff",
+      idempotencyKey: "manual-vendor-handoff-postgres-missing-fields",
+      body: { projectId: "project-postgres-contract" },
+      expectedStatus: "invalid-manual-vendor-handoff-payload"
+    },
+    {
+      routeId: "data-requests",
+      idempotencyKey: "data-requests-postgres-missing-fields",
+      body: { requestType: "delete" },
+      expectedStatus: "invalid-data-requests-payload"
+    }
+  ];
+
+  for (const testCase of cases) {
+    const result = await runtime.persistMutation({
+      route: route(testCase.routeId),
+      request: request({ token: customerToken, idempotencyKey: testCase.idempotencyKey }),
+      authContext: customerAuth,
+      bodyText: JSON.stringify(testCase.body),
+      responsePayload: {
+        service: "customcard-api",
+        status: "accepted-contract-only",
+        route: testCase.routeId,
+        realOrdersEnabled: false,
+        externalNetworkCalls: false
+      }
+    });
+
+    expect(result.statusCode === 400, `${testCase.routeId} missing-field mutation should be rejected`);
+    expect(result.payload.status === testCase.expectedStatus, `${testCase.routeId} rejection status should be explicit`);
+    expect(Array.isArray(result.payload.requiredFields), `${testCase.routeId} rejection should list required fields`);
+  }
+
+  expectRuntimeCountsUnchanged(countsBefore, runtimePersistenceCounts(fakeDb), "rejected non-import mutations");
 });
 
 await runCheck("persists repository-backed card project mutations", async () => {
@@ -356,6 +404,30 @@ function request({ token, idempotencyKey }) {
 
 function expect(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function runtimePersistenceCounts(state) {
+  return {
+    idempotencyRecords: state.idempotencyRecords.size,
+    auditRecords: state.auditRecords.length,
+    queuedJobs: state.jobs.length,
+    providerConnections: state.providerConnections.length,
+    importedEvents: state.importedEvents.length,
+    cardOpportunities: state.cardOpportunities.length,
+    relationshipMemories: state.relationshipMemories.length,
+    cardProjects: state.cardProjects.length,
+    renderPackets: state.renderPackets.length,
+    orders: state.orders.length,
+    orderEvents: state.orderEvents.length,
+    consentRecords: state.consentRecords.length,
+    dataRequests: state.dataRequests.length
+  };
+}
+
+function expectRuntimeCountsUnchanged(before, after, label) {
+  for (const [key, beforeValue] of Object.entries(before)) {
+    expect(after[key] === beforeValue, `${label} must not change ${key}`);
+  }
 }
 
 function createFakePostgresState({ customerToken, adminToken }) {

@@ -97,9 +97,14 @@ it after each meaningful implementation pass.
   `/api/import-preview`, and `/api/card-projects` mutation behavior, including
   fail-closed `/api/import-preview` validation for explicit `sourceKind`,
   `metadataOnlyPayload.title`, `metadataOnlyPayload.recipientName`, and
-  `metadataOnlyPayload.startsAt`, customer pricing preview, `X-Idempotency-Key`
-  replay/conflict behavior, 404/405 behavior, and the no-live-call/no-real-order
-  posture.
+  `metadataOnlyPayload.startsAt`, plus fail-closed required-field validation for
+  non-import repository routes: render packets require `projectId`, card
+  projects require `opportunityId` and `recipientName`, memory review requires
+  `recipientName`, reviewed text, and an explicit decision, manual printer
+  handoff requires project/render/store/approval fields, and data requests
+  require request type, region, and customer confirmation. Tests also cover
+  customer pricing preview, `X-Idempotency-Key` replay/conflict behavior,
+  404/405 behavior, and the no-live-call/no-real-order posture.
 - `npm run api:doctor:postgres:live` covers route-scoped Postgres session
   verification for all 6 repository-backed customer routes, admin readiness
   authorization, wrong-role blocking, and the same idempotency/repository
@@ -518,6 +523,8 @@ Result: passed. Postgres runtime doctor used an injected fake `pg` pool to
 exercise auth-session lookup, wrong-role blocking, idempotent mutation insert,
 repository-backed render-packet insert, repository-backed import-preview insert,
 fail-closed import-preview rejection when required metadata is missing,
+fail-closed rejection for non-import mutations missing required fields before
+idempotency or repository writes,
 repository-backed card-project insert, repository-backed relationship-memory
 insert, repository-backed manual vendor handoff order/consent/event insert,
 repository-backed data-request privacy/consent insert, same-key replay,

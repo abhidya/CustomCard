@@ -858,7 +858,23 @@ describe("api server wrapper", () => {
         externalNetworkCalls: false
       });
 
-      const mutation = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
+      const missingRenderPacketProject = await postJson(
+        port,
+        "/api/render-packets",
+        {}
+      );
+      expect(missingRenderPacketProject.status).toBe(400);
+      expect(await missingRenderPacketProject.json()).toMatchObject({
+        status: "invalid-render-packets-payload",
+        route: "render-packets",
+        requiredFields: expect.arrayContaining(["projectId"])
+      });
+
+      const mutation = await postJson(
+        port,
+        "/api/render-packets",
+        { projectId: "project-contract-api" }
+      );
       expect(mutation.status).toBe(202);
       expect(await mutation.json()).toMatchObject({
         status: "accepted-contract-only",
@@ -900,6 +916,54 @@ describe("api server wrapper", () => {
           "metadataOnlyPayload.recipientName",
           "metadataOnlyPayload.startsAt"
         ])
+      });
+
+      const missingCardProjectRecipient = await postJson(
+        port,
+        "/api/card-projects",
+        { opportunityId: "opportunity-contract-api" }
+      );
+      expect(missingCardProjectRecipient.status).toBe(400);
+      expect(await missingCardProjectRecipient.json()).toMatchObject({
+        status: "invalid-card-projects-payload",
+        route: "card-projects",
+        requiredFields: expect.arrayContaining(["opportunityId", "recipientName"])
+      });
+
+      const missingMemoryReviewFields = await postJson(
+        port,
+        "/api/memories/review",
+        { recipientName: "Sara" }
+      );
+      expect(missingMemoryReviewFields.status).toBe(400);
+      expect(await missingMemoryReviewFields.json()).toMatchObject({
+        status: "invalid-relationship-memories-payload",
+        route: "relationship-memories",
+        requiredFields: expect.arrayContaining(["recipientName", "text", "decision"])
+      });
+
+      const missingManualHandoffFields = await postJson(
+        port,
+        "/api/vendor-handoff/manual",
+        { projectId: "project-contract-api" }
+      );
+      expect(missingManualHandoffFields.status).toBe(400);
+      expect(await missingManualHandoffFields.json()).toMatchObject({
+        status: "invalid-manual-vendor-handoff-payload",
+        route: "manual-vendor-handoff",
+        requiredFields: expect.arrayContaining(["projectId", "renderPacketId", "storeId", "externalShareApproval"])
+      });
+
+      const missingDataRequestFields = await postJson(
+        port,
+        "/api/data-requests",
+        { requestType: "delete" }
+      );
+      expect(missingDataRequestFields.status).toBe(400);
+      expect(await missingDataRequestFields.json()).toMatchObject({
+        status: "invalid-data-requests-payload",
+        route: "data-requests",
+        requiredFields: expect.arrayContaining(["requestType", "region", "consentGranted"])
       });
 
       const importPreview = await postJson(
@@ -1143,7 +1207,7 @@ describe("api server wrapper", () => {
       const missingAuth = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
       expect(missingAuth.status).toBe(401);
 
-      const missingIdempotency = await postJson(port, "/api/render-packets", { projectId: "project-demo" }, bearer(customerToken));
+      const missingIdempotency = await postJson(port, "/api/render-packets", { projectId: "project-memory-api" }, bearer(customerToken));
       expect(missingIdempotency.status).toBe(400);
       expect(await missingIdempotency.json()).toMatchObject({ status: "idempotency-key-required" });
 
@@ -1166,6 +1230,86 @@ describe("api server wrapper", () => {
           "metadataOnlyPayload.recipientName",
           "metadataOnlyPayload.startsAt"
         ])
+      });
+
+      const missingRenderPacketProject = await postJson(
+        port,
+        "/api/render-packets",
+        {},
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "render-packets-missing-project"
+        }
+      );
+      expect(missingRenderPacketProject.status).toBe(400);
+      expect(await missingRenderPacketProject.json()).toMatchObject({
+        status: "invalid-render-packets-payload",
+        route: "render-packets",
+        requiredFields: expect.arrayContaining(["projectId"])
+      });
+
+      const missingManualHandoffFields = await postJson(
+        port,
+        "/api/vendor-handoff/manual",
+        { projectId: "project-memory-api" },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "vendor-handoff-missing-fields"
+        }
+      );
+      expect(missingManualHandoffFields.status).toBe(400);
+      expect(await missingManualHandoffFields.json()).toMatchObject({
+        status: "invalid-manual-vendor-handoff-payload",
+        route: "manual-vendor-handoff",
+        requiredFields: expect.arrayContaining(["projectId", "renderPacketId", "storeId", "externalShareApproval"])
+      });
+
+      const missingMemoryReviewFields = await postJson(
+        port,
+        "/api/memories/review",
+        { recipientName: "Sara" },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "relationship-memories-missing-fields"
+        }
+      );
+      expect(missingMemoryReviewFields.status).toBe(400);
+      expect(await missingMemoryReviewFields.json()).toMatchObject({
+        status: "invalid-relationship-memories-payload",
+        route: "relationship-memories",
+        requiredFields: expect.arrayContaining(["recipientName", "text", "decision"])
+      });
+
+      const missingCardProjectRecipient = await postJson(
+        port,
+        "/api/card-projects",
+        { opportunityId: "opportunity-memory-api" },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "card-projects-missing-recipient"
+        }
+      );
+      expect(missingCardProjectRecipient.status).toBe(400);
+      expect(await missingCardProjectRecipient.json()).toMatchObject({
+        status: "invalid-card-projects-payload",
+        route: "card-projects",
+        requiredFields: expect.arrayContaining(["opportunityId", "recipientName"])
+      });
+
+      const missingDataRequestFields = await postJson(
+        port,
+        "/api/data-requests",
+        { requestType: "delete" },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "data-requests-missing-fields"
+        }
+      );
+      expect(missingDataRequestFields.status).toBe(400);
+      expect(await missingDataRequestFields.json()).toMatchObject({
+        status: "invalid-data-requests-payload",
+        route: "data-requests",
+        requiredFields: expect.arrayContaining(["requestType", "region", "consentGranted"])
       });
 
       const headers = {
