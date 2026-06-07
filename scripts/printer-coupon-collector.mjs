@@ -66,6 +66,8 @@ try {
 
   const fetchedTargets = [];
   const sourceOffers = [];
+  const sourceEvidenceRecords = [];
+  const ignoredCouponSignals = [];
 
   for (const target of allowedTargets) {
     const response = await fetch(target.url, { headers: { "user-agent": userAgent } });
@@ -114,9 +116,12 @@ try {
         documentText: body,
         observedAtIso: generatedAt.toISOString()
       });
+      sourceEvidenceRecords.push(...extraction.sourceEvidence);
+      ignoredCouponSignals.push(...extraction.ignoredSignals);
       sourceOffers.push(
         ...extraction.offers.map((offer) => {
           const activeAtCollection = isPrinterCouponActive(offer, generatedAt);
+          const sourceEvidence = extraction.sourceEvidence.find((evidence) => evidence.code === offer.code);
           return {
             id: offer.id,
             vendorId: offer.vendorId,
@@ -128,6 +133,10 @@ try {
             evidenceStatus: offer.evidenceStatus,
             portalApplicationEvidenceAttached: Boolean(offer.portalApplicationEvidence),
             sourceUrl: offer.source.url,
+            sourceType: sourceEvidence?.sourceType,
+            rawSnippetHash: sourceEvidence?.rawSnippetHash,
+            rawSnippet: sourceEvidence?.rawSnippet,
+            matchedSourceTerms: sourceEvidence?.matchedTerms ?? [],
             requiresLoggedInAccount: offer.requiresLoggedInAccount,
             activeAtCollection,
             bestPriceEligibleAtCollection: false,
@@ -205,6 +214,8 @@ try {
         networkRuntime: "operator-script-only",
         fetchedTargetCount: fetchedTargets.length,
         couponSourceOfferCount: sourceOffers.length,
+        couponSourceEvidenceCount: sourceEvidenceRecords.length,
+        ignoredCouponSignalCount: ignoredCouponSignals.length,
         collectionMethods: [...new Set([...fetchedTargets, ...providerFeedTargets].map((target) => target.collectionMethod))],
         renderedBrowserReadTargetCount: fetchedTargets.filter((target) => target.renderedBrowserReadRequired).length,
         renderedBrowserCollector,
@@ -238,7 +249,9 @@ try {
         bestPriceDiscountingRule:
           "A coupon can affect ranking only after structured provider-portal evidence proves the same product, quantity, fulfillment mode, account state, and subtotal math.",
         fetchedTargets,
+        sourceEvidence: sourceEvidenceRecords,
         sourceOffers: sourceOfferSummaries,
+        ignoredCouponSignals,
         printEntrypointChecks,
         blockedFields: ["checkout subtotal", "coupon application proof", "tax", "pickup window", "real order placement"]
       },

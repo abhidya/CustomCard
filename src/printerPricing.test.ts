@@ -314,6 +314,7 @@ describe("printer pricing research", () => {
       <div class="paragraph3"><h2>GRADUATION</h2></div>
       <p><b>Weekly offers end 6/20/2026 <br/> 65% off Same Day Posters |
       Promo Code: SAMEDAY65 <br/> 50% off Sitewide | Promo Code: JUNESW </b></p>
+      <h2>50% off Sitewide:</h2>
       <div class="caption text-left">Add any photo products to your cart and enter promo
       code JUNESW to receive 50% off your photo order. Offer valid online and in the
       CVS Health app. Offer starts June 7, 2026, at 12:01 AM and ends June 20, 2026,
@@ -359,7 +360,12 @@ describe("printer pricing research", () => {
       ])
     );
 
-    expect(extractPrinterCouponOffers({ vendorId: "walgreens", source: printerCouponSources.walgreensPhotoDeals, documentText: walgreensPage })).toMatchObject({
+    const walgreensExtraction = extractPrinterCouponOffers({
+      vendorId: "walgreens",
+      source: printerCouponSources.walgreensPhotoDeals,
+      documentText: walgreensPage
+    });
+    expect(walgreensExtraction).toMatchObject({
       offers: [
         expect.objectContaining({
           id: "walgreens-crispcard-cards-2026-06-13",
@@ -370,9 +376,25 @@ describe("printer pricing research", () => {
           evidenceStatus: "source-listed"
         })
       ],
+      sourceEvidence: [
+        expect.objectContaining({
+          vendorId: "walgreens",
+          code: "CRISPCARD",
+          sourceType: "official-retailer-public-page",
+          rawSnippet: expect.stringContaining("CRISPCARD"),
+          rawSnippetHash: expect.stringMatching(/^fnv1a32:[0-9a-f]{8}$/),
+          matchedTerms: expect.arrayContaining(["CRISPCARD"])
+        })
+      ],
+      ignoredSignals: [],
       warnings: []
     });
-    expect(extractPrinterCouponOffers({ vendorId: "cvs", source: printerCouponSources.cvsPhotoCoupons, documentText: cvsPrintPage })).toMatchObject({
+    const cvsExtraction = extractPrinterCouponOffers({
+      vendorId: "cvs",
+      source: printerCouponSources.cvsPhotoCoupons,
+      documentText: cvsPrintPage
+    });
+    expect(cvsExtraction).toMatchObject({
       offers: [
         expect.objectContaining({
           id: "cvs-junesw-sitewide-photo-2026-06-20",
@@ -383,13 +405,71 @@ describe("printer pricing research", () => {
           evidenceStatus: "source-listed"
         })
       ],
+      sourceEvidence: [
+        expect.objectContaining({
+          vendorId: "cvs",
+          code: "JUNESW",
+          sourceType: "official-retailer-public-page",
+          rawSnippet: expect.stringContaining("JUNESW"),
+          rawSnippetHash: expect.stringMatching(/^fnv1a32:[0-9a-f]{8}$/),
+          matchedTerms: expect.arrayContaining(["JUNESW", "50% off Sitewide"])
+        })
+      ],
       warnings: []
     });
-    const cvsOffer = extractPrinterCouponOffers({ vendorId: "cvs", source: printerCouponSources.cvsPhotoCoupons, documentText: cvsPrintPage })
-      .offers[0];
+    const cvsOffer = cvsExtraction.offers[0];
     expect(cvsOffer?.code).toBe("JUNESW");
     expect(cvsOffer?.code).not.toBe("GRADUATION");
     expect(isPrinterCouponActive(cvsOffer!, reviewedAt)).toBe(true);
+  });
+
+  it("keeps expired or product-scoped CVS coupon signals out of active sitewide offers", () => {
+    const staleCvsPage = `
+      <h3>Premium Cards</h3>
+      <p>60% off Includes same day Promo code: GRADUATION</p>
+      <h2>Photo Offer Terms & Conditions:</h2>
+      <h2>60% off Premium Cards:</h2>
+      <p>Add any premium cards to your cart and enter promo code GRADUATION to receive
+      60% off each item. Offer valid online and in the CVS Health app. Offer starts
+      May 10, 2026, at 12:01 AM ET and ends June 6, 2026, at 11:59 PM ET. Only one
+      discount may be applied to each item. Promo code must be entered at time of
+      checkout to apply discount. Savings are not transferable. Offers do not apply
+      to nonpremium photo cards, shipping charges or tax.</p>
+      <h2>40% off Sitewide:</h2>
+      <p>Add any photo products to your cart and enter promo code MAY40 to receive
+      40% off your photo order. Offer valid online and in the CVS Health app.
+      Offer starts May 10, 2026, at 12:01 AM ET and ends May 23, 2026,
+      at 11:59 PM ET. Only one discount may be applied to each item.</p>
+    `;
+    const extraction = extractPrinterCouponOffers({
+      vendorId: "cvs",
+      source: printerCouponSources.cvsPhotoCoupons,
+      documentText: staleCvsPage,
+      observedAtIso: reviewedAt.toISOString()
+    });
+
+    expect(extraction.offers).toEqual([
+      expect.objectContaining({
+        code: "MAY40",
+        discountPercent: 40,
+        endsAtIso: "2026-05-23T23:59:00.000-04:00"
+      })
+    ]);
+    expect(isPrinterCouponActive(extraction.offers[0], reviewedAt)).toBe(false);
+    expect(extraction.ignoredSignals).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "GRADUATION",
+          label: "60% off Premium Cards",
+          activeAtCollection: false,
+          reason: "expired-before-collection",
+          rawSnippet: expect.stringContaining("GRADUATION"),
+          rawSnippetHash: expect.stringMatching(/^fnv1a32:[0-9a-f]{8}$/)
+        })
+      ])
+    );
+    expect(extraction.offers.map((offer) => offer.code)).not.toContain("GRADUATION");
+    expect(extraction.offers.map((offer) => offer.code)).not.toContain("JUNESW");
   });
 
   it("extracts expected coupon codes from exact Walgreens and CVS print links", () => {

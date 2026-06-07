@@ -275,11 +275,39 @@ export interface PrinterCouponExtractionInput {
   observedAtIso?: string;
 }
 
+export interface PrinterCouponSourceEvidence {
+  vendorId: VendorId;
+  code: string;
+  sourceLabel: string;
+  sourceUrl: string;
+  sourceMode: PrinterCouponCollectionMode;
+  sourceAuthority: PrinterCouponSourceAuthority;
+  sourceType: "official-retailer-public-page" | "credentialed-coupon-provider-feed";
+  observedAtIso: string;
+  rawSnippet: string;
+  rawSnippetHash: string;
+  matchedTerms: string[];
+}
+
+export interface PrinterCouponIgnoredSignal {
+  vendorId: VendorId;
+  code: string;
+  label: string;
+  sourceUrl: string;
+  observedAtIso: string;
+  rawSnippet: string;
+  rawSnippetHash: string;
+  activeAtCollection: boolean;
+  reason: "expired-before-collection" | "unsupported-product-scope" | "unpaired-promo-code-terms";
+}
+
 export interface PrinterCouponExtractionResult {
   vendorId: VendorId;
   source: PrinterCouponSource;
   extractedAtIso: string;
   offers: PrinterCouponOffer[];
+  sourceEvidence: PrinterCouponSourceEvidence[];
+  ignoredSignals: PrinterCouponIgnoredSignal[];
   warnings: string[];
 }
 
@@ -1312,12 +1340,15 @@ export function extractPrinterCouponOffers(input: PrinterCouponExtractionInput):
       : input.vendorId === "cvs"
         ? extractCvsCouponOffers(text, input.source, extractedAtIso)
         : [];
+  const ignoredSignals = input.vendorId === "cvs" ? extractIgnoredCvsCouponSignals(text, input.source, extractedAtIso, offers) : [];
 
   return {
     vendorId: input.vendorId,
     source: input.source,
     extractedAtIso,
     offers,
+    sourceEvidence: offers.map((offer) => buildPrinterCouponSourceEvidence(offer, text, extractedAtIso)),
+    ignoredSignals,
     warnings: offers.length === 0 ? [`No supported coupon offer found for ${input.vendorId}.`] : []
   };
 }
@@ -1811,40 +1842,120 @@ function extractWalgreensCouponOffers(
   ];
 }
 
-function extractCvsCouponOffers(text: string, source: PrinterCouponSource, extractedAtIso: string): PrinterCouponOffer[] {
-  const code =
-    firstCouponMatch(text, /50%\s+off\s+Sitewide\s*\|\s*Promo Code:\s*([A-Z0-9]+)/i) ??
-    firstCouponMatch(text, /enter promo code\s+([A-Z0-9]+)\s+to receive 50% off/i) ??
-    firstCouponMatch(text, /Promo code:\s*([A-Z0-9]+)/i);
-  const percent = firstPercent(text, /(\d+)%\s+off\s+Sitewide/i);
-  const startsOn = firstCouponMatch(text, /Offer starts ([A-Z][a-z]+ \d{1,2}, \d{4}), at 12:01 AM/i);
-  const endsOn = firstCouponMatch(text, /ends ([A-Z][a-z]+ \d{1,2}, \d{4}), at 11:59 PM ET/i);
-  if (!code || percent === undefined || !endsOn) return [];
+function extractCvsCouponOffers(text: string, source: PrinterCouponSource, _extractedAtIso: string): PrinterCouponOffer[] {
+  const sitewideTermsPattern =
+    /(\d+)%\s+off\s+Sitewide:\s+Add any photo products to your cart and enter promo code\s+([A-Z0-9]+)\s+to receive\s+\d+%\s+off your photo order\.\s+Offer valid online and in the CVS Health(?:registered|®)? app\.\s+Offer starts ([A-Z][a-z]+ \d{1,2}, \d{4}), at 12:01 AM(?: ET)? and ends ([A-Z][a-z]+ \d{1,2}, \d{4}), at 11:59 PM ET\./gi;
+  const offers = [...text.matchAll(sitewideTermsPattern)]
+    .map((match): PrinterCouponOffer | null => {
+      const percent = match[1] ? Number.parseInt(match[1], 10) : undefined;
+      const code = match[2]?.trim();
+      const startsOn = match[3];
+      const endsOn = match[4];
+      if (!code || percent === undefined || !startsOn || !endsOn) return null;
 
-  return [
-    {
-      id: `cvs-${code.toLowerCase()}-sitewide-photo-${isoDateSlug(endsOn)}`,
+      return {
+        id: `cvs-${code.toLowerCase()}-sitewide-photo-${isoDateSlug(endsOn)}`,
+        vendorId: "cvs",
+        label: `${percent}% off Sitewide Photo`,
+        code,
+        discountPercent: percent,
+        appliesToProductKinds: ["folded-card", "flat-card", "photo-card", "premium-card"],
+        startsAtIso: couponDateStartIso(startsOn, "-04:00", "00:01"),
+        endsAtIso: couponDateEndIso(endsOn, "-04:00"),
+        source,
+        sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
+        evidenceStatus: "source-listed",
+        requiresLoggedInAccount: false,
+        excludes: [
+          "additional photo book pages",
+          "eight-gigabyte photo USB drives",
+          "Erin Condren licensed planners",
+          "NFL licensed products",
+          "shipping charges",
+          "tax"
+        ]
+      };
+    })
+    .filter((offer): offer is PrinterCouponOffer => Boolean(offer));
+
+  return offers.filter((offer, index) => offers.findIndex((candidate) => candidate.code === offer.code) === index);
+}
+
+function extractIgnoredCvsCouponSignals(
+  text: string,
+  source: PrinterCouponSource,
+  extractedAtIso: string,
+  acceptedOffers: PrinterCouponOffer[]
+): PrinterCouponIgnoredSignal[] {
+  const acceptedCodes = new Set(acceptedOffers.map((offer) => offer.code));
+  const signals: PrinterCouponIgnoredSignal[] = [];
+  const now = new Date(extractedAtIso);
+  const premiumCards = text.match(
+    /(\d+)%\s+off\s+Premium Cards:\s+Add any premium cards to your cart and enter promo code\s+([A-Z0-9]+)\s+to receive\s+\d+%\s+off each item\.\s+Offer valid online and in the CVS Health(?:registered|®)? app\.\s+Offer starts ([A-Z][a-z]+ \d{1,2}, \d{4}), at 12:01 AM(?: ET)? and ends ([A-Z][a-z]+ \d{1,2}, \d{4}), at 11:59 PM ET\.[\s\S]*?Offers do not apply to nonpremium photo cards, shipping charges or tax\./i
+  );
+
+  if (premiumCards?.[2] && !acceptedCodes.has(premiumCards[2])) {
+    const code = premiumCards[2].trim();
+    const endsAtIso = couponDateEndIso(premiumCards[4], "-04:00");
+    const activeAtCollection = new Date(endsAtIso).getTime() >= now.getTime();
+    const snippet = couponEvidenceSnippet(text, code);
+    signals.push({
       vendorId: "cvs",
-      label: `${percent}% off Sitewide Photo`,
       code,
-      discountPercent: percent,
-      appliesToProductKinds: ["folded-card", "flat-card", "photo-card", "premium-card"],
-      startsAtIso: startsOn ? couponDateStartIso(startsOn, "-04:00", "00:01") : startOfObservedDayIso(extractedAtIso, "-04:00"),
-      endsAtIso: couponDateEndIso(endsOn, "-04:00"),
-      source,
-      sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
-      evidenceStatus: "source-listed",
-      requiresLoggedInAccount: false,
-      excludes: [
-        "additional photo book pages",
-        "eight-gigabyte photo USB drives",
-        "Erin Condren licensed planners",
-        "NFL licensed products",
-        "shipping charges",
-        "tax"
-      ]
-    }
-  ];
+      label: `${premiumCards[1]}% off Premium Cards`,
+      sourceUrl: source.url,
+      observedAtIso: extractedAtIso,
+      rawSnippet: snippet,
+      rawSnippetHash: stableSnippetHash(snippet),
+      activeAtCollection,
+      reason: activeAtCollection ? "unsupported-product-scope" : "expired-before-collection"
+    });
+  }
+
+  const allCodes = extractPrinterCouponCodes(text).filter((code) => !acceptedCodes.has(code) && !signals.some((signal) => signal.code === code));
+  for (const code of allCodes) {
+    const snippet = couponEvidenceSnippet(text, code);
+    signals.push({
+      vendorId: "cvs",
+      code,
+      label: "Unpaired CVS promo-code signal",
+      sourceUrl: source.url,
+      observedAtIso: extractedAtIso,
+      rawSnippet: snippet,
+      rawSnippetHash: stableSnippetHash(snippet),
+      activeAtCollection: false,
+      reason: "unpaired-promo-code-terms"
+    });
+  }
+
+  return signals;
+}
+
+function buildPrinterCouponSourceEvidence(
+  offer: PrinterCouponOffer,
+  documentText: string,
+  observedAtIso: string
+): PrinterCouponSourceEvidence {
+  const rawSnippet = couponEvidenceSnippet(documentText, offer.code);
+  const sourceType =
+    offer.source.authority === "credentialed-coupon-provider" ? "credentialed-coupon-provider-feed" : "official-retailer-public-page";
+  const matchedTerms = offer.sourceTargetIds
+    .flatMap((targetId) => printerCouponCollectionTargets.find((target) => target.id === targetId)?.verificationSignals ?? [])
+    .filter((signal, index, signals) => signals.indexOf(signal) === index && rawSnippet.toLowerCase().includes(signal.toLowerCase()));
+
+  return {
+    vendorId: offer.vendorId,
+    code: offer.code,
+    sourceLabel: offer.source.label,
+    sourceUrl: offer.source.url,
+    sourceMode: offer.source.mode,
+    sourceAuthority: offer.source.authority,
+    sourceType,
+    observedAtIso,
+    rawSnippet,
+    rawSnippetHash: stableSnippetHash(rawSnippet),
+    matchedTerms
+  };
 }
 
 function normalizeCouponDocumentText(documentText: string): string {
@@ -1872,6 +1983,41 @@ function normalizeCouponCodeSearchText(documentText: string): string {
     .replace(/&#174;/gi, "registered")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function couponEvidenceSnippet(text: string, code: string): string {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  const normalizedLower = normalized.toLowerCase();
+  const codeLower = code.toLowerCase();
+  const codeIndexes: number[] = [];
+  let searchFrom = 0;
+  while (searchFrom < normalized.length) {
+    const nextIndex = normalizedLower.indexOf(codeLower, searchFrom);
+    if (nextIndex === -1) break;
+    codeIndexes.push(nextIndex);
+    searchFrom = nextIndex + code.length;
+  }
+  const codeIndex =
+    codeIndexes.find((index) => /offer starts|offer expires|must use code|to receive|ends/i.test(snippetWindow(normalized, index))) ??
+    codeIndexes[0] ??
+    -1;
+  if (codeIndex === -1) return normalized.slice(0, 420);
+  return snippetWindow(normalized, codeIndex).trim();
+}
+
+function snippetWindow(text: string, index: number): string {
+  const start = Math.max(index - 180, 0);
+  const end = Math.min(index + 420, text.length);
+  return text.slice(start, end);
+}
+
+function stableSnippetHash(snippet: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < snippet.length; index += 1) {
+    hash ^= snippet.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `fnv1a32:${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }
 
 function firstCouponMatch(text: string, pattern: RegExp): string | undefined {
