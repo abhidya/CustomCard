@@ -175,6 +175,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   ),
   routePersistence("import-preview", "mutation", "customer", ["auth_sessions", "idempotency_keys", "provider_connections", "imported_events", "card_opportunities", "audit_log"], true, true, false),
   routePersistence("calendar-connection-start", "mutation", "customer", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
+  routePersistence("retail-printer-operation-start", "mutation", "customer", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
   routePersistence("card-projects", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_opportunities", "relationship_memories", "card_projects", "audit_log"], true, true, false),
   routePersistence("relationship-memories", "mutation", "customer", ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"], true, true, false),
   routePersistence("render-packets", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "api_jobs", "audit_log"], true, true, true),

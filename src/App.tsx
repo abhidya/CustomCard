@@ -177,6 +177,7 @@ import {
   type PrinterPricingComparison
 } from "./printerPricing";
 import { getRetailPrinterProductLink, type RetailPrinterVendorId } from "./retailPrinterAdapters";
+import { buildRetailPrinterOperationStartPackets } from "./retailPrinterOperationStart";
 import {
   buildFulfillmentRecommendations,
   type FulfillmentRecommendation,
@@ -188,6 +189,22 @@ type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "h
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
+
+const retailOperationStartPackets = buildRetailPrinterOperationStartPackets();
+const retailOperationCopy = {
+  "fetch-price": {
+    label: "Check price",
+    detail: "Confirm final price, pickup, tax, and discount code in the print shop cart."
+  },
+  "upload-image": {
+    label: "Upload art",
+    detail: "Use the downloaded print package and review crop, fold, and preview before checkout."
+  },
+  "place-order": {
+    label: "Review order",
+    detail: "Stop before payment unless final customer approval and recovery checks are complete."
+  }
+} as const;
 
 interface NavItem {
   id: ViewId;
@@ -1635,6 +1652,9 @@ function HandoffView({
   const manifestFile = printPackage.files.find((file) => file.kind === "manifest-json");
   const retailVendorId = toRetailPrinterVendorId(vendorId);
   const selectedPrintShopUrl = retailVendorId ? getRetailPrinterProductLink(retailVendorId).productUrl : undefined;
+  const selectedOperationStarts = retailVendorId
+    ? retailOperationStartPackets.filter((packet) => packet.vendorId === retailVendorId)
+    : [];
 
   return (
     <section className="handoffLayout">
@@ -1729,6 +1749,40 @@ function HandoffView({
             ))}
           </div>
         </div>
+
+        {selectedOperationStarts.length > 0 && (
+          <div className="operationStartBox">
+            <div className="handoffTitle compact">
+              <ExternalLink size={19} />
+              <div>
+                <span>Print shop steps</span>
+                <h3>Open the right page for each step</h3>
+              </div>
+            </div>
+            <div className="operationStartGrid">
+              {selectedOperationStarts.map((packet) => {
+                const copy = retailOperationCopy[packet.operation];
+                return (
+                  <a
+                    className="operationStartTile"
+                    href={packet.providerPortalUrl}
+                    key={packet.id}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <span>{copy.label}</span>
+                    <strong>{packet.vendorName}</strong>
+                    <small>{copy.detail}</small>
+                  </a>
+                );
+              })}
+            </div>
+            <small>
+              These links do not upload files, collect payment, or place orders from CustomCard. Discounts change the
+              estimate only after the print shop accepts the code in the same cart.
+            </small>
+          </div>
+        )}
 
         <div className="pricingResearchBox">
           <div className="handoffTitle compact">

@@ -474,7 +474,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(16);
+    expect(report.readiness.routes.total).toBe(17);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -486,6 +486,7 @@ describe("api server wrapper", () => {
     });
     expect(report.readiness.persistence).toMatchObject({
       tables: 18,
+      schemaBackedRoutes: 15,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
@@ -565,7 +566,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 16, admin: 5, idempotentMutations: 8 });
+      expect(readiness.routes).toMatchObject({ total: 17, admin: 5, idempotentMutations: 9 });
       expect(readiness.providers).toMatchObject({ total: 121, readyLocal: 18, credentialGated: 88, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 121,
@@ -755,7 +756,7 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 18,
-        schemaBackedRoutes: 14,
+        schemaBackedRoutes: 15,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -878,6 +879,36 @@ describe("api server wrapper", () => {
           })
         ])
       );
+      expect(customer.retailOperations).toMatchObject({
+        startRoute: "/api/retail-printers/operations/start",
+        blockers: []
+      });
+      expect(customer.retailOperations.startPackets).toHaveLength(12);
+      expect(customer.retailOperations.startPackets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "walgreens-fetch-price-operation-start",
+            vendorId: "walgreens",
+            operation: "fetch-price",
+            providerAdapterId: "walgreens-live-order",
+            providerPortalUrl: expect.stringContaining("photo.walgreens.com"),
+            providerRequestUrl: null,
+            providerRequestPrepared: false,
+            clientMayPrepareProviderRequest: false,
+            networkRequestPrepared: false,
+            liveQuoteEnabled: false,
+            couponPortalApplicationRequired: true
+          }),
+          expect.objectContaining({
+            id: "cvs-place-order-operation-start",
+            vendorId: "cvs",
+            operation: "place-order",
+            providerRequestUrl: null,
+            realOrdersEnabled: false,
+            orderPlacementEnabled: false
+          })
+        ])
+      );
 
       const missingCalendarChoice = await postJson(
         port,
@@ -929,6 +960,59 @@ describe("api server wrapper", () => {
           persisted: false,
           rawContentStored: false,
           providerCredentialsStored: false
+        }
+      });
+
+      const missingRetailOperation = await postJson(port, "/api/retail-printers/operations/start", {});
+      expect(missingRetailOperation.status).toBe(400);
+      expect(await missingRetailOperation.json()).toMatchObject({
+        status: "invalid-retail-printer-operation-start-payload",
+        route: "retail-printer-operation-start",
+        requiredFields: expect.arrayContaining(["vendorId", "operation"]),
+        missingFields: expect.arrayContaining(["vendorId", "operation"]),
+        rawContentStored: false
+      });
+
+      const walgreensPriceStart = await postJson(port, "/api/retail-printers/operations/start", {
+        vendorId: "walgreens",
+        operation: "fetch-price"
+      });
+      expect(walgreensPriceStart.status).toBe(202);
+      expect(await walgreensPriceStart.json()).toMatchObject({
+        status: "blocked",
+        route: "retail-printer-operation-start",
+        requestedVendorId: "walgreens",
+        requestedOperation: "fetch-price",
+        serverOwned: true,
+        clientMayPrepareProviderRequest: false,
+        providerPortalUrl: expect.stringContaining("photo.walgreens.com"),
+        providerRequestUrl: null,
+        providerRequestPrepared: false,
+        networkRequestPrepared: false,
+        requestPrepared: false,
+        networkAttempted: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false,
+        liveQuoteEnabled: false,
+        imageUploadEnabled: false,
+        orderPlacementEnabled: false,
+        blockers: expect.arrayContaining(["provider-coupon-portal-proof", "retail-price-freshness-proof"]),
+        startPacket: expect.objectContaining({
+          id: "walgreens-fetch-price-operation-start",
+          providerAdapterId: "walgreens-live-order",
+          serverOwned: true,
+          couponPortalApplicationRequired: true,
+          bestPriceRequiresProviderPortalEvidence: true,
+          canAffectBestPriceBeforePortalEvidence: false,
+          providerRequestUrl: null,
+          requestPrepared: false
+        }),
+        repository: {
+          tables: ["auth_sessions", "idempotency_keys", "audit_log"],
+          runtimeMode: "contract",
+          persisted: false,
+          providerPayloadPrepared: false,
+          realOrdersEnabled: false
         }
       });
 

@@ -24,6 +24,7 @@ describe("api contracts", () => {
         "admin-demo-reset",
         "import-preview",
         "calendar-connection-start",
+        "retail-printer-operation-start",
         "card-projects",
         "relationship-memories",
         "render-packets",
@@ -42,6 +43,7 @@ describe("api contracts", () => {
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
     const importPreview = apiRouteContracts.find((route) => route.id === "import-preview");
     const calendarConnectionStart = apiRouteContracts.find((route) => route.id === "calendar-connection-start");
+    const retailPrinterOperationStart = apiRouteContracts.find((route) => route.id === "retail-printer-operation-start");
     const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
@@ -87,6 +89,36 @@ describe("api contracts", () => {
     );
     expect(calendarConnectionStart?.backedBy).toEqual(
       expect.arrayContaining(["buildCalendarConnectionStartPackets", "validateCalendarConnectionStartPackets"])
+    );
+    expect(retailPrinterOperationStart).toMatchObject({
+      method: "POST",
+      path: "/api/retail-printers/operations/start",
+      audience: "customer",
+      auth: "customer-session",
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(retailPrinterOperationStart?.requestSchema).toEqual(
+      expect.arrayContaining(["X-Idempotency-Key", "vendorId", "operation"])
+    );
+    expect(retailPrinterOperationStart?.responseSchema).toEqual(
+      expect.arrayContaining([
+        "startPacket",
+        "serverOwned",
+        "clientMayPrepareProviderRequest",
+        "providerPortalUrl",
+        "providerRequestUrl",
+        "providerRequestPrepared",
+        "networkRequestPrepared",
+        "requestPrepared",
+        "networkAttempted",
+        "liveQuoteEnabled",
+        "imageUploadEnabled",
+        "orderPlacementEnabled"
+      ])
+    );
+    expect(retailPrinterOperationStart?.backedBy).toEqual(
+      expect.arrayContaining(["buildRetailPrinterOperationStartPackets", "validateRetailPrinterOperationStartPackets"])
     );
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
@@ -344,6 +376,34 @@ describe("api contracts", () => {
           id: "icloud-ics-fallback",
           startMode: "manual-export-guide",
           nextApiRoute: "/api/import-preview"
+        })
+      ])
+    );
+    expect(payload.retailOperations).toMatchObject({
+      startRoute: "/api/retail-printers/operations/start",
+      blockers: []
+    });
+    expect(payload.retailOperations.startPackets).toHaveLength(12);
+    expect(payload.retailOperations.startPackets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "walgreens-fetch-price-operation-start",
+          vendorId: "walgreens",
+          operation: "fetch-price",
+          providerAdapterId: "walgreens-live-order",
+          providerRequestUrl: null,
+          providerRequestPrepared: false,
+          clientMayPrepareProviderRequest: false,
+          networkRequestPrepared: false,
+          liveQuoteEnabled: false,
+          couponPortalApplicationRequired: true
+        }),
+        expect.objectContaining({
+          id: "cvs-place-order-operation-start",
+          vendorId: "cvs",
+          operation: "place-order",
+          orderPlacementEnabled: false,
+          canAffectBestPriceBeforePortalEvidence: false
         })
       ])
     );
@@ -666,6 +726,18 @@ describe("api contracts", () => {
         ]),
         blockers: []
       },
+      retailOperations: {
+        startRoute: "/api/retail-printers/operations/start",
+        startPackets: expect.arrayContaining([
+          expect.objectContaining({
+            id: "walgreens-fetch-price-operation-start",
+            serverOwned: true,
+            clientMayPrepareProviderRequest: false,
+            couponPortalApplicationRequired: true
+          })
+        ]),
+        blockers: []
+      },
       customerChat: {
         mode: "local-deterministic",
         liveModelCallsEnabled: false,
@@ -688,6 +760,24 @@ describe("api contracts", () => {
         id: "manual-invite-or-ics",
         serverOwned: true,
         nextApiRoute: "/api/import-preview"
+      })
+    });
+    expect(resolveApiContractResponse("/api/retail-printers/operations/start")).toMatchObject({
+      status: "blocked",
+      requestedVendorId: "walgreens",
+      requestedOperation: "fetch-price",
+      providerPortalUrl: expect.stringContaining("photo.walgreens.com"),
+      providerRequestUrl: null,
+      providerRequestPrepared: false,
+      networkRequestPrepared: false,
+      requestPrepared: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false,
+      liveQuoteEnabled: false,
+      startPacket: expect.objectContaining({
+        id: "walgreens-fetch-price-operation-start",
+        serverOwned: true,
+        couponPortalApplicationRequired: true
       })
     });
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();

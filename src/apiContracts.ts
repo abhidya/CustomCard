@@ -95,6 +95,13 @@ import {
   type CalendarConnectionStartPacket
 } from "./onboardingCalendar";
 import {
+  buildRetailPrinterOperationStartPackets,
+  buildRetailPrinterOperationStartResponse,
+  retailPrinterOperationStartRoute,
+  validateRetailPrinterOperationStartPackets,
+  type RetailPrinterOperationStartPacket
+} from "./retailPrinterOperationStart";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -240,6 +247,11 @@ export interface ApiBootstrapPayload {
     startPackets: CalendarConnectionStartPacket[];
     blockers: string[];
   };
+  retailOperations: {
+    startRoute: typeof retailPrinterOperationStartRoute;
+    startPackets: RetailPrinterOperationStartPacket[];
+    blockers: string[];
+  };
 }
 
 export const apiRouteContracts: ApiRouteContract[] = [
@@ -288,6 +300,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "customerChat",
       "printerPricing",
       "fulfillmentRecommendations",
+      "retailOperations",
       "localization"
     ],
     idempotencyKeyRequired: false,
@@ -473,6 +486,38 @@ export const apiRouteContracts: ApiRouteContract[] = [
     backedBy: ["buildCalendarConnectionStartPackets", "validateCalendarConnectionStartPackets"]
   },
   {
+    id: "retail-printer-operation-start",
+    method: "POST",
+    path: retailPrinterOperationStartRoute,
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "vendorId", "operation", "quantity", "fulfillmentMode", "renderPacketId"],
+    responseSchema: [
+      "startPacket",
+      "serverOwned",
+      "clientMayPrepareProviderRequest",
+      "providerPortalUrl",
+      "providerRequestUrl",
+      "providerRequestPrepared",
+      "networkRequestPrepared",
+      "requestPrepared",
+      "networkAttempted",
+      "externalNetworkCalls",
+      "realOrdersEnabled",
+      "liveQuoteEnabled",
+      "imageUploadEnabled",
+      "orderPlacementEnabled",
+      "blockers"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Server-owned retail printer operation start packet only; no provider payload, upload, payment, or live order request is returned.",
+    backedBy: ["buildRetailPrinterOperationStartPackets", "validateRetailPrinterOperationStartPackets"]
+  },
+  {
     id: "card-projects",
     method: "POST",
     path: "/api/card-projects",
@@ -588,7 +633,8 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
 
 export function buildApiBootstrapPayload(): ApiBootstrapPayload {
   const printerPricing = buildPrinterPricingComparison("walgreens");
-  const startPackets = buildCalendarConnectionStartPackets();
+  const calendarStartPackets = buildCalendarConnectionStartPackets();
+  const retailOperationStartPackets = buildRetailPrinterOperationStartPackets();
 
   return {
     customer: buildCustomerPanelModel(),
@@ -662,8 +708,13 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     fulfillmentRecommendations: buildFulfillmentRecommendations(printerPricing),
     calendarConnections: {
       startRoute: "/api/calendar/connections/start",
-      startPackets,
-      blockers: validateCalendarConnectionStartPackets(startPackets)
+      startPackets: calendarStartPackets,
+      blockers: validateCalendarConnectionStartPackets(calendarStartPackets)
+    },
+    retailOperations: {
+      startRoute: retailPrinterOperationStartRoute,
+      startPackets: retailOperationStartPackets,
+      blockers: validateRetailPrinterOperationStartPackets(retailOperationStartPackets)
     }
   };
 }
@@ -699,6 +750,9 @@ export function resolveApiContractResponse(path: string) {
   }
   if (path === "/api/calendar/connections/start") {
     return buildCalendarConnectionStartResponse();
+  }
+  if (path === retailPrinterOperationStartRoute) {
+    return buildRetailPrinterOperationStartResponse({ vendorId: "walgreens", operation: "fetch-price" });
   }
 
   return undefined;
@@ -748,6 +802,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     "admin-demo-reset",
     "import-preview",
     "calendar-connection-start",
+    "retail-printer-operation-start",
     "card-projects",
     "relationship-memories",
     "render-packets",
@@ -762,6 +817,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   }
   for (const calendarConnectionIssue of validateCalendarConnectionStartPackets()) {
     issues.push(calendarConnectionIssue);
+  }
+  for (const retailOperationIssue of validateRetailPrinterOperationStartPackets()) {
+    issues.push(retailOperationIssue);
   }
   for (const capacityIssue of validateCapacityProfiles()) {
     issues.push(capacityIssue);

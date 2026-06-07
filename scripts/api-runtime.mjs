@@ -473,6 +473,19 @@ const mutationBodyContracts = {
         : ["calendarChoiceId"];
     }
   },
+  "retail-printer-operation-start": {
+    requiredFields: ["vendorId", "operation"],
+    detail:
+      "Retail printer operation start requires an explicit vendor and operation so the server can return the safe packet without client-owned provider logic.",
+    missingFields(body) {
+      const missingFields = [];
+      const vendorId = String(body.vendorId ?? body.providerId ?? body.selectedVendorId ?? "").trim();
+      const operation = String(body.operation ?? body.operationKind ?? "").trim();
+      if (!["walmart", "fedex", "cvs", "walgreens"].includes(vendorId)) missingFields.push("vendorId");
+      if (!["fetch-price", "upload-image", "place-order"].includes(operation)) missingFields.push("operation");
+      return missingFields;
+    }
+  },
   "render-packets": {
     requiredFields: ["projectId"],
     detail: "Render packet creation requires an explicit card project before artifact records can be prepared.",
@@ -1329,6 +1342,7 @@ function persistedTablesForRoute(route) {
   }
   if (route.id === "card-projects") return ["auth_sessions", "idempotency_keys", "card_opportunities", "relationship_memories", "card_projects", "audit_log"];
   if (route.id === "import-preview") return ["auth_sessions", "idempotency_keys", "provider_connections", "imported_events", "card_opportunities", "audit_log"];
+  if (route.id === "retail-printer-operation-start") return ["auth_sessions", "idempotency_keys", "audit_log"];
   if (route.id === "admin-demo-reset") {
     return [
       "auth_sessions",

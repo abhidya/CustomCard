@@ -173,6 +173,10 @@ describeWithChrome("CustomCard UI smoke", () => {
             text: node.textContent,
             href: node.getAttribute("href")
           })),
+          operationStartTiles: [...document.querySelectorAll(".operationStartTile")].map((node) => ({
+            text: node.textContent,
+            href: node.getAttribute("href")
+          })),
           primaryButtons: [...document.querySelectorAll(".primaryButton")].map((node) => node.textContent),
           downloadTiles: document.querySelectorAll(".downloadTile").length,
           scrollWidth: document.documentElement.scrollWidth,
@@ -203,7 +207,27 @@ describeWithChrome("CustomCard UI smoke", () => {
         href: expect.stringContaining("CommerceProduct_33272")
       })
     ]);
+    expect(result.operationStartTiles).toHaveLength(3);
+    expect(result.operationStartTiles).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          text: expect.stringContaining("Check price"),
+          href: expect.stringContaining("CommerceProduct_33272")
+        }),
+        expect.objectContaining({
+          text: expect.stringContaining("Upload art"),
+          href: expect.stringContaining("CommerceProduct_33272")
+        }),
+        expect.objectContaining({
+          text: expect.stringContaining("Review order"),
+          href: expect.stringContaining("CommerceProduct_33272")
+        })
+      ])
+    );
     expect(result.primaryButtons.join(" ")).toContain("Download print package");
+    expect(result.handoffText).toContain("Print shop steps");
+    expect(result.handoffText).toContain("Open the right page for each step");
+    expect(result.handoffText).toContain("Discounts change the estimate only after the print shop accepts the code in the same cart.");
     expect(result.handoffText).toContain("Checked");
     expect(result.handoffText).toContain("Freshness");
     expect(result.handoffText).toContain("Discounts");

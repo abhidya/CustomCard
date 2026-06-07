@@ -505,8 +505,8 @@ live translation provider, no real orders, and no blockers.
 npm run api:doctor
 ```
 
-Result: passed. API doctor reported 16 routes, 8 idempotent mutation contracts,
-121 providers, provider governance for all 121 adapters, 14 schema-backed routes,
+Result: passed. API doctor reported 17 routes, 9 idempotent mutation contracts,
+121 providers, provider governance for all 121 adapters, 15 schema-backed routes,
 relationship-memory repository readiness, render-packet artifact manifests,
 signed artifact URL contracts, contract runtime mode, no live external calls,
 no real vendor orders, no raw content storage, 13 production launch gates with
@@ -517,7 +517,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 16 routes, 8 idempotent mutation contracts, 87
+enforced, 2 configured sessions, 17 routes, 9 idempotent mutation contracts, 87
 providers, 18 persistence tables, relationship-memory repository readiness,
 render-packet artifact manifests, signed artifact URL contracts, no live external
 calls, no real vendor orders, and no blockers.
@@ -620,12 +620,13 @@ Result: passed. Persistence doctor reported 18 required tables, auth-session
 persistence, account identity and recovery challenge persistence, idempotency
 replay, relationship-memory repository readiness, render-packet repository
 readiness, import-preview repository readiness, card-project repository
-readiness, manual vendor handoff order/consent/event readiness, data-request
-privacy/consent readiness, queue jobs, render-packet artifact manifest signals,
+readiness, retail operation start audit/idempotency readiness, manual vendor
+handoff order/consent/event readiness, data-request privacy/consent readiness,
+queue jobs, render-packet artifact manifest signals,
 artifact-store write/read doctor signals, live S3-compatible artifact doctor
 signals, Postgres runtime SQL/doctor/integration signals, Postgres API HTTP
 doctor signals, account-auth contract/doctor signals, append-only audit
-coverage, 14 schema-backed API routes, and no blockers.
+coverage, 15 schema-backed API routes, and no blockers.
 
 ```text
 npm run demo:doctor

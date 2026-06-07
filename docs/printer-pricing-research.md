@@ -97,6 +97,14 @@ certification-blocked.
   discount can affect best available price before same-cart portal evidence is
   attached. Customer and admin clients consume the packet; they do not choose
   coupon sources or compute portal proof themselves.
+- `buildRetailPrinterOperationStartPackets` exposes the same adapter/coupon
+  contract through the server-owned
+  `/api/retail-printers/operations/start` route and customer bootstrap. The
+  12 packets cover Walmart/FedEx/CVS/Walgreens price, upload, and order starts,
+  return the exact provider portal URL for manual review, and keep
+  `providerRequestUrl`, request preparation, upload, payment, and live order
+  execution disabled. Clients consume the packet; they do not construct
+  provider portal requests or rank coupon discounts.
 - `npm run printer:pricing:doctor` verifies the observed official-source
   catalog, no-network collection rules, manual-confirmation posture, UI/API
   exposure, and CI wiring.

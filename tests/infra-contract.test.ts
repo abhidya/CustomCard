@@ -1537,7 +1537,7 @@ describe("production infrastructure contract", () => {
       idempotencyReplay: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 14, idempotentMutations: 8 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 15, idempotentMutations: 9 });
     expect(report.readiness.safety).toMatchObject({
       rawContentStored: false,
       liveExternalCalls: false,

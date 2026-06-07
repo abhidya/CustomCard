@@ -31,6 +31,7 @@ export {
   getRetailPrinterProductLinkByProvider,
   getRetailPrinterOperationPolicy,
   getRetailPrinterVendorOperationPolicy,
+  retailPrinterOperationKinds,
   retailPrinterProductLinks,
   retailPrinterVendorOperationPolicies,
   type RetailPrinterAdapterContract,

@@ -32,6 +32,7 @@ const repositoryBackedCustomerRouteIds = [
 const routePaths = {
   "import-preview": "/api/import-preview",
   "calendar-connection-start": "/api/calendar/connections/start",
+  "retail-printer-operation-start": "/api/retail-printers/operations/start",
   "relationship-memories": "/api/memories/review",
   "card-projects": "/api/card-projects",
   "render-packets": "/api/render-packets",
@@ -317,7 +318,7 @@ try {
 
     const catalog = await fetchJson("/api/routes");
     expect(Array.isArray(catalog.payload), "Route catalog should be an array.");
-    expect(catalog.payload.length === 16, "Route catalog should expose 16 routes.");
+    expect(catalog.payload.length === 17, "Route catalog should expose 17 routes.");
     finalServer = {
       ...finalServer,
       routeCount: catalog.payload.length,

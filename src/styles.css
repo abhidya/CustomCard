@@ -1780,6 +1780,49 @@ h3 {
   color: #7d3a30;
 }
 
+.operationStartBox {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #dbe4e6;
+}
+
+.operationStartGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.operationStartTile {
+  display: grid;
+  min-height: 118px;
+  align-content: start;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #d3dddf;
+  border-radius: 8px;
+  color: #21373d;
+  background: #fbfdfc;
+  text-decoration: none;
+}
+
+.operationStartTile span {
+  color: #1b5f56;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.operationStartTile strong {
+  font-size: 0.96rem;
+}
+
+.operationStartTile small,
+.operationStartBox > small {
+  color: #51666d;
+}
+
 .printPackageBox {
   display: grid;
   gap: 10px;
@@ -2563,6 +2606,7 @@ h3 {
   .quickActionGrid,
   .journeyActionGrid,
   .workspaceSummary,
+  .operationStartGrid,
   .chatComposer,
   .downloadGrid,
   .adapterToolbar,

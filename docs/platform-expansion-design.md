@@ -504,7 +504,7 @@ The runtime remains fail-closed:
   import-preview repository signals, card-project repository signals, manual
   vendor handoff order/consent/event repository signals, data-request
   privacy/consent repository signals, queue jobs, append-only audit coverage, and
-  14 schema-backed API route mappings.
+  15 schema-backed API route mappings.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, live observability provider verification, and managed secrets remain
@@ -631,10 +631,11 @@ Implemented checks:
   default policy.
 - API contract and server tests validate customer/admin/mobile API bootstrap,
   provider readiness, idempotent mutation contracts, `/api/health`,
-  repository-backed relationship-memory, render-packet, import-preview,
-  card-project, manual-vendor-handoff, and data-request mutations, and
+  server-owned calendar and retail operation starts, repository-backed
+  relationship-memory, render-packet, import-preview, card-project,
+  manual-vendor-handoff, and data-request mutations, and
   memory-runtime auth/idempotency behavior.
-- Persistence contract tests validate 18 table contracts, 14 schema-backed API
+- Persistence contract tests validate 18 table contracts, 15 schema-backed API
   routes, account identity/recovery storage, idempotency replay, queue-backed
   routes, and migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
