@@ -77,9 +77,10 @@ environment configuration instead of static placeholders.
   observations across 8 persisted source links, freshness checks, and checkout
   confirmation still required. Coupons are collected from provider feeds or
   retailer coupon pages, exact Walgreens/CVS print links are rendered as
-  browser-read proof targets, and discounts apply to best-price ranking only
-  after provider portal checkout evidence proves the code worked for the same
-  cart context.
+  browser-read proof targets, rendered proof requires visible coupon text plus
+  matching product/price/SKU signals, and discounts apply to best-price ranking
+  only after provider portal checkout evidence proves the code worked for the
+  same cart context.
 - Localization readiness for English (US), Spanish (US), Urdu, and Arabic
   across customer, admin, API, and mobile surfaces, with RTL layout review and
   human copy-review gates before non-English or RTL copy can be marked ready.

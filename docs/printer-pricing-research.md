@@ -129,6 +129,13 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
+- The June 7, 2026 operator render opened the exact Walgreens and CVS 5x7 print
+  entrypoints without login, upload, cart, payment, or order action. CVS exposed
+  `JUNESW` in visible rendered text alongside the 5x7 folded-card product
+  signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
+  `CommerceProduct_33272` and `$3.49`, but not as visible text; that remains
+  `operator-browser-html-signal-attached-visible-proof-still-required`, not full
+  rendered proof.
 - Scraped source offers now include `sourceEvidence` with source label, source
   URL, source authority, source type, observed timestamp, raw evidence snippet,
   deterministic `rawSnippetHash`, and matched source terms. The collector also
@@ -139,7 +146,10 @@ certification-blocked.
   `src/printerCouponBrowserEvidence.ts`. The collector imports that Module so
   exact print-link proof, HTML-only coupon signals, invalid no-upload/no-order
   evidence, and provider-portal discount proof stay separated at one tested
-  Adapter seam.
+  Adapter seam. Rendered print-link proof is valid only when the expected coupon
+  code is visible, every registered product/price/SKU verification signal is
+  matched, and the artifact proves no checkout, upload, payment, or order
+  action.
 - The customer bootstrap exposes only a safe pricing preview: selected vendor,
   known public price count, source count, maximum source age policy, and
   `liveQuote: false`.
@@ -168,6 +178,18 @@ server-side future validation provider. It requires `apiKey`, `affId`,
 `orderTotalPrice`/`orderDiscountPrice` evidence. That is stronger than scraping
 for Walgreens once partner credentials and certification exist, but it is still
 blocked from runtime and cannot submit uploads, payment, or orders.
+
+The Coupon Bureau Universal Coupons network is a proper coupon-provider
+infrastructure lane for manufacturer Universal Coupons, but it is separate from
+Walgreens/CVS photo promo codes. Model it as a future generic coupon provider
+only when the product being priced is actually eligible for Universal Coupons;
+do not use it to infer retailer photo-card promo discounts.
+
+Authenticated coupon centers and loyalty clip-to-card flows stay out of the
+collector. Public photo promo pages may be read as ephemeral metadata, but
+account-gated CVS ExtraCare or Walgreens loyalty coupons, printable barcode
+summaries, and automated clipping require a documented retailer API, explicit
+user action, and legal review before entering the pricing Module.
 
 Coupon collection targets distinguish static coupon sources, print entrypoints,
 and provider feeds. Official deal/coupon pages use `server-fetch-html`. The

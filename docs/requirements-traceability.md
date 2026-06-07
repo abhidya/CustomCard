@@ -147,8 +147,9 @@ Requirement types:
   links, reports source freshness, keeps `liveQuote: false`, requires checkout
   confirmation, collects credentialed FMTC/Rakuten provider-feed and official
   retailer page coupon candidates, keeps exact rendered Walgreens/CVS print-link
-  coupon proof targets, and applies coupons to best-price ranking only when
-  structured provider-portal evidence proves the same cart terms.
+  coupon proof targets with visible-code and product/price/SKU signal gates, and
+  applies coupons to best-price ranking only when structured provider-portal
+  evidence proves the same cart terms.
 - Customer/admin panels expose the local customer path and provider operations state; the customer path is backed by a tested view-model that permits exactly one primary action per state and routes event review before card drafting.
 - Customer/admin panels expose localization readiness, including RTL and human
   copy-review counts.
@@ -198,12 +199,12 @@ Requirement types:
 - Public printer prices are review-only observations with a 30-day source
   freshness contract and coupon-source collection. Coupon collection includes
   official Walgreens/CVS pages, exact rendered Walgreens/CVS print entrypoint
-  evidence, and credential-gated FMTC/Rakuten provider-feed targets. They are not
-  live quote, tax, stock, pickup-window, live checkout automation, or coupon
-  provider-portal application guarantees. Coupon discounts require structured
-  same-product, quantity, fulfillment mode, account state, subtotal, and
-  no-order-placed provider-portal evidence before best-price ranking can use
-  them.
+  evidence with visible-code and product/price/SKU signal gates, and
+  credential-gated FMTC/Rakuten provider-feed targets. They are not live quote,
+  tax, stock, pickup-window, live checkout automation, or coupon provider-portal
+  application guarantees. Coupon discounts require structured same-product,
+  quantity, fulfillment mode, account state, subtotal, and no-order-placed
+  provider-portal evidence before best-price ranking can use them.
 - Non-English and RTL localization is readiness-gated only; professional
   translation QA, native RTL render proof, and live translation providers are
   not covered.

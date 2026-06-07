@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   combinePrinterCouponBrowserEvidence,
@@ -64,6 +65,8 @@ describe("printer coupon browser evidence", () => {
       visibleTextExpectedCodeVisible: false,
       pageHtmlExpectedCodeVisible: true,
       matchedHtmlExpectedCodes: ["CRISPCARD"],
+      missingVerificationSignals: [],
+      allVerificationSignalsMatched: true,
       validForRenderedProof: false,
       noCheckoutAction: true
     });
@@ -75,10 +78,68 @@ describe("printer coupon browser evidence", () => {
       visibleTextExpectedCodeVisible: true,
       pageHtmlExpectedCodeVisible: true,
       matchedVisibleExpectedCodes: ["JUNESW"],
+      missingVerificationSignals: [],
+      allVerificationSignalsMatched: true,
       validForRenderedProof: true,
       noCheckoutAction: true
     });
     expect(getPrinterCouponRenderedEvidenceStatus(cvsPrintTarget, true, cvsEvidence)).toBe("operator-browser-proof-attached");
+  });
+
+  it("classifies the persisted operator print-link evidence artifact", () => {
+    const artifact = JSON.parse(readFileSync("docs/printer-coupon-browser-evidence.json", "utf8")) as PrinterCouponBrowserEvidenceArtifact;
+
+    expect(validatePrinterCouponBrowserEvidenceArtifact(artifact, printerCouponCollectionTargets)).toEqual([]);
+
+    const walgreensEvidence = summarizePrinterCouponBrowserEvidence(
+      findPrinterCouponBrowserEvidenceTarget(artifact, walgreensPrintTarget),
+      walgreensPrintTarget
+    );
+    const cvsEvidence = summarizePrinterCouponBrowserEvidence(findPrinterCouponBrowserEvidenceTarget(artifact, cvsPrintTarget), cvsPrintTarget);
+
+    expect(walgreensEvidence).toMatchObject({
+      pageHtmlExpectedCodeVisible: true,
+      visibleTextExpectedCodeVisible: false,
+      allVerificationSignalsMatched: true,
+      validForRenderedProof: false
+    });
+    expect(getPrinterCouponRenderedEvidenceStatus(walgreensPrintTarget, true, walgreensEvidence)).toBe(
+      "operator-browser-html-signal-attached-visible-proof-still-required"
+    );
+    expect(cvsEvidence).toMatchObject({
+      visibleTextExpectedCodeVisible: true,
+      allVerificationSignalsMatched: true,
+      validForRenderedProof: true
+    });
+    expect(getPrinterCouponRenderedEvidenceStatus(cvsPrintTarget, true, cvsEvidence)).toBe("operator-browser-proof-attached");
+  });
+
+  it("keeps visible coupon text blocked when print-link product signals are missing", () => {
+    const incompleteEvidence = summarizePrinterCouponBrowserEvidence(
+      {
+        targetId: "cvs-photo-card-design-entrypoint",
+        observedAtIso: "2026-06-07T17:25:07.637Z",
+        url: cvsPrintTarget.url,
+        finalUrl: cvsPrintTarget.url,
+        renderedTitle: "Folded Greeting Card, 5x7 | Cards | Cards & Stationery | CVS Photo",
+        visibleTextSignals: ["JUNESW"],
+        pageHtmlSignals: ["JUNESW"],
+        noCheckoutAction: true,
+        noUploadAction: true,
+        noOrderPlaced: true
+      },
+      cvsPrintTarget
+    );
+
+    expect(incompleteEvidence).toMatchObject({
+      visibleTextExpectedCodeVisible: true,
+      allVerificationSignalsMatched: false,
+      missingVerificationSignals: expect.arrayContaining(["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126"]),
+      validForRenderedProof: false
+    });
+    expect(getPrinterCouponRenderedEvidenceStatus(cvsPrintTarget, true, incompleteEvidence)).toBe(
+      "operator-browser-verification-signals-missing"
+    );
   });
 
   it("rejects unsafe or mismatched rendered print-link evidence", () => {

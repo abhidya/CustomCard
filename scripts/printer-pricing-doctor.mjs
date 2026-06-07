@@ -180,9 +180,12 @@ const checks = [
     "rejectedEvidenceCount",
     "operator-chromium-rendered-read",
     "operator-browser-proof-attached",
+    "operator-browser-verification-signals-missing",
     "operator-browser-html-signal-attached-visible-proof-still-required",
     "matchedExpectedCodes",
     "matchedVerificationSignals",
+    "missingVerificationSignals",
+    "allVerificationSignalsMatched",
     "renderedBrowserEvidenceStatus",
     "collectionMethods",
     "credentialGatedProviderTargetCount",
@@ -211,8 +214,10 @@ const checks = [
   checkIncludes("tests", "browser-evidence-tests", contents.couponBrowserEvidenceTest, [
     "distinguishes visible print-link coupon proof from HTML-only coupon signals",
     "operator-browser-proof-attached",
+    "operator-browser-verification-signals-missing",
     "operator-browser-html-signal-attached-visible-proof-still-required",
     "operator-browser-proof-invalid",
+    "allVerificationSignalsMatched",
     "must prove no upload action"
   ]),
   checkIncludes("collection", "operator-browser-evidence-artifact", contents.browserEvidence, [

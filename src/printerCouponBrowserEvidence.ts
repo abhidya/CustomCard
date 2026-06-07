@@ -6,6 +6,7 @@ export type PrinterCouponRenderedEvidenceStatus =
   | "not-required"
   | "operator-browser-proof-attached"
   | "operator-browser-proof-invalid"
+  | "operator-browser-verification-signals-missing"
   | "operator-browser-html-signal-attached-visible-proof-still-required"
   | "static-html-signal-only-browser-proof-required"
   | "operator-browser-or-provider-portal-proof-required";
@@ -48,6 +49,8 @@ export interface PrinterCouponBrowserEvidenceSummary {
   matchedVisibleExpectedCodes: string[];
   matchedHtmlExpectedCodes: string[];
   matchedVerificationSignals: string[];
+  missingVerificationSignals: string[];
+  allVerificationSignalsMatched: boolean;
   noCheckoutAction: boolean;
   validForRenderedProof: boolean;
   validationErrors: string[];
@@ -93,6 +96,10 @@ export function summarizePrinterCouponBrowserEvidence(
   const matchedVisibleExpectedCodes = target.expectedOfferCodes.filter((code) => signalListIncludes(visibleTextSignals, code));
   const matchedHtmlExpectedCodes = target.expectedOfferCodes.filter((code) => signalListIncludes(pageHtmlSignals, code));
   const matchedVerificationSignals = target.verificationSignals.filter((signal) => signalListIncludes(allSignals, signal));
+  const missingVerificationSignals = target.verificationSignals.filter(
+    (signal) => !matchedVerificationSignals.some((matchedSignal) => matchedSignal === signal)
+  );
+  const allVerificationSignalsMatched = missingVerificationSignals.length === 0;
   const visibleTextExpectedCodeVisible =
     target.expectedOfferCodes.length > 0 && target.expectedOfferCodes.every((code) => matchedVisibleExpectedCodes.includes(code));
   const pageHtmlExpectedCodeVisible =
@@ -111,8 +118,11 @@ export function summarizePrinterCouponBrowserEvidence(
     matchedVisibleExpectedCodes,
     matchedHtmlExpectedCodes,
     matchedVerificationSignals,
+    missingVerificationSignals,
+    allVerificationSignalsMatched,
     noCheckoutAction,
-    validForRenderedProof: validationErrors.length === 0 && visibleTextExpectedCodeVisible && noCheckoutAction,
+    validForRenderedProof:
+      validationErrors.length === 0 && visibleTextExpectedCodeVisible && allVerificationSignalsMatched && noCheckoutAction,
     validationErrors
   };
 }
@@ -125,6 +135,9 @@ export function getPrinterCouponRenderedEvidenceStatus(
   if (!target.browserRenderProofRequired) return "not-required";
   if (browserEvidence?.validForRenderedProof) return "operator-browser-proof-attached";
   if (browserEvidence && browserEvidence.validationErrors.length > 0) return "operator-browser-proof-invalid";
+  if (browserEvidence?.visibleTextExpectedCodeVisible && !browserEvidence.allVerificationSignalsMatched) {
+    return "operator-browser-verification-signals-missing";
+  }
   if (browserEvidence?.pageHtmlExpectedCodeVisible && browserEvidence.noCheckoutAction) {
     return "operator-browser-html-signal-attached-visible-proof-still-required";
   }
