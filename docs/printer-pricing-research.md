@@ -99,6 +99,14 @@ certification-blocked.
   when the operator wants the collector to attach the read-only browser proof
   from the exact print links. The artifact records no login, upload, cart,
   payment, or order action.
+- Set `CUSTOMCARD_COUPON_PORTAL_EVIDENCE=/absolute/path/to/portal-evidence.json`
+  only after an operator has opened the provider portal, selected the same
+  product, quantity, fulfillment mode, and account state, applied the coupon,
+  recorded pre-coupon subtotal, discount, post-coupon subtotal, and stopped
+  before upload, payment, or order placement. The collector imports that
+  artifact through `src/printerCouponPortalEvidence.ts`; accepted records attach
+  `PrinterCouponPortalApplicationEvidence` to matching offers, while rejected
+  records are reported without changing prices.
 - Set `CUSTOMCARD_COUPON_RENDER_PRINT_LINKS=1` to have the collector launch
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
@@ -163,6 +171,43 @@ until matching `PrinterCouponPortalApplicationEvidence` is attached. The
 operator collector also emits `activeAtCollection`,
 `bestPriceEligibleAtCollection`, and `bestPriceBlocker` for each scraped source
 offer so source discovery and best-price eligibility cannot be confused.
+
+Portal application evidence uses this artifact shape:
+
+```json
+{
+  "service": "customcard-printer-coupon-portal-evidence",
+  "generatedAtIso": "2026-06-07T12:15:00.000Z",
+  "operatorAction": "Opened the provider portal, applied the coupon, recorded subtotal evidence, and stopped before upload, payment, or order placement.",
+  "blockedFields": ["payment submission", "live order placement", "card upload", "tax finalization", "pickup slot reservation"],
+  "records": [
+    {
+      "offerId": "walgreens-crispcard-cards-2026-06-13",
+      "code": "CRISPCARD",
+      "evidence": {
+        "observedAtIso": "2026-06-07T12:15:00.000Z",
+        "portalUrl": "https://photo.walgreens.com/store/cart",
+        "providerPortal": true,
+        "sourcePriceObservationId": "walgreens-5x7-folded-card",
+        "subtotalBeforeCouponCents": 349,
+        "discountCents": 209,
+        "subtotalAfterCouponCents": 140,
+        "cartTerms": {
+          "vendorId": "walgreens",
+          "productKind": "folded-card",
+          "size": "5x7",
+          "pricedQuantity": 1,
+          "fulfillmentMode": "pickup",
+          "accountState": "logged-in"
+        },
+        "sameCartTermsProven": true,
+        "noOrderPlaced": true,
+        "blockedFields": ["payment submission", "live order placement", "tax", "pickup window"]
+      }
+    }
+  ]
+}
+```
 
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |

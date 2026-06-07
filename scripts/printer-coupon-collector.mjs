@@ -8,6 +8,7 @@ const userAgent = "CustomCard coupon research collector/0.1 (+local operator run
 const renderPrintLinks = isEnabled(process.env.CUSTOMCARD_COUPON_RENDER_PRINT_LINKS);
 const renderedEvidenceOutputPath = process.env.CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT?.trim();
 let couponProviderFeedCollectors;
+let couponPortalEvidenceImporter;
 
 const vite = await createServer({
   appType: "custom",
@@ -21,12 +22,16 @@ try {
     extractPrinterCouponCodes,
     extractPrinterCouponOffers,
     isPrinterCouponActive,
+    printerCouponOffers,
     printerCouponCollectionTargets,
+    printerPriceCatalog,
     printerCouponSources
   } = await vite.ssrLoadModule("/src/printerPricing.ts");
   couponProviderFeedCollectors = await vite.ssrLoadModule("/src/printerCouponProviderFeeds.ts");
+  couponPortalEvidenceImporter = await vite.ssrLoadModule("/src/printerCouponPortalEvidence.ts");
   const generatedAt = new Date();
   const operatorBrowserEvidencePath = process.env.CUSTOMCARD_COUPON_BROWSER_EVIDENCE?.trim();
+  const operatorPortalEvidencePath = process.env.CUSTOMCARD_COUPON_PORTAL_EVIDENCE?.trim();
   const allowedTargets = printerCouponCollectionTargets.filter(
     (target) => target.sourceProvider === "retailer" && target.readiness === "ready-public-page"
   );
@@ -119,10 +124,32 @@ try {
     }
   }
 
+  const { importPrinterCouponPortalEvidenceArtifact } = couponPortalEvidenceImporter;
+  const providerPortalEvidenceImport = importPrinterCouponPortalEvidenceArtifact(
+    loadOperatorPortalEvidence(operatorPortalEvidencePath),
+    { offers: printerCouponOffers, catalog: printerPriceCatalog, now: generatedAt }
+  );
+  const providerPortalEvidenceImportSummary = summarizePortalEvidenceImport(providerPortalEvidenceImport);
+  const portalAppliedOfferIds = new Set(providerPortalEvidenceImport.acceptedEvidence.map((evidence) => evidence.offerId));
+  const sourceOfferSummaries = sourceOffers.map((offer) => {
+    const portalApplied = portalAppliedOfferIds.has(offer.id);
+    return {
+      ...offer,
+      evidenceStatus: portalApplied ? "provider-portal-applied" : offer.evidenceStatus,
+      portalApplicationEvidenceAttached: portalApplied || offer.portalApplicationEvidenceAttached,
+      bestPriceEligibleAtCollection: portalApplied,
+      bestPriceBlocker: portalApplied
+        ? null
+        : offer.activeAtCollection
+          ? "provider-portal application evidence required"
+          : "coupon expired before provider-portal application"
+    };
+  });
   const codesByVendor = new Map(sourceOffers.map((offer) => [offer.vendorId, offer.code]));
   const providerPortalApplicationPackets = buildPrinterCouponPortalApplicationPackets({
     quantity: 1,
-    now: generatedAt
+    now: generatedAt,
+    offers: providerPortalEvidenceImport.offers
   });
   const providerPortalApplicationTargetCount = providerPortalApplicationPackets.reduce(
     (total, packet) => total + packet.applicationTargets.length,
@@ -169,6 +196,9 @@ try {
         operatorBrowserEvidencePath: operatorBrowserEvidencePath ? "CUSTOMCARD_COUPON_BROWSER_EVIDENCE" : null,
         operatorBrowserEvidenceLoaded: Boolean(operatorBrowserEvidence),
         operatorBrowserEvidenceAttachedCount: fetchedTargets.filter((target) => target.browserEvidence?.attached).length,
+        operatorPortalEvidencePath: operatorPortalEvidencePath ? "CUSTOMCARD_COUPON_PORTAL_EVIDENCE" : null,
+        operatorPortalEvidenceLoaded: providerPortalEvidenceImport.status !== "not-provided",
+        providerPortalEvidenceImport: providerPortalEvidenceImportSummary,
         credentialGatedProviderTargetCount: providerFeedTargets.length,
         providerFeedTargets,
         couponProviderCollectionPriority: [
@@ -181,13 +211,13 @@ try {
         providerPortalApplicationPacketCount: providerPortalApplicationPackets.length,
         providerPortalApplicationTargetCount,
         providerPortalApplicationPackets,
-        providerPortalApplicationProof: false,
+        providerPortalApplicationProof: providerPortalEvidenceImport.providerPortalApplicationProof,
         providerPortalCartTermsEvidenceRequired: true,
-        bestPriceDiscountingAllowed: false,
+        bestPriceDiscountingAllowed: providerPortalEvidenceImport.bestPriceDiscountingAllowed,
         bestPriceDiscountingRule:
           "A coupon can affect ranking only after structured provider-portal evidence proves the same product, quantity, fulfillment mode, account state, and subtotal math.",
         fetchedTargets,
-        sourceOffers,
+        sourceOffers: sourceOfferSummaries,
         printEntrypointChecks,
         blockedFields: ["checkout subtotal", "coupon application proof", "tax", "pickup window", "real order placement"]
       },
@@ -237,6 +267,18 @@ function loadOperatorBrowserEvidence(path) {
   const parsed = safeParseJson(readFileSync(path, "utf8"));
   if (!parsed || typeof parsed !== "object") return null;
   return parsed;
+}
+
+function loadOperatorPortalEvidence(path) {
+  if (!path) return null;
+  const parsed = safeParseJson(readFileSync(path, "utf8"));
+  if (!parsed || typeof parsed !== "object") return null;
+  return parsed;
+}
+
+function summarizePortalEvidenceImport(importResult) {
+  const { offers, ...summary } = importResult;
+  return summary;
 }
 
 function combineOperatorBrowserEvidence(...evidenceSources) {

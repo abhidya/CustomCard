@@ -7,6 +7,7 @@ const files = {
   apiServer: "scripts/api-server.mjs",
   couponCollector: "scripts/printer-coupon-collector.mjs",
   couponProviderFeeds: "src/printerCouponProviderFeeds.ts",
+  couponPortalEvidence: "src/printerCouponPortalEvidence.ts",
   browserEvidence: "docs/printer-coupon-browser-evidence.json",
   docs: "docs/printer-pricing-research.md",
   packageJson: "package.json",
@@ -140,7 +141,7 @@ const checks = [
     "$49.99 pre-tax base",
     "coupon candidates require provider-portal application proof"
   ]),
-  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.packageJson}`, [
+  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.couponPortalEvidence}\n${contents.packageJson}`, [
     "printer-coupon-collector",
     "extractPrinterCouponOffers",
     "printEntrypointChecks",
@@ -155,6 +156,13 @@ const checks = [
     "operatorBrowserEvidenceLoaded",
     "operatorBrowserEvidenceAttachedCount",
     "CUSTOMCARD_COUPON_BROWSER_EVIDENCE",
+    "CUSTOMCARD_COUPON_PORTAL_EVIDENCE",
+    "importPrinterCouponPortalEvidenceArtifact",
+    "validatePrinterCouponPortalEvidenceArtifact",
+    "providerPortalEvidenceImport",
+    "operatorPortalEvidenceLoaded",
+    "acceptedEvidenceCount",
+    "rejectedEvidenceCount",
     "operator-chromium-rendered-read",
     "operator-browser-proof-attached",
     "operator-browser-html-signal-attached-visible-proof-still-required",
