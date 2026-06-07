@@ -587,6 +587,22 @@ describe("production infrastructure contract", () => {
     expect(apiRuntime).toContain("DATABASE_URL");
   });
 
+  it("keeps retail operation starts on the shared server-safe Module", () => {
+    const apiServer = read("scripts/api-server.mjs");
+    const retailStart = read("src/retailPrinterOperationStart.ts");
+    const retailStartData = read("src/retailPrinterOperationStartData.mjs");
+
+    expect(apiServer).toContain("../src/retailPrinterOperationStartData.mjs");
+    expect(apiServer).toContain("buildRetailPrinterOperationStartPackets");
+    expect(apiServer).toContain("buildRetailPrinterOperationStartResponse");
+    expect(apiServer).not.toContain("const retailPrinterProductLinks");
+    expect(apiServer).not.toContain("function buildRetailPrinterOperationStartPacket");
+    expect(retailStart).toContain("./retailPrinterOperationStartData.mjs");
+    expect(retailStartData).toContain("retailPrinterProductLinks");
+    expect(retailStartData).toContain("CRISPCARD");
+    expect(retailStartData).toContain("JUNESW");
+  });
+
   it("ships a reviewer demo reset contract doctor", () => {
     const output = execFileSync("npm", ["run", "demo:doctor", "--silent"], {
       encoding: "utf8",

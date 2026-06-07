@@ -14,6 +14,10 @@ import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
 import { summarizeReviewerDbSeedReadiness } from "../src/reviewerDbSeedReadinessData.mjs";
 import { summarizeCloudArtifactProofReadiness } from "../src/cloudArtifactProofReadinessData.mjs";
 import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
+import {
+  buildRetailPrinterOperationStartPackets,
+  buildRetailPrinterOperationStartResponse
+} from "../src/retailPrinterOperationStartData.mjs";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
@@ -497,7 +501,7 @@ async function serveApi(request, response, path) {
       },
       retailOperations: {
         startRoute: "/api/retail-printers/operations/start",
-        startPackets: retailPrinterOperationStartPackets(),
+        startPackets: buildRetailPrinterOperationStartPackets(),
         blockers: []
       },
       realOrdersEnabled: false,
@@ -1087,29 +1091,13 @@ function buildMutationContractPayload(route, bodyText) {
   }
 
   if (route.id === "retail-printer-operation-start") {
-    const requestedVendorId = safeRetailPrinterVendorId(requestBody.vendorId ?? requestBody.providerId ?? requestBody.selectedVendorId);
-    const requestedOperation = safeRetailPrinterOperationKind(requestBody.operation ?? requestBody.operationKind);
-    const startPacket = buildRetailPrinterOperationStartPacket(requestedVendorId, requestedOperation);
+    const operationStart = buildRetailPrinterOperationStartResponse({
+      vendorId: requestBody.vendorId ?? requestBody.providerId ?? requestBody.selectedVendorId,
+      operation: requestBody.operation ?? requestBody.operationKind
+    });
     return {
       ...basePayload,
-      status: "blocked",
-      requestedVendorId,
-      requestedOperation,
-      startPacket,
-      serverOwned: true,
-      clientMayPrepareProviderRequest: false,
-      providerPortalUrl: startPacket.providerPortalUrl,
-      providerRequestUrl: null,
-      providerRequestPrepared: false,
-      networkRequestPrepared: false,
-      requestPrepared: false,
-      networkAttempted: false,
-      externalNetworkCalls: false,
-      realOrdersEnabled: false,
-      liveQuoteEnabled: false,
-      imageUploadEnabled: false,
-      orderPlacementEnabled: false,
-      blockers: startPacket.blockers,
+      ...operationStart,
       repository: {
         tables: ["auth_sessions", "idempotency_keys", "audit_log"],
         runtimeMode: "contract",
@@ -1402,202 +1390,6 @@ function buildCalendarConnectionStartPacket(choiceId) {
   };
 }
 
-const retailPrinterOperationKinds = ["fetch-price", "upload-image", "place-order"];
-const retailPrinterProductLinks = {
-  walmart: {
-    providerAdapterId: "walmart-live-print",
-    vendorName: "Walmart Photo",
-    productName: "5x7 folded card, blank envelope - upload your design",
-    productSku: "361-5x7-folded-card-blank-envelope",
-    productUrl:
-      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2"
-  },
-  fedex: {
-    providerAdapterId: "fedex-live-print",
-    vendorName: "FedEx Office",
-    productName: "Quick greeting and holiday cards",
-    productSku: "fedex-office-quick-greeting-cards",
-    productUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html"
-  },
-  cvs: {
-    providerAdapterId: "cvs-live-order",
-    vendorName: "CVS Photo",
-    productName: "Folded greeting card, 5x7",
-    productSku: "CommerceProduct_26126",
-    productUrl:
-      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery"
-  },
-  walgreens: {
-    providerAdapterId: "walgreens-live-order",
-    vendorName: "Walgreens Photo",
-    productName: "5x7 folded cards, standard cardstock 85lb",
-    productSku: "CommerceProduct_33272",
-    productUrl:
-      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery"
-  }
-};
-
-const retailPrinterOperationShape = {
-  "fetch-price": {
-    label: "Fetch price",
-    requiredInputFields: ["storeOrShippingZip"],
-    optionalInputFields: ["productUrl", "productSku", "quantity", "fulfillmentMode", "couponCode"],
-    sourceBackedFields: ["productUrl", "productSku"],
-    evidenceMode: "public-product-price-review",
-    couponMode: "same-cart-provider-portal-proof",
-    requiredEvidence: [
-      "Official product page price evidence",
-      "Tax and coupon portal application proof",
-      "Store availability or shipping-window proof"
-    ],
-    requiredGateIds: ["provider-coupon-portal-proof", "retail-price-freshness-proof", "vendor-certification"],
-    blockedReason: "Live quote collection remains blocked until provider portal coupon proof and certification are attached."
-  },
-  "upload-image": {
-    label: "Upload image",
-    requiredInputFields: ["providerAccountReference"],
-    optionalInputFields: ["renderPacketArtifactUris", "panelManifestChecksum", "productSku", "customerApprovalId"],
-    sourceBackedFields: ["productSku"],
-    evidenceMode: "provider-project-preview-review",
-    couponMode: "preserve-price-cart-coupon-state",
-    requiredEvidence: [
-      "Vendor upload API or certified browser automation contract",
-      "Asset-size acceptance proof",
-      "Crop/fold preview screenshot"
-    ],
-    requiredGateIds: ["vendor-certification", "asset-upload-proof", "customer-approval"],
-    blockedReason: "Image upload remains blocked until a certified transport and provider preview proof exist."
-  },
-  "place-order": {
-    label: "Place order",
-    requiredInputFields: ["providerCartId", "paymentAuthorizationReference"],
-    optionalInputFields: ["quoteEvidenceId", "customerApprovalId", "cancellationRecoveryPlanId"],
-    sourceBackedFields: ["quoteEvidenceId"],
-    evidenceMode: "provider-cart-final-review",
-    couponMode: "final-cart-coupon-recheck",
-    requiredEvidence: ["Vendor certification", "Explicit customer approval record", "Payment and cancellation recovery proof"],
-    requiredGateIds: ["vendor-certification", "real-order-kill-switch", "customer-approval"],
-    blockedReason: "Live ordering remains blocked until certification, customer approval, tokenized payment, and recovery gates pass."
-  }
-};
-
-function retailPrinterOperationStartPackets() {
-  return Object.keys(retailPrinterProductLinks).flatMap((vendorId) =>
-    retailPrinterOperationKinds.map((operation) => buildRetailPrinterOperationStartPacket(vendorId, operation))
-  );
-}
-
-function buildRetailPrinterOperationStartPacket(vendorId, operation) {
-  const productLink = retailPrinterProductLinks[vendorId] ?? retailPrinterProductLinks.walgreens;
-  const operationShape = retailPrinterOperationShape[operation] ?? retailPrinterOperationShape["fetch-price"];
-  const expectedInputFields = [...operationShape.requiredInputFields, ...operationShape.optionalInputFields];
-
-  return {
-    id: `${vendorId}-${operation}-operation-start`,
-    vendorId,
-    providerAdapterId: productLink.providerAdapterId,
-    vendorName: productLink.vendorName,
-    productName: productLink.productName,
-    productSku: productLink.productSku,
-    operation,
-    label: operationShape.label,
-    status: "blocked",
-    apiRoute: "/api/retail-printers/operations/start",
-    serverOwned: true,
-    customerVisible: true,
-    productUrl: productLink.productUrl,
-    manualReviewUrl: productLink.productUrl,
-    providerPortalUrl: productLink.productUrl,
-    providerRequestUrl: null,
-    clientMayPrepareProviderRequest: false,
-    providerRequestPrepared: false,
-    networkRequestPrepared: false,
-    requestPrepared: false,
-    networkAttempted: false,
-    noNetwork: true,
-    externalNetworkCalls: false,
-    realOrdersEnabled: false,
-    liveQuoteEnabled: false,
-    imageUploadEnabled: false,
-    orderPlacementEnabled: false,
-    sourceLink: {
-      purpose: operation,
-      label: `${productLink.vendorName} ${operation}`,
-      url: productLink.productUrl,
-      observedAtIso: "2026-06-07T12:00:00.000Z",
-      evidenceMode: operationShape.evidenceMode
-    },
-    providerEntrypoint: {
-      operation,
-      label: `${productLink.vendorName} ${operation}`,
-      url: productLink.productUrl,
-      portalHost: new URL(productLink.productUrl).host,
-      productSku: productLink.productSku,
-      evidenceMode: operationShape.evidenceMode,
-      couponMode: operationShape.couponMode,
-      requiresCustomerApproval: true,
-      noNetwork: true,
-      requestPreparationBlocked: true,
-      orderSubmissionBlocked: true
-    },
-    couponCollectionPlan: {
-      providerPortalApplicationRequired: true,
-      bestPriceRequiresProviderPortalEvidence: true,
-      canAffectBestPriceBeforePortalEvidence: false,
-      operatorSteps: [
-        "Collect coupon candidates from configured coupon provider feeds when credentials exist.",
-        "Open the exact Walgreens/CVS or provider product print link for same-cart application proof.",
-        "Do not apply a discount to best-price ranking until the provider portal shows the code accepted."
-      ]
-    },
-    couponPortalApplicationRequired: true,
-    bestPriceRequiresProviderPortalEvidence: true,
-    canAffectBestPriceBeforePortalEvidence: false,
-    expectedInputFields,
-    requiredInputFields: operationShape.requiredInputFields,
-    optionalInputFields: operationShape.optionalInputFields,
-    sourceBackedFields: operationShape.sourceBackedFields,
-    requiredEvidence: operationShape.requiredEvidence,
-    requiredGateIds: operationShape.requiredGateIds,
-    blockers: operationShape.requiredGateIds,
-    forbiddenFields: ["raw relationship memories", "raw payment card data", "unapproved recipient PII"],
-    operatorSteps: buildRetailPrinterOperationSteps(productLink, operation),
-    safetyChecks: [
-      "Do not send a network request from CustomCard.",
-      "Do not prepare a provider API payload in client or app runtime.",
-      "Do not upload files, submit payment, reserve pickup, or place a live order from this packet.",
-      "Use provider-portal evidence only after customer approval and certification gates are attached."
-    ],
-    blockedReason: operationShape.blockedReason
-  };
-}
-
-function buildRetailPrinterOperationSteps(productLink, operation) {
-  if (operation === "fetch-price") {
-    return [
-      `Open ${productLink.vendorName}: ${productLink.productUrl}`,
-      `Confirm ${productLink.productName} and ${productLink.productSku} before collecting price evidence.`,
-      "Collect public subtotal, tax status, pickup or shipping window, and coupon application status in the provider portal.",
-      "Stop before upload, payment, pickup reservation, or live order placement."
-    ];
-  }
-  if (operation === "upload-image") {
-    return [
-      `Open ${productLink.vendorName}: ${productLink.productUrl}`,
-      `Confirm ${productLink.productName} and ${productLink.productSku} before creating a provider preview.`,
-      "Use only approved render-packet artifacts and record provider preview/crop/fold evidence.",
-      "Preserve the price-collection coupon state; do not submit payment or place an order."
-    ];
-  }
-  return [
-    `Open ${productLink.vendorName}: ${productLink.productUrl}`,
-    `Confirm ${productLink.productName}, ${productLink.productSku}, quote evidence, and approved render packet still match.`,
-    "Recheck coupon application in the same provider portal cart before any final price claim.",
-    "Require customer final approval, tokenized payment authorization, recovery plan, certification, and kill-switch evidence.",
-    "Stop unless every live enablement gate is attached and audited."
-  ];
-}
-
 function parseJsonBody(bodyText) {
   if (!bodyText) return {};
   try {
@@ -1627,16 +1419,6 @@ function safeCalendarChoiceId(value) {
   return ["manual-invite-or-ics", "google-calendar-events", "icloud-ics-fallback"].includes(id)
     ? id
     : "manual-invite-or-ics";
-}
-
-function safeRetailPrinterVendorId(value) {
-  const id = safeContractId(value, "walgreens");
-  return Object.hasOwn(retailPrinterProductLinks, id) ? id : "walgreens";
-}
-
-function safeRetailPrinterOperationKind(value) {
-  const operation = safeContractId(value, "fetch-price");
-  return retailPrinterOperationKinds.includes(operation) ? operation : "fetch-price";
 }
 
 function safeLocale(value) {
