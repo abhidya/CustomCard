@@ -75,7 +75,9 @@ certification-blocked.
   explicit coupon targets in `src/printerPricing.ts`. It fetches public
   retailer coupon pages, can open the exact Walgreens/CVS print links with a
   local headless browser, optionally polls the credential-gated FMTC Deal Feed
-  when `FMTC_API_TOKEN` is present, and still returns
+  when `FMTC_API_TOKEN` is present, optionally polls the credential-gated
+  Rakuten Advertising Coupon Feed API when `RAKUTEN_ADVERTISING_API_TOKEN` is
+  present, and still returns
   `bestPriceDiscountingAllowed: false` until checkout proves a code applied to
   the same cart. The collector does not log in, upload files, submit payment,
   place an order, print provider credentials, or claim live checkout automation.
@@ -96,11 +98,13 @@ certification-blocked.
 ## Coupon Treatment
 
 Coupons are part of pricing collection. The safest production shape is a
-licensed coupon provider feed for discovery plus official retailer coupon pages
-for Walgreens/CVS promo terms. Candidate codes must still be applied in the
-provider portal/cart before ranking a best available price. Coupon discounts
-are applied only after provider-portal evidence proves the code worked for the
-same product, quantity, fulfillment mode, and account state.
+licensed coupon provider feed for discovery, official retailer coupon pages for
+Walgreens/CVS promo terms, exact rendered print links for product/code/price
+signals, and finally provider-portal application while collecting pricing.
+Candidate codes must still be applied in the provider portal/cart before ranking
+a best available price. Coupon discounts are applied only after provider-portal
+evidence proves the code worked for the same product, quantity, fulfillment
+mode, and account state.
 
 Coupon collection targets distinguish static coupon sources, print entrypoints,
 and provider feeds. Official deal/coupon pages use `server-fetch-html`. The
@@ -149,6 +153,7 @@ until matching `PrinterCouponPortalApplicationEvidence` is attached.
 | Provider-feed target | Current treatment |
 | --- | --- |
 | [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`, `provider-api-feed`, and verification signals for status plus code/link verification timestamps; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. When the token is present, the operator collector requests JSON active code deals and redacts the token from output. |
+| [Rakuten Advertising Coupon Feed API](https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API) | Credential-gated publisher coupon-feed candidate. It is represented as `rakuten-coupon-feed` with `RAKUTEN_ADVERTISING_API_TOKEN`, `provider-api-feed`, and verification signals for coupon code, promotional link, advertiser, offer start date, and offer end date. Provider-fed coupons remain discovery evidence until official retailer or provider-portal evidence confirms applicability. |
 
 The handoff UI and API bootstrap show coupon-source counts and portal-proof
 status. They show active source-listed offers separately from portal-applied

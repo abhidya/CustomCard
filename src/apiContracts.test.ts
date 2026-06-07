@@ -482,9 +482,9 @@ describe("api contracts", () => {
       liveQuote: false,
       refreshReport: expect.objectContaining({
         sourceCount: 8,
-        couponSourceCount: 3,
-        couponCollectionTargetCount: 5,
-        couponProviderTargetCount: 1,
+        couponSourceCount: 4,
+        couponCollectionTargetCount: 6,
+        couponProviderTargetCount: 2,
         retailerCouponCollectionTargetCount: 4,
         couponOfferCount: 2,
         activeCouponOfferCount: 2,

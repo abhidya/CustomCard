@@ -420,6 +420,16 @@ export const printerCouponSources = {
     preferredCollectionMethod: "provider-api-feed",
     notes:
       "Recommended provider-feed candidate for discovery and affiliate metadata; provider-fed coupons must still be confirmed against official retailer pages or checkout before discounting."
+  },
+  rakutenCouponFeed: {
+    label: "Rakuten Advertising Coupon Feed API",
+    url: "https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API",
+    observedAtIso,
+    mode: "coupon-provider-feed",
+    authority: "credentialed-coupon-provider",
+    preferredCollectionMethod: "provider-api-feed",
+    notes:
+      "Credentialed publisher coupon feed candidate; Rakuten validates coupon and promotional link data, but retailer page or checkout evidence is still required before discounting."
   }
 } satisfies Record<string, PrinterCouponSource>;
 
@@ -529,6 +539,34 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     blockedFields: [
       "provider credentials in client",
       "unapproved affiliate campaign",
+      "provider-only checkout proof",
+      "coupon application proof",
+      "tax",
+      "store availability"
+    ],
+    noNetworkRuntime: true
+  },
+  {
+    id: "rakuten-coupon-feed",
+    label: "Rakuten Advertising Coupon Feed API",
+    vendorIds: ["walgreens", "cvs"],
+    mode: "coupon-provider-feed",
+    role: "provider-feed",
+    readiness: "credential-gated",
+    url: printerCouponSources.rakutenCouponFeed.url,
+    collectionMethod: "provider-api-feed",
+    credentialEnvKeys: ["RAKUTEN_ADVERTISING_API_TOKEN"],
+    sourceProvider: "affiliate-provider",
+    maxAgeHours: 12,
+    expectedOfferCodes: [],
+    extractHints: ["advertiser", "coupon code", "promotional link", "offerstartdate", "offerenddate", "promotion type"],
+    verificationSignals: ["coupon code", "promotional link", "offerstartdate", "offerenddate", "advertiser"],
+    staticHtmlSignalAllowed: false,
+    browserRenderProofRequired: false,
+    legalReviewRequired: true,
+    blockedFields: [
+      "provider credentials in client",
+      "unapproved advertiser relationship",
       "provider-only checkout proof",
       "coupon application proof",
       "tax",

@@ -94,9 +94,9 @@ describe("printer pricing research", () => {
     expect(comparison.refreshReport).toMatchObject({
       totalObservations: printerPriceCatalog.length,
       sourceCount: 8,
-      couponSourceCount: 3,
-      couponCollectionTargetCount: 5,
-      couponProviderTargetCount: 1,
+      couponSourceCount: 4,
+      couponCollectionTargetCount: 6,
+      couponProviderTargetCount: 2,
       retailerCouponCollectionTargetCount: 4,
       couponOfferCount: 2,
       activeCouponOfferCount: 2,
@@ -337,6 +337,15 @@ describe("printer pricing research", () => {
           staticHtmlSignalAllowed: false,
           browserRenderProofRequired: false,
           noNetworkRuntime: true
+        }),
+        expect.objectContaining({
+          id: "rakuten-coupon-feed",
+          role: "provider-feed",
+          readiness: "credential-gated",
+          credentialEnvKeys: ["RAKUTEN_ADVERTISING_API_TOKEN"],
+          staticHtmlSignalAllowed: false,
+          browserRenderProofRequired: false,
+          noNetworkRuntime: true
         })
       ])
     );
@@ -397,7 +406,8 @@ describe("printer pricing research", () => {
   it("treats proper provider feeds and rendered print links as explicit coupon proof targets", () => {
     const walgreensPrintTarget = printerCouponCollectionTargets.find((target) => target.id === "walgreens-photo-card-design-entrypoint");
     const cvsPrintTarget = printerCouponCollectionTargets.find((target) => target.id === "cvs-photo-card-design-entrypoint");
-    const providerFeedTarget = printerCouponCollectionTargets.find((target) => target.id === "fmtc-deal-feed");
+    const fmtcProviderFeedTarget = printerCouponCollectionTargets.find((target) => target.id === "fmtc-deal-feed");
+    const rakutenProviderFeedTarget = printerCouponCollectionTargets.find((target) => target.id === "rakuten-coupon-feed");
     const walgreensOffer = printerCouponOffers.find((offer) => offer.code === "CRISPCARD");
     const cvsOffer = printerCouponOffers.find((offer) => offer.code === "JUNESW");
 
@@ -410,6 +420,10 @@ describe("printer pricing research", () => {
       preferredCollectionMethod: "server-fetch-html"
     });
     expect(printerCouponSources.fmtcProviderFeed).toMatchObject({
+      authority: "credentialed-coupon-provider",
+      preferredCollectionMethod: "provider-api-feed"
+    });
+    expect(printerCouponSources.rakutenCouponFeed).toMatchObject({
       authority: "credentialed-coupon-provider",
       preferredCollectionMethod: "provider-api-feed"
     });
@@ -436,13 +450,21 @@ describe("printer pricing research", () => {
       legalReviewRequired: true,
       noNetworkRuntime: true
     });
-    expect(providerFeedTarget).toMatchObject({
+    expect(fmtcProviderFeedTarget).toMatchObject({
       collectionMethod: "provider-api-feed",
       credentialEnvKeys: ["FMTC_API_TOKEN"],
       staticHtmlSignalAllowed: false,
       browserRenderProofRequired: false,
       legalReviewRequired: true,
       verificationSignals: expect.arrayContaining(["status", "code_verified_at", "link_verified_at"])
+    });
+    expect(rakutenProviderFeedTarget).toMatchObject({
+      collectionMethod: "provider-api-feed",
+      credentialEnvKeys: ["RAKUTEN_ADVERTISING_API_TOKEN"],
+      staticHtmlSignalAllowed: false,
+      browserRenderProofRequired: false,
+      legalReviewRequired: true,
+      verificationSignals: expect.arrayContaining(["coupon code", "promotional link", "offerstartdate", "offerenddate"])
     });
     expect(walgreensOffer).toMatchObject({
       sourceTargetIds: ["walgreens-photo-official-deals", "walgreens-photo-card-design-entrypoint"]
