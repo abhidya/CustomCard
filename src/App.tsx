@@ -30,7 +30,7 @@ import {
   XCircle,
   type LucideIcon
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   aiProviderReadinessItems,
   summarizeAiProviderReadiness,
@@ -147,6 +147,30 @@ import {
   type BusinessEngagementReadinessItem,
   type BusinessEngagementReadinessSummary
 } from "./businessEngagementReadiness";
+import {
+  mobileAccountOptions,
+  mobileApprovalActions,
+  mobileCardQueueItems,
+  mobileChatTranscript,
+  mobileExperienceSections,
+  mobileFulfillmentRecommendations,
+  mobileHandoffSteps,
+  mobileImportActions,
+  mobileLocaleOptions,
+  mobileMemoryReviewItems,
+  mobilePrintProofChecks,
+  mobileProofBoundary,
+  mobileRenderChoices,
+  mobileSafetyBanner,
+  mobileSyncState,
+  mobileTodaySummary,
+  summarizeMobileExperience,
+  type MobileCardQueueItem,
+  type MobileChatMessage,
+  type MobileFulfillmentRecommendation,
+  type MobileHandoffStep,
+  type MobileMemoryReviewItem,
+} from "../apps/mobile/src/customerExperience";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -166,7 +190,7 @@ import {
 } from "./fulfillmentRecommendation";
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
 
-type ViewId = "customer" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
+type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
@@ -182,6 +206,7 @@ const fixedReviewDate = new Date("2026-06-03T12:00:00.000Z");
 
 const navItems: NavItem[] = [
   { id: "customer", label: "Customer panel", icon: UserRound },
+  { id: "mobile", label: "Mobile app", icon: Smartphone },
   { id: "opportunities", label: "Opportunities", icon: Calendar },
   { id: "studio", label: "Card studio", icon: WandSparkles },
   { id: "memory", label: "Memory", icon: Heart },
@@ -491,6 +516,8 @@ function App() {
           />
         )}
 
+        {activeView === "mobile" && <MobileAppPreviewView />}
+
         {activeView !== "customer" && (
           <section className="workspaceBand" aria-label="Workspace">
             <div className="workspaceIdentity">
@@ -645,6 +672,288 @@ function App() {
         {activeView === "adapters" && <AdaptersView runtimeReadiness={runtimeReadiness} />}
       </main>
     </div>
+  );
+}
+
+function MobileAppPreviewView() {
+  const summary = summarizeMobileExperience();
+
+  return (
+    <section className="mobilePreviewView" aria-label="Mobile app preview">
+      <div className="mobilePreviewIntro">
+        <div>
+          <p className="eyebrow">Native customer app</p>
+          <h2>Mobile app</h2>
+        </div>
+        <div className="mobilePreviewMetrics">
+          <Metric label="Sections" value={`${summary.customerVisibleSections}`} />
+          <Metric label="Cards" value={`${summary.queueItems}`} />
+          <Metric label="Locales" value={`${summary.localeOptions}`} />
+          <Metric label="Live orders" value="Off" />
+        </div>
+      </div>
+
+      <div className="mobilePreviewLayout">
+        <article className="mobileDevice" aria-label="CustomCard native customer shell">
+          <div className="mobileStatusBar">
+            <span>9:41</span>
+            <span>CustomCard</span>
+          </div>
+          <div className="mobileScreen">
+            <header className="mobileHero">
+              <div>
+                <p>Customer mobile panel</p>
+                <h3>CustomCard</h3>
+                <span>{mobileSafetyBanner.label}</span>
+              </div>
+              <ShieldCheck size={22} />
+            </header>
+
+            <section className="mobileSummaryBand">
+              <strong>{mobileTodaySummary.recipientLabel}</strong>
+              <span>
+                {mobileTodaySummary.eventLabel} · {mobileTodaySummary.dueLabel}
+              </span>
+              <div className="mobileMiniStats">
+                <MobileMiniStat label="Panels" value={`${mobileTodaySummary.panelCount}`} />
+                <MobileMiniStat label="Offline" value={mobileTodaySummary.offlineReady ? "On" : "Off"} />
+                <MobileMiniStat label="Orders" value={mobileTodaySummary.realOrdersEnabled ? "On" : "Off"} />
+              </div>
+            </section>
+
+            <MobileSection title="Sign in and import">
+              <div className="mobileActionGrid">
+                {mobileAccountOptions.map((option) => (
+                  <MobileActionTile key={option.provider} title={option.label} detail={option.detail} tone="dark" />
+                ))}
+                {mobileImportActions.map((action) => (
+                  <MobileActionTile
+                    key={action.kind}
+                    title={action.label}
+                    detail={action.detail}
+                    tone={action.sourceMode === "local-paste" ? "green" : "blue"}
+                  />
+                ))}
+              </div>
+            </MobileSection>
+
+            <MobileSection title="Card queue">
+              {mobileCardQueueItems.map((item) => (
+                <MobileQueueRow key={item.id} item={item} />
+              ))}
+            </MobileSection>
+
+            <MobileSection title="Approval controls">
+              <div className="mobilePillGrid">
+                {mobileApprovalActions.map((action) => (
+                  <span key={action.kind}>{action.label}</span>
+                ))}
+              </div>
+            </MobileSection>
+
+            <MobileSection title="Text interface">
+              <div className="mobileChatStack">
+                {mobileChatTranscript.map((message, index) => (
+                  <MobileChatBubble key={`${message.speaker}-${index}`} message={message} />
+                ))}
+              </div>
+            </MobileSection>
+
+            <MobileSection title="Best available options">
+              {mobileFulfillmentRecommendations.map((recommendation) => (
+                <MobileFulfillmentRow key={recommendation.kind} recommendation={recommendation} />
+              ))}
+            </MobileSection>
+
+            <MobileSection title="Checkout confirmation">
+              {mobileHandoffSteps.map((step) => (
+                <MobileHandoffRow key={step.label} step={step} />
+              ))}
+            </MobileSection>
+
+            <MobileSection title="Offline sync">
+              <div className="mobileSyncBox">
+                <Lock size={16} />
+                <span>
+                  {mobileSyncState.pendingMutationTypes.length} queued mutation types;{" "}
+                  {mobileSyncState.forbiddenMutationTypes.length} unsafe mutation types blocked.
+                </span>
+              </div>
+            </MobileSection>
+          </div>
+        </article>
+
+        <aside className="mobileContractPanel" aria-label="Mobile app contract">
+          <ContractBlock
+            title="Workflow coverage"
+            icon={PanelTop}
+            rows={mobileExperienceSections.map((section) => ({
+              label: section.title,
+              value: section.status,
+              detail: section.detail
+            }))}
+          />
+          <ContractBlock
+            title="Memory and proof"
+            icon={Heart}
+            rows={[
+              ...mobileMemoryReviewItems.map((item) => ({
+                label: item.memoryLabel,
+                value: memoryUsageLabel(item.usage),
+                detail: `${item.recipientLabel}; raw content stored: ${item.rawContentStored ? "yes" : "no"}`
+              })),
+              ...mobileRenderChoices.map((choice) => ({
+                label: choice.label,
+                value: choice.mode === "free-local" ? "Free" : "Gated",
+                detail: choice.detail
+              }))
+            ]}
+          />
+          <ContractBlock
+            title="Print proof"
+            icon={Printer}
+            rows={mobilePrintProofChecks.map((check) => ({
+              label: check.label,
+              value: proofStatusLabel(check.passed),
+              detail: check.detail
+            }))}
+          />
+          <ContractBlock
+            title="Locale readiness"
+            icon={Globe2}
+            rows={mobileLocaleOptions.map((locale) => ({
+              label: locale.label,
+              value: locale.writingDirection.toUpperCase(),
+              detail: locale.copyReviewRequired ? "Copy review required" : "Ready"
+            }))}
+          />
+          <div className="mobileProofBoundary">
+            <XCircle size={18} />
+            <div>
+              <strong>{mobileProofBoundary.blockedLiveProofs.length} live proof claims blocked</strong>
+              <span>{mobileSafetyBanner.detail}</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function MobileSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="mobileSection">
+      <h4>{title}</h4>
+      {children}
+    </section>
+  );
+}
+
+function MobileMiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function MobileActionTile({
+  title,
+  detail,
+  tone
+}: {
+  title: string;
+  detail: string;
+  tone: "blue" | "dark" | "green";
+}) {
+  return (
+    <div className={`mobileActionTile ${tone}`}>
+      <strong>{title}</strong>
+      <span>{detail}</span>
+    </div>
+  );
+}
+
+function MobileQueueRow({ item }: { item: MobileCardQueueItem }) {
+  return (
+    <div className="mobileListRow">
+      <div>
+        <strong>{item.recipientLabel}</strong>
+        <span>
+          {item.eventLabel} · {item.source}
+        </span>
+      </div>
+      <em>{queueStatusLabel(item.status)}</em>
+    </div>
+  );
+}
+
+function MobileChatBubble({ message }: { message: MobileChatMessage }) {
+  return (
+    <div className={message.speaker === "customer" ? "mobileChatBubble customer" : "mobileChatBubble assistant"}>
+      <strong>{message.speaker}</strong>
+      <span>{message.text}</span>
+    </div>
+  );
+}
+
+function MobileFulfillmentRow({ recommendation }: { recommendation: MobileFulfillmentRecommendation }) {
+  return (
+    <div className="mobileListRow">
+      <div>
+        <strong>{recommendation.label}</strong>
+        <span>
+          {recommendation.vendorName} · {recommendation.etaLabel}
+        </span>
+      </div>
+      <em>{formatCents(recommendation.totalCents)}</em>
+    </div>
+  );
+}
+
+function MobileHandoffRow({ step }: { step: MobileHandoffStep }) {
+  return (
+    <div className="mobileListRow">
+      <div>
+        <strong>{step.label}</strong>
+        <span>{step.detail}</span>
+      </div>
+      <em>{step.realOrderState}</em>
+    </div>
+  );
+}
+
+function ContractBlock({
+  title,
+  icon: Icon,
+  rows
+}: {
+  title: string;
+  icon: LucideIcon;
+  rows: Array<{ label: string; value: string; detail: string }>;
+}) {
+  return (
+    <section className="mobileContractBlock">
+      <div className="sectionHeader compact">
+        <div>
+          <p className="eyebrow">Mobile contract</p>
+          <h3>{title}</h3>
+        </div>
+        <Icon size={18} />
+      </div>
+      <div className="mobileContractRows">
+        {rows.map((row) => (
+          <div className="mobileContractRow" key={`${row.label}-${row.value}`}>
+            <div>
+              <strong>{row.label}</strong>
+              <span>{row.detail}</span>
+            </div>
+            <em>{row.value}</em>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -2712,6 +3021,27 @@ function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {
     "prepared-request": "request contract ready"
   };
   return labels[mode];
+}
+
+function queueStatusLabel(status: MobileCardQueueItem["status"]): string {
+  const labels: Record<MobileCardQueueItem["status"], string> = {
+    approved: "Approved",
+    "needs-approval": "Needs approval",
+    "ready-for-handoff": "Ready for handoff"
+  };
+  return labels[status];
+}
+
+function memoryUsageLabel(usage: MobileMemoryReviewItem["usage"]): string {
+  const labels: Record<MobileMemoryReviewItem["usage"], string> = {
+    approved: "Approved",
+    "review-required": "Review"
+  };
+  return labels[usage];
+}
+
+function proofStatusLabel(passed: boolean): string {
+  return passed ? "Passed" : "Review";
 }
 
 function formatCents(cents: number): string {
