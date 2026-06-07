@@ -418,13 +418,21 @@ export const apiRouteContracts: ApiRouteContract[] = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "durable-api",
-    requestSchema: ["X-Idempotency-Key", "sourceKind", "metadataOnlyPayload"],
+    requestSchema: [
+      "X-Idempotency-Key",
+      "sourceKind",
+      "metadataOnlyPayload",
+      "rawImportText",
+      "rawInviteText",
+      "rawIcsText",
+      "rawCalendarText"
+    ],
     responseSchema: ["opportunities", "warnings", "rawContentStored"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy: "Metadata-only import preview; raw content storage forbidden.",
-    backedBy: ["parseFreeImport", "serviceKernel.importEvents"]
+    backedBy: ["resolveImportPreviewMetadata", "parseFreeImport", "serviceKernel.importEvents"]
   },
   {
     id: "card-projects",

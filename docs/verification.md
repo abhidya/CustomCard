@@ -98,10 +98,12 @@ it after each meaningful implementation pass.
   explicit contract/memory runtime modes, memory-mode Bearer session gates,
   repository-backed `/api/memories/review`, `/api/render-packets`,
   `/api/import-preview`, and `/api/card-projects` mutation behavior, including
-  fail-closed `/api/import-preview` validation for explicit `sourceKind`,
-  `metadataOnlyPayload.title`, `metadataOnlyPayload.recipientName`, and
-  `metadataOnlyPayload.startsAt`, plus fail-closed required-field validation for
-  non-import repository routes: render packets require `projectId`, card
+  fail-closed `/api/import-preview` validation for explicit `sourceKind` plus
+  either metadata-only event fields (`metadataOnlyPayload.title`,
+  `metadataOnlyPayload.recipientName`, and `metadataOnlyPayload.startsAt`) or
+  server-parsed raw invite/ICS text (`rawImportText`, `rawInviteText`,
+  `rawIcsText`, or `rawCalendarText`), plus fail-closed required-field
+  validation for non-import repository routes: render packets require `projectId`, card
   projects require `opportunityId` and `recipientName`, memory review requires
   `recipientName`, reviewed text, and an explicit decision, manual printer
   handoff requires project/render/store/approval fields, and data requests
@@ -526,7 +528,9 @@ npm run api:doctor:postgres
 Result: passed. Postgres runtime doctor used an injected fake `pg` pool to
 exercise auth-session lookup, wrong-role blocking, idempotent mutation insert,
 repository-backed render-packet insert, repository-backed import-preview insert,
-fail-closed import-preview rejection when required metadata is missing,
+server-parsed raw ICS import-preview insert without raw DESCRIPTION echo,
+fail-closed import-preview rejection when required metadata or raw invite/ICS
+text is missing,
 fail-closed rejection for non-import mutations missing required fields before
 idempotency or repository writes,
 repository-backed card-project insert, repository-backed relationship-memory

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
 
@@ -455,19 +456,10 @@ const mutationBodyContracts = {
       "metadataOnlyPayload.recipientName",
       "metadataOnlyPayload.startsAt"
     ],
-    detail: "Import preview requires explicit metadata-only event fields before event/opportunity persistence.",
+    detail:
+      "Import preview requires explicit metadata-only event fields or server-parsed raw invite/ICS text before event/opportunity persistence.",
     missingFields(body) {
-      const payload = metadataOnlyPayload(body);
-      const missingFields = [];
-
-      if (!hasRequiredText(body.sourceKind)) missingFields.push("sourceKind");
-      if (!payload || !hasRequiredText(payload.title)) missingFields.push("metadataOnlyPayload.title");
-      if (!payload || !hasRequiredText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint)) {
-        missingFields.push("metadataOnlyPayload.recipientName");
-      }
-      if (!payload || !hasValidTimestamp(payload.startsAt ?? payload.starts_at)) missingFields.push("metadataOnlyPayload.startsAt");
-
-      return missingFields;
+      return resolveImportPreviewMetadata(body).missingFields;
     }
   },
   "render-packets": {
@@ -548,20 +540,8 @@ function validateMutationBody(route, bodyText) {
   };
 }
 
-function metadataOnlyPayload(body) {
-  return typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null && !Array.isArray(body.metadataOnlyPayload)
-    ? body.metadataOnlyPayload
-    : undefined;
-}
-
 function hasRequiredText(value) {
   return String(value ?? "").trim().length > 0;
-}
-
-function hasValidTimestamp(value) {
-  const text = String(value ?? "").trim();
-  if (!text) return false;
-  return !Number.isNaN(new Date(text).getTime());
 }
 
 function hasExplicitBoolean(value) {
@@ -957,10 +937,9 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
 
 function buildImportPreviewRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
-  const payload = typeof body.metadataOnlyPayload === "object" && body.metadataOnlyPayload !== null
-    ? body.metadataOnlyPayload
-    : body;
-  const sourceKind = safeId(body.sourceKind, "");
+  const resolvedImport = resolveImportPreviewMetadata(body);
+  const payload = resolvedImport.metadataOnlyPayload ?? {};
+  const sourceKind = safeId(resolvedImport.sourceKind, "");
   const title = safeText(payload.title, "");
   const recipientName = safeText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint, "");
   const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at, "");
@@ -981,7 +960,8 @@ function buildImportPreviewRecord({ authContext, bodyText }) {
       metadataSchema: {
         sourceKind,
         rawContentStored: false,
-        metadataOnly: true
+        metadataOnly: true,
+        rawTextAccepted: resolvedImport.parsedFromRawText
       }
     },
     importedEvent: {
@@ -1001,8 +981,16 @@ function buildImportPreviewRecord({ authContext, bodyText }) {
       evidence: {
         sourceKind,
         sourceEvidence,
-        rawContentStored: false
+        rawContentStored: false,
+        parsedFromRawText: resolvedImport.parsedFromRawText
       }
+    },
+    importParser: {
+      parsedFromRawText: resolvedImport.parsedFromRawText,
+      rawTextField: resolvedImport.rawTextField,
+      rawContentStored: false,
+      evidenceSummary: resolvedImport.evidenceSummary,
+      warnings: resolvedImport.warnings
     }
   };
 }
@@ -1010,7 +998,8 @@ function buildImportPreviewRecord({ authContext, bodyText }) {
 function buildImportPreviewRepositoryPayload(record, runtimeMode) {
   return {
     rawContentStored: false,
-    warnings: [],
+    warnings: record.importParser.warnings,
+    importParser: record.importParser,
     opportunities: [
       {
         opportunityId: record.cardOpportunity.id,

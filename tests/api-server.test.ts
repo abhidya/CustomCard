@@ -918,6 +918,49 @@ describe("api server wrapper", () => {
         ])
       });
 
+      const rawIcsImportPreview = await postJson(
+        port,
+        "/api/import-preview",
+        {
+          sourceKind: "manual-ics",
+          rawImportText: [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "BEGIN:VEVENT",
+            "SUMMARY:Wedding dinner for Sara",
+            "DTSTART;TZID=America/New_York:20300603T180000",
+            "LOCATION:Brooklyn, NY",
+            "ATTENDEE;CN=Sara:mailto:sara@example.com",
+            "DESCRIPTION:Private note that must not return in API metadata.",
+            "END:VEVENT",
+            "END:VCALENDAR"
+          ].join("\n")
+        }
+      );
+      expect(rawIcsImportPreview.status).toBe(202);
+      const rawIcsPayload = await rawIcsImportPreview.json();
+      expect(rawIcsPayload).toMatchObject({
+        status: "accepted-contract-only",
+        route: "import-preview",
+        rawContentStored: false,
+        importParser: {
+          parsedFromRawText: true,
+          rawTextField: "rawImportText",
+          rawContentStored: false,
+          evidenceSummary: expect.arrayContaining(["ICS VEVENT detected", "DTSTART field present"])
+        },
+        opportunities: [
+          expect.objectContaining({
+            recipientName: "Sara",
+            title: "Wedding dinner for Sara",
+            startsAt: "2030-06-03T18:00:00.000Z",
+            timezone: "America/New_York",
+            decision: "generate"
+          })
+        ]
+      });
+      expect(JSON.stringify(rawIcsPayload)).not.toContain("Private note");
+
       const missingCardProjectRecipient = await postJson(
         port,
         "/api/card-projects",
@@ -987,6 +1030,10 @@ describe("api server wrapper", () => {
         status: "accepted-contract-only",
         route: "import-preview",
         rawContentStored: false,
+        importParser: {
+          parsedFromRawText: false,
+          rawContentStored: false
+        },
         opportunities: [
           expect.objectContaining({
             opportunityId: "opportunity-contract-api",
@@ -1232,6 +1279,44 @@ describe("api server wrapper", () => {
         ])
       });
 
+      const rawInvitePreview = await postJson(
+        port,
+        "/api/import-preview",
+        {
+          sourceKind: "manual-invite",
+          rawInviteText: "Birthday brunch for Mom on 2030-07-12 at Queens, NY.",
+          connectionId: "connection-memory-raw-invite",
+          eventId: "event-memory-raw-invite",
+          opportunityId: "opportunity-memory-raw-invite"
+        },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "import-preview-raw-invite"
+        }
+      );
+      expect(rawInvitePreview.status).toBe(202);
+      expect(await rawInvitePreview.json()).toMatchObject({
+        runtimeMode: "memory",
+        authenticatedUserId: "user-demo",
+        repositoryPersisted: true,
+        rawContentStored: false,
+        importParser: {
+          parsedFromRawText: true,
+          rawTextField: "rawInviteText",
+          rawContentStored: false,
+          evidenceSummary: expect.arrayContaining(["Plain invite text detected"])
+        },
+        opportunities: [
+          expect.objectContaining({
+            opportunityId: "opportunity-memory-raw-invite",
+            eventId: "event-memory-raw-invite",
+            recipientName: "Mom",
+            startsAt: "2030-07-12T00:00:00.000Z",
+            decision: "generate"
+          })
+        ]
+      });
+
       const missingRenderPacketProject = await postJson(
         port,
         "/api/render-packets",
@@ -1423,6 +1508,10 @@ describe("api server wrapper", () => {
         authenticatedUserId: "user-demo",
         repositoryPersisted: true,
         rawContentStored: false,
+        importParser: {
+          parsedFromRawText: false,
+          rawContentStored: false
+        },
         opportunities: [
           expect.objectContaining({
             opportunityId: "opportunity-memory-api",
@@ -1596,12 +1685,12 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 7,
-        auditRecords: 7,
+        idempotencyRecords: 8,
+        auditRecords: 8,
         queuedJobs: 2,
-        providerConnectionRecords: 1,
-        importedEventRecords: 1,
-        cardOpportunityRecords: 1,
+        providerConnectionRecords: 2,
+        importedEventRecords: 2,
+        cardOpportunityRecords: 2,
         relationshipMemoryRecords: 1,
         cardProjectRecords: 1,
         renderPacketRecords: 1,

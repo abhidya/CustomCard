@@ -39,13 +39,15 @@ Requirement types:
 | R027 | Support multiple languages and regional readiness. | Explicit | Covered as a launch-locale readiness contract for English (US), Spanish (US), Urdu, and Arabic across customer/admin web panels, API bootstrap/readiness payloads, and the mobile customer shell. RTL locales require layout validation, non-English/RTL copy stays human-review-gated, and live translation providers are disabled. | `src/localization.ts`; `src/localization.test.ts`; `scripts/localization-doctor.mjs`; `src/App.tsx`; `src/apiContracts.ts`; `scripts/api-server.mjs`; `apps/mobile/src/customerExperience.ts`; `apps/mobile/src/App.tsx`; `tests/app-smoke.test.ts`; `tests/mobile-contract.test.ts`; `.github/workflows/verify.yml`. |
 | R028 | Let businesses use popular CRM/customer systems for lifecycle card campaigns. | Explicit | Covered as admin-only CRM lifecycle contracts for local CSV export plus Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, Shopify, Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce, Square, and Intercom customer/order metadata reads, plus a business engagement readiness register that tracks CRM lifecycle source, trigger normalization, card-opportunity review, workflow payloads, customer message channels, consent/suppression gates, and campaign feedback. Birthday, purchase-anniversary, and warranty-anniversary triggers are metadata-only, opt-in gated, suppression-list gated, tenant-reviewed, revocation-aware, and no-network in this repo state; live CRM OAuth, customer messages, CRM writeback, and production campaign analytics remain unclaimed. | `src/providerCatalog.ts`; `src/providerRuntime.ts`; `src/providerGovernance.ts`; `src/businessEngagementReadiness.ts`; `src/businessEngagementReadinessData.mjs`; `scripts/business-engagement-readiness-doctor.mjs`; `src/providerCatalog.test.ts`; `src/providerRuntime.test.ts`; `src/providerGovernance.test.ts`; `src/businessEngagementReadiness.test.ts`; `infra/env/.env.example`; `docs/platform-expansion-design.md`. |
 | R029 | Let businesses connect workflow and workspace systems for review queues. | Explicit | Covered as admin-only no-network workflow contracts for local payload export plus Zapier, Make, Slack, Microsoft Teams, Notion, Airtable, Google Sheets, n8n, Workato, and Pipedream. Payloads are aggregate/metadata-only, opt-in gated, suppression-list gated, redacted, and live sends remain disabled. | `src/providerCatalog.ts`; `src/providerRuntime.ts`; `src/providerGovernance.ts`; `src/providerCatalog.test.ts`; `src/providerRuntime.test.ts`; `src/providerGovernance.test.ts`; `infra/env/.env.example`; `tests/app-smoke.test.ts`. |
-| R030 | Define user stories, onboarding processes, and popular calendar integration planning. | Explicit | Covered as typed onboarding stories, ordered onboarding stages, customer-visible onboarding choices, and Google Calendar/iCloud readiness contracts. Google Calendar is credential-gated behind OAuth setup and `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`; iCloud is manual ICS export contract-only. Web and mobile surfaces present `Paste invite or ICS` as the ready path and do not expose live Google/Apple sign-in CTAs. No fake live OAuth, provider callback, Apple credential storage, background sync, card project creation, memory creation, vendor sharing, payment, or order is enabled by these contracts. | `src/onboardingCalendar.ts`; `src/onboardingCalendar.test.ts`; `src/App.tsx`; `apps/mobile/src/customerExperience.ts`; `apps/mobile/src/App.tsx`; `tests/app-smoke.test.ts`; `tests/mobile-contract.test.ts`; `docs/onboarding-calendar-plan.md`; `docs/product-brief.md`; `docs/implementation-roadmap.md`. |
+| R030 | Define user stories, onboarding processes, and popular calendar integration planning. | Explicit | Covered as typed onboarding stories, ordered onboarding stages, customer-visible onboarding choices, Google Calendar/iCloud readiness contracts, and server-side `/api/import-preview` parsing for explicit metadata-only payloads or pasted raw invite/ICS text. Google Calendar is credential-gated behind OAuth setup and `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`; iCloud is manual ICS export contract-only. Web and mobile surfaces present `Paste invite or ICS` as the ready path and do not expose live Google/Apple sign-in CTAs. Raw pasted calendar text is parsed into metadata-only preview fields and is not persisted or echoed. No fake live OAuth, provider callback, Apple credential storage, background sync, card project creation, memory creation, vendor sharing, payment, or order is enabled by these contracts. | `src/onboardingCalendar.ts`; `src/importPreviewMetadata.mjs`; `src/importPreviewMetadata.test.ts`; `src/onboardingCalendar.test.ts`; `src/App.tsx`; `apps/mobile/src/customerExperience.ts`; `apps/mobile/src/App.tsx`; `tests/app-smoke.test.ts`; `tests/api-server.test.ts`; `tests/mobile-contract.test.ts`; `docs/onboarding-calendar-plan.md`; `docs/product-brief.md`; `docs/implementation-roadmap.md`. |
 
 ## Acceptance Criteria Covered By Tests
 
 - Weak/generic source text cannot create a successful print packet.
 - Walgreens adapter is blocked unless physical certification, live quote, approval, and explicit policy gates exist.
-- Metadata-only provider import rejects raw email/calendar content.
+- Metadata-only provider import rejects raw email/calendar storage and response
+  echo; pasted invite/ICS text is parsed server-side into metadata-only preview
+  fields.
 - Revoked or unsupported provider connections import no events.
 - Card projects are created only after explicit `generate` decisions.
 - Approved memories are filtered by recipient and can be forgotten.
@@ -128,7 +130,8 @@ Requirement types:
 - Mobile doctor validates the customer experience contract and fails if the
   repo-local real-order kill switch is enabled.
 - Local workspace auth works without external providers.
-- ICS/manual import produces a reviewable opportunity.
+- ICS/manual import produces a reviewable opportunity from explicit
+  metadata-only fields or server-parsed raw invite/ICS text.
 - Card studio renders four 1500 x 2100 SVG-ready panels.
 - Print package export produces four SVG artifacts, a combined 5x7 PDF proof,
   and a checksum manifest without network calls or real orders.
@@ -163,7 +166,8 @@ Requirement types:
   and never prepare live vendor order requests.
 - Onboarding calendar contracts cover Google Calendar and iCloud user stories,
   preserve consent-before-import and import-before-generation stage ordering,
-  align adapter IDs to the provider catalog, and keep live OAuth/provider request
+  align adapter IDs to the provider catalog, parse pasted invite/ICS text into
+  metadata-only previews server-side, and keep live OAuth/provider request
   factories disabled.
 - Core, API, localization, persistence, orchestration, and mobile contract
   coverage thresholds are enforced in `npm run check`: 90% statements, 80%

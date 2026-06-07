@@ -14,6 +14,7 @@ import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
 import { summarizeReviewerDbSeedReadiness } from "../src/reviewerDbSeedReadinessData.mjs";
 import { summarizeCloudArtifactProofReadiness } from "../src/cloudArtifactProofReadinessData.mjs";
 import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
+import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
@@ -1004,10 +1005,9 @@ function buildMutationContractPayload(route, bodyText) {
   }
 
   if (route.id === "import-preview") {
-    const payload = typeof requestBody.metadataOnlyPayload === "object" && requestBody.metadataOnlyPayload !== null
-      ? requestBody.metadataOnlyPayload
-      : requestBody;
-    const sourceKind = safeContractId(requestBody.sourceKind, "");
+    const resolvedImport = resolveImportPreviewMetadata(requestBody);
+    const payload = resolvedImport.metadataOnlyPayload ?? {};
+    const sourceKind = safeContractId(resolvedImport.sourceKind, "");
     const title = safeContractText(payload.title, "");
     const recipientName = safeContractText(payload.recipientName ?? payload.recipient_hint ?? payload.recipientHint, "");
     const startsAt = safeTimestamp(payload.startsAt ?? payload.starts_at, "");
@@ -1016,7 +1016,13 @@ function buildMutationContractPayload(route, bodyText) {
     return {
       ...basePayload,
       rawContentStored: false,
-      warnings: [],
+      warnings: resolvedImport.warnings,
+      importParser: {
+        parsedFromRawText: resolvedImport.parsedFromRawText,
+        rawTextField: resolvedImport.rawTextField,
+        rawContentStored: false,
+        evidenceSummary: resolvedImport.evidenceSummary
+      },
       opportunities: [
         {
           opportunityId,

@@ -87,13 +87,16 @@ await runCheck("persists repository-backed import preview mutations", async () =
       connectionId: "connection-postgres-contract",
       eventId: "event-postgres-contract",
       opportunityId: "opportunity-postgres-contract",
-      metadataOnlyPayload: {
-        title: "Anniversary dinner",
-        recipientName: "Sara",
-        startsAt: "2030-06-03T18:00:00.000Z",
-        timezone: "America/New_York",
-        confidence: 0.96
-      }
+      rawImportText: [
+        "BEGIN:VCALENDAR",
+        "BEGIN:VEVENT",
+        "SUMMARY:Anniversary dinner",
+        "DTSTART;TZID=America/New_York:20300603T180000",
+        "ATTENDEE;CN=Sara:mailto:sara@example.invalid",
+        "DESCRIPTION:Private dinner note that must not be returned",
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\n")
     }),
     responsePayload: {
       service: "customcard-api",
@@ -108,7 +111,15 @@ await runCheck("persists repository-backed import preview mutations", async () =
   expect(result.payload.runtimeMode === "postgres", "import-preview mutation should report postgres runtime");
   expect(result.payload.repositoryPersisted, "import-preview mutation should persist through repository path");
   expect(result.payload.rawContentStored === false, "import-preview must keep raw content storage disabled");
+  expect(result.payload.importParser.parsedFromRawText, "import-preview should accept server-parsed raw ICS text");
+  expect(result.payload.importParser.rawContentStored === false, "raw import parser must not store raw content");
+  expect(
+    result.payload.importParser.evidenceSummary.includes("DTSTART field present"),
+    "raw import parser should expose metadata-only parse evidence"
+  );
   expect(result.payload.opportunities[0].opportunityId === "opportunity-postgres-contract", "import-preview should return the persisted opportunity id");
+  expect(result.payload.opportunities[0].startsAt === "2030-06-03T18:00:00.000Z", "raw ICS DTSTART should map to start timestamp");
+  expect(!JSON.stringify(result.payload).includes("Private dinner note"), "import-preview response must not return raw private DESCRIPTION text");
   expect(fakeDb.providerConnections.length === 1, "provider_connections row should be inserted");
   expect(fakeDb.importedEvents.length === 1, "imported_events row should be inserted");
   expect(fakeDb.cardOpportunities.length === 1, "card_opportunities row should be inserted");

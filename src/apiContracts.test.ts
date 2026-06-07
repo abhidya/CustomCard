@@ -39,6 +39,7 @@ describe("api contracts", () => {
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
     const adminDemoReset = apiRouteContracts.find((route) => route.id === "admin-demo-reset");
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
+    const importPreview = apiRouteContracts.find((route) => route.id === "import-preview");
     const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
@@ -55,6 +56,10 @@ describe("api contracts", () => {
     expect(adminDemoReset?.responseSchema).toEqual(expect.arrayContaining(["seedSummary", "signedArtifactUrls"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
+    expect(importPreview?.requestSchema).toEqual(
+      expect.arrayContaining(["metadataOnlyPayload", "rawImportText", "rawInviteText", "rawIcsText", "rawCalendarText"])
+    );
+    expect(importPreview?.backedBy).toContain("resolveImportPreviewMetadata");
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");

@@ -32,7 +32,10 @@ in `src/onboardingCalendar.test.ts`.
    live OAuth URLs.
 4. **Review imported event metadata.** Candidate events use metadata fields only:
    title, date range, location label, attendee labels, and evidence summary.
-   Raw calendar descriptions and full email bodies are out of scope.
+   `/api/import-preview` accepts either explicit metadata-only fields or pasted
+   raw invite/ICS text, parses the raw text server-side, and returns only the
+   derived metadata plus parser evidence. Raw calendar descriptions and full
+   email bodies are never persisted or returned.
 5. **Approve card opportunity.** The user explicitly generates, snoozes,
    dismisses, or edits a candidate. Importing a calendar never creates a card
    project by itself.
@@ -69,7 +72,7 @@ instead of silently hiding the missing adapter behind an empty fallback.
 
 | Packet | Customer action | Operator evidence | Blocked surface |
 | --- | --- | --- | --- |
-| `manual-invite-or-ics` | Paste invite text, selected event fields, or ICS text into the local import path; review detected metadata before creating a card. | Manual parser tests pass; raw content storage checks pass; opportunity approval remains explicit. | None; this is the ready local path. |
+| `manual-invite-or-ics` | Paste invite text, selected event fields, or ICS text into the local import path; review detected metadata before creating a card. | `/api/import-preview` accepts `metadataOnlyPayload`, `rawImportText`, `rawInviteText`, `rawIcsText`, or `rawCalendarText`; parser tests, API tests, and Postgres runtime doctors prove raw content is not stored or echoed. | None; this is the ready local path. |
 | `google-calendar-events` | Review the Google metadata-only scope and use manual paste while OAuth is not enabled. | OAuth app, redirect URI, consent screen, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, revocation handling, token storage boundary, and metadata schema fixture tests. | No provider request URL, callback, token storage, or network request is prepared in this repo state. |
 | `icloud-ics-fallback` | Export/download an ICS copy, then paste selected event data into the same local import preview. | Prove Apple credentials are not collected; manual ICS parser tests pass. | No Apple ID, app-specific password, CalDAV session, native sync, or provider credential storage. |
 
@@ -79,15 +82,16 @@ The customer web panel and mobile app show the same readiness split:
 
 | Choice | Customer state | Action |
 | --- | --- | --- |
-| Paste invite or ICS | Ready now | Use the local no-account import path. |
+| Paste invite or ICS | Ready now | Use the local no-account import path; the server parses pasted invite/ICS text into metadata-only preview fields. |
 | Google Calendar connection | OAuth gated | Do not show a live sign-in CTA until OAuth app setup, consent copy, token storage, and revocation handling exist. |
 | Apple Calendar ICS export | Manual export | Ask the user to export/download ICS and paste selected event data; never ask for Apple ID, app-specific password, CalDAV, or native sync credentials in this repo state. |
 
 ## Guardrails
 
 - No fake live OAuth URLs, callbacks, or provider request factories.
-- Calendar import contracts are metadata-only and reject raw email/calendar body
-  storage.
+- Calendar import contracts are metadata-only: raw pasted invite/ICS text can be
+  parsed by `/api/import-preview`, but raw email/calendar body storage and
+  response echoing are forbidden.
 - Calendar connection does not create card projects, relationship memories,
   vendor shares, payments, or orders without explicit user approval.
 - Google Calendar is credential-gated; iCloud is manual-export contract-only

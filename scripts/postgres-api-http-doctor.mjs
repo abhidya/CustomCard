@@ -47,17 +47,25 @@ const mutationCases = [
       connectionId: "connection-live-postgres-http",
       eventId: "event-live-postgres-http",
       opportunityId: "opportunity-live-postgres-http",
-      metadataOnlyPayload: {
-        title: "Anniversary dinner",
-        recipientName: "Sara",
-        startsAt: "2030-06-03T18:00:00.000Z",
-        timezone: "America/New_York",
-        confidence: 0.96,
-        leadTimeHours: 240
-      }
+      leadTimeHours: 240,
+      rawImportText: [
+        "BEGIN:VCALENDAR",
+        "BEGIN:VEVENT",
+        "SUMMARY:Anniversary dinner",
+        "DTSTART;TZID=America/New_York:20300603T180000",
+        "ATTENDEE;CN=Sara:mailto:sara@example.invalid",
+        "DESCRIPTION:Private dinner note that must not be returned",
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\n")
     },
     expected: {
       rawContentStored: false,
+      importParser: {
+        parsedFromRawText: true,
+        rawContentStored: false,
+        evidenceSummary: ["ICS VEVENT detected", "SUMMARY field present", "DTSTART field present", "1 attendee label detected"]
+      },
       opportunities: [
         {
           opportunityId: "opportunity-live-postgres-http",

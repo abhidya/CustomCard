@@ -157,14 +157,17 @@ try {
           connectionId: "connection-live-postgres",
           eventId: "event-live-postgres",
           opportunityId: "opportunity-live-postgres",
-          metadataOnlyPayload: {
-            title: "Anniversary dinner",
-            recipientName: "Sara",
-            startsAt: "2030-06-03T18:00:00.000Z",
-            timezone: "America/New_York",
-            confidence: 0.96,
-            leadTimeHours: 240
-          }
+          leadTimeHours: 240,
+          rawImportText: [
+            "BEGIN:VCALENDAR",
+            "BEGIN:VEVENT",
+            "SUMMARY:Anniversary dinner",
+            "DTSTART;TZID=America/New_York:20300603T180000",
+            "ATTENDEE;CN=Sara:mailto:sara@example.invalid",
+            "DESCRIPTION:Private dinner note that must not be returned",
+            "END:VEVENT",
+            "END:VCALENDAR"
+          ].join("\n")
         }),
         responsePayload: {
           service: "customcard-api",
@@ -178,7 +181,11 @@ try {
       expect(result.payload.runtimeMode === "postgres", "Import-preview mutation should use postgres runtime.");
       expect(result.payload.repositoryPersisted, "Import-preview mutation should persist through repository path.");
       expect(result.payload.rawContentStored === false, "Import-preview mutation must not store raw content.");
+      expect(result.payload.importParser.parsedFromRawText, "Import-preview mutation should accept server-parsed raw ICS text.");
+      expect(result.payload.importParser.rawContentStored === false, "Raw import parser must keep raw content storage disabled.");
       expect(result.payload.opportunities[0].opportunityId === "opportunity-live-postgres", "Import-preview response should return persisted opportunity id.");
+      expect(result.payload.opportunities[0].startsAt === "2030-06-03T18:00:00.000Z", "Import-preview response should return parsed ICS start time.");
+      expect(!JSON.stringify(result.payload).includes("Private dinner note"), "Import-preview response must not return raw private DESCRIPTION text.");
     });
 
     await runCheck("persists real Postgres relationship memory repository mutation", async () => {
