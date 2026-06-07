@@ -125,7 +125,7 @@ Requirement types:
   sync, locale readiness, and handoff sections.
 - Mobile doctor validates the customer experience contract and fails if the
   repo-local real-order kill switch is enabled.
-- Local demo auth works without external providers.
+- Local workspace auth works without external providers.
 - ICS/manual import produces a reviewable opportunity.
 - Card studio renders four 1500 x 2100 SVG-ready panels.
 - Print package export produces four SVG artifacts, a combined 5x7 PDF proof,

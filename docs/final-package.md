@@ -38,8 +38,8 @@
 
 ## What Changed
 
-- Product/workflow: the web app now opens on the usable workflow: local demo
-  workspace, manual/ICS import, opportunity decision, card studio, memory review,
+- Product/workflow: the web app now opens on the usable workflow: local
+  workspace auth, manual/ICS import, opportunity decision, card studio, memory review,
   SVG/PDF print package export, manual handoff, customer panel, admin panel,
   capacity profile readiness, and adapter readiness.
 - UX/polish: redesigned the app shell, responsive navigation, status gates,

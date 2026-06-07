@@ -113,8 +113,8 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
 
 export const providerCatalog: ProviderAdapter[] = [
   {
-    id: "local-demo-auth",
-    label: "Local demo auth",
+    id: "local-workspace-auth",
+    label: "Local workspace auth",
     provider: "Browser workspace",
     capability: "auth",
     lane: "Free local",
@@ -1384,7 +1384,7 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["User approved", "Delete control", "No hidden personalization"],
     roleSurface: ["customer", "admin"],
     priority: 7,
-    detail: "Stores approved memory in the local demo workspace only."
+    detail: "Stores approved memory in the local workspace only."
   },
   {
     id: "postgres-memory-store",

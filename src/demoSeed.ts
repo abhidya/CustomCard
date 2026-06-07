@@ -3,6 +3,7 @@ import {
   buildOpportunity,
   buildVendorHandoff,
   createLocalWorkspace,
+  defaultMemories,
   generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
@@ -100,7 +101,10 @@ const requiredDemoTables: DemoSeedTable[] = [
 ];
 
 export async function buildDemoSeedPlan(generatedAtIso = fixedDemoDateIso): Promise<DemoSeedPlan> {
-  const workspace = createLocalWorkspace("Demo User", "demo@customcard.local", new Date(generatedAtIso));
+  const workspace = {
+    ...createLocalWorkspace("Demo User", "demo@customcard.local", new Date(generatedAtIso)),
+    memories: defaultMemories
+  };
   const signal = parseFreeImport(sampleInviteText);
   const opportunity = buildOpportunity(signal, workspace.memories, new Date(generatedAtIso));
   const draft = generateCardDraft(getDefaultDraftInput(workspace, opportunity), workspace.memories);

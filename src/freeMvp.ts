@@ -119,7 +119,7 @@ END:VEVENT
 END:VCALENDAR`;
 
 export const freeAdapterLabels = [
-  "Local demo workspace",
+  "Local workspace",
   "ICS or invite paste",
   "Manual memory review",
   "Deterministic copy templates",
@@ -152,15 +152,15 @@ export const defaultMemories: MemoryItem[] = [
 const dayInMs = 24 * 60 * 60 * 1000;
 
 export function createLocalWorkspace(name: string, email: string, now = new Date()): LocalWorkspace {
-  const normalizedName = cleanText(name) || "Demo User";
-  const normalizedEmail = cleanText(email).toLowerCase() || "demo@customcard.local";
+  const normalizedName = cleanText(name) || "Local User";
+  const normalizedEmail = cleanText(email).toLowerCase() || "local@customcard.local";
 
   return {
     id: `workspace-${stableId(`${normalizedName}:${normalizedEmail}`)}`,
     name: normalizedName,
     email: normalizedEmail,
     createdAtIso: now.toISOString(),
-    memories: defaultMemories
+    memories: []
   };
 }
 
@@ -261,7 +261,7 @@ export function getDefaultDraftInput(
   opportunity: CardOpportunity
 ): CardDraftInput {
   return {
-    sender: workspace?.name ?? "Demo User",
+    sender: workspace?.name ?? "Local User",
     recipient: opportunity.recipient,
     relationship: "Friends",
     occasion: opportunity.occasion,
@@ -275,7 +275,7 @@ export function getDefaultDraftInput(
 
 export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[]): CardDraft {
   const recipient = cleanText(input.recipient) || "Someone important";
-  const sender = cleanText(input.sender) || "Demo User";
+  const sender = cleanText(input.sender) || "Local User";
   const occasion = cleanText(input.occasion) || "card";
   const approvedMemories = input.useMemory
     ? memories.filter((memory) => memory.approved && namesOverlap(memory.recipient, recipient))

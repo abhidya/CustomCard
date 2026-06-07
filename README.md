@@ -21,7 +21,7 @@ This is not just AI greeting cards. The defensible product is:
 
 This repo now contains a runnable Vite, React, and TypeScript free local MVP plus
 a repo-local production skeleton. The web app opens on the actual reviewer
-workflow: local demo auth, manual/ICS event import, opportunity approval,
+workflow: local workspace auth, manual/ICS event import, opportunity approval,
 relationship memory review, deterministic card generation, 5x7 SVG panel export,
 local SVG/PDF print package export, customer/admin panels, customer-facing
 fulfillment recommendations, a browser-inspectable mobile app preview, and
@@ -48,7 +48,7 @@ environment configuration instead of static placeholders.
 
 ## Free MVP Capabilities
 
-- Local demo workspace auth using browser storage only.
+- Local workspace auth using browser storage only.
 - Manual invite text and `.ics` paste import.
 - Local vCard and CSV contact/address import.
 - Admin-only business CRM CSV lifecycle import plus gated Salesforce, HubSpot,
@@ -233,7 +233,7 @@ CRM, or cloud credentials.
 ## Reviewer Demo Path
 
 1. Run `npm ci` and `npm run dev`.
-2. Use the local demo auth controls to enter the customer workspace.
+2. Use the local workspace auth controls to enter the customer workspace.
 3. Paste an invite or `.ics` event, approve the detected opportunity, and review
    the relationship memory before generation.
 4. Generate the deterministic 5x7 card panels, export the local print package,

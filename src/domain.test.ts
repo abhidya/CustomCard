@@ -58,7 +58,7 @@ describe("CustomCard blueprint domain", () => {
     expect(adapterBlocksRealOrders(missingApproval)).toBe(false);
   });
 
-  it("runs source extraction into facts, storyboard matches, and a mock print manifest", () => {
+  it("runs source extraction into facts, storyboard matches, and a local proof print manifest", () => {
     const weddingRun = runOperationalExtraction(
       "Sara and Ahmed have a wedding tomorrow. Use Walgreens pickup, 5x7, 1500x2100, 300 DPI, and consider regional privacy."
     );
@@ -73,12 +73,12 @@ describe("CustomCard blueprint domain", () => {
     );
     expect(genericRun.matchedStoryboardIds).toEqual([]);
     expect(weddingRun.printPacket.valid).toBe(true);
-    expect(weddingRun.printPacket.kind).toBe("mock_manifest");
-    expect(weddingRun.handoff).toMatchObject({ mode: "mock_packet", canPlaceRealOrder: false });
+    expect(weddingRun.printPacket.kind).toBe("local_proof_manifest");
+    expect(weddingRun.handoff).toMatchObject({ mode: "local_proof_packet", canPlaceRealOrder: false });
     expect(weddingRun.printPacket.assets).toHaveLength(walgreensAdapter.panels.length);
     for (const asset of weddingRun.printPacket.assets) {
-      expect(asset).toMatchObject({ width: 1500, height: 2100, dpi: 300, mockSafeZonePassed: true });
-      expect(asset.mockChecksum).toMatch(/^[0-9a-f]{8}$/);
+      expect(asset).toMatchObject({ width: 1500, height: 2100, dpi: 300, localProofSafeZonePassed: true });
+      expect(asset.localProofChecksum).toMatch(/^[0-9a-f]{8}$/);
       expect(asset.svg).toContain('width="1500"');
       expect(asset.svg).toContain('height="2100"');
     }
@@ -100,7 +100,7 @@ describe("CustomCard blueprint domain", () => {
         canPlaceRealOrder: false,
         nextGate: "source-extraction-required"
       });
-      expect(run.handoff.reason).toContain("Cannot create a mock print packet");
+      expect(run.handoff.reason).toContain("Cannot create a local proof packet");
       expect(run.memoryProposal.text).toContain("blocked");
     }
   });

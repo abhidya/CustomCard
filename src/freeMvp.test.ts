@@ -4,6 +4,7 @@ import {
   buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
+  defaultMemories,
   generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
@@ -21,14 +22,14 @@ describe("free MVP workflow", () => {
 
     expect(workspace.id).toMatch(/^workspace-/);
     expect(workspace.email).toBe("abdul@example.com");
-    expect(workspace.memories.some((memory) => memory.approved)).toBe(true);
+    expect(workspace.memories).toEqual([]);
   });
 
   it("parses an ICS paste into a reviewable opportunity", () => {
     const signal = parseFreeImport(sampleInviteText);
     const opportunity = buildOpportunity(
       signal,
-      createLocalWorkspace("Demo", "demo@example.com").memories,
+      defaultMemories,
       new Date("2026-06-03T12:00:00.000Z")
     );
 
@@ -42,7 +43,7 @@ describe("free MVP workflow", () => {
   });
 
   it("generates deterministic four-panel 5x7 SVG-ready cards", () => {
-    const workspace = createLocalWorkspace("Abdul", "abdul@example.com");
+    const workspace = { ...createLocalWorkspace("Abdul", "abdul@example.com"), memories: defaultMemories };
     const signal = parseFreeImport(sampleInviteText);
     const opportunity = buildOpportunity(signal, workspace.memories, new Date("2026-06-03T12:00:00.000Z"));
     const input = getDefaultDraftInput(workspace, opportunity);
@@ -60,7 +61,7 @@ describe("free MVP workflow", () => {
   });
 
   it("keeps vendor handoff manual and blocks real orders", () => {
-    const workspace = createLocalWorkspace("Abdul", "abdul@example.com");
+    const workspace = { ...createLocalWorkspace("Abdul", "abdul@example.com"), memories: defaultMemories };
     const signal = parseFreeImport(sampleInviteText);
     const opportunity = buildOpportunity(signal, workspace.memories, new Date("2026-06-03T12:00:00.000Z"));
     const draft = generateCardDraft(getDefaultDraftInput(workspace, opportunity), workspace.memories);
@@ -76,7 +77,7 @@ describe("free MVP workflow", () => {
   });
 
   it("builds downloadable SVG panels with print dimensions", () => {
-    const workspace = createLocalWorkspace("Abdul", "abdul@example.com");
+    const workspace = { ...createLocalWorkspace("Abdul", "abdul@example.com"), memories: defaultMemories };
     const signal = parseFreeImport(sampleInviteText);
     const opportunity = buildOpportunity(signal, workspace.memories, new Date("2026-06-03T12:00:00.000Z"));
     const draft = generateCardDraft(getDefaultDraftInput(workspace, opportunity), workspace.memories);

@@ -63,7 +63,7 @@ export interface ProviderGovernanceSummary {
 }
 
 const fallbackByCapability: Record<ProviderCapability, string> = {
-  auth: "local-demo-auth",
+  auth: "local-workspace-auth",
   "event-import": "ics-paste-import",
   "contact-import": "vcard-contact-import",
   "crm-integration": "crm-csv-lifecycle-import",

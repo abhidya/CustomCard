@@ -89,7 +89,7 @@ pass.
 
 ## D008: Finish The Reviewable MVP With Free Local Substitutes
 
-Decision: finish the user-facing app with local demo auth, manual/ICS import,
+Decision: finish the user-facing app with local workspace auth, manual/ICS import,
 deterministic templates, browser SVG export, and manual vendor handoff.
 
 Reason: the requested finish line required free solutions only. These paths make

@@ -124,6 +124,22 @@ describeWithChrome("CustomCard UI smoke", () => {
 
         await clickByText("Create local workspace");
         await clickByText("Opportunities");
+        const importBox = document.querySelector(".importBox");
+        if (!importBox) throw new Error("Missing import box");
+        const setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+        setValue.call(importBox, [
+          "BEGIN:VCALENDAR",
+          "VERSION:2.0",
+          "BEGIN:VEVENT",
+          "SUMMARY:Sara and Ahmed anniversary dinner",
+          "DTSTART;VALUE=DATE:20260712",
+          "LOCATION:Brooklyn, NY",
+          "DESCRIPTION:Ten year anniversary. Sara loves botanical cards, Ahmed likes quiet humor, pickup is fine.",
+          "END:VEVENT",
+          "END:VCALENDAR"
+        ].join("\\n"));
+        importBox.dispatchEvent(new Event("input", { bubbles: true }));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await clickByText("Scan free import");
         const opportunityText = document.body.textContent;
         await clickByText("Generate card");
@@ -246,6 +262,12 @@ describeWithChrome("CustomCard UI smoke", () => {
 
         const initialCustomerText = document.body.textContent;
         const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
+        const chatComposer = document.querySelector('textarea[aria-label="Customer chat message"]');
+        if (!chatComposer) throw new Error("Missing customer chat composer");
+        const setChatValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+        setChatValue.call(chatComposer, "Can you keep this personal and avoid automatic checkout?");
+        chatComposer.dispatchEvent(new Event("input", { bubbles: true }));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await clickByText("Send");
         await clickByText("Create local workspace");
         const workspaceText = document.body.textContent;
@@ -400,7 +422,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.heading).toContain("Adapter readiness");
-    expect(result.text).toContain("Local demo auth");
+    expect(result.text).toContain("Local workspace auth");
     expect(result.text).toContain("ICS / invite paste");
     expect(result.text).toContain("OpenAI Responses chat");
     expect(result.text).toContain("OpenAI Images");

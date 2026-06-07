@@ -115,7 +115,7 @@ describe("production service kernel", () => {
     expect(pending.decision).toBe("pending");
     expect(createCardProject(user, rejected, [])).toBeUndefined();
     expect(createCardProject(user, snoozed, [])).toBeUndefined();
-    expect(createCardProject(user, approved, [])?.operationalRun.printPacket.kind).toBe("mock_manifest");
+    expect(createCardProject(user, approved, [])?.operationalRun.printPacket.kind).toBe("local_proof_manifest");
   });
 
   it("filters project memories to approved memories for the matching recipient", () => {
@@ -347,7 +347,7 @@ describe("production service kernel", () => {
     const slice = buildDemoServiceSlice();
 
     expect(slice.opportunities[0].decision).toBe("generate");
-    expect(slice.project?.operationalRun.printPacket.kind).toBe("mock_manifest");
+    expect(slice.project?.operationalRun.printPacket.kind).toBe("local_proof_manifest");
     expect(slice.renderPacket.kind).toBe("validated_print_packet");
     expect(slice.renderPacket.assets).toHaveLength(4);
     expect(slice.order?.status).toBe("event_moved_up");

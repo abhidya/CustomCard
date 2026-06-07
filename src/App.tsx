@@ -60,13 +60,11 @@ import {
   buildOpportunity,
   buildVendorHandoff,
   createLocalWorkspace,
-  defaultMemories,
   freeAdapterLabels,
   generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
   removeMemory,
-  sampleInviteText,
   validateCardDraft,
   type CardDraftInput,
   type CardOpportunity,
@@ -223,22 +221,22 @@ const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "walmart", "staples", 
 function App() {
   const [activeView, setActiveView] = useState<ViewId>("customer");
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
-  const [authForm, setAuthForm] = useState({ name: "Abdul Demo", email: "demo@customcard.local" });
-  const [inviteText, setInviteText] = useState(sampleInviteText);
-  const [scanStatus, setScanStatus] = useState("Sample invite loaded");
+  const [authForm, setAuthForm] = useState({ name: "Abdul", email: "abdul@customcard.local" });
+  const [inviteText, setInviteText] = useState("");
+  const [scanStatus, setScanStatus] = useState("Invite required");
   const [opportunityDecision, setOpportunityDecision] = useState<OpportunityDecision>("pending");
   const [vendorId, setVendorId] = useState<VendorId>("walgreens");
   const [localeCode, setLocaleCode] = useState<SupportedLocaleCode>("en-US");
-  const [memoryForm, setMemoryForm] = useState({ recipient: "Sara and Ahmed", note: "" });
+  const [memoryForm, setMemoryForm] = useState({ recipient: "", note: "" });
   const [exportStatus, setExportStatus] = useState("Ready to export");
-  const [customerChatInput, setCustomerChatInput] = useState("Can you keep this personal and find the cheapest pickup?");
+  const [customerChatInput, setCustomerChatInput] = useState("");
   const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
 
-  const memories = workspace?.memories ?? defaultMemories;
+  const memories = workspace?.memories ?? [];
   const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
   const opportunity = useMemo(() => buildOpportunity(signal, memories, fixedReviewDate), [signal, memories]);
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
-    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(sampleInviteText), defaultMemories, fixedReviewDate))
+    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], fixedReviewDate))
   );
 
   useEffect(() => {

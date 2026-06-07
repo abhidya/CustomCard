@@ -110,7 +110,7 @@ import { buildFulfillmentRecommendations } from "./fulfillmentRecommendation.ts"
 export type ApiMethod = "GET" | "POST";
 export type ApiAudience = "public" | "customer" | "admin";
 export type ApiAuth = "none" | "customer-session" | "admin-session";
-export type ApiRuntimeMode = "local-demo" | "durable-api" | "queue-backed";
+export type ApiRuntimeMode = "local-contract" | "durable-api" | "queue-backed";
 
 export interface ApiRouteContract {
   id: string;
@@ -238,7 +238,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     path: "/api/health",
     audience: "public",
     auth: "none",
-    runtimeMode: "local-demo",
+    runtimeMode: "local-contract",
     requestSchema: [],
     responseSchema: ["service", "status", "realOrdersEnabled"],
     idempotencyKeyRequired: false,
@@ -253,7 +253,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     path: "/api/routes",
     audience: "public",
     auth: "none",
-    runtimeMode: "local-demo",
+    runtimeMode: "local-contract",
     requestSchema: [],
     responseSchema: ["routes"],
     idempotencyKeyRequired: false,

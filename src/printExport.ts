@@ -3,6 +3,7 @@ import {
   buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
+  defaultMemories,
   exportFileName,
   generateCardDraft,
   getDefaultDraftInput,
@@ -173,7 +174,10 @@ export function validatePrintExportPackage(printPackage: PrintExportPackage): st
 }
 
 export function buildSamplePrintExportPackage(): PrintExportPackage {
-  const workspace = createLocalWorkspace("Abdul Demo", "demo@customcard.local", new Date(fixedExportDateIso));
+  const workspace = {
+    ...createLocalWorkspace("Abdul", "abdul@customcard.local", new Date(fixedExportDateIso)),
+    memories: defaultMemories
+  };
   const opportunity = buildOpportunity(parseFreeImport(sampleInviteText), workspace.memories, new Date(fixedExportDateIso));
   const draft = generateCardDraft(getDefaultDraftInput(workspace, opportunity), workspace.memories);
   const validation = validateCardDraft(draft);

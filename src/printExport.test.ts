@@ -3,6 +3,7 @@ import {
   buildOpportunity,
   buildVendorHandoff,
   createLocalWorkspace,
+  defaultMemories,
   generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
@@ -19,7 +20,10 @@ import {
 } from "./printExport";
 
 function buildDraftFixture() {
-  const workspace = createLocalWorkspace("Abdul", "abdul@example.com", new Date("2026-06-03T12:00:00.000Z"));
+  const workspace = {
+    ...createLocalWorkspace("Abdul", "abdul@example.com", new Date("2026-06-03T12:00:00.000Z")),
+    memories: defaultMemories
+  };
   const opportunity = buildOpportunity(parseFreeImport(sampleInviteText), workspace.memories, new Date("2026-06-03T12:00:00.000Z"));
   const draft = generateCardDraft(getDefaultDraftInput(workspace, opportunity), workspace.memories);
   const validation = validateCardDraft(draft);

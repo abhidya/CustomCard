@@ -37,7 +37,7 @@ The system remains adapter-first:
 
 The canonical list lives in `src/providerCatalog.ts`. It covers:
 
-- Auth: local demo auth, hosted email-password contract, and credential-gated
+- Auth: local workspace auth, hosted email-password contract, and credential-gated
   Auth0, Clerk, Supabase Auth, Firebase Auth, and Amazon Cognito contracts.
 - Event import: ICS/manual note, Gmail, Google Calendar, Microsoft Graph mail,
   Microsoft Graph calendar, and iCloud ICS fallback.

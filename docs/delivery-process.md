@@ -59,7 +59,7 @@ Local `.omx` logs show the repo moved through these phases:
 - A service-kernel and infra pass adding provider import contracts, approved
   memory, render validation, order lifecycle, regional policy, migrations, and
   deployment manifests.
-- A free-MVP polish pass adding local demo auth, manual/ICS import, deterministic
+- A free-MVP polish pass adding local workspace auth, manual/ICS import, deterministic
   card generation, SVG export, manual vendor handoff, and adapter readiness.
 - Final verification and repository check-in.
 

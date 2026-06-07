@@ -108,9 +108,9 @@ export interface PrintAsset {
   width: 1500;
   height: 2100;
   dpi: 300;
-  mockSafeZonePassed: boolean;
+  localProofSafeZonePassed: boolean;
   textOverflow: boolean;
-  mockChecksum: string;
+  localProofChecksum: string;
   svg: string;
 }
 
@@ -125,14 +125,14 @@ export interface OperationalRun {
   };
   printPacket: {
     adapterId: string;
-    kind: "mock_manifest" | "blocked";
+    kind: "local_proof_manifest" | "blocked";
     assets: PrintAsset[];
     valid: boolean;
     reason: string;
     missingFactIds: string[];
   };
   handoff: {
-    mode: "mock_packet" | "blocked";
+    mode: "local_proof_packet" | "blocked";
     canPlaceRealOrder: false;
     nextGate: string;
     reason: string;
@@ -545,7 +545,7 @@ const requiredWalgreensGateIds = [
   "human-approval-review"
 ];
 
-const requiredMockPacketFactIds = ["people", "print-spec"];
+const requiredLocalProofFactIds = ["people", "print-spec"];
 
 export const architectureProfiles: ArchitectureProfile[] = [
   {
@@ -713,11 +713,11 @@ export function getRunMode(mode: RunMode): ArchitectureProfile {
 export function runOperationalExtraction(sourceText: string): OperationalRun {
   const facts = extractFacts(sourceText);
   const matchedStoryboardIds = matchStoryboards(sourceText);
-  const missingFactIds = requiredMockPacketFactIds.filter((factId) => !findFirstFact(facts, factId));
+  const missingFactIds = requiredLocalProofFactIds.filter((factId) => !findFirstFact(facts, factId));
   const contact = findFirstFact(facts, "people") ?? "Unresolved recipient";
-  const canCreateMockPacket = missingFactIds.length === 0 && facts.some((fact) => fact.id !== "manual-context");
-  const printPacket = canCreateMockPacket
-    ? renderMockPrintPacket(contact)
+  const canCreateLocalProofPacket = missingFactIds.length === 0 && facts.some((fact) => fact.id !== "manual-context");
+  const printPacket = canCreateLocalProofPacket
+    ? renderLocalProofPrintPacket(contact)
     : createBlockedPrintPacket(missingFactIds);
 
   return {
@@ -726,19 +726,19 @@ export function runOperationalExtraction(sourceText: string): OperationalRun {
     matchedStoryboardIds,
     memoryProposal: {
       contact,
-      text: canCreateMockPacket
+      text: canCreateLocalProofPacket
         ? `Remember only after approval: ${contact} may need a high-context, relationship-aware card flow.`
         : "Memory proposal blocked until the source identifies a recipient and print contract.",
       requiresApproval: true
     },
     printPacket,
     handoff: {
-      mode: canCreateMockPacket ? "mock_packet" : "blocked",
+      mode: canCreateLocalProofPacket ? "local_proof_packet" : "blocked",
       canPlaceRealOrder: false,
-      nextGate: canCreateMockPacket ? "layout-safe-zone-validation" : "source-extraction-required",
-      reason: canCreateMockPacket
-        ? "Local mock manifest only; no vendor upload, quote, or real ordering has occurred."
-        : `Cannot create a mock print packet until required facts exist: ${missingFactIds.join(", ") || "source signal"}.`
+      nextGate: canCreateLocalProofPacket ? "layout-safe-zone-validation" : "source-extraction-required",
+      reason: canCreateLocalProofPacket
+        ? "Local proof manifest only; no vendor upload, quote, or real ordering has occurred."
+        : `Cannot create a local proof packet until required facts exist: ${missingFactIds.join(", ") || "source signal"}.`
     }
   };
 }
@@ -834,12 +834,12 @@ function createBlockedPrintPacket(missingFactIds: string[]): OperationalRun["pri
     kind: "blocked",
     assets: [],
     valid: false,
-    reason: `Mock print packet blocked until required facts exist: ${missingFactIds.join(", ") || "source signal"}.`,
+    reason: `Local proof packet blocked until required facts exist: ${missingFactIds.join(", ") || "source signal"}.`,
     missingFactIds
   };
 }
 
-function renderMockPrintPacket(contact: string): OperationalRun["printPacket"] {
+function renderLocalProofPrintPacket(contact: string): OperationalRun["printPacket"] {
   const assets = walgreensAdapter.panels.map((panel): PrintAsset => {
     const text = panel === "front" ? `For ${contact}` : `CustomCard ${panel}`;
     const svg = renderPanelSvg(text);
@@ -848,26 +848,26 @@ function renderMockPrintPacket(contact: string): OperationalRun["printPacket"] {
       width: 1500,
       height: 2100,
       dpi: 300,
-      mockSafeZonePassed: text.length < 80,
+      localProofSafeZonePassed: text.length < 80,
       textOverflow: text.length >= 80,
-      mockChecksum: stableHash(`${panel}:${svg}`),
+      localProofChecksum: stableHash(`${panel}:${svg}`),
       svg
     };
   });
 
   return {
     adapterId: walgreensAdapter.id,
-    kind: "mock_manifest",
+    kind: "local_proof_manifest",
     assets,
     valid: assets.every(
       (asset) =>
         asset.width === 1500 &&
         asset.height === 2100 &&
         asset.dpi === 300 &&
-        asset.mockSafeZonePassed &&
+        asset.localProofSafeZonePassed &&
         !asset.textOverflow
     ),
-    reason: "Local mock manifest proves panel count and exact dimensions only; real layout QA and vendor dry run are future gates.",
+    reason: "Local proof manifest proves panel count and exact dimensions only; real layout QA and vendor dry run are future gates.",
     missingFactIds: []
   };
 }

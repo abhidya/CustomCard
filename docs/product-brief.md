@@ -66,7 +66,7 @@ The smallest useful version should focus on a single end-to-end happy path:
 
 The current delivered app uses free substitutes for the external pieces above:
 
-1. Local demo workspace instead of production auth.
+1. Local workspace auth instead of production auth.
 2. Manual invite or `.ics` paste instead of live email/calendar OAuth.
 3. Deterministic opportunity detection and card templates instead of paid AI.
 4. Browser SVG export instead of PNG/PDF production pipeline.

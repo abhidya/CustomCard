@@ -49,7 +49,7 @@ Initial screens:
 
 Acceptance criteria:
 1. App runs locally.
-2. Local demo auth/user model exists.
+2. Local workspace auth/user model exists.
 3. User can create a manual card project without email integration.
 
 ## Milestone 2: Manual Card Project Flow

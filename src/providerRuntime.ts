@@ -364,7 +364,7 @@ export function buildAuthRuntime(
 ): RuntimeResult {
   const adapter = requireCapability(adapterId, "auth");
 
-  if (adapter.id === "local-demo-auth") {
+  if (adapter.id === "local-workspace-auth") {
     const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
     return {
       adapterId: adapter.id,
@@ -375,7 +375,7 @@ export function buildAuthRuntime(
         adapterId: adapter.id,
         requestedRole: input.requestedRole,
         noNetwork: true,
-        sessionStorage: "browser-local-demo",
+        sessionStorage: "browser-local-workspace",
         returnToPath: input.returnToPath
       }
     };

@@ -35,7 +35,7 @@ const checks = [
     "validateProviderGovernance"
   ]),
   checkIncludes("governance", "ready-local-fallbacks", contents.governance, [
-    'auth: "local-demo-auth"',
+    'auth: "local-workspace-auth"',
     '"text-chat": "deterministic-customer-chat"',
     '"crm-integration": "crm-csv-lifecycle-import"',
     '"image-generation": "browser-svg-renderer"',

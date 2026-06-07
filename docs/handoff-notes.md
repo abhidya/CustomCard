@@ -6,7 +6,7 @@ CustomCard is now a reviewable free local MVP for an event-aware personal
 greeting-card CRM and fulfillment product, plus a contract-first service
 skeleton for the production path. It includes:
 
-- A runnable Vite/React/TypeScript app with local demo auth, manual/ICS import,
+- A runnable Vite/React/TypeScript app with local workspace auth, manual/ICS import,
   opportunity approval, card studio, memory review, SVG export, manual vendor
   handoff, local SVG/PDF print package export, customer panel, admin panel, and
   adapter readiness.
