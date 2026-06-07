@@ -1761,6 +1761,11 @@ function HandoffView({
   const primaryPricing = pricingComparison.selectedVendorOptions[0];
   const rankedOptions = pricingComparison.rankedKnownPrices.slice(0, 4);
   const refreshReport = pricingComparison.refreshReport;
+  const selectedCoupon =
+    primaryPricing?.couponApplication.status === "applied" ||
+    primaryPricing?.couponApplication.status === "portal-evidence-required"
+      ? primaryPricing.couponApplication.offer
+      : undefined;
   const pdfFile = printPackage.files.find((file) => file.kind === "combined-pdf");
   const manifestFile = printPackage.files.find((file) => file.kind === "manifest-json");
   const retailVendorId = toRetailPrinterVendorId(vendorId);
@@ -1878,6 +1883,18 @@ function HandoffView({
             </p>
           ) : (
             <p>Local print shops still need a manual quote before upload.</p>
+          )}
+          {primaryPricing && selectedCoupon && (
+            <div className="couponCheckoutCallout">
+              <span className="couponCodePill">{selectedCoupon.code}</span>
+              <div>
+                <strong>{selectedCoupon.discountPercent}% off card products found</strong>
+                <small>
+                  Try this code at {primaryPricing.observation.vendorName} checkout by {selectedCoupon.endsAtIso.slice(0, 10)}.
+                  The estimate changes only after checkout applies it to this exact card and quantity.
+                </small>
+              </div>
+            </div>
           )}
           <div className="pricingFreshnessGrid">
             <Metric label="Prices" value={`${refreshReport.totalObservations}`} />

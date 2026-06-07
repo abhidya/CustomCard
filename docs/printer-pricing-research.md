@@ -128,7 +128,7 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-15:04 UTC `operator-chromium-rendered-read` check against the exact print
+15:58 UTC `operator-chromium-rendered-read` check against the exact print
 links. CVS rendered the `JUNESW` code visibly on the 5x7 folded card page, so
 the collector reports `operator-browser-proof-attached` when that evidence is
 attached or generated. The raw CVS public page also contains `GRADUATION` as a
@@ -172,11 +172,14 @@ offer so source discovery and best-price eligibility cannot be confused.
 | [Rakuten Advertising Coupon Feed API](https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API) | Credential-gated publisher coupon-feed candidate. It is represented as `rakuten-coupon-feed` with `RAKUTEN_ADVERTISING_API_TOKEN`, `provider-api-feed`, and verification signals for coupon code, promotional link, advertiser, offer start date, and offer end date. Provider-fed coupons remain discovery evidence until official retailer or provider-portal evidence confirms applicability. |
 
 The handoff UI and API bootstrap show coupon-source counts and portal-proof
-status. They show active source-listed offers separately from portal-applied
-offers. They must not show a discounted total as best available until the vendor
-checkout confirms the discount on the same product, quantity, store, pickup or
-shipping path, and customer account state. This is an evidence contract only;
-the repo still does not automate a live checkout or place orders.
+status. The customer print panel also shows the active source-listed code for
+the selected print shop so the customer or operator can try it during the
+retailer checkout step. It still shows active source-listed offers separately
+from portal-applied offers and must not show a discounted total as best
+available until the vendor checkout confirms the discount on the same product,
+quantity, store, pickup or shipping path, and customer account state. This is
+an evidence contract only; the repo still does not automate a live checkout or
+place orders.
 
 ## Product Boundary
 
