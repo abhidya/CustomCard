@@ -65,10 +65,12 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   proof, signed URL cloud probes, access-log proof, secret-manager env sync,
   and retention/restore drills. Run `npm run cloud:artifact:proof:doctor`. This
   is not live-applied cloud bucket/IAM proof.
-- Text chat: deterministic local chat plus OpenAI Responses, Anthropic
-  Messages, Azure OpenAI, Amazon Bedrock Converse, Google Gemini, Hugging Face,
-  Mistral, Cohere, Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks,
-  and self-hosted OpenAI-compatible endpoints.
+- Text chat: sendable deterministic local chat session in `src/customerChat.ts`
+  plus OpenAI Responses, Anthropic Messages, Azure OpenAI, Amazon Bedrock
+  Converse, Google Gemini, Hugging Face, Mistral, Cohere, Perplexity Sonar,
+  xAI, Together, Groq, DeepSeek, Fireworks, and self-hosted OpenAI-compatible
+  endpoints. Customer UI gets the local no-network session; admin/API surfaces
+  keep the gated provider inventory visible.
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
   Gemini image generation, Azure OpenAI, Amazon Bedrock, Stability AI, Hugging
   Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, Adobe
@@ -236,7 +238,7 @@ Official documentation anchors used for the adapter contracts:
 
 The customer panel is the first web surface. It shows the current card
 opportunity, local workspace state, panel count, handoff vendor, quick actions
-for the free workflow, a deterministic customer chat transcript, image/render
+for the free workflow, a deterministic customer chat session, image/render
 choices, locale readiness, and ready local fallbacks.
 
 The customer path stays cheap:

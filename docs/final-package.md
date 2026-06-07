@@ -71,9 +71,9 @@
   inspect free-ready,
   credential-gated, contract-only, and blocked production adapters.
 - Customer panel: Google/Apple entry points, calendar/email/invite import
-  actions, next-card opportunities, deterministic local chat transcript, card
-  proof path, locale readiness, and fulfillment recommendations for cheapest
-  known price, fastest pickup candidate, and cheapest shipped option.
+  actions, next-card opportunities, sendable deterministic local chat session,
+  card proof path, locale readiness, and fulfillment recommendations for
+  cheapest known price, fastest pickup candidate, and cheapest shipped option.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, localization readiness, production launch gates, gated provider
   queue, cloud runtime adapters, capacity profiles, payment readiness, mobile
@@ -149,8 +149,8 @@
 | Check | Command or method | Result |
 | --- | --- | --- |
 | Install/setup | `npm install` expected from README; lockfile present. | Covered as setup path; no fresh reinstall was run in this pass. |
-| Tests | `npm run check` | Passed on 2026-06-03: 33 test files, 194 tests. |
-| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 92.38% statements, 86.72% branches, 97.91% functions, 95.47% lines across account auth, core, API, artifact handoff/store, business engagement readiness, cloud artifact proof readiness, demo seed, E2E coverage, external audit readiness, AI provider readiness, observability readiness, retail fulfillment readiness, payment readiness, mobile render readiness, hosted API proof readiness, reviewer DB seed readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
+| Tests | `npm run check` | Passed on 2026-06-04: 35 test files, 199 tests. |
+| Coverage | `npm run check` includes `npm run test:coverage`. | Passed contract thresholds: 92.73% statements, 86.97% branches, 98% functions, 95.7% lines across account auth, customer chat, core, API, artifact handoff/store, business engagement readiness, cloud artifact proof readiness, demo seed, E2E coverage, external audit readiness, AI provider readiness, observability readiness, retail fulfillment readiness, payment readiness, mobile render readiness, hosted API proof readiness, reviewer DB seed readiness, localization, pricing, print export, provider governance, persistence, orchestration, and mobile contract modules. |
 | Build/typecheck/lint | `npm run check` includes `tsc -b && vite build` and `npm audit --audit-level=high`. | Passed; audit found 0 vulnerabilities. |
 | Smoke/browser | Chrome smoke tests plus rendered screenshots in `docs/evidence/`, `/tmp/customcard-payment-readiness-*.png`, and `/tmp/customcard-mobile-render-readiness-*.png`. | Passed; latest visual pass covered customer/admin panels, mobile render readiness admin panel content, and desktop/mobile viewports with zero horizontal overflow. |
 | Deployment readiness | `npm run deployment:doctor` | Passed; local-dev, cheap-droplet, cloud-native, cloud-storage, runtime, and data lanes reported ready with no blockers. |

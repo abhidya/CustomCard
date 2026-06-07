@@ -297,6 +297,19 @@ describe("api contracts", () => {
     expect(payload.mobile.fulfillmentRecommendations.map((recommendation) => recommendation.kind)).toEqual(
       expect.arrayContaining(["cheapest-known-price", "fastest-pickup", "cheapest-shipped"])
     );
+    expect(payload.customerChat).toMatchObject({
+      mode: "local-deterministic",
+      adapterId: "deterministic-customer-chat",
+      liveModelCallsEnabled: false,
+      externalNetworkCalls: false,
+      noNetworkProof: true,
+      providerSummary: expect.objectContaining({
+        readyLocal: expect.any(Number),
+        credentialGated: expect.any(Number)
+      })
+    });
+    expect(payload.customerChat.providerSummary.readyLocal).toBeGreaterThanOrEqual(1);
+    expect(payload.customerChat.providerSummary.credentialGated).toBeGreaterThanOrEqual(13);
     expect(payload.fulfillmentRecommendations).toMatchObject({
       liveQuote: false,
       directOrderEnabled: false,
@@ -570,6 +583,11 @@ describe("api contracts", () => {
       syncState: { authMode: "customer-session", idempotencyRequired: true }
     });
     expect(resolveApiContractResponse("/api/customer/bootstrap")).toMatchObject({
+      customerChat: {
+        mode: "local-deterministic",
+        liveModelCallsEnabled: false,
+        externalNetworkCalls: false
+      },
       fulfillmentRecommendations: {
         recommendations: expect.arrayContaining([
           expect.objectContaining({ kind: "cheapest-known-price", liveQuote: false, directOrderEnabled: false })

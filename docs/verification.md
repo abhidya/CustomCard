@@ -254,7 +254,7 @@ npm run mobile:release:doctor
 
 ## Latest Result
 
-Last run: 2026-06-03.
+Last run: 2026-06-04.
 
 ```text
 npm run check
@@ -262,16 +262,16 @@ npm run check
 
 Result: passed.
 
-- Vitest: 33 test files passed, 194 tests passed.
-- Coverage: 31 core/API/persistence/infra/mobile test files passed, 185 tests passed; V8 report measured
-  92.38% statements, 86.72% branches, 97.91% functions, and 95.47% lines across
+- Vitest: 35 test files passed, 199 tests passed.
+- Coverage: 33 core/API/persistence/infra/mobile test files passed, 190 tests passed; V8 report measured
+  92.73% statements, 86.97% branches, 98% functions, and 95.7% lines across
   `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`, `src/agentContracts.ts`,
 `src/aiProviderReadiness.ts`, `src/aiProviderReadinessData.mjs`,
 `src/apiContracts.ts`, `src/artifactHandoff.ts`, `src/artifactStore.ts`,
   `src/businessEngagementReadiness.ts`, `src/businessEngagementReadinessData.mjs`,
   `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
   `src/cloudArtifactProofReadiness.ts`,
-  `src/cloudArtifactProofReadinessData.mjs`, `src/domain.ts`,
+  `src/cloudArtifactProofReadinessData.mjs`, `src/customerChat.ts`, `src/domain.ts`,
   `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
   `src/externalAuditReadiness.ts`, `src/externalAuditReadinessData.mjs`,
   `src/freeMvp.ts`, `src/localization.ts`, `src/observabilityReadiness.ts`,

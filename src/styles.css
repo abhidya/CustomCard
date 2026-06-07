@@ -859,6 +859,22 @@ h3 {
   gap: 9px;
 }
 
+.chatRuntimeLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.chatRuntimeLine span {
+  padding: 4px 8px;
+  border: 1px solid rgba(237, 245, 242, 0.22);
+  border-radius: 999px;
+  color: #dce9e5;
+  font-size: 0.72rem;
+  font-weight: 820;
+}
+
 .chatBubble {
   display: grid;
   gap: 5px;
@@ -881,6 +897,28 @@ h3 {
 
 .chatBubble span {
   font-size: 0.88rem;
+}
+
+.chatComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.chatComposer textarea {
+  min-height: 72px;
+  color: #1f2d31;
+  background: #f4faf7;
+}
+
+.chatComposer .primaryButton {
+  align-self: stretch;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .adapterMini {
@@ -1674,6 +1712,7 @@ h3 {
   .importActionGrid,
   .fulfillmentOptionGrid,
   .quickActionGrid,
+  .chatComposer,
   .downloadGrid,
   .adapterToolbar,
   .adapterMatrix {

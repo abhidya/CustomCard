@@ -33,6 +33,7 @@ export default defineConfig({
         "src/businessEngagementReadinessData.mjs",
         "src/cloudArtifactProofReadiness.ts",
         "src/cloudArtifactProofReadinessData.mjs",
+        "src/customerChat.ts",
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",

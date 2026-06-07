@@ -78,9 +78,10 @@ environment configuration instead of static placeholders.
   across customer, admin, API, and mobile surfaces, with RTL layout review and
   human copy-review gates before non-English or RTL copy can be marked ready.
 - Customer panel with Google/Apple entry points, calendar/email/invite import
-  actions, next-card opportunities, local chat, card proof path, and customer
-  fulfillment recommendations for cheapest known price, fastest pickup, and
-  cheapest shipped option.
+  actions, next-card opportunities, a sendable deterministic local chat session
+  with no live model call, card proof path, and customer fulfillment
+  recommendations for cheapest known price, fastest pickup, and cheapest
+  shipped option.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability
@@ -385,7 +386,7 @@ applies to `apps/mobile/src/customerExperience.ts`, `src/accountAuth.ts`,
 `src/businessEngagementReadinessData.mjs`, `src/capacityPlan.ts`, `src/capacityPlanData.mjs`,
 `src/cloudArtifactProofReadiness.ts`,
 `src/cloudArtifactProofReadinessData.mjs`,
-`src/domain.ts`, `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
+`src/customerChat.ts`, `src/domain.ts`, `src/e2eCoverage.ts`, `src/e2eCoverageData.mjs`,
 `src/externalAuditReadiness.ts`,
 `src/externalAuditReadinessData.mjs`, `src/freeMvp.ts`,
 `src/localization.ts`, `src/paymentReadiness.ts`,

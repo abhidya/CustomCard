@@ -82,7 +82,6 @@ import {
 } from "./freeMvp";
 import {
   buildAdminPanelModel,
-  buildCustomerChatTranscript,
   capabilityLabels,
   providerCatalog,
   providerStatusLabel,
@@ -91,6 +90,7 @@ import {
   type ProviderCapability,
   type ProviderStatus
 } from "./providerCatalog";
+import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
 import {
   getSupportedLocale,
   supportedLocales,
@@ -206,6 +206,8 @@ function App() {
   const [localeCode, setLocaleCode] = useState<SupportedLocaleCode>("en-US");
   const [memoryForm, setMemoryForm] = useState({ recipient: "Sara and Ahmed", note: "" });
   const [exportStatus, setExportStatus] = useState("Ready to export");
+  const [customerChatInput, setCustomerChatInput] = useState("Can you keep this personal and find the cheapest pickup?");
+  const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
 
   const memories = workspace?.memories ?? defaultMemories;
   const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
@@ -235,6 +237,14 @@ function App() {
   const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
   const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
+  const approvedMemoryNotes = useMemo(() => memories.filter((memory) => memory.approved).map((memory) => memory.note), [memories]);
+  const fulfillmentContext = useMemo(
+    () =>
+      fulfillmentRecommendationSet.recommendations
+        .map((recommendation) => `${recommendation.label}: ${recommendation.subtotalLabel} at ${recommendation.vendorName}`)
+        .join("; "),
+    [fulfillmentRecommendationSet]
+  );
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
   const externalAuditSummary = useMemo(() => summarizeExternalAuditReadiness(), []);
@@ -250,11 +260,43 @@ function App() {
   const cloudArtifactProofReadinessSummary = useMemo(() => summarizeCloudArtifactProofReadiness(), []);
   const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
-  const customerTranscript = useMemo(
-    () => buildCustomerChatTranscript(opportunity.recipient),
-    [opportunity.recipient]
+  const seededCustomerChat = useMemo(
+    () =>
+      buildCustomerChatSession({
+        recipientName: opportunity.recipient,
+        customerMessage: "",
+        approvedMemoryNotes,
+        locale: selectedLocale.locale,
+        fulfillmentContext
+      }),
+    [approvedMemoryNotes, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
+  );
+  const customerChatSession = useMemo(
+    () =>
+      buildCustomerChatSession(
+        {
+          recipientName: opportunity.recipient,
+          customerMessage: "",
+          approvedMemoryNotes,
+          locale: selectedLocale.locale,
+          fulfillmentContext
+        },
+        customerChatMessages ?? seededCustomerChat.messages
+      ),
+    [
+      approvedMemoryNotes,
+      customerChatMessages,
+      fulfillmentContext,
+      opportunity.recipient,
+      seededCustomerChat.messages,
+      selectedLocale.locale
+    ]
   );
   const opsView = activeView === "admin" || activeView === "adapters";
+
+  useEffect(() => {
+    setCustomerChatMessages(undefined);
+  }, [localeCode, opportunity.id]);
 
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
@@ -348,6 +390,22 @@ function App() {
     }
   }
 
+  function sendCustomerChat() {
+    const nextSession = buildCustomerChatSession(
+      {
+        recipientName: opportunity.recipient,
+        customerMessage: customerChatInput,
+        approvedMemoryNotes,
+        locale: selectedLocale.locale,
+        fulfillmentContext
+      },
+      customerChatSession.messages
+    );
+
+    setCustomerChatMessages(nextSession.messages);
+    setCustomerChatInput("");
+  }
+
   return (
     <div className="appShell">
       <a className="skipLink" href="#main-content">
@@ -410,9 +468,12 @@ function App() {
 
         {activeView === "customer" && (
           <CustomerPanelView
-            chatTranscript={customerTranscript}
+            chatInput={customerChatInput}
+            chatSession={customerChatSession}
             handoff={handoff}
             localizationSummary={localizationSummary}
+            onChatInput={setCustomerChatInput}
+            onChatSend={sendCustomerChat}
             onLocale={chooseLocale}
             onNavigate={setActiveView}
             onGenerateCard={() => {
@@ -587,9 +648,12 @@ function App() {
 }
 
 function CustomerPanelView({
-  chatTranscript,
+  chatInput,
+  chatSession,
   handoff,
   localizationSummary,
+  onChatInput,
+  onChatSend,
   onLocale,
   onGenerateCard,
   onNavigate,
@@ -601,9 +665,12 @@ function CustomerPanelView({
   selectedLocale,
   workspace
 }: {
-  chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
+  chatInput: string;
+  chatSession: CustomerChatSession;
   handoff: VendorHandoff;
   localizationSummary: LocalizationReadinessSummary;
+  onChatInput: (value: string) => void;
+  onChatSend: () => void;
   onLocale: (locale: SupportedLocaleCode) => void;
   onGenerateCard: () => void;
   onNavigate: (view: ViewId) => void;
@@ -778,16 +845,38 @@ function CustomerPanelView({
               <p className="eyebrow">Customer chat</p>
               <h3>Text interface</h3>
             </div>
-            <StatusChip icon={Lock} label="No live model call" tone="blue" />
+            <StatusChip icon={Lock} label="Local reply" tone="blue" />
+          </div>
+          <div className="chatRuntimeLine" aria-label="Customer chat safety">
+            <span>No live model call</span>
+            <span>{chatSession.providerSummary.credentialGated} provider adapters gated</span>
           </div>
           <div className="chatLog">
-            {chatTranscript.map((message) => (
-              <div className={`chatBubble ${message.role}`} key={`${message.role}-${message.text}`}>
+            {chatSession.messages.map((message, index) => (
+              <div className={`chatBubble ${message.role}`} key={`${message.role}-${index}`}>
                 <strong>{message.role === "customer" ? "Customer" : "Assistant"}</strong>
                 <span>{message.text}</span>
               </div>
             ))}
           </div>
+          <form
+            className="chatComposer"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (chatInput.trim()) onChatSend();
+            }}
+          >
+            <textarea
+              aria-label="Customer chat message"
+              value={chatInput}
+              onChange={(event) => onChatInput(event.target.value)}
+              placeholder="Ask about copy, memories, artwork, pickup, or shipping"
+            />
+            <button className="primaryButton" type="submit" disabled={!chatInput.trim()}>
+              <MessageCircle size={16} />
+              Send
+            </button>
+          </form>
         </article>
 
         <article className="surfaceCard">

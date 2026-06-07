@@ -199,6 +199,7 @@ describeWithChrome("CustomCard UI smoke", () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         };
 
+        await clickByText("Send");
         const customerText = document.body.textContent;
         const quickActions = document.querySelectorAll(".quickAction").length;
         const chatBubbles = document.querySelectorAll(".chatBubble").length;
@@ -228,13 +229,16 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.customerText).toContain("Fastest pickup candidate");
     expect(result.customerText).toContain("Cheapest shipped option");
     expect(result.customerText).toContain("Text interface");
+    expect(result.customerText).toContain("No live model call");
+    expect(result.customerText).toContain("provider adapters gated");
+    expect(result.customerText).toContain("No live model call or external transcript storage was used.");
     expect(result.customerText).toContain("Card proof path");
     expect(result.customerText).toContain("Data controls");
     expect(result.customerText).toContain("Language readiness");
     expect(result.customerText).toContain("Production safety");
     expect(result.customerText).toContain("Ar EG");
     expect(result.quickActions).toBeGreaterThanOrEqual(5);
-    expect(result.chatBubbles).toBeGreaterThanOrEqual(4);
+    expect(result.chatBubbles).toBeGreaterThanOrEqual(6);
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Required env");
     expect(result.adminText).toContain("No-network readiness");

@@ -96,6 +96,7 @@ import {
   summarizeProviderCoverage,
   type ProviderCoverageSummary
 } from "./providerCatalog.ts";
+import { buildCustomerChatSession } from "./customerChat.ts";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance.ts";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime.ts";
 import {
@@ -225,6 +226,7 @@ export interface ApiBootstrapPayload {
     summary: BusinessEngagementReadinessSummary;
   };
   chatTranscript: ReturnType<typeof buildCustomerChatTranscript>;
+  customerChat: ReturnType<typeof buildCustomerChatSession>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
   fulfillmentRecommendations: ReturnType<typeof buildFulfillmentRecommendations>;
 }
@@ -272,6 +274,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
       "primaryActions",
       "readyFallbacks",
       "chatTranscript",
+      "customerChat",
       "printerPricing",
       "fulfillmentRecommendations",
       "localization"
@@ -280,7 +283,7 @@ export const apiRouteContracts: ApiRouteContract[] = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy: "Approved memories only; public printer pricing observations contain no customer data.",
-    backedBy: ["buildCustomerPanelModel", "buildCustomerChatTranscript", "buildPrinterPricingComparison"]
+    backedBy: ["buildCustomerPanelModel", "buildCustomerChatSession", "buildPrinterPricingComparison"]
   },
   {
     id: "mobile-bootstrap",
@@ -601,6 +604,13 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
       summary: summarizeBusinessEngagementReadiness()
     },
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
+    customerChat: buildCustomerChatSession({
+      recipientName: "Sara and Ahmed",
+      customerMessage: "",
+      approvedMemoryNotes: ["They like botanical cards."],
+      locale: "en-US",
+      fulfillmentContext: "Cheapest pickup and cheapest shipped recommendations are review-only public prices."
+    }),
     printerPricing,
     fulfillmentRecommendations: buildFulfillmentRecommendations(printerPricing)
   };
