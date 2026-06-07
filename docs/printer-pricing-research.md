@@ -92,6 +92,9 @@ certification-blocked.
   `bestPriceDiscountingAllowed: false` until checkout proves a code applied to
   the same cart. The collector does not log in, upload files, submit payment,
   place an order, print provider credentials, or claim live checkout automation.
+  Provider-feed request builders and parsers live in
+  `src/printerCouponProviderFeeds.ts` so the credentialed FMTC/Rakuten paths are
+  tested without requiring live credentials.
 - Set `CUSTOMCARD_COUPON_BROWSER_EVIDENCE=docs/printer-coupon-browser-evidence.json`
   when the operator wants the collector to attach the read-only browser proof
   from the exact print links. The artifact records no login, upload, cart,
@@ -168,8 +171,8 @@ offer so source discovery and best-price eligibility cannot be confused.
 
 | Provider-feed target | Current treatment |
 | --- | --- |
-| [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`, `provider-api-feed`, and verification signals for status plus code/link verification timestamps; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. When the token is present, the operator collector requests JSON active code deals and redacts the token from output. |
-| [Rakuten Advertising Coupon Feed API](https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API) | Credential-gated publisher coupon-feed candidate. It is represented as `rakuten-coupon-feed` with `RAKUTEN_ADVERTISING_API_TOKEN`, `provider-api-feed`, and verification signals for coupon code, promotional link, advertiser, offer start date, and offer end date. Provider-fed coupons remain discovery evidence until official retailer or provider-portal evidence confirms applicability. |
+| [FMTC Deal Feed](https://docs.fmtc.co/kb/deals-4-2-0) | Recommended credential-gated provider candidate for coupon discovery and affiliate metadata. It is represented as `fmtc-deal-feed` with `FMTC_API_TOKEN`, `provider-api-feed`, and verification signals for status plus code/link verification timestamps; provider-fed coupons remain lower-confidence than official retailer page or checkout evidence. When the token is present, the operator collector requests JSON active code deals through the tested provider-feed seam and redacts the token from output. |
+| [Rakuten Advertising Coupon Feed API](https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API) | Credential-gated publisher coupon-feed candidate. It is represented as `rakuten-coupon-feed` with `RAKUTEN_ADVERTISING_API_TOKEN`, `provider-api-feed`, and verification signals for coupon code, promotional link, advertiser, offer start date, and offer end date. The tested provider-feed seam requests XML coupon pages with bearer authorization, redacts the token from output, and keeps provider-fed coupons as discovery evidence until official retailer or provider-portal evidence confirms applicability. |
 
 The handoff UI and API bootstrap show coupon-source counts and portal-proof
 status. The customer print panel also shows the active source-listed code for

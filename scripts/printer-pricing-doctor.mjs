@@ -6,6 +6,7 @@ const files = {
   app: "src/App.tsx",
   apiServer: "scripts/api-server.mjs",
   couponCollector: "scripts/printer-coupon-collector.mjs",
+  couponProviderFeeds: "src/printerCouponProviderFeeds.ts",
   browserEvidence: "docs/printer-coupon-browser-evidence.json",
   docs: "docs/printer-pricing-research.md",
   packageJson: "package.json",
@@ -139,7 +140,7 @@ const checks = [
     "$49.99 pre-tax base",
     "coupon candidates require provider-portal application proof"
   ]),
-  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.packageJson}`, [
+  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.packageJson}`, [
     "printer-coupon-collector",
     "extractPrinterCouponOffers",
     "printEntrypointChecks",

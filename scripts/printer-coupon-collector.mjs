@@ -7,6 +7,7 @@ import { createServer } from "vite";
 const userAgent = "CustomCard coupon research collector/0.1 (+local operator run; no checkout automation)";
 const renderPrintLinks = isEnabled(process.env.CUSTOMCARD_COUPON_RENDER_PRINT_LINKS);
 const renderedEvidenceOutputPath = process.env.CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT?.trim();
+let couponProviderFeedCollectors;
 
 const vite = await createServer({
   appType: "custom",
@@ -23,6 +24,7 @@ try {
     printerCouponCollectionTargets,
     printerCouponSources
   } = await vite.ssrLoadModule("/src/printerPricing.ts");
+  couponProviderFeedCollectors = await vite.ssrLoadModule("/src/printerCouponProviderFeeds.ts");
   const generatedAt = new Date();
   const operatorBrowserEvidencePath = process.env.CUSTOMCARD_COUPON_BROWSER_EVIDENCE?.trim();
   const allowedTargets = printerCouponCollectionTargets.filter(
@@ -210,164 +212,24 @@ function isEnabled(value) {
 }
 
 async function collectProviderFeedTarget(target) {
-  if (target.id === "fmtc-deal-feed") return collectFmtcProviderFeedTarget(target);
-  if (target.id === "rakuten-coupon-feed") return collectRakutenCouponFeedTarget(target);
+  const {
+    buildCouponProviderBaseTarget,
+    collectFmtcProviderFeedTarget,
+    collectRakutenCouponFeedTarget
+  } = couponProviderFeedCollectors;
+
+  if (target.id === "fmtc-deal-feed") {
+    return collectFmtcProviderFeedTarget(target, process.env.FMTC_API_TOKEN?.trim(), { userAgent });
+  }
+  if (target.id === "rakuten-coupon-feed") {
+    return collectRakutenCouponFeedTarget(target, process.env.RAKUTEN_ADVERTISING_API_TOKEN?.trim(), { userAgent });
+  }
 
   return {
-    ...providerFeedBaseTarget(target),
+    ...buildCouponProviderBaseTarget(target),
     provider: target.label,
     reason: "Credential-gated provider feed is registered, but this collector does not yet have a provider-specific adapter."
   };
-}
-
-function providerFeedBaseTarget(target) {
-  return {
-    id: target.id,
-    vendorIds: target.vendorIds,
-    collectionMethod: target.collectionMethod,
-    readiness: target.readiness,
-    url: target.url,
-    credentialEnvKeys: target.credentialEnvKeys,
-    verificationSignals: target.verificationSignals,
-    legalReviewRequired: target.legalReviewRequired,
-    fetched: false
-  };
-}
-
-async function collectFmtcProviderFeedTarget(target) {
-  const baseTarget = providerFeedBaseTarget(target);
-  const fmtcApiToken = process.env.FMTC_API_TOKEN?.trim();
-
-  if (!fmtcApiToken) {
-    return {
-      ...baseTarget,
-      provider: "FMTC Deal Feed",
-      reason: "Credential-gated provider feed; set FMTC_API_TOKEN only in an approved server/operator environment."
-    };
-  }
-
-  const providerUrl = new URL("https://s3.fmtc.co/api/4.2.0/deals");
-  providerUrl.searchParams.set("api_token", fmtcApiToken);
-  providerUrl.searchParams.set("format", "json");
-  providerUrl.searchParams.set("codesonly", "1");
-  providerUrl.searchParams.set("active", "1");
-  providerUrl.searchParams.set("country", "US");
-  providerUrl.searchParams.set("page_size", "500");
-
-  const response = await fetch(providerUrl, { headers: { "user-agent": userAgent } });
-  const providerBody = await response.text();
-  const parsed = safeParseJson(providerBody);
-  const deals = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.deals) ? parsed.deals : Array.isArray(parsed?.data) ? parsed.data : [];
-  const relevantDeals = deals
-    .filter((deal) => /walgreens|cvs/i.test(`${deal.merchant_name ?? ""} ${deal.label ?? ""} ${deal.direct_link ?? ""}`))
-    .map((deal) => ({
-      id: deal.id,
-      merchantName: deal.merchant_name,
-      label: deal.label,
-      code: deal.code,
-      status: deal.status,
-      startDate: deal.start_date,
-      endDate: deal.end_date,
-      codeVerifiedAt: deal.code_verified_at,
-      linkVerifiedAt: deal.link_verified_at,
-      couponCodeOnPage: deal.coupon_code_on_page
-    }));
-
-  return {
-    ...baseTarget,
-    provider: "FMTC Deal Feed",
-    fetched: true,
-    status: response.status,
-    ok: response.ok,
-    endpoint: "https://s3.fmtc.co/api/4.2.0/deals",
-    requestShape: {
-      format: "json",
-      codesonly: 1,
-      active: 1,
-      country: "US",
-      page_size: 500
-    },
-    returnedDealCount: deals.length,
-    relevantDealCount: relevantDeals.length,
-    relevantDeals,
-    tokenRedacted: true,
-    reason:
-      relevantDeals.length > 0
-        ? "Provider-feed coupons are discovery evidence; official retailer source or provider-portal application proof is still required before discounting."
-        : "Provider feed returned no Walgreens/CVS code candidates in the fetched page."
-  };
-}
-
-async function collectRakutenCouponFeedTarget(target) {
-  const baseTarget = providerFeedBaseTarget(target);
-  const rakutenToken = process.env.RAKUTEN_ADVERTISING_API_TOKEN?.trim();
-
-  if (!rakutenToken) {
-    return {
-      ...baseTarget,
-      provider: "Rakuten Advertising Coupon Feed API",
-      reason:
-        "Credential-gated provider feed; set RAKUTEN_ADVERTISING_API_TOKEN only in an approved publisher/operator environment."
-    };
-  }
-
-  const providerUrl = new URL("https://api.rakutenadvertising.com/coupon/1.0");
-  providerUrl.searchParams.set("resultsperpage", "500");
-  providerUrl.searchParams.set("pagenumber", "1");
-
-  const response = await fetch(providerUrl, {
-    headers: {
-      accept: "application/xml,text/xml,*/*",
-      authorization: `Bearer ${rakutenToken}`,
-      "user-agent": userAgent
-    }
-  });
-  const providerBody = await response.text();
-  const relevantDeals = extractRakutenRelevantDeals(providerBody);
-
-  return {
-    ...baseTarget,
-    provider: "Rakuten Advertising Coupon Feed API",
-    fetched: true,
-    status: response.status,
-    ok: response.ok,
-    endpoint: "https://api.rakutenadvertising.com/coupon/1.0",
-    requestShape: {
-      resultsperpage: 500,
-      pagenumber: 1,
-      responseFormat: "xml"
-    },
-    returnedBodyBytes: providerBody.length,
-    relevantDealCount: relevantDeals.length,
-    relevantDeals,
-    tokenRedacted: true,
-    reason:
-      relevantDeals.length > 0
-        ? "Provider-feed coupons are discovery evidence; official retailer source or provider-portal application proof is still required before discounting."
-        : "Provider feed returned no Walgreens/CVS coupon candidates in the fetched page."
-  };
-}
-
-function extractRakutenRelevantDeals(xmlText) {
-  if (!xmlText) return [];
-  const chunks = xmlText.match(/<coupon[\s\S]*?<\/coupon>|<item[\s\S]*?<\/item>|<link[\s\S]*?<\/link>/gi) ?? [];
-  return chunks
-    .filter((chunk) => /walgreens|cvs/i.test(chunk))
-    .slice(0, 50)
-    .map((chunk) => ({
-      advertiser: firstXmlValue(chunk, "advertisername") ?? firstXmlValue(chunk, "advertiser") ?? firstXmlValue(chunk, "merchantname"),
-      offerTitle: firstXmlValue(chunk, "offerdescription") ?? firstXmlValue(chunk, "description") ?? firstXmlValue(chunk, "linkname"),
-      code: firstXmlValue(chunk, "couponcode") ?? firstXmlValue(chunk, "code"),
-      offerStartDate: firstXmlValue(chunk, "offerstartdate") ?? firstXmlValue(chunk, "startdate"),
-      offerEndDate: firstXmlValue(chunk, "offerenddate") ?? firstXmlValue(chunk, "enddate"),
-      promotionType: firstXmlValue(chunk, "promotiontype") ?? firstXmlValue(chunk, "promocat")
-    }));
-}
-
-function firstXmlValue(xmlText, tagName) {
-  const pattern = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i");
-  const match = xmlText.match(pattern);
-  return match?.[1]?.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").trim();
 }
 
 function loadOperatorBrowserEvidence(path) {
