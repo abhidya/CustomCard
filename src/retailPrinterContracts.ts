@@ -597,7 +597,7 @@ export function validateRetailPrinterProviderOperationEvidence(
     if (typeof signal !== "string" || !signal.trim()) {
       issues.push(`${vendorId} ${operation} public evidence page signals must be non-empty strings.`);
     }
-    if (isPlaceholderRetailProductUrl(signal)) {
+    if (isPlaceholderRetailEvidenceSignal(signal)) {
       issues.push(`${vendorId} ${operation} public evidence must not include placeholder-like page signals.`);
     }
   }
@@ -696,8 +696,29 @@ export function buildRetailPrinterCertificationPacket(
 
 export function isPlaceholderRetailProductUrl(url: string): boolean {
   const normalized = safeDecodeUrlText(url).toLowerCase();
-  if (/\b(example\.com|localhost|127\.0\.0\.1|placeholder|dummy|todo|mock)\b/.test(normalized)) return true;
-  return /(^|[/?#&=._-])demo($|[/?#&=._-])/.test(normalized);
+  try {
+    const parsed = new URL(normalized);
+    const hostLabels = parsed.hostname.split(".");
+    if (["localhost", "127.0.0.1", "example.com"].includes(parsed.hostname) || parsed.hostname.endsWith(".example.com")) {
+      return true;
+    }
+    if (hostLabels.some((label) => isPlaceholderRetailToken(label))) return true;
+    return hasPlaceholderRetailToken(`${parsed.pathname} ${parsed.search} ${parsed.hash}`);
+  } catch {
+    return hasPlaceholderRetailToken(normalized);
+  }
+}
+
+export function isPlaceholderRetailEvidenceSignal(signal: string): boolean {
+  return hasPlaceholderRetailToken(safeDecodeUrlText(signal).toLowerCase());
+}
+
+function hasPlaceholderRetailToken(value: string): boolean {
+  return /(^|[/?#&=._\-\s])(?:placeholders?|dumm(?:y|ies)|todos?|mocks?|mockups?|demos?)($|[/?#&=._\-\s])/.test(value);
+}
+
+function isPlaceholderRetailToken(value: string): boolean {
+  return /^(placeholders?|dumm(?:y|ies)|todos?|mocks?|mockups?|demos?)$/.test(value);
 }
 
 function buildSourceLinks(

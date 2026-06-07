@@ -89,11 +89,14 @@ export interface CustomerWebExperience {
   safetyMetrics: Record<string, string>;
 }
 
-const customerVisibleImplementationTermSources = [
+const customerVisibleFixtureTermSources = [
   "placeholders?",
   "demos?",
   "mock(?:ups?)?",
-  "dumm(?:y|ies)",
+  "dumm(?:y|ies)"
+];
+
+const customerVisibleImplementationTermSources = [
   "providers?",
   "provider[- ]portals?",
   "handoffs?",
@@ -112,8 +115,18 @@ const customerVisibleImplementationTermSources = [
   "coupon evidence"
 ];
 
+export const customerVisibleFixtureTermPattern = new RegExp(
+  `\\b(?:${customerVisibleFixtureTermSources.join("|")})\\b`,
+  "i"
+);
+
 export const customerVisibleImplementationTermPattern = new RegExp(
   `\\b(?:${customerVisibleImplementationTermSources.join("|")})\\b`,
+  "i"
+);
+
+const customerVisibleUnsafeCopyPattern = new RegExp(
+  `\\b(?:${[...customerVisibleFixtureTermSources, ...customerVisibleImplementationTermSources].join("|")})\\b`,
   "i"
 );
 
@@ -224,7 +237,7 @@ export function validateCustomerWebExperience(experience: CustomerWebExperience)
   }
 
   const copy = collectCustomerWebCopy(experience).join(" ");
-  if (customerVisibleImplementationTermPattern.test(copy)) {
+  if (customerVisibleUnsafeCopyPattern.test(copy)) {
     issues.push("Customer web copy must not expose internal readiness/provider terms.");
   }
 

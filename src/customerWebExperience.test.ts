@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCustomerWebExperience,
   collectCustomerWebCopy,
+  customerVisibleFixtureTermPattern,
   customerVisibleImplementationTermPattern,
   validateCustomerWebExperience,
   type CustomerWebExperienceInput
@@ -29,11 +30,14 @@ const baseInput: CustomerWebExperienceInput = {
   productionEvidenceMissing: 13
 };
 
-const requestedBlockedCustomerTerms = [
+const requestedBlockedFixtureTerms = [
   "placeholder",
   "demo",
   "mock",
-  "dummy",
+  "dummy"
+];
+
+const requestedBlockedImplementationTerms = [
   "provider-portal",
   "handoff",
   "adapter",
@@ -164,15 +168,29 @@ describe("customer web experience contract", () => {
     );
   });
 
-  it("rejects the requested implementation terms from customer-visible copy", () => {
+  it("keeps fixture words separate from implementation jargon while blocking both from customer-visible copy", () => {
     const experience = buildCustomerWebExperience(baseInput);
 
-    for (const term of requestedBlockedCustomerTerms) {
+    for (const term of requestedBlockedFixtureTerms) {
       const unsafeExperience = {
         ...experience,
         panelNote: `${experience.panelNote} ${term}`
       };
 
+      expect(customerVisibleFixtureTermPattern.test(term)).toBe(true);
+      expect(customerVisibleImplementationTermPattern.test(term)).toBe(false);
+      expect(validateCustomerWebExperience(unsafeExperience)).toContain(
+        "Customer web copy must not expose internal readiness/provider terms."
+      );
+    }
+
+    for (const term of requestedBlockedImplementationTerms) {
+      const unsafeExperience = {
+        ...experience,
+        panelNote: `${experience.panelNote} ${term}`
+      };
+
+      expect(customerVisibleFixtureTermPattern.test(term)).toBe(false);
       expect(customerVisibleImplementationTermPattern.test(term)).toBe(true);
       expect(validateCustomerWebExperience(unsafeExperience)).toContain(
         "Customer web copy must not expose internal readiness/provider terms."

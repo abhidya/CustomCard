@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { printerPriceCatalog } from "./printerPricing";
+import { isPlaceholderRetailEvidenceSignal, isPlaceholderRetailProductUrl } from "./retailPrinterContracts";
 import {
   buildRetailPrinterAdapterPlan,
   buildRetailPrinterCertificationPackets,
@@ -194,6 +195,20 @@ describe("retail printer adapters", () => {
     expect(validateRetailPrinterAdapters([missingEvidenceWalmart])).toEqual(
       expect.arrayContaining(["walmart fetch-price entrypoint must include public page evidence."])
     );
+  });
+
+  it("classifies placeholder retail URLs and evidence with scoped token rules", () => {
+    expect(isPlaceholderRetailProductUrl(expectedRetailSources.walgreens)).toBe(false);
+    expect(isPlaceholderRetailProductUrl("https://example.com/placeholder/walmart-card")).toBe(true);
+    expect(isPlaceholderRetailProductUrl("https://localhost/walmart-card")).toBe(true);
+    expect(isPlaceholderRetailProductUrl("https://photos3.walmart.com/category/demo-card")).toBe(true);
+    expect(isPlaceholderRetailProductUrl("https://photos3.walmart.com/category/demographic-card")).toBe(false);
+    expect(isPlaceholderRetailProductUrl("https://photo.walgreens.com/store/design-detail?designName=Upload%20Your%20Design")).toBe(false);
+
+    expect(isPlaceholderRetailEvidenceSignal("visible rendered demo mode banner")).toBe(true);
+    expect(isPlaceholderRetailEvidenceSignal("page contains placeholder checkout text")).toBe(true);
+    expect(isPlaceholderRetailEvidenceSignal("card design product page")).toBe(false);
+    expect(isPlaceholderRetailEvidenceSignal("CommerceProduct_33272")).toBe(false);
   });
 
   it("builds a selected no-network operation plan for runtime display", () => {
