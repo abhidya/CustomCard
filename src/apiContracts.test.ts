@@ -479,7 +479,23 @@ describe("api contracts", () => {
       selectedVendorId: "walgreens",
       liveQuote: false,
       refreshReport: expect.objectContaining({
-        sourceCount: 8
+        sourceCount: 8,
+        couponSourceCount: 2,
+        couponOfferCount: 2,
+        activeCouponOfferCount: 0,
+        portalAppliedCouponOfferCount: 0,
+        couponPolicy: expect.objectContaining({
+          providerPortalApplicationRequired: true,
+          couponsAppliedToBestPrice: true
+        })
+      }),
+      couponPolicy: expect.objectContaining({
+        couponProviderFeedAllowed: true,
+        retailerCouponScrapeAllowed: true,
+        providerPortalApplicationRequired: true,
+        couponsAppliedToBestPrice: true,
+        couponsIncludedInDisplayedPrices: "only-after-provider-portal-application",
+        defaultAppliedDiscountCents: 0
       })
     });
   });

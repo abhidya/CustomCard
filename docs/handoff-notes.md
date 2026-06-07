@@ -129,8 +129,10 @@ skeleton for the production path. It includes:
   and applied bucket/IAM/signed-URL/access-log/secret-sync/restore-drill proof
   requirements are covered.
 - No live retail-printer quote or order API.
-- No live tax, coupon, stock, pickup-window, or checkout availability
-  verification for public printer prices.
+- No live tax, stock, pickup-window, or checkout availability verification for
+  public printer prices. Coupon discovery is source-backed, but coupon
+  discounts require provider-portal application proof before they affect
+  best-price ranking.
 - No professional translation QA, live translation provider, or native RTL render
   proof; non-English and RTL launch locales remain human-review gated.
 - No live payment charge/refund, cancellation, or external order-confirmation

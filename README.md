@@ -75,7 +75,9 @@ environment configuration instead of static placeholders.
 - Review-only public printer pricing comparison for Walgreens, CVS, FedEx,
   Walmart, Staples, and Office Depot manual handoff, with 12 official-source
   observations across 8 persisted source links, freshness checks, and checkout
-  confirmation still required.
+  confirmation still required. Coupons are collected from provider feeds or
+  retailer coupon pages and applied to best-price ranking only after provider
+  portal checkout evidence proves the code worked for the same cart context.
 - Localization readiness for English (US), Spanish (US), Urdu, and Arabic
   across customer, admin, API, and mobile surfaces, with RTL layout review and
   human copy-review gates before non-English or RTL copy can be marked ready.

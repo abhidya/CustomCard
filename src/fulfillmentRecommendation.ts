@@ -47,7 +47,7 @@ export function buildFulfillmentRecommendations(comparison: PrinterPricingCompar
       "cheapest-known-price",
       "Cheapest known price",
       cheapestKnown,
-      "Public price before tax, coupons, stock, and checkout confirmation."
+      "Effective price includes only provider-portal-applied coupons; tax, stock, and checkout confirmation remain gated."
     ),
     buildRecommendation(
       "fastest-pickup",
@@ -144,8 +144,8 @@ function buildRecommendation(
     label,
     vendorName: estimate.observation.vendorName,
     productName: estimate.observation.productName,
-    subtotalCents: estimate.subtotalCents,
-    subtotalLabel: estimate.subtotalLabel,
+    subtotalCents: estimate.effectiveSubtotalCents,
+    subtotalLabel: estimate.effectiveSubtotalLabel,
     etaLabel: speedLabel(estimate.observation.speed, estimate.observation.pickupEligible),
     pricedQuantity: estimate.pricedQuantity,
     pickupEligible: estimate.observation.pickupEligible,
@@ -161,7 +161,7 @@ function buildRecommendation(
 function comparePickupEstimate(first: PrinterPriceEstimate, second: PrinterPriceEstimate): number {
   return (
     speedRank(first.observation.speed) - speedRank(second.observation.speed) ||
-    first.subtotalCents - second.subtotalCents ||
+    first.effectiveSubtotalCents - second.effectiveSubtotalCents ||
     first.observation.vendorName.localeCompare(second.observation.vendorName)
   );
 }

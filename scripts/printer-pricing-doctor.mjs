@@ -42,15 +42,28 @@ const checks = [
   ]),
   checkExact("safety", "manual-confirmation-count", manualConfirmationCount, observationCount),
   checkExact("safety", "live-quote-disabled-signals", liveQuoteFalseCount, observationCount),
+  checkIncludes("safety", "coupon-policy-portal-signals", contents.pricing, [
+    "printerCouponPolicy",
+    "couponProviderFeedAllowed: true",
+    "retailerCouponScrapeAllowed: true",
+    "providerPortalApplicationRequired: true",
+    "couponsAppliedToBestPrice: true",
+    '"only-after-provider-portal-application"',
+    "provider portal checkout subtotal after coupon application",
+    "same product, quantity, fulfillment mode, and account state"
+  ]),
   checkMinimum("collection", "no-network-collection-rules", ruleCount, 8),
-  checkIncludes("collection", "blocked-live-quote-fields", contents.pricing, [
+  checkIncludes("collection", "blocked-live-quote-fields-and-coupon-sources", contents.pricing, [
     '"tax"',
-    '"coupon"',
+    '"coupon portal proof"',
     '"store stock"',
     '"pickup window"',
     '"live order placement"',
     "buildPrinterPricingRefreshReport",
-    "canShowComparison"
+    "canShowComparison",
+    "printerCouponSources",
+    "printerCouponOffers",
+    "buildPrinterCouponApplication"
   ]),
   checkIncludes("tests", "pricing-refresh-tests", contents.pricingTest, [
     "cvs-5x7-photo-card",
@@ -62,6 +75,10 @@ const checks = [
     "review-only public pricing",
     "knownPriceCount: 12",
     "sourceCount: 8",
+    "couponSourceCount: 2",
+    "couponOfferCount: 2",
+    "providerPortalApplicationRequired: true",
+    "bestAvailablePriceRequiresCouponPortalEvidence: true",
     "refreshReport.totalObservations",
     "liveQuote: false"
   ]),
@@ -72,8 +89,11 @@ const checks = [
     "5x7 folded greeting card design detail",
     "$8.98 each",
     "$13.99 for 10",
+    "Coupon Treatment",
+    "provider portal",
+    "coupon discounts are applied only after",
     "$49.99 pre-tax base",
-    "coupon prices excluded"
+    "coupon candidates require provider-portal application proof"
   ]),
   checkIncludes("ci", "pricing-doctor-is-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
     '"printer:pricing:doctor": "node scripts/printer-pricing-doctor.mjs"',

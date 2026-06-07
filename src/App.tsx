@@ -1845,7 +1845,7 @@ function HandoffView({
             <Printer size={19} />
             <div>
               <span>review-only public pricing</span>
-              <h3>{primaryPricing ? primaryPricing.subtotalLabel : "Manual quote required"}</h3>
+              <h3>{primaryPricing ? primaryPricing.effectiveSubtotalLabel : "Manual quote required"}</h3>
             </div>
           </div>
           {primaryPricing ? (
@@ -1862,22 +1862,29 @@ function HandoffView({
           <div className="pricingFreshnessGrid">
             <Metric label="Prices" value={`${refreshReport.totalObservations}`} />
             <Metric label="Sources" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
+            <Metric label="Coupon offers" value={`${refreshReport.activeCouponOfferCount}/${refreshReport.couponOfferCount}`} />
             <Metric label="Max age" value={`${refreshReport.maxAgeDays} days`} />
             <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />
+            <Metric
+              label="Coupon proof"
+              value={pricingComparison.couponPolicy.providerPortalApplicationRequired ? "Portal" : "Source"}
+            />
           </div>
           <div className="pricingOptionList">
             {rankedOptions.map((estimate) => (
               <div className="pricingOption" key={estimate.observation.id}>
                 <strong>{estimate.observation.vendorName}</strong>
-                <span>{estimate.subtotalLabel}</span>
+                <span>{estimate.effectiveSubtotalLabel}</span>
                 <small>
                   {estimate.observation.speed.replace(/-/g, " ")} / {estimate.observation.confidence.replace(/-/g, " ")} /
-                  confirm in checkout
+                  coupon {estimate.couponApplication.status.replace(/-/g, " ")} / {estimate.couponDiscountLabel}
                 </small>
               </div>
             ))}
           </div>
-          <small>{pricingComparison.disclaimer}</small>
+          <small>
+            {pricingComparison.disclaimer} {pricingComparison.couponPolicy.confirmationCopy}
+          </small>
         </div>
       </div>
     </section>

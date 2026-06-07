@@ -278,9 +278,11 @@
   database throughput proof, or provider spend report; capacity profiles remain
   planning contracts.
 - Public printer pricing is observed research only; checkout confirmation,
-  taxes, coupons, stock, pickup windows, and checkout availability are not
-  live-verified. The current catalog has 12 official-source observations across
-  8 persisted source links and a no-network pricing doctor.
+  taxes, stock, pickup windows, and checkout availability are not live-verified.
+  Coupon sources are collected, but coupon discounts affect best-price ranking
+  only after provider-portal application proof for the same cart context. The
+  current catalog has 12 official-source observations across 8 persisted source
+  links and a no-network pricing doctor.
 - Non-English and RTL localization is readiness-gated only; professional
   translation QA, native RTL render proof, and live translation providers are
   not covered.

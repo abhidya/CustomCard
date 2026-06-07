@@ -48,7 +48,11 @@ export interface RetailPrinterAdapterPlan {
 }
 
 const vendorEvidence = {
-  price: ["Official current price extraction", "Tax/coupon exclusion proof", "Store availability or shipping-window proof"],
+  price: [
+    "Official current price extraction",
+    "Tax and coupon portal application proof",
+    "Store availability or shipping-window proof"
+  ],
   upload: ["Vendor upload API or certified browser automation contract", "Asset-size acceptance proof", "Crop/fold preview screenshot"],
   order: ["Vendor certification", "Explicit customer approval record", "Payment and cancellation recovery proof"]
 };

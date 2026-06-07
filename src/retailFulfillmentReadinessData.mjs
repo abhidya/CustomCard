@@ -57,8 +57,9 @@ export const retailFulfillmentReadinessItems = [
     realPaymentsEnabled: false,
     physicalCertificationAttached: false,
     currentEvidence: ["printer pricing research doctor", "review-only public observations", "manual confirmation flags"],
-    requiredEvidence: ["Fresh public price review", "Checkout confirmation screenshot", "Tax/coupon manual review"],
-    blocker: "Public prices are comparison hints only; no retailer quote, tax, coupon, or stock API is connected."
+    requiredEvidence: ["Fresh public price review", "Checkout confirmation screenshot", "Tax and coupon portal proof"],
+    blocker:
+      "Public prices are comparison hints only; no retailer quote, tax, coupon portal application, or stock API is connected."
   },
   {
     id: "live-quote-contracts",

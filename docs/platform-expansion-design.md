@@ -82,8 +82,9 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   and Office Depot live ordering blocked.
 - Printer pricing: public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot 5x7
   card observations ready for manual comparison, with official-source collection
-  rules and 30-day freshness reporting; live quotes, taxes, coupons, stock, and
-  pickup windows remain manual-confirmation work.
+  rules, coupon source collection, provider-portal coupon proof requirements,
+  and 30-day freshness reporting; live quotes, taxes, stock, and pickup windows
+  remain manual-confirmation work.
 - Customer fulfillment recommendation: the web customer panel uses the public
   pricing comparison to show cheapest known price, fastest pickup candidate, and
   cheapest shipped option without surfacing retail-printer adapter internals.
@@ -652,7 +653,9 @@ Remaining high-risk work:
   sampling, retention, provider-contract, alert-route, and incident-review
   gates; no live observability ingestion, alert delivery, retention enforcement,
   or incident-response drill is claimed.
-- No live printer tax, coupon, stock, or pickup-window integration.
+- No live printer tax, stock, or pickup-window integration; coupon discounts
+  require provider-portal application proof before they affect best-price
+  ranking.
 - No professional translation QA, live translation provider, or native RTL
   render proof.
 - Live-applied production cloud object-store bucket policy/IAM verification is

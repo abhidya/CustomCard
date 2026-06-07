@@ -20,8 +20,9 @@ preserving the production integration gates from the earlier service skeleton.
 - Production user auth and account recovery.
 - Gmail, Google Calendar, Outlook, or iCloud OAuth.
 - Paid AI text/image generation.
-- Live vendor quotes, taxes, coupons, stock, pickup-window checks, payments,
-  refunds, or real order placement.
+- Live vendor quotes, taxes, stock, pickup-window checks, payments, refunds, or
+  real order placement. Coupon source collection is modeled, but coupon
+  discounts require provider-portal application proof before best-price ranking.
 - Physical print certification.
 - External legal, privacy, security, accessibility, and deployment audits.
 

@@ -506,7 +506,8 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     vendorName: "Walmart Photo",
     totalCents: 56,
     etaLabel: "same-day pickup candidate",
-    confirmationCopy: "Public price before tax, coupons, stock, and checkout confirmation.",
+    confirmationCopy:
+      "Effective price includes only checkout-applied coupons; tax, stock, and checkout confirmation remain gated.",
     liveQuote: false,
     liveOrder: false,
     customerVisible: true

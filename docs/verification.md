@@ -683,7 +683,9 @@ documentation claims found during the audit were corrected.
   S3-compatible writes are covered against CI/local MinIO, but no production
   cloud bucket outside that doctor is claimed.
 - Public printer pricing is review-only and source-backed with freshness gates;
-  no live quote, tax, coupon, stock, pickup-window, or checkout test is claimed.
+  no live quote, tax, stock, pickup-window, or checkout test is claimed. Coupon
+  source collection is modeled, and discounts are applied only with
+  provider-portal application proof for the same cart context.
 - Payment providers are sandbox-contract only; no live charge, capture, refund,
   dispute, tax, settlement, or payment-webhook test is claimed.
 - Observability providers are contract-only; no live telemetry ingestion, alert,

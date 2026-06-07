@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPrinterCouponApplication,
   buildPrinterPricingComparison,
   buildPrinterPricingRefreshReport,
   estimatePrinterSubtotal,
   getPrinterPriceOptionsForVendor,
+  isPrinterCouponActive,
+  printerCouponOffers,
+  printerCouponPolicy,
   printerPriceCatalog,
   printerPricingCollectionRules,
+  validatePrinterCouponOffers,
   validatePrinterPricingCatalog,
+  validatePrinterCouponPolicy,
   type PrinterPriceObservation
 } from "./printerPricing";
 
@@ -52,7 +58,20 @@ describe("printer pricing research", () => {
     expect(estimatePrinterSubtotal(walgreensSingle!, 1)).toMatchObject({
       pricedQuantity: 1,
       subtotalCents: 349,
-      subtotalLabel: "$3.49"
+      subtotalLabel: "$3.49",
+      effectiveSubtotalCents: 349,
+      effectiveSubtotalLabel: "$3.49",
+      couponDiscountCents: 0,
+      couponDiscountLabel: "CRISPCARD expired on 2026-06-06",
+      subtotalIncludesCoupon: false,
+      couponApplication: expect.objectContaining({
+        status: "expired",
+        offer: expect.objectContaining({ code: "CRISPCARD" })
+      }),
+      couponPolicy: expect.objectContaining({
+        providerPortalApplicationRequired: true,
+        couponsAppliedToBestPrice: true
+      })
     });
   });
 
@@ -65,18 +84,128 @@ describe("printer pricing research", () => {
     expect(comparison.refreshReport).toMatchObject({
       totalObservations: printerPriceCatalog.length,
       sourceCount: 8,
+      couponSourceCount: 2,
+      couponOfferCount: 2,
+      activeCouponOfferCount: 0,
+      portalAppliedCouponOfferCount: 0,
       freshSources: 8,
       canShowComparison: true,
-      liveQuote: false
+      liveQuote: false,
+      couponPolicy: expect.objectContaining({
+        providerPortalApplicationRequired: true,
+        couponsAppliedToBestPrice: true
+      })
+    });
+    expect(comparison.couponPolicy).toMatchObject({
+      reviewMode: "apply-during-provider-portal-collection",
+      collectionModes: expect.arrayContaining([
+        "retailer-public-coupon-page",
+        "coupon-provider-feed",
+        "provider-portal-checkout"
+      ]),
+      couponProviderFeedAllowed: true,
+      retailerCouponScrapeAllowed: true,
+      providerPortalApplicationRequired: true,
+      couponsAppliedToBestPrice: true,
+      couponsIncludedInDisplayedPrices: "only-after-provider-portal-application",
+      defaultAppliedDiscountCents: 0,
+      blockedFields: expect.arrayContaining([
+        "coupon provider API credentials",
+        "coupon expiration",
+        "coupon stacking rules",
+        "provider portal checkout session",
+        "promo code application proof"
+      ])
     });
     expect(comparison.rankedKnownPrices[0]).toMatchObject({
       observation: expect.objectContaining({ vendorId: "walmart" }),
-      subtotalLabel: "$0.56"
+      subtotalLabel: "$0.56",
+      effectiveSubtotalLabel: "$0.56",
+      subtotalIncludesCoupon: false
     });
     expect(comparison.manualConfirmationVendors).toEqual(
       expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"])
     );
     expect(comparison.disclaimer).toContain("not live quotes");
+    expect(comparison.disclaimer).toContain("coupons");
+  });
+
+  it("requires coupon collection and portal application proof before discounting", () => {
+    expect(validatePrinterCouponPolicy()).toEqual([]);
+    expect(validatePrinterCouponOffers()).toEqual([]);
+    expect(printerCouponPolicy).toMatchObject({
+      reviewMode: "apply-during-provider-portal-collection",
+      eligibleVendorIds: expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot"]),
+      couponProviderFeedAllowed: true,
+      retailerCouponScrapeAllowed: true,
+      providerPortalApplicationRequired: true,
+      couponsAppliedToBestPrice: true,
+      couponsIncludedInDisplayedPrices: "only-after-provider-portal-application",
+      defaultAppliedDiscountCents: 0,
+      blockedFields: expect.arrayContaining([
+        "coupon provider API credentials",
+        "coupon expiration",
+        "coupon stacking rules",
+        "promo code application proof",
+        "provider portal checkout session"
+      ])
+    });
+    expect(
+      validatePrinterCouponPolicy({
+        ...printerCouponPolicy,
+        collectionModes: ["retailer-public-coupon-page"],
+        couponProviderFeedAllowed: false as never,
+        retailerCouponScrapeAllowed: false as never,
+        providerPortalApplicationRequired: false as never,
+        couponsAppliedToBestPrice: false as never,
+        couponsIncludedInDisplayedPrices: "always" as never,
+        defaultAppliedDiscountCents: 250 as never,
+        blockedFields: [],
+        requiredEvidence: []
+      })
+    ).toEqual(
+      expect.arrayContaining([
+        "Printer coupon policy must allow coupon provider feed collection.",
+        "Printer coupon policy must require provider portal checkout collection.",
+        "Printer coupon policy must allow coupon provider feeds.",
+        "Printer coupon policy must allow retailer coupon page scraping.",
+        "Printer coupon policy must require provider portal application proof.",
+        "Printer coupon policy must apply verified coupons to best price.",
+        "Printer coupon policy must include coupons only after provider portal application.",
+        "Printer coupon policy must keep default applied discounts at zero.",
+        "Printer coupon policy must block promo code application proof.",
+        "Printer coupon policy must require provider portal checkout subtotal after coupon application."
+      ])
+    );
+  });
+
+  it("applies an active coupon only after the provider portal proves it", () => {
+    const walgreensSingle = printerPriceCatalog.find((observation) => observation.id === "walgreens-5x7-folded-card");
+    const activePortalOffer = {
+      ...printerCouponOffers.find((offer) => offer.code === "CRISPCARD")!,
+      endsAtIso: "2026-06-30T23:59:00.000-05:00",
+      evidenceStatus: "provider-portal-applied" as const
+    };
+
+    expect(walgreensSingle).toBeDefined();
+    expect(isPrinterCouponActive(activePortalOffer, reviewedAt)).toBe(true);
+    expect(buildPrinterCouponApplication(walgreensSingle!, 349, reviewedAt, [activePortalOffer])).toMatchObject({
+      status: "applied",
+      discountCents: 209,
+      discountedSubtotalCents: 140,
+      discountedSubtotalLabel: "$1.40"
+    });
+    expect(estimatePrinterSubtotal(walgreensSingle!, 1, { now: reviewedAt, couponOffers: [activePortalOffer] })).toMatchObject({
+      subtotalCents: 349,
+      effectiveSubtotalCents: 140,
+      effectiveSubtotalLabel: "$1.40",
+      couponDiscountCents: 209,
+      subtotalIncludesCoupon: true,
+      couponApplication: expect.objectContaining({
+        status: "applied",
+        offer: expect.objectContaining({ code: "CRISPCARD" })
+      })
+    });
   });
 
   it("surfaces local print shops as manual quote required", () => {
@@ -185,7 +314,7 @@ describe("printer pricing research", () => {
     expect([...sourceUrls].every((url) => ruleUrls.has(url))).toBe(true);
     expect(printerPricingCollectionRules.every((rule) => rule.noNetworkRuntime)).toBe(true);
     expect(printerPricingCollectionRules.flatMap((rule) => rule.blockedFields)).toEqual(
-      expect.arrayContaining(["tax", "coupon", "store stock", "pickup window", "live order placement"])
+      expect.arrayContaining(["tax", "coupon portal proof", "store stock", "pickup window", "live order placement"])
     );
   });
 

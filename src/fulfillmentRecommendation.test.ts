@@ -32,7 +32,8 @@ describe("fulfillment recommendations", () => {
       sourceMode: "review-only-public-price",
       liveQuote: false,
       directOrderEnabled: false,
-      requiresManualConfirmation: true
+      requiresManualConfirmation: true,
+      confirmationCopy: expect.stringContaining("provider-portal-applied coupons")
     });
     expect(recommendationSet.recommendations[1]).toMatchObject({
       label: "Fastest pickup candidate",
