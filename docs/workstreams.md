@@ -1,0 +1,58 @@
+# Workstreams
+
+This file is the orchestration map for the active production-readiness push. It
+links each lane to the design source, defined task shape, current evidence, and
+remaining implementation gaps. It is intentionally stricter than a roadmap: a
+lane is not "done" until its graduation evidence exists in the repo.
+
+## Active Coordination
+
+| Lane | Current owner | Branch/worktree | Scope | Merge rule |
+| --- | --- | --- | --- | --- |
+| Coupon portal evidence | Anscombe | Worker-owned branch/worktree | Coupon collection, provider-feed evidence, and best-price coupon application policy. | Merge only after focused pricing tests, pricing doctor, docs update, and no live-order claims pass. |
+| Demo/bootstrap boundary | Huygens | Worker-owned branch/worktree | Move hardcoded demo bootstrap values out of the primary React shell without behavior change. | Merge only after browser smoke tests and build/check prove parity. |
+| Orchestration/workstream map | Lead agent | `codex/workstream-map` | Repo-local workstream map, branch hygiene, integration, and validation sequencing. | Docs-only; merge after link check and clean status. |
+
+## Product Surface Workstreams
+
+| Workstream | Design source | Tasks already defined | Current coverage | Implementation gaps |
+| --- | --- | --- | --- | --- |
+| Customer web app | `docs/product-brief.md`, `docs/implementation-roadmap.md`, `docs/requirements-traceability.md` R021 | Local workspace, invite/ICS import, opportunity review, card proof path, memory controls, local chat, review-only fulfillment recommendations. | Vite/React app, browser smoke coverage, runtime console-error guard, local deterministic workflows. | Hosted production auth, live account recovery UX, real provider import, real payment/order flow, accessibility audit evidence. |
+| Admin website | `docs/platform-expansion-design.md`, `docs/requirements-traceability.md` R021-R029 | Provider inventory, readiness gates, production launch gates, external audit/payment/mobile/hosted/cloud proof registers. | Admin panel surfaces catalog, runtime, readiness, and blocked providers without enabling network calls. | Real integration-owner workflow, credential vault operations, production incident/alert evidence, hosted admin token proof. |
+| Native iOS/Android app | `apps/mobile/README.md`, `src/mobileRenderReadiness.ts`, `docs/requirements-traceability.md` R004 | Expo shell, API URL config, customer app contract, offline sync model, release profile doctor. | Native source contract, mobile doctor, release doctor, 390px browser mobile-preview smoke. | Actual React Native component render test, emulator screenshots, EAS build execution, signed iOS/Android artifacts, store-review evidence. |
+| Onboarding and calendars | `docs/onboarding-calendar-plan.md`, `src/onboardingCalendar.ts`, R030 | User stories, staged onboarding, Google Calendar OAuth readiness, iCloud manual ICS export, ready `Paste invite or ICS` path. | Typed contracts, customer-visible choices, tests, docs, no fake Google/Apple CTAs. | Live OAuth app approvals, callback/token storage, revocation drill, hosted provider sync worker, metadata schema proof against real provider payloads. |
+
+## Provider And Fulfillment Workstreams
+
+| Workstream | Design source | Tasks already defined | Current coverage | Implementation gaps |
+| --- | --- | --- | --- | --- |
+| Retail printer adapters | `src/retailPrinterAdapters.ts`, `src/providerCatalog.ts`, `docs/printer-pricing-research.md` | Walmart/FedEx/CVS/Walgreens adapter plans for price fetch, image upload, and order placement; manual fallback remains default. | Blocked adapter contracts, no-network runtime dry runs, retail readiness register, manual print package export. | Credentialed quote/upload/order APIs, vendor certification, kill-switch enforcement outside provider runtime, live quote snapshots, physical print QA. |
+| Coupons and best price | `src/printerPricing.ts`, `src/fulfillmentRecommendation.ts`, `docs/printer-pricing-research.md` | Official Walgreens/CVS page collection, CVS print-entry evidence, FMTC provider-feed target, provider-portal coupon application policy. | Review-only coupon offers and freshness rules; recommendations state coupons affect best price only after provider-portal application evidence. | Same-cart provider portal proof, tax/stock/pickup-window confirmation, provider-feed credentials, licensed feed coverage validation, legal review of any scraping path. |
+| Payments | `src/paymentReadiness.ts`, `src/paymentReadinessData.mjs` | Sandbox payment request contracts, no-card-storage boundary, webhook/refund/live approval gates. | Stripe/PayPal/Square/Adyen sandbox/no-network readiness, payment doctor, no live charge/refund/capture claims. | Processor live-mode approval, PCI/legal review, webhook signature/replay proof, refund/void/dispute drills, settlement reconciliation. |
+| AI/image providers | `src/aiProviderReadiness.ts`, `src/providerRuntime.ts`, `src/customerChat.ts` | Text/image provider inventory, prompt/privacy/spend/QA gates, deterministic local chat fallback. | Local deterministic chat, provider dry-run contracts, no live model calls. | Live model allowlist, provider credentials, print QA run, spend/abuse monitoring, moderation evidence, model-output provenance in production storage. |
+
+## Infrastructure And Evidence Workstreams
+
+| Workstream | Design source | Tasks already defined | Current coverage | Implementation gaps |
+| --- | --- | --- | --- | --- |
+| Hosted API and database | `src/hostedApiReadiness.ts`, `src/reviewerDbSeedReadiness.ts`, `docs/deployment-evidence.md` | Vercel deployment evidence, hosted API proof register, reviewer seed proof register, Postgres doctors. | Local/isolated live Postgres doctors, process-level HTTP doctor, Vercel config/evidence register. | Public DB-backed hosted route proof, hosted token verification, Vercel env sync, hosted reviewer seed execution, backup/restore evidence. |
+| Cloud artifact storage | `src/cloudArtifactProofReadiness.ts`, `infra/aws/artifact-store`, `docs/deployment-evidence.md` | Terraform/IAM/static bucket contract, signed URL proof gates, object-store doctors. | Filesystem, injected S3-compatible, live MinIO/S3-compatible write/read verification, static AWS IaC contract. | Applied bucket ARN/IAM proof, real signed URL cloud probes, access-log proof, secret-manager sync, restore drill. |
+| Observability and audits | `src/observabilityReadiness.ts`, `src/externalAuditReadiness.ts` | Telemetry schema, redaction, sampling, alert-route, incident-review, external audit register. | Repo-local readiness doctors and tests keep live ingestion disabled. | Live telemetry project, alert delivery proof, retention enforcement, incident drill, external security/privacy/accessibility/legal audits. |
+| Capacity and deployment | `src/capacityPlan.ts`, `infra/`, `docs/implementation-roadmap.md` | Local-dev, cheap-droplet, cloud-native, SaaS-scale profiles; Docker/Kubernetes manifests. | Deployment and capacity doctors validate local scaffolding and CI wiring. | Real droplet/Kubernetes deployment, measured load/cost evidence, production secrets, rollback procedure proof. |
+
+## Graduation Rules
+
+1. A workstream can merge only from its own branch/worktree with a focused
+   commit and passing validation named in the commit trailers.
+2. Customer-facing UI must not expose internal proof terms unless the surface is
+   explicitly admin/reviewer-oriented.
+3. Coupons may be displayed as source-listed offers, but they may affect best
+   price only after same-cart provider-portal application evidence exists.
+4. Live OAuth, model calls, payment charges, vendor uploads/orders, and external
+   messages stay disabled until a doctor records credential, consent,
+   revocation, kill-switch, and audit evidence.
+5. Native mobile readiness remains contract-only until emulator render proof and
+   signed artifacts are attached.
+6. Main is pushed after each clean merge; if a browser/runtime issue appears
+   after tests pass, it gets a separate fix before the next lane.
+

@@ -487,6 +487,7 @@ mobile native release doctor on pushes to `main` and pull requests.
 - [Delivery process](docs/delivery-process.md)
 - [Platform expansion design](docs/platform-expansion-design.md)
 - [Printer pricing research](docs/printer-pricing-research.md)
+- [Workstreams](docs/workstreams.md)
 - [Verification](docs/verification.md)
 - [Deployment evidence](docs/deployment-evidence.md)
 - [Completion audit](docs/completion-audit.md)
