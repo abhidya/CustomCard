@@ -362,6 +362,12 @@ describeWithChrome("CustomCard UI smoke", () => {
         const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const initialPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
         const initialSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const initialCalendarText = document.querySelector('[aria-label="Calendar onboarding choices"]')?.textContent;
+        const initialCalendarChoices = [...document.querySelectorAll(".calendarChoice")].map((node) => ({
+          text: node.textContent,
+          status: node.querySelector("em")?.textContent,
+          className: node.className
+        }));
         const initialPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
           node.getAttribute("placeholder")
         );
@@ -400,6 +406,8 @@ describeWithChrome("CustomCard UI smoke", () => {
           initialJourneyActions,
           initialPrimaryActions,
           initialSupportingActions,
+          initialCalendarText,
+          initialCalendarChoices,
           initialSupportingPrimaryActions,
           initialPlaceholders,
           workspaceText,
@@ -433,6 +441,30 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.initialCustomerText).toContain("Not connected yet");
     expect(result.initialCustomerText).not.toContain("Continue with Google");
     expect(result.initialCustomerText).not.toContain("Continue with Apple");
+    expect(result.initialCalendarChoices).toEqual([
+      expect.objectContaining({
+        className: expect.stringContaining("ready-local"),
+        status: "Ready now",
+        text: expect.stringContaining("Customer-provided invite text or ICS event metadata only.")
+      }),
+      expect.objectContaining({
+        className: expect.stringContaining("credential-gated"),
+        status: "Not connected yet",
+        text: expect.stringContaining("Event metadata only after explicit consent; raw descriptions stay out of storage.")
+      }),
+      expect.objectContaining({
+        className: expect.stringContaining("manual-export"),
+        status: "Manual export",
+        text: expect.stringContaining(
+          "Customer exports an .ics file or downloads a temporary iCloud.com ICS copy, then pastes selected event data."
+        )
+      })
+    ]);
+    expect(result.initialCalendarText).toContain("Google Calendar connection");
+    expect(result.initialCalendarText).toContain("Apple Calendar ICS export");
+    expect(result.initialCalendarText).not.toContain("Continue with Google");
+    expect(result.initialCalendarText).not.toContain("Continue with Apple");
+    expect(result.initialCalendarText).not.toContain("Future calendar sync");
     expect(result.initialCustomerText).toContain("Print options after proof");
     expect(result.initialCustomerText).not.toContain("Cheapest known price");
     expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");

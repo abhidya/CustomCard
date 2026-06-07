@@ -98,8 +98,8 @@ The customer web panel and mobile app show the same readiness split:
 | Choice | Customer state | Action |
 | --- | --- | --- |
 | Paste invite or ICS | Ready now | Use the local no-account import path; the server parses pasted invite/ICS text into metadata-only preview fields. |
-| Google Calendar connection | OAuth gated | Do not show a live sign-in CTA until OAuth app setup, consent copy, token storage, and revocation handling exist. |
-| Apple Calendar ICS export | Manual export | Ask the user to export/download ICS and paste selected event data; never ask for Apple ID, app-specific password, CalDAV, or native sync credentials in this repo state. |
+| Google Calendar connection | Not connected yet | Tell the user Google requires connection setup; do not show a live sign-in CTA until OAuth app setup, consent copy, token storage, and revocation handling exist. |
+| Apple Calendar ICS export | Manual ICS export | Ask the user to export/download ICS and paste selected event data; never ask for Apple ID, app-specific password, CalDAV, or native sync credentials in this repo state. |
 
 ## Guardrails
 
