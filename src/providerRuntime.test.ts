@@ -245,12 +245,22 @@ const textInput = {
 };
 
 const imageInput = {
-  prompt: "Anniversary artwork for sara@example.com, phone +1 212 555 0199, no text in image.",
+  prompt: "Luxury botanical Muslim wedding card set with ivory, sage, and soft gold floral borders.",
   recipientName: "Sara and Ahmed",
-  occasion: "anniversary",
-  style: "botanical",
+  occasion: "wedding",
+  style: "botanical Islamic stationery",
   locale: "en-US",
-  printApproved: true
+  printApproved: true,
+  senderName: "Auntie Rehman",
+  frontCoverText: "Sara & Ahmed",
+  insideLeftText: "May your marriage be filled with mercy, joy, and barakah.",
+  insideRightText: "Wishing you a lifetime of tenderness, laughter, and faith-filled partnership.",
+  signOff: "With love, Auntie Rehman"
+};
+
+const privacyImageInput = {
+  ...imageInput,
+  prompt: "Privacy audit artwork direction mentions sara@example.com and +1 212 555 0199 so redaction must happen."
 };
 
 const importInput = {
@@ -545,9 +555,27 @@ describe("provider runtime contracts", () => {
       expect(result.request?.method, providerId).toBe("POST");
       expect(result.request?.noNetwork, providerId).toBe(true);
       expect(serializedHeaders, providerId).not.toContain("test-");
-      expect(serializedBody, providerId).toContain("[redacted-email]");
-      expect(serializedBody, providerId).toContain("[redacted-phone]");
       expect(serializedBody, providerId).toContain("print_approval_required");
+      expect(result.request?.panelRequests, providerId).toHaveLength(4);
+      expect(result.request?.panelRequests?.map((request) => request.panelId), providerId).toEqual([
+        "front-cover",
+        "back-cover",
+        "inside-left-panel",
+        "inside-right-panel"
+      ]);
+
+      const panelBodies = result.request?.panelRequests?.map((request) => JSON.stringify(request.body)) ?? [];
+      expect(panelBodies[0], providerId).toContain("Generate only the FRONT COVER");
+      expect(panelBodies[1], providerId).toContain("Generate only the BACK COVER");
+      expect(panelBodies[2], providerId).toContain("Generate only the INSIDE LEFT PANEL");
+      expect(panelBodies[3], providerId).toContain("Generate only the INSIDE RIGHT PANEL");
+      expect(panelBodies.every((body) => body.includes("folded-card-four-panel-v1")), providerId).toBe(true);
+      expect(panelBodies.every((body) => body.includes("one-provider-request-per-panel")), providerId).toBe(true);
+      expect(panelBodies[0], providerId).toContain('"panel_id":"front-cover"');
+      expect(panelBodies[1], providerId).toContain('"panel_id":"back-cover"');
+      expect(panelBodies[2], providerId).toContain('"panel_id":"inside-left-panel"');
+      expect(panelBodies[3], providerId).toContain('"panel_id":"inside-right-panel"');
+      expect(panelBodies.join("\n"), providerId).not.toContain("Create 4 separate print-ready");
     }
 
     expect(buildImageGenerationRuntime("google-gemini-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
@@ -580,6 +608,16 @@ describe("provider runtime contracts", () => {
     expect(buildImageGenerationRuntime("luma-image", imageInput, readyEnv, openGates).request?.url).toBe(
       "https://api.lumalabs.ai/dream-machine/v1/generations/image"
     );
+  });
+
+  it("redacts PII across image panel prompt contracts", () => {
+    const result = buildImageGenerationRuntime("openai-images", privacyImageInput, readyEnv, openGates);
+    const serializedRequest = JSON.stringify(result.request);
+
+    expect(serializedRequest).toContain("[redacted-email]");
+    expect(serializedRequest).toContain("[redacted-phone]");
+    expect(serializedRequest).not.toContain("sara@example.com");
+    expect(serializedRequest).not.toContain("+1 212 555 0199");
   });
 
   it("keeps provider imports metadata-only and omits raw source text", () => {
@@ -1193,6 +1231,8 @@ describe("provider runtime contracts", () => {
     });
     expect(image.mode).toBe("local-result");
     expect(image.localResult?.width).toBe(1500);
+    expect(image.localResult?.requiredPanelCount).toBe(4);
+    expect(image.localResult?.panelPrompts).toHaveLength(4);
     expect(notification.mode).toBe("local-result");
     expect(notification.localResult).toMatchObject({ noNetwork: true, visibleOnly: true });
     expect(payment.mode).toBe("local-result");

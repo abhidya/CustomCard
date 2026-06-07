@@ -71,6 +71,12 @@ const checks = [
     "adobe-firefly-image",
     "recraft-image",
     "luma-image",
+    "folded-card-four-panel-v1",
+    "one-provider-request-per-panel",
+    "panelRequests",
+    "front-cover",
+    "inside-left-panel",
+    "inside-right-panel",
     "modelAllowlisted",
     "modelQualityReviewed"
   ]),

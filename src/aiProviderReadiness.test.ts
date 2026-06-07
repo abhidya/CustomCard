@@ -70,6 +70,9 @@ describe("AI provider readiness", () => {
       externalNetworkCalls: false,
       productionTrafficEnabled: false
     });
+    expect(imageQa?.currentEvidence).toEqual(
+      expect.arrayContaining(["folded-card-four-panel-v1 provider prompt contract"])
+    );
   });
 
   it("flags unsafe AI launch claims before admin or API readiness can expose them", () => {

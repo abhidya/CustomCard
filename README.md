@@ -106,8 +106,11 @@ environment configuration instead of static placeholders.
 - AI provider readiness register in `src/aiProviderReadiness.ts` and
   `src/aiProviderReadinessData.mjs` for text/image adapter inventory, model
   allowlists, prompt and brand-safety review, PII minimization, image print QA,
-  spend controls, evaluation fixtures, and rollout evidence while keeping live
-  model calls and production AI traffic disabled.
+  spend controls, evaluation fixtures, and rollout evidence. Image provider
+  dry-run contracts now use a four-panel folded-card prompt Interface that
+  prepares one no-network provider request each for front cover, back cover,
+  inside-left, and inside-right panels instead of one collage-style prompt,
+  while keeping live model calls and production AI traffic disabled.
 - Observability readiness register in `src/observabilityReadiness.ts` and
   `src/observabilityReadinessData.mjs` for telemetry schema, PII redaction,
   sampling, retention, alert-route drill, provider request contracts, and

@@ -478,7 +478,11 @@ The runtime remains fail-closed:
   minimization, image print QA, spend controls, evaluation fixtures, admin/API
   exposure, CI wiring, and the "not live AI generation" disclaimer while keeping
   live provider calls, production AI traffic, and live external network
-  requirements at zero.
+  requirements at zero. Image provider Runtime contracts use a
+  `folded-card-four-panel-v1` Interface: one no-network request each for front
+  cover, back cover, inside-left, and inside-right panels, with panel metadata
+  and redaction applied per request so provider Adapters do not receive a single
+  collage-style prompt.
 - `npm run observability:doctor` verifies Observability readiness in
   `src/observabilityReadiness.ts`, telemetry schema, PII redaction, sampling,
   retention, alert-route drill tracking, observability provider request

@@ -134,7 +134,12 @@ export const aiProviderReadinessItems = [
     liveProviderCallsEnabled: false,
     externalNetworkCalls: false,
     productionTrafficEnabled: false,
-    currentEvidence: ["browser SVG renderer", "local print package export", "print proof checks"],
+    currentEvidence: [
+      "browser SVG renderer",
+      "local print package export",
+      "print proof checks",
+      "folded-card-four-panel-v1 provider prompt contract"
+    ],
     requiredEvidence: ["Generated image sample set", "Human print approval", "Physical print QA sample"],
     blocker: "No live generated image sample, human approval transcript, or physical print QA evidence is attached."
   },

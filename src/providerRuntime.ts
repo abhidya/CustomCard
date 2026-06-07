@@ -78,6 +78,27 @@ export interface ImageRuntimeInput {
   style: string;
   locale: string;
   printApproved: boolean;
+  senderName?: string;
+  frontCoverText?: string;
+  insideLeftText?: string;
+  insideRightText?: string;
+  signOff?: string;
+}
+
+export type CardImagePanelId = "front-cover" | "back-cover" | "inside-left-panel" | "inside-right-panel";
+
+export interface CardImagePanelPrompt {
+  panelId: CardImagePanelId;
+  label: string;
+  prompt: string;
+}
+
+export interface CardImagePromptPlan {
+  requiredPanelCount: 4;
+  generationStrategy: "one-provider-request-per-panel";
+  sharedPrompt: string;
+  providerCaveats: string[];
+  panelPrompts: CardImagePanelPrompt[];
 }
 
 export interface EventImportRuntimeInput {
@@ -200,6 +221,8 @@ export interface RuntimeRequestContract {
   credentialRefs: string[];
   dataClassifications: string[];
   noNetwork: true;
+  panelId?: CardImagePanelId;
+  panelRequests?: RuntimeRequestContract[];
 }
 
 export interface RuntimeResult<TLocal = unknown> {
@@ -421,11 +444,30 @@ export function buildImageGenerationRuntime(
   input: ImageRuntimeInput,
   env: ProviderRuntimeEnv = {},
   gates: ProviderGateState = {}
-): RuntimeResult<{ renderer: string; width: 1500; height: 2100; dpi: 300; prompt: string }> {
+): RuntimeResult<{
+  renderer: string;
+  width: 1500;
+  height: 2100;
+  dpi: 300;
+  prompt: string;
+  requiredPanelCount: 4;
+  generationStrategy: CardImagePromptPlan["generationStrategy"];
+  providerCaveats: string[];
+  panelPrompts: CardImagePanelPrompt[];
+}> {
   const adapter = requireCapability(adapterId, "image-generation");
   const sanitized = sanitizeText(
-    `${input.occasion} card artwork for ${input.recipientName}. Style: ${input.style}. Prompt: ${input.prompt}`
+    [
+      `${input.occasion} folded greeting card set for ${input.recipientName}.`,
+      `Style: ${input.style}.`,
+      `Sender/sign-off: ${input.signOff ?? input.senderName ?? "not provided"}.`,
+      `Front cover text: ${input.frontCoverText ?? input.recipientName}.`,
+      `Inside left text: ${input.insideLeftText ?? "not provided"}.`,
+      `Inside right text: ${input.insideRightText ?? "not provided"}.`,
+      `Prompt: ${input.prompt}`
+    ].join("\n")
   );
+  const promptPlan = buildCardImagePromptPlan(sanitized, input);
 
   if (adapter.id === "browser-svg-renderer") {
     const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
@@ -439,7 +481,11 @@ export function buildImageGenerationRuntime(
         width: 1500,
         height: 2100,
         dpi: 300,
-        prompt: sanitized.text
+        prompt: promptPlan.sharedPrompt,
+        requiredPanelCount: promptPlan.requiredPanelCount,
+        generationStrategy: promptPlan.generationStrategy,
+        providerCaveats: promptPlan.providerCaveats,
+        panelPrompts: promptPlan.panelPrompts
       }
     };
   }
@@ -450,7 +496,7 @@ export function buildImageGenerationRuntime(
     humanApprovalBeforePrint: input.printApproved || gates.humanApprovalBeforePrint
   });
 
-  return blockedOrRequest(adapter, readiness, () => buildImageRequest(adapter, sanitized, input));
+  return blockedOrRequest(adapter, readiness, () => buildImageRequest(adapter, sanitized, promptPlan));
 }
 
 export function buildEventImportRuntime(
@@ -1118,19 +1164,157 @@ function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText
   });
 }
 
+function buildCardImagePromptPlan(sanitized: SanitizedText, input: ImageRuntimeInput): CardImagePromptPlan {
+  const occasion = sanitizeText(input.occasion).text || "card occasion";
+  const recipientName = sanitizeText(input.recipientName).text || "recipient";
+  const style = sanitizeText(input.style).text || "elegant stationery";
+  const designDirection = sanitizeText(input.prompt).text || sanitized.text;
+  const senderName = sanitizeText(input.senderName ?? input.signOff ?? "not provided").text;
+  const frontCoverText = sanitizeText(input.frontCoverText ?? input.recipientName).text;
+  const insideLeftText = sanitizeText(
+    input.insideLeftText ?? "A short quote, blessing, verse, poem, or message matching the occasion."
+  ).text;
+  const insideRightText = sanitizeText(input.insideRightText ?? input.prompt).text;
+  const signOff = sanitizeText(input.signOff ?? input.senderName ?? "not provided").text;
+  const providerCaveats = [
+    "Generate one panel per provider request to avoid a 4-up collage, contact sheet, or uncontrolled variations.",
+    "Keep provider image counts at one image per panel; orchestrate four calls for the full folded card set.",
+    "Treat generated text as untrusted until proofed; exact names and multilingual text require deterministic overlay or human QA before print."
+  ];
+  const sharedPrompt = [
+    "Create a coordinated print-ready vertical 5x7 inch folded greeting card image set.",
+    "Required final panel set: FRONT COVER, BACK COVER, INSIDE LEFT PANEL, INSIDE RIGHT PANEL.",
+    "Execution strategy: generate one separate image per panel. Do not combine panels into a four-panel collage, grid, mockup, folded preview, or contact sheet.",
+    "Each image must be portrait orientation, 5x7 ratio, flat artwork only, no mockup, no shadows, no table, no background scene, no folds, no labels, no crop marks, and no instruction text.",
+    "Artwork should extend cleanly to the edges with a safe inner margin so nothing important is cut off when printed.",
+    "The four panels must look like one coordinated card set with matching borders, colors, floral elements, patterns, typography, and decorative spacing.",
+    "The front cover and back cover should visually match. The inside left and inside right panels should match each other and feel like the opened interior of the card.",
+    `Occasion: ${occasion}`,
+    `Recipient names: ${recipientName}`,
+    `Sender / sign-off: ${senderName}`,
+    `Cultural or style theme: ${style}`,
+    `Design direction: ${designDirection}`,
+    `Locale: ${input.locale}`,
+    "Overall style: Luxury folded greeting card, elegant stationery design, print-ready, high resolution, refined typography, balanced composition, premium paper texture, subtle decorative border, heirloom quality, sophisticated and celebration-appropriate.",
+    "Accuracy requirements: Spell all names exactly as provided. Keep quoted text exactly as provided. For Arabic, Hebrew, Urdu, Sanskrit, or other non-English script, reproduce the text exactly and do not invent or alter characters. Do not add extra words.",
+    "Text fidelity caveat: if the image provider cannot guarantee exact typography, reserve clean text space and let the app or Canva render exact final text during the proof step."
+  ].join("\n");
+
+  return {
+    requiredPanelCount: 4,
+    generationStrategy: "one-provider-request-per-panel",
+    sharedPrompt,
+    providerCaveats,
+    panelPrompts: [
+      {
+        panelId: "front-cover",
+        label: "FRONT COVER",
+        prompt: [
+          sharedPrompt,
+          "",
+          "Generate only the FRONT COVER image.",
+          "This is one standalone portrait 5x7 print file, not a preview of the whole card.",
+          "Create a beautiful cover design with the recipient name(s), occasion title, and decorative artwork.",
+          "Keep the main text large, centered, readable, and elegant.",
+          `Text on front: "${frontCoverText}"`
+        ].join("\n")
+      },
+      {
+        panelId: "back-cover",
+        label: "BACK COVER",
+        prompt: [
+          sharedPrompt,
+          "",
+          "Generate only the BACK COVER image.",
+          "This is one standalone portrait 5x7 print file, not a preview of the whole card.",
+          "Create a mostly blank coordinating back cover with the same border and decorative style.",
+          "No large text. Leave the center mostly empty. Add only subtle matching ornamentation near the bottom or corners."
+        ].join("\n")
+      },
+      {
+        panelId: "inside-left-panel",
+        label: "INSIDE LEFT PANEL",
+        prompt: [
+          sharedPrompt,
+          "",
+          "Generate only the INSIDE LEFT PANEL image.",
+          "This is one standalone portrait 5x7 print file, not a preview of the whole card.",
+          "Create a coordinating decorative inside-left page.",
+          "Include a quote, blessing, verse, poem, or short message in centered elegant typography when exact text rendering is supported.",
+          `Text: "${insideLeftText}"`
+        ].join("\n")
+      },
+      {
+        panelId: "inside-right-panel",
+        label: "INSIDE RIGHT PANEL",
+        prompt: [
+          sharedPrompt,
+          "",
+          "Generate only the INSIDE RIGHT PANEL image.",
+          "This is one standalone portrait 5x7 print file, not a preview of the whole card.",
+          "Create the main message page. Make the text readable, centered, and balanced with enough margin.",
+          "Use elegant but legible typography when exact text rendering is supported.",
+          `Text: "${insideRightText}"`,
+          `Sign-off: "${signOff}"`
+        ].join("\n")
+      }
+    ]
+  };
+}
+
+function imagePanelMetadata(
+  sanitized: SanitizedText,
+  promptPlan: CardImagePromptPlan,
+  panel: CardImagePanelPrompt
+): Record<string, unknown> {
+  return {
+    redactions: sanitized.redactions,
+    print_approval_required: true,
+    customcard: {
+      prompt_contract: "folded-card-four-panel-v1",
+      required_panel_count: promptPlan.requiredPanelCount,
+      generation_strategy: promptPlan.generationStrategy,
+      panel_id: panel.panelId,
+      panel_label: panel.label,
+      panel_order: promptPlan.panelPrompts.findIndex((candidate) => candidate.panelId === panel.panelId) + 1,
+      required_panels: promptPlan.panelPrompts.map((candidate) => candidate.panelId),
+      provider_caveats: promptPlan.providerCaveats
+    }
+  };
+}
+
 function buildImageRequest(
   adapter: ProviderAdapter,
   sanitized: SanitizedText,
-  input: ImageRuntimeInput
+  promptPlan: CardImagePromptPlan
 ): RuntimeRequestContract {
-  const prompt = `${sanitized.text}. Locale ${input.locale}. 5x7 greeting card artwork; no text baked into image.`;
+  const panelRequests = promptPlan.panelPrompts.map((panel) => ({
+    ...buildSinglePanelImageRequest(adapter, sanitized, promptPlan, panel),
+    panelId: panel.panelId
+  }));
+
+  return {
+    ...panelRequests[0],
+    panelRequests
+  };
+}
+
+function buildSinglePanelImageRequest(
+  adapter: ProviderAdapter,
+  sanitized: SanitizedText,
+  promptPlan: CardImagePromptPlan,
+  panel: CardImagePanelPrompt
+): RuntimeRequestContract {
+  const prompt = panel.prompt;
+  const metadata = imagePanelMetadata(sanitized, promptPlan, panel);
 
   if (adapter.id === "openai-images") {
     return request(adapter, "POST", "https://api.openai.com/v1/images/generations", ["OPENAI_API_KEY"], {
       model: "admin-selected-low-cost-image-model",
       prompt,
       size: "1024x1536",
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      n: 1,
+      metadata
     });
   }
 
@@ -1144,7 +1328,7 @@ function buildImageRequest(
         prompt,
         size: "1024x1536",
         n: 1,
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       { "api-key": "{AZURE_OPENAI_API_KEY}" }
@@ -1161,7 +1345,7 @@ function buildImageRequest(
         taskType: "TEXT_IMAGE",
         textToImageParams: { text: prompt },
         imageGenerationConfig: { numberOfImages: 1, quality: "standard", width: 1024, height: 1536 },
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       {
@@ -1176,7 +1360,7 @@ function buildImageRequest(
     return request(adapter, "POST", "https://generativelanguage.googleapis.com/v1beta/models/{image-model}:generateContent", ["GOOGLE_GENERATIVE_AI_API_KEY"], {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: { responseModalities: ["IMAGE"] },
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      metadata
     }, [], {
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
     });
@@ -1186,7 +1370,7 @@ function buildImageRequest(
     return request(adapter, "POST", "https://api.stability.ai/v2beta/stable-image/generate/core", ["STABILITY_API_KEY"], {
       prompt,
       output_format: "png",
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      metadata
     });
   }
 
@@ -1194,7 +1378,7 @@ function buildImageRequest(
     return request(adapter, "POST", "https://router.huggingface.co/v1/images/generations", ["HUGGINGFACE_API_TOKEN"], {
       model: "admin-allowlisted-image-model",
       prompt,
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      metadata
     });
   }
 
@@ -1204,7 +1388,7 @@ function buildImageRequest(
       prompt,
       width: 1024,
       height: 1536,
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      metadata
     });
   }
 
@@ -1213,7 +1397,7 @@ function buildImageRequest(
       prompt,
       rendering_speed: "DEFAULT",
       aspect_ratio: "2x3",
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      metadata
     }, [], {
       "Api-Key": "{IDEOGRAM_API_KEY}"
     });
@@ -1225,7 +1409,7 @@ function buildImageRequest(
       width: 1024,
       height: 1536,
       num_images: 1,
-      metadata: { redactions: sanitized.redactions, print_approval_required: true }
+      metadata
     });
   }
 
@@ -1239,7 +1423,7 @@ function buildImageRequest(
         prompt,
         image_size: { width: 1024, height: 1536 },
         num_images: 1,
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       { authorization: "Key {FAL_KEY}" }
@@ -1257,7 +1441,7 @@ function buildImageRequest(
         width: 1024,
         height: 1536,
         output_format: "png",
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       { "x-key": "{BFL_API_KEY}" }
@@ -1274,7 +1458,7 @@ function buildImageRequest(
         prompt,
         numVariations: 1,
         size: { width: 1024, height: 1536 },
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       {
@@ -1295,7 +1479,7 @@ function buildImageRequest(
         prompt,
         size: "1024x1536",
         style: "digital_illustration",
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       { authorization: "Bearer {RECRAFT_API_KEY}" }
@@ -1312,7 +1496,7 @@ function buildImageRequest(
         prompt,
         aspect_ratio: "2:3",
         model: "admin-selected-luma-image-model",
-        metadata: { redactions: sanitized.redactions, print_approval_required: true }
+        metadata
       },
       [],
       { authorization: "Bearer {LUMA_API_KEY}" }
@@ -1322,7 +1506,7 @@ function buildImageRequest(
   return request(adapter, "POST", "https://api.replicate.com/v1/predictions", ["REPLICATE_API_TOKEN"], {
     version: "admin-allowlisted-image-model-version",
     input: { prompt },
-    metadata: { redactions: sanitized.redactions, print_approval_required: true }
+    metadata
   });
 }
 
