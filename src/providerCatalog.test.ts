@@ -12,6 +12,7 @@ import {
   validateProviderCatalog,
   type ProviderCapability
 } from "./providerCatalog";
+import { retailPrinterProductLinks, type RetailPrinterVendorId } from "./retailPrinterAdapters";
 
 describe("provider catalog", () => {
   it("exposes a deterministic registry seam for thin provider clients", () => {
@@ -389,5 +390,23 @@ describe("provider catalog", () => {
 
   it("passes the catalog integrity validator", () => {
     expect(validateProviderCatalog()).toEqual([]);
+  });
+
+  it("uses canonical retail printer product links for live printer catalog docs", () => {
+    const providerIds: Record<RetailPrinterVendorId, string> = {
+      walmart: "walmart-live-print",
+      fedex: "fedex-live-print",
+      cvs: "cvs-live-order",
+      walgreens: "walgreens-live-order"
+    };
+
+    expect(validateProviderCatalog()).toEqual([]);
+
+    for (const [vendorId, providerId] of Object.entries(providerIds) as [RetailPrinterVendorId, string][]) {
+      const adapter = getProviderAdapter(providerId);
+      expect(adapter?.docsUrl).toBe(retailPrinterProductLinks[vendorId].productUrl);
+      expect(adapter?.docsUrl).toMatch(/^https:\/\//);
+      expect(adapter?.docsUrl).not.toMatch(/example\.com|localhost|placeholder|dummy|todo|mock/i);
+    }
   });
 });

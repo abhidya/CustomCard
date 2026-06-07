@@ -156,6 +156,17 @@ export interface RetailPrinterOperationAdapter {
   placeOrder(input: RetailPrinterOrderAttemptInput): RetailPrinterBlockedOperationResult;
 }
 
+export interface RetailPrinterProductLinkContract {
+  vendorId: RetailPrinterVendorId;
+  providerAdapterId: string;
+  vendorName: string;
+  productName: string;
+  productSku: string;
+  productUrl: string;
+  pricingObservationId: string;
+  requiredUrlTokens: string[];
+}
+
 const vendorEvidence = {
   price: [
     "Official current price extraction",
@@ -169,8 +180,8 @@ const vendorEvidence = {
 const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
 const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
 
-export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
-  {
+export const retailPrinterProductLinks: Record<RetailPrinterVendorId, RetailPrinterProductLinkContract> = {
+  walmart: {
     vendorId: "walmart",
     providerAdapterId: "walmart-live-print",
     vendorName: "Walmart Photo",
@@ -179,22 +190,14 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
     productUrl:
       "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
     pricingObservationId: "walmart-5x7-same-day-folded-card",
-    uploadAssetExpectation: "One or more 5x7 print-ready image/PDF assets through Walmart Photo's upload-your-design flow.",
-    sourceLinks: buildSourceLinks(
-      "Walmart Photo",
-      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2"
-    ),
-    checkoutMode: "vendor-browser-session",
-    realOrdersEnabled: false,
-    liveQuoteEnabled: false,
-    imageUploadEnabled: false,
-    orderPlacementEnabled: false,
-    operations: buildOperations(
-      "Walmart Photo",
-      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2"
-    )
+    requiredUrlTokens: [
+      "product=361-5x7-folded-card-blank-envelope",
+      "theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card",
+      "design_code=standard.custom",
+      "selected_delivery_options=2"
+    ]
   },
-  {
+  fedex: {
     vendorId: "fedex",
     providerAdapterId: "fedex-live-print",
     vendorName: "FedEx Office",
@@ -202,16 +205,9 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
     productSku: "fedex-office-quick-greeting-cards",
     productUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html",
     pricingObservationId: "fedex-quick-5x7-single-sided-card",
-    uploadAssetExpectation: "PDF or image files uploaded through FedEx Office quick-card setup, with double-sided files split or combined as required.",
-    sourceLinks: buildSourceLinks("FedEx Office", "https://www.office.fedex.com/default/greeting-cards-quick.html"),
-    checkoutMode: "vendor-browser-session",
-    realOrdersEnabled: false,
-    liveQuoteEnabled: false,
-    imageUploadEnabled: false,
-    orderPlacementEnabled: false,
-    operations: buildOperations("FedEx Office", "https://www.office.fedex.com/default/greeting-cards-quick.html")
+    requiredUrlTokens: ["/default/greeting-cards-quick.html"]
   },
-  {
+  cvs: {
     vendorId: "cvs",
     providerAdapterId: "cvs-live-order",
     vendorName: "CVS Photo",
@@ -220,22 +216,15 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
     productUrl:
       "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
     pricingObservationId: "cvs-5x7-folded-card",
-    uploadAssetExpectation: "Images routed through CVS Photo/Snapfish project creation after the customer signs in or continues as guest where allowed.",
-    sourceLinks: buildSourceLinks(
-      "CVS Photo",
-      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery"
-    ),
-    checkoutMode: "vendor-browser-session",
-    realOrdersEnabled: false,
-    liveQuoteEnabled: false,
-    imageUploadEnabled: false,
-    orderPlacementEnabled: false,
-    operations: buildOperations(
-      "CVS Photo",
-      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery"
-    )
+    requiredUrlTokens: [
+      "/photo/design-detail",
+      "category=StoreCat_22821",
+      "designId=1f0682a2d34546bf86cbb799c3811d4e",
+      "sku=CommerceProduct_26126",
+      "productCategory=Card%20%26%20Stationery"
+    ]
   },
-  {
+  walgreens: {
     vendorId: "walgreens",
     providerAdapterId: "walgreens-live-order",
     vendorName: "Walgreens Photo",
@@ -244,22 +233,42 @@ export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
     productUrl:
       "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
     pricingObservationId: "walgreens-5x7-folded-card",
-    uploadAssetExpectation: "Images routed through Walgreens Photo/Snapfish project creation after customer sign-in and preview review.",
-    sourceLinks: buildSourceLinks(
-      "Walgreens Photo",
-      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery"
-    ),
-    checkoutMode: "vendor-browser-session",
-    realOrdersEnabled: false,
-    liveQuoteEnabled: false,
-    imageUploadEnabled: false,
-    orderPlacementEnabled: false,
-    operations: buildOperations(
-      "Walgreens Photo",
-      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery"
-    )
+    requiredUrlTokens: [
+      "/store/design-detail",
+      "category=StoreCat_24955",
+      "designId=0c158c44e2f34d9fabc9e1b3ada2eaa6",
+      "sku=CommerceProduct_33272",
+      "productCategory=Card%20%26%20Stationery"
+    ]
   }
+};
+
+export const retailPrinterAdapters: RetailPrinterAdapterContract[] = [
+  buildRetailPrinterAdapterContract(
+    retailPrinterProductLinks.walmart,
+    "One or more 5x7 print-ready image/PDF assets through Walmart Photo's upload-your-design flow."
+  ),
+  buildRetailPrinterAdapterContract(
+    retailPrinterProductLinks.fedex,
+    "PDF or image files uploaded through FedEx Office quick-card setup, with double-sided files split or combined as required."
+  ),
+  buildRetailPrinterAdapterContract(
+    retailPrinterProductLinks.cvs,
+    "Images routed through CVS Photo/Snapfish project creation after the customer signs in or continues as guest where allowed."
+  ),
+  buildRetailPrinterAdapterContract(
+    retailPrinterProductLinks.walgreens,
+    "Images routed through Walgreens Photo/Snapfish project creation after customer sign-in and preview review."
+  )
 ];
+
+export function getRetailPrinterProductLink(vendorId: RetailPrinterVendorId): RetailPrinterProductLinkContract {
+  return retailPrinterProductLinks[vendorId];
+}
+
+export function getRetailPrinterProductLinkByProvider(providerAdapterId: string): RetailPrinterProductLinkContract | undefined {
+  return Object.values(retailPrinterProductLinks).find((productLink) => productLink.providerAdapterId === providerAdapterId);
+}
 
 export function getRetailPrinterAdapter(vendorId: RetailPrinterVendorId): RetailPrinterAdapterContract {
   const adapter = retailPrinterAdapters.find((candidate) => candidate.vendorId === vendorId);
@@ -321,6 +330,7 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
     if (vendorIds.has(adapter.vendorId)) issues.push(`Duplicate retail printer adapter: ${adapter.vendorId}`);
     vendorIds.add(adapter.vendorId);
     if (!adapter.productUrl.startsWith("https://")) issues.push(`${adapter.vendorId} adapter must persist an HTTPS product URL.`);
+    issues.push(...validateRetailPrinterProductUrl(adapter));
     if (!adapter.pricingObservationId) issues.push(`${adapter.vendorId} adapter must point at a pricing observation.`);
     issues.push(...validateRetailPrinterSourceLinks(adapter));
     if (adapter.realOrdersEnabled || adapter.liveQuoteEnabled || adapter.imageUploadEnabled || adapter.orderPlacementEnabled) {
@@ -331,6 +341,9 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
       if (!operation) issues.push(`${adapter.vendorId} adapter missing operation: ${kind}`);
       if (operation && !operation.sourceUrl.startsWith("https://")) {
         issues.push(`${adapter.vendorId} ${kind} operation must cite an HTTPS source URL.`);
+      }
+      if (operation && isPlaceholderRetailProductUrl(operation.sourceUrl)) {
+        issues.push(`${adapter.vendorId} ${kind} operation source URL must not be placeholder, demo, localhost, or example content.`);
       }
       if (operation && operation.sourceUrl !== adapter.productUrl) {
         issues.push(`${adapter.vendorId} ${kind} operation must use the persisted adapter product URL.`);
@@ -354,6 +367,29 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
   return issues;
 }
 
+export function validateRetailPrinterProductUrl(adapter: RetailPrinterAdapterContract): string[] {
+  const issues: string[] = [];
+  const productLink = getRetailPrinterProductLink(adapter.vendorId);
+
+  if (isPlaceholderRetailProductUrl(adapter.productUrl)) {
+    issues.push(`${adapter.vendorId} adapter product URL must not be placeholder, demo, localhost, or example content.`);
+  }
+
+  if (adapter.providerAdapterId !== productLink.providerAdapterId) {
+    issues.push(`${adapter.vendorId} adapter must use provider adapter id ${productLink.providerAdapterId}.`);
+  }
+  if (adapter.productUrl !== productLink.productUrl) {
+    issues.push(`${adapter.vendorId} adapter must use the exact supplied ${productLink.vendorName} product URL.`);
+  }
+  for (const token of productLink.requiredUrlTokens) {
+    if (!adapter.productUrl.includes(token)) {
+      issues.push(`${adapter.vendorId} adapter product URL is missing required product token: ${token}.`);
+    }
+  }
+
+  return issues;
+}
+
 export function validateRetailPrinterSourceLinks(adapter: RetailPrinterAdapterContract): string[] {
   const issues: string[] = [];
   const purposes = new Set(adapter.sourceLinks.map((sourceLink) => sourceLink.purpose));
@@ -365,6 +401,9 @@ export function validateRetailPrinterSourceLinks(adapter: RetailPrinterAdapterCo
   for (const sourceLink of adapter.sourceLinks) {
     if (!sourceLink.url.startsWith("https://")) {
       issues.push(`${adapter.vendorId} ${sourceLink.purpose} source link must cite an HTTPS URL.`);
+    }
+    if (isPlaceholderRetailProductUrl(sourceLink.url)) {
+      issues.push(`${adapter.vendorId} ${sourceLink.purpose} source link must not be placeholder, demo, localhost, or example content.`);
     }
     if (sourceLink.url !== adapter.productUrl) {
       issues.push(`${adapter.vendorId} ${sourceLink.purpose} source link must use the persisted adapter product URL.`);
@@ -423,6 +462,43 @@ export function validateRetailPrinterOperationBlueprint(
     issues.push(`${vendorId} ${operation.kind} operation must define success criteria.`);
   }
   return issues;
+}
+
+function buildRetailPrinterAdapterContract(
+  productLink: RetailPrinterProductLinkContract,
+  uploadAssetExpectation: string
+): RetailPrinterAdapterContract {
+  return {
+    vendorId: productLink.vendorId,
+    providerAdapterId: productLink.providerAdapterId,
+    vendorName: productLink.vendorName,
+    productName: productLink.productName,
+    productSku: productLink.productSku,
+    productUrl: productLink.productUrl,
+    pricingObservationId: productLink.pricingObservationId,
+    uploadAssetExpectation,
+    sourceLinks: buildSourceLinks(productLink.vendorName, productLink.productUrl),
+    checkoutMode: "vendor-browser-session",
+    realOrdersEnabled: false,
+    liveQuoteEnabled: false,
+    imageUploadEnabled: false,
+    orderPlacementEnabled: false,
+    operations: buildOperations(productLink.vendorName, productLink.productUrl)
+  };
+}
+
+function isPlaceholderRetailProductUrl(url: string): boolean {
+  const normalized = safeDecodeUrlText(url).toLowerCase();
+  if (/\b(example\.com|localhost|127\.0\.0\.1|placeholder|dummy|todo|mock)\b/.test(normalized)) return true;
+  return /(^|[/?#&=._-])demo($|[/?#&=._-])/.test(normalized);
+}
+
+function safeDecodeUrlText(url: string): string {
+  try {
+    return decodeURIComponent(url);
+  } catch {
+    return url;
+  }
 }
 
 function buildSourceLinks(vendorName: string, productUrl: string): RetailPrinterSourceLink[] {

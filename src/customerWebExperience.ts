@@ -123,7 +123,7 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
         ? "Start with browser storage or paste an invite without connecting an account."
         : stage === "event-review"
           ? `${input.evidenceCount} source item${input.evidenceCount === 1 ? "" : "s"} are ready for your review before a draft is created.`
-          : "Check copy, names, language, and artwork before export or fulfillment.",
+          : "Check copy, names, language, and artwork before export or print options.",
     actions,
     flowSteps: buildFlowSteps(stage),
     event: {
@@ -295,7 +295,7 @@ function buildFlowSteps(stage: CustomerWebStage): CustomerWebStep[] {
       { label: "Create workspace", detail: "Local browser storage", state: "current" },
       { label: "Review event", detail: "Confirm what was imported", state: "next" },
       { label: "Proof card", detail: "Check copy and artwork", state: "next" },
-      { label: "Fulfillment", detail: "Compare manual print options", state: "next" }
+      { label: "Print options", detail: "Compare manual print choices", state: "next" }
     ];
   }
 
@@ -304,7 +304,7 @@ function buildFlowSteps(stage: CustomerWebStage): CustomerWebStep[] {
       { label: "Workspace", detail: "Ready in this browser", state: "complete" },
       { label: "Review event", detail: "Current step", state: "current" },
       { label: "Proof card", detail: "After event approval", state: "next" },
-      { label: "Fulfillment", detail: "After proof approval", state: "next" }
+      { label: "Print options", detail: "After proof approval", state: "next" }
     ];
   }
 
@@ -312,6 +312,6 @@ function buildFlowSteps(stage: CustomerWebStage): CustomerWebStep[] {
     { label: "Workspace", detail: "Ready in this browser", state: "complete" },
     { label: "Event", detail: "Approved for drafting", state: "complete" },
     { label: "Proof card", detail: "Current step", state: "current" },
-    { label: "Fulfillment", detail: "After proof review", state: "next" }
+    { label: "Print options", detail: "After proof review", state: "next" }
   ];
 }

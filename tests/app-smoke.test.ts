@@ -168,6 +168,11 @@ describeWithChrome("CustomCard UI smoke", () => {
           panelCount,
           validationRows,
           handoffText: document.body.textContent,
+          printShopLinks: [...document.querySelectorAll(".printShopLink")].map((node) => ({
+            text: node.textContent,
+            href: node.getAttribute("href")
+          })),
+          primaryButtons: [...document.querySelectorAll(".primaryButton")].map((node) => node.textContent),
           downloadTiles: document.querySelectorAll(".downloadTile").length,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth
@@ -185,17 +190,24 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.handoffText).toContain("Print your card");
     expect(result.handoffText).toContain("Download SVG set");
     expect(result.handoffText).toContain("Download print package");
-    expect(result.handoffText).toContain("local print package");
-    expect(result.handoffText).toContain("Preflight passed");
+    expect(result.handoffText).toContain("Print-ready files");
+    expect(result.handoffText).toContain("Ready to download");
     expect(result.handoffText).toContain("Checkout happens outside CustomCard");
     expect(result.handoffText).toContain("Final price, pickup time, payment, and order submission happen outside CustomCard.");
-    expect(result.handoffText).toContain("Source-backed price check");
-    expect(result.handoffText).toContain("Sources");
-    expect(result.handoffText).toContain("Max age");
-    expect(result.handoffText).toContain("Coupon offers");
-    expect(result.handoffText).toContain("Coupon checks");
+    expect(result.handoffText).toContain("Price estimate");
+    expect(result.printShopLinks).toEqual([
+      expect.objectContaining({
+        text: expect.stringContaining("Open Walgreens"),
+        href: expect.stringContaining("CommerceProduct_33272")
+      })
+    ]);
+    expect(result.primaryButtons.join(" ")).toContain("Download print package");
+    expect(result.handoffText).toContain("Checked");
+    expect(result.handoffText).toContain("Freshness");
+    expect(result.handoffText).toContain("Discounts");
+    expect(result.handoffText).toContain("Discount checks");
     expect(result.handoffText).toContain("2/5");
-    expect(result.handoffText).toContain("Offer source");
+    expect(result.handoffText).toContain("Confirm at");
     expect(result.handoffText).toContain("confirm offer at checkout");
     expect(result.handoffText).toContain("Public prices are not final checkout totals.");
     expect(result.downloadTiles).toBe(4);

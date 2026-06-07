@@ -1699,6 +1699,27 @@ h3 {
   color: #c8553d;
 }
 
+.printShopLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  margin-left: auto;
+  padding: 7px 10px;
+  border: 1px solid #d3dddf;
+  border-radius: 8px;
+  color: #1b5f56;
+  background: #f6fbfa;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.printShopLink svg {
+  color: currentColor;
+}
+
 .checklist {
   display: grid;
   gap: 10px;

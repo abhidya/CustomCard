@@ -1,3 +1,5 @@
+import { getRetailPrinterProductLinkByProvider } from "./retailPrinterAdapters";
+
 export type ProviderCapability =
   | "auth"
   | "event-import"
@@ -110,6 +112,12 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
   payment: "Payment",
   observability: "Observability"
 };
+
+function retailPrinterDocsUrl(providerAdapterId: string): string {
+  const productLink = getRetailPrinterProductLinkByProvider(providerAdapterId);
+  if (!productLink) throw new Error(`Missing retail printer product link for provider adapter: ${providerAdapterId}`);
+  return productLink.productUrl;
+}
 
 export const providerCatalog: ProviderAdapter[] = [
   {
@@ -1441,8 +1449,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 90,
     detail: "Models Walgreens Photo price fetch, image upload, and order placement, all blocked until partner certification and print QA exist.",
-    docsUrl:
-      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery"
+    docsUrl: retailPrinterDocsUrl("walgreens-live-order")
   },
   {
     id: "cvs-live-order",
@@ -1457,8 +1464,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 91,
     detail: "Models CVS Photo price fetch, image upload, and order placement, all blocked until certified vendor-browser or API evidence exists.",
-    docsUrl:
-      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery"
+    docsUrl: retailPrinterDocsUrl("cvs-live-order")
   },
   {
     id: "fedex-live-print",
@@ -1473,7 +1479,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 92,
     detail: "Models FedEx Office price fetch, file upload, and order placement, all blocked until print QA and order recovery are verified.",
-    docsUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html"
+    docsUrl: retailPrinterDocsUrl("fedex-live-print")
   },
   {
     id: "walmart-live-print",
@@ -1488,8 +1494,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 93,
     detail: "Models Walmart Photo price fetch, image upload, and order placement, all blocked while pricing research remains manual and review-only.",
-    docsUrl:
-      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2"
+    docsUrl: retailPrinterDocsUrl("walmart-live-print")
   },
   {
     id: "staples-live-print",
@@ -2189,6 +2194,13 @@ export function validateProviderCatalog(adapters: ProviderAdapter[] = providerCa
     if (adapter.status === "credential-gated" && !adapter.docsUrl) {
       errors.push(`Credential-gated adapter ${adapter.id} must include an official docs URL.`);
     }
+    const retailPrinterProductLink = getRetailPrinterProductLinkByProvider(adapter.id);
+    if (retailPrinterProductLink && adapter.docsUrl !== retailPrinterProductLink.productUrl) {
+      errors.push(`Retail printer adapter ${adapter.id} must use its canonical product URL as docsUrl.`);
+    }
+    if (retailPrinterProductLink && adapter.docsUrl && isPlaceholderProviderDocsUrl(adapter.docsUrl)) {
+      errors.push(`Retail printer adapter ${adapter.id} docsUrl must not be placeholder, demo, localhost, or example content.`);
+    }
   }
 
   for (const capability of requiredCapabilities) {
@@ -2211,6 +2223,20 @@ export function validateProviderCatalog(adapters: ProviderAdapter[] = providerCa
   }
 
   return errors;
+}
+
+function isPlaceholderProviderDocsUrl(url: string): boolean {
+  const normalized = safeDecodeUrlText(url).toLowerCase();
+  if (/\b(example\.com|localhost|127\.0\.0\.1|placeholder|dummy|todo|mock)\b/.test(normalized)) return true;
+  return /(^|[/?#&=._-])demo($|[/?#&=._-])/.test(normalized);
+}
+
+function safeDecodeUrlText(url: string): string {
+  try {
+    return decodeURIComponent(url);
+  } catch {
+    return url;
+  }
 }
 
 export function providerStatusLabel(status: ProviderStatus): string {

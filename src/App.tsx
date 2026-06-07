@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   Cloud,
   Download,
+  ExternalLink,
   FileDown,
   Globe2,
   Heart,
@@ -193,6 +194,7 @@ import {
   buildPrinterPricingComparison,
   type PrinterPricingComparison
 } from "./printerPricing";
+import { getRetailPrinterProductLink, type RetailPrinterVendorId } from "./retailPrinterAdapters";
 import {
   buildFulfillmentRecommendations,
   type FulfillmentRecommendation,
@@ -1705,6 +1707,8 @@ function HandoffView({
   const refreshReport = pricingComparison.refreshReport;
   const pdfFile = printPackage.files.find((file) => file.kind === "combined-pdf");
   const manifestFile = printPackage.files.find((file) => file.kind === "manifest-json");
+  const retailVendorId = toRetailPrinterVendorId(vendorId);
+  const selectedPrintShopUrl = retailVendorId ? getRetailPrinterProductLink(retailVendorId).productUrl : undefined;
 
   return (
     <section className="handoffLayout">
@@ -1735,13 +1739,13 @@ function HandoffView({
         </div>
 
         <div className="decisionRow">
-          <button className="primaryButton" disabled={!validation.passed} onClick={onDownloadAll} type="button">
-            <FileDown size={16} />
-            Download SVG set
-          </button>
-          <button className="quietButton" disabled={!printPackage.manifest.passed} onClick={onDownloadPackage} type="button">
+          <button className="primaryButton" disabled={!printPackage.manifest.passed} onClick={onDownloadPackage} type="button">
             <PackageCheck size={16} />
             Download print package
+          </button>
+          <button className="quietButton" disabled={!validation.passed} onClick={onDownloadAll} type="button">
+            <FileDown size={16} />
+            Download SVG set
           </button>
           <button className="quietButton" type="button" onClick={onCopyChecklist}>
             <ClipboardCheck size={16} />
@@ -1753,8 +1757,8 @@ function HandoffView({
           <div className="handoffTitle compact">
             <FileDown size={19} />
             <div>
-              <span>local print package</span>
-              <h3>{printPackage.manifest.passed ? "Preflight passed" : "Needs fixes"}</h3>
+              <span>Print-ready files</span>
+              <h3>{printPackage.manifest.passed ? "Ready to download" : "Needs fixes"}</h3>
             </div>
           </div>
           <div className="packageMetricGrid">
@@ -1763,8 +1767,8 @@ function HandoffView({
             <Metric label="Manifest" value={manifestFile ? "Ready" : "Missing"} />
           </div>
           <small>
-            Includes four source SVG panels, a combined 5x7 PDF proof, and a checksum manifest. No object storage upload or
-            live order is performed.
+            Includes four SVG panels, a combined 5x7 PDF proof, and a checksum manifest. You upload these yourself;
+            CustomCard does not charge or order.
           </small>
         </div>
       </div>
@@ -1776,6 +1780,12 @@ function HandoffView({
             <span>Upload yourself</span>
             <h2>{handoff.vendorName}</h2>
           </div>
+          {selectedPrintShopUrl && (
+            <a className="printShopLink" href={selectedPrintShopUrl} rel="noreferrer" target="_blank">
+              <ExternalLink size={15} />
+              Open {handoff.vendorName}
+            </a>
+          )}
         </div>
 
         <ol className="checklist">
@@ -1798,7 +1808,7 @@ function HandoffView({
           <div className="handoffTitle compact">
             <Printer size={19} />
             <div>
-              <span>Source-backed price check</span>
+              <span>Price estimate</span>
               <h3>{primaryPricing ? primaryPricing.effectiveSubtotalLabel : "Manual quote required"}</h3>
             </div>
           </div>
@@ -1815,16 +1825,16 @@ function HandoffView({
           )}
           <div className="pricingFreshnessGrid">
             <Metric label="Prices" value={`${refreshReport.totalObservations}`} />
-            <Metric label="Sources" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
-            <Metric label="Coupon offers" value={`${refreshReport.activeCouponOfferCount}/${refreshReport.couponOfferCount}`} />
+            <Metric label="Checked" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
+            <Metric label="Discounts" value={`${refreshReport.activeCouponOfferCount}/${refreshReport.couponOfferCount}`} />
             <Metric
-              label="Coupon checks"
+              label="Discount checks"
               value={`${refreshReport.couponPortalApplicationPacketCount}/${refreshReport.couponPortalApplicationTargetCount}`}
             />
-            <Metric label="Max age" value={`${refreshReport.maxAgeDays} days`} />
+            <Metric label="Freshness" value={`${refreshReport.maxAgeDays} days`} />
             <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />
             <Metric
-              label="Offer source"
+              label="Confirm at"
               value={pricingComparison.couponPolicy.providerPortalApplicationRequired ? "Checkout" : "Source"}
             />
           </div>
@@ -3104,6 +3114,11 @@ function customerCouponStatusLabel(status: string): string {
   if (status === "portal-evidence-required") return "confirm offer at checkout";
   if (status === "expired") return "offer expired";
   return "no offer found";
+}
+
+function toRetailPrinterVendorId(vendorId: VendorId): RetailPrinterVendorId | undefined {
+  if (vendorId === "walmart" || vendorId === "fedex" || vendorId === "cvs" || vendorId === "walgreens") return vendorId;
+  return undefined;
 }
 
 function formatCents(cents: number): string {

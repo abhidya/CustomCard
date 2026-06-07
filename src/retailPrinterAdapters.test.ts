@@ -5,7 +5,10 @@ import {
   createRetailPrinterOperationAdapter,
   getRetailPrinterAdapter,
   getRetailPrinterAdapterForProvider,
+  getRetailPrinterProductLink,
+  getRetailPrinterProductLinkByProvider,
   retailPrinterAdapters,
+  retailPrinterProductLinks,
   validateRetailPrinterAdapters,
   type RetailPrinterOperationKind,
   type RetailPrinterVendorId
@@ -27,6 +30,11 @@ describe("retail printer adapters", () => {
     expect(retailPrinterAdapters.map((adapter) => adapter.vendorId)).toEqual(["walmart", "fedex", "cvs", "walgreens"]);
 
     for (const adapter of retailPrinterAdapters) {
+      expect(getRetailPrinterProductLink(adapter.vendorId).productUrl).toBe(expectedRetailSources[adapter.vendorId]);
+      expect(getRetailPrinterProductLinkByProvider(adapter.providerAdapterId)?.productUrl).toBe(
+        expectedRetailSources[adapter.vendorId]
+      );
+      expect(retailPrinterProductLinks[adapter.vendorId].productUrl).toBe(expectedRetailSources[adapter.vendorId]);
       expect(adapter.productUrl).toBe(expectedRetailSources[adapter.vendorId]);
       expect(adapter.realOrdersEnabled).toBe(false);
       expect(adapter.liveQuoteEnabled).toBe(false);
@@ -69,6 +77,46 @@ describe("retail printer adapters", () => {
         expect(operation.blockedReason.toLowerCase()).toMatch(/certified|certification|review-only|disabled/);
       }
     }
+  });
+
+  it("rejects generic or placeholder product URLs for retail printer adapters", () => {
+    const walmart = getRetailPrinterAdapter("walmart");
+    const genericUrl = "https://photos3.walmart.com/category/725-5x7-photo-upload-cards";
+    const genericWalmart = {
+      ...walmart,
+      productUrl: genericUrl,
+      sourceLinks: walmart.sourceLinks.map((sourceLink) => ({ ...sourceLink, url: genericUrl })),
+      operations: walmart.operations.map((operation) => ({ ...operation, sourceUrl: genericUrl }))
+    };
+
+    expect(validateRetailPrinterAdapters([genericWalmart])).toEqual(
+      expect.arrayContaining([
+        "walmart adapter must use the exact supplied Walmart Photo product URL.",
+        "walmart adapter product URL is missing required product token: product=361-5x7-folded-card-blank-envelope.",
+        "walmart adapter product URL is missing required product token: theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card.",
+        "walmart adapter product URL is missing required product token: design_code=standard.custom.",
+        "walmart adapter product URL is missing required product token: selected_delivery_options=2."
+      ])
+    );
+
+    const placeholderWalmart = {
+      ...walmart,
+      productUrl: "https://example.com/placeholder/walmart-card",
+      sourceLinks: walmart.sourceLinks.map((sourceLink) => ({
+        ...sourceLink,
+        url: "https://example.com/placeholder/walmart-card"
+      })),
+      operations: walmart.operations.map((operation) => ({
+        ...operation,
+        sourceUrl: "https://example.com/placeholder/walmart-card"
+      }))
+    };
+
+    expect(validateRetailPrinterAdapters([placeholderWalmart])).toEqual(
+      expect.arrayContaining([
+        "walmart adapter product URL must not be placeholder, demo, localhost, or example content."
+      ])
+    );
   });
 
   it("builds a selected no-network operation plan for runtime display", () => {

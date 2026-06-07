@@ -25,8 +25,11 @@ Observed on: June 7, 2026.
 
 ## Retail Adapter Source Links
 
-These links are persisted in `src/retailPrinterAdapters.ts`, `src/providerCatalog.ts`,
-and `src/printerPricing.ts`.
+These links are owned by `retailPrinterProductLinks` in
+`src/retailPrinterAdapters.ts`. The provider catalog derives the four live
+printer `docsUrl` values through `getRetailPrinterProductLinkByProvider()` so
+the Adapter Module, admin catalog, operation packets, and docs cannot drift to
+generic category pages or placeholder links.
 
 | Vendor | Product link | Price fetch source | Image upload source | Order placement source |
 | --- | --- | --- | --- | --- |
@@ -48,6 +51,15 @@ payload: every result keeps `requestPrepared: false`, `networkAttempted: false`,
 and the operation status `blocked` until certification evidence exists. Raw
 relationship memories, raw payment card data, and unapproved recipient PII are
 forbidden from every operation.
+
+`validateRetailPrinterProductUrl()` rejects generic product/category pages and
+placeholder-like URLs (`example`, `localhost`, `placeholder`, `dummy`, `todo`,
+or `mock`). The Walmart, FedEx, CVS, and Walgreens adapters must keep the exact
+user-supplied product URL plus provider-specific tokens such as SKU, design ID,
+product code, or delivery options. This keeps the Adapter Interface honest:
+`fetch-price`, `upload-image`, and `place-order` packets point at the real
+provider entrypoint even while runtime execution remains no-network and
+certification-blocked.
 
 ## Collection Contract
 
