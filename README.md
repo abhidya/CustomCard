@@ -236,7 +236,7 @@ CRM, or cloud credentials.
 To open the mobile customer UI directly in a desktop browser:
 
 ```sh
-npm run mobile:web:demo
+npm run mobile:web:preview
 ```
 
 That launches the same Vite app at `/?view=mobile`, where the page should show
@@ -244,7 +244,7 @@ That launches the same Vite app at `/?view=mobile`, where the page should show
 The Expo dev-server URL is for native runtime metadata in desktop browsers and
 can show a JSON manifest; it is not the browser UI review path.
 
-## Reviewer Demo Path
+## Reviewer Verification Path
 
 1. Run `npm ci` and `npm run dev`.
 2. Use the local workspace auth controls to enter the customer workspace.
@@ -254,7 +254,7 @@ can show a JSON manifest; it is not the browser UI review path.
    and review the checksum manifest/manual vendor handoff checklist.
 5. Open the admin panel to inspect provider gates, launch-readiness doctors, and
    blocked live-order/payment/vendor statuses.
-6. Open the Mobile app tab, or run `npm run mobile:web:demo`, to inspect the
+6. Open the Mobile app tab, or run `npm run mobile:web:preview`, to inspect the
    browser preview of the shared Expo customer contract; use Expo Go or a
    simulator for native rendering.
 

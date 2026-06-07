@@ -302,7 +302,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("opens the mobile UI directly from the browser demo route", async () => {
+  it("opens the mobile UI directly from the browser preview route", async () => {
     const sessionId = await createPage(390, 900, "?view=mobile");
     const result = await evaluate(
       sessionId,

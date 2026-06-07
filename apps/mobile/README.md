@@ -51,7 +51,7 @@ HTML inside the main Vite app instead of opening the Expo dev-server metadata
 endpoint:
 
 ```sh
-npm run mobile:web:demo
+npm run mobile:web:preview
 ```
 
 Expected screen signals: `Mobile app`, `Your card assistant`, the phone-shaped

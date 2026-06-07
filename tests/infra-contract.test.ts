@@ -351,7 +351,8 @@ describe("production infrastructure contract", () => {
 
     expect(packageJson).toContain("npm run test:coverage");
     expect(packageJson).toContain("tests/mobile-contract.test.ts");
-    expect(packageJson).toContain("\"mobile:web:demo\": \"vite --host 127.0.0.1 --open /?view=mobile\"");
+    expect(packageJson).toContain("\"mobile:web:preview\": \"vite --host 127.0.0.1 --open /?view=mobile\"");
+    expect(packageJson).not.toContain("mobile:web:demo");
     expect(packageJson).toContain("\"demo:doctor\": \"node scripts/demo-reset.mjs\"");
     expect(packageJson).toContain("\"api:doctor:postgres:http\": \"CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs\"");
     expect(packageJson).toContain("\"artifact:doctor:s3:live\": \"CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs\"");
