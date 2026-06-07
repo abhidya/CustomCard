@@ -8,14 +8,18 @@ import {
   retailPrinterRequiredVendorIds,
   validateRetailPrinterOperationBlueprint,
   validateRetailPrinterOperationPolicy,
+  validateRetailPrinterProviderEntrypoints,
   validateRetailPrinterProductUrl,
   type RetailPrinterAdapterContract,
+  type RetailPrinterEntrypointCouponMode,
+  type RetailPrinterEntrypointEvidenceMode,
   type RetailPrinterCertificationPacket,
   type RetailPrinterFulfillmentMode,
   type RetailPrinterOperationContract,
   type RetailPrinterOperationKind,
   type RetailPrinterOperationPolicy,
   type RetailPrinterOperationStatus,
+  type RetailPrinterProviderOperationEntrypoint,
   type RetailPrinterSourceLink,
   type RetailPrinterSourceLinkPurpose,
   type RetailPrinterVendorId
@@ -31,6 +35,8 @@ export {
   type RetailPrinterAdapterContract,
   type RetailPrinterCertificationPacket,
   type RetailPrinterCouponProof,
+  type RetailPrinterEntrypointCouponMode,
+  type RetailPrinterEntrypointEvidenceMode,
   type RetailPrinterFulfillmentMode,
   type RetailPrinterOperationContract,
   type RetailPrinterOperationFieldSource,
@@ -41,6 +47,7 @@ export {
   type RetailPrinterOperationStatus,
   type RetailPrinterProductLinkContract,
   type RetailPrinterProviderAccountMode,
+  type RetailPrinterProviderOperationEntrypoint,
   type RetailPrinterSourceLink,
   type RetailPrinterSourceLinkPurpose,
   type RetailPrinterUploadArtifactKind,
@@ -53,6 +60,7 @@ export interface RetailPrinterAdapterPlan {
   vendorName: string;
   productName: string;
   productUrl: string;
+  providerEntrypoints: RetailPrinterProviderOperationEntrypoint[];
   sourceLinks: RetailPrinterSourceLink[];
   selectedOperation: RetailPrinterOperationKind;
   operation: RetailPrinterOperationContract;
@@ -113,6 +121,7 @@ export interface RetailPrinterOperationPacket {
   productSku: string;
   productUrl: string;
   pricingObservationId: string;
+  providerEntrypoint: RetailPrinterProviderOperationEntrypoint;
   sourceLink: RetailPrinterSourceLink;
   uploadAssetExpectation: string;
   noNetwork: true;
@@ -180,6 +189,7 @@ export function buildRetailPrinterAdapterPlan(
     vendorName: adapter.vendorName,
     productName: adapter.productName,
     productUrl: adapter.productUrl,
+    providerEntrypoints: adapter.providerEntrypoints,
     sourceLinks: adapter.sourceLinks,
     selectedOperation: operation.kind,
     operation,
@@ -229,6 +239,7 @@ export function validateRetailPrinterAdapters(adapters: RetailPrinterAdapterCont
     issues.push(...validateRetailPrinterProductUrl(adapter));
     if (!adapter.pricingObservationId) issues.push(`${adapter.vendorId} adapter must point at a pricing observation.`);
     issues.push(...validateRetailPrinterOperationPolicy(adapter));
+    issues.push(...validateRetailPrinterProviderEntrypoints(adapter));
     issues.push(...validateRetailPrinterSourceLinks(adapter));
     if (adapter.realOrdersEnabled || adapter.liveQuoteEnabled || adapter.imageUploadEnabled || adapter.orderPlacementEnabled) {
       issues.push(`${adapter.vendorId} adapter must not enable live retail operations.`);
@@ -341,6 +352,7 @@ function buildOperationPacket(
     productSku: adapter.productSku,
     productUrl: adapter.productUrl,
     pricingObservationId: adapter.pricingObservationId,
+    providerEntrypoint: operation.providerEntrypoint,
     sourceLink,
     uploadAssetExpectation: adapter.uploadAssetExpectation,
     noNetwork: true,

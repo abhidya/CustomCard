@@ -4,6 +4,14 @@ export type RetailPrinterVendorId = Extract<VendorId, "walgreens" | "cvs" | "fed
 export type RetailPrinterOperationKind = "fetch-price" | "upload-image" | "place-order";
 export type RetailPrinterOperationStatus = "blocked";
 export type RetailPrinterSourceLinkPurpose = "product" | RetailPrinterOperationKind;
+export type RetailPrinterEntrypointEvidenceMode =
+  | "public-product-price-review"
+  | "provider-project-preview-review"
+  | "provider-cart-final-review";
+export type RetailPrinterEntrypointCouponMode =
+  | "apply-during-price-collection"
+  | "preserve-price-collection-coupon-state"
+  | "final-cart-coupon-recheck";
 export type RetailPrinterOperationFieldSource =
   | "customer-approval"
   | "operator"
@@ -32,6 +40,7 @@ export interface RetailPrinterOperationContract {
   label: string;
   status: RetailPrinterOperationStatus;
   sourceUrl: string;
+  providerEntrypoint: RetailPrinterProviderOperationEntrypoint;
   noNetwork: true;
   preparesRequest: false;
   requiredEvidence: string[];
@@ -66,6 +75,7 @@ export interface RetailPrinterAdapterContract {
   pricingObservationId: string;
   uploadAssetExpectation: string;
   operationPolicy: RetailPrinterVendorOperationPolicy;
+  providerEntrypoints: RetailPrinterProviderOperationEntrypoint[];
   sourceLinks: RetailPrinterSourceLink[];
   checkoutMode: "vendor-browser-session";
   realOrdersEnabled: false;
@@ -115,6 +125,21 @@ export type RetailPrinterOperationPolicy =
   | RetailPrinterPriceOperationPolicy
   | RetailPrinterUploadOperationPolicy
   | RetailPrinterOrderOperationPolicy;
+
+export interface RetailPrinterProviderOperationEntrypoint {
+  operation: RetailPrinterOperationKind;
+  label: string;
+  url: string;
+  portalHost: string;
+  productSku: string;
+  productIdentityTokens: string[];
+  evidenceMode: RetailPrinterEntrypointEvidenceMode;
+  couponMode: RetailPrinterEntrypointCouponMode;
+  requiresCustomerApproval: true;
+  noNetwork: true;
+  requestPreparationBlocked: true;
+  orderSubmissionBlocked: true;
+}
 
 export interface RetailPrinterProductLinkContract {
   vendorId: RetailPrinterVendorId;
@@ -291,6 +316,7 @@ export function buildRetailPrinterAdapterContract(
   uploadAssetExpectation: string
 ): RetailPrinterAdapterContract {
   const operationPolicy = getRetailPrinterVendorOperationPolicy(productLink.vendorId);
+  const providerEntrypoints = buildProviderEntrypoints(productLink, operationPolicy.portalHost);
   return {
     vendorId: productLink.vendorId,
     providerAdapterId: productLink.providerAdapterId,
@@ -301,13 +327,14 @@ export function buildRetailPrinterAdapterContract(
     pricingObservationId: productLink.pricingObservationId,
     uploadAssetExpectation,
     operationPolicy,
-    sourceLinks: buildSourceLinks(productLink.vendorName, productLink.productUrl),
+    providerEntrypoints,
+    sourceLinks: buildSourceLinks(productLink, providerEntrypoints),
     checkoutMode: "vendor-browser-session",
     realOrdersEnabled: false,
     liveQuoteEnabled: false,
     imageUploadEnabled: false,
     orderPlacementEnabled: false,
-    operations: buildOperations(productLink.vendorName, productLink.productUrl)
+    operations: buildOperations(productLink, providerEntrypoints)
   };
 }
 
@@ -385,6 +412,60 @@ export function validateRetailPrinterOperationPolicy(adapter: RetailPrinterAdapt
   for (const recoveryField of ["cancellationRecoveryPlanId", "wrongStoreRecoveryPlanId"]) {
     if (!policy.order.recoveryEvidenceFields.includes(recoveryField)) {
       issues.push(`${adapter.vendorId} order policy must require ${recoveryField}.`);
+    }
+  }
+
+  return issues;
+}
+
+export function validateRetailPrinterProviderEntrypoints(adapter: RetailPrinterAdapterContract): string[] {
+  const issues: string[] = [];
+  const productLink = getRetailPrinterProductLink(adapter.vendorId);
+  const expectedModes: Record<RetailPrinterOperationKind, RetailPrinterEntrypointEvidenceMode> = {
+    "fetch-price": "public-product-price-review",
+    "upload-image": "provider-project-preview-review",
+    "place-order": "provider-cart-final-review"
+  };
+  const expectedCouponModes: Record<RetailPrinterOperationKind, RetailPrinterEntrypointCouponMode> = {
+    "fetch-price": "apply-during-price-collection",
+    "upload-image": "preserve-price-collection-coupon-state",
+    "place-order": "final-cart-coupon-recheck"
+  };
+
+  for (const kind of retailPrinterOperationKinds) {
+    const entrypoint = adapter.providerEntrypoints.find((candidate) => candidate.operation === kind);
+    const operation = adapter.operations.find((candidate) => candidate.kind === kind);
+    if (!entrypoint) {
+      issues.push(`${adapter.vendorId} adapter must expose provider entrypoint: ${kind}.`);
+      continue;
+    }
+    if (entrypoint.url !== adapter.productUrl) issues.push(`${adapter.vendorId} ${kind} entrypoint must use adapter product URL.`);
+    if (entrypoint.productSku !== adapter.productSku) issues.push(`${adapter.vendorId} ${kind} entrypoint must use adapter product SKU.`);
+    if (!entrypoint.url.includes(entrypoint.portalHost) || entrypoint.portalHost !== adapter.operationPolicy.portalHost) {
+      issues.push(`${adapter.vendorId} ${kind} entrypoint portal host must match the provider product URL.`);
+    }
+    for (const token of productLink.requiredUrlTokens) {
+      if (!entrypoint.productIdentityTokens.includes(token)) {
+        issues.push(`${adapter.vendorId} ${kind} entrypoint is missing product identity token: ${token}.`);
+      }
+    }
+    if (entrypoint.evidenceMode !== expectedModes[kind]) {
+      issues.push(`${adapter.vendorId} ${kind} entrypoint must use evidence mode ${expectedModes[kind]}.`);
+    }
+    if (entrypoint.couponMode !== expectedCouponModes[kind]) {
+      issues.push(`${adapter.vendorId} ${kind} entrypoint must use coupon mode ${expectedCouponModes[kind]}.`);
+    }
+    if (!entrypoint.requiresCustomerApproval || !entrypoint.noNetwork || !entrypoint.requestPreparationBlocked) {
+      issues.push(`${adapter.vendorId} ${kind} entrypoint must require approval and stay no-network/request-blocked.`);
+    }
+    if (!entrypoint.orderSubmissionBlocked) {
+      issues.push(`${adapter.vendorId} ${kind} entrypoint must keep order submission blocked.`);
+    }
+    if (operation && operation.providerEntrypoint !== entrypoint) {
+      issues.push(`${adapter.vendorId} ${kind} operation must reference the adapter provider entrypoint.`);
+    }
+    if (operation && operation.sourceUrl !== entrypoint.url) {
+      issues.push(`${adapter.vendorId} ${kind} operation source URL must match provider entrypoint URL.`);
     }
   }
 
@@ -481,42 +562,43 @@ export function isPlaceholderRetailProductUrl(url: string): boolean {
   return /(^|[/?#&=._-])demo($|[/?#&=._-])/.test(normalized);
 }
 
-function buildSourceLinks(vendorName: string, productUrl: string): RetailPrinterSourceLink[] {
+function buildSourceLinks(
+  productLink: RetailPrinterProductLinkContract,
+  providerEntrypoints: RetailPrinterProviderOperationEntrypoint[]
+): RetailPrinterSourceLink[] {
   return [
     {
       purpose: "product",
-      label: `${vendorName} product page`,
-      url: productUrl,
+      label: `${productLink.vendorName} product page`,
+      url: productLink.productUrl,
       sourceKind: "retailer-product-page"
     },
-    {
-      purpose: "fetch-price",
-      label: `${vendorName} price source`,
-      url: productUrl,
-      sourceKind: "retailer-product-page"
-    },
-    {
-      purpose: "upload-image",
-      label: `${vendorName} image upload source`,
-      url: productUrl,
-      sourceKind: "retailer-product-page"
-    },
-    {
-      purpose: "place-order",
-      label: `${vendorName} order source`,
-      url: productUrl,
-      sourceKind: "retailer-product-page"
-    }
+    ...providerEntrypoints.map((entrypoint) => ({
+      purpose: entrypoint.operation,
+      label: entrypoint.label,
+      url: entrypoint.url,
+      sourceKind: "retailer-product-page" as const
+    }))
   ];
 }
 
-function buildOperations(vendorName: string, productUrl: string): RetailPrinterOperationContract[] {
+function buildOperations(
+  productLink: RetailPrinterProductLinkContract,
+  providerEntrypoints: RetailPrinterProviderOperationEntrypoint[]
+): RetailPrinterOperationContract[] {
+  const getEntrypoint = (kind: RetailPrinterOperationKind) => {
+    const entrypoint = providerEntrypoints.find((candidate) => candidate.operation === kind);
+    if (!entrypoint) throw new Error(`Missing retail printer provider entrypoint: ${productLink.vendorId} ${kind}`);
+    return entrypoint;
+  };
+
   return [
     {
       kind: "fetch-price",
-      label: `Fetch ${vendorName} price`,
+      label: `Fetch ${productLink.vendorName} price`,
       status: "blocked",
-      sourceUrl: productUrl,
+      sourceUrl: productLink.productUrl,
+      providerEntrypoint: getEntrypoint("fetch-price"),
       noNetwork: true,
       preparesRequest: false,
       requiredEvidence: vendorEvidence.price,
@@ -526,9 +608,10 @@ function buildOperations(vendorName: string, productUrl: string): RetailPrinterO
     },
     {
       kind: "upload-image",
-      label: `Upload image to ${vendorName}`,
+      label: `Upload image to ${productLink.vendorName}`,
       status: "blocked",
-      sourceUrl: productUrl,
+      sourceUrl: productLink.productUrl,
+      providerEntrypoint: getEntrypoint("upload-image"),
       noNetwork: true,
       preparesRequest: false,
       requiredEvidence: vendorEvidence.upload,
@@ -538,15 +621,66 @@ function buildOperations(vendorName: string, productUrl: string): RetailPrinterO
     },
     {
       kind: "place-order",
-      label: `Place ${vendorName} order`,
+      label: `Place ${productLink.vendorName} order`,
       status: "blocked",
-      sourceUrl: productUrl,
+      sourceUrl: productLink.productUrl,
+      providerEntrypoint: getEntrypoint("place-order"),
       noNetwork: true,
       preparesRequest: false,
       requiredEvidence: vendorEvidence.order,
       certificationGateIds: [...sharedGateIds, "payment-certification", "cancellation-recovery", "physical-print-qa"],
       requestBlueprint: buildOrderBlueprint(),
       blockedReason: "Order placement remains disabled until vendor certification, payment, recovery, and kill-switch gates are proven."
+    }
+  ];
+}
+
+function buildProviderEntrypoints(
+  productLink: RetailPrinterProductLinkContract,
+  portalHost: string
+): RetailPrinterProviderOperationEntrypoint[] {
+  return [
+    {
+      operation: "fetch-price",
+      label: `${productLink.vendorName} price collection entrypoint`,
+      url: productLink.productUrl,
+      portalHost,
+      productSku: productLink.productSku,
+      productIdentityTokens: productLink.requiredUrlTokens,
+      evidenceMode: "public-product-price-review",
+      couponMode: "apply-during-price-collection",
+      requiresCustomerApproval: true,
+      noNetwork: true,
+      requestPreparationBlocked: true,
+      orderSubmissionBlocked: true
+    },
+    {
+      operation: "upload-image",
+      label: `${productLink.vendorName} upload preview entrypoint`,
+      url: productLink.productUrl,
+      portalHost,
+      productSku: productLink.productSku,
+      productIdentityTokens: productLink.requiredUrlTokens,
+      evidenceMode: "provider-project-preview-review",
+      couponMode: "preserve-price-collection-coupon-state",
+      requiresCustomerApproval: true,
+      noNetwork: true,
+      requestPreparationBlocked: true,
+      orderSubmissionBlocked: true
+    },
+    {
+      operation: "place-order",
+      label: `${productLink.vendorName} final cart review entrypoint`,
+      url: productLink.productUrl,
+      portalHost,
+      productSku: productLink.productSku,
+      productIdentityTokens: productLink.requiredUrlTokens,
+      evidenceMode: "provider-cart-final-review",
+      couponMode: "final-cart-coupon-recheck",
+      requiresCustomerApproval: true,
+      noNetwork: true,
+      requestPreparationBlocked: true,
+      orderSubmissionBlocked: true
     }
   ];
 }

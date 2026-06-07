@@ -31,15 +31,15 @@ printer `docsUrl` values through `getRetailPrinterProductLinkByProvider()`, and
 `src/retailPrinterAdapters.ts` consumes the same contract module when building
 blocked operation packets. That keeps provider identity, exact product URLs,
 provider-specific operation policy, operation blueprints, certification packets,
-admin catalog links, and docs from drifting to generic category pages or
-placeholder links.
+provider operation entrypoints, admin catalog links, and docs from drifting to
+generic category pages or placeholder links.
 
-| Vendor | Product link | Price fetch source | Image upload source | Order placement source |
+| Vendor | Product link | Price collection entrypoint | Upload preview entrypoint | Final cart review entrypoint |
 | --- | --- | --- | --- | --- |
-| Walmart Photo | [5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) | Same persisted product link; blocked no-network operation using review-only public observation | Same persisted product link; blocked until certified Walmart Photo upload contract or reviewed browser-session automation exists | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
-| FedEx Office | [Quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) | Same persisted product link; blocked no-network operation while live checkout confirms final current price | Same persisted product link; blocked until FedEx upload-file contract, file acceptance, and crop/fold preview evidence exist | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
-| CVS Photo | [5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | Same persisted product link; blocked no-network operation using review-only public observation | Same persisted product link; blocked until CVS Photo/Snapfish project creation and preview evidence exist | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
-| Walgreens Photo | [5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | Same persisted product link; blocked no-network operation using review-only public observation | Same persisted product link; blocked until Walgreens Photo/Snapfish project creation and preview evidence exist | Same persisted product link; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| Walmart Photo | [5x7 folded card upload your design](https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2) | `public-product-price-review`; coupon mode `apply-during-price-collection`; blocked no-network operation using review-only public observation | `provider-project-preview-review`; coupon mode `preserve-price-collection-coupon-state`; blocked until certified Walmart Photo upload contract or reviewed browser-session automation exists | `provider-cart-final-review`; coupon mode `final-cart-coupon-recheck`; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| FedEx Office | [Quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) | `public-product-price-review`; coupon mode `apply-during-price-collection`; blocked no-network operation while live checkout confirms final current price | `provider-project-preview-review`; coupon mode `preserve-price-collection-coupon-state`; blocked until FedEx upload-file contract, file acceptance, and crop/fold preview evidence exist | `provider-cart-final-review`; coupon mode `final-cart-coupon-recheck`; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| CVS Photo | [5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) | `public-product-price-review`; coupon mode `apply-during-price-collection`; blocked no-network operation using review-only public observation | `provider-project-preview-review`; coupon mode `preserve-price-collection-coupon-state`; blocked until CVS Photo/Snapfish project creation and preview evidence exists | `provider-cart-final-review`; coupon mode `final-cart-coupon-recheck`; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
+| Walgreens Photo | [5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | `public-product-price-review`; coupon mode `apply-during-price-collection`; blocked no-network operation using review-only public observation | `provider-project-preview-review`; coupon mode `preserve-price-collection-coupon-state`; blocked until Walgreens Photo/Snapfish project creation and preview evidence exists | `provider-cart-final-review`; coupon mode `final-cart-coupon-recheck`; blocked until vendor certification, payment, cancellation recovery, and kill-switch evidence exist |
 
 Each retail adapter now persists source links for `product`, `fetch-price`,
 `upload-image`, and `place-order`. Each operation also carries a blocked
@@ -47,19 +47,21 @@ request blueprint that names the future certified transport, required request
 fields, response evidence, forbidden data fields, and success criteria. The
 `createRetailPrinterOperationAdapter` Interface exposes callable no-network
 methods for price, upload, and order attempts. Each method returns an
-`operationPacket` with the persisted product link, pricing observation, evidence
-checklist, operator steps, safety checks, source-backed fields, and missing
-input fields. The packet now also includes an `operationPolicy` and
-`policyViolations` list so provider-specific rules stay inside the Adapter
-Module instead of leaking into customer or admin callers. Those policies encode
-minimum quantity, quantity increment, supported pickup/shipping modes,
-same-cart checkout discount proof, accepted print artifacts, provider account
-mode, required approval fields, and recovery evidence. The packet is an
-operator evidence checklist, not a provider API payload: every result keeps
-`requestPrepared: false`, `networkAttempted: false`, and the operation status
-`blocked` until certification evidence exists. Raw relationship memories, raw
-payment card data, and unapproved recipient PII are forbidden from every
-operation.
+`operationPacket` with the persisted product link, pricing observation,
+provider operation entrypoint, evidence checklist, operator steps, safety
+checks, source-backed fields, and missing input fields. The packet now also
+includes an `operationPolicy` and `policyViolations` list so provider-specific
+rules stay inside the Adapter Module instead of leaking into customer or admin
+callers. Those policies encode minimum quantity, quantity increment, supported
+pickup/shipping modes, same-cart checkout discount proof, accepted print
+artifacts, provider account mode, required approval fields, and recovery
+evidence. The provider entrypoint encodes the exact operation evidence mode and
+coupon application mode for price collection, upload preview, and final cart
+review. The packet is an operator evidence checklist, not a provider API
+payload: every result keeps `requestPrepared: false`, `networkAttempted:
+false`, and the operation status `blocked` until certification evidence exists.
+Raw relationship memories, raw payment card data, and unapproved recipient PII
+are forbidden from every operation.
 
 Each operation packet also carries a `certificationPacket` for the future
 certification review. It records the exact provider portal URL, product SKU,

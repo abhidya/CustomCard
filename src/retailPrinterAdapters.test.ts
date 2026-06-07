@@ -62,6 +62,26 @@ describe("retail printer adapters", () => {
       expect(adapter.operationPolicy.productIdentityTokens).toEqual(
         expect.arrayContaining(retailPrinterProductLinks[adapter.vendorId].requiredUrlTokens)
       );
+      expect(adapter.providerEntrypoints.map((entrypoint) => entrypoint.operation)).toEqual([
+        "fetch-price",
+        "upload-image",
+        "place-order"
+      ]);
+      expect(adapter.providerEntrypoints.map((entrypoint) => entrypoint.evidenceMode)).toEqual([
+        "public-product-price-review",
+        "provider-project-preview-review",
+        "provider-cart-final-review"
+      ]);
+      expect(adapter.providerEntrypoints.map((entrypoint) => entrypoint.couponMode)).toEqual([
+        "apply-during-price-collection",
+        "preserve-price-collection-coupon-state",
+        "final-cart-coupon-recheck"
+      ]);
+      expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.url === expectedRetailSources[adapter.vendorId])).toBe(true);
+      expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.productSku === adapter.productSku)).toBe(true);
+      expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.noNetwork)).toBe(true);
+      expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.requestPreparationBlocked)).toBe(true);
+      expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.orderSubmissionBlocked)).toBe(true);
       expect(adapter.sourceLinks.map((sourceLink) => sourceLink.purpose)).toEqual([
         "product",
         "fetch-price",
@@ -79,6 +99,13 @@ describe("retail printer adapters", () => {
       for (const operation of adapter.operations) {
         expect(operation.status).toBe("blocked");
         expect(operation.sourceUrl).toBe(adapter.productUrl);
+        expect(operation.providerEntrypoint).toBe(
+          adapter.providerEntrypoints.find((entrypoint) => entrypoint.operation === operation.kind)
+        );
+        expect(operation.providerEntrypoint.url).toBe(adapter.productUrl);
+        expect(operation.providerEntrypoint.productIdentityTokens).toEqual(
+          expect.arrayContaining(retailPrinterProductLinks[adapter.vendorId].requiredUrlTokens)
+        );
         expect(operation.noNetwork).toBe(true);
         expect(operation.preparesRequest).toBe(false);
         expect(operation.requiredEvidence.length).toBeGreaterThanOrEqual(3);
@@ -148,6 +175,16 @@ describe("retail printer adapters", () => {
       vendorId: "walgreens",
       vendorName: "Walgreens Photo",
       productUrl: expectedRetailSources.walgreens,
+      providerEntrypoints: expect.arrayContaining([
+        expect.objectContaining({
+          operation: "upload-image",
+          url: expectedRetailSources.walgreens,
+          evidenceMode: "provider-project-preview-review",
+          couponMode: "preserve-price-collection-coupon-state",
+          requestPreparationBlocked: true,
+          orderSubmissionBlocked: true
+        })
+      ]),
       selectedOperation: "upload-image",
       noNetwork: true,
       realOrdersEnabled: false,
@@ -217,6 +254,13 @@ describe("retail printer adapters", () => {
         operation: result.operation,
         productUrl: expectedRetailSources.fedex,
         pricingObservationId: "fedex-quick-5x7-single-sided-card",
+        providerEntrypoint: expect.objectContaining({
+          operation: result.operation,
+          url: expectedRetailSources.fedex,
+          noNetwork: true,
+          requestPreparationBlocked: true,
+          orderSubmissionBlocked: true
+        }),
         noNetwork: true,
         networkAttempted: false,
         requestPrepared: false,
@@ -227,6 +271,22 @@ describe("retail printer adapters", () => {
       if (result.operation === "fetch-price") {
         expect(result.operationPacket.operationPolicy).toMatchObject({
           supportedFulfillmentModes: ["pickup", "shipping"]
+        });
+        expect(result.operationPacket.providerEntrypoint).toMatchObject({
+          evidenceMode: "public-product-price-review",
+          couponMode: "apply-during-price-collection"
+        });
+      }
+      if (result.operation === "upload-image") {
+        expect(result.operationPacket.providerEntrypoint).toMatchObject({
+          evidenceMode: "provider-project-preview-review",
+          couponMode: "preserve-price-collection-coupon-state"
+        });
+      }
+      if (result.operation === "place-order") {
+        expect(result.operationPacket.providerEntrypoint).toMatchObject({
+          evidenceMode: "provider-cart-final-review",
+          couponMode: "final-cart-coupon-recheck"
         });
       }
       expect(result.operationPacket.certificationPacket).toMatchObject({
@@ -338,6 +398,13 @@ describe("retail printer adapters", () => {
         expect(result.operationPacket).toMatchObject({
           vendorId,
           productUrl: expectedRetailSources[vendorId],
+          providerEntrypoint: expect.objectContaining({
+            operation: result.operation,
+            url: expectedRetailSources[vendorId],
+            noNetwork: true,
+            requestPreparationBlocked: true,
+            orderSubmissionBlocked: true
+          }),
           sourceLink: expect.objectContaining({
             purpose: result.operation,
             url: expectedRetailSources[vendorId]
