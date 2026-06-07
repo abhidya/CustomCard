@@ -26,6 +26,7 @@
     "demo:doctor": "node scripts/demo-reset.mjs",
     "localization:doctor": "node scripts/localization-doctor.mjs",
     "security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs",
+    "accessibility:doctor": "node scripts/accessibility-readiness-doctor.mjs",
     "external:audit:doctor": "node scripts/external-audit-readiness-doctor.mjs",
     "e2e:coverage:doctor": "node scripts/e2e-coverage-doctor.mjs",
     "ai:doctor": "node scripts/ai-provider-readiness-doctor.mjs",
