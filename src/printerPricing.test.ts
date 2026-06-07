@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPrinterCouponApplication,
+  buildPrinterCouponPortalApplicationPackets,
   buildPrinterPricingComparison,
   buildPrinterPricingRefreshReport,
   estimatePrinterSubtotal,
@@ -18,8 +19,10 @@ import {
   printerPricingSources,
   validatePrinterCouponCollectionTargets,
   validatePrinterCouponOffers,
+  validatePrinterCouponPortalApplicationPackets,
   validatePrinterPricingCatalog,
   validatePrinterCouponPolicy,
+  type PrinterCouponPortalApplicationPacket,
   type PrinterPriceObservation
 } from "./printerPricing";
 
@@ -98,6 +101,8 @@ describe("printer pricing research", () => {
       couponOfferCount: 2,
       activeCouponOfferCount: 2,
       portalAppliedCouponOfferCount: 0,
+      couponPortalApplicationPacketCount: 2,
+      couponPortalApplicationTargetCount: 5,
       freshSources: 8,
       canShowComparison: true,
       liveQuote: false,
@@ -145,6 +150,7 @@ describe("printer pricing research", () => {
     expect(validatePrinterCouponPolicy()).toEqual([]);
     expect(validatePrinterCouponCollectionTargets()).toEqual([]);
     expect(validatePrinterCouponOffers()).toEqual([]);
+    expect(validatePrinterCouponPortalApplicationPackets()).toEqual([]);
     expect(printerCouponPolicy).toMatchObject({
       reviewMode: "apply-during-provider-portal-collection",
       eligibleVendorIds: expect.arrayContaining(["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot"]),
@@ -188,6 +194,102 @@ describe("printer pricing research", () => {
         "Printer coupon policy must block promo code application proof.",
         "Printer coupon policy must require provider portal checkout subtotal after coupon application.",
         "Printer coupon policy must require structured provider portal application evidence."
+      ])
+    );
+  });
+
+  it("builds provider-portal coupon application packets for exact same-cart operator collection", () => {
+    const packets = buildPrinterCouponPortalApplicationPackets({ quantity: 1, now: reviewedAt });
+    const walgreens = packets.find((packet) => packet.code === "CRISPCARD");
+    const cvs = packets.find((packet) => packet.code === "JUNESW");
+
+    expect(packets).toHaveLength(2);
+    expect(walgreens).toMatchObject({
+      offerId: "walgreens-crispcard-cards-2026-06-13",
+      vendorId: "walgreens",
+      status: "portal-evidence-required",
+      evidenceStatus: "source-listed",
+      discountPercent: 60,
+      requiresLoggedInAccount: true,
+      liveCheckoutAutomation: false,
+      noOrderPlacedRequired: true,
+      canAffectBestPrice: false,
+      requiredEvidence: expect.arrayContaining([
+        "structured provider portal application evidence",
+        "same product, quantity, fulfillment mode, and account state",
+        "coupon subtotal before and after application",
+        "no payment or order submission"
+      ]),
+      blockedFields: expect.arrayContaining(["payment submission", "live order placement", "card upload"])
+    });
+    expect(walgreens?.providerPortalUrls).toEqual(
+      expect.arrayContaining([printerPricingSources.walgreensProductCatalog.url])
+    );
+    expect(walgreens?.applicationTargets).toEqual([
+      expect.objectContaining({
+        sourcePriceObservationId: "walgreens-5x7-folded-card",
+        subtotalBeforeCouponCents: 349,
+        expectedDiscountCents: 209,
+        expectedSubtotalAfterCouponCents: 140,
+        cartTerms: {
+          vendorId: "walgreens",
+          productKind: "folded-card",
+          size: "5x7",
+          pricedQuantity: 1,
+          fulfillmentMode: "pickup",
+          accountState: "logged-in"
+        },
+        sameCartTermsEvidenceRequired: true
+      })
+    ]);
+    expect(cvs).toMatchObject({
+      vendorId: "cvs",
+      status: "portal-evidence-required",
+      canAffectBestPrice: false,
+      requiresLoggedInAccount: false
+    });
+    expect(cvs?.applicationTargets).toHaveLength(4);
+    expect(cvs?.applicationTargets.map((target) => target.sourcePriceObservationId)).toEqual([
+      "cvs-5x7-double-sided-cardstock",
+      "cvs-5x7-photo-card",
+      "cvs-5x7-premium-card",
+      "cvs-5x7-folded-card"
+    ]);
+    expect(cvs?.applicationTargets.find((target) => target.sourcePriceObservationId === "cvs-5x7-folded-card")).toMatchObject({
+      subtotalBeforeCouponCents: 898,
+      expectedDiscountCents: 449,
+      expectedSubtotalAfterCouponCents: 449,
+      cartTerms: expect.objectContaining({ accountState: "guest-or-public", fulfillmentMode: "pickup" })
+    });
+  });
+
+  it("rejects unsafe or incomplete coupon portal application packets", () => {
+    const packet = buildPrinterCouponPortalApplicationPackets({ quantity: 1, now: reviewedAt })[0];
+    const unsafePacket: PrinterCouponPortalApplicationPacket = {
+      ...packet,
+      liveCheckoutAutomation: true as never,
+      noOrderPlacedRequired: false as never,
+      canAffectBestPrice: true,
+      blockedFields: [],
+      requiredEvidence: [],
+      applicationTargets: [
+        {
+          ...packet.applicationTargets[0],
+          portalUrl: "http://example.invalid/cart",
+          expectedSubtotalAfterCouponCents: 999
+        }
+      ]
+    };
+
+    expect(validatePrinterCouponPortalApplicationPackets([unsafePacket])).toEqual(
+      expect.arrayContaining([
+        `Printer coupon portal application packet ${packet.id} must not enable checkout automation.`,
+        `Printer coupon portal application packet ${packet.id} must require no-order evidence.`,
+        `Printer coupon portal application packet ${packet.id} best-price flag must match portal-applied status.`,
+        `Printer coupon portal application packet ${packet.id} must block payment submission.`,
+        `Printer coupon portal application packet ${packet.id} must require structured provider portal application evidence.`,
+        `Printer coupon portal application packet ${packet.id} target ${packet.applicationTargets[0].sourcePriceObservationId} must cite HTTPS portal URL.`,
+        `Printer coupon portal application packet ${packet.id} target ${packet.applicationTargets[0].sourcePriceObservationId} subtotal math must match.`
       ])
     );
   });
@@ -411,6 +513,11 @@ describe("printer pricing research", () => {
     expect(hasMatchingProviderPortalCouponEvidence(statusOnlyPortalOffer, walgreensSingle!, 349, 1)).toBe(false);
     expect(hasMatchingProviderPortalCouponEvidence(mismatchedQuantityOffer, walgreensSingle!, 349, 1)).toBe(false);
     expect(hasMatchingProviderPortalCouponEvidence(activePortalOffer, walgreensSingle!, 349, 1)).toBe(true);
+    expect(buildPrinterCouponPortalApplicationPackets({ offers: [activePortalOffer], now: reviewedAt })[0]).toMatchObject({
+      status: "provider-portal-applied",
+      canAffectBestPrice: true,
+      reason: "CRISPCARD has structured same-cart provider portal evidence and may affect best-price ranking."
+    });
     expect(buildPrinterCouponApplication(walgreensSingle!, 349, reviewedAt, [statusOnlyPortalOffer])).toMatchObject({
       status: "portal-evidence-required",
       discountCents: 0,

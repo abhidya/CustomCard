@@ -16,6 +16,7 @@ const vite = await createServer({
 
 try {
   const {
+    buildPrinterCouponPortalApplicationPackets,
     extractPrinterCouponCodes,
     extractPrinterCouponOffers,
     printerCouponCollectionTargets,
@@ -178,6 +179,14 @@ try {
   }
 
   const codesByVendor = new Map(sourceOffers.map((offer) => [offer.vendorId, offer.code]));
+  const providerPortalApplicationPackets = buildPrinterCouponPortalApplicationPackets({
+    quantity: 1,
+    now: new Date()
+  });
+  const providerPortalApplicationTargetCount = providerPortalApplicationPackets.reduce(
+    (total, packet) => total + packet.applicationTargets.length,
+    0
+  );
   const printEntrypointChecks = fetchedTargets
     .filter((target) => target.role === "print-entrypoint")
     .map((target) => {
@@ -221,6 +230,9 @@ try {
         operatorBrowserEvidenceAttachedCount: fetchedTargets.filter((target) => target.browserEvidence?.attached).length,
         credentialGatedProviderTargetCount: providerFeedTargets.length,
         providerFeedTargets,
+        providerPortalApplicationPacketCount: providerPortalApplicationPackets.length,
+        providerPortalApplicationTargetCount,
+        providerPortalApplicationPackets,
         providerPortalApplicationProof: false,
         providerPortalCartTermsEvidenceRequired: true,
         bestPriceDiscountingAllowed: false,

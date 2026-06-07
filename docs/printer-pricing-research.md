@@ -118,6 +118,17 @@ post-coupon subtotal, same-cart terms, `sameCartTermsProven: true`, and
 enough to discount or rank; `hasMatchingProviderPortalCouponEvidence` must match
 the evidence to the public price observation and subtotal math.
 
+`buildPrinterCouponPortalApplicationPackets()` now emits the operator packet
+that should be used while collecting pricing. The current coupon set produces 2
+packets and 5 same-cart application targets: one Walgreens target for the
+single-card folded-card observation and four CVS targets for the current CVS
+5x7 card observations. Each packet carries portal URLs, source observation IDs,
+expected pre-coupon subtotal, expected discount, expected post-coupon subtotal,
+cart terms, required evidence, operator steps, and no-order blocked fields. The
+operator can use those packets to apply coupons in the provider portal during
+pricing collection, but the packet still reports `canAffectBestPrice: false`
+until matching `PrinterCouponPortalApplicationEvidence` is attached.
+
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |
 | Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) plus the [5x7 folded card design-detail print link](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration; the print link contains the expected code, `CommerceProduct_33272`, and the $3.49 public price signal | Stored as active source-listed evidence on June 7, 2026; browser artifact confirms product/price visible and code in page HTML, but visible code proof is still required before treating the print link as visible-code proof |

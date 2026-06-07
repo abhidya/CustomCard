@@ -80,6 +80,9 @@ const checks = [
     "sourceTargetIds",
     "buildPrinterCouponApplication",
     "PrinterCouponPortalApplicationEvidence",
+    "PrinterCouponPortalApplicationPacket",
+    "buildPrinterCouponPortalApplicationPackets",
+    "validatePrinterCouponPortalApplicationPackets",
     "hasMatchingProviderPortalCouponEvidence",
     "validatePrinterCouponPortalApplicationEvidence"
   ]),
@@ -102,6 +105,8 @@ const checks = [
     "couponOfferCount: 2",
     "activeCouponOfferCount: 2",
     "portalAppliedCouponOfferCount: 0",
+    "couponPortalApplicationPacketCount: 2",
+    "couponPortalApplicationTargetCount: 5",
     "providerPortalApplicationRequired: true",
     "bestAvailablePriceRequiresCouponPortalEvidence: true",
     "refreshReport.totalObservations",
@@ -157,6 +162,9 @@ const checks = [
     "codesonly",
     "tokenRedacted",
     "providerPortalCartTermsEvidenceRequired: true",
+    "providerPortalApplicationPacketCount",
+    "providerPortalApplicationTargetCount",
+    "providerPortalApplicationPackets",
     "same product, quantity, fulfillment mode, account state, and subtotal math",
     "bestPriceDiscountingAllowed: false",
     '"printer:coupons:collect": "node scripts/printer-coupon-collector.mjs"'

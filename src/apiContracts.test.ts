@@ -489,6 +489,8 @@ describe("api contracts", () => {
         couponOfferCount: 2,
         activeCouponOfferCount: 2,
         portalAppliedCouponOfferCount: 0,
+        couponPortalApplicationPacketCount: 2,
+        couponPortalApplicationTargetCount: 5,
         couponPolicy: expect.objectContaining({
           providerPortalApplicationRequired: true,
           couponsAppliedToBestPrice: true

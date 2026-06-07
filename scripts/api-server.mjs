@@ -474,6 +474,8 @@ async function serveApi(request, response, path) {
         couponOfferCount: 2,
         activeCouponOfferCount: 2,
         portalAppliedCouponOfferCount: 0,
+        couponPortalApplicationPacketCount: 2,
+        couponPortalApplicationTargetCount: 5,
         couponsIncludedInShownPrices: "only-after-provider-portal-application",
         liveCouponLookup: "operator-script-or-credential-gated-provider",
         couponProviderFeedAllowed: true,

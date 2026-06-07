@@ -1817,6 +1817,10 @@ function HandoffView({
             <Metric label="Prices" value={`${refreshReport.totalObservations}`} />
             <Metric label="Sources" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
             <Metric label="Coupon offers" value={`${refreshReport.activeCouponOfferCount}/${refreshReport.couponOfferCount}`} />
+            <Metric
+              label="Coupon checks"
+              value={`${refreshReport.couponPortalApplicationPacketCount}/${refreshReport.couponPortalApplicationTargetCount}`}
+            />
             <Metric label="Max age" value={`${refreshReport.maxAgeDays} days`} />
             <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />
             <Metric

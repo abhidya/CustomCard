@@ -193,6 +193,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.handoffText).toContain("Sources");
     expect(result.handoffText).toContain("Max age");
     expect(result.handoffText).toContain("Coupon offers");
+    expect(result.handoffText).toContain("Coupon checks");
+    expect(result.handoffText).toContain("2/5");
     expect(result.handoffText).toContain("Offer source");
     expect(result.handoffText).toContain("confirm offer at checkout");
     expect(result.handoffText).toContain("Public prices are not final checkout totals.");
