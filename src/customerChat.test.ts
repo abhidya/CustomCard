@@ -43,7 +43,7 @@ describe("customer chat contract", () => {
       role: "assistant",
       text: expect.stringContaining("This reply stayed local")
     });
-    expect(session.messages.at(-1)?.text).toContain("image tools stay off until you enable and review them");
+    expect(session.messages.at(-1)?.text).toContain("generated images wait until you choose and review them");
     expect(session.blockedProviderReasons.join(" ")).toContain("OPENAI_API_KEY");
   });
 

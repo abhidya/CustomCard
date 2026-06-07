@@ -134,13 +134,13 @@ function buildLocalAssistantReply(input: CustomerChatInput, sanitizedMessage: st
   const normalized = sanitizedMessage.toLowerCase();
   const topics = [
     normalized.match(/\b(price|cheap|cost|pickup|ship|shipping|fulfillment|order|walgreens|cvs|fedex|walmart)\b/)
-      ? `I can compare ${input.fulfillmentContext}, but live quotes and direct ordering stay off until certification passes.`
+      ? `I can compare ${input.fulfillmentContext}, then help you confirm the final price and pickup before checkout.`
       : undefined,
     normalized.match(/\b(memory|private|personal|approved|use)\b/)
       ? `I will use only ${input.approvedMemoryNotes.length} approved memory note${input.approvedMemoryNotes.length === 1 ? "" : "s"} for ${input.recipientName}.`
       : undefined,
     normalized.match(/\b(image|art|picture|style|generate|ai)\b/)
-      ? "Artwork remains template-backed locally; image tools stay off until you enable and review them."
+      ? "Artwork stays template-backed here; generated images wait until you choose and review them."
       : undefined
   ].filter((topic): topic is string => Boolean(topic));
 

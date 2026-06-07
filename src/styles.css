@@ -1104,9 +1104,16 @@ h3 {
 
 .journeyActionGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   margin-top: 12px;
+}
+
+.supportingActionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .quickAction {
@@ -1135,6 +1142,32 @@ h3 {
   color: #213139;
   background: #ffffff;
   text-align: left;
+}
+
+.supportingAction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 7px;
+  align-items: center;
+  min-height: 46px;
+  padding: 7px 10px;
+  border: 1px solid #d5e0e2;
+  border-radius: 8px;
+  color: #24444c;
+  background: #f8fbfa;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.supportingAction svg {
+  grid-row: span 2;
+  color: #258477;
+}
+
+.supportingAction small {
+  color: #5f6e74;
+  font-size: 0.72rem;
+  font-weight: 760;
 }
 
 .journeyAction.primary {

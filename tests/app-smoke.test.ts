@@ -338,6 +338,9 @@ describeWithChrome("CustomCard UI smoke", () => {
 
         const initialCustomerText = document.body.textContent;
         const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
+        const initialPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
+        const initialSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const initialSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         const chatComposer = document.querySelector('textarea[aria-label="Customer chat message"]');
         if (!chatComposer) throw new Error("Missing customer chat composer");
         const setChatValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
@@ -348,20 +351,35 @@ describeWithChrome("CustomCard UI smoke", () => {
         await clickByText("Create local workspace");
         const workspaceText = document.body.textContent;
         const workspaceJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
+        const workspacePrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
+        const workspaceSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const workspaceSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         await clickByText("Review event");
         await clickByText("Generate card");
         await clickByText("Your cards");
         const reviewedCustomerText = document.body.textContent;
         const reviewedJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
+        const reviewedPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
+        const reviewedSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
+        const reviewedSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         const chatBubbles = document.querySelectorAll(".chatBubble").length;
         await clickByText("Operations");
         return {
           initialCustomerText,
           initialJourneyActions,
+          initialPrimaryActions,
+          initialSupportingActions,
+          initialSupportingPrimaryActions,
           workspaceText,
           workspaceJourneyActions,
+          workspacePrimaryActions,
+          workspaceSupportingActions,
+          workspaceSupportingPrimaryActions,
           reviewedCustomerText,
           reviewedJourneyActions,
+          reviewedPrimaryActions,
+          reviewedSupportingActions,
+          reviewedSupportingPrimaryActions,
           chatBubbles,
           adminText: document.body.textContent,
           metricCount: document.querySelectorAll(".adminSummaryGrid .metric").length,
@@ -384,22 +402,30 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.initialCustomerText).toContain("Print options after proof");
     expect(result.initialCustomerText).not.toContain("Cheapest known price");
     expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
-    expect(result.initialJourneyActions.join(" ")).toContain("Paste invite or ICS");
-    expect(result.initialJourneyActions).toHaveLength(2);
+    expect(result.initialJourneyActions).toHaveLength(1);
+    expect(result.initialPrimaryActions).toBe(1);
+    expect(result.initialSupportingActions.join(" ")).toContain("Paste invite or ICS");
+    expect(result.initialSupportingPrimaryActions).toBe(0);
     expect(result.workspaceText).toContain("Workspace ready");
     expect(result.workspaceText).toContain("Review event");
     expect(result.workspaceText).not.toContain("Review and make card");
     expect(result.workspaceJourneyActions.join(" ")).toContain("Review event");
-    expect(result.workspaceJourneyActions.join(" ")).toContain("Add memory");
     expect(result.workspaceJourneyActions.join(" ")).not.toContain("Make card");
-    expect(result.workspaceJourneyActions).toHaveLength(2);
+    expect(result.workspaceJourneyActions).toHaveLength(1);
+    expect(result.workspacePrimaryActions).toBe(1);
+    expect(result.workspaceSupportingActions.join(" ")).toContain("Add memory");
+    expect(result.workspaceSupportingPrimaryActions).toBe(0);
     expect(result.reviewedCustomerText).toContain("Best available options");
     expect(result.reviewedCustomerText).toContain("Cheapest known price");
     expect(result.reviewedCustomerText).toContain("Fastest pickup candidate");
     expect(result.reviewedCustomerText).toContain("Cheapest shipped option");
     expect(result.reviewedCustomerText).toContain("Continue proof review");
-    expect(result.reviewedJourneyActions.join(" ")).toContain("Compare print options");
-    expect(result.reviewedJourneyActions).toHaveLength(3);
+    expect(result.reviewedJourneyActions.join(" ")).toContain("Continue proof review");
+    expect(result.reviewedJourneyActions).toHaveLength(1);
+    expect(result.reviewedPrimaryActions).toBe(1);
+    expect(result.reviewedSupportingActions.join(" ")).toContain("Compare print options");
+    expect(result.reviewedSupportingActions.join(" ")).toContain("Add memory");
+    expect(result.reviewedSupportingPrimaryActions).toBe(0);
     expect(result.reviewedCustomerText).toContain("Card assistant");
     expect(result.reviewedCustomerText).toContain("Private local replies");
     expect(result.reviewedCustomerText).toContain("Runs in this browser");
@@ -407,6 +433,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("This reply stayed local and did not store an outside transcript.");
     expect(result.reviewedCustomerText).not.toContain("provider adapters gated");
     expect(result.reviewedCustomerText).not.toContain("No live model call");
+    for (const customerSnapshot of [result.initialCustomerText, result.workspaceText, result.reviewedCustomerText]) {
+      expect(customerSnapshot).not.toMatch(
+        /\b(provider adapters?|credential-gated|no live model call|runtime|launch gates?|evidence gaps?|api|mvp|handoff|vendor|oauth gated|production safety|real orders disabled|coupon evidence)\b/i
+      );
+    }
     expect(result.reviewedCustomerText).toContain("Card proof path");
     expect(result.reviewedCustomerText).toContain("Data controls");
     expect(result.reviewedCustomerText).toContain("Language readiness");

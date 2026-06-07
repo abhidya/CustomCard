@@ -32,6 +32,8 @@ describe("customer web experience contract", () => {
     const experience = buildCustomerWebExperience(baseInput);
 
     expect(experience.stage).toBe("setup");
+    expect(experience.primaryAction).toMatchObject({ id: "create-workspace", label: "Create local workspace" });
+    expect(experience.supportingActions.map((action) => action.id)).toEqual(["paste-invite"]);
     expect(experience.actions.filter((action) => action.priority === "primary")).toEqual([
       expect.objectContaining({ id: "create-workspace", label: "Create local workspace" })
     ]);
@@ -54,6 +56,8 @@ describe("customer web experience contract", () => {
     });
 
     expect(experience.stage).toBe("event-review");
+    expect(experience.primaryAction).toMatchObject({ id: "review-event", label: "Review event" });
+    expect(experience.supportingActions.map((action) => action.id)).toEqual(["add-memory"]);
     expect(experience.actions.filter((action) => action.priority === "primary")).toEqual([
       expect.objectContaining({ id: "review-event", label: "Review event" })
     ]);
@@ -70,6 +74,8 @@ describe("customer web experience contract", () => {
     });
 
     expect(experience.stage).toBe("proof-review");
+    expect(experience.primaryAction).toMatchObject({ id: "continue-proof", label: "Continue proof review" });
+    expect(experience.supportingActions.map((action) => action.id)).toEqual(["choose-fulfillment", "add-memory"]);
     expect(experience.actions.filter((action) => action.priority === "primary")).toEqual([
       expect.objectContaining({ id: "continue-proof", label: "Continue proof review" })
     ]);
@@ -83,8 +89,8 @@ describe("customer web experience contract", () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: "choose-fulfillment",
-          label: "Compare print options",
-          detail: "Confirm pickup, shipping, coupons, and tax before checkout."
+          label: "Compare print options after proof",
+          detail: "Prices, discounts, and pickup are checked before checkout."
         })
       ])
     );
@@ -99,6 +105,8 @@ describe("customer web experience contract", () => {
         ...experience.actions,
         { ...experience.actions[1], priority: "primary" as const, label: "Provider adapters gated" }
       ],
+      primaryAction: { ...experience.actions[1], priority: "secondary" as const },
+      supportingActions: [...experience.supportingActions, { ...experience.actions[0], priority: "primary" as const }],
       chatSafetyBadges: [...experience.chatSafetyBadges, "No live model call"],
       fulfillment: { ...experience.fulfillment, holdDescription: "OAuth gated vendor coupon evidence" }
     };
@@ -106,6 +114,8 @@ describe("customer web experience contract", () => {
     expect(validateCustomerWebExperience(unsafeExperience)).toEqual(
       expect.arrayContaining([
         "Customer web experience must expose exactly one primary action.",
+        "Customer web primary action must be the single prominent action.",
+        "Customer web supporting actions must stay secondary.",
         "Customer web copy must not expose internal readiness/provider terms."
       ])
     );

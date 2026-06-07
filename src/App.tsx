@@ -570,7 +570,7 @@ function App() {
               <div>
                 <span>{workspace ? "Signed in locally" : "Local workspace auth"}</span>
                 <strong>{workspace?.name ?? "Create a local workspace"}</strong>
-                <small>{workspace?.email ?? "No external provider required"}</small>
+                <small>{workspace?.email ?? "No connected account"}</small>
               </div>
             </div>
 
@@ -1151,14 +1151,14 @@ function CustomerPanelView({
             ))}
           </div>
 
-          <div className="journeyActionGrid" aria-label="Customer next actions">
-            {customerExperience.actions.map((action) => {
+          <div className="journeyActionGrid" aria-label="Customer next action">
+            {(() => {
+              const action = customerExperience.primaryAction;
               const ActionIcon = customerActionIcons[action.id];
               return (
                 <button
-                  className={action.priority === "primary" ? "journeyAction primary" : "journeyAction"}
+                  className="journeyAction primary"
                   data-action-priority={action.priority}
-                  key={action.id}
                   onClick={customerActionHandlers[action.id]}
                   type="button"
                 >
@@ -1167,8 +1167,23 @@ function CustomerPanelView({
                   <small>{action.detail}</small>
                 </button>
               );
-            })}
+            })()}
           </div>
+
+          {customerExperience.supportingActions.length > 0 && (
+            <div className="supportingActionList" aria-label="Other customer tasks">
+              {customerExperience.supportingActions.map((action) => {
+                const ActionIcon = customerActionIcons[action.id];
+                return (
+                  <button className="supportingAction" key={action.id} onClick={customerActionHandlers[action.id]} type="button">
+                    <ActionIcon size={15} />
+                    <span>{action.label}</span>
+                    <small>{action.detail}</small>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <p className="panelNote">{customerExperience.panelNote}</p>
         </article>
@@ -1203,14 +1218,14 @@ function CustomerPanelView({
         <article className="fulfillmentRecommendation">
           <div className="sectionHeader compact">
             <div>
-              <p className="eyebrow">Fulfillment</p>
+              <p className="eyebrow">Print</p>
               <h3>{customerExperience.fulfillment.title}</h3>
             </div>
             <StatusChip icon={Store} label={customerExperience.fulfillment.statusLabel} tone="blue" />
           </div>
 
           {customerExperience.fulfillment.showOptions ? (
-            <div className="fulfillmentOptionGrid" aria-label="Customer fulfillment recommendation">
+            <div className="fulfillmentOptionGrid" aria-label="Customer print recommendation">
               <FulfillmentOption
                 recommendation={cheapestOption}
                 icon={CreditCard}

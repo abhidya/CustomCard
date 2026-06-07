@@ -2165,7 +2165,7 @@ export function buildCustomerChatTranscript(recipient = "Sara and Ahmed"): ChatM
     },
     {
       role: "assistant",
-      text: "Approved memory is separated from hidden data, and the handoff checklist keeps the final upload under your control."
+      text: "Approved memory is separated from hidden data, and the print checklist keeps the final upload under your control."
     }
   ];
 }

@@ -73,6 +73,8 @@ export interface CustomerWebExperience {
   workspaceStatusLabel: string;
   workspaceHelp: string;
   actions: CustomerWebAction[];
+  primaryAction: CustomerWebAction;
+  supportingActions: CustomerWebAction[];
   flowSteps: CustomerWebStep[];
   event: CustomerWebEventSummary;
   fulfillment: CustomerWebFulfillmentSummary;
@@ -89,6 +91,8 @@ export interface CustomerWebExperience {
 export function buildCustomerWebExperience(input: CustomerWebExperienceInput): CustomerWebExperience {
   const stage = resolveStage(input);
   const actions = buildActions(stage);
+  const primaryAction = actions.find((action) => action.priority === "primary");
+  if (!primaryAction) throw new Error(`Customer web stage ${stage} is missing a primary action.`);
   const localeReviewLabel = input.selectedLocaleReviewState === "ready" ? "Ready" : "Review";
 
   return {
@@ -125,6 +129,8 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
           ? `${input.evidenceCount} source item${input.evidenceCount === 1 ? "" : "s"} are ready for your review before a draft is created.`
           : "Check copy, names, language, and artwork before export or print options.",
     actions,
+    primaryAction,
+    supportingActions: actions.filter((action) => action.priority === "secondary"),
     flowSteps: buildFlowSteps(stage),
     event: {
       title: input.opportunityTitle,
@@ -200,6 +206,14 @@ export function validateCustomerWebExperience(experience: CustomerWebExperience)
     issues.push("Fulfillment comparison must stay unavailable until card proof review starts.");
   }
 
+  if (experience.primaryAction.priority !== "primary") {
+    issues.push("Customer web primary action must be the single prominent action.");
+  }
+
+  if (experience.supportingActions.some((action) => action.priority !== "secondary")) {
+    issues.push("Customer web supporting actions must stay secondary.");
+  }
+
   return issues;
 }
 
@@ -215,6 +229,9 @@ export function collectCustomerWebCopy(experience: CustomerWebExperience): strin
     experience.chatTitle,
     experience.chatStatusLabel,
     ...experience.chatSafetyBadges,
+    experience.primaryAction.label,
+    experience.primaryAction.detail,
+    ...experience.supportingActions.flatMap((action) => [action.label, action.detail]),
     ...experience.actions.flatMap((action) => [action.label, action.detail]),
     ...experience.flowSteps.flatMap((step) => [step.label, step.detail]),
     ...Object.values(experience.event),
@@ -244,7 +261,7 @@ function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
       {
         id: "paste-invite",
         label: "Paste invite or ICS",
-        detail: "Continue without connecting an account.",
+        detail: "Use an invite when you are ready to add details.",
         priority: "secondary"
       }
     ];
@@ -261,7 +278,7 @@ function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
       {
         id: "add-memory",
         label: "Add memory",
-        detail: "Attach only personal details you approve.",
+        detail: "Optional: add details you want used in this card.",
         priority: "secondary"
       }
     ];
@@ -276,14 +293,14 @@ function buildActions(stage: CustomerWebStage): CustomerWebAction[] {
     },
     {
       id: "choose-fulfillment",
-      label: "Compare print options",
-      detail: "Confirm pickup, shipping, coupons, and tax before checkout.",
+      label: "Compare print options after proof",
+      detail: "Prices, discounts, and pickup are checked before checkout.",
       priority: "secondary"
     },
     {
       id: "add-memory",
       label: "Add memory",
-      detail: "Save details you want reused later.",
+      detail: "Optional: save details for future cards.",
       priority: "secondary"
     }
   ];
