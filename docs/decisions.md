@@ -63,7 +63,7 @@ can hide cropping, shadow, fold, DPI, and safe-zone defects.
 
 ## D006: Cheap Droplet And Cloud-Native Paths Share Contracts
 
-Decision: the domain contracts stay the same across local prototype,
+Decision: the domain contracts stay the same across the local development contract,
 five-dollar-droplet, and SaaS-scale profiles.
 
 Reason: the brief explicitly asks for both a cost-efficient deployment and a

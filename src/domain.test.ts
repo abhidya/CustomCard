@@ -109,12 +109,19 @@ describe("CustomCard blueprint domain", () => {
     expect(agents.map((agent) => agent.id)).toEqual(agentNames);
   });
 
-  it("documents the small droplet and SaaS architecture modes", () => {
+  it("documents production-ready architecture modes without prototype runtime ids", () => {
     const modes = architectureProfiles.map((profile) => profile.id);
 
+    expect(modes).toContain("local-dev");
     expect(modes).toContain("five-dollar-droplet");
     expect(modes).toContain("saas-scale");
+    expect(modes).not.toContain("prototype");
+    expect(getRunMode("local-dev")).toMatchObject({
+      title: "Local development contract",
+      stack: expect.arrayContaining(["certification-gated retail catalog"])
+    });
     expect(getRunMode("five-dollar-droplet").stack.length).toBeGreaterThan(2);
+    expect(() => getRunMode("prototype" as Parameters<typeof getRunMode>[0])).toThrow("Unknown run mode: prototype");
   });
 
   it("requires every milestone to have implementation evidence and an exit gate", () => {

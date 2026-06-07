@@ -10,7 +10,7 @@ export type Chapter =
 
 export type Criticality = "must-have" | "hard-risk" | "later";
 export type GateStatus = "pass" | "warning" | "blocked";
-export type RunMode = "prototype" | "five-dollar-droplet" | "saas-scale";
+export type RunMode = "local-dev" | "five-dollar-droplet" | "saas-scale";
 
 export interface Storyboard {
   id: string;
@@ -549,11 +549,11 @@ const requiredLocalProofFactIds = ["people", "print-spec"];
 
 export const architectureProfiles: ArchitectureProfile[] = [
   {
-    id: "prototype",
-    title: "Local prototype",
+    id: "local-dev",
+    title: "Local development contract",
     costShape: "Developer laptop or free-tier preview",
-    stack: ["Vite/React", "SQLite fixtures", "local renderer", "certification-gated retail catalog"],
-    scalingMove: "Proves workflows and renderer contracts before OAuth or real vendors.",
+    stack: ["Vite/React", "local persistence fixtures", "local renderer", "certification-gated retail catalog"],
+    scalingMove: "Validates customer workflows and renderer contracts before OAuth or live retail providers.",
     tradeoffs: ["No real OAuth", "No real payments", "Fast iteration"]
   },
   {
@@ -653,7 +653,7 @@ export const qualityGates: QualityGate[] = [
     id: "live-research",
     label: "External vendor claims need live verification",
     status: "warning",
-    detail: "The app avoids pretending current vendor APIs are verified in this local prototype."
+    detail: "The app avoids pretending current vendor APIs are verified in this local development contract."
   },
   {
     id: "physical-print",

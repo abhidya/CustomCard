@@ -37,7 +37,7 @@ repo state. It is process evidence, not marketing.
   hidden local state.
 - Product lane: documented the product brief, storyboard chapters, and MVP
   roadmap.
-- Architecture lane: modeled local prototype, cheap droplet, and SaaS-scale
+- Architecture lane: modeled the local development contract, cheap droplet, and SaaS-scale
   profiles.
 - Implementation lane: built the Vite/React free local MVP, typed domain model,
   service kernel, infrastructure skeleton, and mobile shell boundary.
