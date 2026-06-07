@@ -2090,12 +2090,81 @@ h3 {
 
 .mobileSummaryBand,
 .mobileSection,
-.mobileContractBlock,
+.mobilePrimaryAction,
+.mobileTodayCard,
+.mobileFooterSafety,
+.mobileCustomerPanel,
+.mobileCustomerSummaryRow,
 .mobileProofBoundary {
   min-width: 0;
   border: 1px solid #d6e0e1;
   border-radius: 8px;
   background: #ffffff;
+}
+
+.mobilePrimaryAction,
+.mobileTodayCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+}
+
+.mobilePrimaryAction {
+  color: #172124;
+  background: #ffffff;
+}
+
+.mobilePrimaryAction div,
+.mobileTodayCard div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mobilePrimaryAction strong,
+.mobileTodayCard strong,
+.mobilePrimaryAction span,
+.mobileTodayCard span,
+.mobilePrimaryAction em,
+.mobileTodayCard em {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mobilePrimaryAction strong,
+.mobileTodayCard strong {
+  color: #172124;
+  font-size: 0.9rem;
+}
+
+.mobilePrimaryAction span,
+.mobileTodayCard span {
+  color: #63737a;
+  font-size: 0.74rem;
+  font-weight: 760;
+}
+
+.mobilePrimaryAction em,
+.mobileTodayCard em {
+  justify-self: end;
+  padding: 5px 7px;
+  border-radius: 999px;
+  color: #174c42;
+  background: #dff2eb;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 880;
+  text-align: right;
+}
+
+.mobileTodayCard p {
+  margin: 0;
+  color: #5d6d73;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
 }
 
 .mobileSummaryBand {
@@ -2123,7 +2192,7 @@ h3 {
 
 .mobileMiniStats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -2164,67 +2233,13 @@ h3 {
   font-size: 0.92rem;
 }
 
-.mobileActionGrid,
-.mobilePillGrid {
-  display: grid;
-  gap: 7px;
-}
-
-.mobileActionGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.mobileActionTile {
-  display: grid;
-  align-content: start;
-  gap: 5px;
-  min-width: 0;
-  min-height: 82px;
-  padding: 10px;
-  border-radius: 8px;
-  color: #24343a;
-  background: #f7faf9;
-}
-
-.mobileActionTile.dark {
-  color: #ffffff;
-  background: #172927;
-}
-
-.mobileActionTile.blue {
-  background: #e4f0fb;
-}
-
-.mobileActionTile.green {
-  background: #dff2eb;
-}
-
-.mobileActionTile strong,
-.mobileActionTile span,
 .mobileListRow strong,
 .mobileListRow span,
 .mobileListRow em,
-.mobileContractRow strong,
-.mobileContractRow span,
-.mobileContractRow em,
 .mobileProofBoundary strong,
 .mobileProofBoundary span {
   min-width: 0;
   overflow-wrap: anywhere;
-}
-
-.mobileActionTile strong {
-  font-size: 0.78rem;
-}
-
-.mobileActionTile span {
-  color: #5f7076;
-  font-size: 0.7rem;
-  font-weight: 760;
-}
-
-.mobileActionTile.dark span {
-  color: #d2e0dc;
 }
 
 .mobileListRow {
@@ -2265,22 +2280,12 @@ h3 {
   text-align: right;
 }
 
-.mobilePillGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.mobilePillGrid span {
-  min-width: 0;
-  padding: 7px 8px;
-  overflow-wrap: anywhere;
-  border-radius: 999px;
-  color: #173553;
-  background: #e1edf7;
-  font-size: 0.72rem;
-  font-weight: 820;
-}
-
 .mobileChatStack {
+  display: grid;
+  gap: 7px;
+}
+
+.mobileSnapshotRows {
   display: grid;
   gap: 7px;
 }
@@ -2309,78 +2314,49 @@ h3 {
   font-size: 0.78rem;
 }
 
-.mobileSyncBox,
 .mobileProofBoundary {
   display: flex;
   align-items: flex-start;
   gap: 9px;
 }
 
-.mobileSyncBox {
-  color: #27413c;
-  font-size: 0.78rem;
-  font-weight: 780;
-}
-
-.mobileSyncBox svg,
 .mobileProofBoundary svg {
   flex: 0 0 auto;
 }
 
-.mobileContractPanel {
+.mobileCustomerPanel {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  min-width: 0;
+  align-content: start;
+  padding: 16px;
 }
 
-.mobileContractBlock {
-  padding: 14px;
-}
-
-.mobileContractRows {
+.mobileCustomerSummaryRows {
   display: grid;
-  gap: 8px;
+  gap: 9px;
 }
 
-.mobileContractRow {
+.mobileCustomerSummaryRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
-  gap: 10px;
-  align-items: center;
+  gap: 4px;
+  padding: 12px;
+}
+
+.mobileCustomerSummaryRow strong,
+.mobileCustomerSummaryRow span {
   min-width: 0;
-  padding: 9px 0;
-  border-bottom: 1px solid #dce5e6;
+  overflow-wrap: anywhere;
 }
 
-.mobileContractRow:last-child {
-  border-bottom: 0;
+.mobileCustomerSummaryRow strong {
+  color: #172124;
+  font-size: 0.9rem;
 }
 
-.mobileContractRow div {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-.mobileContractRow strong {
-  color: #1f2b30;
-  font-size: 0.86rem;
-}
-
-.mobileContractRow span {
+.mobileCustomerSummaryRow span {
   color: #64757b;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 760;
-}
-
-.mobileContractRow em {
-  justify-self: end;
-  color: #174c42;
-  font-size: 0.74rem;
-  font-style: normal;
-  font-weight: 880;
-  text-align: right;
 }
 
 .mobileProofBoundary {
@@ -2402,6 +2378,21 @@ h3 {
   font-weight: 760;
 }
 
+.mobileFooterSafety {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  color: #6d251b;
+  background: #fff1ee;
+}
+
+.mobileFooterSafety span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.76rem;
+  font-weight: 780;
+}
+
 @media (max-width: 1140px) {
   .viewGrid,
   .studioLayout,
@@ -2410,8 +2401,7 @@ h3 {
   .customerGrid,
   .adminGrid,
   .mobilePreviewIntro,
-  .mobilePreviewLayout,
-  .mobileContractPanel {
+  .mobilePreviewLayout {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -2617,8 +2607,6 @@ h3 {
   .navList,
   .panelGrid,
   .segmentRow,
-  .mobileActionGrid,
-  .mobilePillGrid,
   .mobileMiniStats {
     grid-template-columns: minmax(0, 1fr);
   }

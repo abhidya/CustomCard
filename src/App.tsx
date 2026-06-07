@@ -157,28 +157,10 @@ import {
   type BusinessEngagementReadinessSummary
 } from "./businessEngagementReadiness";
 import {
-  mobileAccountOptions,
-  mobileApprovalActions,
-  mobileCardQueueItems,
-  mobileChatTranscript,
-  mobileExperienceSections,
-  mobileFulfillmentRecommendations,
-  mobileHandoffSteps,
-  mobileImportActions,
-  mobileLocaleOptions,
-  mobileMemoryReviewItems,
-  mobilePrintProofChecks,
-  mobileProofBoundary,
-  mobileRenderChoices,
-  mobileSafetyBanner,
-  mobileSyncState,
-  mobileTodaySummary,
-  summarizeMobileExperience,
-  type MobileCardQueueItem,
-  type MobileChatMessage,
-  type MobileFulfillmentRecommendation,
-  type MobileHandoffStep,
-  type MobileMemoryReviewItem
+  mobileRenderSnapshot,
+  summarizeMobileRenderSnapshot,
+  type MobileRenderRow,
+  type MobileRenderSection
 } from "../apps/mobile/src/customerExperience";
 import { buildCalendarOnboardingChoices, type CalendarOnboardingChoice } from "./onboardingCalendar";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
@@ -719,7 +701,11 @@ function App() {
 }
 
 function MobileAppPreviewView() {
-  const summary = summarizeMobileExperience();
+  const snapshot = mobileRenderSnapshot;
+  const summary = summarizeMobileRenderSnapshot(snapshot);
+  const highlightedSections = snapshot.sections.filter((section) =>
+    ["sign-in-import", "card-queue", "best-available-options", "checkout-confirmation", "offline-sync"].includes(section.id)
+  );
 
   return (
     <section className="mobilePreviewView" aria-label="Mobile app preview">
@@ -727,12 +713,13 @@ function MobileAppPreviewView() {
         <div>
           <p className="eyebrow">Native customer app</p>
           <h2>Mobile app</h2>
+          <p>Same customer screen model used by the iOS and Android shell.</p>
         </div>
         <div className="mobilePreviewMetrics">
-          <Metric label="Sections" value={`${summary.customerVisibleSections}`} />
-          <Metric label="Cards" value={`${summary.queueItems}`} />
-          <Metric label="Locales" value={`${summary.localeOptions}`} />
-          <Metric label="Ordering" value="Confirm" />
+          <Metric label="Sections" value={`${summary.sectionCount}`} />
+          <Metric label="Rows" value={`${summary.rowCount}`} />
+          <Metric label="Approval slots" value={`${summary.primaryActionCount}`} />
+          <Metric label="Orders" value="Confirm" />
         </div>
       </div>
 
@@ -740,146 +727,73 @@ function MobileAppPreviewView() {
         <article className="mobileDevice" aria-label="CustomCard native customer shell">
           <div className="mobileStatusBar">
             <span>9:41</span>
-            <span>CustomCard</span>
+            <span>{snapshot.screenTitle}</span>
           </div>
           <div className="mobileScreen">
             <header className="mobileHero">
               <div>
-                <p>Customer mobile panel</p>
-                <h3>CustomCard</h3>
-                <span>{mobileSafetyBanner.label}</span>
+                <p>{snapshot.hero.eyebrow}</p>
+                <h3>{snapshot.hero.title}</h3>
+                <span>{snapshot.hero.subtitle}</span>
               </div>
               <ShieldCheck size={22} />
             </header>
 
+            <section className="mobilePrimaryAction" data-action-priority="primary">
+              <div>
+                <strong>{snapshot.hero.primaryAction.label}</strong>
+                <span>{snapshot.hero.primaryAction.detail}</span>
+              </div>
+              <em>{snapshot.hero.primaryAction.modeLabel}</em>
+            </section>
+
             <section className="mobileSummaryBand">
-              <strong>{mobileTodaySummary.recipientLabel}</strong>
-              <span>
-                {mobileTodaySummary.eventLabel} · {mobileTodaySummary.dueLabel}
-              </span>
+              <strong>{snapshot.safetyBand.label}</strong>
+              <span>{snapshot.safetyBand.detail}</span>
               <div className="mobileMiniStats">
-                <MobileMiniStat label="Panels" value={`${mobileTodaySummary.panelCount}`} />
-                <MobileMiniStat label="Offline" value={mobileTodaySummary.offlineReady ? "On" : "Off"} />
-                <MobileMiniStat label="Orders" value={mobileTodaySummary.realOrdersEnabled ? "On" : "Off"} />
+                {snapshot.safetyBand.metrics.map((metric) => (
+                  <MobileMiniStat key={metric.label} label={metric.label} value={metric.value} />
+                ))}
               </div>
             </section>
 
-            <MobileSection title="Start with an event">
-              <div className="mobileActionGrid">
-                {mobileAccountOptions.map((option) => (
-                  <MobileActionTile
-                    key={option.provider}
-                    title={option.label}
-                    detail={option.detail}
-                    tone={option.provider === "Apple" ? "green" : "blue"}
-                  />
-                ))}
-                {mobileImportActions.map((action) => (
-                  <MobileActionTile
-                    key={action.kind}
-                    title={action.label}
-                    detail={action.detail}
-                    tone={action.sourceMode === "local-paste" ? "green" : "blue"}
-                  />
-                ))}
-              </div>
-            </MobileSection>
+            {snapshot.sections.map((section) =>
+              section.id === "next-action" ? (
+                <MobileNextActionSection key={section.id} section={section} />
+              ) : (
+                <MobileSnapshotSection key={section.id} section={section} />
+              )
+            )}
 
-            <MobileSection title="Cards to review">
-              {mobileCardQueueItems.map((item) => (
-                <MobileQueueRow key={item.id} item={item} />
+            <section className="mobileFooterSafety" aria-label="Mobile checkout safeguards">
+              {snapshot.footerSafetyMessages.map((message) => (
+                <span key={message}>{message}</span>
               ))}
-            </MobileSection>
-
-            <MobileSection title="Card actions">
-              <div className="mobilePillGrid">
-                {mobileApprovalActions.map((action) => (
-                  <span key={action.kind}>{action.label}</span>
-                ))}
-              </div>
-            </MobileSection>
-
-            <MobileSection title="Card assistant">
-              <div className="mobileChatStack">
-                {mobileChatTranscript.map((message, index) => (
-                  <MobileChatBubble key={`${message.speaker}-${index}`} message={message} />
-                ))}
-              </div>
-            </MobileSection>
-
-            <MobileSection title="Printing options">
-              {mobileFulfillmentRecommendations.map((recommendation) => (
-                <MobileFulfillmentRow key={recommendation.kind} recommendation={recommendation} />
-              ))}
-            </MobileSection>
-
-            <MobileSection title="Finish manually">
-              {mobileHandoffSteps.map((step) => (
-                <MobileHandoffRow key={step.label} step={step} />
-              ))}
-            </MobileSection>
-
-            <MobileSection title="Saved offline">
-              <div className="mobileSyncBox">
-                <Lock size={16} />
-                <span>
-                  {mobileSyncState.pendingMutationTypes.length} queued mutation types;{" "}
-                  {mobileSyncState.forbiddenMutationTypes.length} unsafe mutation types blocked.
-                </span>
-              </div>
-            </MobileSection>
+            </section>
           </div>
         </article>
 
-        <aside className="mobileContractPanel" aria-label="Mobile app contract">
-          <ContractBlock
-            title="Workflow coverage"
-            icon={PanelTop}
-            rows={mobileExperienceSections.map((section) => ({
-              label: section.title,
-              value: section.status,
-              detail: section.detail
-            }))}
-          />
-          <ContractBlock
-            title="Memory and proof"
-            icon={Heart}
-            rows={[
-              ...mobileMemoryReviewItems.map((item) => ({
-                label: item.memoryLabel,
-                value: memoryUsageLabel(item.usage),
-                detail: `${item.recipientLabel}; raw content stored: ${item.rawContentStored ? "yes" : "no"}`
-              })),
-              ...mobileRenderChoices.map((choice) => ({
-                label: choice.label,
-                value: choice.mode === "free-local" ? "Free" : "Gated",
-                detail: choice.detail
-              }))
-            ]}
-          />
-          <ContractBlock
-            title="Print proof"
-            icon={Printer}
-            rows={mobilePrintProofChecks.map((check) => ({
-              label: check.label,
-              value: proofStatusLabel(check.passed),
-              detail: check.detail
-            }))}
-          />
-          <ContractBlock
-            title="Locale readiness"
-            icon={Globe2}
-            rows={mobileLocaleOptions.map((locale) => ({
-              label: locale.label,
-              value: locale.writingDirection.toUpperCase(),
-              detail: locale.copyReviewRequired ? "Copy review required" : "Ready"
-            }))}
-          />
-          <div className="mobileProofBoundary">
-            <XCircle size={18} />
+        <aside className="mobileCustomerPanel" aria-label="Mobile customer summary">
+          <div className="sectionHeader compact">
             <div>
-              <strong>{mobileProofBoundary.blockedLiveProofs.length} live proof claims blocked</strong>
-              <span>{mobileSafetyBanner.detail}</span>
+              <p className="eyebrow">Customer flow</p>
+              <h3>What the mobile app shows first</h3>
+            </div>
+            <Smartphone size={18} />
+          </div>
+          <div className="mobileCustomerSummaryRows">
+            {highlightedSections.map((section) => (
+              <div className="mobileCustomerSummaryRow" key={section.id}>
+                <strong>{section.title}</strong>
+                <span>{section.rows[0]?.detail ?? section.rows[0]?.title}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mobileProofBoundary">
+            <Lock size={18} />
+            <div>
+              <strong>{snapshot.safetyBand.label}</strong>
+              <span>{snapshot.safetyBand.detail}</span>
             </div>
           </div>
         </aside>
@@ -888,12 +802,51 @@ function MobileAppPreviewView() {
   );
 }
 
-function MobileSection({ title, children }: { title: string; children: ReactNode }) {
+function MobileSnapshotSection({ section }: { section: MobileRenderSection }) {
   return (
     <section className="mobileSection">
-      <h4>{title}</h4>
-      {children}
+      <h4>{section.title}</h4>
+      <div className={section.id === "card-assistant" ? "mobileChatStack" : "mobileSnapshotRows"}>
+        {section.rows.map((row, index) => (
+          <MobileSnapshotRow key={`${section.id}-${index}-${row.title}-${row.modeLabel}`} row={row} chat={section.id === "card-assistant"} />
+        ))}
+      </div>
     </section>
+  );
+}
+
+function MobileNextActionSection({ section }: { section: MobileRenderSection }) {
+  const row = section.rows[0];
+  return (
+    <section className="mobileTodayCard">
+      <div>
+        <p>{section.title}</p>
+        <strong>{row.title}</strong>
+        <span>{row.detail}</span>
+      </div>
+      <em>{row.modeLabel}</em>
+    </section>
+  );
+}
+
+function MobileSnapshotRow({ row, chat }: { row: MobileRenderRow; chat?: boolean }) {
+  if (chat) {
+    return (
+      <div className={row.modeLabel === "Customer" ? "mobileChatBubble customer" : "mobileChatBubble assistant"}>
+        <strong>{row.title}</strong>
+        <span>{row.detail}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mobileListRow">
+      <div>
+        <strong>{row.title}</strong>
+        <span>{row.detail}</span>
+      </div>
+      <em>{row.modeLabel}</em>
+    </div>
   );
 }
 
@@ -903,105 +856,6 @@ function MobileMiniStat({ label, value }: { label: string; value: string }) {
       <strong>{value}</strong>
       <span>{label}</span>
     </div>
-  );
-}
-
-function MobileActionTile({
-  title,
-  detail,
-  tone
-}: {
-  title: string;
-  detail: string;
-  tone: "blue" | "dark" | "green";
-}) {
-  return (
-    <div className={`mobileActionTile ${tone}`}>
-      <strong>{title}</strong>
-      <span>{detail}</span>
-    </div>
-  );
-}
-
-function MobileQueueRow({ item }: { item: MobileCardQueueItem }) {
-  return (
-    <div className="mobileListRow">
-      <div>
-        <strong>{item.recipientLabel}</strong>
-        <span>
-          {item.eventLabel} · {item.source}
-        </span>
-      </div>
-      <em>{queueStatusLabel(item.status)}</em>
-    </div>
-  );
-}
-
-function MobileChatBubble({ message }: { message: MobileChatMessage }) {
-  return (
-    <div className={message.speaker === "customer" ? "mobileChatBubble customer" : "mobileChatBubble assistant"}>
-      <strong>{message.speaker}</strong>
-      <span>{message.text}</span>
-    </div>
-  );
-}
-
-function MobileFulfillmentRow({ recommendation }: { recommendation: MobileFulfillmentRecommendation }) {
-  return (
-    <div className="mobileListRow">
-      <div>
-        <strong>{recommendation.label}</strong>
-        <span>
-          {recommendation.vendorName} · {recommendation.etaLabel}
-        </span>
-      </div>
-      <em>{formatCents(recommendation.totalCents)}</em>
-    </div>
-  );
-}
-
-function MobileHandoffRow({ step }: { step: MobileHandoffStep }) {
-  return (
-    <div className="mobileListRow">
-      <div>
-        <strong>{step.label}</strong>
-        <span>{step.detail}</span>
-      </div>
-      <em>{step.realOrderState}</em>
-    </div>
-  );
-}
-
-function ContractBlock({
-  title,
-  icon: Icon,
-  rows
-}: {
-  title: string;
-  icon: LucideIcon;
-  rows: Array<{ label: string; value: string; detail: string }>;
-}) {
-  return (
-    <section className="mobileContractBlock">
-      <div className="sectionHeader compact">
-        <div>
-          <p className="eyebrow">Mobile contract</p>
-          <h3>{title}</h3>
-        </div>
-        <Icon size={18} />
-      </div>
-      <div className="mobileContractRows">
-        {rows.map((row) => (
-          <div className="mobileContractRow" key={`${row.label}-${row.value}`}>
-            <div>
-              <strong>{row.label}</strong>
-              <span>{row.detail}</span>
-            </div>
-            <em>{row.value}</em>
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -3142,27 +2996,6 @@ function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {
     "prepared-request": "request contract ready"
   };
   return labels[mode];
-}
-
-function queueStatusLabel(status: MobileCardQueueItem["status"]): string {
-  const labels: Record<MobileCardQueueItem["status"], string> = {
-    approved: "Approved",
-    "needs-approval": "Needs approval",
-    "ready-for-handoff": "Ready for handoff"
-  };
-  return labels[status];
-}
-
-function memoryUsageLabel(usage: MobileMemoryReviewItem["usage"]): string {
-  const labels: Record<MobileMemoryReviewItem["usage"], string> = {
-    approved: "Approved",
-    "review-required": "Review"
-  };
-  return labels[usage];
-}
-
-function proofStatusLabel(passed: boolean): string {
-  return passed ? "Passed" : "Review";
 }
 
 function customerCouponStatusLabel(status: string): string {

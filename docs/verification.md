@@ -13,7 +13,9 @@ it after each meaningful implementation pass.
   runtime config.
 - UI smoke tests exercise mobile horizontal overflow, the local auth -> import ->
   studio -> handoff workflow, customer/admin panels, no-network runtime
-  readiness, and adapter readiness when Chrome is available.
+  readiness, adapter readiness, and the direct `/?view=mobile` browser route
+  rendering the shared mobile customer snapshot instead of JSON, Expo manifest,
+  or visible contract/debug panels when Chrome is available.
 - Provider-catalog tests cover adapter capability breadth, explicit local adapters,
   external provider docs/env gates, admin/customer panel models, deterministic
   local chat, and blocked live-vendor status.

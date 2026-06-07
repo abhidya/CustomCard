@@ -248,6 +248,8 @@ describeWithChrome("CustomCard UI smoke", () => {
           text: document.body.textContent,
           hasMobileShell: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
           hasContractPanel: !!document.querySelector('[aria-label="Mobile app contract"]'),
+          hasCustomerSummary: !!document.querySelector('[aria-label="Mobile customer summary"]'),
+          primaryActions: document.querySelectorAll('.mobilePrimaryAction[data-action-priority="primary"]').length,
           contentType: document.contentType,
           bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
           deviceSections: document.querySelectorAll(".mobileSection").length,
@@ -262,11 +264,14 @@ describeWithChrome("CustomCard UI smoke", () => {
 
     expect(result.h2).toBe("Mobile app");
     expect(result.hasMobileShell).toBe(true);
-    expect(result.hasContractPanel).toBe(true);
+    expect(result.hasContractPanel).toBe(false);
+    expect(result.hasCustomerSummary).toBe(true);
+    expect(result.primaryActions).toBe(1);
     expect(result.contentType).toBe("text/html");
     expect(result.bodyIsJson).toBe(false);
     expect(result.currentSearch).toBe("?view=mobile");
-    expect(result.text).toContain("Customer mobile panel");
+    expect(result.text).toContain("Your card assistant");
+    expect(result.text).toContain("Review Sara and Ahmed's card");
     expect(result.text).toContain("Google Calendar is not connected yet");
     expect(result.text).toContain("Apple Calendar ICS export");
     expect(result.text).toContain("Review calendar options");
@@ -280,10 +285,13 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Printing options");
     expect(result.text).toContain("Finish manually");
     expect(result.text).toContain("Saved offline");
-    expect(result.text).toContain("Ordering");
-    expect(result.text).toContain("live proof claims blocked");
-    expect(result.deviceSections).toBeGreaterThanOrEqual(7);
-    expect(result.contractBlocks).toBeGreaterThanOrEqual(4);
+    expect(result.text).toContain("Confirm pickup, shipping, payment, and coupons at checkout before ordering.");
+    expect(result.text).not.toContain("Mobile contract");
+    expect(result.text).not.toContain("live proof claims blocked");
+    expect(result.text).not.toContain("ExpoManifest");
+    expect(result.text).not.toContain("bundleUrl");
+    expect(result.deviceSections).toBeGreaterThanOrEqual(10);
+    expect(result.contractBlocks).toBe(0);
     expect(result.bodyScrollWidth).toBe(result.clientWidth);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
@@ -298,6 +306,8 @@ describeWithChrome("CustomCard UI smoke", () => {
         text: document.body.textContent,
         hasMobileShell: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
         hasContractPanel: !!document.querySelector('[aria-label="Mobile app contract"]'),
+        hasCustomerSummary: !!document.querySelector('[aria-label="Mobile customer summary"]'),
+        primaryActions: document.querySelectorAll('.mobilePrimaryAction[data-action-priority="primary"]').length,
         activeNav: document.querySelector('.navButton.active')?.textContent,
         contentType: document.contentType,
         bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
@@ -310,12 +320,16 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toBe("CustomCard");
     expect(result.h2).toBe("Mobile app");
     expect(result.hasMobileShell).toBe(true);
-    expect(result.hasContractPanel).toBe(true);
+    expect(result.hasContractPanel).toBe(false);
+    expect(result.hasCustomerSummary).toBe(true);
+    expect(result.primaryActions).toBe(1);
     expect(result.activeNav).toContain("Mobile app");
     expect(result.contentType).toBe("text/html");
     expect(result.bodyIsJson).toBe(false);
-    expect(result.text).toContain("Customer mobile panel");
+    expect(result.text).toContain("Your card assistant");
+    expect(result.text).toContain("Review Sara and Ahmed's card");
     expect(result.text).toContain("Cards to review");
+    expect(result.text).not.toContain("Mobile contract");
     expect(result.text).not.toContain("ExpoManifest");
     expect(result.text).not.toContain("bundleUrl");
     expect(result.bodyScrollWidth).toBe(result.clientWidth);

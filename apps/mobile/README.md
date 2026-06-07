@@ -54,9 +54,11 @@ endpoint:
 npm run mobile:web:demo
 ```
 
-Expected screen signals: `Mobile app`, `Customer mobile panel`, the phone-shaped
-customer workflow, and the `Mobile app contract` panel. The direct URL is
-`/?view=mobile`.
+Expected screen signals: `Mobile app`, `Your card assistant`, the phone-shaped
+customer workflow, one primary mobile action, checkout safeguards, and the
+`Mobile customer summary` panel. The browser route must not render an Expo
+manifest, JSON payload, or visible mobile contract/debug panel. The direct URL
+is `/?view=mobile`.
 
 The same lane is reachable through the normal app:
 

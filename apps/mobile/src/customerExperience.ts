@@ -863,7 +863,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
     ],
     footerSafetyMessages: [
       "No automatic order, charge, or raw memory upload can run from this mobile shell.",
-      "Native emulator screenshots and signed build artifacts remain open release evidence."
+      "Confirm pickup, shipping, payment, and coupons at checkout before ordering."
     ]
   };
 }
