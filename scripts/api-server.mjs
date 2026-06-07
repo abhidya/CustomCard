@@ -466,7 +466,7 @@ async function serveApi(request, response, path) {
         selectedVendorId: "walgreens",
         liveQuote: false,
         knownPriceCount: 12,
-        sourceCount: 7,
+        sourceCount: 8,
         maxAgeDays: 30,
         freshnessPolicy: "Use src/printerPricing.ts refresh report before showing prices as current.",
         externalNetworkCalls: false

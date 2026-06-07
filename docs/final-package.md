@@ -168,7 +168,7 @@
 | Business engagement readiness | `npm run business:engagement:doctor` | Passed; verified 8 business engagement readiness items, 14 CRM adapter contracts, 11 workflow adapter contracts, 16 notification adapter contracts, 3 lifecycle trigger kinds, admin/API surfaces, docs, CI wiring, zero live customer messages, zero CRM writes, zero live external network calls, and zero real orders. |
 | Provider cost governance | `npm run provider:governance:doctor` | Passed; verified 121 adapters, 57 usage-based adapters, 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API governance surfaces, CI wiring, and no live provider calls or real orders. |
 | Capacity planning | `npm run capacity:doctor` | Passed; verified 4 local/cheap/cloud/SaaS profiles, finite daily card/image limits, admin/API surfaces, CI wiring, documentation, and no live provider calls or real orders. |
-| Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
+| Printer pricing research | `npm run printer:pricing:doctor` | Passed; verified 12 official-source public price observations across 8 persisted source links, 9 no-network collection rules, manual confirmation on every observation, customer/API exposure, CI wiring, and no live quote or real-order claims. |
 | Localization readiness | `npm run localization:doctor` | Passed; verified 4 launch locales, 2 RTL locales, 3 human-copy-review locales, 4 mobile locale options, web/API/mobile surfaces, CI wiring, no live translation provider, and no real orders. |
 | API readiness | `npm run api:doctor` | Passed; 15 routes, 7 idempotent mutation contracts, contract runtime mode, 121 providers, provider governance, 13 schema-backed routes, relationship-memory and render-packet repository readiness, signed artifact contracts, no live calls or real orders. |
 | API memory runtime | `npm run api:doctor:memory` | Passed; Bearer auth and idempotency enforced with two configured test sessions, signed artifact contracts present, no live calls or real orders. |
@@ -279,8 +279,8 @@
   planning contracts.
 - Public printer pricing is observed research only; checkout confirmation,
   taxes, coupons, stock, pickup windows, and checkout availability are not
-  live-verified. The current catalog has 12 official-source observations behind
-  a no-network pricing doctor.
+  live-verified. The current catalog has 12 official-source observations across
+  8 persisted source links and a no-network pricing doctor.
 - Non-English and RTL localization is readiness-gated only; professional
   translation QA, native RTL render proof, and live translation providers are
   not covered.

@@ -36,6 +36,16 @@ their production evidence gates pass.
 
 ## Demo paths
 
+Browser preview through the main Vite app:
+
+```sh
+npm run dev
+```
+
+Open the Vite URL and choose `Mobile app` in the left navigation. That preview
+uses the same `apps/mobile/src/customerExperience.ts` contract as the Expo shell,
+so it is useful for quick desktop inspection without a simulator.
+
 Native Expo preview:
 
 ```sh
@@ -45,7 +55,7 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled np
 
 Open the QR code in Expo Go or launch the configured iOS/Android simulator from
 the Expo terminal. A desktop browser pointed at the native Expo server can show a
-JSON manifest; that is not the app UI.
+JSON manifest; that is Expo metadata, not the app UI.
 
 Repo-local validation:
 

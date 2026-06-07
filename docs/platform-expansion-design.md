@@ -273,7 +273,7 @@ The admin panel turns the adapter catalog into an operations surface:
 - Blocked live-order vendors.
 - Public printer pricing research for manual Walgreens/CVS/FedEx/Walmart/
   Staples/Office Depot comparison, including 12 official-source observations,
-  source-count, and freshness state.
+  8 persisted source links, source-count, and freshness state.
 - Localization readiness for 4 launch locales, 2 RTL layout-review locales, 3
   human-copy-review locales, complete bundles, and live translation disabled.
 - Production launch gates for production auth, live OAuth, AI generation, vendor

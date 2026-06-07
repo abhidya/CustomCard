@@ -10,6 +10,11 @@ import {
 } from "./providerCatalog";
 import { buildPrinterPricingComparison } from "./printerPricing";
 import { buildSamplePrintExportPackage, summarizePrintExportPackage } from "./printExport";
+import {
+  buildRetailPrinterAdapterPlan,
+  getRetailPrinterAdapterForProvider,
+  type RetailPrinterOperationKind
+} from "./retailPrinterAdapters";
 
 export type RuntimeMode = "local-result" | "prepared-request" | "blocked";
 export type HttpMethod = "GET" | "POST" | "REPORT";
@@ -152,6 +157,7 @@ export interface ObservabilityRuntimeInput {
 
 export interface VendorRuntimeInput {
   vendorId: VendorId;
+  operation?: RetailPrinterOperationKind;
   quoteCents?: number;
   storeId?: string;
   certificationRecorded?: boolean;
@@ -719,6 +725,8 @@ export function buildVendorRuntime(
     };
   }
 
+  const retailAdapter = getRetailPrinterAdapterForProvider(adapter.id);
+  const retailPlan = retailAdapter ? buildRetailPrinterAdapterPlan(retailAdapter.vendorId, input.operation) : undefined;
   const readiness = getProviderRuntimeReadiness(adapter.id, env, {
     ...gates,
     vendorCertificationRecorded: input.certificationRecorded || gates.vendorCertificationRecorded,
@@ -736,9 +744,11 @@ export function buildVendorRuntime(
       mode: "blocked",
       blockedReasons: uniqueSorted([
         ...readiness.blockedReasons,
+        ...(retailPlan ? [retailPlan.operation.blockedReason] : []),
         "Live vendor orders remain disabled until certification, quote, approval, QA, and kill-switch policy are proven."
       ])
-    }
+    },
+    localResult: retailPlan
   };
 }
 

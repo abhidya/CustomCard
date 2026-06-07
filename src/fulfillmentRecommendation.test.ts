@@ -6,7 +6,7 @@ import {
 } from "./fulfillmentRecommendation";
 import { buildPrinterPricingComparison, printerPriceCatalog } from "./printerPricing";
 
-const reviewedAt = new Date("2026-06-03T12:00:00.000Z");
+const reviewedAt = new Date("2026-06-07T12:00:00.000Z");
 
 describe("fulfillment recommendations", () => {
   it("builds customer-safe cheapest, pickup, and shipped recommendations from public pricing", () => {
@@ -27,7 +27,7 @@ describe("fulfillment recommendations", () => {
     expect(recommendationSet.recommendations[0]).toMatchObject({
       label: "Cheapest known price",
       vendorName: "Walmart Photo",
-      subtotalLabel: "$1.42",
+      subtotalLabel: "$0.56",
       etaLabel: "same-day pickup candidate",
       sourceMode: "review-only-public-price",
       liveQuote: false,
@@ -37,7 +37,7 @@ describe("fulfillment recommendations", () => {
     expect(recommendationSet.recommendations[1]).toMatchObject({
       label: "Fastest pickup candidate",
       vendorName: "Walmart Photo",
-      subtotalLabel: "$1.42",
+      subtotalLabel: "$0.56",
       etaLabel: "same-day pickup candidate"
     });
     expect(recommendationSet.recommendations[2]).toMatchObject({

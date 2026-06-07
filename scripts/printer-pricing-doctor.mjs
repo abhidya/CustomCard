@@ -15,8 +15,11 @@ const contents = Object.fromEntries(
 );
 
 const catalogBlock = contents.pricing.match(/export const printerPriceCatalog: PrinterPriceObservation\[] = \[([\s\S]*?)\n\];/)?.[1] ?? "";
+const collectionRulesBlock =
+  contents.pricing.match(/export const printerPricingCollectionRules: PrinterPricingCollectionRule\[] = \[([\s\S]*?)\n\];/)?.[1] ??
+  "";
 const observationCount = countMatches(catalogBlock, /\n\s+id: "/g);
-const ruleCount = countMatches(contents.pricing, /noNetworkRuntime: true/g);
+const ruleCount = countMatches(collectionRulesBlock, /noNetworkRuntime: true/g);
 const manualConfirmationCount = countMatches(catalogBlock, /requiresManualConfirmation: true/g);
 const liveQuoteFalseCount = countMatches(catalogBlock, /liveQuote: false/g);
 const officialSourceCount = countMatches(contents.pricing, /url: "https:\/\//g);
@@ -25,11 +28,13 @@ const checks = [
   checkExact("catalog", "current-observation-count", observationCount, 12),
   checkMinimum("catalog", "official-source-count", officialSourceCount, 9),
   checkIncludes("catalog", "refreshed-official-price-signals", contents.pricing, [
-    'observedAtIso = "2026-06-03T12:00:00.000Z"',
+    'observedAtIso = "2026-06-07T12:00:00.000Z"',
     'id: "walgreens-5x7-folded-card"',
-    "unitPriceCents: 299",
-    'id: "cvs-5x7-photo-card"',
-    "unitPriceCents: 109",
+    "unitPriceCents: 349",
+    'id: "cvs-5x7-folded-card"',
+    "unitPriceCents: 898",
+    'id: "walmart-5x7-same-day-folded-card"',
+    "unitPriceCents: 56",
     'id: "fedex-quick-5x7-single-sided-card"',
     "startingPackagePriceCents: 1399",
     'id: "staples-5x7-same-day-card-bundle"',
@@ -56,14 +61,16 @@ const checks = [
   checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.apiServer}`, [
     "review-only public pricing",
     "knownPriceCount: 12",
+    "sourceCount: 8",
     "refreshReport.totalObservations",
     "liveQuote: false"
   ]),
   checkIncludes("docs", "pricing-research-docs-current", contents.docs, [
-    "Observed on: June 3, 2026.",
-    "5x7 photo card",
-    "$1.09 each",
-    "Quick 5x7 single-sided greeting card",
+    "Observed on: June 7, 2026.",
+    "5x7 folded card upload your design",
+    "$0.56 each",
+    "5x7 folded greeting card design detail",
+    "$8.98 each",
     "$13.99 for 10",
     "$49.99 pre-tax base",
     "coupon prices excluded"

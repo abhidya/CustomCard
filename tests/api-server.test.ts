@@ -838,7 +838,7 @@ describe("api server wrapper", () => {
         selectedVendorId: "walgreens",
         liveQuote: false,
         knownPriceCount: 12,
-        sourceCount: 7,
+        sourceCount: 8,
         maxAgeDays: 30,
         externalNetworkCalls: false
       });
@@ -1089,7 +1089,7 @@ describe("api server wrapper", () => {
       const customerBootstrap = await getJson(port, "/api/customer/bootstrap", bearer(customerToken));
       expect(customerBootstrap.runtime).toMatchObject({ mode: "memory", authEnforced: true });
       expect(customerBootstrap.localization).toMatchObject({ supportedLocales: 4, rtlLocales: 2, liveTranslationProvider: false });
-      expect(customerBootstrap.printerPricing).toMatchObject({ liveQuote: false, knownPriceCount: 12, sourceCount: 7 });
+      expect(customerBootstrap.printerPricing).toMatchObject({ liveQuote: false, knownPriceCount: 12, sourceCount: 8 });
 
       const missingAuth = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
       expect(missingAuth.status).toBe(401);

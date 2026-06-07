@@ -320,6 +320,23 @@ describe("provider catalog", () => {
       ])
     );
     expect(admin.blockedProviders.every((adapter) => adapter.status === "blocked")).toBe(true);
+    expect(getProviderAdapter("walmart-live-print")).toMatchObject({
+      docsUrl:
+        "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
+      detail: expect.stringContaining("price fetch")
+    });
+    expect(getProviderAdapter("fedex-live-print")).toMatchObject({
+      docsUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html",
+      detail: expect.stringContaining("file upload")
+    });
+    expect(getProviderAdapter("cvs-live-order")).toMatchObject({
+      docsUrl: expect.stringContaining("CommerceProduct_26126"),
+      detail: expect.stringContaining("image upload")
+    });
+    expect(getProviderAdapter("walgreens-live-order")).toMatchObject({
+      docsUrl: expect.stringContaining("CommerceProduct_33272"),
+      detail: expect.stringContaining("order placement")
+    });
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Public printer pricing research");
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Local print package export");
     expect(admin.readyLocalProviders.map((adapter) => adapter.label)).toContain("Business CRM CSV lifecycle import");
