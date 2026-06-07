@@ -245,8 +245,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("Customer mobile panel");
     expect(result.text).toContain("Google Calendar connection");
     expect(result.text).toContain("Apple Calendar ICS export");
-    expect(result.text).toContain("Future calendar sync");
+    expect(result.text).toContain("Review calendar options");
     expect(result.text).toContain("Paste invite or ICS");
+    expect(result.text).not.toContain("Future calendar sync");
     expect(result.text).not.toContain("Continue with Google");
     expect(result.text).not.toContain("Continue with Apple");
     expect(result.text).toContain("Card queue");

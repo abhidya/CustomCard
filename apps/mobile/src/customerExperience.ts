@@ -17,6 +17,7 @@ export type MobileApprovalActionKind = "approve" | "edit-tone" | "snooze" | "dis
 export type MobileMutationType = "approve-card" | "update-tone" | "snooze-card" | "dismiss-card" | "prepare-handoff";
 export type MobileAccountProvider = "Google" | "Apple";
 export type MobileImportActionKind = "calendar" | "email" | "invite";
+export type MobileCalendarSourceMode = "oauth-readiness" | "manual-export" | "contract-gated" | "local-paste";
 export type MobileFulfillmentRecommendationKind = "cheapest-known-price" | "fastest-pickup" | "cheapest-shipped";
 export type MobileCustomerFlowStage =
   | "account-import"
@@ -63,15 +64,20 @@ export interface MobileAccountOption {
   provider: MobileAccountProvider;
   label: string;
   detail: string;
+  sourceMode: Extract<MobileCalendarSourceMode, "oauth-readiness" | "manual-export">;
+  canStartNow: boolean;
+  dataBoundary: string;
+  credentialBoundary: string;
   liveOAuthEnabled: false;
   customerVisible: boolean;
+  blockedReason?: string;
 }
 
 export interface MobileImportAction {
   kind: MobileImportActionKind;
   label: string;
   detail: string;
-  sourceMode: "contract-gated" | "local-paste";
+  sourceMode: Extract<MobileCalendarSourceMode, "contract-gated" | "local-paste">;
   customerVisible: boolean;
 }
 
@@ -290,7 +296,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "account-import",
     title: "Sign in and import",
-    detail: "Paste invite/ICS is ready now; Google, Apple, calendar, and email imports require future consent and credential work.",
+    detail: "Paste invite/ICS is ready now; Google stays OAuth-gated and Apple uses manual ICS export.",
     status: "Ready",
     customerVisible: true
   },
@@ -356,14 +362,23 @@ export const mobileAccountOptions: MobileAccountOption[] = [
   {
     provider: "Google",
     label: "Google Calendar connection",
-    detail: "Requires OAuth setup, consent copy, token storage, and revocation handling before use.",
+    detail: "Requires OAuth setup, consent copy, token storage, and revocation handling before use; paste remains available now.",
+    sourceMode: "oauth-readiness",
+    canStartNow: false,
+    dataBoundary: "Event metadata only after explicit consent; raw calendar descriptions stay out of storage.",
+    credentialBoundary: "No OAuth token, refresh token, redirect callback, or Google provider request is prepared by the mobile shell.",
     liveOAuthEnabled: false,
-    customerVisible: true
+    customerVisible: true,
+    blockedReason: "No live OAuth consent flow is implemented in this repository state."
   },
   {
     provider: "Apple",
     label: "Apple Calendar ICS export",
     detail: "Export an ICS event or calendar copy, then paste selected event details locally.",
+    sourceMode: "manual-export",
+    canStartNow: true,
+    dataBoundary: "Customer-controlled ICS export or selected event details only.",
+    credentialBoundary: "No Apple ID, app-specific password, CalDAV session, or native Apple Calendar sync.",
     liveOAuthEnabled: false,
     customerVisible: true
   }
@@ -372,8 +387,8 @@ export const mobileAccountOptions: MobileAccountOption[] = [
 export const mobileImportActions: MobileImportAction[] = [
   {
     kind: "calendar",
-    label: "Future calendar sync",
-    detail: "Calendar sync stays off until OAuth or manual export evidence is configured.",
+    label: "Review calendar options",
+    detail: "Paste invite/ICS works now; Google stays OAuth-gated; Apple uses manual ICS export.",
     sourceMode: "contract-gated",
     customerVisible: true
   },
@@ -739,7 +754,7 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
           ...model.accountOptions.map((option) => ({
             title: option.label,
             detail: option.detail,
-            modeLabel: option.provider === "Apple" ? "Manual" : "OAuth off"
+            modeLabel: option.canStartNow ? "Manual" : "OAuth off"
           })),
           ...model.importActions.map((action) => ({
             title: action.label,
@@ -984,6 +999,23 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   if (model.accountOptions.some((option) => option.label.startsWith("Continue with"))) {
     issues.push("Mobile account options must not expose live-provider sign-in CTAs.");
   }
+  if (
+    !model.accountOptions.some(
+      (option) => option.provider === "Google" && option.sourceMode === "oauth-readiness" && option.canStartNow === false
+    )
+  ) {
+    issues.push("Mobile Google Calendar option must stay OAuth-readiness gated.");
+  }
+  if (
+    !model.accountOptions.some(
+      (option) => option.provider === "Apple" && option.sourceMode === "manual-export" && option.canStartNow === true
+    )
+  ) {
+    issues.push("Mobile Apple Calendar option must stay manual-export ready.");
+  }
+  if (model.accountOptions.some((option) => !option.dataBoundary || !option.credentialBoundary)) {
+    issues.push("Every mobile account option must name its data and credential boundary.");
+  }
 
   const importActions = new Set(model.importActions.map((action) => action.kind));
   for (const action of ["calendar", "email", "invite"] as const) {
@@ -994,6 +1026,9 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
   if (!model.importActions.some((action) => action.kind === "invite" && action.label === "Paste invite or ICS" && action.sourceMode === "local-paste")) {
     issues.push("Mobile import actions must keep Paste invite or ICS as the ready local path.");
+  }
+  if (model.importActions.some((action) => action.label === "Future calendar sync")) {
+    issues.push("Mobile import actions must expose concrete calendar options instead of future-sync placeholder copy.");
   }
 
   const queueItemIds = new Set(model.queueItems.map((item) => item.id));

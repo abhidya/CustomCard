@@ -83,17 +83,32 @@ describe("mobile customer experience contract", () => {
   it("keeps mobile sign-in, import, queue, chat, fulfillment, and checkout paths local or gated", () => {
     expect(mobileAccountOptions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ provider: "Google", label: "Google Calendar connection", liveOAuthEnabled: false }),
-        expect.objectContaining({ provider: "Apple", label: "Apple Calendar ICS export", liveOAuthEnabled: false })
+        expect.objectContaining({
+          provider: "Google",
+          label: "Google Calendar connection",
+          liveOAuthEnabled: false,
+          sourceMode: "oauth-readiness",
+          canStartNow: false,
+          blockedReason: "No live OAuth consent flow is implemented in this repository state."
+        }),
+        expect.objectContaining({
+          provider: "Apple",
+          label: "Apple Calendar ICS export",
+          liveOAuthEnabled: false,
+          sourceMode: "manual-export",
+          canStartNow: true
+        })
       ])
     );
+    expect(mobileAccountOptions.every((option) => option.dataBoundary.length > 0 && option.credentialBoundary.length > 0)).toBe(true);
     expect(mobileImportActions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "calendar", label: "Future calendar sync", customerVisible: true }),
+        expect.objectContaining({ kind: "calendar", label: "Review calendar options", customerVisible: true }),
         expect.objectContaining({ kind: "email", label: "Future email receipts", customerVisible: true }),
         expect.objectContaining({ kind: "invite", label: "Paste invite or ICS", sourceMode: "local-paste" })
       ])
     );
+    expect(mobileImportActions.map((action) => action.label)).not.toContain("Future calendar sync");
     expect(mobileAccountOptions.map((option) => option.label).join(" ")).not.toContain("Continue with");
     expect(mobileProofBoundary).toMatchObject({
       deterministicProofMode: "repo-local-contract",
@@ -275,6 +290,8 @@ describe("mobile customer experience contract", () => {
     );
     expect(mobileRenderSnapshot.footerSafetyMessages.join(" ")).toContain("No automatic order");
     expect(JSON.stringify(mobileRenderSnapshot)).not.toMatch(/repo-local-contract|native-emulator-render|signed-native-artifact|app-store-review|adapter|provider|vendor api|retail-printer/i);
+    expect(JSON.stringify(mobileRenderSnapshot)).not.toContain("Future calendar sync");
+    expect(JSON.stringify(mobileRenderSnapshot)).toContain("Review calendar options");
   });
 
   it("passes the mobile doctor with env configuration and fails if real orders are enabled", () => {
@@ -397,6 +414,10 @@ describe("mobile customer experience contract", () => {
           provider: "Google",
           label: "Google",
           detail: "provider adapter connected",
+          sourceMode: "manual-export",
+          canStartNow: true,
+          dataBoundary: "",
+          credentialBoundary: "",
           liveOAuthEnabled: true as never,
           customerVisible: false
         }

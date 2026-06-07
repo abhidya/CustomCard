@@ -11,6 +11,12 @@ root Vitest suite and inspected by the mobile doctor. `App.tsx` is the Expo root
 entrypoint and re-exports the native shell from `src/App.tsx`, which renders the
 `mobileRenderSnapshot` instead of importing raw contract arrays directly.
 
+Calendar import is intentionally explicit in the mobile shell: paste invite/ICS
+is the ready local path, Google Calendar is shown as OAuth-readiness gated, and
+Apple Calendar is shown as manual ICS export. The mobile app does not prepare a
+Google request URL, store calendar credentials, request Apple credentials, or
+claim native calendar sync.
+
 ## Current proof boundary
 
 The mobile proof is deterministic and repo-local. It proves that the native shell
