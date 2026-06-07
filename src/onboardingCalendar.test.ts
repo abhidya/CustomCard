@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { providerCatalog } from "./providerCatalog";
 import {
+  buildCalendarOnboardingActionPackets,
   buildCalendarOnboardingChoices,
   buildOnboardingPlan,
   calendarAdapterReadinessContracts,
@@ -48,6 +49,14 @@ describe("onboarding and calendar integration contracts", () => {
         "Manual invite and ICS paste remain the free fallback for every onboarding path."
       ])
     );
+
+    expect(onboardingStages.find((stage) => stage.id === "account-baseline")?.productionNotes.join(" ")).not.toContain(
+      "MVP"
+    );
+    expect(onboardingStages.find((stage) => stage.id === "handoff-readiness")).toMatchObject({
+      title: "Review print options",
+      requiredDecision: "Choose manual download, local printer, or future certified retail checkout."
+    });
   });
 
   it("keeps Google Calendar and iCloud contracts aligned to the provider catalog", () => {
@@ -135,5 +144,80 @@ describe("onboarding and calendar integration contracts", () => {
     });
     expect(choices.every((choice) => choice.credentialBoundary.length > 0 && choice.dataBoundary.length > 0)).toBe(true);
     expect(choices.filter((choice) => choice.liveOAuthEnabled).length).toBe(0);
+  });
+
+  it("builds explicit action packets for local, Google, and Apple calendar onboarding", () => {
+    const packets = buildCalendarOnboardingActionPackets();
+
+    expect(packets.map((packet) => packet.id)).toEqual([
+      "manual-invite-or-ics",
+      "google-calendar-events",
+      "icloud-ics-fallback"
+    ]);
+    expect(packets.every((packet) => packet.networkRequestPrepared === false)).toBe(true);
+    expect(packets.every((packet) => packet.credentialStorageEnabled === false)).toBe(true);
+    expect(packets.every((packet) => packet.providerRequestUrl === null)).toBe(true);
+
+    const manual = packets.find((packet) => packet.id === "manual-invite-or-ics");
+    expect(manual).toMatchObject({
+      canStartNow: true,
+      sourceMode: "local-paste",
+      requiredEnv: [],
+      requiredScopes: [],
+      officialDocs: [],
+      successSignal: "A metadata-only import preview is visible without provider credentials."
+    });
+    expect(manual?.safetyChecks).toEqual(
+      expect.arrayContaining([
+        "Treat pasted invite and ICS text as untrusted input.",
+        "Require opportunity approval before card creation."
+      ])
+    );
+
+    const google = packets.find((packet) => packet.id === "google-calendar-events");
+    expect(google).toMatchObject({
+      canStartNow: false,
+      sourceMode: "oauth-readiness",
+      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      requiredScopes: ["calendar.events.readonly"],
+      officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
+      officialDocs: ["https://developers.google.com/workspace/calendar/api/auth"],
+      fallbackChoiceId: "manual-invite-or-ics",
+      blockedReason: "No live OAuth consent flow is implemented in this repository state."
+    });
+    expect(google?.operatorSteps.map((step) => step.title)).toEqual([
+      "Register OAuth app",
+      "Prove revocation and token boundary"
+    ]);
+
+    const icloud = packets.find((packet) => packet.id === "icloud-ics-fallback");
+    expect(icloud).toMatchObject({
+      canStartNow: true,
+      sourceMode: "manual-export",
+      requiredEnv: [],
+      requiredScopes: [],
+      officialDocs: [
+        "https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac",
+        "https://support.apple.com/en-gb/108306"
+      ],
+      fallbackChoiceId: "manual-invite-or-ics",
+      blockedReason: "Live iCloud CalDAV/native sync is intentionally not implemented."
+    });
+    expect(icloud?.credentialBoundary).toContain("No Apple ID");
+    expect(icloud?.operatorSteps[0].evidenceRequired).toEqual(
+      expect.arrayContaining(["Credential collection is absent.", "Manual ICS parser tests pass."])
+    );
+  });
+
+  it("fails fast when a calendar readiness contract is missing instead of hiding a fallback", () => {
+    const googleOnly = calendarAdapterReadinessContracts.filter((adapter) => adapter.id === "google-calendar-events");
+    const icloudOnly = calendarAdapterReadinessContracts.filter((adapter) => adapter.id === "icloud-ics-fallback");
+
+    expect(() => buildCalendarOnboardingChoices(googleOnly)).toThrow(
+      "Missing calendar readiness contract for icloud-ics-fallback."
+    );
+    expect(() => buildCalendarOnboardingActionPackets(icloudOnly)).toThrow(
+      "Missing calendar readiness contract for google-calendar-events."
+    );
   });
 });

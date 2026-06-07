@@ -1,8 +1,9 @@
 # Onboarding And Calendar Integration Plan
 
-This document defines the production-shaped onboarding journey and popular
-calendar integration contracts for CustomCard. It does not claim live OAuth,
-Apple account access, background sync, or provider network calls.
+This document defines the production-shaped onboarding journey, popular
+calendar integration contracts, and action packets for CustomCard. It does not
+claim live OAuth, Apple account access, background sync, or provider network
+calls.
 
 ## User Stories
 
@@ -10,7 +11,7 @@ Apple account access, background sync, or provider network calls.
 | --- | --- | --- | --- | --- |
 | `story-google-calendar-proactive-card` | Busy family organizer | As a busy family organizer, I want CustomCard to find upcoming Google Calendar events so I can approve a thoughtful card before the week gets busy. | Google Calendar API | Google is credential-gated, imports metadata only, and creates no card project until the user approves a candidate. |
 | `story-icloud-export-user` | iCloud-first user | As an iCloud Calendar user, I want a manual export path so I can use CustomCard without giving the app my Apple account credentials. | iCloud ICS export | iCloud stays manual-export only; no Apple ID, app-specific password, fake OAuth, or live CalDAV connector is claimed. |
-| `story-last-minute-pickup` | Last-minute card buyer | As a last-minute card buyer, I want onboarding to show event urgency so I can prioritize a printable card and same-day manual handoff. | Calendar-agnostic | Date confidence is visible, manual print handoff remains available, and real retail ordering remains disabled. |
+| `story-last-minute-pickup` | Last-minute card buyer | As a last-minute card buyer, I want onboarding to show event urgency so I can prioritize a printable card and same-day print options. | Calendar-agnostic | Date confidence is visible, manual print options remain available, and real retail ordering remains disabled. |
 | `story-privacy-first-onboarding` | Privacy-cautious user | As a privacy-cautious user, I want to see scopes, retention, and revocation before importing events so I can choose a manual path if needed. | Calendar-agnostic | Each provider names scopes or explains that none exist; raw event content is rejected; memory requires separate approval. |
 | `story-recurring-memory` | Relationship-memory user | As a recurring card sender, I want approved relationship memories to improve later card interviews without hiding what the product remembers. | Calendar-agnostic | Memory records are proposed after card approval, remain editable/deletable, and are not created from provider data without consent. |
 
@@ -39,8 +40,8 @@ in `src/onboardingCalendar.test.ts`.
    language, and style details. High-care situations remain review-gated.
 7. **Approve relationship memory.** Proposed memories require visible consent,
    provenance, editing, suppression, and deletion controls.
-8. **Prepare print handoff.** The user downloads or manually hands off assets.
-   Real ordering stays blocked until quote, approval, payment, vendor
+8. **Review print options.** The user downloads assets or uses a local print
+   package. Real ordering stays blocked until quote, approval, payment, retail
    certification, and physical print QA gates pass.
 
 ## Calendar Adapter Readiness
@@ -49,6 +50,28 @@ in `src/onboardingCalendar.test.ts`.
 | --- | --- | --- | --- |
 | `google-calendar-events` | Credential-gated | Requires `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`, metadata schema validation, revocation handling, and no raw content storage. | No live OAuth consent flow or provider callback exists in this repo state. |
 | `icloud-ics-fallback` | Contract-only | Uses customer-provided ICS export/paste through the existing untrusted-input import path. Apple supports exporting calendar events to `.ics` on Mac and downloading an iCloud.com calendar copy after temporary public sharing; CustomCard stores no Apple account credentials. | No fake iCloud OAuth, app-specific password storage, live CalDAV, or native Apple Calendar sync is implemented. |
+
+Official source anchors:
+
+- Google Calendar API scope selection:
+  `https://developers.google.com/workspace/calendar/api/auth`
+- Apple Calendar export on Mac:
+  `https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac`
+- Apple iCloud copy/download guidance:
+  `https://support.apple.com/en-gb/108306`
+
+## Calendar Action Packets
+
+`buildCalendarOnboardingActionPackets()` is the typed source of truth for the
+customer-visible action, the operator checklist, and the blocked provider
+boundary. It fails fast when the Google or iCloud readiness contract is missing
+instead of silently hiding the missing adapter behind an empty fallback.
+
+| Packet | Customer action | Operator evidence | Blocked surface |
+| --- | --- | --- | --- |
+| `manual-invite-or-ics` | Paste invite text, selected event fields, or ICS text into the local import path; review detected metadata before creating a card. | Manual parser tests pass; raw content storage checks pass; opportunity approval remains explicit. | None; this is the ready local path. |
+| `google-calendar-events` | Review the Google metadata-only scope and use manual paste while OAuth is not enabled. | OAuth app, redirect URI, consent screen, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, revocation handling, token storage boundary, and metadata schema fixture tests. | No provider request URL, callback, token storage, or network request is prepared in this repo state. |
+| `icloud-ics-fallback` | Export/download an ICS copy, then paste selected event data into the same local import preview. | Prove Apple credentials are not collected; manual ICS parser tests pass. | No Apple ID, app-specific password, CalDAV session, native sync, or provider credential storage. |
 
 ## Customer UI Contract
 
