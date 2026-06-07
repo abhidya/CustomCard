@@ -133,12 +133,20 @@ export interface RetailPrinterProviderOperationEntrypoint {
   portalHost: string;
   productSku: string;
   productIdentityTokens: string[];
+  publicEvidence: RetailPrinterProviderOperationEvidence;
   evidenceMode: RetailPrinterEntrypointEvidenceMode;
   couponMode: RetailPrinterEntrypointCouponMode;
   requiresCustomerApproval: true;
   noNetwork: true;
   requestPreparationBlocked: true;
   orderSubmissionBlocked: true;
+}
+
+export interface RetailPrinterProviderOperationEvidence {
+  observedAtIso: string;
+  sourceTitle: string;
+  pageSignals: string[];
+  requiredOperatorProof: string[];
 }
 
 export interface RetailPrinterProductLinkContract {
@@ -150,6 +158,7 @@ export interface RetailPrinterProductLinkContract {
   productUrl: string;
   pricingObservationId: string;
   requiredUrlTokens: string[];
+  operationEvidence: Record<RetailPrinterOperationKind, RetailPrinterProviderOperationEvidence>;
 }
 
 export interface RetailPrinterCertificationPacket {
@@ -161,6 +170,7 @@ export interface RetailPrinterCertificationPacket {
   productUrl: string;
   productSku: string;
   pricingObservationId: string;
+  publicEvidence: RetailPrinterProviderOperationEvidence;
   status: "certification-evidence-required";
   requiredGateIds: string[];
   requiredEvidenceArtifacts: string[];
@@ -186,6 +196,7 @@ const vendorEvidence = {
 
 const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
 const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
+const retailPrinterLinkObservedAtIso = "2026-06-07T12:00:00.000Z";
 
 export const retailPrinterProductLinks: Record<RetailPrinterVendorId, RetailPrinterProductLinkContract> = {
   walmart: {
@@ -202,7 +213,29 @@ export const retailPrinterProductLinks: Record<RetailPrinterVendorId, RetailPrin
       "theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card",
       "design_code=standard.custom",
       "selected_delivery_options=2"
-    ]
+    ],
+    operationEvidence: {
+      "fetch-price": operationEvidence(
+        "Photo Upload 5x7 Folded Card, Blank Envelope | Walmart Photo",
+        [
+          "Photo Upload 5x7 Folded Card",
+          "$0.56",
+          "361-5x7-folded-card-blank-envelope",
+          "selected_delivery_options=2"
+        ],
+        ["current unit price", "selected pickup store or ZIP", "tax and coupon status"]
+      ),
+      "upload-image": operationEvidence(
+        "Photo Upload 5x7 Folded Card, Blank Envelope | Walmart Photo",
+        ["Upload Photos", "design_code=standard.custom", "wmcards-WMT.themepack%3Awmt_custom_5x7.card"],
+        ["approved print-ready files accepted", "provider preview screenshot", "fold and crop state"]
+      ),
+      "place-order": operationEvidence(
+        "Photo Upload 5x7 Folded Card, Blank Envelope | Walmart Photo",
+        ["Photo Cart", "Sign In", "selected_delivery_options=2"],
+        ["provider cart id", "final pickup commitment", "customer final approval before order"]
+      )
+    }
   },
   fedex: {
     vendorId: "fedex",
@@ -212,7 +245,24 @@ export const retailPrinterProductLinks: Record<RetailPrinterVendorId, RetailPrin
     productSku: "fedex-office-quick-greeting-cards",
     productUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html",
     pricingObservationId: "fedex-quick-5x7-single-sided-card",
-    requiredUrlTokens: ["/default/greeting-cards-quick.html"]
+    requiredUrlTokens: ["/default/greeting-cards-quick.html"],
+    operationEvidence: {
+      "fetch-price": operationEvidence(
+        "Quick Greeting & Holiday Cards | Quick Print & Pickup | FedEx Office",
+        ["Quick Greeting & Holiday Cards", "5\" x 7\" flat card", "Ready same day or within 24 hours", "in-store pickup"],
+        ["current package price", "pickup or shipping path", "production window"]
+      ),
+      "upload-image": operationEvidence(
+        "Quick Greeting & Holiday Cards | Quick Print & Pickup | FedEx Office",
+        ["Upload your design", ".PDF", ".JPG", "Upload a File", "one file per side"],
+        ["front/back file mapping", "file acceptance result", "provider preview screenshot"]
+      ),
+      "place-order": operationEvidence(
+        "Quick Greeting & Holiday Cards | Quick Print & Pickup | FedEx Office",
+        ["paid for", "Production Time + Shipping", "1-3 business days", "same day"],
+        ["provider cart id", "payment authorization reference", "pickup or shipping commitment"]
+      )
+    }
   },
   cvs: {
     vendorId: "cvs",
@@ -229,7 +279,24 @@ export const retailPrinterProductLinks: Record<RetailPrinterVendorId, RetailPrin
       "designId=1f0682a2d34546bf86cbb799c3811d4e",
       "sku=CommerceProduct_26126",
       "productCategory=Card%20%26%20Stationery"
-    ]
+    ],
+    operationEvidence: {
+      "fetch-price": operationEvidence(
+        "Folded Greeting Card, 5x7 | Cards | Cards & Stationery | CVS Photo",
+        ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "productCategory=Card%20%26%20Stationery"],
+        ["current subtotal", "pickup availability", "coupon and tax status"]
+      ),
+      "upload-image": operationEvidence(
+        "Folded Greeting Card, 5x7 | Cards | Cards & Stationery | CVS Photo",
+        ["Folded Greeting Card, 5x7", "CommerceProduct_26126", "dgview", "Cards & Stationery"],
+        ["provider project reference", "provider preview screenshot", "crop and fold state"]
+      ),
+      "place-order": operationEvidence(
+        "Folded Greeting Card, 5x7 | Cards | Cards & Stationery | CVS Photo",
+        ["CommerceProduct_26126", "JUNESW", "8.98"],
+        ["provider cart id", "same-cart coupon recheck", "customer final approval before order"]
+      )
+    }
   },
   walgreens: {
     vendorId: "walgreens",
@@ -246,9 +313,39 @@ export const retailPrinterProductLinks: Record<RetailPrinterVendorId, RetailPrin
       "designId=0c158c44e2f34d9fabc9e1b3ada2eaa6",
       "sku=CommerceProduct_33272",
       "productCategory=Card%20%26%20Stationery"
-    ]
+    ],
+    operationEvidence: {
+      "fetch-price": operationEvidence(
+        "5x7 Folded Cards, Standard Cardstock 85lb | Folded Cards | Cards & Stationary | Walgreens Photo",
+        ["5x7 Folded Cards", "3.49", "CommerceProduct_33272", "productCategory=Card%20%26%20Stationery"],
+        ["current subtotal", "logged-in pickup availability", "coupon and tax status"]
+      ),
+      "upload-image": operationEvidence(
+        "5x7 Folded Cards, Standard Cardstock 85lb | Folded Cards | Cards & Stationary | Walgreens Photo",
+        ["Upload Your Design", "CommerceProduct_33272", "dgview", "Cards & Stationery"],
+        ["provider project reference", "provider preview screenshot", "crop and fold state"]
+      ),
+      "place-order": operationEvidence(
+        "5x7 Folded Cards, Standard Cardstock 85lb | Folded Cards | Cards & Stationary | Walgreens Photo",
+        ["CommerceProduct_33272", "CRISPCARD", "3.49"],
+        ["provider cart id", "same-cart coupon recheck", "customer final approval before order"]
+      )
+    }
   }
 };
+
+function operationEvidence(
+  sourceTitle: string,
+  pageSignals: string[],
+  requiredOperatorProof: string[]
+): RetailPrinterProviderOperationEvidence {
+  return {
+    observedAtIso: retailPrinterLinkObservedAtIso,
+    sourceTitle,
+    pageSignals,
+    requiredOperatorProof
+  };
+}
 
 export const retailPrinterVendorOperationPolicies: Record<RetailPrinterVendorId, RetailPrinterVendorOperationPolicy> = {
   walmart: buildRetailPrinterVendorOperationPolicy(retailPrinterProductLinks.walmart, {
@@ -444,6 +541,7 @@ export function validateRetailPrinterProviderEntrypoints(adapter: RetailPrinterA
     if (!entrypoint.url.includes(entrypoint.portalHost) || entrypoint.portalHost !== adapter.operationPolicy.portalHost) {
       issues.push(`${adapter.vendorId} ${kind} entrypoint portal host must match the provider product URL.`);
     }
+    issues.push(...validateRetailPrinterProviderOperationEvidence(adapter.vendorId, kind, entrypoint.publicEvidence, productLink.operationEvidence[kind]));
     for (const token of productLink.requiredUrlTokens) {
       if (!entrypoint.productIdentityTokens.includes(token)) {
         issues.push(`${adapter.vendorId} ${kind} entrypoint is missing product identity token: ${token}.`);
@@ -469,6 +567,45 @@ export function validateRetailPrinterProviderEntrypoints(adapter: RetailPrinterA
     }
   }
 
+  return issues;
+}
+
+export function validateRetailPrinterProviderOperationEvidence(
+  vendorId: RetailPrinterVendorId,
+  operation: RetailPrinterOperationKind,
+  evidence: RetailPrinterProviderOperationEvidence | undefined,
+  expectedEvidence?: RetailPrinterProviderOperationEvidence
+): string[] {
+  const issues: string[] = [];
+  if (!evidence) return [`${vendorId} ${operation} entrypoint must include public page evidence.`];
+  if (expectedEvidence && evidence !== expectedEvidence) {
+    issues.push(`${vendorId} ${operation} entrypoint must use the registered public page evidence object.`);
+  }
+  if (typeof evidence.observedAtIso !== "string" || Number.isNaN(new Date(evidence.observedAtIso).getTime())) {
+    issues.push(`${vendorId} ${operation} public evidence must include a valid observedAtIso timestamp.`);
+  }
+  if (typeof evidence.sourceTitle !== "string" || !evidence.sourceTitle.trim()) {
+    issues.push(`${vendorId} ${operation} public evidence must include a source title.`);
+  }
+  if (!Array.isArray(evidence.pageSignals) || evidence.pageSignals.length < 3) {
+    issues.push(`${vendorId} ${operation} public evidence must include at least three page signals.`);
+  }
+  if (!Array.isArray(evidence.requiredOperatorProof) || evidence.requiredOperatorProof.length < 3) {
+    issues.push(`${vendorId} ${operation} public evidence must include at least three required operator proof fields.`);
+  }
+  for (const signal of evidence.pageSignals ?? []) {
+    if (typeof signal !== "string" || !signal.trim()) {
+      issues.push(`${vendorId} ${operation} public evidence page signals must be non-empty strings.`);
+    }
+    if (isPlaceholderRetailProductUrl(signal)) {
+      issues.push(`${vendorId} ${operation} public evidence must not include placeholder-like page signals.`);
+    }
+  }
+  for (const proof of evidence.requiredOperatorProof ?? []) {
+    if (typeof proof !== "string" || !proof.trim()) {
+      issues.push(`${vendorId} ${operation} public evidence proof fields must be non-empty strings.`);
+    }
+  }
   return issues;
 }
 
@@ -534,6 +671,7 @@ export function buildRetailPrinterCertificationPacket(
     productUrl: adapter.productUrl,
     productSku: adapter.productSku,
     pricingObservationId: adapter.pricingObservationId,
+    publicEvidence: operation.providerEntrypoint.publicEvidence,
     status: "certification-evidence-required",
     requiredGateIds: operation.certificationGateIds,
     requiredEvidenceArtifacts: operation.requiredEvidence,
@@ -647,6 +785,7 @@ function buildProviderEntrypoints(
       portalHost,
       productSku: productLink.productSku,
       productIdentityTokens: productLink.requiredUrlTokens,
+      publicEvidence: productLink.operationEvidence["fetch-price"],
       evidenceMode: "public-product-price-review",
       couponMode: "apply-during-price-collection",
       requiresCustomerApproval: true,
@@ -661,6 +800,7 @@ function buildProviderEntrypoints(
       portalHost,
       productSku: productLink.productSku,
       productIdentityTokens: productLink.requiredUrlTokens,
+      publicEvidence: productLink.operationEvidence["upload-image"],
       evidenceMode: "provider-project-preview-review",
       couponMode: "preserve-price-collection-coupon-state",
       requiresCustomerApproval: true,
@@ -675,6 +815,7 @@ function buildProviderEntrypoints(
       portalHost,
       productSku: productLink.productSku,
       productIdentityTokens: productLink.requiredUrlTokens,
+      publicEvidence: productLink.operationEvidence["place-order"],
       evidenceMode: "provider-cart-final-review",
       couponMode: "final-cart-coupon-recheck",
       requiresCustomerApproval: true,

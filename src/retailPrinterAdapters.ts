@@ -24,6 +24,7 @@ import {
   type RetailPrinterSourceLinkPurpose,
   type RetailPrinterVendorId
 } from "./retailPrinterContracts";
+import { buildPrinterCouponCollectionPlan, type PrinterCouponCollectionPlan } from "./printerPricing";
 
 export {
   getRetailPrinterProductLink,
@@ -45,6 +46,7 @@ export {
   type RetailPrinterOperationRequestBlueprint,
   type RetailPrinterOperationRequestField,
   type RetailPrinterOperationStatus,
+  type RetailPrinterProviderOperationEvidence,
   type RetailPrinterProductLinkContract,
   type RetailPrinterProviderAccountMode,
   type RetailPrinterProviderOperationEntrypoint,
@@ -122,6 +124,10 @@ export interface RetailPrinterOperationPacket {
   productUrl: string;
   pricingObservationId: string;
   providerEntrypoint: RetailPrinterProviderOperationEntrypoint;
+  publicEvidence: RetailPrinterProviderOperationEntrypoint["publicEvidence"];
+  couponCollectionPlan: PrinterCouponCollectionPlan;
+  bestPriceRequiresProviderPortalEvidence: PrinterCouponCollectionPlan["bestPriceRequiresProviderPortalEvidence"];
+  canAffectBestPriceBeforePortalEvidence: PrinterCouponCollectionPlan["canAffectBestPriceBeforePortalEvidence"];
   sourceLink: RetailPrinterSourceLink;
   uploadAssetExpectation: string;
   noNetwork: true;
@@ -342,6 +348,9 @@ function buildOperationPacket(
     .map((field) => field.name);
   const receivedInputFields = Object.keys(input).sort();
   const received = new Set(receivedInputFields);
+  const couponCollectionPlan = buildPrinterCouponCollectionPlan(adapter.vendorId, {
+    quantity: operation.kind === "fetch-price" ? (input as RetailPrinterPriceAttemptInput).quantity : 1
+  });
 
   return {
     packetId: `${adapter.vendorId}-${operation.kind}-blocked-operation-packet`,
@@ -353,6 +362,10 @@ function buildOperationPacket(
     productUrl: adapter.productUrl,
     pricingObservationId: adapter.pricingObservationId,
     providerEntrypoint: operation.providerEntrypoint,
+    publicEvidence: operation.providerEntrypoint.publicEvidence,
+    couponCollectionPlan,
+    bestPriceRequiresProviderPortalEvidence: couponCollectionPlan.bestPriceRequiresProviderPortalEvidence,
+    canAffectBestPriceBeforePortalEvidence: couponCollectionPlan.canAffectBestPriceBeforePortalEvidence,
     sourceLink,
     uploadAssetExpectation: adapter.uploadAssetExpectation,
     noNetwork: true,
@@ -367,7 +380,7 @@ function buildOperationPacket(
     policyViolations: buildPolicyViolations(adapter, operation.kind, input, operationPolicy),
     operationPolicy,
     evidenceChecklist: operation.requiredEvidence,
-    operatorSteps: buildOperatorSteps(adapter, operation.kind, sourceLink, operationPolicy),
+    operatorSteps: buildOperatorSteps(adapter, operation.kind, sourceLink, operationPolicy, couponCollectionPlan),
     safetyChecks: buildOperationSafetyChecks(operation),
     forbiddenFields: operation.requestBlueprint.forbiddenFields,
     certificationPacket: buildRetailPrinterCertificationPacket(adapter, operation, sourceLink)
@@ -387,15 +400,18 @@ function buildOperatorSteps(
   adapter: RetailPrinterAdapterContract,
   kind: RetailPrinterOperationKind,
   sourceLink: RetailPrinterSourceLink,
-  operationPolicy: RetailPrinterOperationPolicy
+  operationPolicy: RetailPrinterOperationPolicy,
+  couponCollectionPlan: PrinterCouponCollectionPlan
 ): string[] {
   if (kind === "fetch-price") {
     const pricePolicy = operationPolicy.kind === "fetch-price" ? operationPolicy : adapter.operationPolicy.price;
     return [
       `Open ${sourceLink.label}: ${sourceLink.url}`,
+      `Capture public page evidence from "${sourceLink.label}": ${sourceLinkEvidence(adapter, kind).join(", ")}.`,
       `Confirm the product is ${adapter.productName} with SKU/design code ${adapter.productSku}.`,
       `Use adapter policy: minimum quantity ${pricePolicy.minimumQuantity}, quantity increment ${pricePolicy.quantityIncrement}, fulfillment modes ${pricePolicy.supportedFulfillmentModes.join(" or ")}.`,
       "Enter the customer-approved quantity, fulfillment mode, ZIP or store context, and candidate coupon in the provider portal.",
+      ...couponCollectionPlan.operatorSteps,
       "Record subtotal, tax status, coupon application status, and pickup or shipping window as evidence before showing a final price."
     ];
   }
@@ -404,6 +420,7 @@ function buildOperatorSteps(
     const uploadPolicy = operationPolicy.kind === "upload-image" ? operationPolicy : adapter.operationPolicy.upload;
     return [
       `Open ${sourceLink.label}: ${sourceLink.url}`,
+      `Capture upload page evidence from "${sourceLink.label}": ${sourceLinkEvidence(adapter, kind).join(", ")}.`,
       `Use only the approved render packet for ${adapter.productName}: ${adapter.uploadAssetExpectation}`,
       `Use adapter policy: accepted artifacts ${uploadPolicy.acceptedArtifactKinds.join(", ")}; account mode ${uploadPolicy.providerAccountMode}.`,
       "Upload the print-ready files in the provider portal without advancing to payment.",
@@ -414,11 +431,23 @@ function buildOperatorSteps(
   const orderPolicy = operationPolicy.kind === "place-order" ? operationPolicy : adapter.operationPolicy.order;
   return [
     `Open ${sourceLink.label}: ${sourceLink.url}`,
+    `Capture final cart page evidence from "${sourceLink.label}": ${sourceLinkEvidence(adapter, kind).join(", ")}.`,
     "Verify the provider cart still matches the approved card proof, quote evidence, pickup or shipping path, and coupon state.",
+    `Recheck provider-portal coupon evidence before payment; tracked packet ids: ${formatCouponPacketIds(couponCollectionPlan)}.`,
     `Use adapter policy: required approvals ${orderPolicy.requiredApprovalFields.join(", ")}; recovery evidence ${orderPolicy.recoveryEvidenceFields.join(", ")}.`,
     "Use only a tokenized payment authorization reference and confirm the cancellation or wrong-store recovery plan.",
     "Record the order confirmation, pickup or shipping commitment, and audit event IDs after customer final approval."
   ];
+}
+
+function formatCouponPacketIds(couponCollectionPlan: PrinterCouponCollectionPlan): string {
+  return couponCollectionPlan.portalApplicationPacketIds.length > 0
+    ? couponCollectionPlan.portalApplicationPacketIds.join(", ")
+    : "none registered for this vendor";
+}
+
+function sourceLinkEvidence(adapter: RetailPrinterAdapterContract, kind: RetailPrinterOperationKind): string[] {
+  return adapter.providerEntrypoints.find((entrypoint) => entrypoint.operation === kind)?.publicEvidence.pageSignals ?? [];
 }
 
 function buildPolicyViolations(

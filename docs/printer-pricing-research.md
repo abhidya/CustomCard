@@ -11,9 +11,9 @@ Observed on: June 7, 2026.
 | Vendor | Observed product | Public price captured | Source |
 | --- | --- | --- | --- |
 | Walgreens Photo | 5x7 folded cards, standard cardstock 85lb | $3.49 each from JSON-LD offer for `CommerceProduct_33272`; checkout confirmation required | [Walgreens Photo 5x7 folded upload card](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) |
-| CVS Photo | 5x7 double-sided cardstock card | $1.99 each with a 20-card minimum in the app contract | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
-| CVS Photo | 5x7 photo card | $1.09 each with a 20-card minimum in the app contract | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
-| CVS Photo | Same Day 5x7 Premium card | $2.49 each with a 20-card minimum in the app contract | [CVS Photo cards](https://www.cvs.com/Photo/Cards) |
+| CVS Photo | 5x7 double-sided cardstock card | $1.99 each with a 20-card minimum in the app contract; category-level pricing observation, not the retail adapter source-link contract | [CVS Photo cards category](https://www.cvs.com/Photo/Cards) |
+| CVS Photo | 5x7 photo card | $1.09 each with a 20-card minimum in the app contract; category-level pricing observation, not the retail adapter source-link contract | [CVS Photo cards category](https://www.cvs.com/Photo/Cards) |
+| CVS Photo | Same Day 5x7 Premium card | $2.49 each with a 20-card minimum in the app contract; category-level pricing observation, not the retail adapter source-link contract | [CVS Photo cards category](https://www.cvs.com/Photo/Cards) |
 | CVS Photo | Folded greeting card, 5x7 | $8.98 each from JSON-LD offer for `CommerceProduct_26126`; quantity, pickup, tax, and availability require checkout confirmation | [CVS Photo 5x7 folded greeting card design detail](https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery) |
 | FedEx Office | Quick 5x7 single-sided greeting card | $13.99 for 10, represented as a package-start observation; quick page now documents upload-file formats and same-day/24-hour pickup, while live checkout confirms current price | [FedEx Office quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) |
 | FedEx Office | Quick 5x7 double-sided greeting card | $17.99 for 10, represented as a package-start observation; quick page now documents upload-file formats and same-day/24-hour pickup, while live checkout confirms current price | [FedEx Office quick greeting and holiday cards](https://www.office.fedex.com/default/greeting-cards-quick.html) |
@@ -48,16 +48,18 @@ fields, response evidence, forbidden data fields, and success criteria. The
 `createRetailPrinterOperationAdapter` Interface exposes callable no-network
 methods for price, upload, and order attempts. Each method returns an
 `operationPacket` with the persisted product link, pricing observation,
-provider operation entrypoint, evidence checklist, operator steps, safety
-checks, source-backed fields, and missing input fields. The packet now also
-includes an `operationPolicy` and `policyViolations` list so provider-specific
-rules stay inside the Adapter Module instead of leaking into customer or admin
-callers. Those policies encode minimum quantity, quantity increment, supported
-pickup/shipping modes, same-cart checkout discount proof, accepted print
-artifacts, provider account mode, required approval fields, and recovery
-evidence. The provider entrypoint encodes the exact operation evidence mode and
-coupon application mode for price collection, upload preview, and final cart
-review. The packet is an operator evidence checklist, not a provider API
+provider operation entrypoint, public page evidence, evidence checklist,
+operator steps, safety checks, source-backed fields, and missing input fields.
+The packet now also includes an `operationPolicy` and `policyViolations` list
+so provider-specific rules stay inside the Adapter Module instead of leaking
+into customer or admin callers. Those policies encode minimum quantity,
+quantity increment, supported pickup/shipping modes, same-cart checkout
+discount proof, accepted print artifacts, provider account mode, required
+approval fields, and recovery evidence. The provider entrypoint encodes the
+exact operation evidence mode, coupon application mode, source title, page
+signals, and required operator proof for price collection, upload preview, and
+final cart review. The packet is an operator evidence checklist, not a provider
+API
 payload: every result keeps `requestPrepared: false`, `networkAttempted:
 false`, and the operation status `blocked` until certification evidence exists.
 Raw relationship memories, raw payment card data, and unapproved recipient PII
@@ -88,6 +90,13 @@ certification-blocked.
   freshness window, and fields that must stay blocked.
 - `buildPrinterPricingRefreshReport` reports source count, fresh/stale sources,
   future-dated observations, and whether the comparison is safe to show.
+- `buildPrinterCouponCollectionPlan` is the pricing Module Interface used by
+  retail Adapter packets. It bundles credentialed provider-feed targets,
+  official retailer coupon targets, rendered print-entrypoint targets, active
+  candidate codes, provider-portal application packets, and the rule that no
+  discount can affect best available price before same-cart portal evidence is
+  attached. Customer and admin clients consume the packet; they do not choose
+  coupon sources or compute portal proof themselves.
 - `npm run printer:pricing:doctor` verifies the observed official-source
   catalog, no-network collection rules, manual-confirmation posture, UI/API
   exposure, and CI wiring.
@@ -172,11 +181,12 @@ visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
 19:24 UTC `operator-chromium-rendered-read` check against the exact print
-links. CVS rendered the `JUNESW` code visibly on the 5x7 folded card page, so
-the browser-evidence Module reports `operator-browser-proof-attached` when that
-evidence is attached or generated. Walgreens rendered the 5x7 product and
-$3.49 price visibly, while `CRISPCARD` was present in page HTML but not visible
-text; the Module reports
+links. A repeat operator collection at 19:39 UTC with
+`CUSTOMCARD_COUPON_RENDER_PRINT_LINKS=1` produced the same status: CVS rendered
+the `JUNESW` code visibly on the 5x7 folded card page, so the browser-evidence
+Module reports `operator-browser-proof-attached` when that evidence is attached
+or generated. Walgreens rendered the 5x7 product and $3.49 price visibly, while
+`CRISPCARD` was present in page HTML but not visible text; the Module reports
 `operator-browser-html-signal-attached-visible-proof-still-required`. The raw
 CVS public page can drift between offers and may contain unrelated promo-code
 signals such as `SAMEDAY65`, a navigation/category heading such as
@@ -193,8 +203,20 @@ post-coupon subtotal, same-cart terms, `sameCartTermsProven: true`, and
 enough to discount or rank; `hasMatchingProviderPortalCouponEvidence` must match
 the evidence to the public price observation and subtotal math.
 
-`buildPrinterCouponPortalApplicationPackets()` now emits the operator packet
-that should be used while collecting pricing. The current coupon set produces 2
+`buildPrinterCouponCollectionPlan()` now wraps the provider-feed targets,
+retailer coupon targets, exact print-entrypoint targets, candidate source-listed
+codes, and `buildPrinterCouponPortalApplicationPackets()` output into one
+operator plan per vendor. The current Walgreens plan points to FMTC, Rakuten,
+the Walgreens official deals page, the Walgreens exact print link, `CRISPCARD`,
+and the `walgreens-crispcard-cards-2026-06-13-portal-application-packet`. The
+current CVS plan points to FMTC, Rakuten, the CVS official coupons page, the
+CVS exact print link, `JUNESW`, and the
+`cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet`. Vendors with
+no registered coupon targets return an empty no-network plan that explicitly
+blocks invented third-party coupon candidates.
+
+`buildPrinterCouponPortalApplicationPackets()` emits the operator packet that
+should be used while collecting pricing. The current coupon set produces 2
 packets and 5 same-cart application targets: one Walgreens target for the
 single-card folded-card observation and four CVS targets for the current CVS
 5x7 card observations. Each packet carries portal URLs, source observation IDs,
@@ -202,8 +224,10 @@ expected pre-coupon subtotal, expected discount, expected post-coupon subtotal,
 cart terms, required evidence, operator steps, and no-order blocked fields. The
 operator can use those packets to apply coupons in the provider portal during
 pricing collection, but the packet still reports `canAffectBestPrice: false`
-until matching `PrinterCouponPortalApplicationEvidence` is attached. The
-operator collector also emits `activeAtCollection`,
+until matching `PrinterCouponPortalApplicationEvidence` is attached. The retail
+`fetch-price` Adapter packet includes this collection plan so clients can show
+the correct operator workflow without owning coupon-source logic. The operator
+collector also emits `activeAtCollection`,
 `bestPriceEligibleAtCollection`, and `bestPriceBlocker` for each scraped source
 offer so source discovery and best-price eligibility cannot be confused.
 

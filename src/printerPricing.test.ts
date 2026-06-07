@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPrinterCouponApplication,
+  buildPrinterCouponCollectionPlan,
   buildPrinterCouponPortalApplicationPackets,
   buildPrinterPricingComparison,
   buildPrinterPricingRefreshReport,
@@ -269,6 +270,61 @@ describe("printer pricing research", () => {
       expectedSubtotalAfterCouponCents: 449,
       cartTerms: expect.objectContaining({ accountState: "guest-or-public", fulfillmentMode: "pickup" })
     });
+  });
+
+  it("builds provider-first coupon collection plans for provider portal pricing", () => {
+    const walgreens = buildPrinterCouponCollectionPlan("walgreens", { quantity: 1, now: reviewedAt });
+    const cvs = buildPrinterCouponCollectionPlan("cvs", { quantity: 1, now: reviewedAt });
+    const walmart = buildPrinterCouponCollectionPlan("walmart", { quantity: 1, now: reviewedAt });
+
+    expect(walgreens).toMatchObject({
+      vendorId: "walgreens",
+      quantity: 1,
+      providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+      retailerCouponTargetIds: ["walgreens-photo-official-deals"],
+      printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
+      credentialEnvKeys: ["FMTC_API_TOKEN", "RAKUTEN_ADVERTISING_API_TOKEN"],
+      candidateOfferCodes: ["CRISPCARD"],
+      portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"],
+      bestPriceRequiresProviderPortalEvidence: true,
+      canAffectBestPriceBeforePortalEvidence: false,
+      noNetworkRuntime: true
+    });
+    expect(walgreens.operatorSteps.join(" ")).toContain("credentialed coupon provider feed targets first");
+    expect(walgreens.operatorSteps.join(" ")).toContain("same provider portal cart");
+    expect(walgreens.operatorSteps.join(" ")).toContain("best available price");
+    expect(walgreens.portalApplicationPackets[0]).toMatchObject({
+      code: "CRISPCARD",
+      canAffectBestPrice: false,
+      applicationTargets: [expect.objectContaining({ sourcePriceObservationId: "walgreens-5x7-folded-card" })]
+    });
+
+    expect(cvs).toMatchObject({
+      providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+      retailerCouponTargetIds: ["cvs-photo-official-coupons"],
+      printEntrypointTargetIds: ["cvs-photo-card-design-entrypoint"],
+      candidateOfferCodes: ["JUNESW"],
+      portalApplicationPacketIds: ["cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet"]
+    });
+    expect(cvs.portalApplicationPackets[0].applicationTargets.map((target) => target.sourcePriceObservationId)).toEqual([
+      "cvs-5x7-double-sided-cardstock",
+      "cvs-5x7-photo-card",
+      "cvs-5x7-premium-card",
+      "cvs-5x7-folded-card"
+    ]);
+
+    expect(walmart).toMatchObject({
+      collectionTargetIds: [],
+      providerFeedTargetIds: [],
+      retailerCouponTargetIds: [],
+      printEntrypointTargetIds: [],
+      candidateOfferCodes: [],
+      portalApplicationPacketIds: [],
+      bestPriceRequiresProviderPortalEvidence: true,
+      canAffectBestPriceBeforePortalEvidence: false,
+      noNetworkRuntime: true
+    });
+    expect(walmart.operatorSteps.join(" ")).toContain("do not invent third-party coupon candidates");
   });
 
   it("rejects unsafe or incomplete coupon portal application packets", () => {

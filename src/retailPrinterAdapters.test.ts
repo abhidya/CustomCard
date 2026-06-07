@@ -77,6 +77,18 @@ describe("retail printer adapters", () => {
         "preserve-price-collection-coupon-state",
         "final-cart-coupon-recheck"
       ]);
+      for (const entrypoint of adapter.providerEntrypoints) {
+        const expectedEvidence = retailPrinterProductLinks[adapter.vendorId].operationEvidence[entrypoint.operation];
+        expect(entrypoint.publicEvidence).toBe(expectedEvidence);
+        expect(entrypoint.publicEvidence).toMatchObject({
+          observedAtIso: "2026-06-07T12:00:00.000Z",
+          sourceTitle: expect.any(String),
+          pageSignals: expect.arrayContaining(expectedEvidence.pageSignals),
+          requiredOperatorProof: expect.arrayContaining(expectedEvidence.requiredOperatorProof)
+        });
+        expect(entrypoint.publicEvidence.pageSignals.length).toBeGreaterThanOrEqual(3);
+        expect(entrypoint.publicEvidence.requiredOperatorProof.length).toBeGreaterThanOrEqual(3);
+      }
       expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.url === expectedRetailSources[adapter.vendorId])).toBe(true);
       expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.productSku === adapter.productSku)).toBe(true);
       expect(adapter.providerEntrypoints.every((entrypoint) => entrypoint.noNetwork)).toBe(true);
@@ -166,6 +178,22 @@ describe("retail printer adapters", () => {
         "walmart adapter product URL must not be placeholder, demo, localhost, or example content."
       ])
     );
+
+    const missingEvidenceEntrypoint = {
+      ...walmart.providerEntrypoints.find((entrypoint) => entrypoint.operation === "fetch-price")!,
+      publicEvidence: undefined as never
+    };
+    const missingEvidenceWalmart = {
+      ...walmart,
+      providerEntrypoints: [
+        missingEvidenceEntrypoint,
+        ...walmart.providerEntrypoints.filter((entrypoint) => entrypoint.operation !== "fetch-price")
+      ]
+    };
+
+    expect(validateRetailPrinterAdapters([missingEvidenceWalmart])).toEqual(
+      expect.arrayContaining(["walmart fetch-price entrypoint must include public page evidence."])
+    );
   });
 
   it("builds a selected no-network operation plan for runtime display", () => {
@@ -238,6 +266,7 @@ describe("retail printer adapters", () => {
     });
 
     for (const result of [price, upload, order]) {
+      const expectedEvidence = retailPrinterProductLinks.fedex.operationEvidence[result.operation];
       expect(result).toMatchObject({
         vendorId: "fedex",
         providerAdapterId: "fedex-live-print",
@@ -254,6 +283,20 @@ describe("retail printer adapters", () => {
         operation: result.operation,
         productUrl: expectedRetailSources.fedex,
         pricingObservationId: "fedex-quick-5x7-single-sided-card",
+        publicEvidence: expect.objectContaining({
+          sourceTitle: "Quick Greeting & Holiday Cards | Quick Print & Pickup | FedEx Office",
+          pageSignals: expect.arrayContaining(expectedEvidence.pageSignals)
+        }),
+        couponCollectionPlan: expect.objectContaining({
+          vendorId: "fedex",
+          candidateOfferCodes: [],
+          portalApplicationPacketIds: [],
+          bestPriceRequiresProviderPortalEvidence: true,
+          canAffectBestPriceBeforePortalEvidence: false,
+          noNetworkRuntime: true
+        }),
+        bestPriceRequiresProviderPortalEvidence: true,
+        canAffectBestPriceBeforePortalEvidence: false,
         providerEntrypoint: expect.objectContaining({
           operation: result.operation,
           url: expectedRetailSources.fedex,
@@ -267,6 +310,7 @@ describe("retail printer adapters", () => {
         sourceLink: expect.objectContaining({ purpose: result.operation, url: expectedRetailSources.fedex }),
         forbiddenFields: expect.arrayContaining(["raw relationship memories", "raw payment card data", "unapproved recipient PII"])
       });
+      expect(result.operationPacket.publicEvidence).toBe(expectedEvidence);
       expect(result.operationPacket.operationPolicy).toEqual(expect.any(Object));
       if (result.operation === "fetch-price") {
         expect(result.operationPacket.operationPolicy).toMatchObject({
@@ -298,6 +342,7 @@ describe("retail printer adapters", () => {
         productUrl: expectedRetailSources.fedex,
         productSku: "fedex-office-quick-greeting-cards",
         pricingObservationId: "fedex-quick-5x7-single-sided-card",
+        publicEvidence: result.operationPacket.publicEvidence,
         status: "certification-evidence-required",
         requiredEvidenceArtifacts: result.requiredEvidence,
         canEnableLiveOperation: false,
@@ -330,6 +375,54 @@ describe("retail printer adapters", () => {
     expect(order.missingEvidence).toEqual(expect.arrayContaining(["Vendor certification", "Payment and cancellation recovery proof"]));
   });
 
+  it("keeps provider public-page evidence specific to each retail operation", () => {
+    expect(retailPrinterProductLinks.walmart.operationEvidence["fetch-price"]).toMatchObject({
+      sourceTitle: "Photo Upload 5x7 Folded Card, Blank Envelope | Walmart Photo",
+      pageSignals: expect.arrayContaining([
+        "Photo Upload 5x7 Folded Card",
+        "$0.56",
+        "361-5x7-folded-card-blank-envelope",
+        "selected_delivery_options=2"
+      ]),
+      requiredOperatorProof: expect.arrayContaining(["current unit price", "selected pickup store or ZIP"])
+    });
+    expect(retailPrinterProductLinks.walmart.operationEvidence["upload-image"].pageSignals).toEqual(
+      expect.arrayContaining(["Upload Photos", "design_code=standard.custom"])
+    );
+    expect(retailPrinterProductLinks.fedex.operationEvidence["upload-image"]).toMatchObject({
+      sourceTitle: "Quick Greeting & Holiday Cards | Quick Print & Pickup | FedEx Office",
+      pageSignals: expect.arrayContaining(["Upload your design", ".PDF", ".JPG", "Upload a File", "one file per side"]),
+      requiredOperatorProof: expect.arrayContaining(["front/back file mapping", "file acceptance result"])
+    });
+    expect(retailPrinterProductLinks.cvs.operationEvidence["fetch-price"].pageSignals).toEqual(
+      expect.arrayContaining(["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126"])
+    );
+    expect(retailPrinterProductLinks.walgreens.operationEvidence["fetch-price"].pageSignals).toEqual(
+      expect.arrayContaining(["5x7 Folded Cards", "3.49", "CommerceProduct_33272"])
+    );
+
+    const walmartPrice = createRetailPrinterOperationAdapter("walmart").fetchPrice({
+      quantity: 1,
+      fulfillmentMode: "pickup",
+      storeOrShippingZip: "10001"
+    });
+    const fedexUpload = createRetailPrinterOperationAdapter("fedex").uploadImages({
+      renderPacketArtifactUris: ["s3://customcard-review/render-packets/fedex-front.pdf"],
+      panelManifestChecksum: "sha256:fedex-public-evidence",
+      customerApprovalId: "approval-fedex-upload-evidence",
+      providerAccountReference: "provider-account-redacted"
+    });
+
+    expect(walmartPrice.operationPacket.publicEvidence.pageSignals).toEqual(
+      expect.arrayContaining(["selected_delivery_options=2"])
+    );
+    expect(walmartPrice.operationPacket.operatorSteps.join(" ")).toContain("selected_delivery_options=2");
+    expect(fedexUpload.operationPacket.publicEvidence.requiredOperatorProof).toEqual(
+      expect.arrayContaining(["front/back file mapping"])
+    );
+    expect(fedexUpload.operationPacket.operatorSteps.join(" ")).toContain("Upload a File");
+  });
+
   it("keeps provider-specific operation rules inside the retail adapter packet", () => {
     const walmart = createRetailPrinterOperationAdapter("walmart");
     const invalidShipping = walmart.fetchPrice({
@@ -351,6 +444,7 @@ describe("retail printer adapters", () => {
         "walmart fetch-price requires store or shipping context before provider portal collection."
       ])
     );
+    expect(invalidShipping.operationPacket.operatorSteps.join(" ")).toContain("do not invent third-party coupon candidates");
     expect(invalidShipping.networkAttempted).toBe(false);
     expect(invalidShipping.requestPrepared).toBe(false);
 
@@ -365,6 +459,16 @@ describe("retail printer adapters", () => {
       supportedFulfillmentModes: ["pickup", "shipping"]
     });
     expect(fedex.operationPacket.policyViolations).toEqual([]);
+
+    const walgreens = createRetailPrinterOperationAdapter("walgreens").fetchPrice({
+      quantity: 1,
+      fulfillmentMode: "pickup",
+      storeOrShippingZip: "10001",
+      couponCode: "CRISPCARD"
+    });
+    expect(walgreens.operationPacket.operatorSteps.join(" ")).toContain("walgreens-photo-card-design-entrypoint");
+    expect(walgreens.operationPacket.operatorSteps.join(" ")).toContain("same provider portal cart");
+    expect(walgreens.operationPacket.operatorSteps.join(" ")).toContain("best available price");
   });
 
   it("builds operation packets for every retail vendor operation without preparing provider requests", () => {
@@ -412,8 +516,32 @@ describe("retail printer adapters", () => {
           noNetwork: true,
           networkAttempted: false,
           requestPrepared: false,
+          bestPriceRequiresProviderPortalEvidence: true,
+          canAffectBestPriceBeforePortalEvidence: false,
           missingInputFields: []
         });
+        expect(result.operationPacket.couponCollectionPlan).toMatchObject({
+          vendorId,
+          bestPriceRequiresProviderPortalEvidence: true,
+          canAffectBestPriceBeforePortalEvidence: false,
+          noNetworkRuntime: true
+        });
+        if (vendorId === "walgreens") {
+          expect(result.operationPacket.couponCollectionPlan).toMatchObject({
+            candidateOfferCodes: ["CRISPCARD"],
+            providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+            printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
+            portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"]
+          });
+        }
+        if (vendorId === "cvs") {
+          expect(result.operationPacket.couponCollectionPlan).toMatchObject({
+            candidateOfferCodes: ["JUNESW"],
+            providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+            printEntrypointTargetIds: ["cvs-photo-card-design-entrypoint"],
+            portalApplicationPacketIds: ["cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet"]
+          });
+        }
         expect(result.operationPacket.certificationPacket).toMatchObject({
           packetId: `${vendorId}-${result.operation}-certification-packet`,
           vendorId,

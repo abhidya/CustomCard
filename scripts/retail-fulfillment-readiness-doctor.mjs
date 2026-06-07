@@ -16,7 +16,8 @@ const files = {
   retailPrinterAdapters: "src/retailPrinterAdapters.ts",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
-  docs: "docs/platform-expansion-design.md"
+  docs: "docs/platform-expansion-design.md",
+  pricingDocs: "docs/printer-pricing-research.md"
 };
 
 const contents = Object.fromEntries(
@@ -84,6 +85,12 @@ const checks = [
     "providerEntrypoints",
     "providerEntrypoint",
     "validateRetailPrinterProviderEntrypoints",
+    "RetailPrinterProviderOperationEvidence",
+    "publicEvidence",
+    "requiredOperatorProof",
+    "couponCollectionPlan",
+    "buildPrinterCouponCollectionPlan",
+    "bestPriceRequiresProviderPortalEvidence",
     "public-product-price-review",
     "provider-project-preview-review",
     "provider-cart-final-review",
@@ -117,6 +124,23 @@ const checks = [
     "`src/retailFulfillmentReadiness.ts`",
     "`npm run retail:doctor`",
     "not live retail ordering"
+  ]),
+  checkIncludes("docs", "retail-pricing-source-link-docs", contents.pricingDocs, [
+    "Retail Adapter Source Links",
+    "not the retail adapter source-link contract",
+    "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
+    "product=361-5x7-folded-card-blank-envelope",
+    "selected_delivery_options=2",
+    "https://www.office.fedex.com/default/greeting-cards-quick.html",
+    "/default/greeting-cards-quick.html",
+    "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
+    "sku=CommerceProduct_26126",
+    "designId=1f0682a2d34546bf86cbb799c3811d4e",
+    "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
+    "sku=CommerceProduct_33272",
+    "designId=0c158c44e2f34d9fabc9e1b3ada2eaa6",
+    "public page evidence",
+    "required operator proof"
   ]),
   checkIncludes("ci", "retail-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
     '"retail:doctor": "node scripts/retail-fulfillment-readiness-doctor.mjs"',
