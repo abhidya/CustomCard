@@ -7,7 +7,9 @@ import {
   calendarAdapterReadinessContracts,
   evaluateCalendarAdapterReadiness,
   onboardingStages,
-  onboardingUserStories
+  onboardingUserStories,
+  summarizeCalendarOnboardingEvidence,
+  validateCalendarOnboardingActionPackets
 } from "./onboardingCalendar";
 
 describe("onboarding and calendar integration contracts", () => {
@@ -157,6 +159,7 @@ describe("onboarding and calendar integration contracts", () => {
     expect(packets.every((packet) => packet.networkRequestPrepared === false)).toBe(true);
     expect(packets.every((packet) => packet.credentialStorageEnabled === false)).toBe(true);
     expect(packets.every((packet) => packet.providerRequestUrl === null)).toBe(true);
+    expect(validateCalendarOnboardingActionPackets(packets)).toEqual([]);
 
     const manual = packets.find((packet) => packet.id === "manual-invite-or-ics");
     expect(manual).toMatchObject({
@@ -171,6 +174,23 @@ describe("onboarding and calendar integration contracts", () => {
       expect.arrayContaining([
         "Treat pasted invite and ICS text as untrusted input.",
         "Require opportunity approval before card creation."
+      ])
+    );
+    expect(manual?.evidenceRequirements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "manual-import-preview-visible",
+          kind: "import-preview",
+          requiredBefore: "opportunity-creation",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        }),
+        expect.objectContaining({
+          id: "manual-input-parser-untrusted",
+          kind: "metadata-schema",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        })
       ])
     );
 
@@ -189,6 +209,31 @@ describe("onboarding and calendar integration contracts", () => {
       "Register OAuth app",
       "Prove revocation and token boundary"
     ]);
+    expect(google?.evidenceRequirements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "google-scope-review",
+          owner: "operator",
+          kind: "scope-review",
+          officialSourceUrl: "https://developers.google.com/workspace/calendar/api/auth",
+          satisfiedInRepo: false,
+          blocksLiveConnection: true
+        }),
+        expect.objectContaining({
+          id: "google-revocation-proof",
+          kind: "revocation",
+          satisfiedInRepo: false,
+          blocksLiveConnection: true
+        }),
+        expect.objectContaining({
+          id: "google-manual-fallback-visible",
+          owner: "customer",
+          kind: "fallback",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        })
+      ])
+    );
 
     const icloud = packets.find((packet) => packet.id === "icloud-ics-fallback");
     expect(icloud).toMatchObject({
@@ -207,6 +252,81 @@ describe("onboarding and calendar integration contracts", () => {
     expect(icloud?.operatorSteps[0].evidenceRequired).toEqual(
       expect.arrayContaining(["Credential collection is absent.", "Manual ICS parser tests pass."])
     );
+    expect(icloud?.evidenceRequirements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "icloud-export-instructions-visible",
+          kind: "manual-export",
+          officialSourceUrl: "https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        }),
+        expect.objectContaining({
+          id: "icloud-no-credential-collection",
+          kind: "credential-boundary",
+          officialSourceUrl: "https://support.apple.com/en-gb/108306",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        })
+      ])
+    );
+  });
+
+  it("summarizes calendar onboarding evidence without claiming live Google readiness", () => {
+    const summary = summarizeCalendarOnboardingEvidence();
+
+    expect(summary).toMatchObject({
+      total: 10,
+      repoSatisfied: 6,
+      blocksLiveConnection: 4,
+      customerOwned: 2,
+      operatorOwned: 3,
+      systemOwned: 5,
+      providerConnectionRequired: 4,
+      opportunityCreationRequired: 4,
+      officialSourceCount: 3
+    });
+    expect(summary.missingRepoEvidenceIds).toEqual([
+      "google-scope-review",
+      "google-oauth-env-and-redirect",
+      "google-revocation-proof",
+      "google-metadata-schema-fixture"
+    ]);
+  });
+
+  it("rejects unsafe or under-specified calendar onboarding packets", () => {
+    const [manual, google, icloud] = buildCalendarOnboardingActionPackets();
+
+    expect(validateCalendarOnboardingActionPackets([{ ...manual, evidenceRequirements: [] }])).toEqual(
+      expect.arrayContaining(["manual-invite-or-ics must define calendar connection evidence requirements."])
+    );
+    expect(
+      validateCalendarOnboardingActionPackets([
+        {
+          ...google,
+          networkRequestPrepared: true as never,
+          evidenceRequirements: google.evidenceRequirements.map((requirement) =>
+            requirement.id === "google-scope-review" ? { ...requirement, satisfiedInRepo: true } : requirement
+          )
+        }
+      ])
+    ).toEqual(
+      expect.arrayContaining([
+        "google-calendar-events must not prepare live calendar connection side effects.",
+        "Google Calendar blocking live-connection requirements must not be marked satisfied in repo."
+      ])
+    );
+    expect(
+      validateCalendarOnboardingActionPackets([
+        {
+          ...icloud,
+          evidenceRequirements: icloud.evidenceRequirements.map((requirement) => ({
+            ...requirement,
+            blocksLiveConnection: true
+          }))
+        }
+      ])
+    ).toEqual(expect.arrayContaining(["iCloud manual export path must not block on fake live connection evidence."]));
   });
 
   it("fails fast when a calendar readiness contract is missing instead of hiding a fallback", () => {

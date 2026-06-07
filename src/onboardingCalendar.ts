@@ -21,6 +21,15 @@ export type CalendarConnectionMode = "oauth-readiness-contract" | "manual-export
 export type AdapterLaunchStatus = "credential-gated" | "contract-only";
 export type CalendarOnboardingChoiceId = "manual-invite-or-ics" | CalendarIntegrationId;
 export type CalendarOnboardingChoiceStatus = "ready-local" | "credential-gated" | "manual-export";
+export type CalendarEvidenceOwner = "customer" | "operator" | "system";
+export type CalendarEvidenceRequirementKind =
+  | "scope-review"
+  | "metadata-schema"
+  | "credential-boundary"
+  | "revocation"
+  | "manual-export"
+  | "import-preview"
+  | "fallback";
 
 export interface OnboardingUserStory {
   id: string;
@@ -88,6 +97,18 @@ export interface CalendarOnboardingActionStep {
   evidenceRequired: string[];
 }
 
+export interface CalendarConnectionEvidenceRequirement {
+  id: string;
+  owner: CalendarEvidenceOwner;
+  kind: CalendarEvidenceRequirementKind;
+  label: string;
+  requiredBefore: "customer-visible-choice" | "provider-connection" | "opportunity-creation";
+  proofArtifact: string;
+  officialSourceUrl?: string;
+  satisfiedInRepo: boolean;
+  blocksLiveConnection: boolean;
+}
+
 export interface CalendarOnboardingActionPacket {
   id: CalendarOnboardingChoiceId;
   provider: CalendarProvider;
@@ -108,6 +129,7 @@ export interface CalendarOnboardingActionPacket {
   dataBoundary: string;
   credentialBoundary: string;
   safetyChecks: string[];
+  evidenceRequirements: CalendarConnectionEvidenceRequirement[];
   customerSteps: CalendarOnboardingActionStep[];
   operatorSteps: CalendarOnboardingActionStep[];
   successSignal: string;
@@ -128,6 +150,19 @@ export interface AdapterReadinessResult {
   contractReady: boolean;
   missingGates: string[];
   blockedReasons: string[];
+}
+
+export interface CalendarOnboardingEvidenceSummary {
+  total: number;
+  repoSatisfied: number;
+  blocksLiveConnection: number;
+  customerOwned: number;
+  operatorOwned: number;
+  systemOwned: number;
+  providerConnectionRequired: number;
+  opportunityCreationRequired: number;
+  officialSourceCount: number;
+  missingRepoEvidenceIds: string[];
 }
 
 export const onboardingStages: OnboardingStage[] = [
@@ -395,6 +430,28 @@ export function buildCalendarOnboardingActionPackets(
         "Extract event metadata only.",
         "Require opportunity approval before card creation."
       ],
+      evidenceRequirements: [
+        evidenceRequirement({
+          id: "manual-import-preview-visible",
+          owner: "system",
+          kind: "import-preview",
+          label: "Metadata-only import preview is visible before card creation.",
+          requiredBefore: "opportunity-creation",
+          proofArtifact: "src/importPreviewMetadata.test.ts and API import-preview tests",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        }),
+        evidenceRequirement({
+          id: "manual-input-parser-untrusted",
+          owner: "system",
+          kind: "metadata-schema",
+          label: "Pasted invite and ICS text are treated as untrusted input.",
+          requiredBefore: "opportunity-creation",
+          proofArtifact: "src/importPreviewMetadata.ts parser guards",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        })
+      ],
       customerSteps: [
         {
           actor: "customer",
@@ -439,6 +496,61 @@ export function buildCalendarOnboardingActionPackets(
       requiredScopes: google.requiredScopes,
       officialScopeUris: google.officialScopeUris,
       safetyChecks: google.safetyGates,
+      evidenceRequirements: [
+        evidenceRequirement({
+          id: "google-scope-review",
+          owner: "operator",
+          kind: "scope-review",
+          label: "Calendar scope review uses the narrow events-readonly scope.",
+          requiredBefore: "provider-connection",
+          proofArtifact: "Google OAuth consent screen scope review",
+          officialSourceUrl: "https://developers.google.com/workspace/calendar/api/auth",
+          satisfiedInRepo: false,
+          blocksLiveConnection: true
+        }),
+        evidenceRequirement({
+          id: "google-oauth-env-and-redirect",
+          owner: "operator",
+          kind: "credential-boundary",
+          label: "OAuth client, redirect URI, and token boundary are configured outside customer runtime.",
+          requiredBefore: "provider-connection",
+          proofArtifact: "Hosted OAuth configuration evidence",
+          officialSourceUrl: "https://developers.google.com/workspace/calendar/api/auth",
+          satisfiedInRepo: false,
+          blocksLiveConnection: true
+        }),
+        evidenceRequirement({
+          id: "google-revocation-proof",
+          owner: "operator",
+          kind: "revocation",
+          label: "Disconnect and revocation handling are proven before background import.",
+          requiredBefore: "provider-connection",
+          proofArtifact: "Revocation integration test transcript",
+          officialSourceUrl: "https://developers.google.com/workspace/calendar/api/auth",
+          satisfiedInRepo: false,
+          blocksLiveConnection: true
+        }),
+        evidenceRequirement({
+          id: "google-metadata-schema-fixture",
+          owner: "system",
+          kind: "metadata-schema",
+          label: "Google event fixture maps only metadata fields into opportunity review.",
+          requiredBefore: "opportunity-creation",
+          proofArtifact: "Recorded metadata-only Google Calendar fixture test",
+          satisfiedInRepo: false,
+          blocksLiveConnection: true
+        }),
+        evidenceRequirement({
+          id: "google-manual-fallback-visible",
+          owner: "customer",
+          kind: "fallback",
+          label: "Manual invite or ICS paste remains visible while Google is not connected.",
+          requiredBefore: "customer-visible-choice",
+          proofArtifact: "Customer onboarding UI smoke",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        })
+      ],
       customerSteps: [
         {
           actor: "customer",
@@ -488,6 +600,41 @@ export function buildCalendarOnboardingActionPackets(
       requiredScopes: icloud.requiredScopes,
       officialScopeUris: icloud.officialScopeUris,
       safetyChecks: icloud.safetyGates,
+      evidenceRequirements: [
+        evidenceRequirement({
+          id: "icloud-export-instructions-visible",
+          owner: "customer",
+          kind: "manual-export",
+          label: "Customer sees Apple Calendar ICS export/download instructions.",
+          requiredBefore: "customer-visible-choice",
+          proofArtifact: "Customer onboarding UI smoke",
+          officialSourceUrl: "https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        }),
+        evidenceRequirement({
+          id: "icloud-no-credential-collection",
+          owner: "system",
+          kind: "credential-boundary",
+          label: "CustomCard collects no Apple ID, app-specific password, CalDAV session, or native calendar credential.",
+          requiredBefore: "provider-connection",
+          proofArtifact: "Calendar onboarding action packet tests",
+          officialSourceUrl: "https://support.apple.com/en-gb/108306",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        }),
+        evidenceRequirement({
+          id: "icloud-metadata-import-preview",
+          owner: "system",
+          kind: "import-preview",
+          label: "Exported ICS data reaches the same metadata-only import preview.",
+          requiredBefore: "opportunity-creation",
+          proofArtifact: "Manual ICS parser and import-preview tests",
+          officialSourceUrl: "https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac",
+          satisfiedInRepo: true,
+          blocksLiveConnection: false
+        })
+      ],
       customerSteps: [
         {
           actor: "customer",
@@ -578,4 +725,75 @@ export function evaluateCalendarAdapterReadiness(
     missingGates,
     blockedReasons: adapter.blockedReasons
   };
+}
+
+export function summarizeCalendarOnboardingEvidence(
+  packets: CalendarOnboardingActionPacket[] = buildCalendarOnboardingActionPackets()
+): CalendarOnboardingEvidenceSummary {
+  const requirements = packets.flatMap((packet) => packet.evidenceRequirements);
+
+  return {
+    total: requirements.length,
+    repoSatisfied: requirements.filter((requirement) => requirement.satisfiedInRepo).length,
+    blocksLiveConnection: requirements.filter((requirement) => requirement.blocksLiveConnection).length,
+    customerOwned: requirements.filter((requirement) => requirement.owner === "customer").length,
+    operatorOwned: requirements.filter((requirement) => requirement.owner === "operator").length,
+    systemOwned: requirements.filter((requirement) => requirement.owner === "system").length,
+    providerConnectionRequired: requirements.filter((requirement) => requirement.requiredBefore === "provider-connection").length,
+    opportunityCreationRequired: requirements.filter((requirement) => requirement.requiredBefore === "opportunity-creation").length,
+    officialSourceCount: new Set(requirements.map((requirement) => requirement.officialSourceUrl).filter(Boolean)).size,
+    missingRepoEvidenceIds: requirements
+      .filter((requirement) => !requirement.satisfiedInRepo)
+      .map((requirement) => requirement.id)
+  };
+}
+
+export function validateCalendarOnboardingActionPackets(
+  packets: CalendarOnboardingActionPacket[] = buildCalendarOnboardingActionPackets()
+): string[] {
+  const issues: string[] = [];
+
+  for (const packet of packets) {
+    if (packet.liveOAuthEnabled || packet.networkRequestPrepared || packet.credentialStorageEnabled || packet.providerRequestUrl !== null) {
+      issues.push(`${packet.id} must not prepare live calendar connection side effects.`);
+    }
+    if (packet.evidenceRequirements.length === 0) {
+      issues.push(`${packet.id} must define calendar connection evidence requirements.`);
+    }
+    if (packet.id === "google-calendar-events") {
+      if (!packet.evidenceRequirements.some((requirement) => requirement.kind === "scope-review" && requirement.blocksLiveConnection)) {
+        issues.push("Google Calendar onboarding must require blocking scope review evidence.");
+      }
+      if (!packet.evidenceRequirements.some((requirement) => requirement.kind === "revocation" && requirement.blocksLiveConnection)) {
+        issues.push("Google Calendar onboarding must require blocking revocation evidence.");
+      }
+      if (packet.evidenceRequirements.some((requirement) => requirement.satisfiedInRepo && requirement.blocksLiveConnection)) {
+        issues.push("Google Calendar blocking live-connection requirements must not be marked satisfied in repo.");
+      }
+    }
+    if (packet.id === "icloud-ics-fallback") {
+      if (!packet.evidenceRequirements.some((requirement) => requirement.kind === "manual-export")) {
+        issues.push("iCloud onboarding must require manual export evidence.");
+      }
+      if (packet.evidenceRequirements.some((requirement) => requirement.blocksLiveConnection)) {
+        issues.push("iCloud manual export path must not block on fake live connection evidence.");
+      }
+    }
+    if (packet.id === "manual-invite-or-ics") {
+      if (packet.evidenceRequirements.some((requirement) => requirement.blocksLiveConnection)) {
+        issues.push("Manual invite or ICS paste must remain ready without provider-connection blockers.");
+      }
+      if (!packet.evidenceRequirements.every((requirement) => requirement.satisfiedInRepo)) {
+        issues.push("Manual invite or ICS paste evidence must be satisfied by repo-local tests.");
+      }
+    }
+  }
+
+  return issues;
+}
+
+function evidenceRequirement(
+  requirement: CalendarConnectionEvidenceRequirement
+): CalendarConnectionEvidenceRequirement {
+  return requirement;
 }

@@ -76,6 +76,21 @@ instead of silently hiding the missing adapter behind an empty fallback.
 | `google-calendar-events` | Review the Google metadata-only scope and use manual paste while OAuth is not enabled. | OAuth app, redirect URI, consent screen, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, revocation handling, token storage boundary, and metadata schema fixture tests. | No provider request URL, callback, token storage, or network request is prepared in this repo state. |
 | `icloud-ics-fallback` | Export/download an ICS copy, then paste selected event data into the same local import preview. | Prove Apple credentials are not collected; manual ICS parser tests pass. | No Apple ID, app-specific password, CalDAV session, native sync, or provider credential storage. |
 
+## Evidence Requirements
+
+Each action packet now carries `CalendarConnectionEvidenceRequirement[]`. This
+keeps customer actions, operator setup, official source anchors, and launch
+blockers together instead of scattering provider-specific rules through UI
+copy. `summarizeCalendarOnboardingEvidence()` currently reports 10 evidence
+requirements: 6 are repo-satisfied, 4 still block a live Google connection, and
+3 cite official Google or Apple source anchors.
+
+| Provider path | Repo-satisfied evidence | Blocking evidence still missing |
+| --- | --- | --- |
+| Manual invite or ICS | Metadata-only import preview; untrusted input parser guard. | None; this path remains ready without a provider connection. |
+| Google Calendar | Manual invite/ICS fallback remains visible. | Scope review for `calendar.events.readonly`, OAuth app/redirect/token boundary, revocation proof, and recorded metadata-only Google event fixture. |
+| Apple Calendar ICS export | Export instructions visible, no Apple credential collection, exported ICS uses the metadata-only import preview. | None for manual export; live CalDAV/native sync remains out of scope. |
+
 ## Customer UI Contract
 
 The customer web panel and mobile app show the same readiness split:
