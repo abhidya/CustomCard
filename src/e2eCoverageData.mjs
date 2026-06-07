@@ -288,8 +288,16 @@ export const e2eCoverageItems = [
     automationType: "doctor",
     status: "covered",
     ciGated: true,
-    testCommands: ["npm run security:doctor", "npm run check"],
-    evidence: ["Security headers verified", "Raw content storage blocked", "Signed artifact sharing controlled", "App-shell accessibility landmarks verified"],
+    testCommands: ["npm run security:doctor", "npm run customer:accessibility:doctor", "npm run check"],
+    evidence: [
+      "Security headers verified",
+      "Raw content storage blocked",
+      "Signed artifact sharing controlled",
+      "App-shell accessibility landmarks verified",
+      "Customer accessibility evidence doctor",
+      "Labeled customer controls covered",
+      "External accessibility audit remains unclaimed"
+    ],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

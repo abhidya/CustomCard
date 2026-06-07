@@ -218,7 +218,13 @@ export const externalAuditReadinessItems = [
     status: "internal-baseline-ready",
     relatedProductionGateIds: ["external-audits"],
     requiredEvidence: ["WCAG audit report", "Assistive technology test notes", "Remediation signoff"],
-    currentEvidence: ["App shell landmarks", "Skip-link focus tests", "Chrome overflow smoke tests"],
+    currentEvidence: [
+      "App shell landmarks",
+      "Skip-link focus tests",
+      "Chrome overflow smoke tests",
+      "Customer accessibility evidence doctor",
+      "customerAccessibilityEvidence Module"
+    ],
     evidenceArtifactRefs: [],
     reviewer: "external accessibility auditor",
     cadence: "before production launch and major UI changes",

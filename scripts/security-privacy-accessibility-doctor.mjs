@@ -1,4 +1,9 @@
 import { readFileSync } from "node:fs";
+import {
+  customerAccessibilityEvidenceItems,
+  summarizeCustomerAccessibilityEvidence,
+  validateCustomerAccessibilityEvidence
+} from "../src/customerAccessibilityEvidenceData.mjs";
 
 const files = {
   apiServer: "scripts/api-server.mjs",
@@ -16,6 +21,8 @@ const files = {
 const contents = Object.fromEntries(
   Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
 );
+const customerAccessibilitySummary = summarizeCustomerAccessibilityEvidence(customerAccessibilityEvidenceItems);
+const customerAccessibilityBlockers = validateCustomerAccessibilityEvidence(customerAccessibilityEvidenceItems);
 
 const checks = [
   checkIncludes("security", "http-security-headers", contents.apiServer, [
@@ -71,6 +78,10 @@ const checks = [
     ".skipLink:focus",
     "transform: translateY(0)"
   ]),
+  checkExact("accessibility", "customer-accessibility-evidence", customerAccessibilitySummary.total, 6),
+  checkExact("accessibility", "customer-accessibility-external-audit-claims", customerAccessibilitySummary.externalAuditAttached, 0),
+  checkExact("accessibility", "customer-accessibility-screen-reader-claims", customerAccessibilitySummary.manualScreenReaderProofAttached, 0),
+  checkNoBlockers("accessibility", "customer-accessibility-evidence-contract", customerAccessibilityBlockers),
   checkIncludes("ci", "baseline-doctor-is-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
     '"security:doctor": "node scripts/security-privacy-accessibility-doctor.mjs"',
     "Validate security privacy accessibility baseline",
@@ -99,6 +110,13 @@ console.log(
       legalReview: false,
       liveProviderCalls: false,
       realOrdersEnabled: false,
+      customerAccessibilityEvidence: {
+        items: customerAccessibilitySummary.total,
+        repoLocalReady: customerAccessibilitySummary.repoLocalReady,
+        externalEvidenceMissing: customerAccessibilitySummary.externalEvidenceMissing,
+        externalAuditAttached: customerAccessibilitySummary.externalAuditAttached,
+        manualScreenReaderProofAttached: customerAccessibilitySummary.manualScreenReaderProofAttached
+      },
       lanes,
       checks,
       blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
@@ -127,5 +145,23 @@ function checkAbsent(lane, id, text, forbidden) {
     lane,
     passed: present.length === 0,
     detail: present.length === 0 ? "No forbidden baseline signals found." : `Forbidden baseline signals present: ${present.join(", ")}`
+  };
+}
+
+function checkExact(lane, id, actual, expected) {
+  return {
+    id,
+    lane,
+    passed: actual === expected,
+    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
+  };
+}
+
+function checkNoBlockers(lane, id, blockers) {
+  return {
+    id,
+    lane,
+    passed: blockers.length === 0,
+    detail: blockers.length === 0 ? "Customer accessibility evidence contract has no blockers." : blockers.join(" ")
   };
 }

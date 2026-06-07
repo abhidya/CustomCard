@@ -360,6 +360,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"cloud:artifact:proof:doctor\": \"node scripts/cloud-artifact-proof-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"localization:doctor\": \"node scripts/localization-doctor.mjs\"");
     expect(packageJson).toContain("\"security:doctor\": \"node scripts/security-privacy-accessibility-doctor.mjs\"");
+    expect(packageJson).toContain("\"customer:accessibility:doctor\": \"node scripts/customer-accessibility-evidence-doctor.mjs\"");
     expect(packageJson).toContain("\"external:audit:doctor\": \"node scripts/external-audit-readiness-doctor.mjs\"");
     expect(packageJson).toContain("\"e2e:coverage:doctor\": \"node scripts/e2e-coverage-doctor.mjs\"");
     expect(packageJson).toContain("\"ai:doctor\": \"node scripts/ai-provider-readiness-doctor.mjs\"");

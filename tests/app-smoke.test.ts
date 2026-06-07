@@ -264,6 +264,75 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
   }, 30000);
 
+  it("keeps customer and mobile routes keyboard-labeled for repo-local accessibility evidence", async () => {
+    const sessionId = await createPage(390, 900);
+    const result = await evaluate(
+      sessionId,
+      `(async () => {
+        const accessibleName = (node) =>
+          node.getAttribute("aria-label") ||
+          node.getAttribute("title") ||
+          node.getAttribute("placeholder") ||
+          node.textContent?.trim() ||
+          node.getAttribute("value") ||
+          "";
+        const inspectRoute = () => {
+          const focusableControls = [...document.querySelectorAll("a[href], button, input, textarea, select")]
+            .filter((node) => !node.disabled && node.getAttribute("aria-hidden") !== "true")
+            .map((node) => ({
+              tag: node.tagName.toLowerCase(),
+              className: node.className,
+              text: node.textContent?.trim() ?? "",
+              ariaLabel: node.getAttribute("aria-label"),
+              name: accessibleName(node)
+            }));
+          const missingNames = focusableControls.filter((control) => !control.name.trim());
+          const headingLevels = [...document.querySelectorAll("h1, h2, h3")].map((node) => node.tagName.toLowerCase());
+          return {
+            focusableControls,
+            missingNames,
+            headingLevels,
+            skipHref: document.querySelector(".skipLink")?.getAttribute("href"),
+            skipTargetExists: !!document.querySelector("#main-content"),
+            navLabeled: !!document.querySelector('[aria-label="CustomCard navigation"]'),
+            mainExists: !!document.querySelector("main#main-content"),
+            checkoutStatusLabeled: !!document.querySelector('[aria-label="Checkout status"]'),
+            chatComposerLabeled: !!document.querySelector('textarea[aria-label="Customer chat message"]'),
+            mobileShellLabeled: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
+            mobileSummaryLabeled: !!document.querySelector('[aria-label="Mobile customer summary"]'),
+            mobileSafeguardsLabeled: !!document.querySelector('[aria-label="Mobile checkout safeguards"]')
+          };
+        };
+
+        const customer = inspectRoute();
+        const mobileButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent.includes("Mobile app")
+        );
+        if (!mobileButton) throw new Error("Missing Mobile app nav");
+        mobileButton.click();
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const mobile = inspectRoute();
+        return { customer, mobile };
+      })()`
+    );
+
+    expect(result.customer.skipHref).toBe("#main-content");
+    expect(result.customer.skipTargetExists).toBe(true);
+    expect(result.customer.navLabeled).toBe(true);
+    expect(result.customer.mainExists).toBe(true);
+    expect(result.customer.checkoutStatusLabeled).toBe(true);
+    expect(result.customer.chatComposerLabeled).toBe(true);
+    expect(result.customer.missingNames).toEqual([]);
+    expect(result.customer.focusableControls.length).toBeGreaterThan(5);
+    expect(result.customer.headingLevels[0]).toBe("h1");
+    expect(result.mobile.mobileShellLabeled).toBe(true);
+    expect(result.mobile.mobileSummaryLabeled).toBe(true);
+    expect(result.mobile.mobileSafeguardsLabeled).toBe(true);
+    expect(result.mobile.missingNames).toEqual([]);
+    expect(result.mobile.focusableControls.length).toBeGreaterThan(5);
+    expect(result.mobile.headingLevels[0]).toBe("h1");
+  }, 30000);
+
   it("renders the mobile app preview from the shared customer app contract", async () => {
     const sessionId = await createPage(390, 900);
     const result = await evaluate(
