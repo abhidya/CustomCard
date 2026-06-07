@@ -10,16 +10,19 @@ const vite = await createServer({
 
 try {
   const {
+    extractPrinterCouponCodes,
     extractPrinterCouponOffers,
     printerCouponCollectionTargets,
     printerCouponSources
   } = await vite.ssrLoadModule("/src/printerPricing.ts");
+  const fmtcApiToken = process.env.FMTC_API_TOKEN?.trim();
   const allowedTargets = printerCouponCollectionTargets.filter(
     (target) => target.sourceProvider === "retailer" && target.readiness === "ready-public-page"
   );
-  const providerFeedTargets = printerCouponCollectionTargets
-    .filter((target) => target.role === "provider-feed")
-    .map((target) => ({
+  const providerFeedTargets = [];
+
+  for (const target of printerCouponCollectionTargets.filter((candidate) => candidate.role === "provider-feed")) {
+    const baseTarget = {
       id: target.id,
       vendorIds: target.vendorIds,
       collectionMethod: target.collectionMethod,
@@ -28,26 +31,79 @@ try {
       credentialEnvKeys: target.credentialEnvKeys,
       verificationSignals: target.verificationSignals,
       legalReviewRequired: target.legalReviewRequired,
-      fetched: false,
-      reason: "Credential-gated provider feed; run only with approved server/operator credentials."
-    }));
+      fetched: false
+    };
+
+    if (!fmtcApiToken) {
+      providerFeedTargets.push({
+        ...baseTarget,
+        provider: "FMTC Deal Feed",
+        reason: "Credential-gated provider feed; set FMTC_API_TOKEN only in an approved server/operator environment."
+      });
+      continue;
+    }
+
+    const providerUrl = new URL("https://s3.fmtc.co/api/4.2.0/deals");
+    providerUrl.searchParams.set("api_token", fmtcApiToken);
+    providerUrl.searchParams.set("format", "json");
+    providerUrl.searchParams.set("codesonly", "1");
+    providerUrl.searchParams.set("active", "1");
+    providerUrl.searchParams.set("country", "US");
+    providerUrl.searchParams.set("page_size", "500");
+
+    const response = await fetch(providerUrl, { headers: { "user-agent": userAgent } });
+    const providerBody = await response.text();
+    const parsed = safeParseJson(providerBody);
+    const deals = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.deals) ? parsed.deals : Array.isArray(parsed?.data) ? parsed.data : [];
+    const relevantDeals = deals
+      .filter((deal) => /walgreens|cvs/i.test(`${deal.merchant_name ?? ""} ${deal.label ?? ""} ${deal.direct_link ?? ""}`))
+      .map((deal) => ({
+        id: deal.id,
+        merchantName: deal.merchant_name,
+        label: deal.label,
+        code: deal.code,
+        status: deal.status,
+        startDate: deal.start_date,
+        endDate: deal.end_date,
+        codeVerifiedAt: deal.code_verified_at,
+        linkVerifiedAt: deal.link_verified_at,
+        couponCodeOnPage: deal.coupon_code_on_page
+      }));
+
+    providerFeedTargets.push({
+      ...baseTarget,
+      provider: "FMTC Deal Feed",
+      fetched: true,
+      status: response.status,
+      ok: response.ok,
+      endpoint: "https://s3.fmtc.co/api/4.2.0/deals",
+      requestShape: {
+        format: "json",
+        codesonly: 1,
+        active: 1,
+        country: "US",
+        page_size: 500
+      },
+      returnedDealCount: deals.length,
+      relevantDealCount: relevantDeals.length,
+      relevantDeals,
+      tokenRedacted: true,
+      reason:
+        relevantDeals.length > 0
+          ? "Provider-feed coupons are discovery evidence; official retailer source or provider-portal application proof is still required before discounting."
+          : "Provider feed returned no Walgreens/CVS code candidates in the fetched page."
+    });
+  }
+
   const fetchedTargets = [];
   const sourceOffers = [];
 
   for (const target of allowedTargets) {
     const response = await fetch(target.url, { headers: { "user-agent": userAgent } });
     const body = await response.text();
-    const matchedCodes = [
-      ...new Set(
-        [
-          ...body.matchAll(
-            /(?:Coupon code|Promo Code|Promo code):\s*([A-Z0-9]+)|(?:promo code|code)\s+([A-Z0-9]+)\s+to receive/gi
-          )
-        ]
-          .map((match) => match[1] ?? match[2])
-          .filter(Boolean)
-      )
-    ];
+    const matchedCodes = extractPrinterCouponCodes(body);
+    const matchedVerificationSignals = target.verificationSignals.filter((signal) => body.toLowerCase().includes(signal.toLowerCase()));
+    const missingVerificationSignals = target.verificationSignals.filter((signal) => !matchedVerificationSignals.includes(signal));
 
     fetchedTargets.push({
       id: target.id,
@@ -62,6 +118,10 @@ try {
       ok: response.ok,
       url: target.url,
       matchedCodes,
+      matchedExpectedCodes: target.expectedOfferCodes.filter((code) => matchedCodes.includes(code)),
+      staticHtmlExpectedCodeVisible: target.expectedOfferCodes.length > 0 && target.expectedOfferCodes.every((code) => matchedCodes.includes(code)),
+      matchedVerificationSignals,
+      missingVerificationSignals,
       bytes: body.length
     });
 
@@ -105,8 +165,15 @@ try {
         ok: target.ok,
         expectedCodes: target.expectedOfferCodes.length > 0 ? target.expectedOfferCodes : expectedCodes,
         matchedCodes: target.matchedCodes,
-        staticHtmlCodeVisible: expectedCodes.some((code) => target.matchedCodes.includes(code)),
+        matchedExpectedCodes: target.matchedExpectedCodes,
+        staticHtmlExpectedCodeVisible: target.staticHtmlExpectedCodeVisible,
+        staticHtmlCodeVisible: target.staticHtmlExpectedCodeVisible,
+        matchedVerificationSignals: target.matchedVerificationSignals,
+        missingVerificationSignals: target.missingVerificationSignals,
         renderedBrowserReadRequired: target.renderedBrowserReadRequired,
+        renderedBrowserEvidenceStatus: target.renderedBrowserReadRequired
+          ? "operator-browser-or-provider-portal-proof-required"
+          : "not-required",
         verificationSignals: target.verificationSignals
       };
     });
@@ -139,4 +206,12 @@ try {
   );
 } finally {
   await vite.close();
+}
+
+function safeParseJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }

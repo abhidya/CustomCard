@@ -401,7 +401,7 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     maxAgeHours: 24,
     expectedOfferCodes: ["CRISPCARD"],
     extractHints: ["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272", "Create now"],
-    verificationSignals: ["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272"],
+    verificationSignals: ["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"],
     legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
     noNetworkRuntime: true
@@ -438,8 +438,8 @@ export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
     sourceProvider: "retailer",
     maxAgeHours: 24,
     expectedOfferCodes: ["JUNESW"],
-    extractHints: ["5x7 Folded Greeting Cards", "Price $4.49 each", "50% off Sitewide with promo code JUNESW", "Offer ends 6/20/2026"],
-    verificationSignals: ["5x7 Folded Greeting Cards", "Price $4.49 each", "50% off Sitewide with promo code JUNESW"],
+    extractHints: ["Folded Greeting Card, 5x7", "JSON-LD price 8.98", "50% off Sitewide with promo code JUNESW", "Offer ends 6/20/2026"],
+    verificationSignals: ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"],
     legalReviewRequired: true,
     blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
     noNetworkRuntime: true
@@ -1032,6 +1032,21 @@ export function extractPrinterCouponOffers(input: PrinterCouponExtractionInput):
   };
 }
 
+export function extractPrinterCouponCodes(documentText: string): string[] {
+  const text = normalizeCouponCodeSearchText(documentText);
+  const patterns = [
+    /[Cc]oupon\s+[Cc]ode:\s*([A-Z][A-Z0-9]{2,})/g,
+    /[Pp]romo\s+[Cc]ode:\s*([A-Z][A-Z0-9]{2,})/g,
+    /[Pp]romo\s+[Cc]ode\s+([A-Z][A-Z0-9]{2,})/g,
+    /[Ee]nter\s+[Cc]ode\s+([A-Z][A-Z0-9]{2,})/g,
+    /[Mm]ust\s+[Uu]se\s+[Cc]ode\s+([A-Z][A-Z0-9]{2,})/g,
+    /[Cc]ode\s+([A-Z][A-Z0-9]{2,})\s+(?:[Aa]t\s+[Cc]heckout|[Tt]o\s+[Rr]eceive|[Tt]hru|[Tt]hrough)/g
+  ];
+  const codes = patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => match[1]?.trim()).filter(Boolean));
+
+  return [...new Set(codes)].sort();
+}
+
 export function isPrinterCouponActive(offer: PrinterCouponOffer, now: Date = new Date(observedAtIso)): boolean {
   const startsAt = new Date(offer.startsAtIso).getTime();
   const endsAt = new Date(offer.endsAtIso).getTime();
@@ -1453,6 +1468,20 @@ function extractCvsCouponOffers(text: string, source: PrinterCouponSource, extra
 function normalizeCouponDocumentText(documentText: string): string {
   return documentText
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&reg;/gi, "registered")
+    .replace(/&#174;/gi, "registered")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeCouponCodeSearchText(documentText: string): string {
+  return documentText
+    .replace(/<script\b[^>]*>/gi, " ")
+    .replace(/<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/gi, " ")

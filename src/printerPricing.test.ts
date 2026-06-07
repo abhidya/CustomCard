@@ -4,6 +4,7 @@ import {
   buildPrinterPricingComparison,
   buildPrinterPricingRefreshReport,
   estimatePrinterSubtotal,
+  extractPrinterCouponCodes,
   extractPrinterCouponOffers,
   getPrinterPriceOptionsForVendor,
   hasMatchingProviderPortalCouponEvidence,
@@ -260,6 +261,31 @@ describe("printer pricing research", () => {
     });
   });
 
+  it("extracts expected coupon codes from exact Walgreens and CVS print links", () => {
+    const walgreensPrintLinkHtml = `
+      <script>
+        upsellObj['text']='<p><strong>60% OFF All Photo Cards &amp; Premium Stationery</strong>
+        | Enter code <strong>CRISPCARD</strong> at checkout thru June 13</p>';
+      </script>
+      <script type="application/ld+json">
+        { "@type": "Product", "sku": "CommerceProduct_33272", "offers": { "price": "3.49" } }
+      </script>
+      <div>5x7 folded card on 85lb. cardstock</div>
+    `;
+    const cvsPrintLinkHtml = `
+      <script>
+        upsellObj['text']='<p><span>50% off Sitewide with promo code JUNESW |
+        Offer ends 6/20/2026.</span></p>';
+      </script>
+      <script type="application/ld+json">
+        { "@type": "Product", "name": "Folded Greeting Card, 5x7", "sku": "CommerceProduct_26126", "offers": { "price": "8.98" } }
+      </script>
+    `;
+
+    expect(extractPrinterCouponCodes(walgreensPrintLinkHtml)).toEqual(["CRISPCARD"]);
+    expect(extractPrinterCouponCodes(cvsPrintLinkHtml)).toEqual(["JUNESW"]);
+  });
+
   it("treats proper provider feeds and rendered print links as explicit coupon proof targets", () => {
     const walgreensPrintTarget = printerCouponCollectionTargets.find((target) => target.id === "walgreens-photo-card-design-entrypoint");
     const cvsPrintTarget = printerCouponCollectionTargets.find((target) => target.id === "cvs-photo-card-design-entrypoint");
@@ -285,7 +311,7 @@ describe("printer pricing research", () => {
       role: "print-entrypoint",
       collectionMethod: "rendered-browser-read",
       expectedOfferCodes: ["CRISPCARD"],
-      verificationSignals: expect.arrayContaining(["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272"]),
+      verificationSignals: expect.arrayContaining(["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"]),
       legalReviewRequired: true,
       noNetworkRuntime: true
     });
@@ -294,11 +320,7 @@ describe("printer pricing research", () => {
       role: "print-entrypoint",
       collectionMethod: "rendered-browser-read",
       expectedOfferCodes: ["JUNESW"],
-      verificationSignals: expect.arrayContaining([
-        "5x7 Folded Greeting Cards",
-        "Price $4.49 each",
-        "50% off Sitewide with promo code JUNESW"
-      ]),
+      verificationSignals: expect.arrayContaining(["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"]),
       legalReviewRequired: true,
       noNetworkRuntime: true
     });
