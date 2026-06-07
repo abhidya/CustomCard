@@ -93,6 +93,291 @@ export const retailPrinterProductLinks = {
   }
 };
 
+const couponProviderFeedTargets = [
+  {
+    id: "fmtc-deal-feed",
+    label: "FMTC Deal Feed provider API",
+    vendorIds: ["walgreens", "cvs"],
+    mode: "coupon-provider-feed",
+    role: "provider-feed",
+    readiness: "credential-gated",
+    url: "https://docs.fmtc.co/kb/deals-4-2-0",
+    collectionMethod: "provider-api-feed",
+    credentialEnvKeys: ["FMTC_API_TOKEN"],
+    sourceProvider: "affiliate-provider",
+    maxAgeHours: 12,
+    expectedOfferCodes: [],
+    verificationSignals: ["status", "code_verified_at", "link_verified_at", "end_date"],
+    staticHtmlSignalAllowed: false,
+    browserRenderProofRequired: false,
+    legalReviewRequired: true,
+    noNetworkRuntime: true
+  },
+  {
+    id: "rakuten-coupon-feed",
+    label: "Rakuten Advertising Coupon Feed API",
+    vendorIds: ["walgreens", "cvs"],
+    mode: "coupon-provider-feed",
+    role: "provider-feed",
+    readiness: "credential-gated",
+    url: "https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API",
+    collectionMethod: "provider-api-feed",
+    credentialEnvKeys: ["RAKUTEN_ADVERTISING_API_TOKEN"],
+    sourceProvider: "affiliate-provider",
+    maxAgeHours: 12,
+    expectedOfferCodes: [],
+    verificationSignals: ["coupon code", "promotional link", "offerstartdate", "offerenddate", "advertiser"],
+    staticHtmlSignalAllowed: false,
+    browserRenderProofRequired: false,
+    legalReviewRequired: true,
+    noNetworkRuntime: true
+  }
+];
+
+const couponCollectionContracts = {
+  walgreens: {
+    retailerCouponTargets: [
+      {
+        id: "walgreens-photo-official-deals",
+        label: "Walgreens Photo official deals page",
+        vendorIds: ["walgreens"],
+        mode: "retailer-public-coupon-page",
+        role: "coupon-source",
+        readiness: "ready-public-page",
+        url: "https://photo.walgreens.com/store/deals?tab=photo_downsplash_top",
+        collectionMethod: "server-fetch-html",
+        credentialEnvKeys: [],
+        sourceProvider: "retailer",
+        maxAgeHours: 24,
+        expectedOfferCodes: ["CRISPCARD"],
+        verificationSignals: ["CRISPCARD", "60% OFF All Photo Cards & Premium Stationery", "Offer expires at 11:59 p.m. CT"],
+        staticHtmlSignalAllowed: true,
+        browserRenderProofRequired: false,
+        legalReviewRequired: true,
+        noNetworkRuntime: true
+      }
+    ],
+    printEntrypointTargets: [
+      {
+        id: "walgreens-photo-card-design-entrypoint",
+        label: "Walgreens Photo 5x7 folded card design-detail print entrypoint",
+        vendorIds: ["walgreens"],
+        mode: "retailer-public-coupon-page",
+        role: "print-entrypoint",
+        readiness: "ready-public-page",
+        url: retailPrinterProductLinks.walgreens.productUrl,
+        collectionMethod: "rendered-browser-read",
+        credentialEnvKeys: [],
+        sourceProvider: "retailer",
+        maxAgeHours: 24,
+        expectedOfferCodes: ["CRISPCARD"],
+        verificationSignals: ["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"],
+        staticHtmlSignalAllowed: true,
+        browserRenderProofRequired: true,
+        legalReviewRequired: true,
+        noNetworkRuntime: true
+      }
+    ],
+    candidateOfferCodes: ["CRISPCARD"],
+    portalApplicationPackets: [
+      {
+        id: "walgreens-crispcard-cards-2026-06-13-portal-application-packet",
+        offerId: "walgreens-crispcard-cards-2026-06-13",
+        vendorId: "walgreens",
+        code: "CRISPCARD",
+        label: "60% off All Photo Cards and Premium Stationery",
+        status: "portal-evidence-required",
+        evidenceStatus: "source-listed",
+        discountPercent: 60,
+        requiresLoggedInAccount: true,
+        sourceTargetIds: ["walgreens-photo-official-deals", "walgreens-photo-card-design-entrypoint"],
+        providerPortalUrls: [
+          retailPrinterProductLinks.walgreens.productUrl,
+          "https://photo.walgreens.com/store/cards?tab=Photo_Deals2",
+          "https://photo.walgreens.com/store/cards?tab=PhotoNav%7CSameDayPickup%7CAllCards"
+        ],
+        applicationTargets: [
+          {
+            sourcePriceObservationId: "walgreens-5x7-folded-card",
+            vendorName: "Walgreens Photo",
+            productName: "5x7 folded cards, standard cardstock 85lb",
+            portalUrl: retailPrinterProductLinks.walgreens.productUrl,
+            subtotalBeforeCouponCents: 349,
+            expectedDiscountCents: 209,
+            expectedSubtotalAfterCouponCents: 140,
+            cartTerms: {
+              vendorId: "walgreens",
+              productKind: "folded-card",
+              size: "5x7",
+              pricedQuantity: 1,
+              fulfillmentMode: "pickup",
+              accountState: "logged-in"
+            },
+            sameCartTermsEvidenceRequired: true
+          }
+        ],
+        requiredEvidence: [
+          "retailer coupon page or coupon-provider feed capture",
+          "provider portal checkout subtotal after coupon application",
+          "same product, quantity, fulfillment mode, and account state",
+          "no payment or order submission"
+        ],
+        liveCheckoutAutomation: false,
+        noOrderPlacedRequired: true,
+        canAffectBestPrice: false
+      }
+    ]
+  },
+  cvs: {
+    retailerCouponTargets: [
+      {
+        id: "cvs-photo-official-coupons",
+        label: "CVS Photo official coupon page",
+        vendorIds: ["cvs"],
+        mode: "retailer-public-coupon-page",
+        role: "coupon-source",
+        readiness: "ready-public-page",
+        url: "https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo",
+        collectionMethod: "server-fetch-html",
+        credentialEnvKeys: [],
+        sourceProvider: "retailer",
+        maxAgeHours: 24,
+        expectedOfferCodes: ["JUNESW"],
+        verificationSignals: ["JUNESW", "50% off Sitewide", "Offer valid online and in the CVS Health app"],
+        staticHtmlSignalAllowed: true,
+        browserRenderProofRequired: false,
+        legalReviewRequired: true,
+        noNetworkRuntime: true
+      }
+    ],
+    printEntrypointTargets: [
+      {
+        id: "cvs-photo-card-design-entrypoint",
+        label: "CVS Photo 5x7 folded greeting card design-detail print entrypoint",
+        vendorIds: ["cvs"],
+        mode: "retailer-public-coupon-page",
+        role: "print-entrypoint",
+        readiness: "ready-public-page",
+        url: retailPrinterProductLinks.cvs.productUrl,
+        collectionMethod: "rendered-browser-read",
+        credentialEnvKeys: [],
+        sourceProvider: "retailer",
+        maxAgeHours: 24,
+        expectedOfferCodes: ["JUNESW"],
+        verificationSignals: ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"],
+        staticHtmlSignalAllowed: true,
+        browserRenderProofRequired: true,
+        legalReviewRequired: true,
+        noNetworkRuntime: true
+      }
+    ],
+    candidateOfferCodes: ["JUNESW"],
+    portalApplicationPackets: [
+      {
+        id: "cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet",
+        offerId: "cvs-junesw-sitewide-photo-2026-06-20",
+        vendorId: "cvs",
+        code: "JUNESW",
+        label: "50% off Sitewide Photo",
+        status: "portal-evidence-required",
+        evidenceStatus: "source-listed",
+        discountPercent: 50,
+        requiresLoggedInAccount: false,
+        sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
+        providerPortalUrls: [
+          retailPrinterProductLinks.cvs.productUrl,
+          "https://www.cvs.com/photo/prints",
+          "https://www.cvs.com/photo/cards",
+          "https://www.cvs.com/Photo/Cards"
+        ],
+        applicationTargets: [
+          {
+            sourcePriceObservationId: "cvs-5x7-double-sided-cardstock",
+            vendorName: "CVS Photo",
+            productName: "5x7 double-sided cardstock card",
+            portalUrl: "https://www.cvs.com/Photo/Cards",
+            subtotalBeforeCouponCents: 3980,
+            expectedDiscountCents: 1990,
+            expectedSubtotalAfterCouponCents: 1990,
+            cartTerms: {
+              vendorId: "cvs",
+              productKind: "flat-card",
+              size: "5x7",
+              pricedQuantity: 20,
+              fulfillmentMode: "pickup",
+              accountState: "guest-or-public"
+            },
+            sameCartTermsEvidenceRequired: true
+          },
+          {
+            sourcePriceObservationId: "cvs-5x7-photo-card",
+            vendorName: "CVS Photo",
+            productName: "5x7 photo card",
+            portalUrl: "https://www.cvs.com/Photo/Cards",
+            subtotalBeforeCouponCents: 2180,
+            expectedDiscountCents: 1090,
+            expectedSubtotalAfterCouponCents: 1090,
+            cartTerms: {
+              vendorId: "cvs",
+              productKind: "photo-card",
+              size: "5x7",
+              pricedQuantity: 20,
+              fulfillmentMode: "pickup",
+              accountState: "guest-or-public"
+            },
+            sameCartTermsEvidenceRequired: true
+          },
+          {
+            sourcePriceObservationId: "cvs-5x7-premium-card",
+            vendorName: "CVS Photo",
+            productName: "Same Day 5x7 Premium card",
+            portalUrl: "https://www.cvs.com/Photo/Cards",
+            subtotalBeforeCouponCents: 4980,
+            expectedDiscountCents: 2490,
+            expectedSubtotalAfterCouponCents: 2490,
+            cartTerms: {
+              vendorId: "cvs",
+              productKind: "premium-card",
+              size: "5x7",
+              pricedQuantity: 20,
+              fulfillmentMode: "pickup",
+              accountState: "guest-or-public"
+            },
+            sameCartTermsEvidenceRequired: true
+          },
+          {
+            sourcePriceObservationId: "cvs-5x7-folded-card",
+            vendorName: "CVS Photo",
+            productName: "Folded greeting card, 5x7",
+            portalUrl: retailPrinterProductLinks.cvs.productUrl,
+            subtotalBeforeCouponCents: 898,
+            expectedDiscountCents: 449,
+            expectedSubtotalAfterCouponCents: 449,
+            cartTerms: {
+              vendorId: "cvs",
+              productKind: "folded-card",
+              size: "5x7",
+              pricedQuantity: 1,
+              fulfillmentMode: "pickup",
+              accountState: "guest-or-public"
+            },
+            sameCartTermsEvidenceRequired: true
+          }
+        ],
+        requiredEvidence: [
+          "retailer coupon page or coupon-provider feed capture",
+          "provider portal checkout subtotal after coupon application",
+          "same product, quantity, fulfillment mode, and account state",
+          "no payment or order submission"
+        ],
+        liveCheckoutAutomation: false,
+        noOrderPlacedRequired: true,
+        canAffectBestPrice: false
+      }
+    ]
+  }
+};
+
 const operationShapes = {
   "fetch-price": {
     label: "Fetch price",
@@ -223,6 +508,7 @@ export function validateRetailPrinterOperationStartPackets(packets = buildRetail
     if (packet.couponCollectionPlan.canAffectBestPriceBeforePortalEvidence !== false) {
       errors.push(`Retail printer operation start packet ${packet.id} must block coupon ranking before portal evidence.`);
     }
+    errors.push(...validateOperationStartCouponCollectionPlan(packet, productLink));
     if (
       !packet.couponPortalApplicationRequired ||
       !packet.bestPriceRequiresProviderPortalEvidence ||
@@ -259,9 +545,92 @@ export function validateRetailPrinterOperationStartPackets(packets = buildRetail
   return errors;
 }
 
+function validateOperationStartCouponCollectionPlan(packet, productLink) {
+  const errors = [];
+  const plan = packet.couponCollectionPlan;
+  const couponContract = couponCollectionContracts[packet.vendorId];
+  const expectedProviderFeedTargetIds = couponContract ? couponProviderFeedTargets.map((target) => target.id) : [];
+  const expectedRetailerCouponTargetIds = couponContract?.retailerCouponTargets.map((target) => target.id) ?? [];
+  const expectedPrintEntrypointTargetIds = couponContract?.printEntrypointTargets.map((target) => target.id) ?? [];
+  const expectedCandidateOfferCodes = couponContract?.candidateOfferCodes ?? [];
+  const expectedPortalApplicationPacketIds = couponContract?.portalApplicationPackets.map((portalPacket) => portalPacket.id) ?? [];
+  const expectedCollectionTargetIds = [
+    ...expectedProviderFeedTargetIds,
+    ...expectedRetailerCouponTargetIds,
+    ...expectedPrintEntrypointTargetIds
+  ];
+
+  if (!sameStringArray(plan.providerFeedTargetIds, expectedProviderFeedTargetIds)) {
+    errors.push(`Retail printer operation start packet ${packet.id} must use registered coupon provider feed target ids.`);
+  }
+  if (!sameStringArray(plan.retailerCouponTargetIds, expectedRetailerCouponTargetIds)) {
+    errors.push(`Retail printer operation start packet ${packet.id} must use registered official retailer coupon target ids.`);
+  }
+  if (!sameStringArray(plan.printEntrypointTargetIds, expectedPrintEntrypointTargetIds)) {
+    errors.push(`Retail printer operation start packet ${packet.id} must use registered rendered print-link target ids.`);
+  }
+  if (!sameStringArray(plan.collectionTargetIds, expectedCollectionTargetIds)) {
+    errors.push(`Retail printer operation start packet ${packet.id} must expose coupon collection target ids without drift.`);
+  }
+  if (!sameStringArray(plan.candidateOfferCodes, expectedCandidateOfferCodes)) {
+    errors.push(`Retail printer operation start packet ${packet.id} must expose only registered source-listed coupon codes.`);
+  }
+  if (!sameStringArray(plan.portalApplicationPacketIds, expectedPortalApplicationPacketIds)) {
+    errors.push(`Retail printer operation start packet ${packet.id} must expose registered portal application packet ids.`);
+  }
+  if (!couponContract && plan.collectionTargetIds.length > 0) {
+    errors.push(`Retail printer operation start packet ${packet.id} must not invent coupon targets for ${packet.vendorId}.`);
+  }
+
+  for (const target of [...plan.providerFeedTargets, ...plan.retailerCouponTargets, ...plan.printEntrypointTargets]) {
+    if (!plan.collectionTargetIds.includes(target.id)) {
+      errors.push(`Retail printer operation start packet ${packet.id} coupon target ${target.id} must appear in collectionTargetIds.`);
+    }
+    if (target.role === "provider-feed" && target.collectionMethod !== "provider-api-feed") {
+      errors.push(`Retail printer operation start packet ${packet.id} provider feed ${target.id} must use provider-api-feed.`);
+    }
+    if (target.role === "coupon-source" && target.collectionMethod !== "server-fetch-html") {
+      errors.push(`Retail printer operation start packet ${packet.id} coupon source ${target.id} must use server-fetch-html.`);
+    }
+    if (target.role === "print-entrypoint") {
+      if (target.collectionMethod !== "rendered-browser-read") {
+        errors.push(`Retail printer operation start packet ${packet.id} print entrypoint ${target.id} must use rendered-browser-read.`);
+      }
+      if (target.url !== productLink?.productUrl) {
+        errors.push(`Retail printer operation start packet ${packet.id} print entrypoint ${target.id} must use the exact product URL.`);
+      }
+      if (target.browserRenderProofRequired !== true) {
+        errors.push(`Retail printer operation start packet ${packet.id} print entrypoint ${target.id} must require browser render proof.`);
+      }
+    }
+  }
+
+  for (const portalPacket of plan.portalApplicationPackets) {
+    if (portalPacket.vendorId !== packet.vendorId) {
+      errors.push(`Retail printer operation start packet ${packet.id} portal packet ${portalPacket.id} must match packet vendor.`);
+    }
+    if (portalPacket.canAffectBestPrice !== false || portalPacket.liveCheckoutAutomation !== false) {
+      errors.push(`Retail printer operation start packet ${packet.id} portal packet ${portalPacket.id} must stay proof-gated.`);
+    }
+    if (!Array.isArray(portalPacket.applicationTargets) || portalPacket.applicationTargets.length === 0) {
+      errors.push(`Retail printer operation start packet ${packet.id} portal packet ${portalPacket.id} must include application targets.`);
+    }
+  }
+
+  return errors;
+}
+
 export function parseRetailPrinterVendorId(value) {
   const candidate = `${value ?? ""}`.trim();
   return Object.hasOwn(retailPrinterProductLinks, candidate) ? candidate : undefined;
+}
+
+function sameStringArray(actual, expected) {
+  return (
+    Array.isArray(actual) &&
+    actual.length === expected.length &&
+    actual.every((value, index) => value === expected[index])
+  );
 }
 
 export function parseRetailPrinterOperationKind(value) {
@@ -379,11 +748,16 @@ function buildOperationPolicy(productLink, operation) {
 
 function buildCouponCollectionPlan(productLink, operation) {
   const quantity = operation === "fetch-price" ? productLink.minimumQuantity : 1;
-  const candidateOfferCodes = productLink.candidateOfferCodes ?? [];
-  const portalApplicationPacketIds = productLink.portalApplicationPacketIds ?? [];
-  const providerFeedTargetIds = ["fmtc-deal-feed", "rakuten-coupon-feed"];
-  const retailerCouponTargetIds = [`${productLink.vendorId}-official-photo-coupons`];
-  const printEntrypointTargetIds = [`${productLink.vendorId}-photo-card-design-entrypoint`];
+  const couponContract = couponCollectionContracts[productLink.vendorId];
+  const providerFeedTargets = couponContract ? couponProviderFeedTargets : [];
+  const retailerCouponTargets = couponContract?.retailerCouponTargets ?? [];
+  const printEntrypointTargets = couponContract?.printEntrypointTargets ?? [];
+  const portalApplicationPackets = couponContract?.portalApplicationPackets ?? [];
+  const candidateOfferCodes = couponContract?.candidateOfferCodes ?? [];
+  const providerFeedTargetIds = providerFeedTargets.map((target) => target.id);
+  const retailerCouponTargetIds = retailerCouponTargets.map((target) => target.id);
+  const printEntrypointTargetIds = printEntrypointTargets.map((target) => target.id);
+  const portalApplicationPacketIds = portalApplicationPackets.map((packet) => packet.id);
 
   return {
     vendorId: productLink.vendorId,
@@ -392,18 +766,13 @@ function buildCouponCollectionPlan(productLink, operation) {
     providerFeedTargetIds,
     retailerCouponTargetIds,
     printEntrypointTargetIds,
-    credentialEnvKeys: ["FMTC_API_TOKEN", "RAKUTEN_ADVERTISING_API_TOKEN"],
+    credentialEnvKeys: [...new Set(providerFeedTargets.flatMap((target) => target.credentialEnvKeys))],
     candidateOfferCodes,
     portalApplicationPacketIds,
-    providerFeedTargets: [],
-    retailerCouponTargets: [],
-    printEntrypointTargets: [],
-    portalApplicationPackets: portalApplicationPacketIds.map((id) => ({
-      id,
-      vendorId: productLink.vendorId,
-      status: "portal-evidence-required",
-      canAffectBestPrice: false
-    })),
+    providerFeedTargets,
+    retailerCouponTargets,
+    printEntrypointTargets,
+    portalApplicationPackets,
     couponPolicy: {
       providerPortalApplicationRequired: true,
       couponsIncludedInDisplayedPrices: "only-after-provider-portal-application",
@@ -414,11 +783,21 @@ function buildCouponCollectionPlan(productLink, operation) {
     canAffectBestPriceBeforePortalEvidence: false,
     noNetworkRuntime: true,
     operatorSteps: [
-      "Collect coupon candidates from configured coupon provider feeds when credentials exist.",
-      "Open the exact provider product print link for same-cart application proof.",
+      providerFeedTargets.length > 0
+        ? `Run credentialed coupon provider feed targets first when approved server/operator credentials exist: ${providerFeedTargetIds.join(", ")}.`
+        : `No credentialed coupon provider feed target is registered for ${productLink.vendorId}; do not invent third-party coupon candidates.`,
+      [...retailerCouponTargetIds, ...printEntrypointTargetIds].length > 0
+        ? `Collect official retailer coupon-page evidence and rendered print-link evidence from: ${[
+            ...retailerCouponTargetIds,
+            ...printEntrypointTargetIds
+          ].join(", ")}.`
+        : `No official retailer coupon target is registered for ${productLink.vendorId}; record no source-listed coupon before ranking.`,
       candidateOfferCodes.length > 0
         ? `Apply candidate coupon code(s) ${candidateOfferCodes.join(", ")} in the same provider portal cart during pricing collection.`
         : "Record that no active source-listed coupon code is available for this provider before ranking.",
+      portalApplicationPacketIds.length > 0
+        ? `Record same-cart provider portal evidence against packet(s): ${portalApplicationPacketIds.join(", ")}.`
+        : "Do not create ad hoc coupon portal evidence without a registered packet.",
       "Do not apply a discount to best-price ranking until the provider portal shows the code accepted."
     ]
   };

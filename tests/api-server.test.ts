@@ -897,7 +897,12 @@ describe("api server wrapper", () => {
             clientMayPrepareProviderRequest: false,
             networkRequestPrepared: false,
             liveQuoteEnabled: false,
-            couponPortalApplicationRequired: true
+            couponPortalApplicationRequired: true,
+            couponCollectionPlan: expect.objectContaining({
+              retailerCouponTargetIds: ["walgreens-photo-official-deals"],
+              printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
+              candidateOfferCodes: ["CRISPCARD"]
+            })
           }),
           expect.objectContaining({
             id: "cvs-place-order-operation-start",
@@ -905,7 +910,12 @@ describe("api server wrapper", () => {
             operation: "place-order",
             providerRequestUrl: null,
             realOrdersEnabled: false,
-            orderPlacementEnabled: false
+            orderPlacementEnabled: false,
+            couponCollectionPlan: expect.objectContaining({
+              retailerCouponTargetIds: ["cvs-photo-official-coupons"],
+              printEntrypointTargetIds: ["cvs-photo-card-design-entrypoint"],
+              candidateOfferCodes: ["JUNESW"]
+            })
           })
         ])
       );
@@ -1005,7 +1015,14 @@ describe("api server wrapper", () => {
           bestPriceRequiresProviderPortalEvidence: true,
           canAffectBestPriceBeforePortalEvidence: false,
           providerRequestUrl: null,
-          requestPrepared: false
+          requestPrepared: false,
+          couponCollectionPlan: expect.objectContaining({
+            providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+            retailerCouponTargetIds: ["walgreens-photo-official-deals"],
+            printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
+            candidateOfferCodes: ["CRISPCARD"],
+            portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"]
+          })
         }),
         repository: {
           tables: ["auth_sessions", "idempotency_keys", "audit_log"],

@@ -396,14 +396,28 @@ describe("api contracts", () => {
           clientMayPrepareProviderRequest: false,
           networkRequestPrepared: false,
           liveQuoteEnabled: false,
-          couponPortalApplicationRequired: true
+          couponPortalApplicationRequired: true,
+          couponCollectionPlan: expect.objectContaining({
+            providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+            retailerCouponTargetIds: ["walgreens-photo-official-deals"],
+            printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
+            candidateOfferCodes: ["CRISPCARD"],
+            portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"]
+          })
         }),
         expect.objectContaining({
           id: "cvs-place-order-operation-start",
           vendorId: "cvs",
           operation: "place-order",
           orderPlacementEnabled: false,
-          canAffectBestPriceBeforePortalEvidence: false
+          canAffectBestPriceBeforePortalEvidence: false,
+          couponCollectionPlan: expect.objectContaining({
+            providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+            retailerCouponTargetIds: ["cvs-photo-official-coupons"],
+            printEntrypointTargetIds: ["cvs-photo-card-design-entrypoint"],
+            candidateOfferCodes: ["JUNESW"],
+            portalApplicationPacketIds: ["cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet"]
+          })
         })
       ])
     );

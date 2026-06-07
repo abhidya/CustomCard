@@ -92,6 +92,96 @@ describe("retail printer operation start packets", () => {
     );
   });
 
+  it("keeps coupon provider, print-link, and portal proof targets aligned with pricing collection", () => {
+    const packets = buildRetailPrinterOperationStartPackets();
+    const walgreens = packets.find((packet) => packet.id === "walgreens-fetch-price-operation-start");
+    const cvs = packets.find((packet) => packet.id === "cvs-fetch-price-operation-start");
+    const walmart = packets.find((packet) => packet.id === "walmart-fetch-price-operation-start");
+    const fedex = packets.find((packet) => packet.id === "fedex-fetch-price-operation-start");
+
+    expect(walgreens?.couponCollectionPlan).toMatchObject({
+      collectionTargetIds: [
+        "fmtc-deal-feed",
+        "rakuten-coupon-feed",
+        "walgreens-photo-official-deals",
+        "walgreens-photo-card-design-entrypoint"
+      ],
+      providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+      retailerCouponTargetIds: ["walgreens-photo-official-deals"],
+      printEntrypointTargetIds: ["walgreens-photo-card-design-entrypoint"],
+      candidateOfferCodes: ["CRISPCARD"],
+      portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"]
+    });
+    expect(walgreens?.couponCollectionPlan.providerFeedTargets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "fmtc-deal-feed", collectionMethod: "provider-api-feed" }),
+        expect.objectContaining({ id: "rakuten-coupon-feed", collectionMethod: "provider-api-feed" })
+      ])
+    );
+    expect(walgreens?.couponCollectionPlan.printEntrypointTargets).toEqual([
+      expect.objectContaining({
+        id: "walgreens-photo-card-design-entrypoint",
+        url: retailPrinterProductLinks.walgreens.productUrl,
+        browserRenderProofRequired: true
+      })
+    ]);
+    expect(walgreens?.couponCollectionPlan.portalApplicationPackets).toEqual([
+      expect.objectContaining({
+        id: "walgreens-crispcard-cards-2026-06-13-portal-application-packet",
+        canAffectBestPrice: false,
+        liveCheckoutAutomation: false,
+        applicationTargets: [
+          expect.objectContaining({
+            sourcePriceObservationId: "walgreens-5x7-folded-card",
+            expectedSubtotalAfterCouponCents: 140,
+            cartTerms: expect.objectContaining({ accountState: "logged-in" })
+          })
+        ]
+      })
+    ]);
+
+    expect(cvs?.couponCollectionPlan).toMatchObject({
+      collectionTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed", "cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
+      providerFeedTargetIds: ["fmtc-deal-feed", "rakuten-coupon-feed"],
+      retailerCouponTargetIds: ["cvs-photo-official-coupons"],
+      printEntrypointTargetIds: ["cvs-photo-card-design-entrypoint"],
+      candidateOfferCodes: ["JUNESW"],
+      portalApplicationPacketIds: ["cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet"]
+    });
+    expect(cvs?.couponCollectionPlan.printEntrypointTargets).toEqual([
+      expect.objectContaining({
+        id: "cvs-photo-card-design-entrypoint",
+        url: retailPrinterProductLinks.cvs.productUrl,
+        browserRenderProofRequired: true
+      })
+    ]);
+    expect(cvs?.couponCollectionPlan.portalApplicationPackets[0]).toMatchObject({
+      id: "cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet",
+      canAffectBestPrice: false,
+      liveCheckoutAutomation: false,
+      applicationTargets: expect.arrayContaining([
+        expect.objectContaining({ sourcePriceObservationId: "cvs-5x7-folded-card", expectedSubtotalAfterCouponCents: 449 }),
+        expect.objectContaining({ sourcePriceObservationId: "cvs-5x7-photo-card", expectedSubtotalAfterCouponCents: 1090 })
+      ])
+    });
+
+    for (const packet of [walmart, fedex]) {
+      expect(packet?.couponCollectionPlan).toMatchObject({
+        collectionTargetIds: [],
+        providerFeedTargetIds: [],
+        retailerCouponTargetIds: [],
+        printEntrypointTargetIds: [],
+        candidateOfferCodes: [],
+        portalApplicationPacketIds: [],
+        providerFeedTargets: [],
+        retailerCouponTargets: [],
+        printEntrypointTargets: [],
+        portalApplicationPackets: []
+      });
+      expect(packet?.couponCollectionPlan.operatorSteps.join(" ")).toContain("do not invent third-party coupon candidates");
+    }
+  });
+
   it("parses only supported vendors and operations", () => {
     expect(parseRetailPrinterVendorId("walgreens")).toBe("walgreens");
     expect(parseRetailPrinterVendorId("example")).toBeUndefined();

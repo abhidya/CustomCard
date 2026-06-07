@@ -33,6 +33,18 @@ export interface RetailPrinterOperationStartPacket {
   providerEntrypoint: Record<string, unknown> & { operation: RetailPrinterOperationKind; url: string };
   operationPolicy: Record<string, unknown> & { kind: RetailPrinterOperationKind };
   couponCollectionPlan: Record<string, unknown> & {
+    collectionTargetIds: string[];
+    providerFeedTargetIds: string[];
+    retailerCouponTargetIds: string[];
+    printEntrypointTargetIds: string[];
+    candidateOfferCodes: string[];
+    portalApplicationPacketIds: string[];
+    providerFeedTargets: Array<Record<string, unknown> & { id: string; collectionMethod: string; role: string }>;
+    retailerCouponTargets: Array<Record<string, unknown> & { id: string; url: string; collectionMethod: string; role: string }>;
+    printEntrypointTargets: Array<
+      Record<string, unknown> & { id: string; url: string; collectionMethod: "rendered-browser-read"; role: "print-entrypoint" }
+    >;
+    portalApplicationPackets: Array<Record<string, unknown> & { id: string; canAffectBestPrice: false }>;
     couponPolicy: Record<string, unknown> & { providerPortalApplicationRequired: true };
     bestPriceRequiresProviderPortalEvidence: true;
     canAffectBestPriceBeforePortalEvidence: false;
