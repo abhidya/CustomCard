@@ -383,7 +383,7 @@ export const storyboards: Storyboard[] = [
     acceptance: [
       "Every milestone has deliverables, tests, and exit criteria.",
       "Final gates include slop cleanup and independent review.",
-      "Unsafe real-world side effects remain mocked until certified."
+      "Unsafe real-world side effects remain represented as no-network contracts until certified."
     ],
     criticality: "must-have"
   }
@@ -552,7 +552,7 @@ export const architectureProfiles: ArchitectureProfile[] = [
     id: "prototype",
     title: "Local prototype",
     costShape: "Developer laptop or free-tier preview",
-    stack: ["Vite/React", "SQLite fixtures", "local renderer", "mock vendor catalog"],
+    stack: ["Vite/React", "SQLite fixtures", "local renderer", "certification-gated retail catalog"],
     scalingMove: "Proves workflows and renderer contracts before OAuth or real vendors.",
     tradeoffs: ["No real OAuth", "No real payments", "Fast iteration"]
   },

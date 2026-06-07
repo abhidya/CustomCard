@@ -1,6 +1,13 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { agents } from "./domain";
-import { agentNames, defaultAgentPolicy, type AgentEnvelope, type PrintRendererInput } from "./agentContracts";
+import {
+  agentNames,
+  defaultAgentPolicy,
+  type AgentEnvelope,
+  type FulfillmentAdapterOutput,
+  type PrintRendererInput
+} from "./agentContracts";
 
 describe("agent orchestration contracts", () => {
   it("keeps the typed agent names aligned with the visible domain pipeline", () => {
@@ -51,5 +58,22 @@ describe("agent orchestration contracts", () => {
     expect(envelope.agent).toBe("print_renderer");
     expect(envelope.input.adapter.targetPixels).toEqual({ width: 1500, height: 2100, dpi: 300 });
     expect(envelope.policy.realOrdersEnabled).toBe(false);
+  });
+
+  it("uses contract-review language instead of mock fulfillment modes", () => {
+    const source = readFileSync("src/agentContracts.ts", "utf8");
+    const output: FulfillmentAdapterOutput = {
+      mode: "contractReview",
+      canPlaceRealOrder: false,
+      requiredNextGate: "retail-certification"
+    };
+
+    expect(output).toEqual({
+      mode: "contractReview",
+      canPlaceRealOrder: false,
+      requiredNextGate: "retail-certification"
+    });
+    expect(source).toContain('"contractReview"');
+    expect(source).not.toContain('"mock"');
   });
 });

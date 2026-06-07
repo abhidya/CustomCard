@@ -96,7 +96,7 @@ export interface FulfillmentAdapterInput {
 }
 
 export interface FulfillmentAdapterOutput {
-  mode: "mock" | "vendorDryRun" | "certifiedLive";
+  mode: "contractReview" | "vendorDryRun" | "certifiedLive";
   canPlaceRealOrder: false;
   requiredNextGate: string;
 }
