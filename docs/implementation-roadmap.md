@@ -81,6 +81,11 @@ work.
 
 Goal: Detect candidate events from connected Google accounts.
 
+Current planning contract: `src/onboardingCalendar.ts` and
+`docs/onboarding-calendar-plan.md` define the user stories, onboarding stages,
+Google Calendar OAuth-readiness gates, and iCloud manual ICS export fallback.
+This is not live OAuth or background sync.
+
 Components:
 1. Google OAuth with minimal scopes.
 2. ConnectedAccount model.
@@ -94,6 +99,16 @@ Acceptance criteria:
 2. System detects candidate events.
 3. System shows evidence snippets and confidence.
 4. User can dismiss, edit, or convert an opportunity into a card project.
+
+Contract acceptance before implementation:
+1. Calendar source selection names the exact data boundary before import.
+2. Google Calendar uses only `calendar.events.readonly` for event metadata.
+3. iCloud users can continue with manual ICS export without storing Apple
+   credentials.
+4. Import preview precedes card project creation, memory creation, vendor
+   sharing, payment, or ordering.
+5. Revocation, retention, and raw-content rejection gates are tested before live
+   provider calls are enabled.
 
 ## Milestone 4: Relationship Memory
 
