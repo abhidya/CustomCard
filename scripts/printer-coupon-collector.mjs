@@ -9,6 +9,7 @@ const renderPrintLinks = isEnabled(process.env.CUSTOMCARD_COUPON_RENDER_PRINT_LI
 const renderedEvidenceOutputPath = process.env.CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT?.trim();
 let couponProviderFeedCollectors;
 let couponPortalEvidenceImporter;
+let couponBrowserEvidence;
 
 const vite = await createServer({
   appType: "custom",
@@ -29,6 +30,14 @@ try {
   } = await vite.ssrLoadModule("/src/printerPricing.ts");
   couponProviderFeedCollectors = await vite.ssrLoadModule("/src/printerCouponProviderFeeds.ts");
   couponPortalEvidenceImporter = await vite.ssrLoadModule("/src/printerCouponPortalEvidence.ts");
+  couponBrowserEvidence = await vite.ssrLoadModule("/src/printerCouponBrowserEvidence.ts");
+  const {
+    combinePrinterCouponBrowserEvidence,
+    findPrinterCouponBrowserEvidenceTarget,
+    getPrinterCouponRenderedEvidenceStatus,
+    summarizePrinterCouponBrowserEvidence,
+    validatePrinterCouponBrowserEvidenceArtifact
+  } = couponBrowserEvidence;
   const generatedAt = new Date();
   const operatorBrowserEvidencePath = process.env.CUSTOMCARD_COUPON_BROWSER_EVIDENCE?.trim();
   const operatorPortalEvidencePath = process.env.CUSTOMCARD_COUPON_PORTAL_EVIDENCE?.trim();
@@ -41,10 +50,13 @@ try {
   if (renderedBrowserCollector.evidence && renderedEvidenceOutputPath) {
     writeFileSync(renderedEvidenceOutputPath, `${JSON.stringify(renderedBrowserCollector.evidence, null, 2)}\n`);
   }
-  const operatorBrowserEvidence = combineOperatorBrowserEvidence(
+  const operatorBrowserEvidence = combinePrinterCouponBrowserEvidence(
     loadOperatorBrowserEvidence(operatorBrowserEvidencePath),
     renderedBrowserCollector.evidence
   );
+  const operatorBrowserEvidenceValidation = operatorBrowserEvidence
+    ? validatePrinterCouponBrowserEvidenceArtifact(operatorBrowserEvidence, printerCouponCollectionTargets)
+    : [];
   const providerFeedTargets = [];
 
   for (const target of printerCouponCollectionTargets.filter((candidate) => candidate.role === "provider-feed")) {
@@ -61,7 +73,10 @@ try {
     const matchedVerificationSignals = target.verificationSignals.filter((signal) => body.toLowerCase().includes(signal.toLowerCase()));
     const missingVerificationSignals = target.verificationSignals.filter((signal) => !matchedVerificationSignals.includes(signal));
     const staticHtmlExpectedCodeVisible = target.expectedOfferCodes.length > 0 && target.expectedOfferCodes.every((code) => matchedCodes.includes(code));
-    const browserEvidence = summarizeOperatorBrowserEvidence(findOperatorBrowserEvidence(operatorBrowserEvidence, target), target);
+    const browserEvidence = summarizePrinterCouponBrowserEvidence(
+      findPrinterCouponBrowserEvidenceTarget(operatorBrowserEvidence, target),
+      target
+    );
 
     fetchedTargets.push({
       id: target.id,
@@ -84,7 +99,7 @@ try {
       matchedVerificationSignals,
       missingVerificationSignals,
       browserEvidence,
-      renderedBrowserEvidenceStatus: renderedBrowserEvidenceStatus(target, staticHtmlExpectedCodeVisible, browserEvidence),
+      renderedBrowserEvidenceStatus: getPrinterCouponRenderedEvidenceStatus(target, staticHtmlExpectedCodeVisible, browserEvidence),
       bytes: body.length
     });
 
@@ -195,6 +210,7 @@ try {
         renderedBrowserEvidenceOutputPath: renderedEvidenceOutputPath ? "CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT" : null,
         operatorBrowserEvidencePath: operatorBrowserEvidencePath ? "CUSTOMCARD_COUPON_BROWSER_EVIDENCE" : null,
         operatorBrowserEvidenceLoaded: Boolean(operatorBrowserEvidence),
+        operatorBrowserEvidenceValidation,
         operatorBrowserEvidenceAttachedCount: fetchedTargets.filter((target) => target.browserEvidence?.attached).length,
         operatorPortalEvidencePath: operatorPortalEvidencePath ? "CUSTOMCARD_COUPON_PORTAL_EVIDENCE" : null,
         operatorPortalEvidenceLoaded: providerPortalEvidenceImport.status !== "not-provided",
@@ -281,77 +297,9 @@ function summarizePortalEvidenceImport(importResult) {
   return summary;
 }
 
-function combineOperatorBrowserEvidence(...evidenceSources) {
-  const targets = evidenceSources
-    .flatMap((evidence) => (Array.isArray(evidence?.targets) ? evidence.targets : []))
-    .filter(Boolean);
-  if (targets.length === 0) return null;
-
-  return {
-    service: "customcard-printer-coupon-browser-evidence",
-    generatedAtIso: new Date().toISOString(),
-    runtime: "combined-operator-browser-evidence",
-    targets
-  };
-}
-
-function findOperatorBrowserEvidence(evidence, target) {
-  const targets = Array.isArray(evidence?.targets) ? evidence.targets : [];
-  return targets.find((candidate) => {
-    const targetId = candidate.targetId ?? candidate.id;
-    return targetId === target.id && (!candidate.url || candidate.url === target.url);
-  });
-}
-
-function summarizeOperatorBrowserEvidence(evidence, target) {
-  if (!evidence) return null;
-
-  const visibleTextSignals = normalizeSignalList(evidence.visibleTextSignals ?? evidence.visibleSignals);
-  const pageHtmlSignals = normalizeSignalList(evidence.pageHtmlSignals ?? evidence.htmlSignals);
-  const allSignals = [...visibleTextSignals, ...pageHtmlSignals];
-  const matchedVisibleExpectedCodes = target.expectedOfferCodes.filter((code) => signalListIncludes(visibleTextSignals, code));
-  const matchedHtmlExpectedCodes = target.expectedOfferCodes.filter((code) => signalListIncludes(pageHtmlSignals, code));
-  const matchedVerificationSignals = target.verificationSignals.filter((signal) => signalListIncludes(allSignals, signal));
-  const visibleTextExpectedCodeVisible =
-    target.expectedOfferCodes.length > 0 && target.expectedOfferCodes.every((code) => matchedVisibleExpectedCodes.includes(code));
-  const pageHtmlExpectedCodeVisible =
-    target.expectedOfferCodes.length > 0 && target.expectedOfferCodes.every((code) => matchedHtmlExpectedCodes.includes(code));
-  const noCheckoutAction = evidence.noCheckoutAction === true && evidence.noUploadAction !== false && evidence.noOrderPlaced !== false;
-
-  return {
-    attached: true,
-    observedAtIso: evidence.observedAtIso,
-    targetId: evidence.targetId ?? evidence.id,
-    url: evidence.url,
-    renderedTitle: evidence.renderedTitle ?? evidence.title,
-    visibleTextExpectedCodeVisible,
-    pageHtmlExpectedCodeVisible,
-    matchedVisibleExpectedCodes,
-    matchedHtmlExpectedCodes,
-    matchedVerificationSignals,
-    noCheckoutAction,
-    validForRenderedProof: visibleTextExpectedCodeVisible && noCheckoutAction
-  };
-}
-
-function renderedBrowserEvidenceStatus(target, staticHtmlExpectedCodeVisible, browserEvidence) {
-  if (!target.browserRenderProofRequired) return "not-required";
-  if (browserEvidence?.validForRenderedProof) return "operator-browser-proof-attached";
-  if (browserEvidence?.pageHtmlExpectedCodeVisible && browserEvidence.noCheckoutAction) {
-    return "operator-browser-html-signal-attached-visible-proof-still-required";
-  }
-  if (staticHtmlExpectedCodeVisible) return "static-html-signal-only-browser-proof-required";
-  return "operator-browser-or-provider-portal-proof-required";
-}
-
 function normalizeSignalList(value) {
   if (!Array.isArray(value)) return [];
   return value.map((signal) => `${signal ?? ""}`.trim()).filter(Boolean);
-}
-
-function signalListIncludes(signals, expected) {
-  const normalizedExpected = expected.toLowerCase();
-  return signals.some((signal) => signal.toLowerCase().includes(normalizedExpected));
 }
 
 async function collectRenderedBrowserEvidence(targets) {

@@ -44,8 +44,9 @@ it after each meaningful implementation pass.
 - Printer-pricing tests and `npm run printer:pricing:doctor` cover 12
   review-only public Walgreens/CVS/FedEx/Walmart/Staples/Office Depot price
   observations, collection rules, 30-day freshness blocking, minimum quantity
-  math, source URLs, manual confirmation, customer/API exposure, CI wiring, and
-  `liveQuote: false`.
+  math, source URLs, coupon-provider feed adapters, rendered Walgreens/CVS
+  print-link browser evidence, provider-portal proof import, manual
+  confirmation, customer/API exposure, CI wiring, and `liveQuote: false`.
 - Localization tests and `npm run localization:doctor` cover English (US),
   Spanish (US), Urdu, and Arabic customer/admin/API/mobile readiness, complete
   message bundles, RTL layout-review gates, human copy-review gates, CI wiring,
@@ -484,8 +485,9 @@ npm run printer:pricing:doctor
 Result: passed. The JSON report marked catalog, safety, collection, tests,
 surfaces, docs, and CI lanes `ready`; it verified 12 official-source printer
 price observations across 8 persisted source links, 9 collection rules, manual
-confirmation on every observation, UI/API exposure, CI wiring, and no live quote
-or real-order claims.
+confirmation on every observation, provider-feed collection seams, rendered
+print-link browser-evidence validation, same-cart provider-portal proof gating,
+UI/API exposure, CI wiring, and no live quote or real-order claims.
 
 ```text
 npm run localization:doctor

@@ -8,6 +8,8 @@ const files = {
   couponCollector: "scripts/printer-coupon-collector.mjs",
   couponProviderFeeds: "src/printerCouponProviderFeeds.ts",
   couponPortalEvidence: "src/printerCouponPortalEvidence.ts",
+  couponBrowserEvidence: "src/printerCouponBrowserEvidence.ts",
+  couponBrowserEvidenceTest: "src/printerCouponBrowserEvidence.test.ts",
   browserEvidence: "docs/printer-coupon-browser-evidence.json",
   docs: "docs/printer-pricing-research.md",
   packageJson: "package.json",
@@ -141,7 +143,7 @@ const checks = [
     "$49.99 pre-tax base",
     "coupon candidates require provider-portal application proof"
   ]),
-  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.couponPortalEvidence}\n${contents.packageJson}`, [
+  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.couponPortalEvidence}\n${contents.couponBrowserEvidence}\n${contents.packageJson}`, [
     "printer-coupon-collector",
     "extractPrinterCouponOffers",
     "printEntrypointChecks",
@@ -152,6 +154,10 @@ const checks = [
     "renderedBrowserCollector",
     "CUSTOMCARD_COUPON_RENDER_PRINT_LINKS",
     "CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT",
+    "validatePrinterCouponBrowserEvidenceArtifact",
+    "summarizePrinterCouponBrowserEvidence",
+    "getPrinterCouponRenderedEvidenceStatus",
+    "operatorBrowserEvidenceValidation",
     "renderedBrowserEvidenceOutputPath",
     "operatorBrowserEvidenceLoaded",
     "operatorBrowserEvidenceAttachedCount",
@@ -191,6 +197,13 @@ const checks = [
     "same product, quantity, fulfillment mode, account state, and subtotal math",
     "bestPriceDiscountingAllowed: false",
     '"printer:coupons:collect": "node scripts/printer-coupon-collector.mjs"'
+  ]),
+  checkIncludes("tests", "browser-evidence-tests", contents.couponBrowserEvidenceTest, [
+    "distinguishes visible print-link coupon proof from HTML-only coupon signals",
+    "operator-browser-proof-attached",
+    "operator-browser-html-signal-attached-visible-proof-still-required",
+    "operator-browser-proof-invalid",
+    "must prove no upload action"
   ]),
   checkIncludes("collection", "operator-browser-evidence-artifact", contents.browserEvidence, [
     "customcard-printer-coupon-browser-evidence",

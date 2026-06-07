@@ -111,6 +111,11 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
+- Browser evidence parsing, validation, and status classification live in
+  `src/printerCouponBrowserEvidence.ts`. The collector imports that Module so
+  exact print-link proof, HTML-only coupon signals, invalid no-upload/no-order
+  evidence, and provider-portal discount proof stay separated at one tested
+  Adapter seam.
 - The customer bootstrap exposes only a safe pricing preview: selected vendor,
   known public price count, source count, maximum source age policy, and
   `liveQuote: false`.
@@ -139,17 +144,18 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-15:58 UTC `operator-chromium-rendered-read` check against the exact print
+17:25 UTC `operator-chromium-rendered-read` check against the exact print
 links. CVS rendered the `JUNESW` code visibly on the 5x7 folded card page, so
-the collector reports `operator-browser-proof-attached` when that evidence is
-attached or generated. The raw CVS public page also contains `GRADUATION` as a
-navigation/category heading; it is not treated as coupon evidence unless it
-appears in promo-code terms with product scope and dates. Walgreens rendered
-the 5x7 product and $3.49 price visibly, while `CRISPCARD` was present in page
-HTML but not visible text; the collector reports
-`operator-browser-html-signal-attached-visible-proof-still-required`. Neither
-status is provider-portal cart evidence, and neither can discount a best-price
-ranking.
+the browser-evidence Module reports `operator-browser-proof-attached` when that
+evidence is attached or generated. Walgreens rendered the 5x7 product and
+$3.49 price visibly, while `CRISPCARD` was present in page HTML but not visible
+text; the Module reports
+`operator-browser-html-signal-attached-visible-proof-still-required`. The raw
+CVS public page can drift between offers and may also contain a
+navigation/category heading such as `GRADUATION`; that is not treated as coupon
+evidence unless it appears in promo-code terms with product scope and dates.
+Neither rendered status is provider-portal cart evidence, and neither can
+discount a best-price ranking.
 
 That proof is modeled as structured `PrinterCouponPortalApplicationEvidence`:
 provider portal URL, source price observation ID, pre-coupon subtotal, discount,
