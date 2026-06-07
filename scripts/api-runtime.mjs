@@ -462,6 +462,17 @@ const mutationBodyContracts = {
       return resolveImportPreviewMetadata(body).missingFields;
     }
   },
+  "calendar-connection-start": {
+    requiredFields: ["calendarChoiceId"],
+    detail:
+      "Calendar connection start requires an explicit provider choice so the server can return the safe start packet without client-owned provider logic.",
+    missingFields(body) {
+      const calendarChoiceId = String(body.calendarChoiceId ?? body.choiceId ?? body.providerId ?? "").trim();
+      return ["manual-invite-or-ics", "google-calendar-events", "icloud-ics-fallback"].includes(calendarChoiceId)
+        ? []
+        : ["calendarChoiceId"];
+    }
+  },
   "render-packets": {
     requiredFields: ["projectId"],
     detail: "Render packet creation requires an explicit card project before artifact records can be prepared.",

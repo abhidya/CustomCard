@@ -109,6 +109,9 @@ Contract acceptance before implementation:
    sharing, payment, or ordering.
 5. Revocation, retention, and raw-content rejection gates are tested before live
    provider calls are enabled.
+6. `/api/calendar/connections/start` remains the server-owned start contract;
+   clients must not prepare Google OAuth URLs, Apple credentials, provider
+   callbacks, or background sync locally.
 
 ## Milestone 4: Relationship Memory
 

@@ -32,6 +32,7 @@ export const routes = [
   { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "admin-demo-reset", method: "POST", path: "/api/admin/demo-reset", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "calendar-connection-start", method: "POST", path: "/api/calendar/connections/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
@@ -310,7 +311,7 @@ export const readiness = {
   },
   persistence: {
     tables: 18,
-    schemaBackedRoutes: 13,
+    schemaBackedRoutes: 14,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
@@ -488,6 +489,11 @@ async function serveApi(request, response, path) {
         freshnessPolicy: "Use src/printerPricing.ts refresh report before showing prices as current.",
         externalNetworkCalls: false
       },
+      calendarConnections: {
+        startRoute: "/api/calendar/connections/start",
+        startPackets: calendarConnectionStartPackets(),
+        blockers: []
+      },
       realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
@@ -558,6 +564,7 @@ function validateApiServerContract() {
     "/api/admin/persistence-readiness",
     "/api/admin/demo-reset",
     "/api/import-preview",
+    "/api/calendar/connections/start",
     "/api/card-projects",
     "/api/memories/review",
     "/api/render-packets",
@@ -1044,6 +1051,34 @@ function buildMutationContractPayload(route, bodyText) {
     };
   }
 
+  if (route.id === "calendar-connection-start") {
+    const requestedChoiceId = safeCalendarChoiceId(requestBody.calendarChoiceId ?? requestBody.choiceId ?? requestBody.providerId);
+    const startPacket = buildCalendarConnectionStartPacket(requestedChoiceId);
+    return {
+      ...basePayload,
+      status: startPacket.canStartNow ? "ready-local" : "blocked",
+      requestedChoiceId,
+      startPacket,
+      serverOwned: true,
+      clientMayPrepareProviderRequest: false,
+      providerRequestUrl: null,
+      networkRequestPrepared: false,
+      credentialStorageEnabled: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false,
+      rawContentStored: false,
+      nextApiRoute: startPacket.nextApiRoute,
+      blockers: startPacket.missingRepoEvidenceIds,
+      repository: {
+        tables: ["auth_sessions", "idempotency_keys", "audit_log"],
+        runtimeMode: "contract",
+        persisted: false,
+        rawContentStored: false,
+        providerCredentialsStored: false
+      }
+    };
+  }
+
   if (route.id === "manual-vendor-handoff") {
     const projectId = safeContractId(requestBody.projectId ?? requestBody.cardProjectId, "");
     const renderPacketId = safeContractId(requestBody.renderPacketId, "");
@@ -1146,6 +1181,186 @@ function buildMutationContractPayload(route, bodyText) {
   return basePayload;
 }
 
+function calendarConnectionStartPackets() {
+  return [
+    buildCalendarConnectionStartPacket("manual-invite-or-ics"),
+    buildCalendarConnectionStartPacket("google-calendar-events"),
+    buildCalendarConnectionStartPacket("icloud-ics-fallback")
+  ];
+}
+
+function buildCalendarConnectionStartPacket(choiceId) {
+  const packets = {
+    "manual-invite-or-ics": {
+      id: "manual-invite-or-ics",
+      provider: "Manual invite or ICS paste",
+      label: "Paste invite or ICS",
+      status: "ready-local",
+      startMode: "metadata-import",
+      nextApiRoute: "/api/import-preview",
+      canStartNow: true,
+      sourceMode: "local-paste",
+      officialDocs: [],
+      requiredEnv: [],
+      requiredScopes: [],
+      officialScopeUris: [],
+      dataBoundary: "Customer-provided invite text or ICS event metadata only.",
+      credentialBoundary: "No provider account, OAuth token, Apple credential, or background sync.",
+      safetyChecks: [
+        "Treat pasted invite and ICS text as untrusted input.",
+        "Extract event metadata only.",
+        "Require opportunity approval before card creation."
+      ],
+      requiredEvidenceIds: ["manual-import-preview-visible", "manual-input-parser-untrusted"],
+      blockingEvidenceIds: [],
+      missingRepoEvidenceIds: [],
+      customerSteps: [
+        {
+          actor: "customer",
+          title: "Paste event details",
+          detail: "Paste an invite, selected event fields, or ICS text into the local import path.",
+          evidenceRequired: ["Customer-provided event text exists."]
+        }
+      ],
+      operatorSteps: [
+        {
+          actor: "system",
+          title: "Validate untrusted input",
+          detail: "Run the manual import parser and reject raw body persistence before showing opportunity review.",
+          evidenceRequired: ["Manual import parser tests pass.", "Raw content storage checks pass."]
+        }
+      ]
+    },
+    "google-calendar-events": {
+      id: "google-calendar-events",
+      provider: "Google Calendar API",
+      label: "Google Calendar connection",
+      status: "credential-gated",
+      startMode: "oauth-evidence-required",
+      nextApiRoute: null,
+      canStartNow: false,
+      sourceMode: "oauth-readiness",
+      officialDocs: ["https://developers.google.com/workspace/calendar/api/auth"],
+      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      requiredScopes: ["calendar.events.readonly"],
+      officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
+      dataBoundary: "Event metadata only after explicit consent; raw descriptions stay out of storage.",
+      credentialBoundary: "Needs OAuth client, consent screen, redirect URI, token storage, and revocation handling.",
+      safetyChecks: [
+        "OAuth consent required",
+        "Calendar scope consent",
+        "Metadata schema validation",
+        "Revocation handling",
+        "No raw content storage"
+      ],
+      requiredEvidenceIds: [
+        "google-scope-review",
+        "google-oauth-env-and-redirect",
+        "google-revocation-proof",
+        "google-metadata-schema-fixture",
+        "google-manual-fallback-visible"
+      ],
+      blockingEvidenceIds: [
+        "google-scope-review",
+        "google-oauth-env-and-redirect",
+        "google-revocation-proof",
+        "google-metadata-schema-fixture"
+      ],
+      missingRepoEvidenceIds: [
+        "google-scope-review",
+        "google-oauth-env-and-redirect",
+        "google-revocation-proof",
+        "google-metadata-schema-fixture"
+      ],
+      customerSteps: [
+        {
+          actor: "customer",
+          title: "Review Google access",
+          detail: "Review the metadata-only scope and use manual paste while OAuth is not enabled.",
+          evidenceRequired: ["Scope URI is visible.", "Manual fallback remains available."]
+        }
+      ],
+      operatorSteps: [
+        {
+          actor: "operator",
+          title: "Register OAuth app",
+          detail: "Configure the OAuth client, redirect URI, consent screen, and required environment variables.",
+          evidenceRequired: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"]
+        },
+        {
+          actor: "operator",
+          title: "Prove revocation and token boundary",
+          detail: "Implement token storage, disconnect, and revocation handling before any provider request is prepared.",
+          evidenceRequired: ["Revocation test evidence.", "Token storage boundary review.", "Metadata schema fixture tests."]
+        }
+      ],
+      fallbackChoiceId: "manual-invite-or-ics",
+      blockedReason: "No live OAuth consent flow is implemented in this repository state."
+    },
+    "icloud-ics-fallback": {
+      id: "icloud-ics-fallback",
+      provider: "iCloud Calendar export",
+      label: "Apple Calendar ICS export",
+      status: "manual-export",
+      startMode: "manual-export-guide",
+      nextApiRoute: "/api/import-preview",
+      canStartNow: true,
+      sourceMode: "manual-export",
+      officialDocs: [
+        "https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac",
+        "https://support.apple.com/en-gb/108306"
+      ],
+      requiredEnv: [],
+      requiredScopes: [],
+      officialScopeUris: [],
+      dataBoundary: "Customer exports an .ics file or downloads a temporary iCloud.com ICS copy, then pastes selected event data.",
+      credentialBoundary: "No Apple ID, app-specific password, CalDAV session, or native Apple Calendar sync.",
+      safetyChecks: ["Manual export only", "No Apple account credentials stored", "Metadata schema validation"],
+      requiredEvidenceIds: [
+        "icloud-export-instructions-visible",
+        "icloud-no-credential-collection",
+        "icloud-metadata-import-preview"
+      ],
+      blockingEvidenceIds: [],
+      missingRepoEvidenceIds: [],
+      customerSteps: [
+        {
+          actor: "customer",
+          title: "Export or download ICS",
+          detail: "Export an event from Calendar on Mac or download a temporary iCloud.com calendar copy, then stop sharing when finished.",
+          evidenceRequired: ["Customer-controlled ICS export exists."]
+        }
+      ],
+      operatorSteps: [
+        {
+          actor: "operator",
+          title: "Keep Apple credentials out",
+          detail: "Do not collect Apple ID, app-specific password, CalDAV session, or native Apple Calendar credentials.",
+          evidenceRequired: ["Credential collection is absent.", "Manual ICS parser tests pass."]
+        }
+      ],
+      fallbackChoiceId: "manual-invite-or-ics",
+      blockedReason: "Live iCloud CalDAV/native sync is intentionally not implemented."
+    }
+  };
+  const packet = packets[choiceId] ?? packets["manual-invite-or-ics"];
+
+  return {
+    ...packet,
+    apiRoute: "/api/calendar/connections/start",
+    serverOwned: true,
+    clientMayPrepareProviderRequest: false,
+    customerVisible: true,
+    liveOAuthEnabled: false,
+    networkRequestPrepared: false,
+    credentialStorageEnabled: false,
+    providerRequestUrl: null,
+    rawContentStored: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false
+  };
+}
+
 function parseJsonBody(bodyText) {
   if (!bodyText) return {};
   try {
@@ -1168,6 +1383,13 @@ function safeContractId(value, fallback) {
   const text = String(value ?? "").trim();
   if (!text) return fallback;
   return text.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80) || fallback;
+}
+
+function safeCalendarChoiceId(value) {
+  const id = safeContractId(value, "manual-invite-or-ics");
+  return ["manual-invite-or-ics", "google-calendar-events", "icloud-ics-fallback"].includes(id)
+    ? id
+    : "manual-invite-or-ics";
 }
 
 function safeLocale(value) {

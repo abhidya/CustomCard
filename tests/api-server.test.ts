@@ -474,7 +474,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(15);
+    expect(report.readiness.routes.total).toBe(16);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -565,7 +565,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 15, admin: 5, idempotentMutations: 7 });
+      expect(readiness.routes).toMatchObject({ total: 16, admin: 5, idempotentMutations: 8 });
       expect(readiness.providers).toMatchObject({ total: 121, readyLocal: 18, credentialGated: 88, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 121,
@@ -755,7 +755,7 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 18,
-        schemaBackedRoutes: 13,
+        schemaBackedRoutes: 14,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -856,6 +856,80 @@ describe("api server wrapper", () => {
         bestAvailablePriceRequiresCouponPortalEvidence: true,
         maxAgeDays: 30,
         externalNetworkCalls: false
+      });
+      expect(customer.calendarConnections).toMatchObject({
+        startRoute: "/api/calendar/connections/start",
+        blockers: []
+      });
+      expect(customer.calendarConnections.startPackets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "google-calendar-events",
+            startMode: "oauth-evidence-required",
+            canStartNow: false,
+            providerRequestUrl: null,
+            clientMayPrepareProviderRequest: false,
+            networkRequestPrepared: false
+          }),
+          expect.objectContaining({
+            id: "icloud-ics-fallback",
+            startMode: "manual-export-guide",
+            nextApiRoute: "/api/import-preview"
+          })
+        ])
+      );
+
+      const missingCalendarChoice = await postJson(
+        port,
+        "/api/calendar/connections/start",
+        {}
+      );
+      expect(missingCalendarChoice.status).toBe(400);
+      expect(await missingCalendarChoice.json()).toMatchObject({
+        status: "invalid-calendar-connection-start-payload",
+        route: "calendar-connection-start",
+        requiredFields: expect.arrayContaining(["calendarChoiceId"]),
+        rawContentStored: false
+      });
+
+      const googleConnectionStart = await postJson(
+        port,
+        "/api/calendar/connections/start",
+        { calendarChoiceId: "google-calendar-events" }
+      );
+      expect(googleConnectionStart.status).toBe(202);
+      expect(await googleConnectionStart.json()).toMatchObject({
+        status: "blocked",
+        route: "calendar-connection-start",
+        requestedChoiceId: "google-calendar-events",
+        providerRequestUrl: null,
+        networkRequestPrepared: false,
+        credentialStorageEnabled: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false,
+        rawContentStored: false,
+        nextApiRoute: null,
+        blockers: [
+          "google-scope-review",
+          "google-oauth-env-and-redirect",
+          "google-revocation-proof",
+          "google-metadata-schema-fixture"
+        ],
+        startPacket: expect.objectContaining({
+          id: "google-calendar-events",
+          startMode: "oauth-evidence-required",
+          serverOwned: true,
+          clientMayPrepareProviderRequest: false,
+          requiredScopes: ["calendar.events.readonly"],
+          officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"]
+        }),
+        repository: {
+          tables: ["auth_sessions", "idempotency_keys", "audit_log"],
+          runtimeMode: "contract",
+          persisted: false,
+          rawContentStored: false,
+          providerCredentialsStored: false
+        }
       });
 
       const missingRenderPacketProject = await postJson(

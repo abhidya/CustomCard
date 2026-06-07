@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { providerCatalog } from "./providerCatalog";
 import {
+  buildCalendarConnectionStartPackets,
+  buildCalendarConnectionStartResponse,
   buildCalendarOnboardingActionPackets,
   buildCalendarOnboardingChoices,
   buildOnboardingPlan,
@@ -9,6 +11,7 @@ import {
   onboardingStages,
   onboardingUserStories,
   summarizeCalendarOnboardingEvidence,
+  validateCalendarConnectionStartPackets,
   validateCalendarOnboardingActionPackets
 } from "./onboardingCalendar";
 
@@ -294,6 +297,103 @@ describe("onboarding and calendar integration contracts", () => {
     ]);
   });
 
+  it("builds server-owned calendar connection start packets without client provider side effects", () => {
+    const startPackets = buildCalendarConnectionStartPackets();
+
+    expect(startPackets.map((packet) => packet.id)).toEqual([
+      "manual-invite-or-ics",
+      "google-calendar-events",
+      "icloud-ics-fallback"
+    ]);
+    expect(validateCalendarConnectionStartPackets(startPackets)).toEqual([]);
+    expect(startPackets.every((packet) => packet.apiRoute === "/api/calendar/connections/start")).toBe(true);
+    expect(startPackets.every((packet) => packet.serverOwned)).toBe(true);
+    expect(startPackets.every((packet) => packet.clientMayPrepareProviderRequest === false)).toBe(true);
+    expect(startPackets.every((packet) => packet.networkRequestPrepared === false)).toBe(true);
+    expect(startPackets.every((packet) => packet.credentialStorageEnabled === false)).toBe(true);
+    expect(startPackets.every((packet) => packet.providerRequestUrl === null)).toBe(true);
+    expect(startPackets.every((packet) => packet.externalNetworkCalls === false && packet.realOrdersEnabled === false)).toBe(true);
+
+    const manual = startPackets.find((packet) => packet.id === "manual-invite-or-ics");
+    expect(manual).toMatchObject({
+      startMode: "metadata-import",
+      canStartNow: true,
+      nextApiRoute: "/api/import-preview",
+      blockingEvidenceIds: [],
+      missingRepoEvidenceIds: []
+    });
+
+    const google = startPackets.find((packet) => packet.id === "google-calendar-events");
+    expect(google).toMatchObject({
+      startMode: "oauth-evidence-required",
+      canStartNow: false,
+      nextApiRoute: null,
+      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      requiredScopes: ["calendar.events.readonly"],
+      officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
+      blockingEvidenceIds: [
+        "google-scope-review",
+        "google-oauth-env-and-redirect",
+        "google-revocation-proof",
+        "google-metadata-schema-fixture"
+      ],
+      missingRepoEvidenceIds: [
+        "google-scope-review",
+        "google-oauth-env-and-redirect",
+        "google-revocation-proof",
+        "google-metadata-schema-fixture"
+      ]
+    });
+
+    const icloud = startPackets.find((packet) => packet.id === "icloud-ics-fallback");
+    expect(icloud).toMatchObject({
+      startMode: "manual-export-guide",
+      canStartNow: true,
+      nextApiRoute: "/api/import-preview",
+      blockingEvidenceIds: [],
+      missingRepoEvidenceIds: []
+    });
+    expect(icloud?.operatorSteps.map((step) => step.detail).join(" ")).toContain("Apple ID");
+  });
+
+  it("returns a safe server response for calendar connection start requests", () => {
+    expect(buildCalendarConnectionStartResponse("google-calendar-events")).toMatchObject({
+      service: "customcard-api",
+      status: "blocked",
+      route: "calendar-connection-start",
+      requestedChoiceId: "google-calendar-events",
+      providerRequestUrl: null,
+      networkRequestPrepared: false,
+      credentialStorageEnabled: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false,
+      rawContentStored: false,
+      nextApiRoute: null,
+      blockers: [
+        "google-scope-review",
+        "google-oauth-env-and-redirect",
+        "google-revocation-proof",
+        "google-metadata-schema-fixture"
+      ],
+      startPacket: expect.objectContaining({
+        id: "google-calendar-events",
+        startMode: "oauth-evidence-required",
+        serverOwned: true,
+        clientMayPrepareProviderRequest: false
+      })
+    });
+
+    expect(buildCalendarConnectionStartResponse("icloud-ics-fallback")).toMatchObject({
+      status: "ready-local",
+      nextApiRoute: "/api/import-preview",
+      blockers: [],
+      startPacket: expect.objectContaining({
+        id: "icloud-ics-fallback",
+        startMode: "manual-export-guide"
+      })
+    });
+  });
+
   it("rejects unsafe or under-specified calendar onboarding packets", () => {
     const [manual, google, icloud] = buildCalendarOnboardingActionPackets();
 
@@ -327,6 +427,22 @@ describe("onboarding and calendar integration contracts", () => {
         }
       ])
     ).toEqual(expect.arrayContaining(["iCloud manual export path must not block on fake live connection evidence."]));
+
+    expect(
+      validateCalendarConnectionStartPackets([
+        {
+          ...buildCalendarConnectionStartPackets()[1],
+          canStartNow: true as never,
+          nextApiRoute: "/api/import-preview" as never,
+          missingRepoEvidenceIds: []
+        }
+      ])
+    ).toEqual(
+      expect.arrayContaining([
+        "Google Calendar start packet must stay blocked until OAuth evidence exists.",
+        "Google Calendar start packet must expose missing repo evidence before live connection."
+      ])
+    );
   });
 
   it("fails fast when a calendar readiness contract is missing instead of hiding a fallback", () => {

@@ -95,6 +95,7 @@ const apiSignals = [
   "render_packets",
   "importPreviewRepository: true",
   "/api/import-preview",
+  "/api/calendar/connections/start",
   "provider_connections",
   "imported_events",
   "card_opportunities",
@@ -187,6 +188,7 @@ const postgresApiHttpSignals = [
   "enforces Postgres HTTP auth on admin and customer routes",
   "blocks missing HTTP idempotency key before repository mutation",
   "/api/import-preview",
+  "/api/calendar/connections/start",
   "/api/memories/review",
   "/api/card-projects",
   "/api/render-packets",
@@ -315,9 +317,9 @@ const report = {
       auditLog: true
     },
     api: {
-      statefulRoutes: 13,
+      statefulRoutes: 14,
       adminPersistenceReadiness: true,
-      idempotentMutations: 7
+      idempotentMutations: 8
     },
     safety: {
       rawContentStored: false,

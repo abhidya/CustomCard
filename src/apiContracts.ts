@@ -89,6 +89,12 @@ import {
   type BusinessEngagementReadinessSummary
 } from "./businessEngagementReadiness";
 import {
+  buildCalendarConnectionStartPackets,
+  buildCalendarConnectionStartResponse,
+  validateCalendarConnectionStartPackets,
+  type CalendarConnectionStartPacket
+} from "./onboardingCalendar";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -229,6 +235,11 @@ export interface ApiBootstrapPayload {
   customerChat: ReturnType<typeof buildCustomerChatSession>;
   printerPricing: ReturnType<typeof buildPrinterPricingComparison>;
   fulfillmentRecommendations: ReturnType<typeof buildFulfillmentRecommendations>;
+  calendarConnections: {
+    startRoute: "/api/calendar/connections/start";
+    startPackets: CalendarConnectionStartPacket[];
+    blockers: string[];
+  };
 }
 
 export const apiRouteContracts: ApiRouteContract[] = [
@@ -435,6 +446,33 @@ export const apiRouteContracts: ApiRouteContract[] = [
     backedBy: ["resolveImportPreviewMetadata", "parseFreeImport", "serviceKernel.importEvents"]
   },
   {
+    id: "calendar-connection-start",
+    method: "POST",
+    path: "/api/calendar/connections/start",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "calendarChoiceId", "returnTo"],
+    responseSchema: [
+      "startPacket",
+      "serverOwned",
+      "clientMayPrepareProviderRequest",
+      "providerRequestUrl",
+      "networkRequestPrepared",
+      "credentialStorageEnabled",
+      "externalNetworkCalls",
+      "realOrdersEnabled",
+      "rawContentStored",
+      "nextApiRoute",
+      "blockers"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Server-owned connection start policy only; no provider credential, raw calendar content, or live provider request returned.",
+    backedBy: ["buildCalendarConnectionStartPackets", "validateCalendarConnectionStartPackets"]
+  },
+  {
     id: "card-projects",
     method: "POST",
     path: "/api/card-projects",
@@ -550,6 +588,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
 
 export function buildApiBootstrapPayload(): ApiBootstrapPayload {
   const printerPricing = buildPrinterPricingComparison("walgreens");
+  const startPackets = buildCalendarConnectionStartPackets();
 
   return {
     customer: buildCustomerPanelModel(),
@@ -620,7 +659,12 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
       fulfillmentContext: "Cheapest pickup and cheapest shipped recommendations are review-only public prices."
     }),
     printerPricing,
-    fulfillmentRecommendations: buildFulfillmentRecommendations(printerPricing)
+    fulfillmentRecommendations: buildFulfillmentRecommendations(printerPricing),
+    calendarConnections: {
+      startRoute: "/api/calendar/connections/start",
+      startPackets,
+      blockers: validateCalendarConnectionStartPackets(startPackets)
+    }
   };
 }
 
@@ -652,6 +696,9 @@ export function resolveApiContractResponse(path: string) {
   }
   if (path === "/api/admin/provider-governance") {
     return summarizeProviderGovernance();
+  }
+  if (path === "/api/calendar/connections/start") {
+    return buildCalendarConnectionStartResponse();
   }
 
   return undefined;
@@ -700,6 +747,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     "admin-persistence-readiness",
     "admin-demo-reset",
     "import-preview",
+    "calendar-connection-start",
     "card-projects",
     "relationship-memories",
     "render-packets",
@@ -711,6 +759,9 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
 
   if (validateMobileExperience().length > 0) {
     issues.push("Mobile API bootstrap model failed validation.");
+  }
+  for (const calendarConnectionIssue of validateCalendarConnectionStartPackets()) {
+    issues.push(calendarConnectionIssue);
   }
   for (const capacityIssue of validateCapacityProfiles()) {
     issues.push(capacityIssue);

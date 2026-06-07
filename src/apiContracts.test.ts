@@ -23,6 +23,7 @@ describe("api contracts", () => {
         "admin-persistence-readiness",
         "admin-demo-reset",
         "import-preview",
+        "calendar-connection-start",
         "card-projects",
         "relationship-memories",
         "render-packets",
@@ -40,6 +41,7 @@ describe("api contracts", () => {
     const adminDemoReset = apiRouteContracts.find((route) => route.id === "admin-demo-reset");
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
     const importPreview = apiRouteContracts.find((route) => route.id === "import-preview");
+    const calendarConnectionStart = apiRouteContracts.find((route) => route.id === "calendar-connection-start");
     const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
@@ -60,6 +62,32 @@ describe("api contracts", () => {
       expect.arrayContaining(["metadataOnlyPayload", "rawImportText", "rawInviteText", "rawIcsText", "rawCalendarText"])
     );
     expect(importPreview?.backedBy).toContain("resolveImportPreviewMetadata");
+    expect(calendarConnectionStart).toMatchObject({
+      method: "POST",
+      path: "/api/calendar/connections/start",
+      audience: "customer",
+      auth: "customer-session",
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(calendarConnectionStart?.requestSchema).toEqual(
+      expect.arrayContaining(["X-Idempotency-Key", "calendarChoiceId"])
+    );
+    expect(calendarConnectionStart?.responseSchema).toEqual(
+      expect.arrayContaining([
+        "startPacket",
+        "serverOwned",
+        "clientMayPrepareProviderRequest",
+        "providerRequestUrl",
+        "networkRequestPrepared",
+        "credentialStorageEnabled",
+        "rawContentStored",
+        "nextApiRoute"
+      ])
+    );
+    expect(calendarConnectionStart?.backedBy).toEqual(
+      expect.arrayContaining(["buildCalendarConnectionStartPackets", "validateCalendarConnectionStartPackets"])
+    );
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
@@ -298,6 +326,26 @@ describe("api contracts", () => {
     );
     expect(payload.mobile.importActions.map((action) => action.kind)).toEqual(
       expect.arrayContaining(["calendar", "email", "invite"])
+    );
+    expect(payload.calendarConnections).toMatchObject({
+      startRoute: "/api/calendar/connections/start",
+      blockers: []
+    });
+    expect(payload.calendarConnections.startPackets).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "google-calendar-events",
+          startMode: "oauth-evidence-required",
+          canStartNow: false,
+          providerRequestUrl: null,
+          clientMayPrepareProviderRequest: false
+        }),
+        expect.objectContaining({
+          id: "icloud-ics-fallback",
+          startMode: "manual-export-guide",
+          nextApiRoute: "/api/import-preview"
+        })
+      ])
     );
     expect(payload.mobile.fulfillmentRecommendations.map((recommendation) => recommendation.kind)).toEqual(
       expect.arrayContaining(["cheapest-known-price", "fastest-pickup", "cheapest-shipped"])
@@ -611,6 +659,13 @@ describe("api contracts", () => {
       syncState: { authMode: "customer-session", idempotencyRequired: true }
     });
     expect(resolveApiContractResponse("/api/customer/bootstrap")).toMatchObject({
+      calendarConnections: {
+        startRoute: "/api/calendar/connections/start",
+        startPackets: expect.arrayContaining([
+          expect.objectContaining({ id: "google-calendar-events", canStartNow: false })
+        ]),
+        blockers: []
+      },
       customerChat: {
         mode: "local-deterministic",
         liveModelCallsEnabled: false,
@@ -621,6 +676,19 @@ describe("api contracts", () => {
           expect.objectContaining({ kind: "cheapest-known-price", liveQuote: false, directOrderEnabled: false })
         ])
       }
+    });
+    expect(resolveApiContractResponse("/api/calendar/connections/start")).toMatchObject({
+      status: "ready-local",
+      route: "calendar-connection-start",
+      requestedChoiceId: "manual-invite-or-ics",
+      providerRequestUrl: null,
+      networkRequestPrepared: false,
+      credentialStorageEnabled: false,
+      startPacket: expect.objectContaining({
+        id: "manual-invite-or-ics",
+        serverOwned: true,
+        nextApiRoute: "/api/import-preview"
+      })
     });
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();
   });

@@ -21,6 +21,7 @@ export type CalendarConnectionMode = "oauth-readiness-contract" | "manual-export
 export type AdapterLaunchStatus = "credential-gated" | "contract-only";
 export type CalendarOnboardingChoiceId = "manual-invite-or-ics" | CalendarIntegrationId;
 export type CalendarOnboardingChoiceStatus = "ready-local" | "credential-gated" | "manual-export";
+export type CalendarConnectionStartMode = "metadata-import" | "oauth-evidence-required" | "manual-export-guide";
 export type CalendarEvidenceOwner = "customer" | "operator" | "system";
 export type CalendarEvidenceRequirementKind =
   | "scope-review"
@@ -135,6 +136,60 @@ export interface CalendarOnboardingActionPacket {
   successSignal: string;
   fallbackChoiceId?: CalendarOnboardingChoiceId;
   blockedReason?: string;
+}
+
+export interface CalendarConnectionStartPacket {
+  id: CalendarOnboardingChoiceId;
+  provider: CalendarProvider;
+  label: string;
+  status: CalendarOnboardingChoiceStatus;
+  startMode: CalendarConnectionStartMode;
+  apiRoute: "/api/calendar/connections/start";
+  nextApiRoute: "/api/import-preview" | null;
+  serverOwned: true;
+  clientMayPrepareProviderRequest: false;
+  customerVisible: boolean;
+  canStartNow: boolean;
+  liveOAuthEnabled: false;
+  networkRequestPrepared: false;
+  credentialStorageEnabled: false;
+  providerRequestUrl: null;
+  rawContentStored: false;
+  externalNetworkCalls: false;
+  realOrdersEnabled: false;
+  sourceMode: CalendarOnboardingChoice["sourceMode"];
+  officialDocs: string[];
+  requiredEnv: string[];
+  requiredScopes: string[];
+  officialScopeUris: string[];
+  dataBoundary: string;
+  credentialBoundary: string;
+  safetyChecks: string[];
+  requiredEvidenceIds: string[];
+  blockingEvidenceIds: string[];
+  missingRepoEvidenceIds: string[];
+  customerSteps: CalendarOnboardingActionStep[];
+  operatorSteps: CalendarOnboardingActionStep[];
+  fallbackChoiceId?: CalendarOnboardingChoiceId;
+  blockedReason?: string;
+}
+
+export interface CalendarConnectionStartResponse {
+  service: "customcard-api";
+  status: "ready-local" | "blocked";
+  route: "calendar-connection-start";
+  requestedChoiceId: CalendarOnboardingChoiceId;
+  startPacket: CalendarConnectionStartPacket;
+  serverOwned: true;
+  clientMayPrepareProviderRequest: false;
+  providerRequestUrl: null;
+  networkRequestPrepared: false;
+  credentialStorageEnabled: false;
+  externalNetworkCalls: false;
+  realOrdersEnabled: false;
+  rawContentStored: false;
+  nextApiRoute: CalendarConnectionStartPacket["nextApiRoute"];
+  blockers: string[];
 }
 
 export interface OnboardingPlan {
@@ -685,6 +740,92 @@ export function buildCalendarOnboardingChoices(
   }));
 }
 
+export function buildCalendarConnectionStartPackets(
+  actionPackets: CalendarOnboardingActionPacket[] = buildCalendarOnboardingActionPackets()
+): CalendarConnectionStartPacket[] {
+  return actionPackets.map((packet) => {
+    const blockingEvidenceIds = packet.evidenceRequirements
+      .filter((requirement) => requirement.blocksLiveConnection)
+      .map((requirement) => requirement.id);
+    const missingRepoEvidenceIds = packet.evidenceRequirements
+      .filter((requirement) => !requirement.satisfiedInRepo)
+      .map((requirement) => requirement.id);
+
+    return {
+      id: packet.id,
+      provider: packet.provider,
+      label: packet.label,
+      status: packet.status,
+      startMode: startModeForCalendarPacket(packet),
+      apiRoute: "/api/calendar/connections/start",
+      nextApiRoute: packet.canStartNow ? "/api/import-preview" : null,
+      serverOwned: true,
+      clientMayPrepareProviderRequest: false,
+      customerVisible: packet.customerVisible,
+      canStartNow: packet.canStartNow,
+      liveOAuthEnabled: false,
+      networkRequestPrepared: false,
+      credentialStorageEnabled: false,
+      providerRequestUrl: null,
+      rawContentStored: false,
+      externalNetworkCalls: false,
+      realOrdersEnabled: false,
+      sourceMode: packet.sourceMode,
+      officialDocs: packet.officialDocs,
+      requiredEnv: packet.requiredEnv,
+      requiredScopes: packet.requiredScopes,
+      officialScopeUris: packet.officialScopeUris,
+      dataBoundary: packet.dataBoundary,
+      credentialBoundary: packet.credentialBoundary,
+      safetyChecks: packet.safetyChecks,
+      requiredEvidenceIds: packet.evidenceRequirements.map((requirement) => requirement.id),
+      blockingEvidenceIds,
+      missingRepoEvidenceIds,
+      customerSteps: packet.customerSteps,
+      operatorSteps: packet.operatorSteps,
+      fallbackChoiceId: packet.fallbackChoiceId,
+      blockedReason: packet.blockedReason
+    };
+  });
+}
+
+export function getCalendarConnectionStartPacket(
+  choiceId: CalendarOnboardingChoiceId,
+  packets: CalendarConnectionStartPacket[] = buildCalendarConnectionStartPackets()
+): CalendarConnectionStartPacket {
+  const packet = packets.find((candidate) => candidate.id === choiceId);
+  if (!packet) {
+    throw new Error(`Missing calendar connection start packet for ${choiceId}.`);
+  }
+
+  return packet;
+}
+
+export function buildCalendarConnectionStartResponse(
+  choiceId: CalendarOnboardingChoiceId = "manual-invite-or-ics",
+  packets: CalendarConnectionStartPacket[] = buildCalendarConnectionStartPackets()
+): CalendarConnectionStartResponse {
+  const startPacket = getCalendarConnectionStartPacket(choiceId, packets);
+
+  return {
+    service: "customcard-api",
+    status: startPacket.canStartNow ? "ready-local" : "blocked",
+    route: "calendar-connection-start",
+    requestedChoiceId: choiceId,
+    startPacket,
+    serverOwned: true,
+    clientMayPrepareProviderRequest: false,
+    providerRequestUrl: null,
+    networkRequestPrepared: false,
+    credentialStorageEnabled: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    rawContentStored: false,
+    nextApiRoute: startPacket.nextApiRoute,
+    blockers: startPacket.missingRepoEvidenceIds
+  };
+}
+
 export function buildOnboardingPlan(adapterIds: CalendarIntegrationId[] = ["google-calendar-events", "icloud-ics-fallback"]): OnboardingPlan {
   const selectedAdapters = calendarAdapterReadinessContracts.filter((adapter) => adapterIds.includes(adapter.id));
   const selectedStageIds = new Set<OnboardingStageId>();
@@ -792,8 +933,87 @@ export function validateCalendarOnboardingActionPackets(
   return issues;
 }
 
+export function validateCalendarConnectionStartPackets(
+  packets: CalendarConnectionStartPacket[] = buildCalendarConnectionStartPackets()
+): string[] {
+  const issues: string[] = [];
+  const ids = new Set<CalendarOnboardingChoiceId>();
+
+  for (const packet of packets) {
+    if (ids.has(packet.id)) issues.push(`Duplicate calendar connection start packet: ${packet.id}`);
+    ids.add(packet.id);
+
+    if (packet.apiRoute !== "/api/calendar/connections/start") {
+      issues.push(`${packet.id} must start through the server-owned calendar connection route.`);
+    }
+    if (!packet.serverOwned || packet.clientMayPrepareProviderRequest) {
+      issues.push(`${packet.id} must keep provider connection start policy server-owned.`);
+    }
+    if (
+      packet.liveOAuthEnabled ||
+      packet.networkRequestPrepared ||
+      packet.credentialStorageEnabled ||
+      packet.providerRequestUrl !== null ||
+      packet.externalNetworkCalls ||
+      packet.realOrdersEnabled ||
+      packet.rawContentStored
+    ) {
+      issues.push(`${packet.id} must not prepare live calendar connection side effects.`);
+    }
+    if (packet.canStartNow && packet.nextApiRoute !== "/api/import-preview") {
+      issues.push(`${packet.id} must continue through metadata-only import preview when it can start now.`);
+    }
+    if (!packet.canStartNow && packet.nextApiRoute !== null) {
+      issues.push(`${packet.id} must not expose a next provider route while blocked.`);
+    }
+
+    if (packet.id === "google-calendar-events") {
+      if (packet.canStartNow || packet.startMode !== "oauth-evidence-required") {
+        issues.push("Google Calendar start packet must stay blocked until OAuth evidence exists.");
+      }
+      if (!packet.blockingEvidenceIds.includes("google-scope-review")) {
+        issues.push("Google Calendar start packet must require scope-review evidence.");
+      }
+      if (!packet.blockingEvidenceIds.includes("google-revocation-proof")) {
+        issues.push("Google Calendar start packet must require revocation evidence.");
+      }
+      if (packet.missingRepoEvidenceIds.length === 0) {
+        issues.push("Google Calendar start packet must expose missing repo evidence before live connection.");
+      }
+    }
+
+    if (packet.id === "icloud-ics-fallback") {
+      if (packet.startMode !== "manual-export-guide") {
+        issues.push("iCloud start packet must remain a manual export guide.");
+      }
+      if (!packet.canStartNow || packet.blockingEvidenceIds.length > 0) {
+        issues.push("iCloud manual export start packet must not be blocked by fake live-connection evidence.");
+      }
+      if (/Apple ID|app-specific password|CalDAV/.test(packet.operatorSteps.map((step) => step.detail).join(" ")) === false) {
+        issues.push("iCloud start packet must explicitly keep Apple credentials out of CustomCard.");
+      }
+    }
+
+    if (packet.id === "manual-invite-or-ics" && packet.startMode !== "metadata-import") {
+      issues.push("Manual invite or ICS start packet must use metadata import mode.");
+    }
+  }
+
+  for (const requiredPacket of ["manual-invite-or-ics", "google-calendar-events", "icloud-ics-fallback"] as const) {
+    if (!ids.has(requiredPacket)) issues.push(`Missing calendar connection start packet: ${requiredPacket}`);
+  }
+
+  return issues;
+}
+
 function evidenceRequirement(
   requirement: CalendarConnectionEvidenceRequirement
 ): CalendarConnectionEvidenceRequirement {
   return requirement;
+}
+
+function startModeForCalendarPacket(packet: CalendarOnboardingActionPacket): CalendarConnectionStartMode {
+  if (packet.id === "google-calendar-events") return "oauth-evidence-required";
+  if (packet.id === "icloud-ics-fallback") return "manual-export-guide";
+  return "metadata-import";
 }

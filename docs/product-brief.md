@@ -46,8 +46,10 @@ The detailed production-shaped user stories, onboarding stages, and
 Google/iCloud calendar readiness contracts are captured in
 `docs/onboarding-calendar-plan.md` and `src/onboardingCalendar.ts`. Those
 contracts intentionally stop at planning and safety gates: Google Calendar is
-credential-gated, iCloud Calendar is a manual ICS export path, and no fake live
-OAuth or background sync is claimed.
+credential-gated, iCloud Calendar is a manual ICS export path, and
+`/api/calendar/connections/start` returns server-owned start packets without
+fake live OAuth URLs, client-owned provider request preparation, credential
+storage, or background sync.
 
 ## MVP Scope
 
