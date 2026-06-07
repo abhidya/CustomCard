@@ -5,22 +5,16 @@ import {
   mobileApprovalActions,
   mobileCardQueueItems,
   mobileChatTranscript,
-  mobileExperienceSections,
   mobileFulfillmentRecommendations,
   mobileHandoffSteps,
   mobileImportActions,
-  mobileLocaleOptions,
   mobileMemoryReviewItems,
   mobilePrintProofChecks,
-  mobileProofBoundary,
   mobileRenderChoices,
   mobileSafetyBanner,
   mobileSyncState,
-  mobileTodaySummary,
-  summarizeMobileExperience
+  mobileTodaySummary
 } from "./customerExperience";
-
-const experienceSummary = summarizeMobileExperience();
 
 export default function App() {
   return (
@@ -39,40 +33,22 @@ export default function App() {
           <Text style={styles.statusCopy}>{mobileSafetyBanner.detail}</Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.customerVisibleSections}</Text>
-              <Text style={styles.summaryLabel}>sections</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.queueItems}</Text>
+              <Text style={styles.summaryValue}>{mobileCardQueueItems.length}</Text>
               <Text style={styles.summaryLabel}>cards</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.idempotentApprovalActions}</Text>
+              <Text style={styles.summaryValue}>{mobileTodaySummary.panelCount}</Text>
+              <Text style={styles.summaryLabel}>panels</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>{mobileApprovalActions.length}</Text>
               <Text style={styles.summaryLabel}>actions</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{experienceSummary.passedPrintProofChecks}</Text>
-              <Text style={styles.summaryLabel}>proofs</Text>
+              <Text style={styles.summaryValue}>Off</Text>
+              <Text style={styles.summaryLabel}>orders</Text>
             </View>
           </View>
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Proof boundary</Text>
-          <View style={styles.compactRow}>
-            <View style={styles.compactCopy}>
-              <Text style={styles.compactTitle}>Deterministic repo proof</Text>
-              <Text style={styles.cardCopy}>
-                Mirrors the web customer flow through sign-in/import, review, approval, proof, fulfillment, and checkout
-                confirmation without emulator, signed build, store review, or live order claims.
-              </Text>
-            </View>
-            <Text style={styles.modePill}>Local</Text>
-          </View>
-          <Text style={styles.smallMeta}>
-            {mobileProofBoundary.webCustomerFlowStages.length} flow stages aligned;{" "}
-            {mobileProofBoundary.blockedLiveProofs.length} live proof claims blocked.
-          </Text>
         </View>
 
         <View style={styles.group}>
@@ -123,19 +99,6 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Workflow coverage</Text>
-          {mobileExperienceSections.map((section) => (
-            <View key={section.title} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{section.title}</Text>
-                <Text style={styles.cardCopy}>{section.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{section.status}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
           <Text style={styles.groupTitle}>Card queue</Text>
           {mobileCardQueueItems.map((item) => (
             <View key={item.id} style={styles.compactRow}>
@@ -177,7 +140,7 @@ export default function App() {
         </View>
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Text interface</Text>
+          <Text style={styles.groupTitle}>Card assistant</Text>
           {mobileChatTranscript.map((message, index) => (
             <View
               key={`${message.speaker}-${index}`}
@@ -260,18 +223,6 @@ export default function App() {
           </Text>
         </View>
 
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Locale readiness</Text>
-          {mobileLocaleOptions.map((locale) => (
-            <View key={locale.locale} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{locale.label}</Text>
-                <Text style={styles.cardCopy}>{locale.cardLanguage} card copy</Text>
-              </View>
-              <Text style={styles.modePill}>{locale.copyReviewRequired ? "Review" : locale.writingDirection}</Text>
-            </View>
-          ))}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -14,11 +14,12 @@ credential-gated provider work explicit and testable.
 
 The system remains adapter-first:
 
-- Customer UX is outcome-first: sign in with Google/Apple entry points, import
-  calendar/email/invite signals, review card-worthy events, approve a card, and
-  choose between cheapest known public price, fastest pickup candidate, and
-  cheapest shipped option. Customer screens must not expose adapter inventory,
-  credential gates, or provider runtime jargon.
+- Customer UX is outcome-first: sign in to the local workspace, paste an invite
+  or ICS as the ready import path, treat Google Calendar as OAuth-gated and
+  Apple/iCloud as manual ICS export-ready, review card-worthy events, approve a
+  card, and choose between cheapest known public price, fastest pickup
+  candidate, and cheapest shipped option. Customer screens must not expose
+  adapter inventory, credential gates, or provider runtime jargon.
 - Customer surfaces consume capability groups: event import, text chat,
   image/render, memory, localization, and handoff.
 - Admin surfaces consume the same adapter catalog to see readiness, required

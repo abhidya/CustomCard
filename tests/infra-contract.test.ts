@@ -1415,9 +1415,12 @@ describe("production infrastructure contract", () => {
     expect(releaseDoctor).toContain("nativeBuildProfiles");
     expect(mobileApp).toContain("CustomCard");
     expect(mobileApp).toContain("Customer mobile panel");
-    expect(mobileApp).toContain("Text interface");
+    expect(mobileApp).toContain("Card assistant");
     expect(mobileApp).toContain("Sign in and import");
     expect(mobileApp).toContain("Best available options");
+    expect(mobileApp).not.toContain("Proof boundary");
+    expect(mobileApp).not.toContain("Workflow coverage");
+    expect(mobileApp).not.toContain("Locale readiness");
     expect(mobileApp).toContain("mobileChatTranscript");
     expect(mobileApp).toContain("mobileRenderChoices");
     expect(mobileApp).toContain("mobileAccountOptions");

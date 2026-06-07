@@ -77,8 +77,6 @@ function inspectMobileSources() {
     {
       path: "src/App.tsx",
       patterns: [
-        "mobileExperienceSections",
-        "mobileProofBoundary",
         "mobileAccountOptions",
         "mobileImportActions",
         "mobileCardQueueItems",
@@ -87,16 +85,14 @@ function inspectMobileSources() {
         "mobileRenderChoices",
         "mobileFulfillmentRecommendations",
         "mobileHandoffSteps",
-        "mobileLocaleOptions",
         "mobileSyncState",
         "Card queue",
         "Approval controls",
         "Sign in and import",
-        "Proof boundary",
+        "Card assistant",
         "Best available options",
         "Offline sync",
-        "Locale readiness",
-        "summarizeMobileExperience"
+        "Checkout confirmation"
       ]
     }
   ];

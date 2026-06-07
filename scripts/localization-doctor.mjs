@@ -54,7 +54,9 @@ const checks = [
   checkExact("mobile", "mobile-locale-count", mobileLocaleCount, 4),
   checkIncludes("mobile", "mobile-localization-parity", `${contents.mobileExperience}\n${contents.mobileApp}\n${contents.mobileDoctor}`, [
     "mobileLocaleOptions",
-    "Locale readiness",
+    "cardLanguage",
+    "copyReviewRequired",
+    "writingDirection",
     "Missing mobile locale option",
     "RTL mobile locale options must require copy review",
     "ar-EG",

@@ -70,8 +70,9 @@
   compare review-only public printer prices, download the local print package,
   inspect free-ready,
   credential-gated, contract-only, and blocked production adapters.
-- Customer panel: Google/Apple entry points, calendar/email/invite import
-  actions, next-card opportunities, sendable deterministic local chat session,
+- Customer panel: local workspace auth, Paste invite or ICS as the ready import
+  path, Google Calendar OAuth-gated readiness, Apple/iCloud manual export
+  readiness, next-card opportunities, sendable deterministic local chat session,
   card proof path, locale readiness, and fulfillment recommendations for
   cheapest known price, fastest pickup candidate, and cheapest shipped option.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
@@ -180,7 +181,7 @@
 | Live S3-compatible artifact writes | `npm run artifact:doctor:s3:live` | Passed in CI against MinIO; created an isolated bucket, wrote 6 render-packet artifacts plus 1 manifest through path-style SigV4 requests, read all 7 objects back, verified checksum/byte-length evidence, reported `cloudWritesVerified: true`, kept external vendor calls and real orders disabled, and cleaned up the bucket. |
 | Persistence readiness | `npm run persistence:doctor` | Passed; auth sessions, account identities, account recovery challenges, idempotency replay, relationship-memory repository readiness, render-packet repository readiness, import-preview repository readiness, card-project repository readiness, manual vendor handoff order/consent/event readiness, data-request privacy/consent readiness, queue jobs, render-packet artifact manifests, artifact-store filesystem/S3-compatible/live-MinIO write-read signals, Postgres runtime SQL/doctor/integration/HTTP signals, append-only audit, demo reset mapping, and 13 schema-backed routes present. |
 | Worker/runtime | `CUSTOMCARD_ENV=dev ... npm run worker` | Passed; worker reported queue and artifact-signing readiness. |
-| Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present, including Google/Apple entry points, calendar/email/invite import actions, next-action, memory-review, best available fulfillment recommendations, and print-proof workflow state. |
+| Mobile app shell | `CUSTOMCARD_API_BASE_URL=... npm --prefix apps/mobile run doctor` | Passed; mobile app configuration and customer experience contract present, including local account import, Paste invite or ICS ready path, gated Google Calendar readiness, Apple/iCloud manual export readiness, next-action, memory-review, card assistant, best available fulfillment recommendations, and print-proof workflow state. |
 | Mobile render readiness | `npm run mobile:render:doctor` | Passed; verified 8 mobile render readiness items, 21 screen sections, 4 viewport profiles, 3 native build profiles, admin/API surfaces, docs, CI wiring, zero emulator render proof claims, zero signed artifact claims, zero live provider calls, and zero real orders. |
 | Mobile native release contract | `npm run mobile:release:doctor` | Passed; verified Expo/EAS development, preview, and production build profiles, iOS/Android identifiers, environment-sourced API URL, disabled real-order kill switch, no hardcoded production API endpoint, no live provider calls, and no signed artifact built. |
 | Demo reset | `npm run demo:doctor` | Passed; admin reset contract covers 14 reviewer fixture tables and 17 rows without live calls or real orders. |

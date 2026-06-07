@@ -757,7 +757,7 @@ function MobileAppPreviewView() {
               </div>
             </MobileSection>
 
-            <MobileSection title="Text interface">
+            <MobileSection title="Card assistant">
               <div className="mobileChatStack">
                 {mobileChatTranscript.map((message, index) => (
                   <MobileChatBubble key={`${message.speaker}-${index}`} message={message} />
@@ -1276,7 +1276,7 @@ function CustomerPanelView({
           <div className="sectionHeader">
             <div>
               <p className="eyebrow">Customer chat</p>
-              <h3>Text interface</h3>
+              <h3>Card assistant</h3>
             </div>
             <StatusChip icon={Lock} label="Local reply" tone="blue" />
           </div>

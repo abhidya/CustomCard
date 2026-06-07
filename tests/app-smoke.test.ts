@@ -237,7 +237,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).not.toContain("Continue with Apple");
     expect(result.text).toContain("Card queue");
     expect(result.text).toContain("Approval controls");
-    expect(result.text).toContain("Text interface");
+    expect(result.text).toContain("Card assistant");
     expect(result.text).toContain("Best available options");
     expect(result.text).toContain("Checkout confirmation");
     expect(result.text).toContain("Offline sync");
@@ -325,7 +325,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedCustomerText).toContain("Continue proof review");
     expect(result.reviewedJourneyActions.join(" ")).toContain("Choose fulfillment");
     expect(result.reviewedJourneyActions).toHaveLength(3);
-    expect(result.reviewedCustomerText).toContain("Text interface");
+    expect(result.reviewedCustomerText).toContain("Card assistant");
     expect(result.reviewedCustomerText).toContain("No live model call");
     expect(result.reviewedCustomerText).toContain("provider adapters gated");
     expect(result.reviewedCustomerText).toContain("No live model call or external transcript storage was used.");
