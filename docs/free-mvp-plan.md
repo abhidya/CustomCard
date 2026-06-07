@@ -7,7 +7,7 @@ preserving the production integration gates from the earlier service skeleton.
 
 | Path | Free solution | Evidence |
 | --- | --- | --- |
-| Demo auth | Local browser workspace stored in `localStorage`; no external auth provider. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. |
+| Local workspace auth | Local browser workspace stored in `localStorage`; no external auth provider. | `src/App.tsx`, `src/freeMvp.ts`, `tests/app-smoke.test.ts`. |
 | Event import | Manual invite text or ICS paste parser. | `parseFreeImport`, `src/freeMvp.test.ts`. |
 | Opportunity decision | Local approve, snooze, and dismiss states. | `OpportunitiesView`, Chrome smoke workflow. |
 | Relationship memory | User-approved local memory records with add/delete controls. | `addMemory`, `removeMemory`, Memory view. |

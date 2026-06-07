@@ -237,7 +237,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "account-import",
     title: "Sign in and import",
-    detail: "Google, Apple, calendar, email, and invite paths start the customer flow without exposing integration setup.",
+    detail: "Paste invite/ICS is ready now; Google, Apple, calendar, and email imports require future consent and credential work.",
     status: "Ready",
     customerVisible: true
   },
@@ -302,15 +302,15 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
 export const mobileAccountOptions: MobileAccountOption[] = [
   {
     provider: "Google",
-    label: "Continue with Google",
-    detail: "Use calendar and Gmail signals after consent.",
+    label: "Google Calendar connection",
+    detail: "Requires OAuth setup, consent copy, token storage, and revocation handling before use.",
     liveOAuthEnabled: false,
     customerVisible: true
   },
   {
     provider: "Apple",
-    label: "Continue with Apple",
-    detail: "Use Apple account and calendar signals after consent.",
+    label: "Apple Calendar ICS export",
+    detail: "Export an ICS event or calendar copy, then paste selected event details locally.",
     liveOAuthEnabled: false,
     customerVisible: true
   }
@@ -319,21 +319,21 @@ export const mobileAccountOptions: MobileAccountOption[] = [
 export const mobileImportActions: MobileImportAction[] = [
   {
     kind: "calendar",
-    label: "Import calendar",
-    detail: "Birthdays, anniversaries, weddings, trips, and renewals.",
+    label: "Future calendar sync",
+    detail: "Calendar sync stays off until OAuth or manual export evidence is configured.",
     sourceMode: "contract-gated",
     customerVisible: true
   },
   {
     kind: "email",
-    label: "Scan email receipts",
-    detail: "Purchases, warranties, deliveries, and subscription dates.",
+    label: "Future email receipts",
+    detail: "Email receipt review requires consent, metadata limits, and retention review.",
     sourceMode: "contract-gated",
     customerVisible: true
   },
   {
     kind: "invite",
-    label: "Paste invite",
+    label: "Paste invite or ICS",
     detail: "Use the no-account local path for an event or note.",
     sourceMode: "local-paste",
     customerVisible: true
@@ -709,6 +709,9 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   if (model.accountOptions.some((option) => option.liveOAuthEnabled)) {
     issues.push("Mobile account options must not claim live OAuth.");
   }
+  if (model.accountOptions.some((option) => option.label.startsWith("Continue with"))) {
+    issues.push("Mobile account options must not expose live-provider sign-in CTAs.");
+  }
 
   const importActions = new Set(model.importActions.map((action) => action.kind));
   for (const action of ["calendar", "email", "invite"] as const) {
@@ -716,6 +719,9 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
   if (model.importActions.some((action) => !action.customerVisible)) {
     issues.push("Every mobile import action must be customer-visible.");
+  }
+  if (!model.importActions.some((action) => action.kind === "invite" && action.label === "Paste invite or ICS" && action.sourceMode === "local-paste")) {
+    issues.push("Mobile import actions must keep Paste invite or ICS as the ready local path.");
   }
 
   const queueItemIds = new Set(model.queueItems.map((item) => item.id));

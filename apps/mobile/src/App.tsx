@@ -30,7 +30,7 @@ export default function App() {
           <Text style={styles.eyebrow}>Customer mobile panel</Text>
           <Text style={styles.title}>CustomCard</Text>
           <Text style={styles.subtitle}>
-            Sign in, import events, approve a card, and compare pickup or shipped options before checkout.
+            Create a local workspace, paste an invite or ICS event, approve a card, and prepare manual handoff.
           </Text>
         </View>
 
@@ -83,7 +83,7 @@ export default function App() {
                 <Text style={styles.compactTitle}>{option.label}</Text>
                 <Text style={styles.cardCopy}>{option.detail}</Text>
               </View>
-              <Text style={styles.modePill}>Review</Text>
+              <Text style={styles.modePill}>{option.provider === "Apple" ? "Manual" : "OAuth off"}</Text>
             </View>
           ))}
           {mobileImportActions.map((action) => (
@@ -92,7 +92,7 @@ export default function App() {
                 <Text style={styles.compactTitle}>{action.label}</Text>
                 <Text style={styles.cardCopy}>{action.detail}</Text>
               </View>
-              <Text style={styles.modePill}>{action.sourceMode === "local-paste" ? "Local" : "Consent"}</Text>
+              <Text style={styles.modePill}>{action.sourceMode === "local-paste" ? "Local" : "Future"}</Text>
             </View>
           ))}
         </View>
@@ -171,7 +171,7 @@ export default function App() {
                 <Text style={styles.compactTitle}>{action.label}</Text>
                 <Text style={styles.cardCopy}>{action.detail}</Text>
               </View>
-              <Text style={styles.modePill}>{action.networkMode === "local-only" ? "Local" : "API"}</Text>
+              <Text style={styles.modePill}>{action.networkMode === "local-only" ? "Local" : "Queued"}</Text>
             </View>
           ))}
         </View>

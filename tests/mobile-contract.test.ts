@@ -80,17 +80,18 @@ describe("mobile customer experience contract", () => {
   it("keeps mobile sign-in, import, queue, chat, fulfillment, and checkout paths local or gated", () => {
     expect(mobileAccountOptions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ provider: "Google", label: "Continue with Google", liveOAuthEnabled: false }),
-        expect.objectContaining({ provider: "Apple", label: "Continue with Apple", liveOAuthEnabled: false })
+        expect.objectContaining({ provider: "Google", label: "Google Calendar connection", liveOAuthEnabled: false }),
+        expect.objectContaining({ provider: "Apple", label: "Apple Calendar ICS export", liveOAuthEnabled: false })
       ])
     );
     expect(mobileImportActions).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "calendar", label: "Import calendar", customerVisible: true }),
-        expect.objectContaining({ kind: "email", label: "Scan email receipts", customerVisible: true }),
-        expect.objectContaining({ kind: "invite", label: "Paste invite", sourceMode: "local-paste" })
+        expect.objectContaining({ kind: "calendar", label: "Future calendar sync", customerVisible: true }),
+        expect.objectContaining({ kind: "email", label: "Future email receipts", customerVisible: true }),
+        expect.objectContaining({ kind: "invite", label: "Paste invite or ICS", sourceMode: "local-paste" })
       ])
     );
+    expect(mobileAccountOptions.map((option) => option.label).join(" ")).not.toContain("Continue with");
     expect(mobileProofBoundary).toMatchObject({
       deterministicProofMode: "repo-local-contract",
       webCustomerFlowStages: [

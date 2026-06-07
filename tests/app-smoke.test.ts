@@ -140,7 +140,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         ].join("\\n"));
         importBox.dispatchEvent(new Event("input", { bubbles: true }));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Scan free import");
+        await clickByText("Parse pasted invite/ICS");
         const opportunityText = document.body.textContent;
         await clickByText("Generate card");
         const studioText = document.body.textContent;
@@ -229,9 +229,12 @@ describeWithChrome("CustomCard UI smoke", () => {
 
     expect(result.h2).toBe("Mobile app");
     expect(result.text).toContain("Customer mobile panel");
-    expect(result.text).toContain("Continue with Google");
-    expect(result.text).toContain("Continue with Apple");
-    expect(result.text).toContain("Import calendar");
+    expect(result.text).toContain("Google Calendar connection");
+    expect(result.text).toContain("Apple Calendar ICS export");
+    expect(result.text).toContain("Future calendar sync");
+    expect(result.text).toContain("Paste invite or ICS");
+    expect(result.text).not.toContain("Continue with Google");
+    expect(result.text).not.toContain("Continue with Apple");
     expect(result.text).toContain("Card queue");
     expect(result.text).toContain("Approval controls");
     expect(result.text).toContain("Text interface");
@@ -298,13 +301,16 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.initialCustomerText).toContain("Customer panel");
     expect(result.initialCustomerText).toContain("Create private workspace");
     expect(result.initialCustomerText).toContain("Create local workspace");
-    expect(result.initialCustomerText).toContain("Paste invite only");
+    expect(result.initialCustomerText).toContain("Paste invite or ICS");
+    expect(result.initialCustomerText).toContain("Google Calendar connection");
+    expect(result.initialCustomerText).toContain("Apple Calendar ICS export");
+    expect(result.initialCustomerText).toContain("OAuth gated");
     expect(result.initialCustomerText).not.toContain("Continue with Google");
     expect(result.initialCustomerText).not.toContain("Continue with Apple");
     expect(result.initialCustomerText).toContain("Fulfillment after proof");
     expect(result.initialCustomerText).not.toContain("Cheapest known price");
     expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
-    expect(result.initialJourneyActions.join(" ")).toContain("Paste invite only");
+    expect(result.initialJourneyActions.join(" ")).toContain("Paste invite or ICS");
     expect(result.initialJourneyActions).toHaveLength(2);
     expect(result.workspaceText).toContain("Signed in locally");
     expect(result.workspaceText).toContain("Review event import");

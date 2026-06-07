@@ -726,6 +726,69 @@ h3 {
   color: #d4e5e0;
 }
 
+.calendarOnboardingBox {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.calendarChoice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #d7e0e2;
+  border-radius: 8px;
+  background: #fbfdfc;
+}
+
+.calendarChoice.ready-local {
+  border-color: #a7d8ca;
+  background: #eef8f4;
+}
+
+.calendarChoice.credential-gated {
+  border-color: #e0d2aa;
+  background: #fff9e7;
+}
+
+.calendarChoice.manual-export {
+  border-color: #c6d8e8;
+  background: #f1f7fb;
+}
+
+.calendarChoice strong,
+.calendarChoice span,
+.calendarChoice em {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.calendarChoice strong {
+  display: block;
+  color: #203038;
+  font-size: 0.86rem;
+  font-weight: 880;
+}
+
+.calendarChoice span {
+  display: block;
+  margin-top: 3px;
+  color: #5f7076;
+  font-size: 0.74rem;
+  font-weight: 720;
+}
+
+.calendarChoice em {
+  color: #203038;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 880;
+  text-align: right;
+}
+
 .workspaceSummary {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2246,6 +2309,14 @@ h3 {
   .adapterToolbar,
   .adapterMatrix {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendarChoice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendarChoice em {
+    text-align: left;
   }
 
   .cloudProofOverview {

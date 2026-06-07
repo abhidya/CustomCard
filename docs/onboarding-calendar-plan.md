@@ -26,8 +26,9 @@ in `src/onboardingCalendar.test.ts`.
    manual invite paste, or manual note. The UI must show the source's data
    boundary before import.
 3. **Preview consent and scopes.** Google Calendar requires OAuth app setup,
-   minimal `calendar.events.readonly` scope, revocation handling, and privacy
-   copy. This repo does not generate live OAuth URLs.
+   minimal `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`
+   scope, revocation handling, and privacy copy. This repo does not generate
+   live OAuth URLs.
 4. **Review imported event metadata.** Candidate events use metadata fields only:
    title, date range, location label, attendee labels, and evidence summary.
    Raw calendar descriptions and full email bodies are out of scope.
@@ -46,8 +47,18 @@ in `src/onboardingCalendar.test.ts`.
 
 | Adapter | Status | Production contract | Live behavior blocked |
 | --- | --- | --- | --- |
-| `google-calendar-events` | Credential-gated | Requires `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `calendar.events.readonly`, metadata schema validation, revocation handling, and no raw content storage. | No live OAuth consent flow or provider callback exists in this repo state. |
-| `icloud-ics-fallback` | Contract-only | Uses customer-provided ICS export/paste through the existing untrusted-input import path. Stores no Apple account credentials. | No fake iCloud OAuth, app-specific password storage, live CalDAV, or native Apple Calendar sync is implemented. |
+| `google-calendar-events` | Credential-gated | Requires `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`, metadata schema validation, revocation handling, and no raw content storage. | No live OAuth consent flow or provider callback exists in this repo state. |
+| `icloud-ics-fallback` | Contract-only | Uses customer-provided ICS export/paste through the existing untrusted-input import path. Apple supports exporting calendar events to `.ics` on Mac and downloading an iCloud.com calendar copy after temporary public sharing; CustomCard stores no Apple account credentials. | No fake iCloud OAuth, app-specific password storage, live CalDAV, or native Apple Calendar sync is implemented. |
+
+## Customer UI Contract
+
+The customer web panel and mobile app show the same readiness split:
+
+| Choice | Customer state | Action |
+| --- | --- | --- |
+| Paste invite or ICS | Ready now | Use the local no-account import path. |
+| Google Calendar connection | OAuth gated | Do not show a live sign-in CTA until OAuth app setup, consent copy, token storage, and revocation handling exist. |
+| Apple Calendar ICS export | Manual export | Ask the user to export/download ICS and paste selected event data; never ask for Apple ID, app-specific password, CalDAV, or native sync credentials in this repo state. |
 
 ## Guardrails
 

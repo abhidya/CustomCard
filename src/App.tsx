@@ -167,8 +167,9 @@ import {
   type MobileChatMessage,
   type MobileFulfillmentRecommendation,
   type MobileHandoffStep,
-  type MobileMemoryReviewItem,
+  type MobileMemoryReviewItem
 } from "../apps/mobile/src/customerExperience";
+import { buildCalendarOnboardingChoices, type CalendarOnboardingChoice } from "./onboardingCalendar";
 import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
 import { buildProviderAdapterRuntime, type RuntimeReadiness } from "./providerRuntime";
 import {
@@ -282,6 +283,7 @@ function App() {
   const reviewerDbSeedReadinessSummary = useMemo(() => summarizeReviewerDbSeedReadiness(), []);
   const cloudArtifactProofReadinessSummary = useMemo(() => summarizeCloudArtifactProofReadiness(), []);
   const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
+  const calendarOnboardingChoices = useMemo(() => buildCalendarOnboardingChoices(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const seededCustomerChat = useMemo(
     () =>
@@ -353,7 +355,7 @@ function App() {
   }
 
   function scanImport() {
-    setScanStatus(`${signal.source} scanned`);
+    setScanStatus(`${signal.source} reviewed`);
     setOpportunityDecision("pending");
   }
 
@@ -482,7 +484,7 @@ function App() {
             ) : (
               <>
                 <StatusChip icon={ShieldCheck} label="Private review" tone="green" />
-                <StatusChip icon={Calendar} label="Event scan" tone="blue" />
+                <StatusChip icon={Calendar} label="Manual import" tone="blue" />
                 <StatusChip icon={Store} label="Best option" tone="blue" />
               </>
             )}
@@ -493,6 +495,7 @@ function App() {
           <CustomerPanelView
             chatInput={customerChatInput}
             chatSession={customerChatSession}
+            calendarChoices={calendarOnboardingChoices}
             handoff={handoff}
             localizationSummary={localizationSummary}
             onChatInput={setCustomerChatInput}
@@ -523,7 +526,7 @@ function App() {
                 <UserRound size={22} />
               </div>
               <div>
-                <span>{workspace ? "Signed in locally" : "Demo auth"}</span>
+                <span>{workspace ? "Signed in locally" : "Local workspace auth"}</span>
                 <strong>{workspace?.name ?? "Create a local workspace"}</strong>
                 <small>{workspace?.email ?? "No external provider required"}</small>
               </div>
@@ -722,7 +725,12 @@ function MobileAppPreviewView() {
             <MobileSection title="Sign in and import">
               <div className="mobileActionGrid">
                 {mobileAccountOptions.map((option) => (
-                  <MobileActionTile key={option.provider} title={option.label} detail={option.detail} tone="dark" />
+                  <MobileActionTile
+                    key={option.provider}
+                    title={option.label}
+                    detail={option.detail}
+                    tone={option.provider === "Apple" ? "green" : "blue"}
+                  />
                 ))}
                 {mobileImportActions.map((action) => (
                   <MobileActionTile
@@ -956,6 +964,7 @@ function ContractBlock({
 }
 
 function CustomerPanelView({
+  calendarChoices,
   chatInput,
   chatSession,
   handoff,
@@ -974,6 +983,7 @@ function CustomerPanelView({
   selectedLocale,
   workspace
 }: {
+  calendarChoices: CalendarOnboardingChoice[];
   chatInput: string;
   chatSession: CustomerChatSession;
   handoff: VendorHandoff;
@@ -1016,7 +1026,7 @@ function CustomerPanelView({
           primary: true
         },
         {
-          label: "Paste invite only",
+          label: "Paste invite or ICS",
           detail: "Continue without connecting an account",
           icon: ClipboardCheck,
           onClick: () => onNavigate("opportunities")
@@ -1108,11 +1118,23 @@ function CustomerPanelView({
               </button>
               <button className="customerAuthButton" type="button" onClick={() => onNavigate("opportunities")}>
                 <ClipboardCheck size={18} />
-                <span>Paste invite only</span>
+                <span>Paste invite or ICS</span>
                 <small>Use the no-account local import path</small>
               </button>
             </div>
           )}
+
+          <div className="calendarOnboardingBox" aria-label="Calendar onboarding choices">
+            {calendarChoices.map((choice) => (
+              <div className={`calendarChoice ${choice.status}`} key={choice.id}>
+                <div>
+                  <strong>{choice.label}</strong>
+                  <span>{choice.dataBoundary}</span>
+                </div>
+                <em>{calendarChoiceStatusLabel(choice)}</em>
+              </div>
+            ))}
+          </div>
 
           {hasWorkspace && (
             <div className="importActionGrid" aria-label="Customer import actions">
@@ -1169,7 +1191,7 @@ function CustomerPanelView({
             <Metric label="Confidence" value={`${opportunity.confidence}%`} />
             <Metric label="Panels" value={`${panelCount}`} />
             <Metric label="Memory" value={opportunity.memoryIds.length > 0 ? "Matched" : "None"} />
-            <Metric label="Checkout" value={handoff.canPlaceRealOrder ? "Ready" : "Confirm"} />
+            <Metric label="Checkout" value={handoff.canPlaceRealOrder ? "Ready" : "Manual"} />
           </div>
         </article>
 
@@ -1317,7 +1339,7 @@ function CustomerPanelView({
           <div className="runtimeGrid compactMetrics" aria-label="Customer privacy controls">
             <Metric label="Memory" value="Approved" />
             <Metric label="Import" value="Review" />
-            <Metric label="Checkout" value="Confirm" />
+            <Metric label="Checkout" value="Manual" />
             <Metric label="Payments" value="Off" />
           </div>
         </article>
@@ -1403,6 +1425,12 @@ function FulfillmentOption({
   );
 }
 
+function calendarChoiceStatusLabel(choice: CalendarOnboardingChoice): string {
+  if (choice.status === "ready-local") return "Ready now";
+  if (choice.status === "manual-export") return "Manual export";
+  return "OAuth gated";
+}
+
 function OpportunitiesView({
   inviteText,
   onDecision,
@@ -1434,7 +1462,7 @@ function OpportunitiesView({
           </div>
           <button className="iconTextButton" type="button" onClick={onScan}>
             <RefreshCw size={16} />
-            Scan free import
+            Parse pasted invite/ICS
           </button>
         </div>
 

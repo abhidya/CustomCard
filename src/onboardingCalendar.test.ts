@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { providerCatalog } from "./providerCatalog";
 import {
+  buildCalendarOnboardingChoices,
   buildOnboardingPlan,
   calendarAdapterReadinessContracts,
   evaluateCalendarAdapterReadiness,
@@ -69,6 +70,7 @@ describe("onboarding and calendar integration contracts", () => {
     expect(google?.mode).toBe("oauth-readiness-contract");
     expect(google?.requiredEnv).toEqual(["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"]);
     expect(google?.requiredScopes).toEqual(["calendar.events.readonly"]);
+    expect(google?.officialScopeUris).toEqual(["https://www.googleapis.com/auth/calendar.events.readonly"]);
 
     const readiness = evaluateCalendarAdapterReadiness(google!, ["Metadata schema validation", "Revocation handling"]);
 
@@ -86,6 +88,7 @@ describe("onboarding and calendar integration contracts", () => {
     expect(icloud?.mode).toBe("manual-export-contract");
     expect(icloud?.requiredEnv).toEqual([]);
     expect(icloud?.requiredScopes).toEqual([]);
+    expect(icloud?.officialScopeUris).toEqual([]);
     expect(icloud?.fallbackImportPath).toContain("ICS");
 
     const readiness = evaluateCalendarAdapterReadiness(icloud!, icloud!.safetyGates);
@@ -94,5 +97,43 @@ describe("onboarding and calendar integration contracts", () => {
     expect(readiness.contractReady).toBe(true);
     expect(readiness.missingGates).toEqual([]);
     expect(readiness.blockedReasons).toContain("Live iCloud CalDAV/native sync is intentionally not implemented.");
+  });
+
+  it("builds customer-safe onboarding choices with local paste first and provider integrations gated", () => {
+    const choices = buildCalendarOnboardingChoices();
+
+    expect(choices.map((choice) => choice.id)).toEqual([
+      "manual-invite-or-ics",
+      "google-calendar-events",
+      "icloud-ics-fallback"
+    ]);
+    expect(choices[0]).toMatchObject({
+      label: "Paste invite or ICS",
+      status: "ready-local",
+      canStartNow: true,
+      liveOAuthEnabled: false,
+      sourceMode: "local-paste",
+      requiredScopes: [],
+      officialScopeUris: []
+    });
+    expect(choices[1]).toMatchObject({
+      label: "Google Calendar connection",
+      status: "credential-gated",
+      canStartNow: false,
+      liveOAuthEnabled: false,
+      sourceMode: "oauth-readiness",
+      actionLabel: "Requires OAuth setup",
+      officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"]
+    });
+    expect(choices[2]).toMatchObject({
+      label: "Apple Calendar ICS export",
+      status: "manual-export",
+      canStartNow: true,
+      liveOAuthEnabled: false,
+      sourceMode: "manual-export",
+      actionLabel: "Export ICS, then paste"
+    });
+    expect(choices.every((choice) => choice.credentialBoundary.length > 0 && choice.dataBoundary.length > 0)).toBe(true);
+    expect(choices.filter((choice) => choice.liveOAuthEnabled).length).toBe(0);
   });
 });

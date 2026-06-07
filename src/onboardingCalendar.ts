@@ -16,9 +16,11 @@ export type OnboardingStageId =
   | "handoff-readiness";
 
 export type CalendarIntegrationId = "google-calendar-events" | "icloud-ics-fallback";
-export type CalendarProvider = "Google Calendar API" | "iCloud Calendar export";
+export type CalendarProvider = "Google Calendar API" | "iCloud Calendar export" | "Manual invite or ICS paste";
 export type CalendarConnectionMode = "oauth-readiness-contract" | "manual-export-contract";
 export type AdapterLaunchStatus = "credential-gated" | "contract-only";
+export type CalendarOnboardingChoiceId = "manual-invite-or-ics" | CalendarIntegrationId;
+export type CalendarOnboardingChoiceStatus = "ready-local" | "credential-gated" | "manual-export";
 
 export interface OnboardingUserStory {
   id: string;
@@ -48,6 +50,7 @@ export interface CalendarAdapterReadinessContract {
   catalogAdapterId: CalendarIntegrationId;
   requiredEnv: string[];
   requiredScopes: string[];
+  officialScopeUris: string[];
   safetyGates: string[];
   metadataFields: string[];
   rawContentAllowed: false;
@@ -57,6 +60,23 @@ export interface CalendarAdapterReadinessContract {
   fallbackImportPath: string;
   readinessChecklist: string[];
   blockedReasons: string[];
+}
+
+export interface CalendarOnboardingChoice {
+  id: CalendarOnboardingChoiceId;
+  provider: CalendarProvider;
+  label: string;
+  status: CalendarOnboardingChoiceStatus;
+  actionLabel: string;
+  customerVisible: boolean;
+  canStartNow: boolean;
+  liveOAuthEnabled: false;
+  sourceMode: "local-paste" | "oauth-readiness" | "manual-export";
+  dataBoundary: string;
+  credentialBoundary: string;
+  requiredScopes: string[];
+  officialScopeUris: string[];
+  blockedReason?: string;
 }
 
 export interface OnboardingPlan {
@@ -239,6 +259,7 @@ export const calendarAdapterReadinessContracts: CalendarAdapterReadinessContract
     catalogAdapterId: "google-calendar-events",
     requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
     requiredScopes: ["calendar.events.readonly"],
+    officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
     safetyGates: [
       "OAuth consent required",
       "Calendar scope consent",
@@ -269,6 +290,7 @@ export const calendarAdapterReadinessContracts: CalendarAdapterReadinessContract
     catalogAdapterId: "icloud-ics-fallback",
     requiredEnv: [],
     requiredScopes: [],
+    officialScopeUris: [],
     safetyGates: ["Manual export only", "No Apple account credentials stored", "Metadata schema validation"],
     metadataFields: ["title", "startIso", "endIso", "locationLabel", "evidenceSummary"],
     rawContentAllowed: false,
@@ -293,6 +315,63 @@ export const onboardingProductionGuardrails = [
   "Google Calendar is credential-gated; iCloud is manual-export contract-only until a real Apple calendar credential strategy exists.",
   "Manual invite and ICS paste remain the free fallback for every onboarding path."
 ];
+
+export function buildCalendarOnboardingChoices(
+  adapters: CalendarAdapterReadinessContract[] = calendarAdapterReadinessContracts
+): CalendarOnboardingChoice[] {
+  const google = adapters.find((adapter) => adapter.id === "google-calendar-events");
+  const icloud = adapters.find((adapter) => adapter.id === "icloud-ics-fallback");
+
+  return [
+    {
+      id: "manual-invite-or-ics",
+      provider: "Manual invite or ICS paste",
+      label: "Paste invite or ICS",
+      status: "ready-local",
+      actionLabel: "Paste event",
+      customerVisible: true,
+      canStartNow: true,
+      liveOAuthEnabled: false,
+      sourceMode: "local-paste",
+      dataBoundary: "Customer-provided invite text or ICS event metadata only.",
+      credentialBoundary: "No provider account, OAuth token, Apple credential, or background sync.",
+      requiredScopes: [],
+      officialScopeUris: []
+    },
+    {
+      id: "google-calendar-events",
+      provider: "Google Calendar API",
+      label: "Google Calendar connection",
+      status: "credential-gated",
+      actionLabel: "Requires OAuth setup",
+      customerVisible: true,
+      canStartNow: false,
+      liveOAuthEnabled: false,
+      sourceMode: "oauth-readiness",
+      dataBoundary: "Event metadata only after explicit consent; raw descriptions stay out of storage.",
+      credentialBoundary: "Needs OAuth client, consent screen, redirect URI, token storage, and revocation handling.",
+      requiredScopes: google?.requiredScopes ?? [],
+      officialScopeUris: google?.officialScopeUris ?? [],
+      blockedReason: google?.blockedReasons[0] ?? "No live OAuth consent flow is implemented in this repository state."
+    },
+    {
+      id: "icloud-ics-fallback",
+      provider: "iCloud Calendar export",
+      label: "Apple Calendar ICS export",
+      status: "manual-export",
+      actionLabel: "Export ICS, then paste",
+      customerVisible: true,
+      canStartNow: true,
+      liveOAuthEnabled: false,
+      sourceMode: "manual-export",
+      dataBoundary: "Customer exports an .ics file or downloads a temporary iCloud.com ICS copy, then pastes selected event data.",
+      credentialBoundary: "No Apple ID, app-specific password, CalDAV session, or native Apple Calendar sync.",
+      requiredScopes: icloud?.requiredScopes ?? [],
+      officialScopeUris: icloud?.officialScopeUris ?? [],
+      blockedReason: icloud?.blockedReasons[0]
+    }
+  ];
+}
 
 export function buildOnboardingPlan(adapterIds: CalendarIntegrationId[] = ["google-calendar-events", "icloud-ics-fallback"]): OnboardingPlan {
   const selectedAdapters = calendarAdapterReadinessContracts.filter((adapter) => adapterIds.includes(adapter.id));
