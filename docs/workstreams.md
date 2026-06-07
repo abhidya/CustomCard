@@ -11,6 +11,7 @@ No worker branch is currently awaiting integration. Recent merged lanes:
 
 | Lane | Owner | Main commit | Scope | Validation |
 | --- | --- | --- | --- | --- |
+| Admin operations workflow | Lead agent | `8f9dc82` | Admin panel now exposes a tested integration-owner workflow for credential vault, hosted token proof, alert drill, incident runbook, and owner-lane evidence actions. | Full `npm run check`, admin operations doctor, browser smoke suite, Browser desktop DOM/console check. |
 | Customer web flow | Lead agent | `52efae6` | Customer dashboard now uses a tested one-primary-action journey model that routes event review before drafting and keeps customer copy free of internal provider/model jargon. | Full `npm run check`, browser smoke suite, focused customer/chat/API/provider/pricing tests, Browser desktop DOM/console check. |
 | Mobile render snapshot | Lead agent | `e9b6580` | Expo mobile shell renders a tested customer-facing snapshot instead of importing raw contract arrays. | Full `npm run check`, mobile doctor, mobile render doctor, release doctor, focused mobile/infra tests. |
 | Coupon source targets | Lead agent | `3c7543d` | Official Walgreens/CVS coupon sources, exact rendered print-link proof targets, and credential-gated FMTC provider-feed reporting. | Full `npm run check`, pricing doctor, coupon collector, focused pricing/API/app tests. |
