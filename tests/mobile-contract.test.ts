@@ -18,10 +18,13 @@ import {
   mobilePricingPreviews,
   mobilePrintProofChecks,
   mobileProofBoundary,
+  mobileRenderSnapshot,
   mobileRenderChoices,
   mobileSyncState,
   mobileTodaySummary,
+  summarizeMobileRenderSnapshot,
   requiredMobileCapabilities,
+  validateMobileRenderSnapshot,
   summarizeMobileExperience,
   validateMobileExperience,
   type MobileExperienceModel
@@ -222,6 +225,56 @@ describe("mobile customer experience contract", () => {
     expect(mobileSyncState.forbiddenMutationTypes).toEqual(
       expect.arrayContaining(["submit-live-order", "charge-payment", "upload-raw-memory"])
     );
+  });
+
+  it("builds a render snapshot for the native app shell without exposing contract internals", () => {
+    const source = readFileSync("apps/mobile/src/App.tsx", "utf8");
+    const summary = summarizeMobileRenderSnapshot();
+
+    expect(validateMobileRenderSnapshot()).toEqual([]);
+    expect(source).toContain("mobileRenderSnapshot");
+    expect(source).not.toContain("mobileAccountOptions");
+    expect(summary).toMatchObject({
+      sectionCount: 11,
+      rowCount: 31,
+      primaryActionCount: 2,
+      footerSafetyMessages: 2,
+      blockedLiveActionCount: 0,
+      internalProofTermCount: 0
+    });
+    expect(mobileRenderSnapshot).toMatchObject({
+      screenTitle: "CustomCard",
+      hero: expect.objectContaining({
+        eyebrow: "Customer mobile panel",
+        title: "CustomCard",
+        primaryAction: expect.objectContaining({
+          label: "Approve card",
+          modeLabel: "Queued"
+        })
+      }),
+      safetyBand: expect.objectContaining({
+        label: "Confirm before checkout",
+        metrics: [
+          { label: "cards", value: "2" },
+          { label: "panels", value: "4" },
+          { label: "actions", value: "5" },
+          { label: "orders", value: "Off" }
+        ]
+      }),
+      sections: expect.arrayContaining([
+        expect.objectContaining({ title: "Sign in and import" }),
+        expect.objectContaining({ title: "Card queue" }),
+        expect.objectContaining({ title: "Card assistant" }),
+        expect.objectContaining({ title: "Best available options" }),
+        expect.objectContaining({ title: "Checkout confirmation" }),
+        expect.objectContaining({ title: "Offline sync" })
+      ])
+    });
+    expect(mobileRenderSnapshot.sections.flatMap((section) => section.rows).map((row) => row.modeLabel)).toEqual(
+      expect.arrayContaining(["Local", "Queued", "Free", "Gated", "Confirm", "Manual", "Off"])
+    );
+    expect(mobileRenderSnapshot.footerSafetyMessages.join(" ")).toContain("No automatic order");
+    expect(JSON.stringify(mobileRenderSnapshot)).not.toMatch(/repo-local-contract|native-emulator-render|signed-native-artifact|app-store-review|adapter|provider|vendor api|retail-printer/i);
   });
 
   it("passes the mobile doctor with env configuration and fails if real orders are enabled", () => {

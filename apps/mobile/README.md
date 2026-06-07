@@ -5,10 +5,11 @@ web customer panel and adds a mobile-specific workflow contract: Google/Apple
 entry points, calendar/email/invite import actions, card queue items, customer
 approval controls, approved memory review, local scripted chat, card proof path,
 best available pickup/shipped fulfillment recommendations, offline idempotent
-sync, locale readiness, and checkout confirmation. The customer state lives in
-`src/customerExperience.ts`, a pure contract module tested by the root Vitest
-suite and inspected by the mobile doctor. `App.tsx` is the Expo root entrypoint
-and re-exports the native shell from `src/App.tsx`.
+sync, locale readiness, and checkout confirmation. The customer state and
+render snapshot live in `src/customerExperience.ts`, a pure module tested by the
+root Vitest suite and inspected by the mobile doctor. `App.tsx` is the Expo root
+entrypoint and re-exports the native shell from `src/App.tsx`, which renders the
+`mobileRenderSnapshot` instead of importing raw contract arrays directly.
 
 ## Current proof boundary
 
@@ -19,8 +20,9 @@ and checkout confirmation. The `mobileProofBoundary` contract intentionally
 blocks native emulator render proof, signed native artifact proof, app-store
 review proof, and live retail-order proof.
 
-It uses static demo state because the repo-local verification loop does not run a
-hosted API server, native emulator, or signed platform build.
+It uses a deterministic render snapshot because the repo-local verification loop
+does not run a hosted API server, native emulator, or signed platform build. The
+snapshot is still customer-facing screen state, not an emulator screenshot.
 The launch locale options mirror the web/API contract: English (US), Spanish
 (US), Urdu, and Arabic, with RTL and non-English copy review still gated before
 production use.

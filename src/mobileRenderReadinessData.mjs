@@ -23,18 +23,16 @@ export const mobileRenderReadinessItems = [
       "header",
       "status-band",
       "sign-in-import",
-      "today-card",
-      "workflow-coverage",
+      "next-action",
       "card-queue",
       "memory-review",
       "approval-controls",
-      "text-interface",
+      "card-assistant",
       "card-proof-path",
       "best-available-options",
       "print-proof",
       "checkout-confirmation",
-      "offline-sync",
-      "locale-readiness"
+      "offline-sync"
     ],
     viewportProfiles: requiredViewportProfiles,
     nativeBuildProfileIds: [],
@@ -42,12 +40,12 @@ export const mobileRenderReadinessItems = [
       "SafeAreaView",
       "ScrollView",
       "StyleSheet.create",
-      "mobileAccountOptions",
-      "mobileImportActions",
-      "mobileExperienceSections",
-      "mobileFulfillmentRecommendations",
-      "mobileProofBoundary",
-      "summarizeMobileExperience"
+      "mobileRenderSnapshot",
+      "MobileRenderSection",
+      "MobileRenderRow",
+      "buildMobileRenderSnapshot",
+      "validateMobileRenderSnapshot",
+      "summarizeMobileRenderSnapshot"
     ],
     deterministicProofBoundary: "repo-local-source-contract",
     blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"],
@@ -59,7 +57,7 @@ export const mobileRenderReadinessItems = [
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     liveProviderCalls: false,
-    currentEvidence: ["Expo App.tsx source", "mobile customer experience contract", "mobile contract tests"],
+    currentEvidence: ["Expo App.tsx source", "mobile render snapshot contract", "mobile contract tests"],
     requiredEvidence: ["React Native render test output", "Expo preview screenshot", "Screen-reader pass notes"],
     blocker: "Native source render contract exists; no React Native renderer output or emulator screenshot is attached."
   },
@@ -71,10 +69,10 @@ export const mobileRenderReadinessItems = [
     screenSectionIds: [
       "today-card",
       "sign-in-import",
-      "workflow-coverage",
+      "next-action",
       "card-queue",
       "approval-controls",
-      "text-interface",
+      "card-assistant",
       "best-available-options",
       "offline-sync"
     ],
@@ -82,6 +80,8 @@ export const mobileRenderReadinessItems = [
     nativeBuildProfileIds: [],
     requiredSourceSignals: [
       "mobileProofBoundary",
+      "mobileRenderSnapshot",
+      "buildMobileRenderSnapshot",
       "mobileAccountOptions",
       "mobileImportActions",
       "mobileTodaySummary",
@@ -156,7 +156,7 @@ export const mobileRenderReadinessItems = [
     label: "Mobile RTL render review",
     lane: "rtl-review",
     status: "evidence-missing",
-    screenSectionIds: ["locale-readiness", "text-interface"],
+    screenSectionIds: ["card-assistant", "sign-in-import"],
     viewportProfiles: ["standard-phone", "large-phone"],
     nativeBuildProfileIds: [],
     requiredSourceSignals: ["ar-EG", "ur-PK", "writingDirection", "copyReviewRequired", "rtl"],
@@ -316,13 +316,13 @@ export function validateMobileRenderReadiness(items = mobileRenderReadinessItems
     assertCoversViewportProfiles(shell, issues, "Mobile native shell render contract");
     for (const section of [
       "sign-in-import",
+      "next-action",
       "card-queue",
       "approval-controls",
-      "text-interface",
+      "card-assistant",
       "best-available-options",
       "print-proof",
-      "offline-sync",
-      "locale-readiness"
+      "offline-sync"
     ]) {
       if (!shell.screenSectionIds.includes(section)) {
         issues.push(`Mobile native shell render contract must include section: ${section}.`);

@@ -53,11 +53,14 @@ describe("mobile render readiness", () => {
     expect(shell?.screenSectionIds).toEqual(
       expect.arrayContaining([
         "sign-in-import",
+        "next-action",
         "card-queue",
         "approval-controls",
-        "text-interface",
+        "card-assistant",
+        "card-proof-path",
         "best-available-options",
         "print-proof",
+        "checkout-confirmation",
         "offline-sync"
       ])
     );

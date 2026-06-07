@@ -303,11 +303,12 @@ adapters remain zero-spend with real orders disabled.
 
 ## Mobile Customer App
 
-`apps/mobile/src/customerExperience.ts` is the tested mobile customer contract.
-`apps/mobile/src/App.tsx` renders that contract as the Expo customer surface
-instead of a placeholder. It mirrors the web customer panel with card queue
-items, a next-action summary, approval controls, memory review items,
-print-proof checks, local scripted chat, image/render status, review-only
+`apps/mobile/src/customerExperience.ts` is the tested mobile customer contract
+and render snapshot seam. `apps/mobile/src/App.tsx` renders the
+`mobileRenderSnapshot` as the Expo customer surface instead of importing raw
+contract arrays or exposing proof diagnostics. It mirrors the web customer panel
+with card queue items, a next-action summary, approval controls, memory review
+items, print-proof checks, local scripted chat, image/render status, review-only
 printer pricing previews, offline idempotent API sync, manual handoff, and a
 real-order-disabled banner. The mobile contract also carries the same 4 launch
 locale options, including copy-review and RTL posture.
@@ -670,8 +671,9 @@ Remaining high-risk work:
   account-token verification; isolated live Postgres route-auth/migration/runtime
   integration, process-level API HTTP verification, and account identity/recovery
   storage are covered by doctors.
-- No React Native render/emulator proof or actual native iOS/Android build
-  artifact; EAS profiles and release doctor are covered.
+- No React Native renderer-package output, emulator proof, or actual native
+  iOS/Android build artifact; render snapshot validation, EAS profiles, and
+  release doctor are covered.
 - No cloud deployment proof against a real cluster.
 - Hosted GitHub Actions verification exists for main pushes, but there is still
   no live deployment proof against a real cluster.

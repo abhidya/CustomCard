@@ -1,245 +1,100 @@
 import React from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import {
-  mobileAccountOptions,
-  mobileApprovalActions,
-  mobileCardQueueItems,
-  mobileChatTranscript,
-  mobileFulfillmentRecommendations,
-  mobileHandoffSteps,
-  mobileImportActions,
-  mobileMemoryReviewItems,
-  mobilePrintProofChecks,
-  mobileRenderChoices,
-  mobileSafetyBanner,
-  mobileSyncState,
-  mobileTodaySummary
-} from "./customerExperience";
+import { mobileRenderSnapshot, type MobileRenderRow, type MobileRenderSection } from "./customerExperience";
 
 export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>Customer mobile panel</Text>
-          <Text style={styles.title}>CustomCard</Text>
-          <Text style={styles.subtitle}>
-            Create a local workspace, paste an invite or ICS event, approve a card, and prepare manual handoff.
-          </Text>
+          <Text style={styles.eyebrow}>{mobileRenderSnapshot.hero.eyebrow}</Text>
+          <Text style={styles.title}>{mobileRenderSnapshot.hero.title}</Text>
+          <Text style={styles.subtitle}>{mobileRenderSnapshot.hero.subtitle}</Text>
+          <View style={styles.heroAction}>
+            <View style={styles.compactCopy}>
+              <Text style={styles.compactTitle}>{mobileRenderSnapshot.hero.primaryAction.label}</Text>
+              <Text style={styles.cardCopy}>{mobileRenderSnapshot.hero.primaryAction.detail}</Text>
+            </View>
+            <Text style={styles.modePill}>{mobileRenderSnapshot.hero.primaryAction.modeLabel}</Text>
+          </View>
         </View>
 
         <View style={styles.statusBand}>
-          <Text style={styles.statusLabel}>{mobileSafetyBanner.label}</Text>
-          <Text style={styles.statusCopy}>{mobileSafetyBanner.detail}</Text>
+          <Text style={styles.statusLabel}>{mobileRenderSnapshot.safetyBand.label}</Text>
+          <Text style={styles.statusCopy}>{mobileRenderSnapshot.safetyBand.detail}</Text>
           <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{mobileCardQueueItems.length}</Text>
-              <Text style={styles.summaryLabel}>cards</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{mobileTodaySummary.panelCount}</Text>
-              <Text style={styles.summaryLabel}>panels</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>{mobileApprovalActions.length}</Text>
-              <Text style={styles.summaryLabel}>actions</Text>
-            </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryValue}>Off</Text>
-              <Text style={styles.summaryLabel}>orders</Text>
-            </View>
+            {mobileRenderSnapshot.safetyBand.metrics.map((metric) => (
+              <View key={metric.label} style={styles.summaryItem}>
+                <Text style={styles.summaryValue}>{metric.value}</Text>
+                <Text style={styles.summaryLabel}>{metric.label}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Sign in and import</Text>
-          {mobileAccountOptions.map((option) => (
-            <View key={option.provider} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{option.label}</Text>
-                <Text style={styles.cardCopy}>{option.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{option.provider === "Apple" ? "Manual" : "OAuth off"}</Text>
-            </View>
-          ))}
-          {mobileImportActions.map((action) => (
-            <View key={action.kind} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{action.label}</Text>
-                <Text style={styles.cardCopy}>{action.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{action.sourceMode === "local-paste" ? "Local" : "Future"}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.todayCard}>
-          <View style={styles.cardTop}>
-            <Text style={styles.groupEyebrow}>Next action</Text>
-            <Text style={styles.warningPill}>{mobileTodaySummary.riskBadge}</Text>
-          </View>
-          <Text style={styles.todayTitle}>{mobileTodaySummary.recipientLabel}</Text>
-          <Text style={styles.todayMeta}>
-            {mobileTodaySummary.eventLabel} - {mobileTodaySummary.dueLabel}
-          </Text>
-          <View style={styles.metricRow}>
-            <View style={styles.miniMetric}>
-              <Text style={styles.miniMetricValue}>{mobileTodaySummary.panelCount}</Text>
-              <Text style={styles.miniMetricLabel}>panels</Text>
-            </View>
-            <View style={styles.miniMetric}>
-              <Text style={styles.miniMetricValue}>{mobileTodaySummary.offlineReady ? "On" : "Off"}</Text>
-              <Text style={styles.miniMetricLabel}>offline queue</Text>
-            </View>
-            <View style={styles.miniMetric}>
-              <Text style={styles.miniMetricValue}>{mobileTodaySummary.realOrdersEnabled ? "On" : "Off"}</Text>
-              <Text style={styles.miniMetricLabel}>real orders</Text>
-            </View>
-          </View>
-        </View>
+        {mobileRenderSnapshot.sections.map((section) =>
+          section.id === "next-action" ? <NextActionSection key={section.id} section={section} /> : <StandardSection key={section.id} section={section} />
+        )}
 
         <View style={styles.group}>
-          <Text style={styles.groupTitle}>Card queue</Text>
-          {mobileCardQueueItems.map((item) => (
-            <View key={item.id} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{item.recipientLabel}</Text>
-                <Text style={styles.cardCopy}>
-                  {item.eventLabel} due {item.dueIso.slice(0, 10)} from {item.source}; {item.panelCount} panels ready.
-                </Text>
-              </View>
-              <Text style={styles.modePill}>{queueStatusLabel(item.status)}</Text>
-            </View>
+          {mobileRenderSnapshot.footerSafetyMessages.map((message) => (
+            <Text key={message} style={styles.smallMeta}>
+              {message}
+            </Text>
           ))}
         </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Memory review</Text>
-          {mobileMemoryReviewItems.map((item) => (
-            <View key={item.id} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{item.recipientLabel}</Text>
-                <Text style={styles.cardCopy}>{item.memoryLabel}</Text>
-              </View>
-              <Text style={styles.modePill}>{memoryUsageLabel(item.usage)}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Approval controls</Text>
-          {mobileApprovalActions.map((action) => (
-            <View key={action.kind} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{action.label}</Text>
-                <Text style={styles.cardCopy}>{action.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{action.networkMode === "local-only" ? "Local" : "Queued"}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Card assistant</Text>
-          {mobileChatTranscript.map((message, index) => (
-            <View
-              key={`${message.speaker}-${index}`}
-              style={[styles.chatBubble, message.speaker === "customer" ? styles.customerBubble : styles.assistantBubble]}
-            >
-              <Text style={styles.chatSpeaker}>{message.speaker}</Text>
-              <Text style={styles.chatCopy}>{message.text}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Card proof path</Text>
-          {mobileRenderChoices.map((choice) => (
-            <View key={choice.label} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{choice.label}</Text>
-                <Text style={styles.cardCopy}>{choice.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{choice.mode === "free-local" ? "Free" : "Gated"}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Best available options</Text>
-          {mobileFulfillmentRecommendations.map((recommendation) => (
-            <View key={recommendation.kind} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{recommendation.label}</Text>
-                <Text style={styles.cardCopy}>
-                  ${(recommendation.totalCents / 100).toFixed(2)} at {recommendation.vendorName};{" "}
-                  {recommendation.etaLabel}. {recommendation.confirmationCopy}
-                </Text>
-              </View>
-              <Text style={styles.modePill}>Confirm</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Print proof</Text>
-          {mobilePrintProofChecks.map((check) => (
-            <View key={check.id} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{check.label}</Text>
-                <Text style={styles.cardCopy}>{check.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{proofStatusLabel(check.passed)}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Checkout confirmation</Text>
-          {mobileHandoffSteps.map((step) => (
-            <View key={step.label} style={styles.compactRow}>
-              <View style={styles.compactCopy}>
-                <Text style={styles.compactTitle}>{step.label}</Text>
-                <Text style={styles.cardCopy}>{step.detail}</Text>
-              </View>
-              <Text style={styles.modePill}>{step.realOrderState}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.group}>
-          <Text style={styles.groupTitle}>Offline sync</Text>
-          <View style={styles.compactRow}>
-            <View style={styles.compactCopy}>
-              <Text style={styles.compactTitle}>Customer session</Text>
-              <Text style={styles.cardCopy}>
-                Customer actions stay queued offline and replay safely when your session is available.
-              </Text>
-            </View>
-            <Text style={styles.modePill}>{mobileSyncState.offlineQueueEnabled ? "Queued" : "Off"}</Text>
-          </View>
-          <Text style={styles.smallMeta}>
-            No automatic order, charge, or raw memory upload can run from this mobile shell.
-          </Text>
-        </View>
-
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function queueStatusLabel(status: string): string {
-  if (status === "needs-approval") return "Review";
-  if (status === "ready-for-handoff") return "Handoff";
-  return "Approved";
+function NextActionSection({ section }: { section: MobileRenderSection }) {
+  const row = section.rows[0];
+
+  return (
+    <View style={styles.todayCard}>
+      <View style={styles.cardTop}>
+        <Text style={styles.groupEyebrow}>{section.title}</Text>
+        <Text style={styles.warningPill}>{row.modeLabel}</Text>
+      </View>
+      <Text style={styles.todayTitle}>{row.title}</Text>
+      <Text style={styles.todayMeta}>{row.detail}</Text>
+    </View>
+  );
 }
 
-function memoryUsageLabel(usage: string): string {
-  return usage === "approved" ? "Approved" : "Review";
+function StandardSection({ section }: { section: MobileRenderSection }) {
+  const sectionStyle = section.id === "card-assistant" ? [styles.group, styles.chatGroup] : styles.group;
+
+  return (
+    <View style={sectionStyle}>
+      <Text style={styles.groupTitle}>{section.title}</Text>
+      {section.rows.map((row) => (
+        <SectionRow key={`${section.id}-${row.title}-${row.modeLabel}`} row={row} chat={section.id === "card-assistant"} />
+      ))}
+    </View>
+  );
 }
 
-function proofStatusLabel(passed: boolean): string {
-  return passed ? "Passed" : "Check";
+function SectionRow({ row, chat }: { row: MobileRenderRow; chat?: boolean }) {
+  if (chat) {
+    return (
+      <View style={[styles.chatBubble, row.modeLabel === "Customer" ? styles.customerBubble : styles.assistantBubble]}>
+        <Text style={styles.chatSpeaker}>{row.title}</Text>
+        <Text style={styles.chatCopy}>{row.detail}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.compactRow}>
+      <View style={styles.compactCopy}>
+        <Text style={styles.compactTitle}>{row.title}</Text>
+        <Text style={styles.cardCopy}>{row.detail}</Text>
+      </View>
+      <Text style={styles.modePill}>{row.modeLabel}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -272,6 +127,16 @@ const styles = StyleSheet.create({
     color: "#d8e7e4",
     fontSize: 15,
     lineHeight: 22
+  },
+  heroAction: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "#ffffff"
   },
   statusBand: {
     padding: 14,
@@ -358,29 +223,6 @@ const styles = StyleSheet.create({
     color: "#4d5c61",
     lineHeight: 21
   },
-  metricRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 13
-  },
-  miniMetric: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 7,
-    backgroundColor: "#eef5f3"
-  },
-  miniMetricValue: {
-    color: "#172124",
-    fontSize: 16,
-    fontWeight: "900"
-  },
-  miniMetricLabel: {
-    marginTop: 2,
-    color: "#42615f",
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase"
-  },
   group: {
     gap: 10,
     padding: 14,
@@ -388,6 +230,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderColor: "#d5dee0",
     borderWidth: 1
+  },
+  chatGroup: {
+    backgroundColor: "#fbfcfc"
   },
   groupTitle: {
     color: "#172124",
@@ -441,8 +286,7 @@ const styles = StyleSheet.create({
     color: "#123a32",
     backgroundColor: "#cde9df",
     fontSize: 12,
-    fontWeight: "900",
-    textTransform: "capitalize"
+    fontWeight: "900"
   },
   smallMeta: {
     color: "#5d6c72",

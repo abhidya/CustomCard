@@ -198,6 +198,59 @@ export interface MobileExperienceModel {
   syncState: MobileSyncState;
 }
 
+export interface MobileRenderMetric {
+  label: string;
+  value: string;
+}
+
+export interface MobileRenderAction {
+  label: string;
+  detail: string;
+  modeLabel: string;
+  actionKind?: MobileApprovalActionKind;
+}
+
+export interface MobileRenderRow {
+  title: string;
+  detail: string;
+  modeLabel: string;
+  actionKind?: MobileApprovalActionKind;
+}
+
+export interface MobileRenderSection {
+  id:
+    | "sign-in-import"
+    | "next-action"
+    | "card-queue"
+    | "memory-review"
+    | "approval-controls"
+    | "card-assistant"
+    | "card-proof-path"
+    | "best-available-options"
+    | "print-proof"
+    | "checkout-confirmation"
+    | "offline-sync";
+  title: string;
+  rows: MobileRenderRow[];
+}
+
+export interface MobileRenderSnapshot {
+  screenTitle: string;
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    primaryAction: MobileRenderAction;
+  };
+  safetyBand: {
+    label: string;
+    detail: string;
+    metrics: MobileRenderMetric[];
+  };
+  sections: MobileRenderSection[];
+  footerSafetyMessages: string[];
+}
+
 export const mobileSafetyBanner = {
   label: "Confirm before checkout",
   detail: "No automatic charge, live quote, or direct order runs from the mobile shell."
@@ -649,6 +702,157 @@ export const mobileExperience: MobileExperienceModel = {
   syncState: mobileSyncState
 };
 
+export const mobileRenderSnapshot = buildMobileRenderSnapshot();
+
+export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileExperience): MobileRenderSnapshot {
+  const approvalByKind = new Map(model.approvalActions.map((action) => [action.kind, action]));
+  const primaryAction = approvalByKind.get(model.todaySummary.primaryAction) ?? model.approvalActions[0];
+
+  return {
+    screenTitle: "CustomCard",
+    hero: {
+      eyebrow: "Customer mobile panel",
+      title: "CustomCard",
+      subtitle: "Create a local workspace, paste an invite or ICS event, approve a card, and prepare manual handoff.",
+      primaryAction: {
+        label: primaryAction.label,
+        detail: primaryAction.detail,
+        modeLabel: actionModeLabel(primaryAction),
+        actionKind: primaryAction.kind
+      }
+    },
+    safetyBand: {
+      label: model.safetyBanner.label,
+      detail: model.safetyBanner.detail,
+      metrics: [
+        { label: "cards", value: String(model.queueItems.length) },
+        { label: "panels", value: String(model.todaySummary.panelCount) },
+        { label: "actions", value: String(model.approvalActions.length) },
+        { label: "orders", value: model.todaySummary.realOrdersEnabled ? "On" : "Off" }
+      ]
+    },
+    sections: [
+      {
+        id: "sign-in-import",
+        title: "Sign in and import",
+        rows: [
+          ...model.accountOptions.map((option) => ({
+            title: option.label,
+            detail: option.detail,
+            modeLabel: option.provider === "Apple" ? "Manual" : "OAuth off"
+          })),
+          ...model.importActions.map((action) => ({
+            title: action.label,
+            detail: action.detail,
+            modeLabel: action.sourceMode === "local-paste" ? "Local" : "Gated"
+          }))
+        ]
+      },
+      {
+        id: "next-action",
+        title: "Next action",
+        rows: [
+          {
+            title: model.todaySummary.recipientLabel,
+            detail: `${model.todaySummary.eventLabel} - ${model.todaySummary.dueLabel}`,
+            modeLabel: model.todaySummary.riskBadge,
+            actionKind: model.todaySummary.primaryAction
+          }
+        ]
+      },
+      {
+        id: "card-queue",
+        title: "Card queue",
+        rows: model.queueItems.map((item) => ({
+          title: item.recipientLabel,
+          detail: `${item.eventLabel} due ${item.dueIso.slice(0, 10)} from ${sourceLabel(item.source)}; ${item.panelCount} panels ready.`,
+          modeLabel: queueStatusLabel(item.status),
+          actionKind: item.nextAction
+        }))
+      },
+      {
+        id: "memory-review",
+        title: "Memory review",
+        rows: model.memoryReviewItems.map((item) => ({
+          title: item.recipientLabel,
+          detail: item.memoryLabel,
+          modeLabel: item.usage === "approved" ? "Approved" : "Review"
+        }))
+      },
+      {
+        id: "approval-controls",
+        title: "Approval controls",
+        rows: model.approvalActions.map((action) => ({
+          title: action.label,
+          detail: action.detail,
+          modeLabel: actionModeLabel(action),
+          actionKind: action.kind
+        }))
+      },
+      {
+        id: "card-assistant",
+        title: "Card assistant",
+        rows: model.chatTranscript.map((message) => ({
+          title: message.speaker === "customer" ? "Customer" : "Assistant",
+          detail: message.text,
+          modeLabel: message.source === "local-script" ? "Local" : "Customer"
+        }))
+      },
+      {
+        id: "card-proof-path",
+        title: "Card proof path",
+        rows: model.renderChoices.map((choice) => ({
+          title: choice.label,
+          detail: choice.detail,
+          modeLabel: choice.mode === "free-local" ? "Free" : "Gated"
+        }))
+      },
+      {
+        id: "best-available-options",
+        title: "Best available options",
+        rows: model.fulfillmentRecommendations.map((recommendation) => ({
+          title: recommendation.label,
+          detail: `${formatCents(recommendation.totalCents)} at ${recommendation.vendorName}; ${recommendation.etaLabel}. ${recommendation.confirmationCopy}`,
+          modeLabel: "Confirm"
+        }))
+      },
+      {
+        id: "print-proof",
+        title: "Print proof",
+        rows: model.printProofChecks.map((check) => ({
+          title: check.label,
+          detail: check.detail,
+          modeLabel: check.passed ? "Passed" : "Check"
+        }))
+      },
+      {
+        id: "checkout-confirmation",
+        title: "Checkout confirmation",
+        rows: model.handoffSteps.map((step) => ({
+          title: step.label,
+          detail: step.detail,
+          modeLabel: step.realOrderState === "manual" ? "Manual" : "Off"
+        }))
+      },
+      {
+        id: "offline-sync",
+        title: "Offline sync",
+        rows: [
+          {
+            title: "Customer session",
+            detail: "Customer actions stay queued offline and replay safely when your session is available.",
+            modeLabel: model.syncState.offlineQueueEnabled ? "Queued" : "Off"
+          }
+        ]
+      }
+    ],
+    footerSafetyMessages: [
+      "No automatic order, charge, or raw memory upload can run from this mobile shell.",
+      "Native emulator screenshots and signed build artifacts remain open release evidence."
+    ]
+  };
+}
+
 export function summarizeMobileExperience(model: MobileExperienceModel = mobileExperience) {
   return {
     capabilityCount: new Set(model.sections.map((section) => section.id)).size,
@@ -679,6 +883,74 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
     webCustomerFlowStages: model.proofBoundary.webCustomerFlowStages.length,
     blockedLiveProofs: model.proofBoundary.blockedLiveProofs.length
   };
+}
+
+export function summarizeMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mobileRenderSnapshot) {
+  const snapshotText = collectMobileRenderSnapshotText(snapshot);
+
+  return {
+    sectionCount: snapshot.sections.length,
+    rowCount: snapshot.sections.reduce((total, section) => total + section.rows.length, 0),
+    primaryActionCount:
+      (snapshot.hero.primaryAction.actionKind === "approve" ? 1 : 0) +
+      snapshot.sections
+        .filter((section) => section.id === "next-action")
+        .flatMap((section) => section.rows)
+        .filter((row) => row.actionKind === "approve").length,
+    footerSafetyMessages: snapshot.footerSafetyMessages.length,
+    blockedLiveActionCount: snapshotText.filter((phrase) => /\b(live order ready|real orders enabled|payment active|paid ai active)\b/i.test(phrase)).length,
+    internalProofTermCount: snapshotText.filter((phrase) =>
+      /\b(repo-local-contract|native-emulator-render|signed-native-artifact|app-store-review|adapter|provider|vendor api|retail-printer)\b/i.test(phrase)
+    ).length
+  };
+}
+
+export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mobileRenderSnapshot): string[] {
+  const issues: string[] = [];
+  const summary = summarizeMobileRenderSnapshot(snapshot);
+  const sectionIds = new Set(snapshot.sections.map((section) => section.id));
+
+  if (snapshot.screenTitle !== "CustomCard") issues.push("Mobile render snapshot must name the product.");
+  if (!snapshot.hero.primaryAction.label || !snapshot.hero.primaryAction.actionKind) {
+    issues.push("Mobile render snapshot must expose a primary customer action.");
+  }
+  if (snapshot.safetyBand.label !== "Confirm before checkout") {
+    issues.push("Mobile render snapshot must keep checkout confirmation in the safety band.");
+  }
+  for (const metric of ["cards", "panels", "actions", "orders"]) {
+    if (!snapshot.safetyBand.metrics.some((item) => item.label === metric)) {
+      issues.push(`Mobile render snapshot missing safety metric: ${metric}.`);
+    }
+  }
+  for (const sectionId of [
+    "sign-in-import",
+    "next-action",
+    "card-queue",
+    "memory-review",
+    "approval-controls",
+    "card-assistant",
+    "card-proof-path",
+    "best-available-options",
+    "print-proof",
+    "checkout-confirmation",
+    "offline-sync"
+  ] satisfies MobileRenderSection["id"][]) {
+    if (!sectionIds.has(sectionId)) issues.push(`Mobile render snapshot missing section: ${sectionId}.`);
+  }
+  if (summary.sectionCount !== 11) issues.push("Mobile render snapshot must expose 11 rendered sections.");
+  if (summary.rowCount < 30) issues.push("Mobile render snapshot must expose the full customer workflow rows.");
+  if (summary.primaryActionCount < 2) issues.push("Mobile render snapshot must place the primary approval action in hero and workflow.");
+  if (summary.footerSafetyMessages < 2) issues.push("Mobile render snapshot must keep safety footer messages.");
+  if (summary.blockedLiveActionCount > 0) issues.push("Mobile render snapshot must not claim live order, payment, or paid AI actions.");
+  if (summary.internalProofTermCount > 0) issues.push("Mobile render snapshot must not expose internal proof terms to customers.");
+  if (snapshot.sections.some((section) => section.rows.length === 0)) {
+    issues.push("Mobile render snapshot sections must not be empty.");
+  }
+  if (snapshot.sections.flatMap((section) => section.rows).some((row) => !row.title.trim() || !row.detail.trim() || !row.modeLabel.trim())) {
+    issues.push("Mobile render snapshot rows must include title, detail, and mode label.");
+  }
+
+  return issues;
 }
 
 export function validateMobileExperience(model: MobileExperienceModel = mobileExperience): string[] {
@@ -932,4 +1204,44 @@ function collectMobileExperienceText(model: MobileExperienceModel): string[] {
     model.syncState.authMode,
     model.syncState.retryPolicy
   ];
+}
+
+function collectMobileRenderSnapshotText(snapshot: MobileRenderSnapshot): string[] {
+  return [
+    snapshot.screenTitle,
+    snapshot.hero.eyebrow,
+    snapshot.hero.title,
+    snapshot.hero.subtitle,
+    snapshot.hero.primaryAction.label,
+    snapshot.hero.primaryAction.detail,
+    snapshot.hero.primaryAction.modeLabel,
+    snapshot.safetyBand.label,
+    snapshot.safetyBand.detail,
+    ...snapshot.safetyBand.metrics.flatMap((metric) => [metric.label, metric.value]),
+    ...snapshot.sections.flatMap((section) => [
+      section.title,
+      ...section.rows.flatMap((row) => [row.title, row.detail, row.modeLabel])
+    ]),
+    ...snapshot.footerSafetyMessages
+  ];
+}
+
+function actionModeLabel(action: MobileApprovalAction): string {
+  return action.networkMode === "local-only" ? "Local" : "Queued";
+}
+
+function sourceLabel(source: MobileCardQueueItem["source"]): string {
+  if (source === "ics-import") return "ICS import";
+  if (source === "manual-entry") return "manual entry";
+  return "customer history";
+}
+
+function queueStatusLabel(status: MobileCardQueueStatus): string {
+  if (status === "needs-approval") return "Review";
+  if (status === "ready-for-handoff") return "Handoff";
+  return "Approved";
+}
+
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }

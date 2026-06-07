@@ -119,11 +119,11 @@ Requirement types:
   repository, manual handoff order/consent/event, data-request privacy/consent,
   queue-job, and audit-log tables.
 - Mobile shell resolves API configuration from environment.
-- Mobile customer app keeps the native shell customer-facing with tested
-  account import, next-action summary, card queue items, approval controls,
-  memory-review items, card assistant, print-proof checks, render,
-  review-only pricing, offline idempotent API sync, and handoff sections while
-  proof/readiness diagnostics stay in contract data, doctors, and admin/web
+- Mobile customer app keeps the native shell customer-facing with a tested
+  render snapshot for account import, next-action summary, card queue items,
+  approval controls, memory-review items, card assistant, print-proof checks,
+  render, review-only pricing, offline idempotent API sync, and handoff sections
+  while proof/readiness diagnostics stay in contract data, doctors, and admin/web
   proof surfaces.
 - Mobile doctor validates the customer experience contract and fails if the
   repo-local real-order kill switch is enabled.
@@ -208,6 +208,7 @@ Requirement types:
 - No real droplet or Kubernetes deployment has been executed.
 - Hosted GitHub Actions verification exists for main pushes, but no real droplet
   or Kubernetes deployment has been executed.
-- No actual React Native component render test, emulator run, EAS/native build,
-  or signed mobile artifact has been produced; mobile render readiness, EAS
-  profiles, and release doctor are covered as repo-local contracts.
+- No actual React Native renderer-package output, emulator run, EAS/native
+  build, or signed mobile artifact has been produced; mobile render snapshot
+  validation, mobile render readiness, EAS profiles, and release doctor are
+  covered as repo-local contracts.
