@@ -2,7 +2,7 @@ import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type ViteDevServer } from "vite";
 
 const chromePath = resolveChromePath();
@@ -29,6 +29,7 @@ describeWithChrome("CustomCard UI smoke", () => {
   let nextId = 1;
   const pending = new Map<number, PendingCommand>();
   const eventWaiters: EventWaiter[] = [];
+  const browserConsoleErrors: string[] = [];
   const debuggingPort = 9400 + Math.floor(Math.random() * 500);
 
   beforeAll(async () => {
@@ -82,6 +83,14 @@ describeWithChrome("CustomCard UI smoke", () => {
         else command.resolve(message.result);
       }
 
+      if (message.method === "Runtime.consoleAPICalled" && message.params?.type === "error") {
+        browserConsoleErrors.push(formatRuntimeArgs(message.params.args));
+      }
+
+      if (message.method === "Runtime.exceptionThrown") {
+        browserConsoleErrors.push(message.params?.exceptionDetails?.text ?? "Browser runtime exception");
+      }
+
       for (let index = eventWaiters.length - 1; index >= 0; index -= 1) {
         const waiter = eventWaiters[index];
         if (waiter.method === message.method && (!waiter.sessionId || waiter.sessionId === message.sessionId)) {
@@ -95,6 +104,11 @@ describeWithChrome("CustomCard UI smoke", () => {
       ws.onerror = () => reject(new Error("Chrome debugging WebSocket failed"));
     });
   }, 45000);
+
+  afterEach(() => {
+    const errors = browserConsoleErrors.splice(0);
+    expect(errors).toEqual([]);
+  });
 
   afterAll(async () => {
     if (ws) {
@@ -518,6 +532,13 @@ describeWithChrome("CustomCard UI smoke", () => {
     });
   }
 });
+
+function formatRuntimeArgs(args: any[] = []): string {
+  return args
+    .map((arg) => arg.value ?? arg.description ?? arg.unserializableValue ?? "")
+    .filter(Boolean)
+    .join(" ");
+}
 
 async function waitForDebuggingVersion(
   port: number,

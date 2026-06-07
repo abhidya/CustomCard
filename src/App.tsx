@@ -218,6 +218,7 @@ const tones: Tone[] = ["warm", "playful", "elegant", "reverent"];
 const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"];
 const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
 const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"];
+const emptyMemories: MemoryItem[] = [];
 
 function App() {
   const [activeView, setActiveView] = useState<ViewId>("customer");
@@ -233,7 +234,7 @@ function App() {
   const [customerChatInput, setCustomerChatInput] = useState("");
   const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
 
-  const memories = workspace?.memories ?? [];
+  const memories = workspace?.memories ?? emptyMemories;
   const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
   const opportunity = useMemo(() => buildOpportunity(signal, memories, fixedReviewDate), [signal, memories]);
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
