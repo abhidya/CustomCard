@@ -28,6 +28,24 @@ export interface ProviderGovernancePolicy {
   realOrdersEnabled: false;
 }
 
+export interface ProviderGovernanceControls {
+  fallbackAdapterId: string;
+  monthlyBudgetCents: number;
+  perRequestBudgetCents: number;
+  rateLimitPerMinute: number;
+  cacheTtlSeconds: number;
+  queueRequired: boolean;
+  humanApprovalRequired: boolean;
+}
+
+export interface ProviderGovernanceSeam {
+  capability: ProviderCapability;
+  fallbackAdapterId: string;
+  liveNetworkDefault: false;
+  realOrdersEnabled: false;
+  controls: ProviderGovernanceControls;
+}
+
 export interface ProviderGovernanceSummary {
   total: number;
   zeroPlatformSpend: number;
@@ -139,7 +157,30 @@ const queuedCapabilities = new Set<ProviderCapability>([
   "cloud-runtime"
 ]);
 
+export const providerGovernanceSeams: ProviderGovernanceSeam[] = (Object.keys(fallbackByCapability) as ProviderCapability[]).map(
+  (capability) => ({
+    capability,
+    fallbackAdapterId: fallbackByCapability[capability],
+    liveNetworkDefault: false,
+    realOrdersEnabled: false,
+    controls: buildProviderGovernanceControls(capability)
+  })
+);
+
+export function buildProviderGovernanceControls(capability: ProviderCapability): ProviderGovernanceControls {
+  return {
+    fallbackAdapterId: fallbackByCapability[capability],
+    monthlyBudgetCents: monthlyBudgetCentsByCapability[capability],
+    perRequestBudgetCents: perRequestBudgetCentsByCapability[capability],
+    rateLimitPerMinute: rateLimitPerMinuteByCapability[capability],
+    cacheTtlSeconds: cacheTtlSecondsByCapability[capability],
+    queueRequired: queuedCapabilities.has(capability),
+    humanApprovalRequired: capability === "image-generation" || capability === "vendor-handoff" || capability === "payment"
+  };
+}
+
 export function buildProviderGovernancePolicy(adapter: ProviderAdapter): ProviderGovernancePolicy {
+  const controls = buildProviderGovernanceControls(adapter.capability);
   const blocked = adapter.status === "blocked";
   const zeroPlatformSpend = adapter.status === "ready-local" || adapter.cost === "free-local" || adapter.cost === "manual";
   const spendTier: GovernanceSpendTier = blocked
@@ -147,9 +188,9 @@ export function buildProviderGovernancePolicy(adapter: ProviderAdapter): Provide
     : zeroPlatformSpend
       ? "zero-platform-spend"
       : "budget-capped";
-  const monthlyBudgetCents = spendTier === "budget-capped" ? monthlyBudgetCentsByCapability[adapter.capability] : 0;
-  const perRequestBudgetCents = spendTier === "budget-capped" ? perRequestBudgetCentsByCapability[adapter.capability] : 0;
-  const rateLimitPerMinute = blocked ? 0 : rateLimitPerMinuteByCapability[adapter.capability];
+  const monthlyBudgetCents = spendTier === "budget-capped" ? controls.monthlyBudgetCents : 0;
+  const perRequestBudgetCents = spendTier === "budget-capped" ? controls.perRequestBudgetCents : 0;
+  const rateLimitPerMinute = blocked ? 0 : controls.rateLimitPerMinute;
 
   return {
     adapterId: adapter.id,
@@ -162,10 +203,10 @@ export function buildProviderGovernancePolicy(adapter: ProviderAdapter): Provide
     perRequestBudgetCents,
     rateLimitPerMinute,
     burstLimit: Math.max(rateLimitPerMinute * 2, rateLimitPerMinute),
-    queueRequired: blocked || queuedCapabilities.has(adapter.capability) || adapter.cost === "usage-based",
-    cacheTtlSeconds: cacheTtlSecondsByCapability[adapter.capability],
-    fallbackAdapterId: fallbackByCapability[adapter.capability],
-    humanApprovalRequired: adapter.capability === "image-generation" || adapter.capability === "vendor-handoff" || adapter.capability === "payment",
+    queueRequired: blocked || controls.queueRequired || adapter.cost === "usage-based",
+    cacheTtlSeconds: controls.cacheTtlSeconds,
+    fallbackAdapterId: controls.fallbackAdapterId,
+    humanApprovalRequired: controls.humanApprovalRequired,
     liveNetworkDefault: false,
     realOrdersEnabled: false
   };

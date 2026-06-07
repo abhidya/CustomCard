@@ -14,6 +14,7 @@ import {
   buildVendorRuntime,
   buildWorkflowIntegrationRuntime,
   getProviderRuntimeReadiness,
+  providerRuntimeSeams,
   sanitizeText,
   validateRuntimeCoverage,
   type ProviderGateState,
@@ -336,6 +337,21 @@ const observabilityInput = {
 };
 
 describe("provider runtime contracts", () => {
+  it("keeps runtime dispatch behind explicit no-network capability seams", () => {
+    const seamCapabilities = providerRuntimeSeams.map((seam) => seam.capability);
+    const catalogCapabilities = Array.from(new Set(providerCatalog.map((adapter) => adapter.capability))).sort();
+
+    expect([...seamCapabilities].sort()).toEqual(catalogCapabilities);
+    expect(providerRuntimeSeams.every((seam) => seam.buildsNoNetworkContracts && !seam.liveNetworkDefault)).toBe(true);
+    expect(providerRuntimeSeams.find((seam) => seam.capability === "text-chat")).toMatchObject({
+      inputKey: "textChat",
+      defaultMode: "prepared-request"
+    });
+    expect(providerRuntimeSeams.find((seam) => seam.capability === "render-export")).toMatchObject({
+      defaultMode: "local-result"
+    });
+  });
+
   it("covers every catalog adapter with a no-network dry run", () => {
     expect(validateRuntimeCoverage()).toEqual([]);
 

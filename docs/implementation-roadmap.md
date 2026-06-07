@@ -178,6 +178,34 @@ Vendor Layer
   -> Future direct APIs
 ```
 
+## Provider Seam Boundary
+
+Provider ownership is split across three deterministic seams:
+
+1. `src/providerCatalog.ts` owns the provider registry: adapter identity,
+   capability grouping, role surface, credential names, docs URLs, and
+   ready-local fallback discovery. Clients should read adapters through this
+   registry instead of duplicating provider lists.
+2. `src/providerRuntime.ts` owns dry-run runtime contracts: capability-level
+   dispatch, local fallbacks, request-shape builders, redaction, credential
+   placeholders, and `noNetwork: true` prepared requests. It does not execute
+   provider calls.
+3. `src/providerGovernance.ts` owns production controls: fallback mapping,
+   budget ceilings, rate limits, queue requirements, human-approval flags, and
+   the invariant that live network and real orders default to `false`.
+
+Remaining production/live-proof blockers:
+
+1. Replace contract-only prepared requests with credential-vaulted server
+   adapters behind explicit integration-owner approval.
+2. Add live-provider doctors that prove OAuth/session revocation, webhook
+   signatures, rate-limit handling, and tenant review before enabling network
+   execution.
+3. Add payment and retail kill-switch enforcement outside the provider seam
+   before any real charge, live quote, file upload, or vendor order is possible.
+4. Wire UI/API clients to the provider registry/runtime/governance seams without
+   duplicating capability or fallback logic in shared surfaces.
+
 ## First Build Recommendation
 
 Start with the manual card project flow before email/calendar ingestion. It proves

@@ -34,6 +34,13 @@ export interface ProviderAdapter {
   docsUrl?: string;
 }
 
+export interface ProviderCatalogRegistry {
+  adapters: ProviderAdapter[];
+  adaptersById: Map<string, ProviderAdapter>;
+  adaptersByCapability: Map<ProviderCapability, ProviderAdapter[]>;
+  readyLocalFallbackByCapability: Map<ProviderCapability, ProviderAdapter>;
+}
+
 export interface CapabilityCoverage {
   capability: ProviderCapability;
   label: string;
@@ -2004,11 +2011,43 @@ export const providerCatalog: ProviderAdapter[] = [
   }
 ];
 
+export const providerCatalogRegistry = buildProviderCatalogRegistry(providerCatalog);
+
+export function buildProviderCatalogRegistry(adapters: ProviderAdapter[] = providerCatalog): ProviderCatalogRegistry {
+  const sortedAdapters = sortByPriority(adapters);
+  const adaptersById = new Map<string, ProviderAdapter>();
+  const adaptersByCapability = new Map<ProviderCapability, ProviderAdapter[]>();
+  const readyLocalFallbackByCapability = new Map<ProviderCapability, ProviderAdapter>();
+
+  for (const adapter of sortedAdapters) {
+    adaptersById.set(adapter.id, adapter);
+    adaptersByCapability.set(adapter.capability, [...(adaptersByCapability.get(adapter.capability) ?? []), adapter]);
+
+    if (adapter.status === "ready-local" && !readyLocalFallbackByCapability.has(adapter.capability)) {
+      readyLocalFallbackByCapability.set(adapter.capability, adapter);
+    }
+  }
+
+  return {
+    adapters: sortedAdapters,
+    adaptersById,
+    adaptersByCapability,
+    readyLocalFallbackByCapability
+  };
+}
+
+export function getProviderAdapter(
+  adapterId: string,
+  registry: ProviderCatalogRegistry = providerCatalogRegistry
+): ProviderAdapter | undefined {
+  return registry.adaptersById.get(adapterId);
+}
+
 export function getAdaptersByCapability(
   capability: ProviderCapability,
   adapters: ProviderAdapter[] = providerCatalog
 ): ProviderAdapter[] {
-  return sortByPriority(adapters.filter((adapter) => adapter.capability === capability));
+  return buildProviderCatalogRegistry(adapters).adaptersByCapability.get(capability) ?? [];
 }
 
 export function summarizeProviderCoverage(
@@ -2043,9 +2082,11 @@ export function summarizeProviderCoverage(
 }
 
 export function buildAdminPanelModel(adapters: ProviderAdapter[] = providerCatalog): AdminPanelModel {
+  const registry = buildProviderCatalogRegistry(adapters);
+
   return {
     coverage: summarizeProviderCoverage(adapters),
-    deploymentAdapters: sortByPriority(adapters.filter((adapter) => adapter.capability === "cloud-runtime")),
+    deploymentAdapters: registry.adaptersByCapability.get("cloud-runtime") ?? [],
     integrationAdapters: sortByPriority(
       adapters.filter((adapter) => adapter.capability === "crm-integration" || adapter.capability === "workflow-integration")
     ),
@@ -2056,9 +2097,14 @@ export function buildAdminPanelModel(adapters: ProviderAdapter[] = providerCatal
 }
 
 export function buildCustomerPanelModel(adapters: ProviderAdapter[] = providerCatalog): CustomerPanelModel {
+  const registry = buildProviderCatalogRegistry(adapters);
   const customerAdapters = adapters.filter((adapter) => adapter.roleSurface.includes("customer"));
-  const firstReady = (capability: ProviderCapability) =>
-    customerAdapters.find((adapter) => adapter.capability === capability && adapter.status === "ready-local");
+  const firstReady = (capability: ProviderCapability) => {
+    const fallback = registry.readyLocalFallbackByCapability.get(capability);
+    return fallback?.roleSurface.includes("customer")
+      ? fallback
+      : customerAdapters.find((adapter) => adapter.capability === capability && adapter.status === "ready-local");
+  };
 
   const primaryActions = [
     firstReady("event-import"),
@@ -2079,7 +2125,7 @@ export function buildCustomerPanelModel(adapters: ProviderAdapter[] = providerCa
 
   return {
     primaryActions,
-    chatProviders: sortByPriority(adapters.filter((adapter) => adapter.capability === "text-chat")),
+    chatProviders: registry.adaptersByCapability.get("text-chat") ?? [],
     imageProviders: sortByPriority(
       adapters.filter((adapter) => adapter.capability === "image-generation" || adapter.capability === "render-export")
     ),

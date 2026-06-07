@@ -3,14 +3,31 @@ import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
+  buildProviderCatalogRegistry,
   getAdaptersByCapability,
+  getProviderAdapter,
   providerCatalog,
+  providerCatalogRegistry,
   summarizeProviderCoverage,
   validateProviderCatalog,
   type ProviderCapability
 } from "./providerCatalog";
 
 describe("provider catalog", () => {
+  it("exposes a deterministic registry seam for thin provider clients", () => {
+    const registry = buildProviderCatalogRegistry();
+
+    expect(registry.adapters).toHaveLength(providerCatalog.length);
+    expect(registry.adaptersById.size).toBe(providerCatalog.length);
+    expect(registry.adaptersByCapability.get("text-chat")?.map((adapter) => adapter.id)).toEqual(
+      getAdaptersByCapability("text-chat").map((adapter) => adapter.id)
+    );
+    expect(registry.readyLocalFallbackByCapability.get("image-generation")?.id).toBe("browser-svg-renderer");
+    expect(registry.readyLocalFallbackByCapability.get("payment")?.id).toBe("no-payment-checkout-gate");
+    expect(getProviderAdapter("openai-responses-chat")?.capability).toBe("text-chat");
+    expect(providerCatalogRegistry.adaptersById.get("manual-vendor-handoff")?.status).toBe("ready-local");
+  });
+
   it("covers every platform capability with a free local fallback", () => {
     const requiredCapabilities: ProviderCapability[] = [
       "auth",

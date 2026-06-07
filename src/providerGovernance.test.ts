@@ -1,12 +1,36 @@
 import { describe, expect, it } from "vitest";
 import { providerCatalog, type ProviderAdapter } from "./providerCatalog";
 import {
+  buildProviderGovernanceControls,
   buildProviderGovernancePolicy,
+  providerGovernanceSeams,
   summarizeProviderGovernance,
   validateProviderGovernance
 } from "./providerGovernance";
 
 describe("provider governance", () => {
+  it("publishes capability-level governance seams for fallbacks and no-live defaults", () => {
+    const seamCapabilities = providerGovernanceSeams.map((seam) => seam.capability);
+    const catalogCapabilities = Array.from(new Set(providerCatalog.map((adapter) => adapter.capability))).sort();
+
+    expect([...seamCapabilities].sort()).toEqual(catalogCapabilities);
+    expect(providerGovernanceSeams.every((seam) => !seam.liveNetworkDefault && !seam.realOrdersEnabled)).toBe(true);
+    expect(providerGovernanceSeams.find((seam) => seam.capability === "text-chat")).toMatchObject({
+      fallbackAdapterId: "deterministic-customer-chat",
+      controls: expect.objectContaining({
+        monthlyBudgetCents: 2500,
+        perRequestBudgetCents: 10,
+        queueRequired: false
+      })
+    });
+    expect(buildProviderGovernanceControls("payment")).toMatchObject({
+      fallbackAdapterId: "no-payment-checkout-gate",
+      monthlyBudgetCents: 0,
+      humanApprovalRequired: true,
+      queueRequired: true
+    });
+  });
+
   it("caps paid provider spend and preserves ready-local fallbacks", () => {
     const summary = summarizeProviderGovernance();
 

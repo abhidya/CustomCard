@@ -1,6 +1,7 @@
 import { buildVendorHandoff, parseFreeImport, sampleInviteText, type VendorId } from "./freeMvp";
 import {
   buildCustomerChatTranscript,
+  getProviderAdapter,
   providerCatalog,
   type ChatMessage,
   type ProviderAdapter,
@@ -204,6 +205,21 @@ export interface RuntimeResult<TLocal = unknown> {
   request?: RuntimeRequestContract;
 }
 
+export interface ProviderRuntimeSeam {
+  capability: ProviderCapability;
+  inputKey?: keyof ProviderRuntimeInput;
+  defaultMode: RuntimeMode;
+  buildsNoNetworkContracts: true;
+  liveNetworkDefault: false;
+}
+
+type ProviderRuntimeHandler = (
+  adapterId: string,
+  input: ProviderRuntimeInput,
+  env: ProviderRuntimeEnv,
+  gates: ProviderGateState
+) => RuntimeResult;
+
 export interface SanitizedText {
   text: string;
   redactions: string[];
@@ -258,6 +274,46 @@ const providerScopes: Record<string, string[]> = {
   "pipedream-webhook-workflow": ["webhook:write"]
 };
 
+export const providerRuntimeSeams: ProviderRuntimeSeam[] = [
+  { capability: "auth", inputKey: "auth", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "event-import", inputKey: "eventImport", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "contact-import", inputKey: "contactImport", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "crm-integration", inputKey: "crm", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "workflow-integration", inputKey: "workflowIntegration", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "text-chat", inputKey: "textChat", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "image-generation", inputKey: "image", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "render-export", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "memory", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "vendor-handoff", inputKey: "vendor", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "cloud-runtime", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "notification", inputKey: "notification", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "payment", inputKey: "payment", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
+  { capability: "observability", inputKey: "observability", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false }
+];
+
+const providerRuntimeHandlers: Record<ProviderCapability, ProviderRuntimeHandler> = {
+  auth: (adapterId, input, env, gates) => buildAuthRuntime(adapterId, input.auth ?? defaultAuthInput, env, gates),
+  "event-import": (adapterId, input, env, gates) =>
+    buildEventImportRuntime(adapterId, input.eventImport ?? defaultEventImportInput, env, gates),
+  "contact-import": (adapterId, input, env, gates) =>
+    buildContactImportRuntime(adapterId, input.contactImport ?? defaultContactImportInput, env, gates),
+  "crm-integration": (adapterId, input, env, gates) => buildCrmRuntime(adapterId, input.crm ?? defaultCrmInput, env, gates),
+  "workflow-integration": (adapterId, input, env, gates) =>
+    buildWorkflowIntegrationRuntime(adapterId, input.workflowIntegration ?? defaultWorkflowIntegrationInput, env, gates),
+  "text-chat": (adapterId, input, env, gates) => buildTextChatRuntime(adapterId, input.textChat ?? defaultTextChatInput, env, gates),
+  "image-generation": (adapterId, input, env, gates) =>
+    buildImageGenerationRuntime(adapterId, input.image ?? defaultImageInput, env, gates),
+  "render-export": (adapterId, _input, env, gates) => buildDefaultRuntime(adapterId, env, gates),
+  memory: (adapterId, _input, env, gates) => buildDefaultRuntime(adapterId, env, gates),
+  "vendor-handoff": (adapterId, input, env, gates) => buildVendorRuntime(adapterId, input.vendor ?? defaultVendorInput, env, gates),
+  "cloud-runtime": (adapterId, _input, env, gates) => buildDefaultRuntime(adapterId, env, gates),
+  notification: (adapterId, input, env, gates) =>
+    buildNotificationRuntime(adapterId, input.notification ?? defaultNotificationInput, env, gates),
+  payment: (adapterId, input, env, gates) => buildPaymentRuntime(adapterId, input.payment ?? defaultPaymentInput, env, gates),
+  observability: (adapterId, input, env, gates) =>
+    buildObservabilityRuntime(adapterId, input.observability ?? defaultObservabilityInput, env, gates)
+};
+
 export function buildProviderAdapterRuntime(
   adapterId: string,
   input: ProviderRuntimeInput = {},
@@ -265,75 +321,7 @@ export function buildProviderAdapterRuntime(
   gates: ProviderGateState = {}
 ): RuntimeResult {
   const adapter = requireAdapter(adapterId);
-
-  if (adapter.capability === "auth") {
-    return buildAuthRuntime(adapterId, input.auth ?? defaultAuthInput, env, gates);
-  }
-  if (adapter.capability === "event-import") {
-    return buildEventImportRuntime(adapterId, input.eventImport ?? defaultEventImportInput, env, gates);
-  }
-  if (adapter.capability === "contact-import") {
-    return buildContactImportRuntime(adapterId, input.contactImport ?? defaultContactImportInput, env, gates);
-  }
-  if (adapter.capability === "crm-integration") {
-    return buildCrmRuntime(adapterId, input.crm ?? defaultCrmInput, env, gates);
-  }
-  if (adapter.capability === "workflow-integration") {
-    return buildWorkflowIntegrationRuntime(adapterId, input.workflowIntegration ?? defaultWorkflowIntegrationInput, env, gates);
-  }
-  if (adapter.capability === "text-chat") {
-    return buildTextChatRuntime(adapterId, input.textChat ?? defaultTextChatInput, env, gates);
-  }
-  if (adapter.capability === "image-generation") {
-    return buildImageGenerationRuntime(adapterId, input.image ?? defaultImageInput, env, gates);
-  }
-  if (adapter.capability === "vendor-handoff") {
-    return buildVendorRuntime(adapterId, input.vendor ?? defaultVendorInput, env, gates);
-  }
-  if (adapter.capability === "notification") {
-    return buildNotificationRuntime(adapterId, input.notification ?? defaultNotificationInput, env, gates);
-  }
-  if (adapter.capability === "payment") {
-    return buildPaymentRuntime(adapterId, input.payment ?? defaultPaymentInput, env, gates);
-  }
-  if (adapter.capability === "observability") {
-    return buildObservabilityRuntime(adapterId, input.observability ?? defaultObservabilityInput, env, gates);
-  }
-
-  const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
-  if (readiness.mode === "blocked") {
-    return {
-      adapterId: adapter.id,
-      capability: adapter.capability,
-      mode: "blocked",
-      readiness
-    };
-  }
-
-  if (adapter.id === "local-print-package-export") {
-    return {
-      adapterId: adapter.id,
-      capability: adapter.capability,
-      mode: "local-result",
-      readiness,
-      localResult: summarizePrintExportPackage(buildSamplePrintExportPackage())
-    };
-  }
-
-  return {
-    adapterId: adapter.id,
-    capability: adapter.capability,
-    mode: "local-result",
-    readiness,
-    localResult: {
-      adapterId: adapter.id,
-      label: adapter.label,
-      lane: adapter.lane,
-      noNetwork: true,
-      safetyGates: adapter.safetyGates,
-      status: adapter.status
-    }
-  };
+  return providerRuntimeHandlers[adapter.capability](adapter.id, input, env, gates);
 }
 
 export function getProviderRuntimeReadiness(
@@ -754,11 +742,50 @@ export function buildVendorRuntime(
   };
 }
 
+function buildDefaultRuntime(adapterId: string, env: ProviderRuntimeEnv = {}, gates: ProviderGateState = {}): RuntimeResult {
+  const adapter = requireAdapter(adapterId);
+  const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
+  if (readiness.mode === "blocked") {
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "blocked",
+      readiness
+    };
+  }
+
+  if (adapter.id === "local-print-package-export") {
+    return {
+      adapterId: adapter.id,
+      capability: adapter.capability,
+      mode: "local-result",
+      readiness,
+      localResult: summarizePrintExportPackage(buildSamplePrintExportPackage())
+    };
+  }
+
+  return {
+    adapterId: adapter.id,
+    capability: adapter.capability,
+    mode: "local-result",
+    readiness,
+    localResult: {
+      adapterId: adapter.id,
+      label: adapter.label,
+      lane: adapter.lane,
+      noNetwork: true,
+      safetyGates: adapter.safetyGates,
+      status: adapter.status
+    }
+  };
+}
+
 export function validateRuntimeCoverage(adapters: ProviderAdapter[] = providerCatalog): string[] {
   const errors: string[] = [];
+  const seamCapabilities = new Set(providerRuntimeSeams.map((seam) => seam.capability));
 
   for (const adapter of adapters) {
-    if (!runtimeSupported(adapter)) {
+    if (!runtimeSupported(adapter) || !seamCapabilities.has(adapter.capability)) {
       errors.push(`Adapter ${adapter.id} has no runtime contract.`);
     }
 
@@ -2589,28 +2616,13 @@ function requireCapability(adapterId: string, capability: ProviderCapability): P
 }
 
 function requireAdapter(adapterId: string): ProviderAdapter {
-  const adapter = providerCatalog.find((candidate) => candidate.id === adapterId);
+  const adapter = getProviderAdapter(adapterId);
   if (!adapter) throw new Error(`Unknown provider adapter: ${adapterId}`);
   return adapter;
 }
 
 function runtimeSupported(adapter: ProviderAdapter): boolean {
-  if (adapter.capability === "cloud-runtime") return true;
-  if (adapter.capability === "auth") return true;
-  if (adapter.capability === "memory") return true;
-  if (adapter.capability === "render-export") return true;
-  if (adapter.capability === "notification") return true;
-  if (adapter.capability === "payment") return true;
-  if (adapter.capability === "observability") return true;
-  return [
-    "event-import",
-    "contact-import",
-    "crm-integration",
-    "workflow-integration",
-    "text-chat",
-    "image-generation",
-    "vendor-handoff"
-  ].includes(adapter.capability);
+  return Boolean(providerRuntimeHandlers[adapter.capability]);
 }
 
 function dataClassificationsFor(adapter: ProviderAdapter): string[] {
