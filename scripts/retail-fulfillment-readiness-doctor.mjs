@@ -12,6 +12,7 @@ const files = {
   apiServer: "scripts/api-server.mjs",
   providerCatalog: "src/providerCatalog.ts",
   providerRuntime: "src/providerRuntime.ts",
+  retailPrinterRegistry: "src/retailPrinterRegistryData.mjs",
   retailPrinterContracts: "src/retailPrinterContracts.ts",
   retailPrinterAdapters: "src/retailPrinterAdapters.ts",
   packageJson: "package.json",
@@ -63,7 +64,7 @@ const checks = [
     "directOrderEnabled",
     "physicalCertificationAttached"
   ]),
-  checkIncludes("provider-contracts", "retail-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}\n${contents.retailPrinterContracts}\n${contents.retailPrinterAdapters}`, [
+  checkIncludes("provider-contracts", "retail-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}\n${contents.retailPrinterRegistry}\n${contents.retailPrinterContracts}\n${contents.retailPrinterAdapters}`, [
     "manual-vendor-handoff",
     "public-printer-pricing-research",
     "walgreens-live-order",
@@ -74,6 +75,10 @@ const checks = [
     "office-depot-live-print",
     "RetailPrinterSourceLink",
     "sourceLinks",
+    "retailPrinterRegistryProductLinks",
+    "retailPrinterRegistryOperationKinds",
+    "CRISPCARD",
+    "JUNESW",
     "retailPrinterProductLinks",
     "getRetailPrinterProductLinkByProvider",
     "validateRetailPrinterProductUrl",

@@ -591,6 +591,7 @@ describe("production infrastructure contract", () => {
     const apiServer = read("scripts/api-server.mjs");
     const retailStart = read("src/retailPrinterOperationStart.ts");
     const retailStartData = read("src/retailPrinterOperationStartData.mjs");
+    const retailRegistryData = read("src/retailPrinterRegistryData.mjs");
 
     expect(apiServer).toContain("../src/retailPrinterOperationStartData.mjs");
     expect(apiServer).toContain("buildRetailPrinterOperationStartPackets");
@@ -598,9 +599,13 @@ describe("production infrastructure contract", () => {
     expect(apiServer).not.toContain("const retailPrinterProductLinks");
     expect(apiServer).not.toContain("function buildRetailPrinterOperationStartPacket");
     expect(retailStart).toContain("./retailPrinterOperationStartData.mjs");
-    expect(retailStartData).toContain("retailPrinterProductLinks");
-    expect(retailStartData).toContain("CRISPCARD");
-    expect(retailStartData).toContain("JUNESW");
+    expect(retailStartData).toContain("./retailPrinterRegistryData.mjs");
+    expect(retailStartData).not.toContain("const retailPrinterProductLinks = {");
+    expect(retailStartData).not.toContain("export const retailPrinterProductLinks = {");
+    expect(retailRegistryData).toContain("retailPrinterRegistryProductLinks");
+    expect(retailRegistryData).toContain("CRISPCARD");
+    expect(retailRegistryData).toContain("JUNESW");
+    expect(retailRegistryData).toContain("photos3.walmart.com");
   });
 
   it("ships a reviewer demo reset contract doctor", () => {
@@ -1430,7 +1435,7 @@ describe("production infrastructure contract", () => {
     expect(pricingResearch).toMatch(/official Walgreens Photo\s+deals page/);
     expect(pricingResearch).toMatch(/official CVS Photo coupons page/);
     expect(pricingResearch).toMatch(/keep The Coupon Bureau out of this\s+retailer photo-card promo-code flow/);
-    expect(pricingResearch).toContain("02:18 UTC `operator-chromium-rendered-read`");
+    expect(pricingResearch).toContain("02:47 UTC `operator-chromium-rendered-read`");
   }, shellDoctorTimeoutMs);
 
   it("keeps mobile iOS/Android as a real app-shell package boundary", () => {

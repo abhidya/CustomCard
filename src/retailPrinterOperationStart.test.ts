@@ -4,12 +4,25 @@ import {
   buildRetailPrinterOperationStartResponse,
   parseRetailPrinterOperationKind,
   parseRetailPrinterVendorId,
+  retailPrinterOperationKinds as operationStartOperationKinds,
+  retailPrinterProductLinks as operationStartProductLinks,
   retailPrinterOperationStartRoute,
   validateRetailPrinterOperationStartPackets
 } from "./retailPrinterOperationStart";
 import { retailPrinterOperationKinds, retailPrinterProductLinks } from "./retailPrinterAdapters";
+import {
+  retailPrinterRegistryOperationKinds,
+  retailPrinterRegistryProductLinks
+} from "./retailPrinterRegistryData.mjs";
 
 describe("retail printer operation start packets", () => {
+  it("uses the shared retail printer registry for adapter and operation-start products", () => {
+    expect(retailPrinterProductLinks).toBe(retailPrinterRegistryProductLinks);
+    expect(operationStartProductLinks).toBe(retailPrinterRegistryProductLinks);
+    expect(retailPrinterOperationKinds).toBe(retailPrinterRegistryOperationKinds);
+    expect(operationStartOperationKinds).toBe(retailPrinterRegistryOperationKinds);
+  });
+
   it("builds server-owned start packets for every vendor operation", () => {
     const packets = buildRetailPrinterOperationStartPackets();
 

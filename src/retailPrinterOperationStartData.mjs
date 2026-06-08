@@ -1,97 +1,15 @@
+import {
+  retailPrinterRegistryLinkObservedAtIso as observedAtIso,
+  retailPrinterRegistryOperationKinds,
+  retailPrinterRegistryProductLinks
+} from "./retailPrinterRegistryData.mjs";
+
 export const retailPrinterOperationStartRoute = "/api/retail-printers/operations/start";
+export const retailPrinterOperationKinds = retailPrinterRegistryOperationKinds;
+export const retailPrinterProductLinks = retailPrinterRegistryProductLinks;
 
-export const retailPrinterOperationKinds = ["fetch-price", "upload-image", "place-order"];
-
-const observedAtIso = "2026-06-07T12:00:00.000Z";
 const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
 const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
-
-export const retailPrinterProductLinks = {
-  walmart: {
-    vendorId: "walmart",
-    providerAdapterId: "walmart-live-print",
-    vendorName: "Walmart Photo",
-    productName: "5x7 folded card, blank envelope - upload your design",
-    productSku: "361-5x7-folded-card-blank-envelope",
-    productUrl:
-      "https://photos3.walmart.com/category/725-5x7-photo-upload-cards?product=361-5x7-folded-card-blank-envelope&theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card&design_code=standard.custom&selected_delivery_options=2",
-    pricingObservationId: "walmart-5x7-same-day-folded-card",
-    requiredUrlTokens: [
-      "product=361-5x7-folded-card-blank-envelope",
-      "theme=wmcards-WMT.themepack%3Awmt_custom_5x7.card",
-      "design_code=standard.custom",
-      "selected_delivery_options=2"
-    ],
-    portalHost: "photos3.walmart.com",
-    minimumQuantity: 1,
-    quantityIncrement: 1,
-    supportedFulfillmentModes: ["pickup"],
-    providerAccountMode: "guest-or-customer-account"
-  },
-  fedex: {
-    vendorId: "fedex",
-    providerAdapterId: "fedex-live-print",
-    vendorName: "FedEx Office",
-    productName: "Quick greeting and holiday cards",
-    productSku: "fedex-office-quick-greeting-cards",
-    productUrl: "https://www.office.fedex.com/default/greeting-cards-quick.html",
-    pricingObservationId: "fedex-quick-5x7-single-sided-card",
-    requiredUrlTokens: ["/default/greeting-cards-quick.html"],
-    portalHost: "www.office.fedex.com",
-    minimumQuantity: 10,
-    quantityIncrement: 10,
-    supportedFulfillmentModes: ["pickup", "shipping"],
-    providerAccountMode: "guest-or-customer-account"
-  },
-  cvs: {
-    vendorId: "cvs",
-    providerAdapterId: "cvs-live-order",
-    vendorName: "CVS Photo",
-    productName: "Folded greeting card, 5x7",
-    productSku: "CommerceProduct_26126",
-    productUrl:
-      "https://www.cvs.com/photo/design-detail?category=StoreCat_22821&dgId=02d8d8bfa1fd46bb8234635847ec8dfd&designId=1f0682a2d34546bf86cbb799c3811d4e&sku=CommerceProduct_26126&ptype=cards&pcat=erin_condren_3740_1725983028_cvs_us&designName=Erin%20Condren&dgCatId=erin_condren_3740_1725983028_cvs_us&sortCriteria=toppicks#/dgview?productCategory=Card%20%26%20Stationery",
-    pricingObservationId: "cvs-5x7-folded-card",
-    requiredUrlTokens: [
-      "/photo/design-detail",
-      "category=StoreCat_22821",
-      "designId=1f0682a2d34546bf86cbb799c3811d4e",
-      "sku=CommerceProduct_26126",
-      "productCategory=Card%20%26%20Stationery"
-    ],
-    portalHost: "www.cvs.com",
-    minimumQuantity: 1,
-    quantityIncrement: 1,
-    supportedFulfillmentModes: ["pickup"],
-    providerAccountMode: "guest-or-customer-account",
-    candidateOfferCodes: ["JUNESW"],
-    portalApplicationPacketIds: ["cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet"]
-  },
-  walgreens: {
-    vendorId: "walgreens",
-    providerAdapterId: "walgreens-live-order",
-    vendorName: "Walgreens Photo",
-    productName: "5x7 folded cards, standard cardstock 85lb",
-    productSku: "CommerceProduct_33272",
-    productUrl:
-      "https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery",
-    pricingObservationId: "walgreens-5x7-folded-card",
-    requiredUrlTokens: [
-      "/store/design-detail",
-      "category=StoreCat_24955",
-      "designId=0c158c44e2f34d9fabc9e1b3ada2eaa6",
-      "sku=CommerceProduct_33272",
-      "productCategory=Card%20%26%20Stationery"
-    ],
-    portalHost: "photo.walgreens.com",
-    minimumQuantity: 1,
-    quantityIncrement: 1,
-    supportedFulfillmentModes: ["pickup"],
-    providerAccountMode: "customer-account-required",
-    candidateOfferCodes: ["CRISPCARD"],
-    portalApplicationPacketIds: ["walgreens-crispcard-cards-2026-06-13-portal-application-packet"]
-  }
-};
 
 const couponProviderFeedTargets = [
   {
@@ -615,8 +533,9 @@ function validateOperationStartCouponCollectionPlan(packet, productLink) {
   const expectedProviderFeedTargetIds = couponContract ? couponProviderFeedTargets.map((target) => target.id) : [];
   const expectedRetailerCouponTargetIds = couponContract?.retailerCouponTargets.map((target) => target.id) ?? [];
   const expectedPrintEntrypointTargetIds = couponContract?.printEntrypointTargets.map((target) => target.id) ?? [];
-  const expectedCandidateOfferCodes = couponContract?.candidateOfferCodes ?? [];
-  const expectedPortalApplicationPacketIds = couponContract?.portalApplicationPackets.map((portalPacket) => portalPacket.id) ?? [];
+  const expectedCandidateOfferCodes = productLink?.candidateOfferCodes ?? [];
+  const expectedPortalApplicationPacketIds = productLink?.portalApplicationPacketIds ?? [];
+  const registeredPortalApplicationPacketIds = couponContract?.portalApplicationPackets.map((portalPacket) => portalPacket.id) ?? [];
   const expectedCollectionTargetIds = [
     ...expectedProviderFeedTargetIds,
     ...expectedRetailerCouponTargetIds,
@@ -649,6 +568,9 @@ function validateOperationStartCouponCollectionPlan(packet, productLink) {
   }
   if (!sameStringArray(plan.portalApplicationPacketIds, expectedPortalApplicationPacketIds)) {
     errors.push(`Retail printer operation start packet ${packet.id} must expose registered portal application packet ids.`);
+  }
+  if (!sameStringArray(registeredPortalApplicationPacketIds, expectedPortalApplicationPacketIds)) {
+    errors.push(`Retail printer operation start packet ${packet.id} portal packet objects must match registry portal application packet ids.`);
   }
   if (!couponContract && plan.collectionTargetIds.length > 0) {
     errors.push(`Retail printer operation start packet ${packet.id} must not invent coupon targets for ${packet.vendorId}.`);
@@ -804,9 +726,9 @@ function buildOperationPolicy(productLink, operation) {
   if (operation === "upload-image") {
     return {
       kind: "upload-image",
-      acceptedArtifactKinds: ["combined-pdf-proof", "svg-panel-set", "print-ready-image-files"],
+      acceptedArtifactKinds: productLink.acceptedArtifactKinds,
       providerAccountMode: productLink.providerAccountMode,
-      preflightChecks: ["approved render packet", `${productLink.productSku} selected`, `${productLink.vendorName} preview captured`],
+      preflightChecks: productLink.uploadPreflightChecks,
       previewEvidenceFields: ["providerPreviewScreenshot", "assetAcceptanceResult", "cropFoldState"]
     };
   }
@@ -825,11 +747,11 @@ function buildCouponCollectionPlan(productLink, operation) {
   const retailerCouponTargets = couponContract?.retailerCouponTargets ?? [];
   const printEntrypointTargets = couponContract?.printEntrypointTargets ?? [];
   const portalApplicationPackets = couponContract?.portalApplicationPackets ?? [];
-  const candidateOfferCodes = couponContract?.candidateOfferCodes ?? [];
+  const candidateOfferCodes = productLink.candidateOfferCodes;
   const providerFeedTargetIds = providerFeedTargets.map((target) => target.id);
   const retailerCouponTargetIds = retailerCouponTargets.map((target) => target.id);
   const printEntrypointTargetIds = printEntrypointTargets.map((target) => target.id);
-  const portalApplicationPacketIds = portalApplicationPackets.map((packet) => packet.id);
+  const portalApplicationPacketIds = productLink.portalApplicationPacketIds;
 
   return {
     vendorId: productLink.vendorId,

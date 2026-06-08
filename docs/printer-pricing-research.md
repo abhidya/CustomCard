@@ -25,14 +25,15 @@ Observed on: June 7, 2026.
 
 ## Retail Adapter Source Links
 
-These links are owned by `retailPrinterProductLinks` in
-`src/retailPrinterContracts.ts`. The provider catalog derives the four live
-printer `docsUrl` values through `getRetailPrinterProductLinkByProvider()`, and
-`src/retailPrinterAdapters.ts` consumes the same contract module when building
-blocked operation packets. That keeps provider identity, exact product URLs,
-provider-specific operation policy, operation blueprints, certification packets,
-provider operation entrypoints, admin catalog links, and docs from drifting to
-generic category pages or placeholder links.
+These links are owned by the Node-safe `retailPrinterRegistryProductLinks`
+registry in `src/retailPrinterRegistryData.mjs`. The TypeScript retail Adapter
+contract and the server-safe operation-start Module consume the same registry
+objects, while the provider catalog derives the four live printer `docsUrl`
+values through `getRetailPrinterProductLinkByProvider()`. That keeps provider
+identity, exact product URLs, provider-specific operation policy, operation
+blueprints, certification packets, provider operation entrypoints, admin catalog
+links, coupon candidate codes, portal-application packet IDs, and docs from
+drifting to generic category pages or placeholder links.
 
 `docs/retail-printer-entrypoint-evidence.json` records the latest operator
 public-page read of those four exact provider product URLs. Refresh it with
@@ -145,7 +146,7 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
-- The June 8, 2026 02:18 UTC operator render opened the exact Walgreens and CVS 5x7 print
+- The June 8, 2026 02:47 UTC operator render opened the exact Walgreens and CVS 5x7 print
   entrypoints without login, upload, cart, payment, or order action. CVS exposed
   `JUNESW` in visible rendered text alongside the 5x7 folded-card product
   signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
@@ -239,7 +240,7 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 visible browser proof.
 
 `docs/printer-coupon-browser-evidence.json` records the June 8, 2026
-02:18 UTC `operator-chromium-rendered-read` check against the exact print
+02:47 UTC `operator-chromium-rendered-read` check against the exact print
 links. A matching visible browser read opened both print links after the
 collector run. CVS rendered the `JUNESW` code visibly on the 5x7 folded card
 page, so the browser-evidence Module reports
@@ -279,11 +280,12 @@ no registered coupon targets return an empty no-network plan that explicitly
 blocks invented third-party coupon candidates.
 
 The server-safe retail operation-start Module mirrors that contract for API and
-customer bootstrap packets. Walgreens/CVS start packets now expose the exact
-FMTC/Rakuten provider feed targets, official retailer coupon target IDs, exact
-rendered print-link target IDs, source-listed candidate codes, and registered
-provider-portal application packet IDs. Walmart/FedEx start packets expose no
-coupon targets and explicitly block invented third-party coupon candidates.
+customer bootstrap packets through `src/retailPrinterRegistryData.mjs`.
+Walgreens/CVS start packets now expose the exact FMTC/Rakuten provider feed
+targets, official retailer coupon target IDs, exact rendered print-link target
+IDs, source-listed candidate codes, and registered provider-portal application
+packet IDs. Walmart/FedEx start packets expose no coupon targets and explicitly
+block invented third-party coupon candidates.
 Clients consume those server packets; they do not choose coupon sources, scrape
 retailer pages, or decide when a provider-portal coupon can affect ranking.
 
