@@ -319,7 +319,7 @@ try {
 
     const catalog = await fetchJson("/api/routes");
     expect(Array.isArray(catalog.payload), "Route catalog should be an array.");
-    expect(catalog.payload.length === 17, "Route catalog should expose 17 routes.");
+    expect(catalog.payload.length === 18, "Route catalog should expose 18 routes.");
     finalServer = {
       ...finalServer,
       routeCount: catalog.payload.length,

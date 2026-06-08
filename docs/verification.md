@@ -505,8 +505,8 @@ live translation provider, no real orders, and no blockers.
 npm run api:doctor
 ```
 
-Result: passed. API doctor reported 17 routes, 9 idempotent mutation contracts,
-121 providers, provider governance for all 121 adapters, 15 schema-backed routes,
+Result: passed. API doctor reported 18 routes, 10 idempotent mutation contracts,
+121 providers, provider governance for all 121 adapters, 16 schema-backed routes,
 relationship-memory repository readiness, render-packet artifact manifests,
 signed artifact URL contracts, contract runtime mode, no live external calls,
 no real vendor orders, no raw content storage, 13 production launch gates with
@@ -517,7 +517,7 @@ npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 17 routes, 9 idempotent mutation contracts, 87
+enforced, 2 configured sessions, 18 routes, 10 idempotent mutation contracts, 121
 providers, 18 persistence tables, relationship-memory repository readiness,
 render-packet artifact manifests, signed artifact URL contracts, no live external
 calls, no real vendor orders, and no blockers.
