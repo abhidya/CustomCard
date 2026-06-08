@@ -121,3 +121,27 @@ dependency is one-way — so the split's main justification did not hold.
 Rejected: splitting `printerPricing.ts` into three modules in this pass. Revisit
 if the file grows materially or a second consumer needs the pricing catalog
 independently of coupons.
+
+## D010: Defer The Provider-Runtime / Provider-Catalog Plugin Split
+
+Decision: keep `providerRuntime.ts` and `providerCatalog.ts` as single modules for
+now; do not split the runtime into per-capability files or co-locate each
+adapter's catalog entry with its request builder in this pass.
+
+Reason: architecture review flagged that adding a provider means editing two large
+files (`providerCatalog.ts` ~2.3k lines of adapter data, `providerRuntime.ts` ~3k
+lines of dispatch). But the seam is already real and centralized:
+`buildProviderAdapterRuntime` dispatches through a capability handler table
+(`providerRuntimeSeams` + `providerRuntimeHandlers`), and `validateRuntimeCoverage`
+guards that every capability has a handler. The proposed change is therefore a
+large reorganization over an existing, working seam — high blast radius
+(`providerRuntime` is referenced by the catalog, the API server, several doctors
+with source-text checks, and a ~1.3k-line test) for a payoff of navigability, not
+behaviour or leakage. That cost/risk is not justified in a behaviour-preserving
+pass made alongside three other deepenings.
+
+Rejected: a partial extraction (shared kernel only, or a single capability) in this
+pass — it would leave an inconsistent half-split for low incremental value. Revisit
+as a dedicated effort when provider-add frequency makes the two-file edit cost
+dominant; do it per-capability behind the existing handler table, with each adapter
+module owning both its catalog metadata and its request builder.
