@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCustomerWebExperience,
+  buildCustomerWebExperienceFromState,
   collectCustomerWebCopy,
   customerVisibleFixtureTermPattern,
   customerVisibleImplementationTermPattern,
   validateCustomerWebExperience,
-  type CustomerWebExperienceInput
+  type CustomerWebExperienceInput,
+  type CustomerWebExperienceState
 } from "./customerWebExperience";
 
 const baseInput: CustomerWebExperienceInput = {
@@ -196,5 +198,44 @@ describe("customer web experience contract", () => {
         "Customer web copy must not expose internal readiness/provider terms."
       );
     }
+  });
+});
+
+describe("buildCustomerWebExperienceFromState", () => {
+  const state = {
+    workspace: { id: "workspace-1" },
+    opportunityDecision: "accepted",
+    opportunity: {
+      title: "Maya's birthday",
+      dateLabel: "May 3",
+      status: "ready",
+      recommendedPath: "Pickup today",
+      confidence: 0.9,
+      evidence: ["calendar invite"],
+      memoryIds: ["memory-1"]
+    },
+    validation: { passed: true },
+    handoff: { canPlaceRealOrder: false },
+    localizationSummary: { supportedLocales: 4 },
+    selectedLocale: { label: "English (US)", requiresRtlLayout: false, reviewState: "ready", cardLanguage: "en-US" },
+    productionReadiness: { total: 8, evidenceMissing: 3 },
+    panelCount: 4
+  } as unknown as CustomerWebExperienceState;
+
+  it("composes a valid customer web experience from app state without rendering React", () => {
+    const experience = buildCustomerWebExperienceFromState(state);
+
+    expect(validateCustomerWebExperience(experience)).toEqual([]);
+    expect(collectCustomerWebCopy(experience).length).toBeGreaterThan(0);
+  });
+
+  it("flows app state through the mapping (workspace presence changes the experience)", () => {
+    const withWorkspace = buildCustomerWebExperienceFromState(state);
+    const withoutWorkspace = buildCustomerWebExperienceFromState({
+      ...state,
+      workspace: undefined
+    } as unknown as CustomerWebExperienceState);
+
+    expect(collectCustomerWebCopy(withWorkspace)).not.toEqual(collectCustomerWebCopy(withoutWorkspace));
   });
 });

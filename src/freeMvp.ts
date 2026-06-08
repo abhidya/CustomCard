@@ -38,6 +38,8 @@ export interface FreeImportSignal {
   warnings: string[];
 }
 
+export type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
+
 export interface CardOpportunity {
   id: string;
   title: string;

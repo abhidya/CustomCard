@@ -74,6 +74,7 @@ import {
   type LanguageChoice,
   type LocalWorkspace,
   type MemoryItem,
+  type OpportunityDecision,
   type Tone,
   type VendorHandoff,
   type VendorId,
@@ -90,7 +91,7 @@ import {
   type ProviderStatus
 } from "./providerCatalog";
 import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
-import { buildCustomerWebExperience, type CustomerWebActionId } from "./customerWebExperience";
+import { buildCustomerWebExperienceFromState, type CustomerWebActionId } from "./customerWebExperience";
 import {
   reviewerDraftOptions,
   reviewerEmptyMemories,
@@ -186,7 +187,6 @@ import {
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
 
 type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
-type OpportunityDecision = "pending" | "accepted" | "snoozed" | "dismissed";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
 
@@ -923,27 +923,16 @@ function CustomerPanelView({
   const fastestPickup = recommendationByKind.get("fastest-pickup");
   const cheapestShipped = recommendationByKind.get("cheapest-shipped");
   const hasWorkspace = Boolean(workspace);
-  const cardReviewStarted = opportunityDecision === "accepted";
-  const customerExperience = buildCustomerWebExperience({
-    hasWorkspace,
-    cardReviewStarted,
-    proofApproved: validation.passed,
-    opportunityTitle: opportunity.title,
-    opportunityDateLabel: opportunity.dateLabel,
-    opportunityStatus: opportunity.status,
-    opportunityRecommendedPath: opportunity.recommendedPath,
-    opportunityConfidence: opportunity.confidence,
-    evidenceCount: opportunity.evidence.length,
-    memoryMatched: opportunity.memoryIds.length > 0,
-    panelCount,
-    checkoutMode: handoff.canPlaceRealOrder ? "ready" : "manual",
-    supportedLocaleCount: localizationSummary.supportedLocales,
-    selectedLocaleLabel: selectedLocale.label,
-    selectedLocaleRequiresRtl: selectedLocale.requiresRtlLayout,
-    selectedLocaleReviewState: selectedLocale.reviewState,
-    cardLanguage: selectedLocale.cardLanguage,
-    productionGateCount: productionReadiness.total,
-    productionEvidenceMissing: productionReadiness.evidenceMissing
+  const customerExperience = buildCustomerWebExperienceFromState({
+    workspace,
+    opportunityDecision,
+    opportunity,
+    validation,
+    handoff,
+    localizationSummary,
+    selectedLocale,
+    productionReadiness,
+    panelCount
   });
   const customerActionIcons: Record<CustomerWebActionId, LucideIcon> = {
     "create-workspace": KeyRound,

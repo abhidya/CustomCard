@@ -1,3 +1,7 @@
+import type { CardOpportunity, CardValidation, LocalWorkspace, OpportunityDecision, VendorHandoff } from "./freeMvp";
+import type { LocalizationReadinessSummary, SupportedLocale } from "./localization";
+import type { ProductionReadinessSummary } from "./productionReadiness";
+
 export type CustomerWebStage = "setup" | "event-review" | "proof-review";
 
 export type CustomerWebActionId =
@@ -226,6 +230,49 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
       "Price check": "Before print"
     }
   };
+}
+
+export interface CustomerWebExperienceState {
+  workspace: LocalWorkspace | undefined;
+  opportunityDecision: OpportunityDecision;
+  opportunity: CardOpportunity;
+  validation: CardValidation;
+  handoff: VendorHandoff;
+  localizationSummary: LocalizationReadinessSummary;
+  selectedLocale: SupportedLocale;
+  productionReadiness: ProductionReadinessSummary;
+  panelCount: number;
+}
+
+/**
+ * Map live app state to a CustomerWebExperience. This composition used to live
+ * inline in the React view (App.tsx) — checkout-readiness, evidence counts, and
+ * locale shaping wired into a component. Keeping it here gives "what the customer
+ * panel shows for this state" one testable home (locality), and lets the view
+ * call a single function instead of owning the mapping.
+ */
+export function buildCustomerWebExperienceFromState(state: CustomerWebExperienceState): CustomerWebExperience {
+  return buildCustomerWebExperience({
+    hasWorkspace: Boolean(state.workspace),
+    cardReviewStarted: state.opportunityDecision === "accepted",
+    proofApproved: state.validation.passed,
+    opportunityTitle: state.opportunity.title,
+    opportunityDateLabel: state.opportunity.dateLabel,
+    opportunityStatus: state.opportunity.status,
+    opportunityRecommendedPath: state.opportunity.recommendedPath,
+    opportunityConfidence: state.opportunity.confidence,
+    evidenceCount: state.opportunity.evidence.length,
+    memoryMatched: state.opportunity.memoryIds.length > 0,
+    panelCount: state.panelCount,
+    checkoutMode: state.handoff.canPlaceRealOrder ? "ready" : "manual",
+    supportedLocaleCount: state.localizationSummary.supportedLocales,
+    selectedLocaleLabel: state.selectedLocale.label,
+    selectedLocaleRequiresRtl: state.selectedLocale.requiresRtlLayout,
+    selectedLocaleReviewState: state.selectedLocale.reviewState,
+    cardLanguage: state.selectedLocale.cardLanguage,
+    productionGateCount: state.productionReadiness.total,
+    productionEvidenceMissing: state.productionReadiness.evidenceMissing
+  });
 }
 
 export function validateCustomerWebExperience(experience: CustomerWebExperience): string[] {
