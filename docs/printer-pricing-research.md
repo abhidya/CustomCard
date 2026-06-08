@@ -145,7 +145,7 @@ certification-blocked.
   local Chrome/Chromium and read the exact print entrypoints. Add
   `CUSTOMCARD_COUPON_RENDER_EVIDENCE_OUT=docs/printer-coupon-browser-evidence.json`
   to refresh the persisted evidence artifact from that operator run.
-- The June 7, 2026 23:28 UTC operator render opened the exact Walgreens and CVS 5x7 print
+- The June 8, 2026 02:18 UTC operator render opened the exact Walgreens and CVS 5x7 print
   entrypoints without login, upload, cart, payment, or order action. CVS exposed
   `JUNESW` in visible rendered text alongside the 5x7 folded-card product
   signals. Walgreens exposed `CRISPCARD` in rendered page HTML alongside
@@ -238,8 +238,8 @@ Print-entrypoint targets now also distinguish `staticHtmlSignalAllowed` from
 `browserRenderProofRequired` so the collector cannot mistake scraped HTML for a
 visible browser proof.
 
-`docs/printer-coupon-browser-evidence.json` records the June 7, 2026
-23:28 UTC `operator-chromium-rendered-read` check against the exact print
+`docs/printer-coupon-browser-evidence.json` records the June 8, 2026
+02:18 UTC `operator-chromium-rendered-read` check against the exact print
 links. A matching visible browser read opened both print links after the
 collector run. CVS rendered the `JUNESW` code visibly on the 5x7 folded card
 page, so the browser-evidence Module reports
