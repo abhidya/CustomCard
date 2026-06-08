@@ -312,6 +312,8 @@ describe("mobile customer experience contract", () => {
     expect(summary).toMatchObject({
       sectionCount: 11,
       rowCount: 28,
+      tappableActionCount: 7,
+      disabledActionCount: 2,
       primaryActionCount: 2,
       footerSafetyMessages: 2,
       blockedLiveActionCount: 0,
@@ -329,7 +331,8 @@ describe("mobile customer experience contract", () => {
         title: "CustomCard",
         primaryAction: expect.objectContaining({
           label: "Review Sara and Ahmed's card",
-          modeLabel: "Ready to review"
+          modeLabel: "Ready to review",
+          presentation: "primary"
         })
       }),
       safetyBand: expect.objectContaining({
@@ -350,6 +353,35 @@ describe("mobile customer experience contract", () => {
         expect.objectContaining({ title: "Saved offline" })
       ])
     });
+    expect(source).toContain("Pressable");
+    expect(source).toContain("accessibilityRole=\"button\"");
+    expect(mobileRenderSnapshot.hero.secondaryActions).toEqual([
+      expect.objectContaining({
+        label: "Paste invite or ICS",
+        modeLabel: "Local",
+        presentation: "secondary",
+        disabled: false
+      }),
+      expect.objectContaining({
+        label: "Review calendar options",
+        modeLabel: "Later",
+        presentation: "secondary",
+        disabled: true
+      })
+    ]);
+    expect(mobileRenderSnapshot.sections.find((section) => section.id === "next-action")?.rows[0]).toMatchObject({
+      actionKind: "approve",
+      presentation: "primary",
+      disabled: false
+    });
+    expect(mobileRenderSnapshot.sections.find((section) => section.id === "best-available-options")?.rows[0]).toMatchObject({
+      presentation: "locked",
+      disabled: true
+    });
+    expect(mobileRenderSnapshot.sections.find((section) => section.id === "checkout-confirmation")?.rows[0]).toMatchObject({
+      presentation: "locked",
+      disabled: true
+    });
     expect(mobileRenderSnapshot.sections.flatMap((section) => section.rows).map((row) => row.modeLabel)).toEqual(
       expect.arrayContaining([
         "Local",
@@ -363,18 +395,22 @@ describe("mobile customer experience contract", () => {
       ])
     );
     expect(mobileRenderSnapshot.sections.find((section) => section.id === "best-available-options")?.rows).toEqual([
-      {
+      expect.objectContaining({
         title: "Approve proof first",
         detail: "Print estimates unlock after you approve copy, language, and artwork.",
-        modeLabel: "After proof"
-      }
+        modeLabel: "After proof",
+        presentation: "locked",
+        disabled: true
+      })
     ]);
     expect(mobileRenderSnapshot.sections.find((section) => section.id === "checkout-confirmation")?.rows).toEqual([
-      {
+      expect.objectContaining({
         title: "Approve proof first",
         detail: "Download and print shop steps unlock after proof approval.",
-        modeLabel: "After proof"
-      }
+        modeLabel: "After proof",
+        presentation: "locked",
+        disabled: true
+      })
     ]);
     expect(JSON.stringify(mobileRenderSnapshot)).not.toContain("Cheapest known price");
     expect(JSON.stringify(mobileRenderSnapshot)).not.toContain("Download print package");

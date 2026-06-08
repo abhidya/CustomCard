@@ -2084,6 +2084,16 @@ h3 {
   align-items: end;
 }
 
+.mobilePreviewIntro > div,
+.mobilePreviewIntro p {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mobilePreviewIntro p:not(.eyebrow) {
+  max-width: 34ch;
+}
+
 .mobilePreviewMetrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2095,9 +2105,12 @@ h3 {
   grid-template-columns: minmax(330px, 430px) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+  min-width: 0;
 }
 
 .mobileDevice {
+  width: 100%;
+  max-width: 430px;
   min-width: 0;
   padding: 12px;
   border: 1px solid #10231f;
@@ -2110,15 +2123,27 @@ h3 {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
   padding: 4px 16px 10px;
   color: #d8e7e2;
   font-size: 0.74rem;
   font-weight: 850;
 }
 
+.mobileStatusBar span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mobileStatusBar span:last-child {
+  text-align: right;
+}
+
 .mobileScreen {
   display: grid;
   gap: 10px;
+  width: 100%;
   max-height: 780px;
   min-height: 640px;
   overflow: auto;
@@ -2686,6 +2711,19 @@ h3 {
   .segmentRow,
   .mobileMiniStats {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mobilePrimaryAction,
+  .mobileTodayCard,
+  .mobileSnapshotRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mobilePrimaryAction em,
+  .mobileTodayCard em,
+  .mobileSnapshotRow em {
+    justify-self: start;
+    text-align: left;
   }
 
   .decisionRow,

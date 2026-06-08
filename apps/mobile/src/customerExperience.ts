@@ -225,11 +225,16 @@ export interface MobileRenderMetric {
   value: string;
 }
 
+export type MobileRenderActionPresentation = "primary" | "secondary" | "inline" | "locked" | "status";
+
 export interface MobileRenderAction {
   label: string;
   detail: string;
   modeLabel: string;
   actionKind?: MobileApprovalActionKind;
+  presentation: Exclude<MobileRenderActionPresentation, "status">;
+  disabled: boolean;
+  accessibilityLabel: string;
 }
 
 export interface MobileRenderRow {
@@ -237,6 +242,9 @@ export interface MobileRenderRow {
   detail: string;
   modeLabel: string;
   actionKind?: MobileApprovalActionKind;
+  presentation?: MobileRenderActionPresentation;
+  disabled?: boolean;
+  accessibilityLabel?: string;
 }
 
 export interface MobileRenderSection {
@@ -268,6 +276,7 @@ export interface MobileRenderSnapshot {
     title: string;
     subtitle: string;
     primaryAction: MobileRenderAction;
+    secondaryActions: MobileRenderAction[];
   };
   safetyBand: {
     label: string;
@@ -773,8 +782,12 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
         label: `Review ${model.todaySummary.recipientLabel}'s card`,
         detail: "Check event details, memory, copy, language, and artwork before printing.",
         modeLabel: "Ready to review",
-        actionKind: primaryAction.kind
-      }
+        actionKind: primaryAction.kind,
+        presentation: "primary",
+        disabled: false,
+        accessibilityLabel: `Review ${model.todaySummary.recipientLabel}'s card`
+      },
+      secondaryActions: buildMobileHeroSecondaryActions(model)
     },
     safetyBand: {
       label: model.safetyBanner.label,
@@ -811,7 +824,10 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
             title: `Review ${model.todaySummary.recipientLabel}'s card`,
             detail: `${model.todaySummary.eventLabel} - ${model.todaySummary.dueLabel}`,
             modeLabel: model.todaySummary.riskBadge,
-            actionKind: model.todaySummary.primaryAction
+            actionKind: model.todaySummary.primaryAction,
+            presentation: "primary",
+            disabled: false,
+            accessibilityLabel: `Review ${model.todaySummary.recipientLabel}'s card`
           }
         ]
       },
@@ -822,7 +838,10 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
           title: item.recipientLabel,
           detail: `${item.eventLabel} due ${item.dueIso.slice(0, 10)} from ${sourceLabel(item.source)}; ${item.panelCount} panels ready.`,
           modeLabel: queueStatusLabel(item.status),
-          actionKind: item.nextAction
+          actionKind: item.nextAction,
+          presentation: "secondary",
+          disabled: false,
+          accessibilityLabel: `Review ${item.recipientLabel} ${item.eventLabel} card`
         }))
       },
       {
@@ -841,7 +860,10 @@ export function buildMobileRenderSnapshot(model: MobileExperienceModel = mobileE
           title: action.label,
           detail: action.detail,
           modeLabel: actionModeLabel(action),
-          actionKind: action.kind
+          actionKind: action.kind,
+          presentation: "inline",
+          disabled: false,
+          accessibilityLabel: action.label
         }))
       },
       {
@@ -936,10 +958,18 @@ export function summarizeMobileExperience(model: MobileExperienceModel = mobileE
 
 export function summarizeMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mobileRenderSnapshot) {
   const snapshotText = collectMobileRenderSnapshotText(snapshot);
+  const approvalRows = snapshot.sections.find((section) => section.id === "approval-controls")?.rows ?? [];
+  const lockedRows = snapshot.sections
+    .filter((section) => section.id === "best-available-options" || section.id === "checkout-confirmation")
+    .flatMap((section) => section.rows);
 
   return {
     sectionCount: snapshot.sections.length,
     rowCount: snapshot.sections.reduce((total, section) => total + section.rows.length, 0),
+    tappableActionCount:
+      [snapshot.hero.primaryAction, ...snapshot.hero.secondaryActions].filter((action) => !action.disabled).length +
+      approvalRows.filter((row) => row.presentation === "inline" && !row.disabled).length,
+    disabledActionCount: lockedRows.filter((row) => row.presentation === "locked" && row.disabled).length,
     primaryActionCount:
       (snapshot.hero.primaryAction.actionKind === "approve" ? 1 : 0) +
       snapshot.sections
@@ -962,6 +992,15 @@ export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mo
   if (snapshot.screenTitle !== "CustomCard") issues.push("Mobile render snapshot must name the product.");
   if (!snapshot.hero.primaryAction.label || !snapshot.hero.primaryAction.actionKind) {
     issues.push("Mobile render snapshot must expose a primary customer action.");
+  }
+  if (snapshot.hero.primaryAction.presentation !== "primary" || snapshot.hero.primaryAction.disabled) {
+    issues.push("Mobile render snapshot primary action must be enabled and primary.");
+  }
+  if (!snapshot.hero.secondaryActions.some((action) => action.label === "Paste invite or ICS" && !action.disabled)) {
+    issues.push("Mobile render snapshot must expose Paste invite or ICS as the ready secondary action.");
+  }
+  if (!snapshot.hero.secondaryActions.some((action) => action.label === "Review calendar options" && action.disabled)) {
+    issues.push("Mobile render snapshot must keep calendar review as a disabled secondary action until connected.");
   }
   if (!snapshot.proofGate.proofApproved && snapshot.proofGate.printOptionsUnlocked) {
     issues.push("Mobile render snapshot must not unlock print options before proof approval.");
@@ -991,6 +1030,8 @@ export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mo
   }
   if (summary.sectionCount !== 11) issues.push("Mobile render snapshot must expose 11 rendered sections.");
   if (summary.rowCount < 28) issues.push("Mobile render snapshot must expose the full customer workflow rows.");
+  if (summary.tappableActionCount < 7) issues.push("Mobile render snapshot must expose the ready mobile action surface.");
+  if (summary.disabledActionCount < 2) issues.push("Mobile render snapshot must expose disabled proof-gated print actions.");
   if (summary.primaryActionCount < 2) issues.push("Mobile render snapshot must place the primary approval action in hero and workflow.");
   if (summary.footerSafetyMessages < 2) issues.push("Mobile render snapshot must keep safety footer messages.");
   if (summary.blockedLiveActionCount > 0) issues.push("Mobile render snapshot must not claim live order, payment, or paid AI actions.");
@@ -1006,6 +1047,12 @@ export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mo
     }
     if (checkoutRows.length !== 1 || checkoutRows[0]?.title !== "Approve proof first") {
       issues.push("Mobile render snapshot must keep print shop steps locked until proof approval.");
+    }
+    if (printRows.some((row) => row.presentation !== "locked" || !row.disabled)) {
+      issues.push("Mobile render snapshot print estimates must render as disabled locked actions before proof approval.");
+    }
+    if (checkoutRows.some((row) => row.presentation !== "locked" || !row.disabled)) {
+      issues.push("Mobile render snapshot print shop steps must render as disabled locked actions before proof approval.");
     }
   }
   if (snapshot.sections.flatMap((section) => section.rows).some((row) => !row.title.trim() || !row.detail.trim() || !row.modeLabel.trim())) {
@@ -1366,6 +1413,7 @@ function collectMobileRenderSnapshotText(snapshot: MobileRenderSnapshot): string
     snapshot.hero.primaryAction.label,
     snapshot.hero.primaryAction.detail,
     snapshot.hero.primaryAction.modeLabel,
+    ...snapshot.hero.secondaryActions.flatMap((action) => [action.label, action.detail, action.modeLabel]),
     snapshot.safetyBand.label,
     snapshot.safetyBand.detail,
     ...snapshot.safetyBand.metrics.flatMap((metric) => [metric.label, metric.value]),
@@ -1374,6 +1422,30 @@ function collectMobileRenderSnapshotText(snapshot: MobileRenderSnapshot): string
       ...section.rows.flatMap((row) => [row.title, row.detail, row.modeLabel])
     ]),
     ...snapshot.footerSafetyMessages
+  ];
+}
+
+function buildMobileHeroSecondaryActions(model: MobileExperienceModel): MobileRenderAction[] {
+  const pasteInvite = model.importActions.find((action) => action.kind === "invite");
+  const calendarReview = model.importActions.find((action) => action.kind === "calendar");
+
+  return [
+    {
+      label: pasteInvite?.label ?? "Paste invite or ICS",
+      detail: pasteInvite?.detail ?? "Use the no-account local path for an event or note.",
+      modeLabel: "Local",
+      presentation: "secondary",
+      disabled: false,
+      accessibilityLabel: "Paste invite or ICS"
+    },
+    {
+      label: calendarReview?.label ?? "Review calendar options",
+      detail: calendarReview?.detail ?? "Google Calendar is not connected yet, and Apple uses manual ICS export.",
+      modeLabel: "Later",
+      presentation: "secondary",
+      disabled: true,
+      accessibilityLabel: "Review calendar options"
+    }
   ];
 }
 
@@ -1399,7 +1471,10 @@ function buildMobilePrintOptionRows(model: MobileExperienceModel): MobileRenderR
       {
         title: "Approve proof first",
         detail: "Print estimates unlock after you approve copy, language, and artwork.",
-        modeLabel: "After proof"
+        modeLabel: "After proof",
+        presentation: "locked",
+        disabled: true,
+        accessibilityLabel: "Approve proof before print estimates"
       }
     ];
   }
@@ -1407,7 +1482,10 @@ function buildMobilePrintOptionRows(model: MobileExperienceModel): MobileRenderR
   return model.fulfillmentRecommendations.map((recommendation) => ({
     title: recommendation.label,
     detail: `${formatCents(recommendation.totalCents)} at ${recommendation.vendorName}; ${recommendation.etaLabel}. ${recommendation.confirmationCopy}`,
-    modeLabel: "Confirm"
+    modeLabel: "Confirm",
+    presentation: "secondary",
+    disabled: false,
+    accessibilityLabel: recommendation.label
   }));
 }
 
@@ -1417,7 +1495,10 @@ function buildMobileHandoffRows(model: MobileExperienceModel): MobileRenderRow[]
       {
         title: "Approve proof first",
         detail: "Download and print shop steps unlock after proof approval.",
-        modeLabel: "After proof"
+        modeLabel: "After proof",
+        presentation: "locked",
+        disabled: true,
+        accessibilityLabel: "Approve proof before print shop steps"
       }
     ];
   }
@@ -1425,7 +1506,10 @@ function buildMobileHandoffRows(model: MobileExperienceModel): MobileRenderRow[]
   return model.handoffSteps.map((step) => ({
     title: step.label,
     detail: step.detail,
-    modeLabel: step.realOrderState === "manual" ? "Manual" : "Off"
+    modeLabel: step.realOrderState === "manual" ? "Manual" : "Off",
+    presentation: step.realOrderState === "manual" ? "secondary" : "locked",
+    disabled: step.realOrderState !== "manual",
+    accessibilityLabel: step.label
   }));
 }
 

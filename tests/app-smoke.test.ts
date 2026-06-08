@@ -414,6 +414,21 @@ describeWithChrome("CustomCard UI smoke", () => {
         activeNav: document.querySelector('.navButton.active')?.textContent,
         contentType: document.contentType,
         bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
+        introCopyLineRight: Math.ceil(
+          Math.max(
+            ...[
+              ...[...document.querySelectorAll(".mobilePreviewIntro p")].find((node) =>
+                node.textContent?.includes("Same customer screen model")
+              )?.getClientRects() ?? []
+            ].map((rect) => rect.right),
+            0
+          )
+        ),
+        mobileDeviceRight: Math.ceil(document.querySelector(".mobileDevice")?.getBoundingClientRect().right ?? 0),
+        mobileDeviceScrollWidth: document.querySelector(".mobileDevice")?.scrollWidth ?? 0,
+        mobileDeviceClientWidth: document.querySelector(".mobileDevice")?.clientWidth ?? 0,
+        mobileScreenScrollWidth: document.querySelector(".mobileScreen")?.scrollWidth ?? 0,
+        mobileScreenClientWidth: document.querySelector(".mobileScreen")?.clientWidth ?? 0,
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
         bodyScrollWidth: document.body.scrollWidth
@@ -435,6 +450,10 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).not.toContain("Mobile contract");
     expect(result.text).not.toContain("ExpoManifest");
     expect(result.text).not.toContain("bundleUrl");
+    expect(result.introCopyLineRight).toBeLessThanOrEqual(result.clientWidth);
+    expect(result.mobileDeviceRight).toBeLessThanOrEqual(result.clientWidth);
+    expect(result.mobileDeviceScrollWidth).toBe(result.mobileDeviceClientWidth);
+    expect(result.mobileScreenScrollWidth).toBe(result.mobileScreenClientWidth);
     expect(result.bodyScrollWidth).toBe(result.clientWidth);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);

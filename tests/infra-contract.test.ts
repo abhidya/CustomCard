@@ -1467,6 +1467,9 @@ describe("production infrastructure contract", () => {
     expect(releaseDoctor).toContain("signedArtifactBuilt: false");
     expect(releaseDoctor).toContain("nativeBuildProfiles");
     expect(mobileApp).toContain("mobileRenderSnapshot");
+    expect(mobileApp).toContain("Pressable");
+    expect(mobileApp).toContain("accessibilityRole=\"button\"");
+    expect(mobileApp).toContain("ActionSurface");
     expect(mobileApp).toContain("MobileRenderSection");
     expect(mobileApp).toContain("NextActionSection");
     expect(mobileApp).toContain("StandardSection");
@@ -1478,6 +1481,9 @@ describe("production infrastructure contract", () => {
     expect(mobileExperience).toContain("buildMobileRenderSnapshot");
     expect(mobileExperience).toContain("validateMobileRenderSnapshot");
     expect(mobileExperience).toContain("collectMobileCustomerCopy");
+    expect(mobileExperience).toContain("secondaryActions");
+    expect(mobileExperience).toContain("tappableActionCount");
+    expect(mobileExperience).toContain("disabledActionCount");
     expect(mobileExperience).toContain("Card assistant");
     expect(mobileExperience).toContain("Start with an event");
     expect(mobileExperience).toContain("Printing options");

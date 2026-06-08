@@ -10,6 +10,11 @@ render snapshot live in `src/customerExperience.ts`, a pure module tested by the
 root Vitest suite and inspected by the mobile doctor. `App.tsx` is the Expo root
 entrypoint and re-exports the native shell from `src/App.tsx`, which renders the
 `mobileRenderSnapshot` instead of importing raw contract arrays directly.
+Ready mobile actions render through an explicit native action surface using
+accessible `Pressable` controls. The primary card review action, local
+paste/ICS action, queued card actions, and card controls are enabled; print
+estimates and print-shop steps render as disabled locked actions until proof
+approval.
 
 Calendar import is intentionally explicit in the mobile shell: paste invite/ICS
 is the ready local path, Google Calendar is shown as not connected yet, and
@@ -56,8 +61,9 @@ npm run mobile:web:preview
 ```
 
 Expected screen signals: `Mobile app`, `Your card assistant`, the phone-shaped
-customer workflow, one primary mobile action, checkout safeguards, and the
-`Mobile customer summary` panel. The browser route must not render an Expo
+customer workflow, one primary mobile action, checkout safeguards, locked print
+and checkout sections before proof approval, and the `Mobile customer summary`
+panel. The browser route must not render an Expo
 manifest, JSON payload, or visible mobile contract/debug panel. The direct URL
 is `/?view=mobile`.
 

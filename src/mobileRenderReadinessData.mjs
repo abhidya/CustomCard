@@ -39,10 +39,14 @@ export const mobileRenderReadinessItems = [
     requiredSourceSignals: [
       "SafeAreaView",
       "ScrollView",
+      "Pressable",
+      "accessibilityRole",
       "StyleSheet.create",
       "mobileRenderSnapshot",
       "MobileRenderSection",
       "MobileRenderRow",
+      "MobileRenderAction",
+      "ActionSurface",
       "buildMobileRenderSnapshot",
       "validateMobileRenderSnapshot",
       "summarizeMobileRenderSnapshot"
@@ -87,6 +91,9 @@ export const mobileRenderReadinessItems = [
       "mobileTodaySummary",
       "mobileCardQueueItems",
       "mobileApprovalActions",
+      "secondaryActions",
+      "presentation",
+      "disabled",
       "mobileChatTranscript",
       "mobileFulfillmentRecommendations",
       "mobileSyncState"

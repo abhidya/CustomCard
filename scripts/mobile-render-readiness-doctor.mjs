@@ -63,6 +63,8 @@ const checks = [
   checkIncludes("mobile-source", "native-mobile-render-source-signals", `${contents.mobileApp}\n${contents.mobileExperience}`, [
     "SafeAreaView",
     "ScrollView",
+    "Pressable",
+    "accessibilityRole",
     "Start with an event",
     "Today's card",
     "Cards to review",
@@ -78,6 +80,11 @@ const checks = [
     "summarizeMobileRenderSnapshot",
     "MobileRenderSection",
     "MobileRenderRow",
+    "MobileRenderAction",
+    "ActionSurface",
+    "secondaryActions",
+    "presentation",
+    "disabled",
     "mobileFulfillmentRecommendations",
     "mobilePrintProofChecks",
     "mobileLocaleOptions"

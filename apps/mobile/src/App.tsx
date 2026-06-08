@@ -1,6 +1,6 @@
 import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import { mobileRenderSnapshot, type MobileRenderRow, type MobileRenderSection } from "./customerExperience";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { mobileRenderSnapshot, type MobileRenderAction, type MobileRenderRow, type MobileRenderSection } from "./customerExperience";
 
 export default function App() {
   return (
@@ -10,12 +10,11 @@ export default function App() {
           <Text style={styles.eyebrow}>{mobileRenderSnapshot.hero.eyebrow}</Text>
           <Text style={styles.title}>{mobileRenderSnapshot.hero.title}</Text>
           <Text style={styles.subtitle}>{mobileRenderSnapshot.hero.subtitle}</Text>
-          <View style={styles.heroAction}>
-            <View style={styles.compactCopy}>
-              <Text style={styles.compactTitle}>{mobileRenderSnapshot.hero.primaryAction.label}</Text>
-              <Text style={styles.cardCopy}>{mobileRenderSnapshot.hero.primaryAction.detail}</Text>
-            </View>
-            <Text style={styles.modePill}>{mobileRenderSnapshot.hero.primaryAction.modeLabel}</Text>
+          <ActionSurface action={mobileRenderSnapshot.hero.primaryAction} />
+          <View style={styles.heroSecondaryActions}>
+            {mobileRenderSnapshot.hero.secondaryActions.map((action) => (
+              <ActionSurface key={action.label} action={action} compact />
+            ))}
           </View>
         </View>
 
@@ -53,12 +52,8 @@ function NextActionSection({ section }: { section: MobileRenderSection }) {
 
   return (
     <View style={styles.todayCard}>
-      <View style={styles.cardTop}>
-        <Text style={styles.groupEyebrow}>{section.title}</Text>
-        <Text style={styles.warningPill}>{row.modeLabel}</Text>
-      </View>
-      <Text style={styles.todayTitle}>{row.title}</Text>
-      <Text style={styles.todayMeta}>{row.detail}</Text>
+      <Text style={styles.groupEyebrow}>{section.title}</Text>
+      <ActionSurface row={row} featured />
     </View>
   );
 }
@@ -86,14 +81,62 @@ function SectionRow({ row, chat }: { row: MobileRenderRow; chat?: boolean }) {
     );
   }
 
-  return (
-    <View style={styles.compactRow}>
+  return <ActionSurface row={row} compact />;
+}
+
+function ActionSurface({
+  action,
+  row,
+  compact,
+  featured
+}: {
+  action?: MobileRenderAction;
+  row?: MobileRenderRow;
+  compact?: boolean;
+  featured?: boolean;
+}) {
+  const title = action?.label ?? row?.title ?? "";
+  const detail = action?.detail ?? row?.detail ?? "";
+  const modeLabel = action?.modeLabel ?? row?.modeLabel ?? "";
+  const presentation = action?.presentation ?? row?.presentation ?? "status";
+  const disabled = action?.disabled ?? row?.disabled ?? false;
+  const accessibilityLabel = action?.accessibilityLabel ?? row?.accessibilityLabel ?? title;
+  const isButton = presentation !== "status";
+  const surfaceStyle = [
+    styles.actionSurface,
+    compact && styles.compactActionSurface,
+    featured && styles.featuredActionSurface,
+    presentation === "primary" && styles.primaryActionSurface,
+    presentation === "secondary" && styles.secondaryActionSurface,
+    presentation === "inline" && styles.inlineActionSurface,
+    presentation === "locked" && styles.lockedActionSurface,
+    disabled && styles.disabledActionSurface
+  ];
+  const content = (
+    <>
       <View style={styles.compactCopy}>
-        <Text style={styles.compactTitle}>{row.title}</Text>
-        <Text style={styles.cardCopy}>{row.detail}</Text>
+        <Text style={[styles.compactTitle, featured && styles.todayTitle]}>{title}</Text>
+        <Text style={[styles.cardCopy, featured && styles.todayMeta]}>{detail}</Text>
       </View>
-      <Text style={styles.modePill}>{row.modeLabel}</Text>
-    </View>
+      <Text style={[styles.modePill, disabled && styles.disabledModePill]}>{modeLabel}</Text>
+    </>
+  );
+
+  if (!isButton) {
+    return <View style={surfaceStyle}>{content}</View>;
+  }
+
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={() => undefined}
+      style={surfaceStyle}
+    >
+      {content}
+    </Pressable>
   );
 }
 
@@ -128,15 +171,42 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22
   },
-  heroAction: {
+  heroSecondaryActions: {
+    gap: 8,
+    marginTop: 8
+  },
+  actionSurface: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 10,
-    marginTop: 8,
     padding: 12,
     borderRadius: 8,
     backgroundColor: "#ffffff"
+  },
+  compactActionSurface: {
+    padding: 10
+  },
+  featuredActionSurface: {
+    marginTop: 10,
+    padding: 0,
+    backgroundColor: "transparent"
+  },
+  primaryActionSurface: {
+    backgroundColor: "#ffffff"
+  },
+  secondaryActionSurface: {
+    backgroundColor: "#edf6f3"
+  },
+  inlineActionSurface: {
+    borderTopColor: "#e5ebed",
+    borderTopWidth: 1
+  },
+  lockedActionSurface: {
+    backgroundColor: "#f4f0ec"
+  },
+  disabledActionSurface: {
+    opacity: 0.72
   },
   statusBand: {
     padding: 14,
@@ -183,37 +253,18 @@ const styles = StyleSheet.create({
     borderColor: "#c9d7d5",
     borderWidth: 1
   },
-  cardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10
-  },
   groupEyebrow: {
     color: "#42615f",
     fontSize: 12,
     fontWeight: "900",
     textTransform: "uppercase"
   },
-  warningPill: {
-    flexShrink: 1,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 7,
-    color: "#6d251b",
-    backgroundColor: "#fff1ee",
-    fontSize: 12,
-    fontWeight: "900",
-    textAlign: "right"
-  },
   todayTitle: {
-    marginTop: 10,
     color: "#172124",
     fontSize: 25,
     fontWeight: "900"
   },
   todayMeta: {
-    marginTop: 4,
     color: "#4d5c61",
     fontSize: 15,
     lineHeight: 21
@@ -260,15 +311,6 @@ const styles = StyleSheet.create({
     color: "#30434a",
     lineHeight: 20
   },
-  compactRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 10,
-    paddingTop: 10,
-    borderTopColor: "#e5ebed",
-    borderTopWidth: 1
-  },
   compactCopy: {
     flex: 1
   },
@@ -287,6 +329,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#cde9df",
     fontSize: 12,
     fontWeight: "900"
+  },
+  disabledModePill: {
+    color: "#6d251b",
+    backgroundColor: "#fff1ee"
   },
   smallMeta: {
     color: "#5d6c72",
