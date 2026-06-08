@@ -99,3 +99,25 @@ accounts, payment processors, or production infrastructure.
 Rejected: treating Gmail OAuth, paid AI generation, live vendor APIs, or real
 orders as required for this pass. Those integrations remain open production work
 with explicit safety gates.
+
+## D009: Extract Coupon Cart-Terms Seam; Defer The Full Printer-Pricing Split
+
+Decision: extract coupon Cart Terms validation (`isPrinterCouponActive`,
+`hasMatchingProviderPortalCouponEvidence`,
+`validatePrinterCouponPortalApplicationEvidence`) into
+`src/printerCouponCartTerms.ts`, imported by both the ranking path in
+`printerPricing.ts` and `printerCouponPortalEvidence.ts`. `printerPricing.ts`
+re-exports the three so its existing importers are unaffected.
+
+Reason: "is this coupon valid for this cart" is the one coupon rule reused across
+modules; a named module concentrates it (locality) and lets the evidence-import
+path depend on a small seam instead of the 2k-line pricing module. The further
+catalog/policy/ranking file split proposed in architecture review is deferred: it
+is reorganization-only (no behaviour or leakage change), `printerPricing.ts` has
+~18 importers (high blast radius), and the review's premise of a
+`printerPricing` ↔ `printerCouponPortalEvidence` import cycle proved false — the
+dependency is one-way — so the split's main justification did not hold.
+
+Rejected: splitting `printerPricing.ts` into three modules in this pass. Revisit
+if the file grows materially or a second consumer needs the pricing catalog
+independently of coupons.

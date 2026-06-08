@@ -1,9 +1,11 @@
 import {
   hasMatchingProviderPortalCouponEvidence,
   isPrinterCouponActive,
+  validatePrinterCouponPortalApplicationEvidence
+} from "./printerCouponCartTerms";
+import {
   printerCouponOffers,
   printerPriceCatalog,
-  validatePrinterCouponPortalApplicationEvidence,
   type PrinterCouponOffer,
   type PrinterCouponPortalApplicationEvidence,
   type PrinterPriceObservation

@@ -46,6 +46,7 @@ export default defineConfig({
         "src/localization.ts",
         "src/persistenceContracts.ts",
         "src/printerPricing.ts",
+        "src/printerCouponCartTerms.ts",
         "src/printExport.ts",
         "src/productionReadiness.ts",
         "src/readinessRegister.mjs",
