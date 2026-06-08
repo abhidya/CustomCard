@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredReviewerDbSeedReadinessIds = [
   "reviewer-seed-plan-contract",
   "reviewer-session-token-contract",
@@ -273,45 +275,12 @@ export const reviewerDbSeedReadinessItems = [
   }
 ];
 
-export function summarizeReviewerDbSeedReadiness(items = reviewerDbSeedReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    hostedDatabaseRequired: items.filter((item) => item.requiresHostedDatabase).length,
-    hostedSeedExecutionRequired: items.filter((item) => item.requiresHostedSeedExecution).length,
-    hostedTokenProbeRequired: items.filter((item) => item.requiresHostedTokenProbe).length,
-    vercelEnvSyncRequired: items.filter((item) => item.requiresVercelEnvSync).length,
-    rollbackRequired: items.filter((item) => item.rollbackRequired).length,
-    repoLocalContractProofs: items.filter((item) => item.proofScope === "repo-local-contract").length,
-    liveHostedProofRequired: items.filter((item) => item.proofScope === "live-hosted-required").length,
-    sqlPreviewRollbackModes: items.filter((item) => item.rollbackMode === "demo-scoped-sql-preview").length,
-    hostedRollbackModes: items.filter((item) => item.rollbackMode === "hosted-isolated-db-rollback-required").length,
-    noRollbackProbeModes: items.filter((item) => item.rollbackMode === "hosted-token-probe-no-rollback").length,
-    sqlPreviewOnly: items.filter((item) => item.sqlPreviewOnly).length,
-    tableContracts: new Set(items.flatMap((item) => item.tableNames)).size,
-    routeContracts: new Set(items.flatMap((item) => item.routeIds)).size,
-    requiredEnvVars: new Set(items.flatMap((item) => item.envVarNames)).size,
-    hostedSeedProofs: items.filter((item) => item.hostedSeedExecuted).length,
-    hostedTokenProbeProofs: items.filter((item) => item.hostedTokenProbeAttached).length,
-    vercelEnvSyncProofs: items.filter((item) => item.vercelEnvSynced).length,
-    destructiveLiveMutations: items.filter((item) => item.destructiveLiveMutation).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
-    realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateReviewerDbSeedReadiness(items)
-  };
-}
-
-export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate reviewer DB seed readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
-
+const reviewerDbSeedReadinessRegister = defineReadinessRegister({
+  domainLabel: "reviewer DB seed",
+  items: reviewerDbSeedReadinessItems,
+  requiredIds: requiredReviewerDbSeedReadinessIds,
+  itemRules(item) {
+    const issues = [];
     if (!allowedStatuses.has(item.status)) issues.push(`Reviewer DB seed readiness item ${item.id} has unsupported status.`);
     if (!allowedProofScopes.has(item.proofScope)) {
       issues.push(`Reviewer DB seed readiness item ${item.id} has unsupported proofScope.`);
@@ -353,74 +322,109 @@ export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessI
     if (item.requiresHostedSeedExecution && item.rollbackRequired && item.rollbackMode !== "hosted-isolated-db-rollback-required") {
       issues.push(`Reviewer DB seed readiness item ${item.id} must require hosted isolated DB rollback mode.`);
     }
-  }
-
-  for (const requiredId of requiredReviewerDbSeedReadinessIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing reviewer DB seed readiness item: ${requiredId}.`);
-  }
-
-  const seedPlan = itemsById.get("reviewer-seed-plan-contract");
-  if (seedPlan) {
-    assertCoversTables(seedPlan, issues, "Reviewer seed plan contract");
-    if (!seedPlan.rollbackRequired || !seedPlan.sqlPreviewOnly) {
-      issues.push("Reviewer seed plan contract must stay rollback-required and SQL-preview-only.");
-    }
-    if (seedPlan.proofScope !== "repo-local-contract" || seedPlan.rollbackMode !== "demo-scoped-sql-preview") {
-      issues.push("Reviewer seed plan contract must stay repo-local with demo-scoped SQL preview rollback mode.");
-    }
-  }
-
-  const tokenContract = itemsById.get("reviewer-session-token-contract");
-  if (tokenContract) {
-    assertCoversEnvVars(tokenContract, ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN"], issues, "Reviewer session token contract");
-    for (const route of ["/api/admin/readiness", "/api/customer/bootstrap"]) {
-      if (!tokenContract.routeIds.includes(route)) {
-        issues.push(`Reviewer session token contract must include route: ${route}.`);
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
+    const seedPlan = itemsById.get("reviewer-seed-plan-contract");
+    if (seedPlan) {
+      assertCoversTables(seedPlan, issues, "Reviewer seed plan contract");
+      if (!seedPlan.rollbackRequired || !seedPlan.sqlPreviewOnly) {
+        issues.push("Reviewer seed plan contract must stay rollback-required and SQL-preview-only.");
+      }
+      if (seedPlan.proofScope !== "repo-local-contract" || seedPlan.rollbackMode !== "demo-scoped-sql-preview") {
+        issues.push("Reviewer seed plan contract must stay repo-local with demo-scoped SQL preview rollback mode.");
       }
     }
-  }
 
-  const hostedSeed = itemsById.get("hosted-seed-execution-proof");
-  if (hostedSeed) {
-    assertCoversTables(hostedSeed, issues, "Hosted seed execution proof");
-    assertCoversEnvVars(hostedSeed, requiredReviewerSeedEnvVars, issues, "Hosted seed execution proof");
-    if (!hostedSeed.requiresHostedDatabase || !hostedSeed.requiresHostedSeedExecution || !hostedSeed.requiresHostedTokenProbe) {
-      issues.push("Hosted seed execution proof must require hosted database, seed execution, and token probe evidence.");
-    }
-  }
-
-  const hostedProbe = itemsById.get("hosted-admin-customer-token-probe");
-  if (hostedProbe) {
-    for (const route of ["/api/admin/readiness", "/api/customer/bootstrap", "/api/render-packets"]) {
-      if (!hostedProbe.routeIds.includes(route)) {
-        issues.push(`Hosted admin and customer token probe must include route: ${route}.`);
+    const tokenContract = itemsById.get("reviewer-session-token-contract");
+    if (tokenContract) {
+      assertCoversEnvVars(tokenContract, ["CUSTOMCARD_CUSTOMER_SESSION_TOKEN", "CUSTOMCARD_ADMIN_SESSION_TOKEN"], issues, "Reviewer session token contract");
+      for (const route of ["/api/admin/readiness", "/api/customer/bootstrap"]) {
+        if (!tokenContract.routeIds.includes(route)) {
+          issues.push(`Reviewer session token contract must include route: ${route}.`);
+        }
       }
     }
-    if (!hostedProbe.requiresHostedDatabase || !hostedProbe.requiresHostedTokenProbe || hostedProbe.hostedTokenProbeAttached !== false) {
-      issues.push("Hosted admin and customer token probe must require hosted token evidence without claiming it.");
-    }
-  }
 
-  const vercelEnv = itemsById.get("vercel-env-seed-sync");
-  if (vercelEnv) {
-    assertCoversEnvVars(vercelEnv, requiredReviewerSeedEnvVars, issues, "Vercel env seed sync");
-    if (!vercelEnv.requiresVercelEnvSync || vercelEnv.vercelEnvSynced !== false) {
-      issues.push("Vercel env seed sync must require env sync evidence without claiming it.");
+    const hostedSeed = itemsById.get("hosted-seed-execution-proof");
+    if (hostedSeed) {
+      assertCoversTables(hostedSeed, issues, "Hosted seed execution proof");
+      assertCoversEnvVars(hostedSeed, requiredReviewerSeedEnvVars, issues, "Hosted seed execution proof");
+      if (!hostedSeed.requiresHostedDatabase || !hostedSeed.requiresHostedSeedExecution || !hostedSeed.requiresHostedTokenProbe) {
+        issues.push("Hosted seed execution proof must require hosted database, seed execution, and token probe evidence.");
+      }
     }
-  }
 
-  const rollback = itemsById.get("rollback-cleanup-drill");
-  if (rollback) {
-    assertCoversTables(rollback, issues, "Rollback cleanup drill");
-    if (!rollback.rollbackRequired || !rollback.requiresHostedSeedExecution) {
-      issues.push("Rollback cleanup drill must require hosted seed execution and rollback evidence.");
+    const hostedProbe = itemsById.get("hosted-admin-customer-token-probe");
+    if (hostedProbe) {
+      for (const route of ["/api/admin/readiness", "/api/customer/bootstrap", "/api/render-packets"]) {
+        if (!hostedProbe.routeIds.includes(route)) {
+          issues.push(`Hosted admin and customer token probe must include route: ${route}.`);
+        }
+      }
+      if (!hostedProbe.requiresHostedDatabase || !hostedProbe.requiresHostedTokenProbe || hostedProbe.hostedTokenProbeAttached !== false) {
+        issues.push("Hosted admin and customer token probe must require hosted token evidence without claiming it.");
+      }
     }
-    if (rollback.rollbackMode !== "hosted-isolated-db-rollback-required") {
-      issues.push("Rollback cleanup drill must require hosted isolated DB rollback mode.");
-    }
-  }
 
-  return issues;
+    const vercelEnv = itemsById.get("vercel-env-seed-sync");
+    if (vercelEnv) {
+      assertCoversEnvVars(vercelEnv, requiredReviewerSeedEnvVars, issues, "Vercel env seed sync");
+      if (!vercelEnv.requiresVercelEnvSync || vercelEnv.vercelEnvSynced !== false) {
+        issues.push("Vercel env seed sync must require env sync evidence without claiming it.");
+      }
+    }
+
+    const rollback = itemsById.get("rollback-cleanup-drill");
+    if (rollback) {
+      assertCoversTables(rollback, issues, "Rollback cleanup drill");
+      if (!rollback.rollbackRequired || !rollback.requiresHostedSeedExecution) {
+        issues.push("Rollback cleanup drill must require hosted seed execution and rollback evidence.");
+      }
+      if (rollback.rollbackMode !== "hosted-isolated-db-rollback-required") {
+        issues.push("Rollback cleanup drill must require hosted isolated DB rollback mode.");
+      }
+    }
+
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      hostedDatabaseRequired: items.filter((item) => item.requiresHostedDatabase).length,
+      hostedSeedExecutionRequired: items.filter((item) => item.requiresHostedSeedExecution).length,
+      hostedTokenProbeRequired: items.filter((item) => item.requiresHostedTokenProbe).length,
+      vercelEnvSyncRequired: items.filter((item) => item.requiresVercelEnvSync).length,
+      rollbackRequired: items.filter((item) => item.rollbackRequired).length,
+      repoLocalContractProofs: items.filter((item) => item.proofScope === "repo-local-contract").length,
+      liveHostedProofRequired: items.filter((item) => item.proofScope === "live-hosted-required").length,
+      sqlPreviewRollbackModes: items.filter((item) => item.rollbackMode === "demo-scoped-sql-preview").length,
+      hostedRollbackModes: items.filter((item) => item.rollbackMode === "hosted-isolated-db-rollback-required").length,
+      noRollbackProbeModes: items.filter((item) => item.rollbackMode === "hosted-token-probe-no-rollback").length,
+      sqlPreviewOnly: items.filter((item) => item.sqlPreviewOnly).length,
+      tableContracts: new Set(items.flatMap((item) => item.tableNames)).size,
+      routeContracts: new Set(items.flatMap((item) => item.routeIds)).size,
+      requiredEnvVars: new Set(items.flatMap((item) => item.envVarNames)).size,
+      hostedSeedProofs: items.filter((item) => item.hostedSeedExecuted).length,
+      hostedTokenProbeProofs: items.filter((item) => item.hostedTokenProbeAttached).length,
+      vercelEnvSyncProofs: items.filter((item) => item.vercelEnvSynced).length,
+      destructiveLiveMutations: items.filter((item) => item.destructiveLiveMutation).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
+      realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
+  }
+});
+
+export function summarizeReviewerDbSeedReadiness(items = reviewerDbSeedReadinessItems) {
+  return reviewerDbSeedReadinessRegister.summarize(items);
+}
+
+export function validateReviewerDbSeedReadiness(items = reviewerDbSeedReadinessItems) {
+  return reviewerDbSeedReadinessRegister.validate(items);
 }
 
 function assertCoversTables(item, issues, label) {

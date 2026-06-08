@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredAiReadinessIds = [
   "ai-adapter-inventory",
   "model-allowlist-and-env-gates",
@@ -199,31 +201,12 @@ export const aiProviderReadinessItems = [
   }
 ];
 
-export function summarizeAiProviderReadiness(items = aiProviderReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    textProviderContracts: new Set(items.flatMap((item) => item.textAdapterIds)).size,
-    imageProviderContracts: new Set(items.flatMap((item) => item.imageAdapterIds)).size,
-    localFallbacks: new Set(items.flatMap((item) => item.localFallbackAdapterIds)).size,
-    promptAuditRequired: items.filter((item) => item.promptAuditRequired).length,
-    humanReviewRequired: items.filter((item) => item.humanReviewRequired).length,
-    liveProviderCallsEnabled: items.filter((item) => item.liveProviderCallsEnabled).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    productionTrafficEnabled: items.filter((item) => item.productionTrafficEnabled).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateAiProviderReadiness(items)
-  };
-}
-
-export function validateAiProviderReadiness(items = aiProviderReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate AI provider readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
+const aiProviderReadinessRegister = defineReadinessRegister({
+  domainLabel: "AI provider",
+  items: aiProviderReadinessItems,
+  requiredIds: requiredAiReadinessIds,
+  itemRules(item) {
+    const issues = [];
 
     if (item.liveProviderCallsEnabled !== false) {
       issues.push(`AI provider readiness item ${item.id} must keep liveProviderCallsEnabled=false.`);
@@ -246,34 +229,58 @@ export function validateAiProviderReadiness(items = aiProviderReadinessItems) {
     if (item.status === "evidence-missing" && !item.blocker) {
       issues.push(`AI provider readiness item ${item.id} must explain its evidence blocker.`);
     }
-  }
 
-  for (const requiredId of requiredAiReadinessIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing AI provider readiness item: ${requiredId}.`);
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  const inventory = itemsById.get("ai-adapter-inventory");
-  if (inventory) {
-    for (const adapterId of requiredTextAdapterIds) {
-      if (!inventory.textAdapterIds.includes(adapterId)) issues.push(`AI adapter inventory must include text adapter: ${adapterId}.`);
+    const inventory = itemsById.get("ai-adapter-inventory");
+    if (inventory) {
+      for (const adapterId of requiredTextAdapterIds) {
+        if (!inventory.textAdapterIds.includes(adapterId)) issues.push(`AI adapter inventory must include text adapter: ${adapterId}.`);
+      }
+      for (const adapterId of requiredImageAdapterIds) {
+        if (!inventory.imageAdapterIds.includes(adapterId)) issues.push(`AI adapter inventory must include image adapter: ${adapterId}.`);
+      }
+      for (const adapterId of requiredLocalFallbackAdapterIds) {
+        if (!inventory.localFallbackAdapterIds.includes(adapterId)) issues.push(`AI adapter inventory must include fallback adapter: ${adapterId}.`);
+      }
     }
-    for (const adapterId of requiredImageAdapterIds) {
-      if (!inventory.imageAdapterIds.includes(adapterId)) issues.push(`AI adapter inventory must include image adapter: ${adapterId}.`);
+
+    const promptSafety = itemsById.get("prompt-brand-safety-review");
+    if (promptSafety && (!promptSafety.promptAuditRequired || !promptSafety.humanReviewRequired)) {
+      issues.push("AI prompt and brand safety review must require prompt audit and human review.");
     }
-    for (const adapterId of requiredLocalFallbackAdapterIds) {
-      if (!inventory.localFallbackAdapterIds.includes(adapterId)) issues.push(`AI adapter inventory must include fallback adapter: ${adapterId}.`);
+
+    const imageQa = itemsById.get("image-print-qa");
+    if (imageQa && (!imageQa.humanReviewRequired || imageQa.imageAdapterIds.length < requiredImageAdapterIds.length)) {
+      issues.push("AI image and print QA must require human review and cover every image adapter contract.");
     }
-  }
 
-  const promptSafety = itemsById.get("prompt-brand-safety-review");
-  if (promptSafety && (!promptSafety.promptAuditRequired || !promptSafety.humanReviewRequired)) {
-    issues.push("AI prompt and brand safety review must require prompt audit and human review.");
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      textProviderContracts: new Set(items.flatMap((item) => item.textAdapterIds)).size,
+      imageProviderContracts: new Set(items.flatMap((item) => item.imageAdapterIds)).size,
+      localFallbacks: new Set(items.flatMap((item) => item.localFallbackAdapterIds)).size,
+      promptAuditRequired: items.filter((item) => item.promptAuditRequired).length,
+      humanReviewRequired: items.filter((item) => item.humanReviewRequired).length,
+      liveProviderCallsEnabled: items.filter((item) => item.liveProviderCallsEnabled).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      productionTrafficEnabled: items.filter((item) => item.productionTrafficEnabled).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
   }
+});
 
-  const imageQa = itemsById.get("image-print-qa");
-  if (imageQa && (!imageQa.humanReviewRequired || imageQa.imageAdapterIds.length < requiredImageAdapterIds.length)) {
-    issues.push("AI image and print QA must require human review and cover every image adapter contract.");
-  }
+export function summarizeAiProviderReadiness(items = aiProviderReadinessItems) {
+  return aiProviderReadinessRegister.summarize(items);
+}
 
-  return issues;
+export function validateAiProviderReadiness(items = aiProviderReadinessItems) {
+  return aiProviderReadinessRegister.validate(items);
 }

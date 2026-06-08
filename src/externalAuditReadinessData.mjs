@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredAuditIds = [
   "production-auth-token-verification",
   "oauth-app-approval",
@@ -267,29 +269,12 @@ export const externalAuditReadinessItems = [
   }
 ];
 
-export function summarizeExternalAuditReadiness(items = externalAuditReadinessItems) {
-  return {
-    total: items.length,
-    internalBaselineReady: items.filter((item) => item.status === "internal-baseline-ready").length,
-    externalEvidenceMissing: items.filter((item) => item.status === "external-evidence-missing").length,
-    certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
-    productionBlocked: items.filter((item) => item.blocksProduction).length,
-    publicClaimsAllowed: items.filter((item) => item.publicClaimAllowed).length,
-    externalArtifactsAttached: items.reduce((total, item) => total + item.evidenceArtifactRefs.length, 0),
-    externalReviewerRequired: items.filter((item) => item.externalReviewerRequired).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: items.filter((item) => item.blocksProduction).map((item) => item.blocker)
-  };
-}
-
-export function validateExternalAuditReadiness(items = externalAuditReadinessItems) {
-  const issues = [];
-  const ids = new Set();
-
-  for (const item of items) {
-    if (ids.has(item.id)) issues.push(`Duplicate external audit readiness item: ${item.id}.`);
-    ids.add(item.id);
-
+const externalAuditReadinessRegister = defineReadinessRegister({
+  domainLabel: "external audit",
+  items: externalAuditReadinessItems,
+  requiredIds: requiredAuditIds,
+  itemRules(item) {
+    const issues = [];
     if (!allowedStatuses.has(item.status)) issues.push(`External audit readiness item ${item.id} has unsupported status.`);
     if (item.publicClaimAllowed !== false) {
       issues.push(`External audit readiness item ${item.id} must keep publicClaimAllowed=false until external evidence is reviewed.`);
@@ -315,11 +300,29 @@ export function validateExternalAuditReadiness(items = externalAuditReadinessIte
     if (!item.blocker) {
       issues.push(`External audit readiness item ${item.id} must explain the missing external proof.`);
     }
+    return issues;
+  },
+  summarize(items) {
+    return {
+      internalBaselineReady: items.filter((item) => item.status === "internal-baseline-ready").length,
+      externalEvidenceMissing: items.filter((item) => item.status === "external-evidence-missing").length,
+      certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
+      productionBlocked: items.filter((item) => item.blocksProduction).length,
+      publicClaimsAllowed: items.filter((item) => item.publicClaimAllowed).length,
+      externalArtifactsAttached: items.reduce((total, item) => total + item.evidenceArtifactRefs.length, 0),
+      externalReviewerRequired: items.filter((item) => item.externalReviewerRequired).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
   }
+});
 
-  for (const requiredId of requiredAuditIds) {
-    if (!ids.has(requiredId)) issues.push(`Missing external audit readiness item: ${requiredId}.`);
-  }
+export function summarizeExternalAuditReadiness(items = externalAuditReadinessItems) {
+  return {
+    ...externalAuditReadinessRegister.summarize(items),
+    blockers: items.filter((item) => item.blocksProduction).map((item) => item.blocker)
+  };
+}
 
-  return issues;
+export function validateExternalAuditReadiness(items = externalAuditReadinessItems) {
+  return externalAuditReadinessRegister.validate(items);
 }

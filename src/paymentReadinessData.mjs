@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredPaymentReadinessIds = [
   "no-payment-local-gate",
   "sandbox-payment-contracts",
@@ -196,39 +198,12 @@ export const paymentReadinessItems = [
   }
 ];
 
-export function summarizePaymentReadiness(items = paymentReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
-    paymentProviderContracts: new Set(
-      items.flatMap((item) => item.paymentAdapterIds).filter((adapterId) => requiredPaymentAdapterIds.includes(adapterId))
-    ).size,
-    localFallbacks: new Set(items.flatMap((item) => item.fallbackAdapterIds)).size,
-    ledgerEvents: new Set(items.flatMap((item) => item.ledgerEventNames)).size,
-    idempotencyRequired: items.filter((item) => item.idempotencyRequired).length,
-    webhookSignatureRequired: items.filter((item) => item.webhookSignatureRequired).length,
-    processorApprovalRequired: items.filter((item) => item.processorApprovalRequired).length,
-    liveChargesEnabled: items.filter((item) => item.liveChargesEnabled).length,
-    liveRefundsEnabled: items.filter((item) => item.liveRefundsEnabled).length,
-    liveCaptureEnabled: items.filter((item) => item.liveCaptureEnabled).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    cardDataStored: items.filter((item) => item.cardDataStored).length,
-    pciScopeApproved: items.filter((item) => item.pciScopeApproved).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validatePaymentReadiness(items)
-  };
-}
-
-export function validatePaymentReadiness(items = paymentReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate payment readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
-
+const paymentRegister = defineReadinessRegister({
+  domainLabel: "payment",
+  items: paymentReadinessItems,
+  requiredIds: requiredPaymentReadinessIds,
+  itemRules(item) {
+    const issues = [];
     if (!allowedStatuses.has(item.status)) issues.push(`Payment readiness item ${item.id} has unsupported status.`);
     if (item.idempotencyRequired !== true) issues.push(`Payment readiness item ${item.id} must require idempotency.`);
     if (item.liveChargesEnabled !== false) issues.push(`Payment readiness item ${item.id} must keep liveChargesEnabled=false.`);
@@ -241,50 +216,80 @@ export function validatePaymentReadiness(items = paymentReadinessItems) {
     if (item.currentEvidence.length < 1) issues.push(`Payment readiness item ${item.id} must list current repo-local evidence.`);
     if (item.requiredEvidence.length < 2) issues.push(`Payment readiness item ${item.id} must list at least two required evidence items.`);
     if (!item.blocker) issues.push(`Payment readiness item ${item.id} must explain its blocker.`);
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  for (const requiredId of requiredPaymentReadinessIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing payment readiness item: ${requiredId}.`);
-  }
-
-  const sandboxContracts = itemsById.get("sandbox-payment-contracts");
-  if (sandboxContracts) {
-    assertCoversPaymentAdapters(sandboxContracts, issues, "Payment sandbox contracts");
-    if (!sandboxContracts.webhookSignatureRequired) {
-      issues.push("Payment sandbox contracts must require webhook signatures.");
+    const sandboxContracts = itemsById.get("sandbox-payment-contracts");
+    if (sandboxContracts) {
+      assertCoversPaymentAdapters(sandboxContracts, issues, "Payment sandbox contracts");
+      if (!sandboxContracts.webhookSignatureRequired) {
+        issues.push("Payment sandbox contracts must require webhook signatures.");
+      }
     }
-  }
 
-  const liveApproval = itemsById.get("live-charge-capture-approval");
-  if (liveApproval) {
-    assertCoversPaymentAdapters(liveApproval, issues, "Payment live charge and capture approval");
-    if (liveApproval.status !== "certification-blocked") {
-      issues.push("Payment live charge and capture approval must remain certification-blocked.");
+    const liveApproval = itemsById.get("live-charge-capture-approval");
+    if (liveApproval) {
+      assertCoversPaymentAdapters(liveApproval, issues, "Payment live charge and capture approval");
+      if (liveApproval.status !== "certification-blocked") {
+        issues.push("Payment live charge and capture approval must remain certification-blocked.");
+      }
+      if (!liveApproval.processorApprovalRequired || !liveApproval.webhookSignatureRequired) {
+        issues.push("Payment live charge and capture approval must require processor approval and webhook signatures.");
+      }
     }
-    if (!liveApproval.processorApprovalRequired || !liveApproval.webhookSignatureRequired) {
-      issues.push("Payment live charge and capture approval must require processor approval and webhook signatures.");
+
+    const refunds = itemsById.get("refund-void-dispute-drills");
+    if (refunds) {
+      assertCoversPaymentAdapters(refunds, issues, "Payment refund void and dispute drills");
+      if (!refunds.processorApprovalRequired || !refunds.webhookSignatureRequired) {
+        issues.push("Payment refund void and dispute drills must require processor approval and webhook signatures.");
+      }
     }
-  }
 
-  const refunds = itemsById.get("refund-void-dispute-drills");
-  if (refunds) {
-    assertCoversPaymentAdapters(refunds, issues, "Payment refund void and dispute drills");
-    if (!refunds.processorApprovalRequired || !refunds.webhookSignatureRequired) {
-      issues.push("Payment refund void and dispute drills must require processor approval and webhook signatures.");
+    const noCardStorage = itemsById.get("no-card-data-storage");
+    if (noCardStorage && noCardStorage.cardDataStored !== false) {
+      issues.push("Payment no-card-data-storage item must keep cardDataStored=false.");
     }
-  }
 
-  const noCardStorage = itemsById.get("no-card-data-storage");
-  if (noCardStorage && noCardStorage.cardDataStored !== false) {
-    issues.push("Payment no-card-data-storage item must keep cardDataStored=false.");
-  }
+    const localGate = itemsById.get("no-payment-local-gate");
+    if (localGate && !localGate.fallbackAdapterIds.includes("no-payment-checkout-gate")) {
+      issues.push("Payment no-payment local gate must include no-payment-checkout-gate fallback.");
+    }
 
-  const localGate = itemsById.get("no-payment-local-gate");
-  if (localGate && !localGate.fallbackAdapterIds.includes("no-payment-checkout-gate")) {
-    issues.push("Payment no-payment local gate must include no-payment-checkout-gate fallback.");
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
+      paymentProviderContracts: new Set(
+        items.flatMap((item) => item.paymentAdapterIds).filter((adapterId) => requiredPaymentAdapterIds.includes(adapterId))
+      ).size,
+      localFallbacks: new Set(items.flatMap((item) => item.fallbackAdapterIds)).size,
+      ledgerEvents: new Set(items.flatMap((item) => item.ledgerEventNames)).size,
+      idempotencyRequired: items.filter((item) => item.idempotencyRequired).length,
+      webhookSignatureRequired: items.filter((item) => item.webhookSignatureRequired).length,
+      processorApprovalRequired: items.filter((item) => item.processorApprovalRequired).length,
+      liveChargesEnabled: items.filter((item) => item.liveChargesEnabled).length,
+      liveRefundsEnabled: items.filter((item) => item.liveRefundsEnabled).length,
+      liveCaptureEnabled: items.filter((item) => item.liveCaptureEnabled).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      cardDataStored: items.filter((item) => item.cardDataStored).length,
+      pciScopeApproved: items.filter((item) => item.pciScopeApproved).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
   }
+});
 
-  return issues;
+export function summarizePaymentReadiness(items = paymentReadinessItems) {
+  return paymentRegister.summarize(items);
+}
+
+export function validatePaymentReadiness(items = paymentReadinessItems) {
+  return paymentRegister.validate(items);
 }
 
 function assertCoversPaymentAdapters(item, issues, label) {

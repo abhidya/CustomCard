@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredObservabilityIds = [
   "telemetry-event-schema",
   "pii-redaction-sample",
@@ -157,32 +159,12 @@ export const observabilityReadinessItems = [
   }
 ];
 
-export function summarizeObservabilityReadiness(items = observabilityReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    alertRoutesRequired: items.filter((item) => item.alertRouteRequired).length,
-    piiRedacted: items.filter((item) => item.piiRedacted).length,
-    providerContracts: new Set(items.flatMap((item) => item.providerAdapterIds)).size,
-    unsampledCriticalEvents: items.filter((item) => item.samplingPolicy.toLowerCase().includes("never sampled")).length,
-    maxRetentionDays: Math.max(...items.map((item) => item.retentionDays), 0),
-    liveIngestionEnabled: items.filter((item) => item.liveIngestionEnabled).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    productionAlertsEnabled: items.filter((item) => item.productionAlertEnabled).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateObservabilityReadiness(items)
-  };
-}
-
-export function validateObservabilityReadiness(items = observabilityReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate observability readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
-
+const observabilityRegister = defineReadinessRegister({
+  domainLabel: "observability",
+  items: observabilityReadinessItems,
+  requiredIds: requiredObservabilityIds,
+  itemRules(item) {
+    const issues = [];
     if (item.liveIngestionEnabled !== false) {
       issues.push(`Observability readiness item ${item.id} must keep liveIngestionEnabled=false.`);
     }
@@ -213,24 +195,44 @@ export function validateObservabilityReadiness(items = observabilityReadinessIte
     if (item.status !== "repo-local-ready" && !item.blocker) {
       issues.push(`Observability readiness item ${item.id} must explain its blocker.`);
     }
-  }
-
-  for (const requiredId of requiredObservabilityIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing observability readiness item: ${requiredId}.`);
-  }
-
-  const providerContracts = itemsById.get("observability-provider-contracts");
-  if (providerContracts) {
-    const missing = requiredProviderAdapters.filter((adapterId) => !providerContracts.providerAdapterIds.includes(adapterId));
-    for (const adapterId of missing) {
-      issues.push(`Observability provider contracts must include adapter: ${adapterId}.`);
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
+    const providerContracts = itemsById.get("observability-provider-contracts");
+    if (providerContracts) {
+      const missing = requiredProviderAdapters.filter((adapterId) => !providerContracts.providerAdapterIds.includes(adapterId));
+      for (const adapterId of missing) {
+        issues.push(`Observability provider contracts must include adapter: ${adapterId}.`);
+      }
     }
+    const alertDrill = itemsById.get("alert-routing-drill");
+    if (alertDrill && !alertDrill.alertRouteRequired) {
+      issues.push("Observability alert-routing drill must require an alert route.");
+    }
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      alertRoutesRequired: items.filter((item) => item.alertRouteRequired).length,
+      piiRedacted: items.filter((item) => item.piiRedacted).length,
+      providerContracts: new Set(items.flatMap((item) => item.providerAdapterIds)).size,
+      unsampledCriticalEvents: items.filter((item) => item.samplingPolicy.toLowerCase().includes("never sampled")).length,
+      maxRetentionDays: Math.max(...items.map((item) => item.retentionDays), 0),
+      liveIngestionEnabled: items.filter((item) => item.liveIngestionEnabled).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      productionAlertsEnabled: items.filter((item) => item.productionAlertEnabled).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
   }
+});
 
-  const alertDrill = itemsById.get("alert-routing-drill");
-  if (alertDrill && !alertDrill.alertRouteRequired) {
-    issues.push("Observability alert-routing drill must require an alert route.");
-  }
+export function summarizeObservabilityReadiness(items = observabilityReadinessItems) {
+  return observabilityRegister.summarize(items);
+}
 
-  return issues;
+export function validateObservabilityReadiness(items = observabilityReadinessItems) {
+  return observabilityRegister.validate(items);
 }

@@ -48,6 +48,7 @@ export default defineConfig({
         "src/printerPricing.ts",
         "src/printExport.ts",
         "src/productionReadiness.ts",
+        "src/readinessRegister.mjs",
         "src/providerCatalog.ts",
         "src/providerGovernance.ts",
         "src/retailPrinterAdapters.ts",

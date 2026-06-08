@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredCloudArtifactProofReadinessIds = [
   "static-artifact-iac-contract",
   "terraform-plan-review-contract",
@@ -261,43 +263,12 @@ export const cloudArtifactProofReadinessItems = [
   }
 ];
 
-export function summarizeCloudArtifactProofReadiness(items = cloudArtifactProofReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    appliedCloudRequired: items.filter((item) => item.requiresAppliedCloud).length,
-    bucketArnProofRequired: items.filter((item) => item.requiresBucketArnProof).length,
-    iamPolicyProofRequired: items.filter((item) => item.requiresIamPolicyProof).length,
-    signedUrlProbeRequired: items.filter((item) => item.requiresSignedUrlProbe).length,
-    accessLogProofRequired: items.filter((item) => item.requiresAccessLogProof).length,
-    secretSyncRequired: items.filter((item) => item.requiresSecretSync).length,
-    restoreDrillRequired: items.filter((item) => item.requiresRestoreDrill).length,
-    terraformFileContracts: new Set(items.flatMap((item) => item.terraformFiles)).size,
-    envOutputContracts: new Set(items.flatMap((item) => item.envOutputNames)).size,
-    terraformApplyExecutions: items.filter((item) => item.terraformApplyExecuted).length,
-    appliedBucketArnProofs: items.filter((item) => item.appliedBucketArnAttached).length,
-    iamPolicyOutputProofs: items.filter((item) => item.iamPolicyOutputAttached).length,
-    signedUrlProbeProofs: items.filter((item) => item.signedUrlProbeAttached).length,
-    accessLogProofs: items.filter((item) => item.accessLogAttached).length,
-    secretSyncProofs: items.filter((item) => item.secretSyncAttached).length,
-    restoreDrillProofs: items.filter((item) => item.restoreDrillAttached).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
-    realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateCloudArtifactProofReadiness(items)
-  };
-}
-
-export function validateCloudArtifactProofReadiness(items = cloudArtifactProofReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate cloud artifact proof readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
-
+const cloudArtifactProofReadinessRegister = defineReadinessRegister({
+  domainLabel: "cloud artifact proof",
+  items: cloudArtifactProofReadinessItems,
+  requiredIds: requiredCloudArtifactProofReadinessIds,
+  itemRules(item) {
+    const issues = [];
     if (!allowedStatuses.has(item.status)) issues.push(`Cloud artifact proof readiness item ${item.id} has unsupported status.`);
     if (item.requiredSourceSignals.length < 2) issues.push(`Cloud artifact proof readiness item ${item.id} must list source signals.`);
     if (item.currentEvidence.length < 1) issues.push(`Cloud artifact proof readiness item ${item.id} must list current repo-local evidence.`);
@@ -313,55 +284,89 @@ export function validateCloudArtifactProofReadiness(items = cloudArtifactProofRe
     if (item.externalNetworkCalls !== false) issues.push(`Cloud artifact proof readiness item ${item.id} must not require live external network calls.`);
     if (item.liveProviderCalls !== false) issues.push(`Cloud artifact proof readiness item ${item.id} must keep liveProviderCalls=false.`);
     if (item.realOrdersEnabled !== false) issues.push(`Cloud artifact proof readiness item ${item.id} must keep realOrdersEnabled=false.`);
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  for (const requiredId of requiredCloudArtifactProofReadinessIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing cloud artifact proof readiness item: ${requiredId}.`);
-  }
-
-  const staticIac = itemsById.get("static-artifact-iac-contract");
-  if (staticIac) {
-    assertCoversTerraformFiles(staticIac, issues, "Static artifact IaC contract");
-    assertCoversEnvOutputs(staticIac, issues, "Static artifact IaC contract");
-  }
-
-  const appliedBucket = itemsById.get("applied-bucket-arn-proof");
-  if (appliedBucket) {
-    if (!appliedBucket.requiresAppliedCloud || !appliedBucket.requiresBucketArnProof || appliedBucket.appliedBucketArnAttached !== false) {
-      issues.push("Applied bucket ARN proof must require applied cloud bucket evidence without claiming it.");
+    const staticIac = itemsById.get("static-artifact-iac-contract");
+    if (staticIac) {
+      assertCoversTerraformFiles(staticIac, issues, "Static artifact IaC contract");
+      assertCoversEnvOutputs(staticIac, issues, "Static artifact IaC contract");
     }
-  }
 
-  const iamProof = itemsById.get("iam-policy-output-proof");
-  if (iamProof) {
-    if (!iamProof.requiresAppliedCloud || !iamProof.requiresIamPolicyProof || iamProof.iamPolicyOutputAttached !== false) {
-      issues.push("IAM policy output proof must require applied IAM evidence without claiming it.");
+    const appliedBucket = itemsById.get("applied-bucket-arn-proof");
+    if (appliedBucket) {
+      if (!appliedBucket.requiresAppliedCloud || !appliedBucket.requiresBucketArnProof || appliedBucket.appliedBucketArnAttached !== false) {
+        issues.push("Applied bucket ARN proof must require applied cloud bucket evidence without claiming it.");
+      }
     }
-  }
 
-  const signedProbe = itemsById.get("signed-url-cloud-probe");
-  if (signedProbe) {
-    if (!signedProbe.requiresSignedUrlProbe || !signedProbe.requiresSecretSync || signedProbe.signedUrlProbeAttached !== false) {
-      issues.push("Signed URL cloud probe must require signed URL and secret sync evidence without claiming it.");
+    const iamProof = itemsById.get("iam-policy-output-proof");
+    if (iamProof) {
+      if (!iamProof.requiresAppliedCloud || !iamProof.requiresIamPolicyProof || iamProof.iamPolicyOutputAttached !== false) {
+        issues.push("IAM policy output proof must require applied IAM evidence without claiming it.");
+      }
     }
-  }
 
-  const secretSync = itemsById.get("secret-manager-env-sync");
-  if (secretSync) {
-    assertCoversEnvOutputs(secretSync, issues, "Secret manager env sync");
-    if (!secretSync.requiresSecretSync || secretSync.secretSyncAttached !== false) {
-      issues.push("Secret manager env sync must require secret sync evidence without claiming it.");
+    const signedProbe = itemsById.get("signed-url-cloud-probe");
+    if (signedProbe) {
+      if (!signedProbe.requiresSignedUrlProbe || !signedProbe.requiresSecretSync || signedProbe.signedUrlProbeAttached !== false) {
+        issues.push("Signed URL cloud probe must require signed URL and secret sync evidence without claiming it.");
+      }
     }
-  }
 
-  const restore = itemsById.get("retention-restore-drill");
-  if (restore) {
-    if (!restore.requiresRestoreDrill || restore.restoreDrillAttached !== false) {
-      issues.push("Retention and restore drill must require restore evidence without claiming it.");
+    const secretSync = itemsById.get("secret-manager-env-sync");
+    if (secretSync) {
+      assertCoversEnvOutputs(secretSync, issues, "Secret manager env sync");
+      if (!secretSync.requiresSecretSync || secretSync.secretSyncAttached !== false) {
+        issues.push("Secret manager env sync must require secret sync evidence without claiming it.");
+      }
     }
-  }
 
-  return issues;
+    const restore = itemsById.get("retention-restore-drill");
+    if (restore) {
+      if (!restore.requiresRestoreDrill || restore.restoreDrillAttached !== false) {
+        issues.push("Retention and restore drill must require restore evidence without claiming it.");
+      }
+    }
+
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      appliedCloudRequired: items.filter((item) => item.requiresAppliedCloud).length,
+      bucketArnProofRequired: items.filter((item) => item.requiresBucketArnProof).length,
+      iamPolicyProofRequired: items.filter((item) => item.requiresIamPolicyProof).length,
+      signedUrlProbeRequired: items.filter((item) => item.requiresSignedUrlProbe).length,
+      accessLogProofRequired: items.filter((item) => item.requiresAccessLogProof).length,
+      secretSyncRequired: items.filter((item) => item.requiresSecretSync).length,
+      restoreDrillRequired: items.filter((item) => item.requiresRestoreDrill).length,
+      terraformFileContracts: new Set(items.flatMap((item) => item.terraformFiles)).size,
+      envOutputContracts: new Set(items.flatMap((item) => item.envOutputNames)).size,
+      terraformApplyExecutions: items.filter((item) => item.terraformApplyExecuted).length,
+      appliedBucketArnProofs: items.filter((item) => item.appliedBucketArnAttached).length,
+      iamPolicyOutputProofs: items.filter((item) => item.iamPolicyOutputAttached).length,
+      signedUrlProbeProofs: items.filter((item) => item.signedUrlProbeAttached).length,
+      accessLogProofs: items.filter((item) => item.accessLogAttached).length,
+      secretSyncProofs: items.filter((item) => item.secretSyncAttached).length,
+      restoreDrillProofs: items.filter((item) => item.restoreDrillAttached).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
+      realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
+  }
+});
+
+export function summarizeCloudArtifactProofReadiness(items = cloudArtifactProofReadinessItems) {
+  return cloudArtifactProofReadinessRegister.summarize(items);
+}
+
+export function validateCloudArtifactProofReadiness(items = cloudArtifactProofReadinessItems) {
+  return cloudArtifactProofReadinessRegister.validate(items);
 }
 
 function assertCoversTerraformFiles(item, issues, label) {

@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredMobileRenderReadinessIds = [
   "native-shell-source-render-contract",
   "customer-flow-screen-state",
@@ -252,38 +254,12 @@ export const mobileRenderReadinessItems = [
   }
 ];
 
-export function summarizeMobileRenderReadiness(items = mobileRenderReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    artifactBlocked: items.filter((item) => item.status === "artifact-blocked").length,
-    customerVisibleItems: items.filter((item) => item.customerVisible).length,
-    screenSections: new Set(items.flatMap((item) => item.screenSectionIds)).size,
-    viewportProfiles: new Set(items.flatMap((item) => item.viewportProfiles)).size,
-    nativeBuildProfiles: new Set(items.flatMap((item) => item.nativeBuildProfileIds)).size,
-    sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
-    deterministicProofBoundaries: new Set(items.map((item) => item.deterministicProofBoundary)).size,
-    blockedLiveProofs: new Set(items.flatMap((item) => item.blockedLiveProofs)).size,
-    emulatorRequired: items.filter((item) => item.requiresEmulatorProof).length,
-    signedArtifactRequired: items.filter((item) => item.requiresSignedArtifact).length,
-    emulatorRenderProofs: items.filter((item) => item.emulatorRenderProofAttached).length,
-    signedArtifacts: items.filter((item) => item.nativeArtifactSigned).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
-    liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateMobileRenderReadiness(items)
-  };
-}
-
-export function validateMobileRenderReadiness(items = mobileRenderReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate mobile render readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
+const mobileRenderReadinessRegister = defineReadinessRegister({
+  domainLabel: "mobile render",
+  items: mobileRenderReadinessItems,
+  requiredIds: requiredMobileRenderReadinessIds,
+  itemRules(item) {
+    const issues = [];
 
     if (!allowedStatuses.has(item.status)) issues.push(`Mobile render readiness item ${item.id} has unsupported status.`);
     if (item.screenSectionIds.length < 1) issues.push(`Mobile render readiness item ${item.id} must list screen sections.`);
@@ -312,65 +288,96 @@ export function validateMobileRenderReadiness(items = mobileRenderReadinessItems
     if (item.liveProviderCalls !== false) {
       issues.push(`Mobile render readiness item ${item.id} must keep liveProviderCalls=false.`);
     }
-  }
 
-  for (const requiredId of requiredMobileRenderReadinessIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing mobile render readiness item: ${requiredId}.`);
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  const shell = itemsById.get("native-shell-source-render-contract");
-  if (shell) {
-    assertCoversViewportProfiles(shell, issues, "Mobile native shell render contract");
-    for (const section of [
-      "sign-in-import",
-      "next-action",
-      "card-queue",
-      "approval-controls",
-      "card-assistant",
-      "best-available-options",
-      "print-proof",
-      "offline-sync"
-    ]) {
-      if (!shell.screenSectionIds.includes(section)) {
-        issues.push(`Mobile native shell render contract must include section: ${section}.`);
+    const shell = itemsById.get("native-shell-source-render-contract");
+    if (shell) {
+      assertCoversViewportProfiles(shell, issues, "Mobile native shell render contract");
+      for (const section of [
+        "sign-in-import",
+        "next-action",
+        "card-queue",
+        "approval-controls",
+        "card-assistant",
+        "best-available-options",
+        "print-proof",
+        "offline-sync"
+      ]) {
+        if (!shell.screenSectionIds.includes(section)) {
+          issues.push(`Mobile native shell render contract must include section: ${section}.`);
+        }
       }
     }
-  }
 
-  const preview = itemsById.get("expo-preview-profile-render-contract");
-  if (preview) {
-    assertCoversNativeBuildProfiles(preview, issues, "Expo preview profile render contract");
-  }
+    const preview = itemsById.get("expo-preview-profile-render-contract");
+    if (preview) {
+      assertCoversNativeBuildProfiles(preview, issues, "Expo preview profile render contract");
+    }
 
-  const rtl = itemsById.get("mobile-rtl-render-review");
-  if (rtl) {
-    if (!rtl.requiresEmulatorProof || rtl.emulatorRenderProofAttached !== false) {
-      issues.push("Mobile RTL render review must require emulator proof without claiming it.");
+    const rtl = itemsById.get("mobile-rtl-render-review");
+    if (rtl) {
+      if (!rtl.requiresEmulatorProof || rtl.emulatorRenderProofAttached !== false) {
+        issues.push("Mobile RTL render review must require emulator proof without claiming it.");
+      }
+      for (const signal of ["ar-EG", "ur-PK", "rtl"]) {
+        if (!rtl.requiredSourceSignals.includes(signal)) issues.push(`Mobile RTL render review must include source signal: ${signal}.`);
+      }
     }
-    for (const signal of ["ar-EG", "ur-PK", "rtl"]) {
-      if (!rtl.requiredSourceSignals.includes(signal)) issues.push(`Mobile RTL render review must include source signal: ${signal}.`);
-    }
-  }
 
-  const emulator = itemsById.get("native-emulator-render-proof");
-  if (emulator) {
-    assertCoversViewportProfiles(emulator, issues, "Native emulator render proof");
-    if (!emulator.requiresEmulatorProof || emulator.emulatorRenderProofAttached !== false) {
-      issues.push("Native emulator render proof must require emulator evidence without claiming it.");
+    const emulator = itemsById.get("native-emulator-render-proof");
+    if (emulator) {
+      assertCoversViewportProfiles(emulator, issues, "Native emulator render proof");
+      if (!emulator.requiresEmulatorProof || emulator.emulatorRenderProofAttached !== false) {
+        issues.push("Native emulator render proof must require emulator evidence without claiming it.");
+      }
     }
-  }
 
-  const signed = itemsById.get("signed-native-artifact-proof");
-  if (signed) {
-    if (signed.status !== "artifact-blocked") {
-      issues.push("Signed native artifact proof must remain artifact-blocked.");
+    const signed = itemsById.get("signed-native-artifact-proof");
+    if (signed) {
+      if (signed.status !== "artifact-blocked") {
+        issues.push("Signed native artifact proof must remain artifact-blocked.");
+      }
+      if (!signed.requiresSignedArtifact || signed.nativeArtifactSigned !== false) {
+        issues.push("Signed native artifact proof must require signed artifact evidence without claiming it.");
+      }
     }
-    if (!signed.requiresSignedArtifact || signed.nativeArtifactSigned !== false) {
-      issues.push("Signed native artifact proof must require signed artifact evidence without claiming it.");
-    }
-  }
 
-  return issues;
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      artifactBlocked: items.filter((item) => item.status === "artifact-blocked").length,
+      customerVisibleItems: items.filter((item) => item.customerVisible).length,
+      screenSections: new Set(items.flatMap((item) => item.screenSectionIds)).size,
+      viewportProfiles: new Set(items.flatMap((item) => item.viewportProfiles)).size,
+      nativeBuildProfiles: new Set(items.flatMap((item) => item.nativeBuildProfileIds)).size,
+      sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
+      deterministicProofBoundaries: new Set(items.map((item) => item.deterministicProofBoundary)).size,
+      blockedLiveProofs: new Set(items.flatMap((item) => item.blockedLiveProofs)).size,
+      emulatorRequired: items.filter((item) => item.requiresEmulatorProof).length,
+      signedArtifactRequired: items.filter((item) => item.requiresSignedArtifact).length,
+      emulatorRenderProofs: items.filter((item) => item.emulatorRenderProofAttached).length,
+      signedArtifacts: items.filter((item) => item.nativeArtifactSigned).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
+      liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
+  }
+});
+
+export function summarizeMobileRenderReadiness(items = mobileRenderReadinessItems) {
+  return mobileRenderReadinessRegister.summarize(items);
+}
+
+export function validateMobileRenderReadiness(items = mobileRenderReadinessItems) {
+  return mobileRenderReadinessRegister.validate(items);
 }
 
 function assertCoversViewportProfiles(item, issues, label) {

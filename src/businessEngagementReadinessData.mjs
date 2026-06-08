@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredBusinessEngagementIds = [
   "crm-csv-lifecycle-source",
   "popular-crm-oauth-contracts",
@@ -241,38 +243,12 @@ export const businessEngagementReadinessItems = [
   }
 ];
 
-export function summarizeBusinessEngagementReadiness(items = businessEngagementReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    approvalBlocked: items.filter((item) => item.status === "approval-blocked").length,
-    crmAdapterContracts: new Set(items.flatMap((item) => item.crmAdapterIds)).size,
-    workflowAdapterContracts: new Set(items.flatMap((item) => item.workflowAdapterIds)).size,
-    notificationAdapterContracts: new Set(items.flatMap((item) => item.notificationAdapterIds)).size,
-    lifecycleTriggerKinds: new Set(items.flatMap((item) => item.lifecycleTriggers)).size,
-    liveOAuthRequired: items.filter((item) => item.requiresLiveOAuth).length,
-    optInRequired: items.filter((item) => item.requiresCustomerOptIn).length,
-    suppressionReviewRequired: items.filter((item) => item.requiresSuppressionReview).length,
-    humanReviewRequired: items.filter((item) => item.requiresHumanReview).length,
-    liveSendProofRequired: items.filter((item) => item.requiresLiveSendProof).length,
-    liveMessagesEnabled: items.filter((item) => item.liveMessagesEnabled).length,
-    crmWritesEnabled: items.filter((item) => item.crmWritesEnabled).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateBusinessEngagementReadiness(items)
-  };
-}
-
-export function validateBusinessEngagementReadiness(items = businessEngagementReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate business engagement readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
-
+const businessEngagementRegister = defineReadinessRegister({
+  domainLabel: "business engagement",
+  items: businessEngagementReadinessItems,
+  requiredIds: requiredBusinessEngagementIds,
+  itemRules(item) {
+    const issues = [];
     if (!allowedStatuses.has(item.status)) issues.push(`Business engagement readiness item ${item.id} has unsupported status.`);
     if (item.currentEvidence.length < 1) {
       issues.push(`Business engagement readiness item ${item.id} must list current repo-local evidence.`);
@@ -307,46 +283,75 @@ export function validateBusinessEngagementReadiness(items = businessEngagementRe
     if (item.realOrdersEnabled !== false) {
       issues.push(`Business engagement readiness item ${item.id} must keep realOrdersEnabled=false.`);
     }
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  for (const requiredId of requiredBusinessEngagementIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing business engagement readiness item: ${requiredId}.`);
-  }
-
-  const csvSource = itemsById.get("crm-csv-lifecycle-source");
-  if (csvSource) {
-    assertCovers(csvSource.lifecycleTriggers, requiredLifecycleTriggers, issues, "CRM CSV lifecycle source must include trigger");
-    if (csvSource.requiresLiveOAuth !== false) issues.push("CRM CSV lifecycle source must not require live OAuth.");
-  }
-
-  const crmContracts = itemsById.get("popular-crm-oauth-contracts");
-  if (crmContracts) {
-    assertCovers(crmContracts.crmAdapterIds, requiredCrmAdapterIds.filter((id) => id !== "crm-csv-lifecycle-import"), issues, "Popular CRM OAuth contracts must include adapter");
-    if (crmContracts.requiresLiveOAuth !== true) issues.push("Popular CRM OAuth contracts must require live OAuth evidence.");
-  }
-
-  const workflow = itemsById.get("workflow-payload-contracts");
-  if (workflow) {
-    assertCovers(workflow.workflowAdapterIds, requiredWorkflowAdapterIds, issues, "Workflow payload contracts must include adapter");
-  }
-
-  const channels = itemsById.get("customer-message-channel-contracts");
-  if (channels) {
-    assertCovers(channels.notificationAdapterIds, requiredNotificationAdapterIds, issues, "Customer message channel contracts must include adapter");
-    if (channels.requiresLiveSendProof !== true) {
-      issues.push("Customer message channel contracts must require live send proof without claiming it.");
+    const csvSource = itemsById.get("crm-csv-lifecycle-source");
+    if (csvSource) {
+      assertCovers(csvSource.lifecycleTriggers, requiredLifecycleTriggers, issues, "CRM CSV lifecycle source must include trigger");
+      if (csvSource.requiresLiveOAuth !== false) issues.push("CRM CSV lifecycle source must not require live OAuth.");
     }
-  }
 
-  const consent = itemsById.get("consent-suppression-privacy-gate");
-  if (consent) {
-    if (consent.status !== "approval-blocked") issues.push("Consent suppression privacy gate must remain approval-blocked.");
-    assertCovers(consent.crmAdapterIds, requiredCrmAdapterIds, issues, "Consent suppression privacy gate must include CRM adapter");
-    assertCovers(consent.workflowAdapterIds, requiredWorkflowAdapterIds, issues, "Consent suppression privacy gate must include workflow adapter");
-    assertCovers(consent.notificationAdapterIds, requiredNotificationAdapterIds, issues, "Consent suppression privacy gate must include notification adapter");
-  }
+    const crmContracts = itemsById.get("popular-crm-oauth-contracts");
+    if (crmContracts) {
+      assertCovers(crmContracts.crmAdapterIds, requiredCrmAdapterIds.filter((id) => id !== "crm-csv-lifecycle-import"), issues, "Popular CRM OAuth contracts must include adapter");
+      if (crmContracts.requiresLiveOAuth !== true) issues.push("Popular CRM OAuth contracts must require live OAuth evidence.");
+    }
 
-  return issues;
+    const workflow = itemsById.get("workflow-payload-contracts");
+    if (workflow) {
+      assertCovers(workflow.workflowAdapterIds, requiredWorkflowAdapterIds, issues, "Workflow payload contracts must include adapter");
+    }
+
+    const channels = itemsById.get("customer-message-channel-contracts");
+    if (channels) {
+      assertCovers(channels.notificationAdapterIds, requiredNotificationAdapterIds, issues, "Customer message channel contracts must include adapter");
+      if (channels.requiresLiveSendProof !== true) {
+        issues.push("Customer message channel contracts must require live send proof without claiming it.");
+      }
+    }
+
+    const consent = itemsById.get("consent-suppression-privacy-gate");
+    if (consent) {
+      if (consent.status !== "approval-blocked") issues.push("Consent suppression privacy gate must remain approval-blocked.");
+      assertCovers(consent.crmAdapterIds, requiredCrmAdapterIds, issues, "Consent suppression privacy gate must include CRM adapter");
+      assertCovers(consent.workflowAdapterIds, requiredWorkflowAdapterIds, issues, "Consent suppression privacy gate must include workflow adapter");
+      assertCovers(consent.notificationAdapterIds, requiredNotificationAdapterIds, issues, "Consent suppression privacy gate must include notification adapter");
+    }
+
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      approvalBlocked: items.filter((item) => item.status === "approval-blocked").length,
+      crmAdapterContracts: new Set(items.flatMap((item) => item.crmAdapterIds)).size,
+      workflowAdapterContracts: new Set(items.flatMap((item) => item.workflowAdapterIds)).size,
+      notificationAdapterContracts: new Set(items.flatMap((item) => item.notificationAdapterIds)).size,
+      lifecycleTriggerKinds: new Set(items.flatMap((item) => item.lifecycleTriggers)).size,
+      liveOAuthRequired: items.filter((item) => item.requiresLiveOAuth).length,
+      optInRequired: items.filter((item) => item.requiresCustomerOptIn).length,
+      suppressionReviewRequired: items.filter((item) => item.requiresSuppressionReview).length,
+      humanReviewRequired: items.filter((item) => item.requiresHumanReview).length,
+      liveSendProofRequired: items.filter((item) => item.requiresLiveSendProof).length,
+      liveMessagesEnabled: items.filter((item) => item.liveMessagesEnabled).length,
+      crmWritesEnabled: items.filter((item) => item.crmWritesEnabled).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
+  }
+});
+
+export function summarizeBusinessEngagementReadiness(items = businessEngagementReadinessItems) {
+  return businessEngagementRegister.summarize(items);
+}
+
+export function validateBusinessEngagementReadiness(items = businessEngagementReadinessItems) {
+  return businessEngagementRegister.validate(items);
 }
 
 function assertCovers(values, requiredValues, issues, label) {

@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredRetailFulfillmentIds = [
   "manual-handoff-package",
   "review-only-pricing",
@@ -177,37 +179,12 @@ export const retailFulfillmentReadinessItems = [
   }
 ];
 
-export function summarizeRetailFulfillmentReadiness(items = retailFulfillmentReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
-    liveVendorAdapterContracts: new Set(
-      items.flatMap((item) => item.vendorAdapterIds).filter((adapterId) => requiredLiveVendorAdapterIds.includes(adapterId))
-    ).size,
-    manualFallbacks: new Set(items.flatMap((item) => item.fallbackAdapterIds)).size,
-    recoveryDrillEvents: new Set(items.flatMap((item) => item.recoveryEventNames)).size,
-    manualConfirmationRequired: items.filter((item) => item.manualConfirmationRequired).length,
-    humanApprovalRequired: items.filter((item) => item.humanApprovalRequired).length,
-    liveQuoteEnabled: items.filter((item) => item.liveQuoteEnabled).length,
-    directOrderEnabled: items.filter((item) => item.directOrderEnabled).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    realPaymentsEnabled: items.filter((item) => item.realPaymentsEnabled).length,
-    physicalCertificationAttached: items.filter((item) => item.physicalCertificationAttached).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateRetailFulfillmentReadiness(items)
-  };
-}
-
-export function validateRetailFulfillmentReadiness(items = retailFulfillmentReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate retail fulfillment readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
-
+const retailFulfillmentReadinessRegister = defineReadinessRegister({
+  domainLabel: "retail fulfillment",
+  items: retailFulfillmentReadinessItems,
+  requiredIds: requiredRetailFulfillmentIds,
+  itemRules(item) {
+    const issues = [];
     if (!allowedStatuses.has(item.status)) {
       issues.push(`Retail fulfillment readiness item ${item.id} has unsupported status.`);
     }
@@ -244,43 +221,71 @@ export function validateRetailFulfillmentReadiness(items = retailFulfillmentRead
     if (!item.blocker) {
       issues.push(`Retail fulfillment readiness item ${item.id} must explain its blocker.`);
     }
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  for (const requiredId of requiredRetailFulfillmentIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing retail fulfillment readiness item: ${requiredId}.`);
-  }
+    const liveQuoteContracts = itemsById.get("live-quote-contracts");
+    if (liveQuoteContracts) assertCoversLiveVendors(liveQuoteContracts, issues, "Retail live quote contracts");
 
-  const liveQuoteContracts = itemsById.get("live-quote-contracts");
-  if (liveQuoteContracts) assertCoversLiveVendors(liveQuoteContracts, issues, "Retail live quote contracts");
-
-  const vendorCertification = itemsById.get("vendor-api-certification");
-  if (vendorCertification) {
-    assertCoversLiveVendors(vendorCertification, issues, "Retail vendor certification");
-    if (vendorCertification.status !== "certification-blocked") {
-      issues.push("Retail vendor certification must remain certification-blocked.");
+    const vendorCertification = itemsById.get("vendor-api-certification");
+    if (vendorCertification) {
+      assertCoversLiveVendors(vendorCertification, issues, "Retail vendor certification");
+      if (vendorCertification.status !== "certification-blocked") {
+        issues.push("Retail vendor certification must remain certification-blocked.");
+      }
     }
+
+    const killSwitch = itemsById.get("order-mutation-kill-switch");
+    if (killSwitch) assertCoversLiveVendors(killSwitch, issues, "Retail order mutation kill switch");
+
+    const physicalQa = itemsById.get("physical-print-qa");
+    if (physicalQa) {
+      assertCoversLiveVendors(physicalQa, issues, "Retail physical print QA");
+      if (physicalQa.status !== "certification-blocked") issues.push("Retail physical print QA must remain certification-blocked.");
+    }
+
+    const manual = itemsById.get("manual-handoff-package");
+    if (manual && !manual.fallbackAdapterIds.includes("manual-vendor-handoff")) {
+      issues.push("Retail manual handoff package must include manual-vendor-handoff fallback.");
+    }
+
+    const pricing = itemsById.get("review-only-pricing");
+    if (pricing && !pricing.fallbackAdapterIds.includes("public-printer-pricing-research")) {
+      issues.push("Retail review-only pricing must include public-printer-pricing-research fallback.");
+    }
+
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
+      liveVendorAdapterContracts: new Set(
+        items.flatMap((item) => item.vendorAdapterIds).filter((adapterId) => requiredLiveVendorAdapterIds.includes(adapterId))
+      ).size,
+      manualFallbacks: new Set(items.flatMap((item) => item.fallbackAdapterIds)).size,
+      recoveryDrillEvents: new Set(items.flatMap((item) => item.recoveryEventNames)).size,
+      manualConfirmationRequired: items.filter((item) => item.manualConfirmationRequired).length,
+      humanApprovalRequired: items.filter((item) => item.humanApprovalRequired).length,
+      liveQuoteEnabled: items.filter((item) => item.liveQuoteEnabled).length,
+      directOrderEnabled: items.filter((item) => item.directOrderEnabled).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      realPaymentsEnabled: items.filter((item) => item.realPaymentsEnabled).length,
+      physicalCertificationAttached: items.filter((item) => item.physicalCertificationAttached).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
   }
+});
 
-  const killSwitch = itemsById.get("order-mutation-kill-switch");
-  if (killSwitch) assertCoversLiveVendors(killSwitch, issues, "Retail order mutation kill switch");
+export function summarizeRetailFulfillmentReadiness(items = retailFulfillmentReadinessItems) {
+  return retailFulfillmentReadinessRegister.summarize(items);
+}
 
-  const physicalQa = itemsById.get("physical-print-qa");
-  if (physicalQa) {
-    assertCoversLiveVendors(physicalQa, issues, "Retail physical print QA");
-    if (physicalQa.status !== "certification-blocked") issues.push("Retail physical print QA must remain certification-blocked.");
-  }
-
-  const manual = itemsById.get("manual-handoff-package");
-  if (manual && !manual.fallbackAdapterIds.includes("manual-vendor-handoff")) {
-    issues.push("Retail manual handoff package must include manual-vendor-handoff fallback.");
-  }
-
-  const pricing = itemsById.get("review-only-pricing");
-  if (pricing && !pricing.fallbackAdapterIds.includes("public-printer-pricing-research")) {
-    issues.push("Retail review-only pricing must include public-printer-pricing-research fallback.");
-  }
-
-  return issues;
+export function validateRetailFulfillmentReadiness(items = retailFulfillmentReadinessItems) {
+  return retailFulfillmentReadinessRegister.validate(items);
 }
 
 function assertCoversLiveVendors(item, issues, label) {

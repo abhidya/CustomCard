@@ -1,3 +1,5 @@
+import { defineReadinessRegister } from "./readinessRegister.mjs";
+
 const requiredHostedApiReadinessIds = [
   "vercel-project-link",
   "serverless-api-route-contract",
@@ -247,44 +249,12 @@ export const hostedApiReadinessItems = [
   }
 ];
 
-export function summarizeHostedApiReadiness(items = hostedApiReadinessItems) {
-  return {
-    total: items.length,
-    repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
-    evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
-    protectionBlocked: items.filter((item) => item.status === "protection-blocked").length,
-    hostedDbRequired: items.filter((item) => item.requiresHostedDb).length,
-    publicRouteProofRequired: items.filter((item) => item.requiresPublicRouteProof).length,
-    hostedTokenVerificationRequired: items.filter((item) => item.requiresHostedTokenVerification).length,
-    backupPolicyRequired: items.filter((item) => item.requiresBackupPolicy).length,
-    repoLocalContractProofs: items.filter((item) => item.proofScope === "repo-local-contract").length,
-    liveHostedProofRequired: items.filter((item) => item.proofScope === "live-hosted-required").length,
-    protectionBlockedProofs: items.filter((item) => item.proofScope === "protection-blocked").length,
-    liveProofClaims: items.filter((item) => item.liveProofClaimed).length,
-    routeContracts: new Set(items.flatMap((item) => item.routeIds)).size,
-    requiredEnvVars: new Set(items.flatMap((item) => item.envVarNames)).size,
-    sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
-    envSyncProofs: items.filter((item) => item.environmentSynced).length,
-    hostedDbProofs: items.filter((item) => item.hostedDbConnected).length,
-    publicRouteProofs: items.filter((item) => item.publicRouteProofAttached).length,
-    hostedTokenVerificationProofs: items.filter((item) => item.hostedTokenVerificationAttached).length,
-    backupPolicies: items.filter((item) => item.backupPolicyAttached).length,
-    deploymentProtectionBypasses: items.filter((item) => item.deploymentProtectionBypassed).length,
-    externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
-    realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
-    liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
-    requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort(),
-    blockers: validateHostedApiReadiness(items)
-  };
-}
-
-export function validateHostedApiReadiness(items = hostedApiReadinessItems) {
-  const issues = [];
-  const itemsById = new Map();
-
-  for (const item of items) {
-    if (itemsById.has(item.id)) issues.push(`Duplicate hosted API readiness item: ${item.id}.`);
-    itemsById.set(item.id, item);
+const hostedApiReadinessRegister = defineReadinessRegister({
+  domainLabel: "hosted API",
+  items: hostedApiReadinessItems,
+  requiredIds: requiredHostedApiReadinessIds,
+  itemRules(item) {
+    const issues = [];
 
     if (!allowedStatuses.has(item.status)) issues.push(`Hosted API readiness item ${item.id} has unsupported status.`);
     if (!allowedProofScopes.has(item.proofScope)) issues.push(`Hosted API readiness item ${item.id} has unsupported proofScope.`);
@@ -308,57 +278,94 @@ export function validateHostedApiReadiness(items = hostedApiReadinessItems) {
     }
     if (item.realOrdersEnabled !== false) issues.push(`Hosted API readiness item ${item.id} must keep realOrdersEnabled=false.`);
     if (item.liveProviderCalls !== false) issues.push(`Hosted API readiness item ${item.id} must keep liveProviderCalls=false.`);
-  }
 
-  for (const requiredId of requiredHostedApiReadinessIds) {
-    if (!itemsById.has(requiredId)) issues.push(`Missing hosted API readiness item: ${requiredId}.`);
-  }
+    return issues;
+  },
+  crossRules(itemsById) {
+    const issues = [];
 
-  const envSync = itemsById.get("hosted-env-sync");
-  if (envSync) {
-    assertCoversHostedEnvVars(envSync, issues, "Hosted env sync");
-  }
+    const envSync = itemsById.get("hosted-env-sync");
+    if (envSync) {
+      assertCoversHostedEnvVars(envSync, issues, "Hosted env sync");
+    }
 
-  const publicProof = itemsById.get("public-db-backed-route-proof");
-  if (publicProof) {
-    assertCoversHostedRoutes(publicProof, issues, "Public DB-backed route proof");
-    assertCoversHostedEnvVars(publicProof, issues, "Public DB-backed route proof");
-    if (!publicProof.requiresHostedDb || !publicProof.requiresPublicRouteProof || !publicProof.requiresHostedTokenVerification) {
-      issues.push("Public DB-backed route proof must require hosted DB, public route, and hosted token evidence.");
+    const publicProof = itemsById.get("public-db-backed-route-proof");
+    if (publicProof) {
+      assertCoversHostedRoutes(publicProof, issues, "Public DB-backed route proof");
+      assertCoversHostedEnvVars(publicProof, issues, "Public DB-backed route proof");
+      if (!publicProof.requiresHostedDb || !publicProof.requiresPublicRouteProof || !publicProof.requiresHostedTokenVerification) {
+        issues.push("Public DB-backed route proof must require hosted DB, public route, and hosted token evidence.");
+      }
     }
-  }
 
-  const protection = itemsById.get("deployment-protection-boundary");
-  if (protection) {
-    if (protection.status !== "protection-blocked") {
-      issues.push("Deployment protection boundary must remain protection-blocked.");
+    const protection = itemsById.get("deployment-protection-boundary");
+    if (protection) {
+      if (protection.status !== "protection-blocked") {
+        issues.push("Deployment protection boundary must remain protection-blocked.");
+      }
+      if (!protection.requiresPublicRouteProof || protection.deploymentProtectionBypassed !== false) {
+        issues.push("Deployment protection boundary must require public route proof without claiming a bypass.");
+      }
+      if (protection.proofScope !== "protection-blocked") {
+        issues.push("Deployment protection boundary must keep proofScope=protection-blocked.");
+      }
     }
-    if (!protection.requiresPublicRouteProof || protection.deploymentProtectionBypassed !== false) {
-      issues.push("Deployment protection boundary must require public route proof without claiming a bypass.");
-    }
-    if (protection.proofScope !== "protection-blocked") {
-      issues.push("Deployment protection boundary must keep proofScope=protection-blocked.");
-    }
-  }
 
-  const hostedToken = itemsById.get("hosted-account-token-verification");
-  if (hostedToken) {
-    if (!hostedToken.requiresHostedTokenVerification || hostedToken.hostedTokenVerificationAttached !== false) {
-      issues.push("Hosted account-token verification must require hosted token evidence without claiming it.");
+    const hostedToken = itemsById.get("hosted-account-token-verification");
+    if (hostedToken) {
+      if (!hostedToken.requiresHostedTokenVerification || hostedToken.hostedTokenVerificationAttached !== false) {
+        issues.push("Hosted account-token verification must require hosted token evidence without claiming it.");
+      }
+      for (const route of ["/api/admin/readiness", "/api/customer/bootstrap"]) {
+        if (!hostedToken.routeIds.includes(route)) issues.push(`Hosted account-token verification must include route: ${route}.`);
+      }
     }
-    for (const route of ["/api/admin/readiness", "/api/customer/bootstrap"]) {
-      if (!hostedToken.routeIds.includes(route)) issues.push(`Hosted account-token verification must include route: ${route}.`);
-    }
-  }
 
-  const backup = itemsById.get("backup-recovery-policy");
-  if (backup) {
-    if (!backup.requiresBackupPolicy || backup.backupPolicyAttached !== false) {
-      issues.push("Backup and recovery policy must require backup evidence without claiming it.");
+    const backup = itemsById.get("backup-recovery-policy");
+    if (backup) {
+      if (!backup.requiresBackupPolicy || backup.backupPolicyAttached !== false) {
+        issues.push("Backup and recovery policy must require backup evidence without claiming it.");
+      }
     }
-  }
 
-  return issues;
+    return issues;
+  },
+  summarize(items) {
+    return {
+      repoLocalReady: items.filter((item) => item.status === "repo-local-ready").length,
+      evidenceMissing: items.filter((item) => item.status === "evidence-missing").length,
+      protectionBlocked: items.filter((item) => item.status === "protection-blocked").length,
+      hostedDbRequired: items.filter((item) => item.requiresHostedDb).length,
+      publicRouteProofRequired: items.filter((item) => item.requiresPublicRouteProof).length,
+      hostedTokenVerificationRequired: items.filter((item) => item.requiresHostedTokenVerification).length,
+      backupPolicyRequired: items.filter((item) => item.requiresBackupPolicy).length,
+      repoLocalContractProofs: items.filter((item) => item.proofScope === "repo-local-contract").length,
+      liveHostedProofRequired: items.filter((item) => item.proofScope === "live-hosted-required").length,
+      protectionBlockedProofs: items.filter((item) => item.proofScope === "protection-blocked").length,
+      liveProofClaims: items.filter((item) => item.liveProofClaimed).length,
+      routeContracts: new Set(items.flatMap((item) => item.routeIds)).size,
+      requiredEnvVars: new Set(items.flatMap((item) => item.envVarNames)).size,
+      sourceSignals: new Set(items.flatMap((item) => item.requiredSourceSignals)).size,
+      envSyncProofs: items.filter((item) => item.environmentSynced).length,
+      hostedDbProofs: items.filter((item) => item.hostedDbConnected).length,
+      publicRouteProofs: items.filter((item) => item.publicRouteProofAttached).length,
+      hostedTokenVerificationProofs: items.filter((item) => item.hostedTokenVerificationAttached).length,
+      backupPolicies: items.filter((item) => item.backupPolicyAttached).length,
+      deploymentProtectionBypasses: items.filter((item) => item.deploymentProtectionBypassed).length,
+      externalNetworkCalls: items.filter((item) => item.externalNetworkCalls).length,
+      realOrdersEnabled: items.filter((item) => item.realOrdersEnabled).length,
+      liveProviderCalls: items.filter((item) => item.liveProviderCalls).length,
+      requiredEvidence: Array.from(new Set(items.flatMap((item) => item.requiredEvidence))).sort()
+    };
+  }
+});
+
+export function summarizeHostedApiReadiness(items = hostedApiReadinessItems) {
+  return hostedApiReadinessRegister.summarize(items);
+}
+
+export function validateHostedApiReadiness(items = hostedApiReadinessItems) {
+  return hostedApiReadinessRegister.validate(items);
 }
 
 function assertCoversHostedEnvVars(item, issues, label) {
