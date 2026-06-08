@@ -6,6 +6,7 @@ const routes = [
   { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "calendar-connection-start", method: "POST", path: "/api/calendar/connections/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "retail-printer-operation-start", method: "POST", path: "/api/retail-printers/operations/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "retail-printer-coupon-portal-evidence", method: "POST", path: "/api/retail-printers/coupon-portal-evidence", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
   { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },

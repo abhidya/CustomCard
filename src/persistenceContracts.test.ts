@@ -57,7 +57,7 @@ describe("persistence contracts", () => {
     expect(persistenceTableContracts.find((contract) => contract.name === "render_packets")?.requiredColumns).toEqual(
       expect.arrayContaining(["artifact_manifest", "signed_url_expires_at", "external_share_approval_required", "real_orders_enabled"])
     );
-    expect(summary.routes.schemaBacked).toBe(15);
+    expect(summary.routes.schemaBacked).toBe(16);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-demo-reset")).toMatchObject({
       requiredRole: "admin",

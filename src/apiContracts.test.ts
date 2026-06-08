@@ -25,6 +25,7 @@ describe("api contracts", () => {
         "import-preview",
         "calendar-connection-start",
         "retail-printer-operation-start",
+        "retail-printer-coupon-portal-evidence",
         "card-projects",
         "relationship-memories",
         "render-packets",
@@ -44,6 +45,7 @@ describe("api contracts", () => {
     const importPreview = apiRouteContracts.find((route) => route.id === "import-preview");
     const calendarConnectionStart = apiRouteContracts.find((route) => route.id === "calendar-connection-start");
     const retailPrinterOperationStart = apiRouteContracts.find((route) => route.id === "retail-printer-operation-start");
+    const retailPrinterCouponPortalEvidence = apiRouteContracts.find((route) => route.id === "retail-printer-coupon-portal-evidence");
     const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
@@ -119,6 +121,35 @@ describe("api contracts", () => {
     );
     expect(retailPrinterOperationStart?.backedBy).toEqual(
       expect.arrayContaining(["buildRetailPrinterOperationStartPackets", "validateRetailPrinterOperationStartPackets"])
+    );
+    expect(retailPrinterCouponPortalEvidence).toMatchObject({
+      method: "POST",
+      path: "/api/retail-printers/coupon-portal-evidence",
+      audience: "admin",
+      auth: "admin-session",
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(retailPrinterCouponPortalEvidence?.requestSchema).toEqual(
+      expect.arrayContaining(["X-Idempotency-Key", "evidenceArtifact"])
+    );
+    expect(retailPrinterCouponPortalEvidence?.responseSchema).toEqual(
+      expect.arrayContaining([
+        "providerPortalEvidenceImport",
+        "acceptedEvidence",
+        "rejectedEvidence",
+        "pricingImpact",
+        "bestPriceDiscountingAllowed",
+        "externalNetworkCalls",
+        "realOrdersEnabled"
+      ])
+    );
+    expect(retailPrinterCouponPortalEvidence?.backedBy).toEqual(
+      expect.arrayContaining([
+        "buildRetailPrinterCouponPortalEvidenceResponse",
+        "buildRetailPrinterOperationStartPackets",
+        "buildPrinterPricingComparison"
+      ])
     );
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
@@ -793,6 +824,26 @@ describe("api contracts", () => {
         serverOwned: true,
         couponPortalApplicationRequired: true
       })
+    });
+    expect(resolveApiContractResponse("/api/retail-printers/coupon-portal-evidence")).toMatchObject({
+      status: "accepted",
+      route: "retail-printer-coupon-portal-evidence",
+      serverOwned: true,
+      clientMayPrepareProviderRequest: false,
+      providerPortalEvidenceImport: expect.objectContaining({
+        acceptedEvidenceCount: 1,
+        rejectedEvidenceCount: 0,
+        bestPriceDiscountingAllowed: true
+      }),
+      pricingImpact: expect.objectContaining({
+        sourcePriceObservationId: "walgreens-5x7-folded-card",
+        couponCode: "CRISPCARD",
+        subtotalBeforeCouponCents: 349,
+        discountCents: 209,
+        subtotalAfterCouponCents: 140
+      }),
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
     });
     expect(resolveApiContractResponse("/api/not-found")).toBeUndefined();
   });

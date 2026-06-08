@@ -5,11 +5,14 @@ const files = {
   pricingTest: "src/printerPricing.test.ts",
   app: "src/App.tsx",
   apiServer: "scripts/api-server.mjs",
+  apiRuntime: "scripts/api-runtime.mjs",
   couponCollector: "scripts/printer-coupon-collector.mjs",
   couponProviderFeeds: "src/printerCouponProviderFeeds.ts",
   couponPortalEvidence: "src/printerCouponPortalEvidence.ts",
+  couponPortalEvidenceData: "src/retailPrinterCouponPortalEvidenceData.mjs",
   couponBrowserEvidence: "src/printerCouponBrowserEvidence.ts",
   couponBrowserEvidenceTest: "src/printerCouponBrowserEvidence.test.ts",
+  apiContracts: "src/apiContracts.ts",
   browserEvidence: "docs/printer-coupon-browser-evidence.json",
   docs: "docs/printer-pricing-research.md",
   packageJson: "package.json",
@@ -127,6 +130,21 @@ const checks = [
     "refreshReport.totalObservations",
     "liveQuote: false"
   ]),
+  checkIncludes("surfaces", "server-owned-coupon-portal-evidence-api", `${contents.apiServer}\n${contents.apiRuntime}\n${contents.apiContracts}\n${contents.couponPortalEvidenceData}`, [
+    "retail-printer-coupon-portal-evidence",
+    "/api/retail-printers/coupon-portal-evidence",
+    "buildRetailPrinterCouponPortalEvidenceResponse",
+    "missingRetailPrinterCouponPortalEvidenceFields",
+    "buildRetailPrinterOperationStartPackets",
+    "same provider portal cart",
+    "clientMaySubmitCouponEvidence: false",
+    "clientMayPrepareProviderRequest: false",
+    "providerRequestPrepared: false",
+    "networkRequestPrepared: false",
+    "externalNetworkCalls: false",
+    "realOrdersEnabled: false",
+    "bestPriceDiscountingAllowed"
+  ]),
   checkIncludes("docs", "pricing-research-docs-current", contents.docs, [
     "Observed on: June 7, 2026.",
     "5x7 folded card upload your design",
@@ -150,9 +168,12 @@ const checks = [
     "Coupon discounts",
     "are applied only after",
     "$49.99 pre-tax base",
-    "coupon candidates require provider-portal application proof"
+    "coupon candidates require provider-portal application proof",
+    "/api/retail-printers/coupon-portal-evidence",
+    "admin-only coupon evidence intake",
+    "Clients do not choose coupon sources"
   ]),
-  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.couponPortalEvidence}\n${contents.couponBrowserEvidence}\n${contents.packageJson}`, [
+  checkIncludes("collection", "operator-coupon-collector", `${contents.couponCollector}\n${contents.couponProviderFeeds}\n${contents.couponPortalEvidence}\n${contents.couponPortalEvidenceData}\n${contents.couponBrowserEvidence}\n${contents.packageJson}`, [
     "printer-coupon-collector",
     "extractPrinterCouponOffers",
     "printEntrypointChecks",
@@ -175,6 +196,9 @@ const checks = [
     "importPrinterCouponPortalEvidenceArtifact",
     "validatePrinterCouponPortalEvidenceArtifact",
     "providerPortalEvidenceImport",
+    "buildRetailPrinterCouponPortalEvidenceResponse",
+    "validateRetailPrinterCouponPortalEvidenceArtifact",
+    "retailPrinterCouponPortalEvidenceRoute",
     "operatorPortalEvidenceLoaded",
     "acceptedEvidenceCount",
     "rejectedEvidenceCount",

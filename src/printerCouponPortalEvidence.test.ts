@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPrinterCouponApplication, printerCouponOffers, printerPriceCatalog } from "./printerPricing";
+import { buildPrinterCouponApplication, buildPrinterPricingComparison, printerCouponOffers, printerPriceCatalog } from "./printerPricing";
 import {
   importPrinterCouponPortalEvidenceArtifact,
   validatePrinterCouponPortalEvidenceArtifact,
@@ -91,6 +91,20 @@ describe("printer coupon portal evidence import", () => {
       status: "applied",
       discountCents: 209,
       discountedSubtotalCents: 140
+    });
+    expect(buildPrinterPricingComparison("walgreens", 1, printerPriceCatalog, reviewedAt, { couponOffers: result.offers })).toMatchObject({
+      selectedVendorOptions: [
+        expect.objectContaining({
+          effectiveSubtotalCents: 140,
+          couponApplication: expect.objectContaining({
+            status: "applied",
+            reason: "CRISPCARD applied in provider portal with matching cart terms"
+          })
+        })
+      ],
+      refreshReport: expect.objectContaining({
+        portalAppliedCouponOfferCount: 1
+      })
     });
   });
 

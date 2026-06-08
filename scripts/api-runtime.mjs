@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
+import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
 
@@ -484,6 +485,14 @@ const mutationBodyContracts = {
       if (!["walmart", "fedex", "cvs", "walgreens"].includes(vendorId)) missingFields.push("vendorId");
       if (!["fetch-price", "upload-image", "place-order"].includes(operation)) missingFields.push("operation");
       return missingFields;
+    }
+  },
+  "retail-printer-coupon-portal-evidence": {
+    requiredFields: ["evidenceArtifact"],
+    detail:
+      "Retail printer coupon portal evidence requires a server-validated evidence artifact captured from the same provider portal cart; clients may not choose coupon sources or compute coupon pricing.",
+    missingFields(body) {
+      return missingRetailPrinterCouponPortalEvidenceFields(body);
     }
   },
   "render-packets": {
@@ -1343,6 +1352,7 @@ function persistedTablesForRoute(route) {
   if (route.id === "card-projects") return ["auth_sessions", "idempotency_keys", "card_opportunities", "relationship_memories", "card_projects", "audit_log"];
   if (route.id === "import-preview") return ["auth_sessions", "idempotency_keys", "provider_connections", "imported_events", "card_opportunities", "audit_log"];
   if (route.id === "retail-printer-operation-start") return ["auth_sessions", "idempotency_keys", "audit_log"];
+  if (route.id === "retail-printer-coupon-portal-evidence") return ["auth_sessions", "idempotency_keys", "audit_log"];
   if (route.id === "admin-demo-reset") {
     return [
       "auth_sessions",

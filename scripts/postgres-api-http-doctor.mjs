@@ -33,6 +33,7 @@ const routePaths = {
   "import-preview": "/api/import-preview",
   "calendar-connection-start": "/api/calendar/connections/start",
   "retail-printer-operation-start": "/api/retail-printers/operations/start",
+  "retail-printer-coupon-portal-evidence": "/api/retail-printers/coupon-portal-evidence",
   "relationship-memories": "/api/memories/review",
   "card-projects": "/api/card-projects",
   "render-packets": "/api/render-packets",

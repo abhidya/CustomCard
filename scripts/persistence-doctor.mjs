@@ -317,9 +317,9 @@ const report = {
       auditLog: true
     },
     api: {
-      statefulRoutes: 15,
+      statefulRoutes: 16,
       adminPersistenceReadiness: true,
-      idempotentMutations: 9
+      idempotentMutations: 10
     },
     safety: {
       rawContentStored: false,

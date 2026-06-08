@@ -4,6 +4,42 @@ import { handleApiRequest } from "../scripts/api-server.mjs";
 
 const shellDoctorTimeoutMs = 15_000;
 
+function walgreensPortalEvidenceArtifact() {
+  return {
+    service: "customcard-printer-coupon-portal-evidence",
+    generatedAtIso: "2026-06-07T12:15:00.000Z",
+    operatorAction:
+      "Opened Walgreens Photo provider portal, selected the same 5x7 folded-card product and quantity, applied CRISPCARD, recorded subtotal evidence, and stopped before upload, payment, or order placement.",
+    blockedFields: ["payment submission", "live order placement", "card upload", "tax finalization", "pickup slot reservation"],
+    records: [
+      {
+        offerId: "walgreens-crispcard-cards-2026-06-13",
+        code: "CRISPCARD",
+        evidence: {
+          observedAtIso: "2026-06-07T12:15:00.000Z",
+          portalUrl: "https://photo.walgreens.com/store/cart",
+          providerPortal: true,
+          sourcePriceObservationId: "walgreens-5x7-folded-card",
+          subtotalBeforeCouponCents: 349,
+          discountCents: 209,
+          subtotalAfterCouponCents: 140,
+          cartTerms: {
+            vendorId: "walgreens",
+            productKind: "folded-card",
+            size: "5x7",
+            pricedQuantity: 1,
+            fulfillmentMode: "pickup",
+            accountState: "logged-in"
+          },
+          sameCartTermsProven: true,
+          noOrderPlaced: true,
+          blockedFields: ["payment submission", "live order placement", "tax", "pickup window"]
+        }
+      }
+    ]
+  };
+}
+
 describe("api server wrapper", () => {
   it("passes its doctor contract", () => {
     const output = execFileSync("node", ["scripts/api-server.mjs", "--doctor"], {
@@ -474,7 +510,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(17);
+    expect(report.readiness.routes.total).toBe(18);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -486,7 +522,7 @@ describe("api server wrapper", () => {
     });
     expect(report.readiness.persistence).toMatchObject({
       tables: 18,
-      schemaBackedRoutes: 15,
+      schemaBackedRoutes: 16,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
@@ -566,7 +602,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 17, admin: 5, idempotentMutations: 9 });
+      expect(readiness.routes).toMatchObject({ total: 18, admin: 6, idempotentMutations: 10 });
       expect(readiness.providers).toMatchObject({ total: 121, readyLocal: 18, credentialGated: 88, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 121,
@@ -756,7 +792,7 @@ describe("api server wrapper", () => {
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
         tables: 18,
-        schemaBackedRoutes: 15,
+        schemaBackedRoutes: 16,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -1426,6 +1462,81 @@ describe("api server wrapper", () => {
         bestAvailablePriceRequiresCouponPortalEvidence: true
       });
 
+      const wrongRoleCouponEvidence = await postJson(
+        port,
+        "/api/retail-printers/coupon-portal-evidence",
+        { evidenceArtifact: walgreensPortalEvidenceArtifact() },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "coupon-portal-evidence-wrong-role"
+        }
+      );
+      expect(wrongRoleCouponEvidence.status).toBe(403);
+      expect(await wrongRoleCouponEvidence.json()).toMatchObject({
+        status: "wrong-role",
+        requiredAuth: "admin-session"
+      });
+
+      const missingCouponEvidence = await postJson(
+        port,
+        "/api/retail-printers/coupon-portal-evidence",
+        {},
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "coupon-portal-evidence-missing"
+        }
+      );
+      expect(missingCouponEvidence.status).toBe(400);
+      expect(await missingCouponEvidence.json()).toMatchObject({
+        status: "invalid-retail-printer-coupon-portal-evidence-payload",
+        route: "retail-printer-coupon-portal-evidence",
+        requiredFields: expect.arrayContaining(["evidenceArtifact"]),
+        rawContentStored: false
+      });
+
+      const couponEvidence = await postJson(
+        port,
+        "/api/retail-printers/coupon-portal-evidence",
+        { evidenceArtifact: walgreensPortalEvidenceArtifact() },
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "coupon-portal-evidence-valid"
+        }
+      );
+      expect(couponEvidence.status).toBe(202);
+      expect(await couponEvidence.json()).toMatchObject({
+        status: "accepted",
+        route: "retail-printer-coupon-portal-evidence",
+        runtimeMode: "memory",
+        authenticatedUserId: "admin-demo",
+        serverOwned: true,
+        clientMayPrepareProviderRequest: false,
+        providerRequestPrepared: false,
+        networkRequestPrepared: false,
+        externalNetworkCalls: false,
+        realOrdersEnabled: false,
+        providerPortalEvidenceImport: expect.objectContaining({
+          acceptedEvidenceCount: 1,
+          rejectedEvidenceCount: 0,
+          bestPriceDiscountingAllowed: true
+        }),
+        pricingImpact: expect.objectContaining({
+          sourcePriceObservationId: "walgreens-5x7-folded-card",
+          couponCode: "CRISPCARD",
+          subtotalBeforeCouponCents: 349,
+          discountCents: 209,
+          subtotalAfterCouponCents: 140
+        }),
+        repository: {
+          tables: ["auth_sessions", "idempotency_keys", "audit_log"],
+          runtimeMode: "contract",
+          persisted: false,
+          providerPayloadPrepared: false,
+          realOrdersEnabled: false
+        },
+        persistedTables: expect.arrayContaining(["idempotency_keys", "audit_log"])
+      });
+
       const missingAuth = await fetch(`http://127.0.0.1:${port}/api/render-packets`, { method: "POST" });
       expect(missingAuth.status).toBe(401);
 
@@ -1860,8 +1971,8 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 8,
-        auditRecords: 8,
+        idempotencyRecords: 9,
+        auditRecords: 9,
         queuedJobs: 2,
         providerConnectionRecords: 2,
         importedEventRecords: 2,

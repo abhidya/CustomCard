@@ -380,6 +380,10 @@ export interface PrinterPricingEstimateOptions {
   couponOffers?: PrinterCouponOffer[];
 }
 
+export interface PrinterPricingComparisonOptions {
+  couponOffers?: PrinterCouponOffer[];
+}
+
 export interface PrinterCouponApplicationOptions {
   pricedQuantity?: number;
 }
@@ -1156,9 +1160,11 @@ export function buildPrinterPricingComparison(
   selectedVendorId: VendorId,
   quantity = 1,
   catalog: PrinterPriceObservation[] = printerPriceCatalog,
-  now = new Date()
+  now = new Date(),
+  options: PrinterPricingComparisonOptions = {}
 ): PrinterPricingComparison {
-  const estimates = catalog.map((observation) => estimatePrinterSubtotal(observation, quantity, { now }));
+  const couponOffers = options.couponOffers ?? printerCouponOffers;
+  const estimates = catalog.map((observation) => estimatePrinterSubtotal(observation, quantity, { now, couponOffers }));
   const rankedKnownPrices = estimates.slice().sort((first, second) =>
     first.effectiveSubtotalCents - second.effectiveSubtotalCents ||
     speedRank(first.observation.speed) - speedRank(second.observation.speed) ||
@@ -1182,7 +1188,7 @@ export function buildPrinterPricingComparison(
     manualConfirmationVendors: Array.from(vendorIds).filter((vendorId) =>
       vendorId === "local-print-shop" || catalog.some((observation) => observation.vendorId === vendorId)
     ),
-    refreshReport: buildPrinterPricingRefreshReport(catalog, now),
+    refreshReport: buildPrinterPricingRefreshReport(catalog, now, { couponOffers }),
     couponPolicy: printerCouponPolicy,
     disclaimer:
       "Public printer prices are review-only observations, not live quotes. Apply available coupons only after the same cart is opened and verified, then confirm tax, pickup window, and stock before upload.",
@@ -1192,8 +1198,10 @@ export function buildPrinterPricingComparison(
 
 export function buildPrinterPricingRefreshReport(
   catalog: PrinterPriceObservation[] = printerPriceCatalog,
-  now = new Date()
+  now = new Date(),
+  options: PrinterPricingComparisonOptions = {}
 ): PrinterPricingRefreshReport {
+  const couponOffers = options.couponOffers ?? printerCouponOffers;
   const sourceMap = new Map<string, { source: PrinterPricingSource; observationIds: string[] }>();
   for (const observation of catalog) {
     const key = observation.source.url;
@@ -1213,9 +1221,9 @@ export function buildPrinterPricingRefreshReport(
     ...staleSources.map((source) => `${source.sourceLabel} source is ${source.ageDays} days old; refresh before showing as current.`),
     ...futureDatedSources.map((source) => `${source.sourceLabel} source observation date is in the future.`)
   ];
-  const activeCouponOffers = printerCouponOffers.filter((offer) => isPrinterCouponActive(offer, now));
+  const activeCouponOffers = couponOffers.filter((offer) => isPrinterCouponActive(offer, now));
   const portalAppliedCouponOffers = activeCouponOffers.filter((offer) => offer.evidenceStatus === "provider-portal-applied");
-  const couponPortalApplicationPackets = buildPrinterCouponPortalApplicationPackets({ catalog, offers: printerCouponOffers, now });
+  const couponPortalApplicationPackets = buildPrinterCouponPortalApplicationPackets({ catalog, offers: couponOffers, now });
 
   return {
     generatedAtIso: now.toISOString(),
@@ -1239,7 +1247,7 @@ export function buildPrinterPricingRefreshReport(
     futureDatedSources,
     collectionRules: printerPricingCollectionRules,
     couponSources: Object.values(printerCouponSources),
-    couponOffers: printerCouponOffers,
+    couponOffers,
     couponPortalApplicationPackets,
     couponCollectionPriority: printerCouponCollectionPriority,
     couponPolicy: printerCouponPolicy,

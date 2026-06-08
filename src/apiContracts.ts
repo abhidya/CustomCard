@@ -102,6 +102,11 @@ import {
   type RetailPrinterOperationStartPacket
 } from "./retailPrinterOperationStart";
 import {
+  buildRetailPrinterCouponPortalEvidenceResponse,
+  buildSampleRetailPrinterCouponPortalEvidencePayload,
+  retailPrinterCouponPortalEvidenceRoute
+} from "./retailPrinterCouponPortalEvidenceData.mjs";
+import {
   buildAdminPanelModel,
   buildCustomerChatTranscript,
   buildCustomerPanelModel,
@@ -518,6 +523,37 @@ export const apiRouteContracts: ApiRouteContract[] = [
     backedBy: ["buildRetailPrinterOperationStartPackets", "validateRetailPrinterOperationStartPackets"]
   },
   {
+    id: "retail-printer-coupon-portal-evidence",
+    method: "POST",
+    path: retailPrinterCouponPortalEvidenceRoute,
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["X-Idempotency-Key", "evidenceArtifact", "portalApplicationPacketId"],
+    responseSchema: [
+      "providerPortalEvidenceImport",
+      "acceptedEvidence",
+      "rejectedEvidence",
+      "pricingImpact",
+      "rankedPricingImpacts",
+      "bestPriceDiscountingAllowed",
+      "serverOwned",
+      "clientMayPrepareProviderRequest",
+      "externalNetworkCalls",
+      "realOrdersEnabled"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin/server-owned coupon portal evidence intake only; no client-side coupon source selection, provider request payload, upload, payment, or live order request is accepted.",
+    backedBy: [
+      "buildRetailPrinterCouponPortalEvidenceResponse",
+      "buildRetailPrinterOperationStartPackets",
+      "buildPrinterPricingComparison"
+    ]
+  },
+  {
     id: "card-projects",
     method: "POST",
     path: "/api/card-projects",
@@ -754,6 +790,9 @@ export function resolveApiContractResponse(path: string) {
   if (path === retailPrinterOperationStartRoute) {
     return buildRetailPrinterOperationStartResponse({ vendorId: "walgreens", operation: "fetch-price" });
   }
+  if (path === retailPrinterCouponPortalEvidenceRoute) {
+    return buildRetailPrinterCouponPortalEvidenceResponse(buildSampleRetailPrinterCouponPortalEvidencePayload());
+  }
 
   return undefined;
 }
@@ -803,6 +842,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     "import-preview",
     "calendar-connection-start",
     "retail-printer-operation-start",
+    "retail-printer-coupon-portal-evidence",
     "card-projects",
     "relationship-memories",
     "render-packets",

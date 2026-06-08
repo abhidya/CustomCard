@@ -302,6 +302,10 @@ the correct operator workflow without owning coupon-source logic. The operator
 collector also emits `activeAtCollection`,
 `bestPriceEligibleAtCollection`, and `bestPriceBlocker` for each scraped source
 offer so source discovery and best-price eligibility cannot be confused.
+The server-owned coupon evidence route consumes those packet IDs, offer IDs,
+source price observation IDs, expected subtotal math, provider portal hosts, and
+cart terms when validating whether collected Walgreens/CVS portal proof may
+affect ranking.
 
 Portal application evidence uses this artifact shape:
 
@@ -340,6 +344,16 @@ Portal application evidence uses this artifact shape:
 }
 ```
 
+The admin-only coupon evidence intake is
+`POST /api/retail-printers/coupon-portal-evidence`. It accepts the same
+artifact shape from an operator or server collector, validates each record
+against the registered provider-portal application packet, and returns accepted
+or rejected pricing impact without preparing a provider request, upload,
+payment, or order. Clients do not choose coupon sources, scrape retailer pages,
+submit coupon evidence, or compute best-price discounts; they only receive
+server-owned pricing output after the admin/server route accepts same-cart
+provider-portal proof.
+
 | Vendor | Coupon source | Observed card offer | Runtime treatment |
 | --- | --- | --- | --- |
 | Walgreens Photo | [Walgreens Photo deals](https://photo.walgreens.com/store/deals?tab=photo_downsplash_top) plus the [5x7 folded card design-detail print link](https://photo.walgreens.com/store/design-detail?category=StoreCat_24955&dgId=40e943c647fe44c5867d74bb91e5feca&designId=0c158c44e2f34d9fabc9e1b3ada2eaa6&sku=CommerceProduct_33272&ptype=cards&pcat=design_your_own_56061_1525293477_walgreens_us&scat=&filters=&searchPhrase=&designName=Upload%20Your%20Design&pcatName=Cards&withSku=N&searchPhrase=&dgCatId=design_your_own_56061_1525293477_walgreens_us#/dgview?productCategory=Card%20%26%20Stationery) | `CRISPCARD`, 60% off all photo cards and premium stationery, listed with June 13, 2026 expiration; the print link contains the expected code, `CommerceProduct_33272`, and the $3.49 public price signal | Stored as active source-listed evidence on June 7, 2026; browser artifact confirms product/price visible and code in page HTML, but visible code proof is still required before treating the print link as visible-code proof |
@@ -365,6 +379,10 @@ available until the vendor checkout confirms the discount on the same product,
 quantity, store, pickup or shipping path, and customer account state. This is
 an evidence contract only; the repo still does not automate a live checkout or
 place orders.
+The customer bootstrap exposes the admin/operator coupon evidence route as route
+metadata only, with `clientMaySubmitCouponEvidence: false`, so mobile and web
+clients know the server has a proof intake without owning collection or pricing
+decisions.
 
 ## Product Boundary
 
