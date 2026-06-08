@@ -194,9 +194,11 @@ describe("mobile customer experience contract", () => {
     expect(mobileFulfillmentRecommendations).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          kind: "cheapest-known-price",
-          label: "Cheapest known price",
+          kind: "lowest-current-estimate",
+          label: "Lowest current estimate",
           vendorName: "Walmart Photo",
+          priceProofStatus: "public-estimate-only",
+          priceProofLabel: "Estimate only",
           liveQuote: false,
           liveOrder: false
         }),
@@ -278,7 +280,9 @@ describe("mobile customer experience contract", () => {
     expect(customerCopy).toContain("Google Calendar is not connected yet");
     expect(customerCopy).toContain("Print options");
     expect(customerCopy).toContain("Download print package");
-    expect(customerCopy).toContain("Discounts are checked at checkout");
+    expect(customerCopy).toContain("same-cart coupon proof");
+    expect(customerCopy).toContain("Public prices and source-listed coupons are only estimates");
+    expect(customerCopy).not.toContain("cheapest known price");
     expect(customerCopy).not.toMatch(/\b(oauth[- ]gated|credential[- ]gated|repo-local-contract|handoff|fulfillment|vendor|adapter|mock|dummy|placeholder)\b/i);
   });
 

@@ -89,7 +89,8 @@ environment configuration instead of static placeholders.
   exists, Apple Calendar as manual ICS export, event review, next-card
   opportunities, a sendable deterministic local chat session with no live
   model call, card proof path, and customer fulfillment recommendations for
-  cheapest known price, fastest pickup, and cheapest shipped option.
+  the lowest current estimate, fastest pickup, and cheapest shipped option,
+  with visible estimate-only price proof until same-cart coupon proof exists.
 - Admin panel with provider coverage, env gates, provider cost/rate governance,
   CRM and workflow integration readiness, production launch gates, capacity
   profiles, external audit readiness, AI provider readiness, observability

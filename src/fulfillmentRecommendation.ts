@@ -1,7 +1,8 @@
-import type { PrinterPriceEstimate, PrinterPricingComparison, PrinterPricingSpeed } from "./printerPricing";
+import type { PrinterCouponApplication, PrinterPriceEstimate, PrinterPricingComparison, PrinterPricingSpeed } from "./printerPricing";
 
-export type FulfillmentRecommendationKind = "cheapest-known-price" | "fastest-pickup" | "cheapest-shipped";
+export type FulfillmentRecommendationKind = "lowest-current-estimate" | "fastest-pickup" | "cheapest-shipped";
 export type FulfillmentRecommendationMode = "review-only-public-price" | "manual-confirmation-required";
+export type FulfillmentRecommendationPriceProofStatus = "public-estimate-only" | "same-cart-coupon-verified";
 
 export interface FulfillmentRecommendation {
   kind: FulfillmentRecommendationKind;
@@ -13,6 +14,9 @@ export interface FulfillmentRecommendation {
   etaLabel: string;
   pricedQuantity: number;
   pickupEligible: boolean;
+  subtotalIncludesCoupon: boolean;
+  priceProofStatus: FulfillmentRecommendationPriceProofStatus;
+  priceProofLabel: string;
   sourceMode: FulfillmentRecommendationMode;
   liveQuote: false;
   directOrderEnabled: false;
@@ -31,7 +35,7 @@ export interface FulfillmentRecommendationSet {
 }
 
 const requiredKinds: FulfillmentRecommendationKind[] = [
-  "cheapest-known-price",
+  "lowest-current-estimate",
   "fastest-pickup",
   "cheapest-shipped"
 ];
@@ -44,10 +48,10 @@ export function buildFulfillmentRecommendations(comparison: PrinterPricingCompar
   const cheapestShipped = comparison.rankedKnownPrices.find((estimate) => !estimate.observation.pickupEligible);
   const recommendations = [
     buildRecommendation(
-      "cheapest-known-price",
-      "Cheapest known price",
+      "lowest-current-estimate",
+      "Lowest current estimate",
       cheapestKnown,
-      "Effective price includes only discounts confirmed at checkout; tax, stock, and checkout still need review."
+      "Public prices and source-listed coupons are only estimates until the print shop accepts them in the same cart."
     ),
     buildRecommendation(
       "fastest-pickup",
@@ -101,6 +105,15 @@ export function validateFulfillmentRecommendations(recommendations: FulfillmentR
     if (!recommendation.confirmationCopy.trim()) {
       issues.push(`Fulfillment recommendation ${recommendation.kind} must include confirmation copy.`);
     }
+    if (recommendation.label === "Cheapest known price") {
+      issues.push(`Fulfillment recommendation ${recommendation.kind} must not claim cheapest known price.`);
+    }
+    if (recommendation.priceProofStatus === "same-cart-coupon-verified" && !recommendation.subtotalIncludesCoupon) {
+      issues.push(`Fulfillment recommendation ${recommendation.kind} must include a coupon subtotal before claiming same-cart coupon proof.`);
+    }
+    if (recommendation.priceProofStatus === "public-estimate-only" && recommendation.subtotalIncludesCoupon) {
+      issues.push(`Fulfillment recommendation ${recommendation.kind} must not hide same-cart coupon proof as a public estimate.`);
+    }
     if (!recommendation.blocker.trim()) {
       issues.push(`Fulfillment recommendation ${recommendation.kind} must explain live fulfillment blockers.`);
     }
@@ -130,6 +143,9 @@ function buildRecommendation(
       etaLabel: "manual confirmation",
       pricedQuantity: 1,
       pickupEligible: false,
+      subtotalIncludesCoupon: false,
+      priceProofStatus: "public-estimate-only",
+      priceProofLabel: "Manual quote",
       sourceMode: "manual-confirmation-required",
       liveQuote: false,
       directOrderEnabled: false,
@@ -138,6 +154,8 @@ function buildRecommendation(
       blocker: "No public price observation is available for this recommendation."
     };
   }
+
+  const priceProof = priceProofForCouponApplication(estimate.couponApplication);
 
   return {
     kind,
@@ -149,6 +167,9 @@ function buildRecommendation(
     etaLabel: speedLabel(estimate.observation.speed, estimate.observation.pickupEligible),
     pricedQuantity: estimate.pricedQuantity,
     pickupEligible: estimate.observation.pickupEligible,
+    subtotalIncludesCoupon: estimate.subtotalIncludesCoupon,
+    priceProofStatus: priceProof.status,
+    priceProofLabel: priceProof.label,
     sourceMode: "review-only-public-price",
     liveQuote: false,
     directOrderEnabled: false,
@@ -156,6 +177,16 @@ function buildRecommendation(
     confirmationCopy,
     blocker: "Live tax, stock, pickup slot, shipping fee, payment, and direct order submission still need review."
   };
+}
+
+function priceProofForCouponApplication(
+  couponApplication: PrinterCouponApplication
+): { status: FulfillmentRecommendationPriceProofStatus; label: string } {
+  if (couponApplication.status === "applied") {
+    return { status: "same-cart-coupon-verified", label: "Coupon verified in cart" };
+  }
+
+  return { status: "public-estimate-only", label: "Estimate only" };
 }
 
 function comparePickupEstimate(first: PrinterPriceEstimate, second: PrinterPriceEstimate): number {

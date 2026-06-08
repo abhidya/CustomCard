@@ -74,7 +74,8 @@
   path, Google Calendar OAuth-gated readiness, Apple/iCloud manual export
   readiness, next-card opportunities, sendable deterministic local chat session,
   card proof path, locale readiness, and fulfillment recommendations for
-  cheapest known price, fastest pickup candidate, and cheapest shipped option.
+  the lowest current estimate, fastest pickup candidate, and cheapest shipped
+  option, with estimate-only price proof until same-cart coupon proof exists.
 - Admin panel: provider coverage metrics, no-network runtime readiness, required
   env vars, localization readiness, production launch gates, gated provider
   queue, cloud runtime adapters, capacity profiles, payment readiness, mobile

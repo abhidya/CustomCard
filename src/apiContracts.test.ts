@@ -453,7 +453,7 @@ describe("api contracts", () => {
       ])
     );
     expect(payload.mobile.fulfillmentRecommendations.map((recommendation) => recommendation.kind)).toEqual(
-      expect.arrayContaining(["cheapest-known-price", "fastest-pickup", "cheapest-shipped"])
+      expect.arrayContaining(["lowest-current-estimate", "fastest-pickup", "cheapest-shipped"])
     );
     expect(payload.customerChat).toMatchObject({
       mode: "local-deterministic",
@@ -475,7 +475,14 @@ describe("api contracts", () => {
     });
     expect(payload.fulfillmentRecommendations.recommendations).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "cheapest-known-price", vendorName: "Walmart Photo", subtotalLabel: "$0.56" }),
+        expect.objectContaining({
+          kind: "lowest-current-estimate",
+          label: "Lowest current estimate",
+          vendorName: "Walmart Photo",
+          subtotalLabel: "$0.56",
+          priceProofStatus: "public-estimate-only",
+          priceProofLabel: "Estimate only"
+        }),
         expect.objectContaining({ kind: "fastest-pickup", vendorName: "Walmart Photo", etaLabel: "same-day pickup candidate" }),
         expect.objectContaining({ kind: "cheapest-shipped", vendorName: "FedEx Office", subtotalLabel: "$22.99" })
       ])
@@ -790,7 +797,7 @@ describe("api contracts", () => {
       },
       fulfillmentRecommendations: {
         recommendations: expect.arrayContaining([
-          expect.objectContaining({ kind: "cheapest-known-price", liveQuote: false, directOrderEnabled: false })
+          expect.objectContaining({ kind: "lowest-current-estimate", liveQuote: false, directOrderEnabled: false })
         ])
       }
     });

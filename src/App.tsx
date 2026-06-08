@@ -919,7 +919,7 @@ function CustomerPanelView({
   const recommendationByKind = new Map(
     fulfillmentRecommendationSet.recommendations.map((recommendation) => [recommendation.kind, recommendation])
   );
-  const cheapestOption = recommendationByKind.get("cheapest-known-price");
+  const lowestEstimate = recommendationByKind.get("lowest-current-estimate");
   const fastestPickup = recommendationByKind.get("fastest-pickup");
   const cheapestShipped = recommendationByKind.get("cheapest-shipped");
   const hasWorkspace = Boolean(workspace);
@@ -1109,21 +1109,18 @@ function CustomerPanelView({
           {customerExperience.fulfillment.showOptions ? (
             <div className="fulfillmentOptionGrid" aria-label="Customer print recommendation">
               <FulfillmentOption
-                recommendation={cheapestOption}
+                recommendation={lowestEstimate}
                 icon={CreditCard}
-                label="Cheapest known price"
                 tag="Cost"
               />
               <FulfillmentOption
                 recommendation={fastestPickup}
                 icon={Store}
-                label="Fastest pickup candidate"
                 tag="Pickup"
               />
               <FulfillmentOption
                 recommendation={cheapestShipped}
                 icon={PackageCheck}
-                label="Cheapest shipped option"
                 tag="Ship"
               />
             </div>
@@ -1257,12 +1254,10 @@ function CustomerPanelView({
 function FulfillmentOption({
   recommendation,
   icon: Icon,
-  label,
   tag
 }: {
   recommendation: FulfillmentRecommendation | undefined;
   icon: LucideIcon;
-  label: string;
   tag: string;
 }) {
   return (
@@ -1271,7 +1266,7 @@ function FulfillmentOption({
         <Icon size={18} />
         <span>{tag}</span>
       </div>
-      <strong>{label}</strong>
+      <strong>{recommendation?.label ?? "Manual quote required"}</strong>
       {recommendation ? (
         <>
           <span>
@@ -1279,7 +1274,7 @@ function FulfillmentOption({
           </span>
           <small>
             {recommendation.etaLabel} / {recommendation.pricedQuantity} card
-            {recommendation.pricedQuantity === 1 ? "" : "s"} priced
+            {recommendation.pricedQuantity === 1 ? "" : "s"} priced / {recommendation.priceProofLabel}
           </small>
           <em>{recommendation.confirmationCopy}</em>
         </>

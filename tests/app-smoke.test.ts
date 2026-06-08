@@ -617,7 +617,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.workspaceSupportingActions.join(" ")).toContain("Add memory");
     expect(result.workspaceSupportingPrimaryActions).toBe(0);
     expect(result.reviewedCustomerText).toContain("Best available options");
-    expect(result.reviewedCustomerText).toContain("Cheapest known price");
+    expect(result.reviewedCustomerText).toContain("Lowest current estimate");
+    expect(result.reviewedCustomerText).toContain("Estimate only");
+    expect(result.reviewedCustomerText).not.toContain("Cheapest known price");
     expect(result.reviewedCustomerText).toContain("Fastest pickup candidate");
     expect(result.reviewedCustomerText).toContain("Cheapest shipped option");
     expect(result.reviewedCustomerText).toContain("Compare print options");

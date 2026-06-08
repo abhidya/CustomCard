@@ -87,8 +87,11 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   and 30-day freshness reporting; live quotes, taxes, stock, and pickup windows
   remain manual-confirmation work.
 - Customer fulfillment recommendation: the web customer panel uses the public
-  pricing comparison to show cheapest known price, fastest pickup candidate, and
-  cheapest shipped option without surfacing retail-printer adapter internals.
+  pricing comparison to show the lowest current estimate, fastest pickup
+  candidate, and cheapest shipped option without surfacing retail-printer
+  adapter internals. Recommendation packets carry `priceProofStatus` and
+  `priceProofLabel` so customer clients can distinguish estimate-only prices
+  from same-cart coupon-verified subtotals.
   Closest-store ETA, live tax, stock, delivery fee, payment, and direct order
   submission remain gated behind live quote/order/payment adapters.
 - Retail fulfillment readiness: `src/retailFulfillmentReadiness.ts` and

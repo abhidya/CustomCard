@@ -24,7 +24,7 @@ export type MobileMutationType = "approve-card" | "update-tone" | "snooze-card" 
 export type MobileAccountProvider = "Google" | "Apple";
 export type MobileImportActionKind = "calendar" | "email" | "invite";
 export type MobileCalendarSourceMode = "oauth-readiness" | "manual-export" | "contract-gated" | "local-paste";
-export type MobileFulfillmentRecommendationKind = "cheapest-known-price" | "fastest-pickup" | "cheapest-shipped";
+export type MobileFulfillmentRecommendationKind = "lowest-current-estimate" | "fastest-pickup" | "cheapest-shipped";
 export type MobileCustomerFlowStage =
   | "account-import"
   | "event-review"
@@ -143,6 +143,9 @@ export interface MobileFulfillmentRecommendation {
   totalCents: number;
   etaLabel: string;
   confirmationCopy: string;
+  subtotalIncludesCoupon: boolean;
+  priceProofStatus: "public-estimate-only" | "same-cart-coupon-verified";
+  priceProofLabel: string;
   liveQuote: false;
   liveOrder: false;
   customerVisible: boolean;
@@ -371,7 +374,7 @@ export const mobileExperienceSections: MobileExperienceSection[] = [
   {
     id: "pricing-preview",
     title: "Print options",
-    detail: "The app compares cheapest known price, fastest pickup, and cheapest shipped options before checkout.",
+    detail: "The app compares current estimates, pickup speed, shipping, and same-cart coupon proof before checkout.",
     status: "Manual",
     customerVisible: true
   },
@@ -613,13 +616,16 @@ export const mobilePricingPreviews: MobilePricingPreview[] = [
 
 export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[] = [
   {
-    kind: "cheapest-known-price",
-    label: "Cheapest known price",
+    kind: "lowest-current-estimate",
+    label: "Lowest current estimate",
     vendorName: "Walmart Photo",
     totalCents: 56,
     etaLabel: "same-day pickup candidate",
     confirmationCopy:
-      "Discounts are checked at checkout; tax, stock, and pickup still need review.",
+      "Public prices and source-listed coupons are only estimates until the print shop accepts them in the same cart.",
+    subtotalIncludesCoupon: false,
+    priceProofStatus: "public-estimate-only",
+    priceProofLabel: "Estimate only",
     liveQuote: false,
     liveOrder: false,
     customerVisible: true
@@ -631,6 +637,9 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     totalCents: 56,
     etaLabel: "same-day pickup candidate",
     confirmationCopy: "Closest store ETA needs live location and inventory confirmation.",
+    subtotalIncludesCoupon: false,
+    priceProofStatus: "public-estimate-only",
+    priceProofLabel: "Estimate only",
     liveQuote: false,
     liveOrder: false,
     customerVisible: true
@@ -642,6 +651,9 @@ export const mobileFulfillmentRecommendations: MobileFulfillmentRecommendation[]
     totalCents: 2299,
     etaLabel: "ships in days",
     confirmationCopy: "Shipping dates and delivery fees require checkout confirmation.",
+    subtotalIncludesCoupon: false,
+    priceProofStatus: "public-estimate-only",
+    priceProofLabel: "Estimate only",
     liveQuote: false,
     liveOrder: false,
     customerVisible: true
@@ -1220,7 +1232,7 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
 
   const fulfillmentKinds = new Set(model.fulfillmentRecommendations.map((recommendation) => recommendation.kind));
-  for (const kind of ["cheapest-known-price", "fastest-pickup", "cheapest-shipped"] as const) {
+  for (const kind of ["lowest-current-estimate", "fastest-pickup", "cheapest-shipped"] as const) {
     if (!fulfillmentKinds.has(kind)) issues.push(`Missing mobile fulfillment recommendation: ${kind}`);
   }
   if (model.fulfillmentRecommendations.some((recommendation) => !recommendation.customerVisible)) {
@@ -1231,6 +1243,12 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   }
   if (model.fulfillmentRecommendations.some((recommendation) => recommendation.totalCents <= 0)) {
     issues.push("Mobile fulfillment recommendations must expose positive estimated totals.");
+  }
+  if (model.fulfillmentRecommendations.some((recommendation) => recommendation.label === "Cheapest known price")) {
+    issues.push("Mobile fulfillment recommendations must not claim cheapest known price.");
+  }
+  if (model.fulfillmentRecommendations.some((recommendation) => !recommendation.priceProofLabel.trim())) {
+    issues.push("Mobile fulfillment recommendations must expose customer-facing price proof state.");
   }
 
   if (model.printProofChecks.length < 4) {

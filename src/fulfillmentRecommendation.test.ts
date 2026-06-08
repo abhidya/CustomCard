@@ -9,7 +9,7 @@ import { buildPrinterPricingComparison, printerPriceCatalog } from "./printerPri
 const reviewedAt = new Date("2026-06-07T12:00:00.000Z");
 
 describe("fulfillment recommendations", () => {
-  it("builds customer-safe cheapest, pickup, and shipped recommendations from public pricing", () => {
+  it("builds customer-safe estimate, pickup, and shipped recommendations from public pricing", () => {
     const comparison = buildPrinterPricingComparison("walgreens", 1, printerPriceCatalog, reviewedAt);
     const recommendationSet = buildFulfillmentRecommendations(comparison);
 
@@ -20,21 +20,25 @@ describe("fulfillment recommendations", () => {
       blockers: []
     });
     expect(recommendationSet.recommendations.map((recommendation) => recommendation.kind)).toEqual([
-      "cheapest-known-price",
+      "lowest-current-estimate",
       "fastest-pickup",
       "cheapest-shipped"
     ]);
     expect(recommendationSet.recommendations[0]).toMatchObject({
-      label: "Cheapest known price",
+      label: "Lowest current estimate",
       vendorName: "Walmart Photo",
       subtotalLabel: "$0.56",
       etaLabel: "same-day pickup candidate",
+      subtotalIncludesCoupon: false,
+      priceProofStatus: "public-estimate-only",
+      priceProofLabel: "Estimate only",
       sourceMode: "review-only-public-price",
       liveQuote: false,
       directOrderEnabled: false,
       requiresManualConfirmation: true,
-      confirmationCopy: expect.stringContaining("discounts confirmed at checkout")
+      confirmationCopy: expect.stringContaining("print shop accepts them in the same cart")
     });
+    expect(recommendationSet.recommendations.map((recommendation) => recommendation.label)).not.toContain("Cheapest known price");
     expect(recommendationSet.recommendations[0].confirmationCopy).not.toMatch(/provider-portal|gated/i);
     expect(recommendationSet.recommendations[1]).toMatchObject({
       label: "Fastest pickup candidate",
@@ -58,6 +62,7 @@ describe("fulfillment recommendations", () => {
     const recommendations = buildFulfillmentRecommendations(buildPrinterPricingComparison("walgreens")).recommendations;
     const unsafe: FulfillmentRecommendation = {
       ...recommendations[0],
+      label: "Cheapest known price",
       subtotalCents: 0,
       liveQuote: true as never,
       directOrderEnabled: true as never,
@@ -69,14 +74,15 @@ describe("fulfillment recommendations", () => {
 
     expect(validateFulfillmentRecommendations([unsafe, recommendations[0]])).toEqual(
       expect.arrayContaining([
-        "Duplicate fulfillment recommendation: cheapest-known-price.",
-        "Fulfillment recommendation cheapest-known-price must expose a positive subtotal.",
-        "Fulfillment recommendation cheapest-known-price must not claim a live quote.",
-        "Fulfillment recommendation cheapest-known-price must not enable direct ordering.",
-        "Fulfillment recommendation cheapest-known-price must require manual confirmation.",
-        "Fulfillment recommendation cheapest-known-price must stay review-only.",
-        "Fulfillment recommendation cheapest-known-price must include confirmation copy.",
-        "Fulfillment recommendation cheapest-known-price must explain live fulfillment blockers.",
+        "Duplicate fulfillment recommendation: lowest-current-estimate.",
+        "Fulfillment recommendation lowest-current-estimate must expose a positive subtotal.",
+        "Fulfillment recommendation lowest-current-estimate must not claim a live quote.",
+        "Fulfillment recommendation lowest-current-estimate must not enable direct ordering.",
+        "Fulfillment recommendation lowest-current-estimate must require manual confirmation.",
+        "Fulfillment recommendation lowest-current-estimate must stay review-only.",
+        "Fulfillment recommendation lowest-current-estimate must include confirmation copy.",
+        "Fulfillment recommendation lowest-current-estimate must not claim cheapest known price.",
+        "Fulfillment recommendation lowest-current-estimate must explain live fulfillment blockers.",
         "Missing fulfillment recommendation: fastest-pickup.",
         "Missing fulfillment recommendation: cheapest-shipped."
       ])
