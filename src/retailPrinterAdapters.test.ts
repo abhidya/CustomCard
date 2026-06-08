@@ -258,6 +258,12 @@ describe("retail printer adapters", () => {
     expect(getRetailPrinterAdapterForProvider("walmart-live-print")?.productUrl).toBe(expectedRetailSources.walmart);
   });
 
+  it("fails closed instead of silently selecting another operation for invalid retail plans", () => {
+    expect(() => buildRetailPrinterAdapterPlan("walgreens", "checkout-now" as RetailPrinterOperationKind)).toThrow(
+      "Unknown retail printer operation for walgreens: checkout-now"
+    );
+  });
+
   it("exposes executable no-network adapters for price, upload, and order attempts", () => {
     const adapter = createRetailPrinterOperationAdapter("fedex");
     const price = adapter.fetchPrice({

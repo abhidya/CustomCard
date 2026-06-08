@@ -189,7 +189,8 @@ export function buildRetailPrinterAdapterPlan(
   selectedOperation: RetailPrinterOperationKind = "place-order"
 ): RetailPrinterAdapterPlan {
   const adapter = getRetailPrinterAdapter(vendorId);
-  const operation = adapter.operations.find((candidate) => candidate.kind === selectedOperation) ?? adapter.operations[0];
+  const operation = adapter.operations.find((candidate) => candidate.kind === selectedOperation);
+  if (!operation) throw new Error(`Unknown retail printer operation for ${vendorId}: ${selectedOperation}`);
 
   return {
     vendorId: adapter.vendorId,
