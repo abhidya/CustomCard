@@ -138,7 +138,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         };
 
         await clickByText("Create local workspace");
-        await clickByText("Opportunities");
+        await clickByText("Events");
         const importBox = document.querySelector(".importBox");
         if (!importBox) throw new Error("Missing import box");
         const setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;

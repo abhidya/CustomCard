@@ -160,7 +160,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: "customer", label: "Your cards", icon: UserRound },
   { id: "mobile", label: "Mobile app", icon: Smartphone },
-  { id: "opportunities", label: "Opportunities", icon: Calendar },
+  { id: "opportunities", label: "Events", icon: Calendar },
   { id: "studio", label: "Card studio", icon: WandSparkles },
   { id: "memory", label: "Memory", icon: Heart },
   { id: "handoff", label: "Print options", icon: Printer },
@@ -572,11 +572,11 @@ function MobileAppPreviewView() {
           <h2>Mobile app</h2>
           <p>Same customer screen model used by the iOS and Android shell.</p>
         </div>
-        <div className="mobilePreviewMetrics">
-          <Metric label="Sections" value={`${summary.sectionCount}`} />
-          <Metric label="Rows" value={`${summary.rowCount}`} />
-          <Metric label="Approval slots" value={`${summary.primaryActionCount}`} />
-          <Metric label="Orders" value="Confirm" />
+        <div className="mobileCapabilityChips">
+          <span className="mobileCapChip">Card creation</span>
+          <span className="mobileCapChip">Print options</span>
+          <span className="mobileCapChip">Order tracking</span>
+          <span className="mobileCapChip">No account needed</span>
         </div>
       </div>
 
@@ -629,6 +629,7 @@ function MobileAppPreviewView() {
               ))}
             </section>
           </div>
+          <div className="mobileHomeIndicator" aria-hidden="true" />
         </article>
 
         <aside className="mobileCustomerPanel" aria-label="Mobile customer summary">
@@ -987,9 +988,15 @@ function CustomerPanelView({
             ))}
           </div>
           <div className="chatLog">
+            {chatSession.messages.length === 0 && (
+              <div className="chatBubble chatEmptyState">
+                <strong>{customerExperience.chatTitle}</strong>
+                <span>Ask about copy ideas, memories to include, print options, or anything about your card.</span>
+              </div>
+            )}
             {chatSession.messages.map((message, index) => (
               <div className={`chatBubble ${message.role}`} key={`${message.role}-${index}`}>
-                <strong>{message.role === "customer" ? "Customer" : "Assistant"}</strong>
+                <strong>{message.role === "customer" ? "You" : customerExperience.chatTitle}</strong>
                 <span>{message.text}</span>
               </div>
             ))}

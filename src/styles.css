@@ -3041,3 +3041,81 @@ a:focus-visible {
   outline: 2px solid #258477;
   outline-offset: 2px;
 }
+
+/* ─── Mobile capability chips ──────────────────────────────────────────────── */
+
+.mobileCapabilityChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mobileCapChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border: 1px solid #b8ddd3;
+  border-radius: 999px;
+  color: #1a3d35;
+  background: #eef8f4;
+  font-size: 0.81rem;
+  font-weight: 840;
+}
+
+/* ─── Mobile home indicator ─────────────────────────────────────────────────── */
+
+.mobileHomeIndicator {
+  width: 44px;
+  height: 4px;
+  margin: 10px auto 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* ─── Flow step progress dots ───────────────────────────────────────────────── */
+
+.customerFlowStep {
+  position: relative;
+  padding-top: 22px;
+}
+
+.customerFlowStep::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c0cfd2;
+}
+
+.customerFlowStep.complete::before {
+  background: #258477;
+}
+
+.customerFlowStep.current::before {
+  background: #172927;
+  box-shadow: 0 0 0 3px rgba(23, 41, 39, 0.18);
+}
+
+/* ─── Chat empty state ──────────────────────────────────────────────────────── */
+
+.chatBubble.chatEmptyState {
+  border: 1px dashed rgba(237, 245, 242, 0.22);
+  background: rgba(231, 239, 235, 0.35);
+  color: #b0c7be;
+}
+
+.chatBubble.chatEmptyState strong {
+  color: #c4d8d0;
+}
+
+/* ─── mobilePreviewMetrics removed — replaced by .mobileCapabilityChips ────── */
+
+.mobilePreviewMetrics {
+  display: none;
+}
