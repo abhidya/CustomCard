@@ -3119,3 +3119,41 @@ a:focus-visible {
 .mobilePreviewMetrics {
   display: none;
 }
+
+/* ─── FulfillmentOption pending state ──────────────────────────────────────── */
+
+.fulfillmentPendingNote {
+  font-size: 0.82rem;
+  color: #7a9a93;
+  font-style: italic;
+}
+
+/* ─── confirmationNotice info icon ─────────────────────────────────────────── */
+
+.confirmationNotice svg {
+  color: #258477;
+  flex-shrink: 0;
+}
+
+/* ─── MemoryView empty state ────────────────────────────────────────────────── */
+
+.memoryEmptyState {
+  padding: 18px 14px;
+  border: 1px dashed #c8d8d4;
+  border-radius: 8px;
+  background: #f6faf8;
+  text-align: center;
+}
+
+.memoryEmptyState p {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  color: #4a6e67;
+  font-weight: 600;
+}
+
+.memoryEmptyState small {
+  font-size: 0.78rem;
+  color: #8aaba4;
+  line-height: 1.45;
+}

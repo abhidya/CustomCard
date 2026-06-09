@@ -22,6 +22,7 @@ import {
   Settings,
   ShieldCheck,
   Smartphone,
+  Info,
   Store,
   Search,
   Trash2,
@@ -969,7 +970,7 @@ function CustomerPanelView({
           )}
 
           <div className="confirmationNotice">
-            <XCircle size={16} />
+            <Info size={16} />
             <span>{customerExperience.fulfillment.disclaimer}</span>
           </div>
         </article>
@@ -1041,7 +1042,7 @@ function FulfillmentOption({
         <Icon size={18} />
         <span>{tag}</span>
       </div>
-      <strong>{recommendation?.label ?? "Manual quote required"}</strong>
+      <strong>{recommendation?.label ?? "Price estimate pending"}</strong>
       {recommendation ? (
         <>
           <span>
@@ -1055,8 +1056,7 @@ function FulfillmentOption({
         </>
       ) : (
         <>
-          <span>Manual quote required</span>
-          <small>No public price observation is ready for this path.</small>
+          <span className="fulfillmentPendingNote">Prices load once a store link is confirmed</span>
         </>
       )}
     </div>
@@ -1373,6 +1373,12 @@ function MemoryView({
       </div>
 
       <div className="memoryList">
+        {memories.length === 0 && (
+          <div className="memoryEmptyState">
+            <p>No memories saved yet.</p>
+            <small>Add a memory above to personalise card copy — names, relationships, or meaningful moments.</small>
+          </div>
+        )}
         {memories.map((memory) => (
           <article className="memoryItem" key={memory.id}>
             <div>
