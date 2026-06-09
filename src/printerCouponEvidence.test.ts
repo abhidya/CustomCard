@@ -5,6 +5,7 @@ import {
   validatePrinterCouponBrowserEvidenceArtifact,
   validatePrinterCouponPortalEvidenceArtifact
 } from "./printerCouponEvidence";
+import { printerCouponCollectionTargets } from "./printerPricing";
 
 describe("printerCouponEvidence coordinator", () => {
   it("importCatalogBackedCouponPortalEvidence returns not-provided when artifact is null", () => {
@@ -36,19 +37,7 @@ describe("printerCouponEvidence coordinator", () => {
   });
 
   it("summarizePrinterCouponBrowserEvidence returns null when evidence is null", () => {
-    const target = {
-      id: "walgreens-5x7",
-      vendorId: "walgreens" as const,
-      role: "print-entrypoint" as const,
-      url: "https://www.walgreens.com/photo/",
-      expectedOfferCodes: ["SAVE20"],
-      verificationSignals: ["save", "20%"],
-      collectionMode: "rendered-browser-read" as const,
-      collectionMethod: "rendered-browser-read" as const,
-      browserRenderProofRequired: true,
-      readiness: "ready-public-page" as const,
-      vendorIds: ["walgreens" as const]
-    };
+    const target = printerCouponCollectionTargets[0];
     expect(summarizePrinterCouponBrowserEvidence(null, target)).toBeNull();
   });
 });
