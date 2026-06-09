@@ -943,15 +943,7 @@ function CustomerPanelView({
             <div>
               <strong>{customerExperience.event.title}</strong>
               <span>{customerExperience.event.dateLabel}</span>
-              <small>{customerExperience.event.recommendedPath}</small>
             </div>
-          </div>
-
-          <div className="metricStrip">
-            <Metric label="Confidence" value={customerExperience.event.confidenceLabel} />
-            <Metric label="Panels" value={customerExperience.event.panelLabel} />
-            <Metric label="Memory" value={customerExperience.event.memoryLabel} />
-            <Metric label="Checkout" value={customerExperience.event.checkoutLabel} />
           </div>
           <div className="eventLocaleRow">
             <p className="eyebrow">Language readiness</p>
@@ -1406,8 +1398,8 @@ function MemoryView({
         {memories.map((memory) => (
           <article className="memoryItem" key={memory.id}>
             <div>
-              <span className={memory.sensitivity === "review" ? "statePill hold" : "statePill ready"}>
-                {memory.sensitivity}
+              <span className={memory.sensitivity === "review" ? "statePill hold" : memory.sensitivity === "sensitive" ? "statePill hold" : "statePill ready"}>
+                {memory.sensitivity === "review" ? "Pending review" : memory.sensitivity === "sensitive" ? "Handle with care" : "Approved"}
               </span>
               <h3>{memory.recipient}</h3>
               <p>{memory.note}</p>
@@ -1528,11 +1520,6 @@ function HandoffView({
               <h3>{printPackage.manifest.passed ? "Ready to download" : "Needs fixes"}</h3>
             </div>
           </div>
-          <div className="packageMetricGrid">
-            <Metric label="Files" value={`${printPackage.files.length}`} />
-            <Metric label="PDF" value={pdfFile ? `${Math.ceil(pdfFile.byteLength / 1024)} KB` : "Missing"} />
-            <Metric label="Manifest" value={manifestFile ? "Ready" : "Missing"} />
-          </div>
           <small>
             Includes four SVG panels, a combined 5x7 PDF proof, and a checksum manifest. You upload these yourself;
             CustomCard does not charge or order.
@@ -1561,8 +1548,8 @@ function HandoffView({
           ))}
         </ol>
 
-        <div className="blockedBox">
-          <XCircle size={18} />
+        <div className="blockedBox blockedBoxInfo">
+          <Info size={18} />
           <div>
             <strong>Checkout happens outside CustomCard</strong>
             {handoff.disabledReasons.map((reason) => (
