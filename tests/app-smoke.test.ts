@@ -155,7 +155,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         ].join("\\n"));
         importBox.dispatchEvent(new Event("input", { bubbles: true }));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Parse pasted invite/ICS");
+        await clickByText("Scan for occasion");
         const opportunityText = document.body.textContent;
         await clickByText("Generate card");
         const studioText = document.body.textContent;

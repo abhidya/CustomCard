@@ -1127,30 +1127,23 @@ function OpportunitiesView({
       <div className="toolPanel">
         <div className="sectionHeader">
           <div>
-            <p className="eyebrow">Intake</p>
-            <h2>Opportunity scan</h2>
+            <p className="eyebrow">Occasion</p>
+            <h2>Find an occasion</h2>
           </div>
           <button className="iconTextButton" type="button" onClick={onScan}>
             <RefreshCw size={16} />
-            Parse pasted invite/ICS
+            Scan for occasion
           </button>
         </div>
 
         <label className="fieldStack">
-          <span>Invite or ICS text</span>
+          <span>Paste an invite or calendar event</span>
           <textarea
             className="importBox"
             value={inviteText}
             onChange={(event) => onInviteText(event.target.value)}
           />
         </label>
-
-        <div className="signalGrid">
-          <Metric label="Status" value={scanStatus} />
-          <Metric label="Confidence" value={`${opportunity.confidence}%`} />
-          <Metric label="Date" value={opportunity.dateLabel} />
-          <Metric label="Path" value={opportunity.recommendedPath} />
-        </div>
 
         {warnings.length > 0 && (
           <div className="warningList">
@@ -1172,7 +1165,6 @@ function OpportunitiesView({
           <span className="urgency">{opportunity.urgency}</span>
         </div>
         <h2>{opportunity.title}</h2>
-        <p>{opportunity.recommendedPath}</p>
 
         <div className="evidenceList">
           {opportunity.evidence.slice(0, 5).map((item) => (
