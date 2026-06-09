@@ -130,7 +130,7 @@ import {
 } from "./fulfillmentRecommendation";
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
 
-type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
+import { useAppState, initialViewFromLocation, type ViewId } from "./appStateOrchestrator";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
 
@@ -167,20 +167,6 @@ const navItems: NavItem[] = [
   { id: "adapters", label: "Connections", icon: Settings }
 ];
 
-const viewIds = new Set<ViewId>(navItems.map((item) => item.id));
-
-function isViewId(value: string | null | undefined): value is ViewId {
-  return Boolean(value && viewIds.has(value as ViewId));
-}
-
-function initialViewFromLocation(): ViewId {
-  if (typeof window === "undefined") return "customer";
-  const requestedView = new URLSearchParams(window.location.search).get("view");
-  if (isViewId(requestedView)) return requestedView;
-  const hashView = window.location.hash.replace(/^#\/?/, "");
-  if (isViewId(hashView)) return hashView;
-  return "customer";
-}
 
 function updateViewRoute(view: ViewId) {
   if (typeof window === "undefined") return;
@@ -191,92 +177,42 @@ function updateViewRoute(view: ViewId) {
 }
 
 function App() {
-  const [activeView, setActiveView] = useState<ViewId>(() => initialViewFromLocation());
-  const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => loadWorkspace());
-  const [authForm, setAuthForm] = useState(reviewerInitialAuthForm);
-  const [inviteText, setInviteText] = useState("");
-  const [scanStatus, setScanStatus] = useState(reviewerInitialScanStatus);
-  const [opportunityDecision, setOpportunityDecision] = useState<OpportunityDecision>("pending");
-  const [vendorId, setVendorId] = useState<VendorId>("walgreens");
-  const [localeCode, setLocaleCode] = useState<SupportedLocaleCode>("en-US");
-  const [memoryForm, setMemoryForm] = useState({ recipient: "", note: "" });
-  const [exportStatus, setExportStatus] = useState(reviewerInitialExportStatus);
-  const [customerChatInput, setCustomerChatInput] = useState("");
-  const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
-
-  const memories = workspace?.memories ?? reviewerEmptyMemories;
-  const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
-  const opportunity = useMemo(() => buildOpportunity(signal, memories, reviewerReferenceDate), [signal, memories]);
-  const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
-    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], reviewerReferenceDate))
-  );
-
-  useEffect(() => {
-    setDraftInput((current) => ({
-      ...getDefaultDraftInput(workspace, opportunity),
-      tone: current.tone,
-      style: current.style,
-      language: current.language
-    }));
-  }, [workspace, opportunity]);
-
-  const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
-  const validation = useMemo(() => validateCardDraft(draft), [draft]);
-  const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
-  const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
-  const fulfillmentRecommendationSet = useMemo(
-    () => buildFulfillmentRecommendations(pricingComparison),
-    [pricingComparison]
-  );
-  const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
-  const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
-  const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
-  const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
-  const approvedMemoryNotes = useMemo(() => memories.filter((memory) => memory.approved).map((memory) => memory.note), [memories]);
-  const fulfillmentContext = useMemo(
-    () =>
-      fulfillmentRecommendationSet.recommendations
-        .map((recommendation) => `${recommendation.label}: ${recommendation.subtotalLabel} at ${recommendation.vendorName}`)
-        .join("; "),
-    [fulfillmentRecommendationSet]
-  );
-  const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
-  const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
-  const readiness = useMemo(() => buildReadinessSummary(), []);
-  const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
-  const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
-  const seededCustomerChat = useMemo(
-    () =>
-      buildCustomerChatSession({
-        recipientName: opportunity.recipient,
-        customerMessage: "",
-        approvedMemoryNotes,
-        locale: selectedLocale.locale,
-        fulfillmentContext
-      }),
-    [approvedMemoryNotes, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
-  );
-  const customerChatSession = useMemo(
-    () =>
-      buildCustomerChatSession(
-        {
-          recipientName: opportunity.recipient,
-          customerMessage: "",
-          approvedMemoryNotes,
-          locale: selectedLocale.locale,
-          fulfillmentContext
-        },
-        customerChatMessages ?? seededCustomerChat.messages
-      ),
-    [
-      approvedMemoryNotes,
-      customerChatMessages,
-      fulfillmentContext,
-      opportunity.recipient,
-      seededCustomerChat.messages,
-      selectedLocale.locale
-    ]
-  );
+  const {
+    activeView, setActiveView,
+    workspace, setWorkspace,
+    authForm, setAuthForm,
+    inviteText, setInviteText,
+    scanStatus, setScanStatus,
+    opportunityDecision, setOpportunityDecision,
+    vendorId, setVendorId,
+    localeCode, setLocaleCode,
+    memoryForm, setMemoryForm,
+    exportStatus, setExportStatus,
+    customerChatInput, setCustomerChatInput,
+    customerChatMessages, setCustomerChatMessages,
+    draftInput, setDraftInput,
+    memories,
+    signal,
+    pricingComparison,
+    opportunity,
+    draft,
+    validation,
+    handoff,
+    fulfillmentRecommendationSet,
+    printPackage,
+    adminPanelModel,
+    localizationSummary,
+    selectedLocale,
+    approvedMemoryNotes,
+    fulfillmentContext,
+    providerGovernance,
+    productionReadiness,
+    readiness,
+    calendarConnectionStartPackets,
+    runtimeReadiness,
+    seededCustomerChat,
+    customerChatSession
+  } = useAppState();
   const opsView = activeView === "admin" || activeView === "adapters";
 
   function openView(view: ViewId) {
@@ -285,20 +221,6 @@ function App() {
       updateViewRoute(view);
     }
   }
-
-  useEffect(() => {
-    setCustomerChatMessages(undefined);
-  }, [localeCode, opportunity.id]);
-
-  useEffect(() => {
-    const syncView = () => setActiveView(initialViewFromLocation());
-    window.addEventListener("popstate", syncView);
-    window.addEventListener("hashchange", syncView);
-    return () => {
-      window.removeEventListener("popstate", syncView);
-      window.removeEventListener("hashchange", syncView);
-    };
-  }, []);
 
   function saveWorkspace(nextWorkspace: LocalWorkspace | undefined) {
     setWorkspace(nextWorkspace);
@@ -2868,14 +2790,6 @@ function decisionLabel(decision: OpportunityDecision): string {
   return labels[decision];
 }
 
-function buildRuntimeReadinessMap(): Map<string, RuntimeReadiness> {
-  return new Map(
-    providerCatalog.map((adapter) => {
-      return [adapter.id, getProviderRuntimeReadiness(adapter.id)];
-    })
-  );
-}
-
 function summarizeRuntimeReadiness(readinessMap: Map<string, RuntimeReadiness>) {
   const readiness = Array.from(readinessMap.values());
 
@@ -2968,16 +2882,6 @@ function formatOption(value: string): string {
     .split("-")
     .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
     .join(" ");
-}
-
-function loadWorkspace(): LocalWorkspace | undefined {
-  try {
-    const raw = localStorage.getItem(reviewerWorkspaceKey);
-    if (!raw) return undefined;
-    return JSON.parse(raw) as LocalWorkspace;
-  } catch {
-    return undefined;
-  }
 }
 
 export default App;
