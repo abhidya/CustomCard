@@ -826,12 +826,6 @@ function CustomerPanelView({
   validation: CardValidation;
   workspace: LocalWorkspace | undefined;
 }) {
-  const recommendationByKind = new Map(
-    fulfillmentRecommendationSet.recommendations.map((recommendation) => [recommendation.kind, recommendation])
-  );
-  const lowestEstimate = recommendationByKind.get("lowest-current-estimate");
-  const fastestPickup = recommendationByKind.get("fastest-pickup");
-  const cheapestShipped = recommendationByKind.get("cheapest-shipped");
   const hasWorkspace = Boolean(workspace);
   const customerExperience = buildCustomerWebExperienceFromState({
     workspace,
@@ -842,7 +836,8 @@ function CustomerPanelView({
     localizationSummary,
     selectedLocale,
     productionReadiness,
-    panelCount
+    panelCount,
+    fulfillmentRecommendationSet
   });
   const customerActionIcons: Record<CustomerWebActionId, LucideIcon> = {
     "create-workspace": KeyRound,
@@ -1008,17 +1003,17 @@ function CustomerPanelView({
           {customerExperience.fulfillment.showOptions ? (
             <div className="fulfillmentOptionGrid" aria-label="Customer print recommendation">
               <FulfillmentOption
-                recommendation={lowestEstimate}
+                recommendation={customerExperience.fulfillment.lowestEstimate}
                 icon={CreditCard}
                 tag="Cost"
               />
               <FulfillmentOption
-                recommendation={fastestPickup}
+                recommendation={customerExperience.fulfillment.fastestPickup}
                 icon={Store}
                 tag="Pickup"
               />
               <FulfillmentOption
-                recommendation={cheapestShipped}
+                recommendation={customerExperience.fulfillment.cheapestShipped}
                 icon={PackageCheck}
                 tag="Ship"
               />
@@ -1035,7 +1030,7 @@ function CustomerPanelView({
 
           <div className="confirmationNotice">
             <XCircle size={16} />
-            <span>{fulfillmentRecommendationSet.disclaimer}</span>
+            <span>{customerExperience.fulfillment.disclaimer}</span>
           </div>
         </article>
 

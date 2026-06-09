@@ -219,7 +219,8 @@ describe("buildCustomerWebExperienceFromState", () => {
     localizationSummary: { supportedLocales: 4 },
     selectedLocale: { label: "English (US)", requiresRtlLayout: false, reviewState: "ready", cardLanguage: "en-US" },
     productionReadiness: { total: 8, evidenceMissing: 3 },
-    panelCount: 4
+    panelCount: 4,
+    fulfillmentRecommendationSet: { recommendations: [], blockers: [], liveQuote: false, directOrderEnabled: false, disclaimer: "Prices are public estimates.", quantity: 1 }
   } as unknown as CustomerWebExperienceState;
 
   it("composes a valid customer web experience from app state without rendering React", () => {
@@ -237,5 +238,44 @@ describe("buildCustomerWebExperienceFromState", () => {
     } as unknown as CustomerWebExperienceState);
 
     expect(collectCustomerWebCopy(withWorkspace)).not.toEqual(collectCustomerWebCopy(withoutWorkspace));
+  });
+
+  it("projects fulfillmentRecommendationSet recommendations into fulfillment summary", () => {
+    const recommendation = {
+      kind: "lowest-current-estimate" as const,
+      label: "Best Price",
+      vendorName: "Walgreens",
+      productName: "5x7 Prints",
+      subtotalCents: 599,
+      subtotalLabel: "$5.99",
+      etaLabel: "Ready today",
+      pricedQuantity: 20,
+      pickupEligible: true,
+      subtotalIncludesCoupon: false,
+      priceProofStatus: "public-estimate-only" as const,
+      priceProofLabel: "Public estimate",
+      sourceMode: "review-only-public-price" as const,
+      liveQuote: false as const,
+      directOrderEnabled: false as const,
+      requiresManualConfirmation: true as const,
+      confirmationCopy: "Confirm before checkout",
+      blocker: ""
+    };
+    const stateWithRecommendations = {
+      ...state,
+      fulfillmentRecommendationSet: {
+        quantity: 20,
+        recommendations: [recommendation],
+        blockers: [],
+        liveQuote: false as const,
+        directOrderEnabled: false as const,
+        disclaimer: "Estimate only."
+      }
+    } as unknown as CustomerWebExperienceState;
+    const experience = buildCustomerWebExperienceFromState(stateWithRecommendations);
+    expect(experience.fulfillment.lowestEstimate?.kind).toBe("lowest-current-estimate");
+    expect(experience.fulfillment.fastestPickup).toBeUndefined();
+    expect(experience.fulfillment.cheapestShipped).toBeUndefined();
+    expect(experience.fulfillment.disclaimer).toBe("Estimate only.");
   });
 });

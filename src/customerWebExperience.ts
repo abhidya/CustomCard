@@ -1,4 +1,5 @@
 import type { CardOpportunity, CardValidation, LocalWorkspace, OpportunityDecision, VendorHandoff } from "./freeMvp";
+import type { FulfillmentRecommendation, FulfillmentRecommendationSet } from "./fulfillmentRecommendation";
 import type { LocalizationReadinessSummary, SupportedLocale } from "./localization";
 import type { ProductionReadinessSummary } from "./productionReadiness";
 
@@ -67,6 +68,10 @@ export interface CustomerWebFulfillmentSummary {
   holdTitle: string;
   holdDescription: string;
   showOptions: boolean;
+  lowestEstimate: FulfillmentRecommendation | undefined;
+  fastestPickup: FulfillmentRecommendation | undefined;
+  cheapestShipped: FulfillmentRecommendation | undefined;
+  disclaimer: string;
 }
 
 export interface CustomerWebExperience {
@@ -194,7 +199,11 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
       statusLabel: proofApproved ? "Ready to compare" : "Waiting for proof approval",
       holdTitle: "Print options unlock after the proof passes review.",
       holdDescription: "Final price, coupons, tax, and pickup time are confirmed before checkout.",
-      showOptions: proofApproved
+      showOptions: proofApproved,
+      lowestEstimate: undefined,
+      fastestPickup: undefined,
+      cheapestShipped: undefined,
+      disclaimer: ""
     },
     panelNote:
       stage === "setup"
@@ -242,6 +251,7 @@ export interface CustomerWebExperienceState {
   selectedLocale: SupportedLocale;
   productionReadiness: ProductionReadinessSummary;
   panelCount: number;
+  fulfillmentRecommendationSet: FulfillmentRecommendationSet;
 }
 
 /**
@@ -252,7 +262,7 @@ export interface CustomerWebExperienceState {
  * call a single function instead of owning the mapping.
  */
 export function buildCustomerWebExperienceFromState(state: CustomerWebExperienceState): CustomerWebExperience {
-  return buildCustomerWebExperience({
+  const base = buildCustomerWebExperience({
     hasWorkspace: Boolean(state.workspace),
     cardReviewStarted: state.opportunityDecision === "accepted",
     proofApproved: state.validation.passed,
@@ -273,6 +283,19 @@ export function buildCustomerWebExperienceFromState(state: CustomerWebExperience
     productionGateCount: state.productionReadiness.total,
     productionEvidenceMissing: state.productionReadiness.evidenceMissing
   });
+  const recommendationByKind = new Map(
+    state.fulfillmentRecommendationSet.recommendations.map((r) => [r.kind, r])
+  );
+  return {
+    ...base,
+    fulfillment: {
+      ...base.fulfillment,
+      lowestEstimate: recommendationByKind.get("lowest-current-estimate"),
+      fastestPickup: recommendationByKind.get("fastest-pickup"),
+      cheapestShipped: recommendationByKind.get("cheapest-shipped"),
+      disclaimer: state.fulfillmentRecommendationSet.disclaimer
+    }
+  };
 }
 
 export function validateCustomerWebExperience(experience: CustomerWebExperience): string[] {
