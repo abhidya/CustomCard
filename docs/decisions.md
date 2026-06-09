@@ -145,3 +145,77 @@ pass — it would leave an inconsistent half-split for low incremental value. Re
 as a dedicated effort when provider-add frequency makes the two-file edit cost
 dominant; do it per-capability behind the existing handler table, with each adapter
 module owning both its catalog metadata and its request builder.
+
+## D011: Collapse Readiness Fan-Out Behind ReadinessSummary Seam (C2)
+
+Decision: create `readinessSummary.ts` as a single-import facade for all 12 readiness
+domains. `App.tsx` calls `buildReadinessSummary()` once; `AdminPanelView` receives
+one `readiness: ReadinessSummary` prop instead of 29 individual readiness params.
+
+Reason: the 12 individual readiness imports in `App.tsx` had grown into a shallow
+fan-out — each domain followed the same `getXxxReadinessItems()` / `getXxxReadinessSummary()`
+pattern with no domain logic differentiating their call sites. Aggregating them behind
+one seam concentrates the "which domains exist" knowledge in one file, makes adding
+a 13th domain a single-file change, and cuts `AdminPanelView`'s prop count from 29
+to 6. The deletion test: removing the facade causes complexity to reappear across all
+12 call sites.
+
+## D012: Name The Hidden Coupon Evidence Coordinator (C3)
+
+Decision: create `printerCouponEvidence.ts` as the canonical import point for the
+coupon evidence subsystem (portal evidence, browser evidence, provider feeds). Add
+`importCatalogBackedCouponPortalEvidence()` to expose the catalog injection point
+explicitly.
+
+Reason: the three evidence-source modules (`printerCouponPortalEvidence`,
+`printerCouponBrowserEvidence`, `printerCouponProviderFeeds`) were logically a
+subsystem but had no named seam. Callers imported from whichever module happened to
+export the symbol they needed, so the subsystem's entry point was invisible. Naming
+it concentrates subsystem knowledge and makes the catalog binding explicit rather
+than buried inside the portal-evidence module.
+
+## D013: Split OnboardingCalendar Type Layer From Logic (C5)
+
+Decision: extract the 12 type aliases and 11 interfaces from `onboardingCalendar.ts`
+(~220 lines) into `onboardingCalendarTypes.ts`. `onboardingCalendar.ts` re-exports
+all types for backward compatibility.
+
+Reason: callers that only need the data shapes (e.g., test fixtures, API contract
+checkers) were forced to import from an 800-line module containing unrelated function
+bodies and data arrays. The type layer has zero runtime weight; separating it lets
+type-only consumers avoid the full module load and makes the interface inspectable
+without navigating implementation.
+
+Note: the initial commit missed `import type { ... }` alongside `export type { ... }`,
+so `onboardingCalendar.ts` function bodies lost visibility of their own types. Fixed
+in the next commit.
+
+## D014: Absorb Fulfillment Recommendation Derivation Into CustomerWebExperience (C4)
+
+Decision: add `fulfillmentRecommendationSet: FulfillmentRecommendationSet` to
+`CustomerWebExperienceState`. `buildCustomerWebExperienceFromState` computes the
+`recommendationByKind` Map and populates `lowestEstimate`, `fastestPickup`,
+`cheapestShipped`, and `disclaimer` onto `CustomerWebFulfillmentSummary`.
+
+Reason: `CustomerPanelView` was doing 6 lines of Map construction and property
+extraction that belonged in the module's composition layer. The view's job is to
+render data, not derive it. Moving the computation into `buildCustomerWebExperienceFromState`
+concentrates fulfillment presentation logic in one testable function and adds 4 new
+fields to `CustomerWebFulfillmentSummary` as the stable interface for fulfillment
+display state.
+
+## D015: Extract App State Orchestration Into useAppState Hook (C1)
+
+Decision: create `appStateOrchestrator.ts` exporting `useAppState()`, a custom React
+hook that owns all 13 `useState` + 14 `useMemo` + 3 `useEffect` calls previously
+inline in `App()`. `App()` now calls `useAppState()` and destructures the result.
+Move `initialViewFromLocation`, `loadWorkspace`, and `buildRuntimeReadinessMap`
+helpers into the orchestrator.
+
+Reason: `App()` mixed state management (dependency chains, derivation logic, effect
+lifecycle) with view composition (JSX, event handlers). The 70-line state block was
+the highest-friction area in the component — difficult to test in isolation and
+requiring readers to parse a dense dependency graph before understanding the view
+structure. The hook provides a typed `AppState` interface as the test surface; the
+initial-view and workspace-loading helpers become testable without rendering the
+full component tree.
