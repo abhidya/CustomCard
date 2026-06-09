@@ -33,29 +33,21 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  aiProviderReadinessItems,
-  summarizeAiProviderReadiness,
+  buildReadinessSummary,
   type AiProviderReadinessItem,
-  type AiProviderReadinessSummary
-} from "./aiProviderReadiness";
-import {
-  capacityProfiles,
-  summarizeCapacityPlan,
-  type CapacityPlanSummary,
-  type CapacityProfile
-} from "./capacityPlan";
-import {
-  externalAuditReadinessItems,
-  summarizeExternalAuditReadiness,
-  type ExternalAuditReadinessItem,
-  type ExternalAuditReadinessSummary
-} from "./externalAuditReadiness";
-import {
-  e2eCoverageItems,
-  summarizeE2eCoverage,
+  type BusinessEngagementReadinessItem,
+  type CapacityProfile,
+  type CloudArtifactProofReadinessItem,
   type E2eCoverageItem,
-  type E2eCoverageSummary
-} from "./e2eCoverage";
+  type ExternalAuditReadinessItem,
+  type HostedApiReadinessItem,
+  type MobileRenderReadinessItem,
+  type ObservabilityReadinessItem,
+  type PaymentReadinessItem,
+  type ReadinessSummary,
+  type RetailFulfillmentReadinessItem,
+  type ReviewerDbSeedReadinessItem
+} from "./readinessSummary";
 import {
   addMemory,
   buildOpportunity,
@@ -109,54 +101,6 @@ import {
   type SupportedLocale,
   type SupportedLocaleCode
 } from "./localization";
-import {
-  observabilityReadinessItems,
-  summarizeObservabilityReadiness,
-  type ObservabilityReadinessItem,
-  type ObservabilityReadinessSummary
-} from "./observabilityReadiness";
-import {
-  retailFulfillmentReadinessItems,
-  summarizeRetailFulfillmentReadiness,
-  type RetailFulfillmentReadinessItem,
-  type RetailFulfillmentReadinessSummary
-} from "./retailFulfillmentReadiness";
-import {
-  paymentReadinessItems,
-  summarizePaymentReadiness,
-  type PaymentReadinessItem,
-  type PaymentReadinessSummary
-} from "./paymentReadiness";
-import {
-  mobileRenderReadinessItems,
-  summarizeMobileRenderReadiness,
-  type MobileRenderReadinessItem,
-  type MobileRenderReadinessSummary
-} from "./mobileRenderReadiness";
-import {
-  hostedApiReadinessItems,
-  summarizeHostedApiReadiness,
-  type HostedApiReadinessItem,
-  type HostedApiReadinessSummary
-} from "./hostedApiReadiness";
-import {
-  reviewerDbSeedReadinessItems,
-  summarizeReviewerDbSeedReadiness,
-  type ReviewerDbSeedReadinessItem,
-  type ReviewerDbSeedReadinessSummary
-} from "./reviewerDbSeedReadiness";
-import {
-  cloudArtifactProofReadinessItems,
-  summarizeCloudArtifactProofReadiness,
-  type CloudArtifactProofReadinessItem,
-  type CloudArtifactProofReadinessSummary
-} from "./cloudArtifactProofReadiness";
-import {
-  businessEngagementReadinessItems,
-  summarizeBusinessEngagementReadiness,
-  type BusinessEngagementReadinessItem,
-  type BusinessEngagementReadinessSummary
-} from "./businessEngagementReadiness";
 import {
   mobileRenderSnapshot,
   summarizeMobileRenderSnapshot,
@@ -298,18 +242,7 @@ function App() {
   );
   const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
   const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
-  const externalAuditSummary = useMemo(() => summarizeExternalAuditReadiness(), []);
-  const e2eCoverageSummary = useMemo(() => summarizeE2eCoverage(), []);
-  const aiProviderReadinessSummary = useMemo(() => summarizeAiProviderReadiness(), []);
-  const capacitySummary = useMemo(() => summarizeCapacityPlan(), []);
-  const observabilitySummary = useMemo(() => summarizeObservabilityReadiness(), []);
-  const retailFulfillmentSummary = useMemo(() => summarizeRetailFulfillmentReadiness(), []);
-  const paymentReadinessSummary = useMemo(() => summarizePaymentReadiness(), []);
-  const mobileRenderReadinessSummary = useMemo(() => summarizeMobileRenderReadiness(), []);
-  const hostedApiReadinessSummary = useMemo(() => summarizeHostedApiReadiness(), []);
-  const reviewerDbSeedReadinessSummary = useMemo(() => summarizeReviewerDbSeedReadiness(), []);
-  const cloudArtifactProofReadinessSummary = useMemo(() => summarizeCloudArtifactProofReadiness(), []);
-  const businessEngagementReadinessSummary = useMemo(() => summarizeBusinessEngagementReadiness(), []);
+  const readiness = useMemo(() => buildReadinessSummary(), []);
   const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const seededCustomerChat = useMemo(
@@ -680,34 +613,11 @@ function App() {
 
         {activeView === "admin" && (
           <AdminPanelView
-            capacityProfiles={capacityProfiles}
-            capacitySummary={capacitySummary}
-            aiProviderReadinessItems={aiProviderReadinessItems}
-            aiProviderReadinessSummary={aiProviderReadinessSummary}
-            e2eCoverageItems={e2eCoverageItems}
-            e2eCoverageSummary={e2eCoverageSummary}
-            externalAuditItems={externalAuditReadinessItems}
-            externalAuditSummary={externalAuditSummary}
+            readiness={readiness}
             localizationSummary={localizationSummary}
             model={adminPanelModel}
-            observabilityItems={observabilityReadinessItems}
-            observabilitySummary={observabilitySummary}
             providerGovernance={providerGovernance}
             productionReadiness={productionReadiness}
-            retailFulfillmentItems={retailFulfillmentReadinessItems}
-            retailFulfillmentSummary={retailFulfillmentSummary}
-            paymentReadinessItems={paymentReadinessItems}
-            paymentReadinessSummary={paymentReadinessSummary}
-            mobileRenderReadinessItems={mobileRenderReadinessItems}
-            mobileRenderReadinessSummary={mobileRenderReadinessSummary}
-            hostedApiReadinessItems={hostedApiReadinessItems}
-            hostedApiReadinessSummary={hostedApiReadinessSummary}
-            reviewerDbSeedReadinessItems={reviewerDbSeedReadinessItems}
-            reviewerDbSeedReadinessSummary={reviewerDbSeedReadinessSummary}
-            cloudArtifactProofReadinessItems={cloudArtifactProofReadinessItems}
-            cloudArtifactProofReadinessSummary={cloudArtifactProofReadinessSummary}
-            businessEngagementReadinessItems={businessEngagementReadinessItems}
-            businessEngagementReadinessSummary={businessEngagementReadinessSummary}
             runtimeReadiness={runtimeReadiness}
           />
         )}
@@ -1837,66 +1747,45 @@ function HandoffView({
 }
 
 function AdminPanelView({
-  aiProviderReadinessItems,
-  aiProviderReadinessSummary,
-  capacityProfiles,
-  capacitySummary,
-  e2eCoverageItems,
-  e2eCoverageSummary,
-  externalAuditItems,
-  externalAuditSummary,
+  readiness,
   localizationSummary,
   model,
-  observabilityItems,
-  observabilitySummary,
   providerGovernance,
   productionReadiness,
-  retailFulfillmentItems,
-  retailFulfillmentSummary,
-  paymentReadinessItems,
-  paymentReadinessSummary,
-  mobileRenderReadinessItems,
-  mobileRenderReadinessSummary,
-  hostedApiReadinessItems,
-  hostedApiReadinessSummary,
-  reviewerDbSeedReadinessItems,
-  reviewerDbSeedReadinessSummary,
-  cloudArtifactProofReadinessItems,
-  cloudArtifactProofReadinessSummary,
-  businessEngagementReadinessItems,
-  businessEngagementReadinessSummary,
   runtimeReadiness
 }: {
-  aiProviderReadinessItems: AiProviderReadinessItem[];
-  aiProviderReadinessSummary: AiProviderReadinessSummary;
-  capacityProfiles: CapacityProfile[];
-  capacitySummary: CapacityPlanSummary;
-  e2eCoverageItems: E2eCoverageItem[];
-  e2eCoverageSummary: E2eCoverageSummary;
-  externalAuditItems: ExternalAuditReadinessItem[];
-  externalAuditSummary: ExternalAuditReadinessSummary;
+  readiness: ReadinessSummary;
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
-  observabilityItems: ObservabilityReadinessItem[];
-  observabilitySummary: ObservabilityReadinessSummary;
   providerGovernance: ProviderGovernanceSummary;
   productionReadiness: ProductionReadinessSummary;
-  retailFulfillmentItems: RetailFulfillmentReadinessItem[];
-  retailFulfillmentSummary: RetailFulfillmentReadinessSummary;
-  paymentReadinessItems: PaymentReadinessItem[];
-  paymentReadinessSummary: PaymentReadinessSummary;
-  mobileRenderReadinessItems: MobileRenderReadinessItem[];
-  mobileRenderReadinessSummary: MobileRenderReadinessSummary;
-  hostedApiReadinessItems: HostedApiReadinessItem[];
-  hostedApiReadinessSummary: HostedApiReadinessSummary;
-  reviewerDbSeedReadinessItems: ReviewerDbSeedReadinessItem[];
-  reviewerDbSeedReadinessSummary: ReviewerDbSeedReadinessSummary;
-  cloudArtifactProofReadinessItems: CloudArtifactProofReadinessItem[];
-  cloudArtifactProofReadinessSummary: CloudArtifactProofReadinessSummary;
-  businessEngagementReadinessItems: BusinessEngagementReadinessItem[];
-  businessEngagementReadinessSummary: BusinessEngagementReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
+  const { aiProvider, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
+  const aiProviderReadinessItems = aiProvider.items;
+  const aiProviderReadinessSummary = aiProvider.summary;
+  const capacityProfiles = capacity.profiles;
+  const capacitySummary = capacity.summary;
+  const e2eCoverageItems = e2eCoverage.items;
+  const e2eCoverageSummary = e2eCoverage.summary;
+  const externalAuditItems = externalAudit.items;
+  const externalAuditSummary = externalAudit.summary;
+  const observabilityItems = observability.items;
+  const observabilitySummary = observability.summary;
+  const retailFulfillmentItems = retailFulfillment.items;
+  const retailFulfillmentSummary = retailFulfillment.summary;
+  const paymentReadinessItems = payment.items;
+  const paymentReadinessSummary = payment.summary;
+  const mobileRenderReadinessItems = mobileRender.items;
+  const mobileRenderReadinessSummary = mobileRender.summary;
+  const hostedApiReadinessItems = hostedApi.items;
+  const hostedApiReadinessSummary = hostedApi.summary;
+  const reviewerDbSeedReadinessItems = reviewerDbSeed.items;
+  const reviewerDbSeedReadinessSummary = reviewerDbSeed.summary;
+  const cloudArtifactProofReadinessItems = cloudArtifactProof.items;
+  const cloudArtifactProofReadinessSummary = cloudArtifactProof.summary;
+  const businessEngagementReadinessItems = businessEngagement.items;
+  const businessEngagementReadinessSummary = businessEngagement.summary;
   const runtimeSummary = summarizeRuntimeReadiness(runtimeReadiness);
   const visibleEnv = prioritizeAdminEnv(model.coverage.requiredEnv).slice(0, 24);
   const hiddenEnvCount = Math.max(model.coverage.requiredEnv.length - visibleEnv.length, 0);
