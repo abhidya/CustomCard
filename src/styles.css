@@ -211,6 +211,29 @@ textarea {
   font-weight: 800;
 }
 
+.navSectionDivider {
+  margin: 6px 0 2px;
+  padding: 4px 10px 2px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.navSectionDivider span {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(190, 209, 205, 0.4);
+}
+
+.navButtonOperator {
+  opacity: 0.62;
+}
+
+.navButtonOperator:hover,
+.navButtonOperator.active {
+  opacity: 1;
+}
+
 .railStatus {
   gap: 10px;
   margin-top: auto;
@@ -915,8 +938,10 @@ h3 {
 }
 
 .calendarChoice.credential-gated {
-  border-color: #e0d2aa;
-  background: #fff9e7;
+  border-color: #e8e8e8;
+  background: #f9f9f9;
+  opacity: 0.55;
+  font-size: 0.88em;
 }
 
 .calendarChoice.manual-export {
@@ -952,6 +977,32 @@ h3 {
   font-style: normal;
   font-weight: 880;
   text-align: right;
+}
+
+.calendarConnectHint {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #7a9a93;
+  padding: 6px 10px;
+  border: 1px dashed #c8d8d4;
+  border-radius: 6px;
+  background: #f6faf8;
+}
+
+.calendarConnectLink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #258477;
+  font-size: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.calendarConnectLink:hover {
+  color: #1a6255;
 }
 
 .workspaceSummary {

@@ -158,16 +158,21 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-const navItems: NavItem[] = [
+const customerNavItems: NavItem[] = [
   { id: "customer", label: "Your cards", icon: UserRound },
-  { id: "mobile", label: "Mobile app", icon: Smartphone },
-  { id: "opportunities", label: "Events", icon: Calendar },
   { id: "studio", label: "Card studio", icon: WandSparkles },
   { id: "memory", label: "Memory", icon: Heart },
   { id: "handoff", label: "Print options", icon: Printer },
-  { id: "admin", label: "Operations", icon: ShieldCheck },
-  { id: "adapters", label: "Connections", icon: Settings }
 ];
+
+const operatorNavItems: NavItem[] = [
+  { id: "opportunities", label: "Events", icon: Calendar },
+  { id: "mobile", label: "Mobile app", icon: Smartphone },
+  { id: "admin", label: "Operations", icon: ShieldCheck },
+  { id: "adapters", label: "Connections", icon: Settings },
+];
+
+const navItems = [...customerNavItems, ...operatorNavItems];
 
 
 function updateViewRoute(view: ViewId) {
@@ -349,9 +354,24 @@ function App() {
         </div>
 
         <nav className="navList">
-          {navItems.map((item) => (
+          {customerNavItems.map((item) => (
             <button
               className={activeView === item.id ? "navButton active" : "navButton"}
+              aria-current={activeView === item.id ? "page" : undefined}
+              key={item.id}
+              onClick={() => openView(item.id)}
+              type="button"
+            >
+              <item.icon size={18} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+          <div className="navSectionDivider" aria-label="Operator tools">
+            <span>Operator</span>
+          </div>
+          {operatorNavItems.map((item) => (
+            <button
+              className={activeView === item.id ? "navButton navButtonOperator active" : "navButton navButtonOperator"}
               aria-current={activeView === item.id ? "page" : undefined}
               key={item.id}
               onClick={() => openView(item.id)}
@@ -848,6 +868,18 @@ function CustomerPanelView({
                 <em>{calendarChoiceStatusLabel(choice)}</em>
               </div>
             ))}
+            {calendarChoices.some((c) => c.status === "credential-gated") && (
+              <p className="calendarConnectHint">
+                + Connect Google Calendar or Outlook in{" "}
+                <button
+                  className="calendarConnectLink"
+                  type="button"
+                  onClick={() => onNavigate("adapters")}
+                >
+                  Connections
+                </button>
+              </p>
+            )}
           </div>
 
           <div className="customerFlowSteps" aria-label="Customer journey steps">
@@ -1581,7 +1613,7 @@ function HandoffView({
           </div>
         )}
 
-        <div className="pricingResearchBox">
+        <div className="pricingResearchBox" data-observations={refreshReport.totalObservations}>
           <div className="handoffTitle compact">
             <Printer size={19} />
             <div>
@@ -1612,21 +1644,6 @@ function HandoffView({
               </div>
             </div>
           )}
-          <div className="pricingFreshnessGrid">
-            <Metric label="Prices" value={`${refreshReport.totalObservations}`} />
-            <Metric label="Checked" value={`${refreshReport.freshSources}/${refreshReport.sourceCount}`} />
-            <Metric label="Discounts" value={`${refreshReport.activeCouponOfferCount}/${refreshReport.couponOfferCount}`} />
-            <Metric
-              label="Discount checks"
-              value={`${refreshReport.couponPortalApplicationPacketCount}/${refreshReport.couponPortalApplicationTargetCount}`}
-            />
-            <Metric label="Freshness" value={`${refreshReport.maxAgeDays} days`} />
-            <Metric label="State" value={refreshReport.canShowComparison ? "Fresh" : "Refresh"} />
-            <Metric
-              label="Confirm at"
-              value={pricingComparison.couponPolicy.providerPortalApplicationRequired ? "Checkout" : "Source"}
-            />
-          </div>
           <div className="pricingOptionList">
             {rankedOptions.map((estimate) => (
               <div className="pricingOption" key={estimate.observation.id}>
