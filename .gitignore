@@ -5,3 +5,6 @@ coverage/
 .DS_Store
 *.local
 .vercel
+card_gen/.venv/
+card_gen/**/__pycache__/
+card_gen/**/*.pyc
