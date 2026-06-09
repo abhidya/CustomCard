@@ -1579,14 +1579,22 @@ h3 {
 }
 
 .panelPreview {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   aspect-ratio: 5 / 7;
   overflow: hidden;
   border: 1px solid #ccd7d9;
   border-radius: 8px;
   background: #f8f3e8;
+}
+
+.panelSvgImg {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .panelPreview.inside-left,
@@ -1628,11 +1636,28 @@ h3 {
   font-size: clamp(0.76rem, 1vw, 0.92rem);
 }
 
-.panelPreview small {
-  min-height: 42px;
-  padding: 8px;
-  color: #607077;
+.studioHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aiGenBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #e0f0e9;
+  color: #1a7550;
   font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.panelGridLoading {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.2s;
 }
 
 .validationPanel {

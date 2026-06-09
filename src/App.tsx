@@ -51,6 +51,7 @@ import {
 import {
   addMemory,
   buildOpportunity,
+  buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
   freeAdapterLabels,
@@ -191,6 +192,7 @@ function App() {
     customerChatInput, setCustomerChatInput,
     customerChatMessages, setCustomerChatMessages,
     draftInput, setDraftInput,
+    aiDraft, aiCardGenLoading, triggerAiCardGen, cardGenAvailable,
     memories,
     signal,
     pricingComparison,
@@ -213,6 +215,7 @@ function App() {
     seededCustomerChat,
     customerChatSession
   } = useAppState();
+  const displayPanels = aiDraft?.panels ?? draft.panels;
   const opsView = activeView === "admin" || activeView === "adapters";
 
   function openView(view: ViewId) {
@@ -495,12 +498,16 @@ function App() {
 
         {activeView === "studio" && (
           <StudioView
+            aiCardGenLoading={aiCardGenLoading}
+            cardGenAvailable={cardGenAvailable}
             draftInput={draftInput}
+            generatedBy={aiDraft?.generatedBy ?? draft.generatedBy}
             memories={memories}
+            onAiGenerate={triggerAiCardGen}
             onExport={() => openView("handoff")}
             onUpdate={updateDraft}
             opportunity={opportunity}
-            panels={draft.panels}
+            panels={displayPanels}
             validation={validation}
           />
         )}
@@ -525,7 +532,7 @@ function App() {
             onDownloadPanel={downloadPanel}
             onDownloadPackage={downloadPrintPackage}
             onVendor={setVendorId}
-            panels={draft.panels}
+            panels={displayPanels}
             pricingComparison={pricingComparison}
             printPackage={printPackage}
             validation={validation}
@@ -1217,16 +1224,24 @@ function OpportunitiesView({
 }
 
 function StudioView({
+  aiCardGenLoading,
+  cardGenAvailable,
   draftInput,
+  generatedBy,
   memories,
+  onAiGenerate,
   onExport,
   onUpdate,
   opportunity,
   panels,
   validation
 }: {
+  aiCardGenLoading: boolean;
+  cardGenAvailable: boolean;
   draftInput: CardDraftInput;
+  generatedBy: string;
   memories: MemoryItem[];
+  onAiGenerate: () => void;
   onExport: () => void;
   onUpdate: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   opportunity: CardOpportunity;
@@ -1320,9 +1335,22 @@ function StudioView({
             <p className="eyebrow">Preview</p>
             <h2>5x7 panels</h2>
           </div>
-          <span className="smallStat">{memories.filter((memory) => memory.approved).length} approved memories</span>
+          <div className="studioHeaderActions">
+            {generatedBy !== "deterministic-free-template" && (
+              <span className="aiGenBadge">{generatedBy === "ai-text-and-image" ? "AI image" : "AI text"}</span>
+            )}
+            <button
+              className="quietButton"
+              type="button"
+              onClick={onAiGenerate}
+              disabled={!cardGenAvailable || aiCardGenLoading}
+              title={cardGenAvailable ? "Generate with AI" : "Set VITE_CARD_GEN_URL to enable AI generation"}
+            >
+              {aiCardGenLoading ? "Generating…" : "Generate with AI"}
+            </button>
+          </div>
         </div>
-        <div className="panelGrid">
+        <div className={`panelGrid${aiCardGenLoading ? " panelGridLoading" : ""}`}>
           {panels.map((panel) => (
             <PanelPreview key={panel.id} panel={panel} />
           ))}
@@ -2705,17 +2733,20 @@ function adapterIcon(adapter: ProviderAdapter) {
 }
 
 function PanelPreview({ panel }: { panel: CardPanel }) {
+  const svgDataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(buildPanelSvg(panel))}`;
   return (
     <article className={`panelPreview ${panel.id}`}>
       <div className="panelChrome">
         <span>{panel.label}</span>
         <PanelTop size={16} />
       </div>
-      <div className="panelBody" dir={panel.rtl ? "rtl" : "ltr"}>
-        <h3>{panel.headline}</h3>
-        <p>{panel.body}</p>
-      </div>
-      <small>{panel.artDirection}</small>
+      <img
+        src={svgDataUri}
+        alt={`${panel.label} preview`}
+        className="panelSvgImg"
+        width={300}
+        height={420}
+      />
     </article>
   );
 }

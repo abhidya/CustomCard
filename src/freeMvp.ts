@@ -77,6 +77,7 @@ export interface CardPanel {
   dpi: 300;
   rtl: boolean;
   overflowRisk: boolean;
+  imageUrl?: string;
 }
 
 export interface CardDraft {
@@ -84,7 +85,7 @@ export interface CardDraft {
   input: CardDraftInput;
   panels: CardPanel[];
   memoryCitations: string[];
-  generatedBy: "deterministic-free-template";
+  generatedBy: "deterministic-free-template" | "ai-text-only" | "ai-text-and-image";
 }
 
 export interface ValidationCheck {
@@ -421,18 +422,25 @@ export function buildPanelSvg(panel: CardPanel): string {
   const anchor = panel.rtl ? "end" : "start";
   const x = panel.rtl ? 1240 : 260;
 
+  const decorativeLayer = panel.imageUrl
+    ? `  <image href="${escapeXml(panel.imageUrl)}" x="120" y="120" width="1260" height="1860" preserveAspectRatio="xMidYMid slice"/>`
+    : `  <circle cx="1210" cy="330" r="96" fill="${accent}" opacity="0.15"/>
+  <path d="M210 1710 C480 1580, 720 1890, 1260 1670" fill="none" stroke="${accent}" stroke-width="18" opacity="0.22"/>`;
+  const textFill = panel.imageUrl ? "#ffffff" : "#1d2429";
+  const bodyFill = panel.imageUrl ? "rgba(255,255,255,0.92)" : "#27343a";
+  const artFill = panel.imageUrl ? "rgba(255,255,255,0.7)" : "#59656b";
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="${escapeXml(panel.label)} panel" direction="${direction}">
   <rect width="1500" height="2100" fill="${background}"/>
   <rect x="120" y="120" width="1260" height="1860" rx="42" fill="none" stroke="${accent}" stroke-width="12"/>
-  <circle cx="1210" cy="330" r="96" fill="${accent}" opacity="0.15"/>
-  <path d="M210 1710 C480 1580, 720 1890, 1260 1670" fill="none" stroke="${accent}" stroke-width="18" opacity="0.22"/>
-  <text x="${x}" y="470" fill="#1d2429" font-family="Georgia, serif" font-size="92" font-weight="700" text-anchor="${anchor}">
+${decorativeLayer}
+  <text x="${x}" y="470" fill="${textFill}" font-family="Georgia, serif" font-size="92" font-weight="700" text-anchor="${anchor}">
 ${headlineLines.map((line, index) => `    <tspan x="${x}" dy="${index === 0 ? 0 : 108}">${escapeXml(line)}</tspan>`).join("\n")}
   </text>
-  <text x="${x}" y="880" fill="#27343a" font-family="Arial, sans-serif" font-size="54" text-anchor="${anchor}">
+  <text x="${x}" y="880" fill="${bodyFill}" font-family="Arial, sans-serif" font-size="54" text-anchor="${anchor}">
 ${bodyLines.map((line, index) => `    <tspan x="${x}" dy="${index === 0 ? 0 : 74}">${escapeXml(line)}</tspan>`).join("\n")}
   </text>
-  <text x="${x}" y="1840" fill="#59656b" font-family="Arial, sans-serif" font-size="34" text-anchor="${anchor}">${escapeXml(panel.artDirection)}</text>
+  <text x="${x}" y="1840" fill="${artFill}" font-family="Arial, sans-serif" font-size="34" text-anchor="${anchor}">${escapeXml(panel.artDirection)}</text>
 </svg>`;
 }
 

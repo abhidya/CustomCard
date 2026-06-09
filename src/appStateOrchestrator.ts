@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
 import { buildFulfillmentRecommendations, type FulfillmentRecommendationSet } from "./fulfillmentRecommendation";
 import {
@@ -8,6 +8,7 @@ import {
   getDefaultDraftInput,
   parseFreeImport,
   validateCardDraft,
+  type CardDraft,
   type CardDraftInput,
   type CardOpportunity,
   type CardValidation,
@@ -37,6 +38,8 @@ import {
 
 export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 
+const cardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
+
 export interface AppState {
   activeView: ViewId;
   setActiveView: (view: ViewId) => void;
@@ -64,6 +67,11 @@ export interface AppState {
   setCustomerChatMessages: (messages: CustomerChatSession["messages"] | undefined) => void;
   draftInput: CardDraftInput;
   setDraftInput: (updater: ((current: CardDraftInput) => CardDraftInput) | CardDraftInput) => void;
+
+  aiDraft: CardDraft | null;
+  aiCardGenLoading: boolean;
+  triggerAiCardGen: () => void;
+  cardGenAvailable: boolean;
 
   memories: LocalWorkspace["memories"];
   signal: ReturnType<typeof parseFreeImport>;
@@ -129,6 +137,8 @@ export function useAppState(): AppState {
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
     getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], reviewerReferenceDate))
   );
+  const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
+  const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
 
   useEffect(() => {
     setDraftInput((current) => ({
@@ -152,6 +162,8 @@ export function useAppState(): AppState {
       window.removeEventListener("hashchange", syncView);
     };
   }, []);
+
+  useEffect(() => { setAiDraft(null); }, [draftInput]);
 
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
   const validation = useMemo(() => validateCardDraft(draft), [draft]);
@@ -204,6 +216,49 @@ export function useAppState(): AppState {
     [approvedMemoryNotes, customerChatMessages, fulfillmentContext, opportunity.recipient, seededCustomerChat.messages, selectedLocale.locale]
   );
 
+  const triggerAiCardGen = useCallback(() => {
+    if (!cardGenApiUrl || aiCardGenLoading) return;
+    const body = JSON.stringify({
+      sender: draftInput.sender,
+      recipient: draftInput.recipient,
+      relationship: draftInput.relationship,
+      occasion: draftInput.occasion,
+      tone: draftInput.tone,
+      style: draftInput.style,
+      language: draftInput.language,
+      personal_note: draftInput.personalNote,
+      memory_notes: approvedMemoryNotes
+    });
+    setAiCardGenLoading(true);
+    fetch(`${cardGenApiUrl}/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Card gen service returned ${res.status}`);
+        return res.json();
+      })
+      .then((result) => {
+        const imageByPanel = new Map<string, string>(
+          (result.images as Array<{ panel_id: string; image_url: string }> | undefined ?? []).map((img) => [img.panel_id, img.image_url])
+        );
+        const basePanels = draft.panels;
+        const aiPanels = basePanels.map((panel) => {
+          const copy = (result.card_copy?.panels as Array<{ id: string; headline: string; body: string; art_direction: string }> | undefined ?? [])
+            .find((p) => p.id === panel.id);
+          if (!copy) return panel;
+          return {
+            ...panel,
+            headline: copy.headline,
+            body: copy.body,
+            artDirection: copy.art_direction,
+            imageUrl: imageByPanel.get(panel.id)
+          };
+        });
+        const hasImages = imageByPanel.size > 0;
+        setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+      })
+      .catch((err: unknown) => { console.error("AI card gen failed:", err); })
+      .finally(() => { setAiCardGenLoading(false); });
+  }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput]);
+
   return {
     activeView, setActiveView,
     workspace, setWorkspace,
@@ -218,6 +273,10 @@ export function useAppState(): AppState {
     customerChatInput, setCustomerChatInput,
     customerChatMessages, setCustomerChatMessages,
     draftInput, setDraftInput,
+    aiDraft,
+    aiCardGenLoading,
+    triggerAiCardGen,
+    cardGenAvailable: Boolean(cardGenApiUrl),
     memories,
     signal,
     pricingComparison,
