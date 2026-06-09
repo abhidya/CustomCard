@@ -2787,3 +2787,257 @@ h3 {
     text-align: left;
   }
 }
+
+/* ─── Design system enhancements ──────────────────────────────────────────── */
+
+/* Smooth transitions on interactive elements */
+.navButton {
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.navButton:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e8f0ed;
+}
+
+/* Richer primary button */
+.primaryButton {
+  background: linear-gradient(135deg, #d4604a 0%, #c8553d 100%);
+  box-shadow: 0 3px 10px rgba(200, 85, 61, 0.24);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.primaryButton:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(200, 85, 61, 0.32);
+}
+
+.primaryButton:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(200, 85, 61, 0.2);
+}
+
+/* Quiet button hover */
+.quietButton:not(:disabled):hover,
+.iconTextButton:not(:disabled):hover {
+  border-color: #b5c5c9;
+  background: #f5f8f9;
+}
+
+/* Journey primary action hover */
+.journeyAction.primary:not(:disabled):hover {
+  background: #1e3632;
+}
+
+/* Card hover depth */
+.toolPanel,
+.opportunityCard,
+.previewColumn,
+.handoffPanel,
+.surfaceCard,
+.customerStartCard,
+.eventQueueCard,
+.fulfillmentRecommendation,
+.chatConsole {
+  transition: box-shadow 0.2s ease;
+}
+
+/* AI generate button */
+.aiGenerateButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #258477 0%, #1a6255 100%);
+  font-weight: 840;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(37, 132, 119, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.aiGenerateButton:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 132, 119, 0.38);
+}
+
+.aiGenerateButton:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.aiGenerateButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Event locale row */
+.eventLocaleRow {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e8f0ee;
+}
+
+/* Chat console spans full width in customer grid */
+.customerGrid .chatConsole.wide {
+  grid-column: 1 / -1;
+}
+
+/* ─── Admin hero row ───────────────────────────────────────────────────────── */
+
+.adminHeroRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.adminHeroCard {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #d5dee0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(28, 47, 55, 0.07);
+}
+
+.adminHeroCard.safetyCard {
+  border-left: 4px solid #258477;
+}
+
+.heroStat {
+  display: block;
+  margin: 6px 0 2px;
+  color: #172124;
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.heroStatLabel {
+  display: block;
+  color: #617178;
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.heroSubStats {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e8eef0;
+}
+
+.heroSubStats span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #516167;
+  font-size: 0.76rem;
+  font-weight: 760;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dot {
+  display: inline-flex;
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.green {
+  background: #258477;
+}
+
+.dot.red {
+  background: #c8553d;
+}
+
+.dot.amber {
+  background: #c88f25;
+}
+
+.dot.blue {
+  background: #315b7d;
+}
+
+/* ─── Panel preview improvements ──────────────────────────────────────────── */
+
+.panelPreview {
+  box-shadow: 0 4px 14px rgba(28, 47, 55, 0.1);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.panelPreview:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(28, 47, 55, 0.15);
+}
+
+/* ─── Mobile device improvements ──────────────────────────────────────────── */
+
+.mobileNotch {
+  width: 90px;
+  height: 18px;
+  margin: 0 auto 4px;
+  border-radius: 0 0 14px 14px;
+  background: #111e1d;
+}
+
+.mobileDevice {
+  border-width: 2px;
+  border-color: #0d1d1b;
+  box-shadow:
+    0 24px 56px rgba(23, 41, 39, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* ─── Metric card improvements ─────────────────────────────────────────────── */
+
+.metric {
+  transition: background 0.14s ease;
+}
+
+/* ─── Typography sharpening ────────────────────────────────────────────────── */
+
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #617178;
+}
+
+/* ─── Responsive: adminHeroRow stacking ───────────────────────────────────── */
+
+@media (max-width: 1140px) {
+  .adminHeroRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .adminHeroRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ─── Focus ring improvements ──────────────────────────────────────────────── */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid #258477;
+  outline-offset: 2px;
+}

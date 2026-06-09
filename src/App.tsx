@@ -582,6 +582,7 @@ function MobileAppPreviewView() {
 
       <div className="mobilePreviewLayout">
         <article className="mobileDevice" aria-label="CustomCard native customer shell">
+          <div className="mobileNotch" aria-hidden="true" />
           <div className="mobileStatusBar">
             <span>9:41</span>
             <span>{snapshot.screenTitle}</span>
@@ -918,6 +919,15 @@ function CustomerPanelView({
             <Metric label="Memory" value={customerExperience.event.memoryLabel} />
             <Metric label="Checkout" value={customerExperience.event.checkoutLabel} />
           </div>
+          <div className="eventLocaleRow">
+            <p className="eyebrow">Language readiness</p>
+            <SegmentedControl
+              label="Card language"
+              options={supportedLocales.map((locale) => locale.locale)}
+              value={selectedLocale.locale}
+              onValue={(value) => onLocale(value as SupportedLocaleCode)}
+            />
+          </div>
         </article>
 
         <article className="fulfillmentRecommendation">
@@ -963,7 +973,7 @@ function CustomerPanelView({
           </div>
         </article>
 
-        <article className="chatConsole">
+        <article className="chatConsole wide">
           <div className="sectionHeader">
             <div>
               <p className="eyebrow">Customer chat</p>
@@ -1004,71 +1014,6 @@ function CustomerPanelView({
           </form>
         </article>
 
-        <article className="surfaceCard">
-          <div className="sectionHeader compact">
-            <div>
-              <p className="eyebrow">Artwork</p>
-              <h3>Card proof path</h3>
-            </div>
-            <Image size={18} />
-          </div>
-          <div className="runtimeGrid compactMetrics" aria-label="Customer artwork proof path">
-            {Object.entries(customerExperience.artworkMetrics).map(([label, value]) => (
-              <Metric key={label} label={label} value={value} />
-            ))}
-          </div>
-        </article>
-
-        <article className="surfaceCard">
-          <div className="sectionHeader compact">
-            <div>
-              <p className="eyebrow">Privacy</p>
-              <h3>Data controls</h3>
-            </div>
-            <Check size={18} />
-          </div>
-          <div className="runtimeGrid compactMetrics" aria-label="Customer privacy controls">
-            {Object.entries(customerExperience.privacyMetrics).map(([label, value]) => (
-              <Metric key={label} label={label} value={value} />
-            ))}
-          </div>
-        </article>
-
-        <article className="surfaceCard">
-          <div className="sectionHeader compact">
-            <div>
-              <p className="eyebrow">Locale</p>
-              <h3>Language readiness</h3>
-            </div>
-            <Globe2 size={18} />
-          </div>
-          <SegmentedControl
-            label="Locale"
-            options={supportedLocales.map((locale) => locale.locale)}
-            value={selectedLocale.locale}
-            onValue={(value) => onLocale(value as SupportedLocaleCode)}
-          />
-          <div className="runtimeGrid compactMetrics" aria-label="Customer localization readiness">
-            {Object.entries(customerExperience.localeMetrics).map(([label, value]) => (
-              <Metric key={label} label={label} value={value} />
-            ))}
-          </div>
-        </article>
-
-        <article className="surfaceCard">
-          <div className="sectionHeader compact">
-            <div>
-              <p className="eyebrow">Ordering</p>
-              <h3>Checkout safety</h3>
-            </div>
-            <ShieldCheck size={18} />
-          </div>
-          <div className="runtimeGrid compactMetrics" aria-label="Customer checkout safety">
-            {Object.entries(customerExperience.safetyMetrics).map(([label, value]) => (
-              <Metric key={label} label={label} value={value} />
-            ))}
-          </div>
-        </article>
       </div>
     </section>
   );
@@ -1340,13 +1285,13 @@ function StudioView({
               <span className="aiGenBadge">{generatedBy === "ai-text-and-image" ? "AI image" : "AI text"}</span>
             )}
             <button
-              className="quietButton"
+              className="aiGenerateButton"
               type="button"
               onClick={onAiGenerate}
               disabled={!cardGenAvailable || aiCardGenLoading}
-              title={cardGenAvailable ? "Generate with AI" : "Set VITE_CARD_GEN_URL to enable AI generation"}
+              title={cardGenAvailable ? "Generate card copy with AI" : "Set VITE_CARD_GEN_URL to enable AI generation"}
             >
-              {aiCardGenLoading ? "Generating…" : "Generate with AI"}
+              {aiCardGenLoading ? "Generating…" : "✦ Generate with AI"}
             </button>
           </div>
         </div>
@@ -1754,39 +1699,50 @@ function AdminPanelView({
         <StatusChip icon={ShieldCheck} label="Credential gates visible" tone="blue" />
       </div>
 
-      <div className="adminSummaryGrid">
-        <Metric label="Adapters" value={`${model.coverage.total}`} />
-        <Metric label="Capabilities" value={`${model.coverage.capabilityCount}`} />
-        <Metric label="Ready local" value={`${model.coverage.readyLocal}`} />
-        <Metric label="Credential gated" value={`${model.coverage.credentialGated}`} />
-        <Metric label="Contract only" value={`${model.coverage.contractOnly}`} />
-        <Metric label="Blocked live" value={`${model.coverage.blocked}`} />
-        <Metric label="Budget cap" value={formatCents(providerGovernance.monthlyBudgetCents)} />
-        <Metric label="Locales" value={`${localizationSummary.supportedLocales}`} />
-        <Metric label="Launch gates" value={`${productionReadiness.total}`} />
-        <Metric label="External gaps" value={`${externalAuditSummary.productionBlocked}`} />
-        <Metric label="E2E coverage" value={`${e2eCoverageSummary.repoLocalCoveragePercent}%`} />
-        <Metric label="Capacity profiles" value={`${capacitySummary.total}`} />
-        <Metric label="Public claims" value={`${externalAuditSummary.publicClaimsAllowed}`} />
-        <Metric label="Max daily cards" value={`${capacitySummary.maxDailyCards}`} />
-        <Metric label="AI contracts" value={`${aiProviderReadinessSummary.textProviderContracts + aiProviderReadinessSummary.imageProviderContracts}`} />
-        <Metric label="Live AI" value={`${aiProviderReadinessSummary.liveProviderCallsEnabled}`} />
-        <Metric label="Alert routes" value={`${observabilitySummary.alertRoutesRequired}`} />
-        <Metric label="Live telemetry" value={`${observabilitySummary.liveIngestionEnabled}`} />
-        <Metric label="Retail contracts" value={`${retailFulfillmentSummary.liveVendorAdapterContracts}`} />
-        <Metric label="Direct orders" value={`${retailFulfillmentSummary.directOrderEnabled}`} />
-        <Metric label="Payment contracts" value={`${paymentReadinessSummary.paymentProviderContracts}`} />
-        <Metric label="Live charges" value={`${paymentReadinessSummary.liveChargesEnabled}`} />
-        <Metric label="Mobile screens" value={`${mobileRenderReadinessSummary.screenSections}`} />
-        <Metric label="Native proofs" value={`${mobileRenderReadinessSummary.emulatorRenderProofs}`} />
-        <Metric label="Hosted routes" value={`${hostedApiReadinessSummary.routeContracts}`} />
-        <Metric label="Public DB proof" value={`${hostedApiReadinessSummary.publicRouteProofs}`} />
-        <Metric label="Seed tables" value={`${reviewerDbSeedReadinessSummary.tableContracts}`} />
-        <Metric label="Hosted seed" value={`${reviewerDbSeedReadinessSummary.hostedSeedProofs}`} />
-        <Metric label="Cloud proof" value={`${cloudArtifactProofReadinessSummary.appliedBucketArnProofs}`} />
-        <Metric label="Cloud IAM" value={`${cloudArtifactProofReadinessSummary.iamPolicyOutputProofs}`} />
-        <Metric label="Business CRM" value={`${businessEngagementReadinessSummary.crmAdapterContracts}`} />
-        <Metric label="Live sends" value={`${businessEngagementReadinessSummary.liveMessagesEnabled}`} />
+      <div className="adminHeroRow">
+        <article className="adminHeroCard">
+          <p className="eyebrow">Adapters</p>
+          <strong className="heroStat">{model.coverage.total}</strong>
+          <span className="heroStatLabel">total contracts</span>
+          <div className="heroSubStats">
+            <span><span className="dot green" />{model.coverage.readyLocal} ready local</span>
+            <span><span className="dot amber" />{model.coverage.credentialGated} credential-gated</span>
+            <span><span className="dot red" />{model.coverage.blocked} blocked live</span>
+          </div>
+        </article>
+
+        <article className="adminHeroCard safetyCard">
+          <p className="eyebrow">Safety gates</p>
+          <strong className="heroStat">All on</strong>
+          <span className="heroStatLabel">no live exposure</span>
+          <div className="heroSubStats">
+            <span><span className="dot green" />Orders: disabled</span>
+            <span><span className="dot green" />Payments: off</span>
+            <span><span className="dot green" />Live AI: off</span>
+          </div>
+        </article>
+
+        <article className="adminHeroCard">
+          <p className="eyebrow">Launch readiness</p>
+          <strong className="heroStat">{productionReadiness.total}</strong>
+          <span className="heroStatLabel">gates tracked</span>
+          <div className="heroSubStats">
+            <span><span className="dot red" />{externalAuditSummary.productionBlocked} production blocked</span>
+            <span><span className="dot amber" />{externalAuditSummary.publicClaimsAllowed} public claims</span>
+            <span><span className="dot blue" />{capacitySummary.total} capacity profiles</span>
+          </div>
+        </article>
+
+        <article className="adminHeroCard">
+          <p className="eyebrow">Test coverage</p>
+          <strong className="heroStat">{e2eCoverageSummary.repoLocalCoveragePercent}%</strong>
+          <span className="heroStatLabel">repo-local journeys</span>
+          <div className="heroSubStats">
+            <span><span className="dot green" />{e2eCoverageSummary.covered}/{e2eCoverageSummary.total} paths covered</span>
+            <span><span className="dot amber" />{localizationSummary.supportedLocales} locales</span>
+            <span><span className="dot blue" />{mobileRenderReadinessSummary.screenSections} mobile screens</span>
+          </div>
+        </article>
       </div>
 
       <div className="adminGrid">

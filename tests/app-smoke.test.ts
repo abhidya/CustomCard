@@ -542,7 +542,7 @@ describeWithChrome("CustomCard UI smoke", () => {
           reviewedPlaceholders,
           chatBubbles,
           adminText: document.body.textContent,
-          metricCount: document.querySelectorAll(".adminSummaryGrid .metric").length,
+          metricCount: document.querySelectorAll(".toolPanel .metric, .adminHeroRow .heroSubStats span").length,
           gatedRows: document.querySelectorAll(".adapterMini.credential-gated").length,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth
@@ -646,10 +646,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     ]) {
       expect(customerSnapshot).not.toMatch(customerVisibleImplementationTermPattern);
     }
-    expect(result.reviewedCustomerText).toContain("Card proof path");
-    expect(result.reviewedCustomerText).toContain("Data controls");
     expect(result.reviewedCustomerText).toContain("Language readiness");
-    expect(result.reviewedCustomerText).toContain("Checkout safety");
+    expect(result.reviewedCustomerText).toContain("Card language");
     expect(result.reviewedCustomerText).toContain("Ar EG");
     expect(result.chatBubbles).toBeGreaterThanOrEqual(6);
     expect(result.adminText).toContain("Admin panel");
