@@ -296,9 +296,9 @@ export function buildCalendarOnboardingActionPackets(
     {
       id: "manual-invite-or-ics",
       provider: "Manual invite or ICS paste",
-      label: "Paste invite or ICS",
+      label: "Import an invite",
       status: "ready-local",
-      actionLabel: "Paste event",
+      actionLabel: "Import event",
       customerVisible: true,
       canStartNow: true,
       liveOAuthEnabled: false,

@@ -448,8 +448,8 @@ export const mobileImportActions: MobileImportAction[] = [
   },
   {
     kind: "invite",
-    label: "Paste invite or ICS",
-    detail: "Use the no-account local path for an event or note.",
+    label: "Import an invite",
+    detail: "Paste an email invite, event link, or calendar export.",
     sourceMode: "local-paste",
     customerVisible: true
   }
@@ -1008,8 +1008,8 @@ export function validateMobileRenderSnapshot(snapshot: MobileRenderSnapshot = mo
   if (snapshot.hero.primaryAction.presentation !== "primary" || snapshot.hero.primaryAction.disabled) {
     issues.push("Mobile render snapshot primary action must be enabled and primary.");
   }
-  if (!snapshot.hero.secondaryActions.some((action) => action.label === "Paste invite or ICS" && !action.disabled)) {
-    issues.push("Mobile render snapshot must expose Paste invite or ICS as the ready secondary action.");
+  if (!snapshot.hero.secondaryActions.some((action) => action.label === "Import an invite" && !action.disabled)) {
+    issues.push("Mobile render snapshot must expose Import an invite as the ready secondary action.");
   }
   if (!snapshot.hero.secondaryActions.some((action) => action.label === "Review calendar options" && action.disabled)) {
     issues.push("Mobile render snapshot must keep calendar review as a disabled secondary action until connected.");
@@ -1152,8 +1152,8 @@ export function validateMobileExperience(model: MobileExperienceModel = mobileEx
   if (model.importActions.some((action) => !action.customerVisible)) {
     issues.push("Every mobile import action must be customer-visible.");
   }
-  if (!model.importActions.some((action) => action.kind === "invite" && action.label === "Paste invite or ICS" && action.sourceMode === "local-paste")) {
-    issues.push("Mobile import actions must keep Paste invite or ICS as the ready local path.");
+  if (!model.importActions.some((action) => action.kind === "invite" && action.label === "Import an invite" && action.sourceMode === "local-paste")) {
+    issues.push("Mobile import actions must keep Import an invite as the ready local path.");
   }
   if (model.importActions.some((action) => action.label === "Future calendar sync")) {
     issues.push("Mobile import actions must expose concrete calendar options instead of future-sync placeholder copy.");
@@ -1449,12 +1449,12 @@ function buildMobileHeroSecondaryActions(model: MobileExperienceModel): MobileRe
 
   return [
     {
-      label: pasteInvite?.label ?? "Paste invite or ICS",
-      detail: pasteInvite?.detail ?? "Use the no-account local path for an event or note.",
+      label: pasteInvite?.label ?? "Import an invite",
+      detail: pasteInvite?.detail ?? "Paste an email invite, event link, or calendar export.",
       modeLabel: "Local",
       presentation: "secondary",
       disabled: false,
-      accessibilityLabel: "Paste invite or ICS"
+      accessibilityLabel: "Import an invite"
     },
     {
       label: calendarReview?.label ?? "Review calendar options",

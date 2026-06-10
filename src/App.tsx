@@ -174,6 +174,10 @@ const operatorNavItems: NavItem[] = [
 
 const navItems = [...customerNavItems, ...operatorNavItems];
 
+function isOpsUnlocked(): boolean {
+  if (typeof window === "undefined") return false;
+  return new URL(window.location.href).searchParams.get("ops") === "1";
+}
 
 function updateViewRoute(view: ViewId) {
   if (typeof window === "undefined") return;
@@ -222,7 +226,7 @@ function App() {
     customerChatSession
   } = useAppState();
   const displayPanels = aiDraft?.panels ?? draft.panels;
-  const opsView = activeView === "admin" || activeView === "adapters";
+  const opsView = isOpsUnlocked() && (activeView === "admin" || activeView === "adapters");
 
   function openView(view: ViewId) {
     setActiveView(view);
@@ -366,21 +370,25 @@ function App() {
               <span>{item.label}</span>
             </button>
           ))}
-          <div className="navSectionDivider" aria-label="Operator tools">
-            <span>Operator</span>
-          </div>
-          {operatorNavItems.map((item) => (
-            <button
-              className={activeView === item.id ? "navButton navButtonOperator active" : "navButton navButtonOperator"}
-              aria-current={activeView === item.id ? "page" : undefined}
-              key={item.id}
-              onClick={() => openView(item.id)}
-              type="button"
-            >
-              <item.icon size={18} />
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {isOpsUnlocked() && (
+            <>
+              <div className="navSectionDivider" aria-label="Operator tools">
+                <span>Operator</span>
+              </div>
+              {operatorNavItems.map((item) => (
+                <button
+                  className={activeView === item.id ? "navButton navButtonOperator active" : "navButton navButtonOperator"}
+                  aria-current={activeView === item.id ? "page" : undefined}
+                  key={item.id}
+                  onClick={() => openView(item.id)}
+                  type="button"
+                >
+                  <item.icon size={18} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </>
+          )}
         </nav>
 
         <div className="railStatus">
@@ -417,11 +425,13 @@ function App() {
 
         {activeView === "customer" && (
           <CustomerPanelView
+            authForm={authForm}
             chatInput={customerChatInput}
             chatSession={customerChatSession}
             calendarChoices={calendarConnectionStartPackets}
             handoff={handoff}
             localizationSummary={localizationSummary}
+            onAuthForm={setAuthForm}
             onChatInput={setCustomerChatInput}
             onChatSend={sendCustomerChat}
             onLocale={chooseLocale}
@@ -447,42 +457,21 @@ function App() {
                 <UserRound size={22} />
               </div>
               <div>
-                <span>{workspace ? "Signed in locally" : "Local workspace auth"}</span>
-                <strong>{workspace?.name ?? "Create a local workspace"}</strong>
-                <small>{workspace?.email ?? "No connected account"}</small>
+                <span>{workspace ? "Saved in this browser" : "Not started"}</span>
+                <strong>{workspace?.name ?? "Start from Your cards"}</strong>
+                <small>{workspace?.email ?? ""}</small>
               </div>
             </div>
 
-            {workspace ? (
+            {workspace && (
               <div className="workspaceActions">
                 <button className="quietButton" type="button" onClick={() => openView("memory")}>
                   <Heart size={16} />
-                  {workspace.memories.length} memories
+                  {workspace.memories.length} {workspace.memories.length === 1 ? "memory" : "memories"}
                 </button>
                 <button className="dangerButton" type="button" onClick={() => saveWorkspace(undefined)}>
                   <Trash2 size={16} />
                   Clear
-                </button>
-              </div>
-            ) : (
-              <div className="authInline">
-                <label>
-                  <span>Name</span>
-                  <input
-                    value={authForm.name}
-                    onChange={(event) => setAuthForm((current) => ({ ...current, name: event.target.value }))}
-                  />
-                </label>
-                <label>
-                  <span>Email</span>
-                  <input
-                    value={authForm.email}
-                    onChange={(event) => setAuthForm((current) => ({ ...current, email: event.target.value }))}
-                  />
-                </label>
-                <button className="primaryButton" type="button" onClick={startWorkspace}>
-                  <KeyRound size={16} />
-                  Start local workspace
                 </button>
               </div>
             )}
@@ -740,11 +729,13 @@ function MobileMiniStat({ label, value }: { label: string; value: string }) {
 }
 
 function CustomerPanelView({
+  authForm,
   calendarChoices,
   chatInput,
   chatSession,
   handoff,
   localizationSummary,
+  onAuthForm,
   onChatInput,
   onChatSend,
   onLocale,
@@ -759,11 +750,13 @@ function CustomerPanelView({
   validation,
   workspace
 }: {
+  authForm: { name: string; email: string };
   calendarChoices: CalendarConnectionStartPacket[];
   chatInput: string;
   chatSession: CustomerChatSession;
   handoff: VendorHandoff;
   localizationSummary: LocalizationReadinessSummary;
+  onAuthForm: React.Dispatch<React.SetStateAction<{ name: string; email: string }>>;
   onChatInput: (value: string) => void;
   onChatSend: () => void;
   onLocale: (locale: SupportedLocaleCode) => void;
@@ -831,12 +824,12 @@ function CustomerPanelView({
           {hasWorkspace ? (
             <div className="workspaceSummary" aria-label="Local customer workspace">
               <div>
-                <span>Customer</span>
+                <span>Your name</span>
                 <strong>{workspace?.name}</strong>
                 <small>{workspace?.email}</small>
               </div>
               <div>
-                <span>Next source</span>
+                <span>Next occasion</span>
                 <strong>{opportunity.title}</strong>
                 <small>{customerExperience.workspaceHelp}</small>
               </div>
@@ -845,8 +838,26 @@ function CustomerPanelView({
             <div className="customerSetupCopy" aria-label="Customer local workspace options">
               <ShieldCheck size={20} />
               <div>
-                <strong>Start locally, then review every imported detail.</strong>
+                <strong>No account needed. Cards stay private in this browser.</strong>
                 <span>{customerExperience.workspaceHelp}</span>
+              </div>
+              <div className="customerSetupForm">
+                <label htmlFor="setupName">Your name</label>
+                <input
+                  id="setupName"
+                  type="text"
+                  placeholder="Your name"
+                  value={authForm.name}
+                  onChange={(e) => onAuthForm((f) => ({ ...f, name: e.target.value }))}
+                />
+                <label htmlFor="setupEmail">Email (optional)</label>
+                <input
+                  id="setupEmail"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={authForm.email}
+                  onChange={(e) => onAuthForm((f) => ({ ...f, email: e.target.value }))}
+                />
               </div>
             </div>
           )}
@@ -855,10 +866,6 @@ function CustomerPanelView({
             {calendarChoices.map((choice) => (
               <div
                 className={`calendarChoice ${choice.status}`}
-                data-client-provider-request={String(choice.clientMayPrepareProviderRequest)}
-                data-next-route={choice.nextApiRoute ?? ""}
-                data-start-mode={choice.startMode}
-                data-start-route={choice.apiRoute}
                 key={choice.id}
               >
                 <div>
@@ -870,14 +877,7 @@ function CustomerPanelView({
             ))}
             {calendarChoices.some((c) => c.status === "credential-gated") && (
               <p className="calendarConnectHint">
-                + Connect Google Calendar or Outlook in{" "}
-                <button
-                  className="calendarConnectLink"
-                  type="button"
-                  onClick={() => onNavigate("adapters")}
-                >
-                  Connections
-                </button>
+                Google Calendar and Outlook connect coming soon.
               </p>
             )}
           </div>
@@ -1088,9 +1088,9 @@ function FulfillmentOption({
 }
 
 function calendarChoiceStatusLabel(choice: CalendarConnectionStartPacket): string {
-  if (choice.status === "ready-local") return "Ready now";
-  if (choice.status === "manual-export") return "Manual export";
-  return "Not connected yet";
+  if (choice.status === "ready-local") return "Available now";
+  if (choice.status === "manual-export") return "Export from app";
+  return "Coming soon";
 }
 
 function OpportunitiesView({
@@ -1119,17 +1119,17 @@ function OpportunitiesView({
       <div className="toolPanel">
         <div className="sectionHeader">
           <div>
-            <p className="eyebrow">Occasion</p>
-            <h2>Find an occasion</h2>
+            <p className="eyebrow">Import</p>
+            <h2>Add event details</h2>
           </div>
           <button className="iconTextButton" type="button" onClick={onScan}>
             <RefreshCw size={16} />
-            Scan for occasion
+            Read event
           </button>
         </div>
 
         <label className="fieldStack">
-          <span>Paste an invite or calendar event</span>
+          <span>Paste an invite, event link, or calendar export</span>
           <textarea
             className="importBox"
             value={inviteText}
@@ -1312,7 +1312,7 @@ function StudioView({
               type="button"
               onClick={onAiGenerate}
               disabled={!cardGenAvailable || aiCardGenLoading}
-              title={cardGenAvailable ? "Generate card copy with AI" : "Set VITE_CARD_GEN_URL to enable AI generation"}
+              title={cardGenAvailable ? "Generate card copy with AI" : "AI generation not available in this environment"}
             >
               {aiCardGenLoading ? "Generating…" : "✦ Generate with AI"}
             </button>
@@ -1361,7 +1361,7 @@ function MemoryView({
             <p className="eyebrow">Review</p>
             <h2>Relationship memory</h2>
           </div>
-          <StatusChip icon={Lock} label="User approved" tone="green" />
+          <StatusChip icon={Lock} label="Saved by you" tone="green" />
         </div>
 
         <div className="formGrid single">
@@ -1378,7 +1378,7 @@ function MemoryView({
               className="noteBox"
               value={memoryForm.note}
               onChange={(event) => onFormChange({ ...memoryForm, note: event.target.value })}
-              placeholder="A detail the user explicitly approves for reuse."
+              placeholder="Something personal — a nickname, a shared memory, something they love."
             />
           </label>
           <button className="primaryButton" disabled={!memoryForm.note.trim()} onClick={onAdd} type="button">
@@ -1399,7 +1399,7 @@ function MemoryView({
           <article className="memoryItem" key={memory.id}>
             <div>
               <span className={memory.sensitivity === "review" ? "statePill hold" : memory.sensitivity === "sensitive" ? "statePill hold" : "statePill ready"}>
-                {memory.sensitivity === "review" ? "Pending review" : memory.sensitivity === "sensitive" ? "Handle with care" : "Approved"}
+                {memory.sensitivity === "review" ? "Draft" : memory.sensitivity === "sensitive" ? "Private" : "Saved"}
               </span>
               <h3>{memory.recipient}</h3>
               <p>{memory.note}</p>
@@ -1592,7 +1592,7 @@ function HandoffView({
           </div>
         )}
 
-        <div className="pricingResearchBox" data-observations={refreshReport.totalObservations}>
+        <div className="pricingResearchBox">
           <div className="handoffTitle compact">
             <Printer size={19} />
             <div>
@@ -2778,10 +2778,10 @@ function iconForCapability(capability: ProviderCapability) {
 
 function decisionLabel(decision: OpportunityDecision): string {
   const labels: Record<OpportunityDecision, string> = {
-    pending: "Awaiting user decision",
-    accepted: "Approved for card generation",
-    snoozed: "Snoozed locally",
-    dismissed: "Dismissed locally"
+    pending: "Review the details below",
+    accepted: "Ready to make a card",
+    snoozed: "Saved for later",
+    dismissed: "Skipped"
   };
   return labels[decision];
 }

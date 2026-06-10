@@ -989,20 +989,31 @@ h3 {
   background: #f6faf8;
 }
 
-.calendarConnectLink {
-  background: none;
-  border: none;
-  padding: 0;
-  color: #258477;
-  font-size: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.customerSetupForm {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 10px;
+  width: 100%;
 }
 
-.calendarConnectLink:hover {
-  color: #1a6255;
+.customerSetupForm label {
+  font-size: 0.76rem;
+  font-weight: 760;
+  color: #5f7076;
+  white-space: nowrap;
+}
+
+.customerSetupForm input {
+  min-height: 34px;
+  padding: 0 9px;
+  font-size: 0.85rem;
+  border: 1px solid #cbd5d8;
+  border-radius: 6px;
+  background: white;
+  color: #1f2a30;
+  width: 100%;
 }
 
 .workspaceSummary {

@@ -83,7 +83,7 @@ function inspectMobileSources() {
         "Apple Calendar ICS export",
         "Review calendar options",
         "Email receipts later",
-        "Paste invite or ICS",
+        "Import an invite",
         "Download print package",
         "Cheapest shipped option",
         "Live AI and automatic orders stay off",

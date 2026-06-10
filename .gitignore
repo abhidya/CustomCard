@@ -8,3 +8,10 @@ coverage/
 card_gen/.venv/
 card_gen/**/__pycache__/
 card_gen/**/*.pyc
+# Local env files with real secrets — never commit
+infra/env/.env
+infra/env/.env.dev
+infra/env/.env.qa
+infra/env/.env.prod
+.env
+.env.local

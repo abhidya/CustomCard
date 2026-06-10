@@ -122,7 +122,7 @@ describe("onboarding and calendar integration contracts", () => {
       "icloud-ics-fallback"
     ]);
     expect(choices[0]).toMatchObject({
-      label: "Paste invite or ICS",
+      label: "Import an invite",
       status: "ready-local",
       canStartNow: true,
       liveOAuthEnabled: false,

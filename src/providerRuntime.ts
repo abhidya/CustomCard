@@ -318,6 +318,8 @@ const placeholderValues = new Set([
 const providerScopes: Record<string, string[]> = {
   "gmail-metadata-import": ["gmail.metadata.readonly"],
   "google-calendar-events": ["calendar.events.readonly"],
+  "eventbrite-events": ["event:read"],
+  "meetup-events": [],
   "google-people-contacts": ["contacts.readonly"],
   "microsoft-graph-mail": ["Mail.ReadBasic"],
   "microsoft-graph-calendar": ["Calendars.ReadBasic"],
@@ -328,6 +330,9 @@ const providerScopes: Record<string, string[]> = {
   "pipedrive-crm-lifecycle": ["persons:read", "deals:read"],
   "dynamics-crm-lifecycle": ["https://{DYNAMICS_RESOURCE_URL}/.default"],
   "shopify-crm-lifecycle": ["read_customers", "read_orders"],
+  "etsy-seller-customer-lifecycle": ["transactions_r", "listings_r"],
+  "monday-crm-lifecycle": [],
+  "amazon-seller-customer-lifecycle": [],
   "klaviyo-profile-lifecycle": ["profiles:read"],
   "mailchimp-audience-lifecycle": ["lists:read", "members:read"],
   "activecampaign-contact-lifecycle": ["contacts:read"],
@@ -1611,6 +1616,84 @@ function buildEventImportRequest(
     );
   }
 
+  if (adapter.id === "microsoft-graph-calendar") {
+    return request(
+      adapter,
+      "GET",
+      `https://graph.microsoft.com/v1.0/me/calendarView?${new URLSearchParams({
+        $select: "id,subject,start,end,location",
+        endDateTime: input.toIso,
+        startDateTime: input.fromIso
+      }).toString()}`,
+      ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET", "MICROSOFT_TENANT_ID"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {microsoft-graph-access-token}" }
+    );
+  }
+
+  if (adapter.id === "eventbrite-events") {
+    return request(
+      adapter,
+      "GET",
+      `https://www.eventbriteapi.com/v3/users/me/events/?${new URLSearchParams({
+        status: "live,started,ended",
+        time_filter: "current_future",
+        expand: "venue",
+        page_size: "50"
+      }).toString()}`,
+      ["EVENTBRITE_CLIENT_ID", "EVENTBRITE_CLIENT_SECRET"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {eventbrite-oauth-access-token}" }
+    );
+  }
+
+  if (adapter.id === "luma-events") {
+    return request(
+      adapter,
+      "GET",
+      `https://public-api.luma.com/v1/calendar/list-events?${new URLSearchParams({
+        pagination_limit: "50"
+      }).toString()}`,
+      ["LUMA_API_KEY"],
+      undefined,
+      [],
+      { "x-luma-api-key": "{luma-api-key}" }
+    );
+  }
+
+  if (adapter.id === "meetup-events") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.meetup.com/gql",
+      ["MEETUP_CLIENT_ID", "MEETUP_CLIENT_SECRET"],
+      // GraphQL query body — runtime contracts carry the shape, not live payloads
+      { query: "query { self { id name upcomingEvents(input: { first: 50 }) { edges { node { id title dateTime endTime venue { address city state country } } } } } }" },
+      scopes,
+      { authorization: "Bearer {meetup-oauth-access-token}", "content-type": "application/json" }
+    );
+  }
+
+  // partiful-events is contract-only — no live endpoint
+  if (adapter.id === "partiful-events") {
+    return request(
+      adapter,
+      "GET",
+      "https://partiful.com",
+      [],
+      undefined,
+      [],
+      {}
+    );
+  }
+
+  // icloud-ics-fallback — manual ICS export, no live endpoint
+  if (adapter.id === "ics-paste-import" || adapter.id === "manual-note-import" || adapter.id === "icloud-ics-fallback" || adapter.id === "partiful-events") {
+    return request(adapter, "GET", "local://event-import-no-network", [], undefined, [], {});
+  }
+
   return request(
     adapter,
     "GET",
@@ -1881,6 +1964,54 @@ function buildCrmRequest(adapter: ProviderAdapter, input: CrmRuntimeInput): Runt
       },
       scopes,
       { authorization: "Bearer {SQUARE_ACCESS_TOKEN}" }
+    );
+  }
+
+  if (adapter.id === "monday-crm-lifecycle") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.monday.com/v2",
+      ["MONDAY_API_TOKEN"],
+      {
+        query: `query { boards(limit: 10) { id name items_page(limit: 100, query_params: { rules: [{ column_id: "last_updated", compare_value: "${input.fromIso}" compare_attribute: "UPDATED_AT" }] }) { items { id name column_values { id text value } } } } }`
+      },
+      scopes,
+      { authorization: "Bearer {MONDAY_API_TOKEN}", "API-Version": "2024-01" }
+    );
+  }
+
+  if (adapter.id === "amazon-seller-customer-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      `https://sellingpartnerapi-na.amazon.com/orders/v0/orders?${new URLSearchParams({
+        MarketplaceIds: "{AMAZON_SP_MARKETPLACE_ID}",
+        CreatedAfter: input.fromIso,
+        CreatedBefore: input.toIso,
+        OrderStatuses: "Shipped,Delivered",
+        MaxResultsPerPage: "100"
+      }).toString()}`,
+      ["AMAZON_SP_CLIENT_ID", "AMAZON_SP_CLIENT_SECRET", "AMAZON_SP_REFRESH_TOKEN", "AMAZON_SP_MARKETPLACE_ID"],
+      undefined,
+      scopes,
+      { authorization: "Bearer {amazon-lwa-access-token}", "x-amz-access-token": "{amazon-lwa-access-token}" }
+    );
+  }
+
+  if (adapter.id === "etsy-seller-customer-lifecycle") {
+    return request(
+      adapter,
+      "GET",
+      `https://openapi.etsy.com/v3/application/shops/{etsy-shop-id}/receipts?${new URLSearchParams({
+        min_created: input.fromIso,
+        max_created: input.toIso,
+        limit: "100"
+      }).toString()}`,
+      ["ETSY_CLIENT_ID", "ETSY_CLIENT_SECRET"],
+      undefined,
+      scopes,
+      { "x-api-key": "{ETSY_CLIENT_ID}", authorization: "Bearer {etsy-oauth-access-token}" }
     );
   }
 

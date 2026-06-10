@@ -369,8 +369,8 @@ function buildActions(stage: CustomerWebStage, proofApproved = false): CustomerW
       },
       {
         id: "paste-invite",
-        label: "Paste invite or ICS",
-        detail: "Use an invite when you are ready to add details.",
+        label: "Import an invite",
+        detail: "Paste an email invite, event link, or calendar export.",
         priority: "secondary"
       }
     ];

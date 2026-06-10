@@ -129,7 +129,7 @@ describe("mobile customer experience contract", () => {
       expect.arrayContaining([
         expect.objectContaining({ kind: "calendar", label: "Review calendar options", customerVisible: true }),
         expect.objectContaining({ kind: "email", label: "Email receipts later", customerVisible: true }),
-        expect.objectContaining({ kind: "invite", label: "Paste invite or ICS", sourceMode: "local-paste" })
+        expect.objectContaining({ kind: "invite", label: "Import an invite", sourceMode: "local-paste" })
       ])
     );
     expect(mobileImportActions.map((action) => action.label)).not.toContain("Future calendar sync");
@@ -361,7 +361,7 @@ describe("mobile customer experience contract", () => {
     expect(source).toContain("accessibilityRole=\"button\"");
     expect(mobileRenderSnapshot.hero.secondaryActions).toEqual([
       expect.objectContaining({
-        label: "Paste invite or ICS",
+        label: "Import an invite",
         modeLabel: "Local",
         presentation: "secondary",
         disabled: false

@@ -260,6 +260,51 @@ For Outlook: register at [portal.azure.com](https://portal.azure.com/) → App r
 
 ---
 
+### Event platform integrations (contract-only, no gate flip needed)
+
+These adapters are wired as contract-only Provider Adapters in `providerCatalog.ts`. No live calls until `liveOAuthEnabled` is flipped. Credentials can be added at any time — the runtime will produce no-network request contracts until the gate is opened.
+
+#### Eventbrite
+
+- Register app: https://www.eventbrite.com/account-settings/apps
+- Auth: OAuth 2.0 · scope `event:read`
+- Endpoint: `GET https://www.eventbriteapi.com/v3/users/me/events/`
+- Rate limit: 1,000 req/hour per token
+
+```bash
+vercel env add EVENTBRITE_CLIENT_ID preview
+vercel env add EVENTBRITE_CLIENT_SECRET preview
+```
+
+#### Luma (lu.ma)
+
+- Requires Luma Plus subscription on the connected calendar
+- Get API key: Luma Settings → Developer → API Keys
+- Endpoint: `GET https://public-api.luma.com/v1/calendar/list-events`
+- Rate limit: 200 req/min per calendar key
+
+```bash
+vercel env add LUMA_API_KEY preview
+```
+
+#### Meetup
+
+- Requires Meetup Pro to register an OAuth consumer
+- Register at: https://secure.meetup.com/meetup_api/oauth_consumers/
+- Endpoint: GraphQL `POST https://api.meetup.com/gql` · query `self { upcomingEvents }`
+- Rate limit: 500 points/60s
+
+```bash
+vercel env add MEETUP_CLIENT_ID preview
+vercel env add MEETUP_CLIENT_SECRET preview
+```
+
+#### Partiful
+
+No official API as of 2026. Adapter is `contract-only` / `status: manual`. Deferred until Partiful launches a developer program. Customer can paste event link or ICS in the meantime.
+
+---
+
 ### Gate: Live model chat (`liveModelCallsEnabled`)
 
 Requires: prompt audit, spend limits, PII redaction pipeline in production.
@@ -279,6 +324,43 @@ Then update `CustomerChatSession` in `customerChat.ts` to accept `liveModelCalls
 Requires: vendor API access or certified browser session contract.
 
 See `retailQuoteContract.ts` → `retailQuoteEnablementChecklists` for per-vendor required evidence. No env var shortcut — this gate requires vendor accounts and legal review before any code change.
+
+#### Walgreens Native Photo Prints API
+
+API credentials are available. Sandbox is ready to test against.
+
+```bash
+# Vercel — set for Preview first, then Production once certified
+vercel env add WALGREENS_API_KEY preview
+vercel env add WALGREENS_AFF_ID preview
+# Optional: revenue share
+vercel env add WALGREENS_PUBLISHER_ID preview
+```
+
+Local (Docker):
+```
+# in infra/env/.env  (gitignored copy of infra/env/.env.example)
+WALGREENS_VENDOR_MODE=sandbox
+WALGREENS_API_KEY=<your-key>
+WALGREENS_AFF_ID=<your-aff-id>
+```
+
+Sandbox base URL: `https://services-qa.walgreens.com/api/photo`  
+Production base URL: `https://services.walgreens.com/api/photo`
+
+Endpoints used by the adapter:
+| Endpoint | Path | Rate limit |
+|---|---|---|
+| Fetch upload credentials | `/creds/v3` | 300/min |
+| Product details + pricing | `/products/v3` | 300/min |
+| Validate coupon | `/order/coupon/v3` | 100/min |
+| Store search | `/store/v3` | 300/min |
+| Order submit | `/order/submit/v3` | 300/min |
+| Order status | `/order/status/v3` | 300/min |
+
+Image upload goes directly to Azure Blob Storage via a SAS token returned by `/creds/v3` — not through the Walgreens API server.
+
+Flip `WALGREENS_VENDOR_MODE=sandbox` to enable sandbox calls. Keep `REAL_ORDER_KILL_SWITCH=disabled` until Walgreens approves your production launch.
 
 ---
 
@@ -370,3 +452,4 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | Live model chat | 🔑 Needs prompt audit + API key | `liveModelCallsEnabled` |
 | Live price quotes | 🔑 Needs vendor API access | `liveQuoteEnabled` |
 | Real order placement | 🔒 Needs vendor cert + kill-switch | `realOrdersEnabled` |
+| Walgreens sandbox calls | 🔑 `WALGREENS_VENDOR_MODE=sandbox` + API key | `WALGREENS_VENDOR_MODE` |
