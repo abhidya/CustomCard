@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ArtifactHandoffContract, StoredPrintArtifact } from "./artifactHandoff";
+import { buildArtifactHandoffContract, type ArtifactHandoffConfig, type ArtifactHandoffContract, type StoredPrintArtifact } from "./artifactHandoff";
 import type { PrintExportFile, PrintExportPackage } from "./printExport";
 
 export type ArtifactStoreProvider = "filesystem" | "s3-compatible";
@@ -405,4 +405,32 @@ function contentHash(value: string): string {
 
 function byteLength(value: string): number {
   return new TextEncoder().encode(value).length;
+}
+
+// --- Facade ---
+
+export interface ArtifactHandoffPackageResult {
+  handoff: ArtifactHandoffContract;
+  storeResult: ArtifactStoreResult;
+}
+
+/**
+ * Single-call facade for the full sign → store → verify lifecycle.
+ *
+ * Callers pass a print package and storage config; the sequence
+ * (buildArtifactHandoffContract → writeFilesystemArtifactStore /
+ * writeS3CompatibleArtifactStore) is hidden behind this interface.
+ * Provide `s3Client` for the s3-compatible provider, omit for filesystem.
+ */
+export async function storeArtifactHandoffPackage(
+  printPackage: PrintExportPackage,
+  config: ArtifactHandoffConfig,
+  s3Client?: S3CompatibleArtifactStoreClient
+): Promise<ArtifactHandoffPackageResult> {
+  const handoff = await buildArtifactHandoffContract(printPackage, config);
+  const storeResult =
+    config.storageProvider === "s3-compatible" && s3Client
+      ? await writeS3CompatibleArtifactStore(printPackage, handoff, s3Client)
+      : await writeFilesystemArtifactStore(printPackage, handoff);
+  return { handoff, storeResult };
 }

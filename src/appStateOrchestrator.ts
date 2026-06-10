@@ -12,10 +12,14 @@ import {
   type CardDraftInput,
   type CardOpportunity,
   type CardValidation,
+  type LanguageChoice,
   type LocalWorkspace,
+  type MemoryItem,
   type OpportunityDecision,
+  type Tone,
   type VendorHandoff,
-  type VendorId
+  type VendorId,
+  type VisualStyle
 } from "./freeMvp";
 import { getSupportedLocale, summarizeLocalizationReadiness, type LocalizationReadinessSummary, type SupportedLocale, type SupportedLocaleCode } from "./localization";
 import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
@@ -26,15 +30,31 @@ import { buildPrinterPricingComparison } from "./printerPricing";
 import { buildPrintExportPackage, type PrintExportPackage } from "./printExport";
 import { getProviderRuntimeReadiness, type RuntimeReadiness } from "./providerRuntime";
 import { buildReadinessSummary, type ReadinessSummary } from "./readinessSummary";
-import {
-  reviewerEmptyMemories,
-  reviewerInitialAuthForm,
-  reviewerInitialExportStatus,
-  reviewerInitialScanStatus,
-  reviewerReferenceDate,
-  reviewerWorkspaceKey,
-  type ReviewerAuthForm
-} from "./reviewerBootstrap";
+// --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
+
+export interface ReviewerAuthForm {
+  name: string;
+  email: string;
+}
+
+export const reviewerWorkspaceKey = "customcard-free-workspace-v1";
+export const reviewerReferenceDate = new Date("2026-06-03T12:00:00.000Z");
+export const reviewerInitialAuthForm: ReviewerAuthForm = { name: "Abdul", email: "abdul@customcard.local" };
+export const reviewerInitialScanStatus = "Invite required";
+export const reviewerInitialExportStatus = "Ready to export";
+export const reviewerEmptyMemories: MemoryItem[] = [];
+
+export const reviewerDraftOptions: {
+  tones: Tone[];
+  styles: VisualStyle[];
+  languages: LanguageChoice[];
+  vendors: VendorId[];
+} = {
+  tones: ["warm", "playful", "elegant", "reverent"],
+  styles: ["botanical", "bold-type", "photo-note", "minimal"],
+  languages: ["English", "Spanish", "Urdu", "Arabic"],
+  vendors: ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"]
+};
 
 export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 

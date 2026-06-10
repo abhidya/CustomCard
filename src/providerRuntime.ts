@@ -200,6 +200,50 @@ export interface ProviderRuntimeInput {
   vendor?: VendorRuntimeInput;
 }
 
+/**
+ * Maps each ProviderCapability to the exact ProviderRuntimeInput key it requires.
+ * Capabilities that need no input (render-export, memory, cloud-runtime) map to never.
+ * Use with CapabilityInput<C> and toRuntimeInput() to build type-safe inputs per capability.
+ */
+export type CapabilityInputKey = {
+  "auth": "auth";
+  "event-import": "eventImport";
+  "contact-import": "contactImport";
+  "crm-integration": "crm";
+  "workflow-integration": "workflowIntegration";
+  "text-chat": "textChat";
+  "image-generation": "image";
+  "render-export": never;
+  "memory": never;
+  "vendor-handoff": "vendor";
+  "cloud-runtime": never;
+  "notification": "notification";
+  "payment": "payment";
+  "observability": "observability";
+};
+
+/** The required input shape for a specific capability — narrows the 11-field open union. */
+export type CapabilityInput<C extends ProviderCapability> =
+  CapabilityInputKey[C] extends never
+    ? Record<string, never>
+    : Required<Pick<ProviderRuntimeInput, CapabilityInputKey[C] & keyof ProviderRuntimeInput>>;
+
+/**
+ * Type-safe input constructor. The capability parameter constrains the input shape at
+ * compile time — passing the wrong input key for a capability is a type error.
+ *
+ * @example
+ *   buildProviderAdapterRuntime(id, toRuntimeInput("auth", { auth: {...} }))
+ *   buildProviderAdapterRuntime(id, toRuntimeInput("text-chat", { textChat: {...} }))
+ *   buildProviderAdapterRuntime(id, toRuntimeInput("render-export", {}))
+ */
+export function toRuntimeInput<C extends ProviderCapability>(
+  _capability: C,
+  input: CapabilityInput<C>
+): ProviderRuntimeInput {
+  return input as ProviderRuntimeInput;
+}
+
 export interface RuntimeReadiness {
   adapterId: string;
   label: string;

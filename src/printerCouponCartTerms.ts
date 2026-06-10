@@ -17,6 +17,12 @@ import type {
  * being one facet of the 2k-line pricing module.
  */
 
+/** Single source of discount math — both the pricing and evidence paths use this. */
+export function applyDiscountPercent(subtotalCents: number, discountPercent: number): { discountCents: number; afterCents: number } {
+  const discountCents = Math.floor((subtotalCents * discountPercent) / 100);
+  return { discountCents, afterCents: Math.max(subtotalCents - discountCents, 0) };
+}
+
 export function isPrinterCouponActive(offer: PrinterCouponOffer, now: Date): boolean {
   const startsAt = new Date(offer.startsAtIso).getTime();
   const endsAt = new Date(offer.endsAtIso).getTime();
@@ -35,8 +41,7 @@ export function hasMatchingProviderPortalCouponEvidence(
   if (offer.evidenceStatus !== "provider-portal-applied" || !evidence) return false;
   if (validatePrinterCouponPortalApplicationEvidence(offer).length > 0) return false;
 
-  const expectedDiscountCents = Math.floor((subtotalCents * offer.discountPercent) / 100);
-  const expectedAfterCouponCents = Math.max(subtotalCents - expectedDiscountCents, 0);
+  const { discountCents: expectedDiscountCents, afterCents: expectedAfterCouponCents } = applyDiscountPercent(subtotalCents, offer.discountPercent);
   const expectedFulfillmentMode: PrinterCouponFulfillmentMode = observation.pickupEligible ? "pickup" : "shipping";
   const expectedAccountState: PrinterCouponAccountState = offer.requiresLoggedInAccount ? "logged-in" : evidence.cartTerms.accountState;
 

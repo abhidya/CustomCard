@@ -1,12 +1,13 @@
 import type { VendorId } from "./freeMvp";
 import { couponSignalTextIncludes } from "./printerCouponSignals";
 import {
+  applyDiscountPercent,
   hasMatchingProviderPortalCouponEvidence,
   isPrinterCouponActive,
   validatePrinterCouponPortalApplicationEvidence
 } from "./printerCouponCartTerms";
 
-export { hasMatchingProviderPortalCouponEvidence, isPrinterCouponActive, validatePrinterCouponPortalApplicationEvidence };
+export { applyDiscountPercent, hasMatchingProviderPortalCouponEvidence, isPrinterCouponActive, validatePrinterCouponPortalApplicationEvidence };
 
 const observedAtIso = "2026-06-07T12:00:00.000Z";
 
@@ -1980,8 +1981,7 @@ function buildPrinterCouponPortalApplicationTarget(
   quantity: number
 ): PrinterCouponPortalApplicationTarget {
   const { pricedQuantity, subtotalCents } = buildPrinterSubtotalTerms(observation, quantity);
-  const expectedDiscountCents = Math.floor((subtotalCents * offer.discountPercent) / 100);
-  const expectedSubtotalAfterCouponCents = Math.max(subtotalCents - expectedDiscountCents, 0);
+  const { discountCents: expectedDiscountCents, afterCents: expectedSubtotalAfterCouponCents } = applyDiscountPercent(subtotalCents, offer.discountPercent);
 
   return {
     sourcePriceObservationId: observation.id,
