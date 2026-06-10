@@ -1639,6 +1639,7 @@ function HandoffView({
             Public prices are not final checkout totals. Confirm final price, available discounts, tax, pickup, and
             shipping before ordering.
           </small>
+          <small>Based on {refreshReport.totalObservations} price observations. Prices refresh periodically; confirm at checkout.</small>
         </div>
       </div>
     </section>
