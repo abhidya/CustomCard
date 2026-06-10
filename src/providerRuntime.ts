@@ -1968,13 +1968,14 @@ function buildCrmRequest(adapter: ProviderAdapter, input: CrmRuntimeInput): Runt
   }
 
   if (adapter.id === "monday-crm-lifecycle") {
+    const safeIso = /^[\d\-T:.Z+]+$/.test(input.fromIso) ? input.fromIso : "";
     return request(
       adapter,
       "POST",
       "https://api.monday.com/v2",
       ["MONDAY_API_TOKEN"],
       {
-        query: `query { boards(limit: 10) { id name items_page(limit: 100, query_params: { rules: [{ column_id: "last_updated", compare_value: "${input.fromIso}" compare_attribute: "UPDATED_AT" }] }) { items { id name column_values { id text value } } } } }`
+        query: `query { boards(limit: 10) { id name items_page(limit: 100, query_params: { rules: [{ column_id: "last_updated", compare_value: "${safeIso}" compare_attribute: "UPDATED_AT" }] }) { items { id name column_values { id text value } } } } }`
       },
       scopes,
       { authorization: "Bearer {MONDAY_API_TOKEN}", "API-Version": "2024-01" }

@@ -51,6 +51,18 @@ function createContractApiRuntime({ routes }) {
       return [];
     },
     async authorize(route) {
+      if (route.audience === "admin" && route.method === "POST") {
+        return {
+          ok: false,
+          statusCode: 403,
+          payload: {
+            service: "customcard-api",
+            status: "admin-mutation-requires-durable-runtime",
+            route: route.id,
+            detail: "Admin mutations are not permitted in contract runtime. Set CUSTOMCARD_API_RUNTIME=postgres in deployed environments."
+          }
+        };
+      }
       return {
         ok: true,
         role: route.audience,

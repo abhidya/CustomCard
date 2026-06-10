@@ -1366,20 +1366,10 @@ describe("api server wrapper", () => {
       });
 
       const demoReset = await fetch(`http://127.0.0.1:${port}/api/admin/demo-reset`, { method: "POST" });
-      expect(demoReset.status).toBe(202);
+      expect(demoReset.status).toBe(403);
       expect(await demoReset.json()).toMatchObject({
-        status: "accepted-contract-only",
-        route: "admin-demo-reset",
-        seedSummary: {
-          service: "customcard-demo-seed",
-          status: "ready",
-          rows: 17,
-          signedArtifactUrls: true,
-          realOrdersEnabled: false
-        },
-        signedArtifactUrls: true,
-        externalNetworkCalls: false,
-        realOrdersEnabled: false
+        status: "admin-mutation-requires-durable-runtime",
+        route: "admin-demo-reset"
       });
 
       const wrongMethod = await fetch(`http://127.0.0.1:${port}/api/health`, { method: "POST" });
