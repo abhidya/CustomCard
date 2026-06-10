@@ -1398,8 +1398,8 @@ function MemoryView({
         {memories.map((memory) => (
           <article className="memoryItem" key={memory.id}>
             <div>
-              <span className={memory.sensitivity === "review" ? "statePill hold" : memory.sensitivity === "sensitive" ? "statePill hold" : "statePill ready"}>
-                {memory.sensitivity === "review" ? "Draft" : memory.sensitivity === "sensitive" ? "Private" : "Saved"}
+              <span className={memory.sensitivity === "review" ? "statePill hold" : "statePill ready"}>
+                {memory.sensitivity === "review" ? "Draft" : "Saved"}
               </span>
               <h3>{memory.recipient}</h3>
               <p>{memory.note}</p>
