@@ -9,6 +9,7 @@ const files = {
   artifactStore: "src/artifactStore.ts",
   artifactStoreDoctor: "scripts/artifact-store-doctor.mjs",
   artifactStoreS3LiveDoctor: "scripts/artifact-store-s3-live-doctor.mjs",
+  localPersistenceAudit: "src/localPersistenceAudit.ts",
   postgresApiHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
   postgresIntegrationDoctor: "scripts/postgres-integration-doctor.mjs",
   postgresRuntimeDoctor: "scripts/postgres-runtime-doctor.mjs",
@@ -269,6 +270,21 @@ const artifactStoreS3LiveDoctorSignals = [
   "externalVendorCalls: false",
   "realOrdersEnabled: false"
 ];
+const localPersistenceAuditSignals = [
+  "customcard-local-persistence-audit",
+  "local-workspace-identity",
+  "approved-relationship-memories",
+  "saved-event-queue-decisions",
+  "card-history-render-preview",
+  "theme-preference",
+  "customcard-free-workspace-v1",
+  "customcard-theme-v1",
+  "postgres-and-object-store",
+  "relationship_memories",
+  "render_packets",
+  "/api/memories/review",
+  "/api/render-packets"
+];
 const authSessionSignals = migrationSignals.slice(0, 7);
 const accountStorageSignals = migrationSignals.slice(7, 16);
 const idempotencySignals = migrationSignals.slice(16, 21);
@@ -289,12 +305,17 @@ const checks = [
   checkIncludes("api", "artifact-store-contract", contents.artifactStore, artifactStoreSignals),
   checkIncludes("api", "artifact-store-doctor", contents.artifactStoreDoctor, artifactStoreDoctorSignals),
   checkIncludes("api", "artifact-store-s3-live-doctor", contents.artifactStoreS3LiveDoctor, artifactStoreS3LiveDoctorSignals),
+  checkIncludes("api", "local-browser-persistence-audit", contents.localPersistenceAudit, localPersistenceAuditSignals),
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),
   checkIncludes("api", "postgres-api-http-doctor", contents.postgresApiHttpDoctor, postgresApiHttpSignals),
   checkAbsent("schema", "no-raw-content-permission", contents.migration, ["raw_content_allowed", "raw_content_stored BOOLEAN NOT NULL DEFAULT TRUE"]),
-  checkAbsent("api", "no-live-persistence-claims", `${contents.apiContracts}\n${contents.apiServer}`, ["realOrdersEnabled: true", "externalNetworkCalls: true"])
+  checkAbsent("api", "no-live-persistence-claims", `${contents.apiServer}\n${contents.localPersistenceAudit}`, [
+    "realOrdersEnabled: true",
+    "liveExternalCalls: true",
+    "rawContentStored: true"
+  ])
 ];
 
 const lanes = Array.from(new Set(checks.map((item) => item.lane))).map((lane) => {
@@ -332,6 +353,14 @@ const report = {
       statefulRoutes: 16,
       adminPersistenceReadiness: true,
       idempotentMutations: 10
+    },
+    localBrowserState: {
+      auditItems: 5,
+      dbRequiredItems: 4,
+      objectStoreRequiredItems: 1,
+      browserOnlyItems: 1,
+      workspaceKey: "customcard-free-workspace-v1",
+      browserOnlyKeys: ["customcard-theme-v1"]
     },
     safety: {
       rawContentStored: false,

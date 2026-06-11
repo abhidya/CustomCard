@@ -1,6 +1,7 @@
-import { ArrowRight, Download } from "lucide-react";
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRight, Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
+import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AdminPanelView, AdaptersView } from "../src/App";
 import {
   addMemory,
   createLocalWorkspace,
@@ -33,6 +34,22 @@ const navItems: Array<{ id: ViewId; label: string }> = [
   { id: "handoff", label: "Print" }
 ];
 
+const adminNavItems: Array<{ id: ViewId; label: string }> = [
+  { id: "admin", label: "Admin" },
+  { id: "adapters", label: "Adapters" }
+];
+
+const configuredAdminEmails = new Set(
+  [
+    import.meta.env.VITE_CUSTOMCARD_ADMIN_EMAILS as string | undefined,
+    import.meta.env.VITE_CUSTOMCARD_ADMIN_EMAIL as string | undefined
+  ]
+    .filter(Boolean)
+    .flatMap((value) => value!.split(","))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean)
+);
+
 function updateViewRoute(view: ViewId) {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
@@ -43,6 +60,7 @@ function updateViewRoute(view: ViewId) {
 
 export default function App() {
   const [theme, setTheme] = useTheme();
+  const adminAccess = useAdminAccess();
   const state = useAppState();
   const {
     activeView,
@@ -72,9 +90,17 @@ export default function App() {
     draft,
     validation,
     handoff,
-    printPackage
+    printPackage,
+    adminPanelModel,
+    localizationSummary,
+    providerGovernance,
+    productionReadiness,
+    readiness,
+    runtimeReadiness
   } = state;
 
+  const isAdminView = activeView === "admin" || activeView === "adapters";
+  const visibleCustomerView = isAdminView || activeView === "mobile" ? "customer" : activeView;
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
 
@@ -184,8 +210,8 @@ export default function App() {
   /* ---------- live CTA ---------- */
   const estimate = pricingComparison.selectedVendorOptions[0];
   const priceLabel = estimate?.effectiveSubtotalLabel;
-  const designing = activeView === "studio";
-  const printing = activeView === "handoff";
+  const designing = visibleCustomerView === "studio";
+  const printing = visibleCustomerView === "handoff";
 
   const cta = printing
     ? {
@@ -222,19 +248,20 @@ export default function App() {
     inviteText.trim().length > 0;
 
   return (
-    <div className="shell">
+    <div className="shell" data-admin-view={isAdminView ? "true" : undefined}>
+      <a className="skipLink" href="#main-content">
+        Skip to main content
+      </a>
       <header className="topbar">
         <button className="wordmark" onClick={() => openView("customer")} type="button">
           <span className="wordmark-glyph">C</span>
           <span className="wordmark-name">CustomCard</span>
         </button>
-        <nav className="mainnav">
+        <nav className="mainnav" aria-label="CustomCard navigation">
           {navItems.map((item) => (
             <button
               className="navlink"
-              data-active={
-                item.id === activeView || (item.id === "customer" && activeView === "studio" && false)
-              }
+              data-active={item.id === visibleCustomerView}
               key={item.id}
               onClick={() => openView(item.id)}
               type="button"
@@ -242,6 +269,22 @@ export default function App() {
               {item.label}
             </button>
           ))}
+          {adminAccess.isAdmin ? (
+            <>
+              <span className="navdivider" aria-hidden="true" />
+              {adminNavItems.map((item) => (
+                <button
+                  className="navlink navlink-admin"
+                  data-active={item.id === activeView}
+                  key={item.id}
+                  onClick={() => openView(item.id)}
+                  type="button"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </>
+          ) : null}
         </nav>
         <div className="topbar-side">
           <ClerkAuthControls />
@@ -261,8 +304,26 @@ export default function App() {
         </div>
       </header>
 
-      <main>
-        {activeView === "customer" ? (
+      <main id="main-content">
+        {isAdminView ? (
+          <AdminRoute
+            access={adminAccess}
+            activeView={activeView}
+            adminPanel={
+              <AdminPanelView
+                localizationSummary={localizationSummary}
+                model={adminPanelModel}
+                productionReadiness={productionReadiness}
+                providerGovernance={providerGovernance}
+                readiness={readiness}
+                runtimeReadiness={runtimeReadiness}
+              />
+            }
+            adaptersPanel={<AdaptersView runtimeReadiness={runtimeReadiness} />}
+          />
+        ) : null}
+
+        {!isAdminView && visibleCustomerView === "customer" ? (
           <HomeView
             draft={displayDraft}
             hasProgress={hasProgress}
@@ -272,7 +333,7 @@ export default function App() {
           />
         ) : null}
 
-        {activeView === "opportunities" ? (
+        {!isAdminView && visibleCustomerView === "opportunities" ? (
           <EventsView
             inviteText={inviteText}
             onAccept={acceptOpportunity}
@@ -283,7 +344,7 @@ export default function App() {
           />
         ) : null}
 
-        {activeView === "studio" ? (
+        {!isAdminView && visibleCustomerView === "studio" ? (
           <StudioView
             aiActive={aiDraft !== null}
             aiAvailable={cardGenAvailable}
@@ -296,7 +357,7 @@ export default function App() {
           />
         ) : null}
 
-        {activeView === "memory" ? (
+        {!isAdminView && visibleCustomerView === "memory" ? (
           <NotesView
             form={memoryForm}
             memories={memories}
@@ -306,7 +367,7 @@ export default function App() {
           />
         ) : null}
 
-        {activeView === "handoff" ? (
+        {!isAdminView && visibleCustomerView === "handoff" ? (
           <PrintView
             handoff={handoff}
             onCopyChecklist={copyChecklist}
@@ -321,7 +382,7 @@ export default function App() {
         ) : null}
       </main>
 
-      <div className="ctadock">
+      {!isAdminView ? <div className="ctadock">
         <span className="ctadock-progress" aria-hidden="true">
           <i data-done={true} data-now={!designing && !printing} />
           <i data-done={designing || printing} data-now={designing} />
@@ -335,10 +396,113 @@ export default function App() {
           {cta.label}
           {cta.icon}
         </button>
-      </div>
+      </div> : null}
 
       {toast ? <Toast message={toast} /> : null}
     </div>
+  );
+}
+
+interface AdminAccess {
+  isLoaded: boolean;
+  isSignedIn: boolean;
+  isAdmin: boolean;
+  hasConfiguredEmails: boolean;
+}
+
+function useAdminAccess(): AdminAccess {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress?.trim().toLowerCase();
+  const metadata = user?.publicMetadata as Record<string, unknown> | undefined;
+  const role = typeof metadata?.role === "string" ? metadata.role.toLowerCase() : "";
+  const roles = Array.isArray(metadata?.roles)
+    ? metadata.roles.map((value) => String(value).toLowerCase())
+    : [];
+  const emailAllowed = email ? configuredAdminEmails.has(email) : false;
+  const roleAllowed = role === "admin" || roles.includes("admin");
+
+  return {
+    isLoaded,
+    isSignedIn: Boolean(isSignedIn),
+    isAdmin: Boolean(isSignedIn && (emailAllowed || roleAllowed)),
+    hasConfiguredEmails: configuredAdminEmails.size > 0
+  };
+}
+
+function AdminRoute({
+  access,
+  activeView,
+  adminPanel,
+  adaptersPanel
+}: {
+  access: AdminAccess;
+  activeView: ViewId;
+  adminPanel: ReactNode;
+  adaptersPanel: ReactNode;
+}) {
+  if (!access.isAdmin) {
+    return <AdminGate access={access} target={activeView === "adapters" ? "Adapters" : "Admin panel"} />;
+  }
+
+  return (
+    <section className="adminSurface reveal">
+      <div className="adminSurfaceHead">
+        <span className="adminBadge">
+          {activeView === "adapters" ? <Settings size={16} /> : <ShieldCheck size={16} />}
+          Admin
+        </span>
+        <div>
+          <h1>{activeView === "adapters" ? "Adapter readiness" : "Admin panel"}</h1>
+          <p>Operational views are visible only to signed-in admin users.</p>
+        </div>
+      </div>
+      <div className="adminLegacySurface">
+        {activeView === "adapters" ? adaptersPanel : adminPanel}
+      </div>
+    </section>
+  );
+}
+
+function AdminGate({ access, target }: { access: AdminAccess; target: string }) {
+  const status = !access.isLoaded
+    ? "Checking account access"
+    : access.isSignedIn
+      ? "Admin access required"
+      : "Sign in required";
+
+  return (
+    <section className="adminGate panelcard reveal" aria-label={`${target} access gate`}>
+      <span className="adminGateIcon">
+        <LockKeyhole size={24} />
+      </span>
+      <div>
+        <p className="eyebrow">Private operations</p>
+        <h1>{target}</h1>
+        <p>
+          {access.isSignedIn
+            ? "This account is signed in, but it is not marked as a CustomCard admin."
+            : "Sign in with a CustomCard admin account to view operational readiness and adapter controls."}
+        </p>
+        {!access.hasConfiguredEmails ? (
+          <small>
+            Admin access can be granted with Clerk public metadata role <code>admin</code> or a
+            comma-separated <code>VITE_CUSTOMCARD_ADMIN_EMAILS</code> allowlist.
+          </small>
+        ) : null}
+      </div>
+      <div className="adminGateActions">
+        <span>{status}</span>
+        {access.isSignedIn ? (
+          <UserButton />
+        ) : (
+          <SignInButton>
+            <button className="btn btn-ink" type="button">
+              Sign in
+            </button>
+          </SignInButton>
+        )}
+      </div>
+    </section>
   );
 }
 

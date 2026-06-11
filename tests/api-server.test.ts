@@ -280,6 +280,12 @@ describe("api server wrapper", () => {
           renderPacketRepository: boolean;
           renderPacketArtifacts: boolean;
           signedArtifactUrls: boolean;
+          localBrowserState: {
+            audited: boolean;
+            dbRequiredItems: number;
+            objectStoreRequiredItems: number;
+            browserOnlyItems: number;
+          };
         };
         runtime: {
           mode: string;
@@ -512,7 +518,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(18);
+    expect(report.readiness.routes.total).toBe(21);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -537,7 +543,13 @@ describe("api server wrapper", () => {
       dataRequestRepository: true,
       renderPacketRepository: true,
       renderPacketArtifacts: true,
-      signedArtifactUrls: true
+      signedArtifactUrls: true,
+      localBrowserState: {
+        audited: true,
+        dbRequiredItems: 4,
+        objectStoreRequiredItems: 1,
+        browserOnlyItems: 1
+      }
     });
     expect(report.readiness.runtime).toMatchObject({
       mode: "contract",
@@ -605,7 +617,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 18, admin: 6, idempotentMutations: 10 });
+      expect(readiness.routes).toMatchObject({ total: 21, admin: 6, idempotentMutations: 12 });
       expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 124,

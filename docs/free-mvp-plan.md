@@ -15,6 +15,19 @@ preserving the production integration gates from the earlier service skeleton.
 | Print export | Browser-generated 1500 x 2100 SVG panels plus a local 5x7 PDF proof and checksum manifest. | `buildPanelSvg`, `buildPrintExportPackage`, Handoff view. |
 | Vendor handoff | Manual checklist for Walgreens, CVS, FedEx Office, Walmart, Staples, Office Depot, or local print shop plus review-only public price comparison. | `buildVendorHandoff`, `src/printerPricing.ts`, Adapter view. |
 
+## Local Persistence Audit
+
+`src/localPersistenceAudit.ts` names the browser-local state that must become
+database-backed before hosted sync is treated as production-ready:
+
+| Local data | Production home |
+| --- | --- |
+| Workspace identity (`id`, name, email, creation time) | `users`, `account_identities`, `auth_sessions` |
+| Approved relationship memories and forget controls | `relationship_memories`, `audit_log` |
+| Saved event queue and snooze/dismiss decisions | `provider_connections`, `imported_events`, `card_opportunities`, `audit_log` |
+| Card history and render metadata | `card_projects`, `render_packets`, `orders`, `order_events`, `audit_log`; rendered SVG/PDF bytes go to object storage |
+| Theme preference | Remains browser-local |
+
 ## Blocked Production Paths
 
 - Production user auth and account recovery.

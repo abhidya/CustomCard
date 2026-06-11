@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createServer, type ViteDevServer } from "vite";
-import { customerVisibleImplementationTermPattern } from "../src/customerWebExperience";
 
 const chromePath = resolveChromePath();
 const describeWithChrome = existsSync(chromePath) ? describe : describe.skip;
@@ -45,9 +44,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     });
     await server.listen();
     const address = server.httpServer?.address();
-    if (!address || typeof address === "string") {
-      throw new Error("Unable to determine Vite server address");
-    }
+    if (!address || typeof address === "string") throw new Error("Unable to determine Vite server address");
     baseUrl = `http://127.0.0.1:${address.port}/`;
 
     userDataDir = mkdtempSync(join(tmpdir(), "customcard-ui-smoke-"));
@@ -101,8 +98,8 @@ describeWithChrome("CustomCard UI smoke", () => {
       }
     };
     await new Promise<void>((resolve, reject) => {
-      ws.onopen = () => resolve();
-      ws.onerror = () => reject(new Error("Chrome debugging WebSocket failed"));
+      ws!.onopen = () => resolve();
+      ws!.onerror = () => reject(new Error("Chrome debugging WebSocket failed"));
     });
   }, 45000);
 
@@ -112,181 +109,127 @@ describeWithChrome("CustomCard UI smoke", () => {
   });
 
   afterAll(async () => {
-    if (ws) {
-      await send("Browser.close").catch(() => undefined);
-    }
+    if (ws) await send("Browser.close").catch(() => undefined);
     ws?.close();
     await waitForChromeExit(chrome);
     await server?.close();
-    if (userDataDir) {
-      rmSync(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 120 });
-    }
+    if (userDataDir) rmSync(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 120 });
   });
 
-  it("runs local auth, free import, card studio, and print options", async () => {
+  it("runs the customer-first create-to-print flow", async () => {
     const sessionId = await createPage(1280, 900);
     const result = await evaluate(
       sessionId,
       `(async () => {
+        const raf = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         const clickByText = async (label) => {
-          const button = [...document.querySelectorAll("button")].find((node) =>
-            node.textContent.includes(label)
-          );
-          if (!button) throw new Error("Missing button: " + label);
-          button.click();
-          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const target = [...document.querySelectorAll("button, a")].find((node) => node.textContent?.includes(label));
+          if (!target) throw new Error("Missing clickable text: " + label);
+          target.click();
+          await raf();
+        };
+        const setValue = (node, value) => {
+          const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(node), "value");
+          descriptor.set.call(node, value);
+          node.dispatchEvent(new Event("input", { bubbles: true }));
         };
 
-        const setupName = document.querySelector("#setupName");
-        if (!setupName) throw new Error("Missing setup name input");
-        const setNameValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-        setNameValue.call(setupName, "Abdul");
-        setupName.dispatchEvent(new Event("input", { bubbles: true }));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Create local workspace");
-        window.history.pushState({}, "", "?view=opportunities");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        const importBox = document.querySelector(".importBox");
-        if (!importBox) throw new Error("Missing import box");
-        const setValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-        setValue.call(importBox, [
-          "BEGIN:VCALENDAR",
-          "VERSION:2.0",
-          "BEGIN:VEVENT",
-          "SUMMARY:Sara and Ahmed anniversary dinner",
-          "DTSTART;VALUE=DATE:20260712",
-          "LOCATION:Brooklyn, NY",
-          "DESCRIPTION:Ten year anniversary. Sara loves botanical cards, Ahmed likes quiet humor, pickup is fine.",
-          "END:VEVENT",
-          "END:VCALENDAR"
-        ].join("\\n"));
-        importBox.dispatchEvent(new Event("input", { bubbles: true }));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Read event");
-        const opportunityText = document.body.textContent;
-        await clickByText("Generate card");
-        const studioText = document.body.textContent;
-        const panelCount = document.querySelectorAll(".panelPreview").length;
-        const validationRows = [...document.querySelectorAll(".validationPanel span")].map((node) => node.textContent);
-        await clickByText("Continue to print options");
+        const homeText = document.body.textContent;
+        await clickByText("Anniversary");
+        const studioHeading = document.querySelector("h1")?.textContent;
+        const recipient = [...document.querySelectorAll("input")].find((node) => node.placeholder === "Their name");
+        const sender = [...document.querySelectorAll("input")].find((node) => node.placeholder === "Your name");
+        if (!recipient || !sender) throw new Error("Missing studio name fields");
+        setValue(recipient, "Sara and Ahmed");
+        setValue(sender, "Abdul");
+        await raf();
+        const panelCount = document.querySelectorAll(".pagetab img").length;
+        await clickByText("Continue to print");
+
         return {
-          h1: document.querySelector("h1")?.textContent,
-          opportunityText,
-          studioText,
+          homeText,
+          studioHeading,
           panelCount,
-          validationRows,
-          handoffText: document.body.textContent,
-          printShopLinks: [...document.querySelectorAll(".printShopLink")].map((node) => ({
-            text: node.textContent,
-            href: node.getAttribute("href")
-          })),
-          operationStartTiles: [...document.querySelectorAll(".operationStartTile")].map((node) => ({
-            text: node.textContent,
-            href: node.getAttribute("href")
-          })),
-          primaryButtons: [...document.querySelectorAll(".primaryButton")].map((node) => node.textContent),
-          downloadTiles: document.querySelectorAll(".downloadTile").length,
+          printHeading: document.querySelector("h1")?.textContent,
+          printText: document.body.textContent,
+          downloadButtons: [...document.querySelectorAll("button")].map((node) => node.textContent),
+          storeSteps: document.querySelectorAll(".storestep").length,
+          adminRows: document.querySelectorAll(".adminHeroCard, .adapterRow").length,
           scrollWidth: document.documentElement.scrollWidth,
           clientWidth: document.documentElement.clientWidth
         };
       })()`
     );
 
-    expect(result.h1).toBe("CustomCard");
-    expect(result.opportunityText).toContain("Saved in this browser");
-    expect(result.opportunityText).toContain("Anniversary card for Sara and Ahmed");
-    expect(result.studioText).toContain("Make it theirs");
-    expect(result.studioText).toContain("For Sara and Ahmed");
+    expect(result.homeText).toContain("Make someone");
+    expect(result.homeText).toContain("Pick the occasion");
+    expect(result.homeText).not.toContain("Admin panel");
+    expect(result.homeText).not.toContain("Adapter readiness");
+    expect(result.studioHeading).toBe("Your card, their story");
     expect(result.panelCount).toBe(4);
-    expect(result.validationRows.join(" ")).toContain("5x7 print size");
-    expect(result.validationRows.join(" ")).toContain("No paid services");
-    expect(result.validationRows.join(" ")).not.toMatch(customerVisibleImplementationTermPattern);
-    expect(result.handoffText).toContain("Print your card");
-    expect(result.handoffText).toContain("Download SVG set");
-    expect(result.handoffText).toContain("Download print package");
-    expect(result.handoffText).toContain("Print-ready files");
-    expect(result.handoffText).toContain("Ready to download");
-    expect(result.handoffText).toContain("Checkout happens outside CustomCard");
-    expect(result.handoffText).toContain("Final price, pickup time, payment, and order submission happen outside CustomCard.");
-    expect(result.handoffText).toContain("Price estimate");
-    expect(result.printShopLinks).toEqual([
-      expect.objectContaining({
-        text: expect.stringContaining("Open Walgreens"),
-        href: expect.stringContaining("CommerceProduct_33272")
-      })
-    ]);
-    expect(result.operationStartTiles).toHaveLength(3);
-    expect(result.operationStartTiles).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          text: expect.stringContaining("Check price"),
-          href: expect.stringContaining("CommerceProduct_33272")
-        }),
-        expect.objectContaining({
-          text: expect.stringContaining("Upload art"),
-          href: expect.stringContaining("CommerceProduct_33272")
-        }),
-        expect.objectContaining({
-          text: expect.stringContaining("Review order"),
-          href: expect.stringContaining("CommerceProduct_33272")
-        })
-      ])
-    );
-    expect(result.primaryButtons.join(" ")).toContain("Download print package");
-    expect(result.handoffText).toContain("Print shop steps");
-    expect(result.handoffText).toContain("Open the right page for each step");
-    expect(result.handoffText).toContain("Discounts change the estimate only after the print shop accepts the code in the same cart.");
-    expect(result.handoffText).toContain("CRISPCARD");
-    expect(result.handoffText).toContain("60% off card products found");
-    expect(result.handoffText).toContain("Try this code at Walgreens Photo checkout by 2026-06-13.");
-    expect(result.handoffText).toContain(
-      "The estimate changes only after checkout applies it to this exact card and quantity."
-    );
-    expect(result.handoffText).toContain("confirm offer at checkout");
-    expect(result.handoffText).toContain("Public prices are not final checkout totals.");
-    expect(result.downloadTiles).toBe(4);
+    expect(result.printHeading).toBe("Print it nearby");
+    expect(result.printText).toContain("Choose a print shop");
+    expect(result.printText).toContain("Download your card");
+    expect(result.printText).toContain("Print at Walgreens");
+    expect(result.printText).toContain("CustomCard never charges you or places orders");
+    expect(result.downloadButtons.join(" ")).toContain("Download print package");
+    expect(result.storeSteps).toBeGreaterThanOrEqual(3);
+    expect(result.adminRows).toBe(0);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("keeps the mobile first viewport from overflowing horizontally", async () => {
-    const sessionId = await createPage(390, 900);
-    const layout = await evaluate(
+  it("turns an invite into a card without exposing admin surfaces", async () => {
+    const sessionId = await createPage(1280, 900, "?view=opportunities");
+    const result = await evaluate(
       sessionId,
-      `(() => {
-        const rail = document.querySelector(".appRail");
-        const railRect = rail ? rail.getBoundingClientRect() : undefined;
-        const center = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+      `(async () => {
+        const raf = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const setValue = (node, value) => {
+          const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(node), "value");
+          descriptor.set.call(node, value);
+          node.dispatchEvent(new Event("input", { bubbles: true }));
+        };
+        const clickByText = async (label) => {
+          const target = [...document.querySelectorAll("button")].find((node) => node.textContent?.includes(label));
+          if (!target) throw new Error("Missing button: " + label);
+          target.click();
+          await raf();
+        };
+
+        const textarea = document.querySelector("textarea");
+        if (!textarea) throw new Error("Missing invite textarea");
+        setValue(textarea, [
+          "BEGIN:VCALENDAR",
+          "SUMMARY:Sara and Ahmed anniversary dinner",
+          "DTSTART;VALUE=DATE:20260712",
+          "LOCATION:Brooklyn, NY",
+          "DESCRIPTION:Ten year anniversary. Sara loves botanical cards.",
+          "END:VCALENDAR"
+        ].join("\\n"));
+        await raf();
+        const eventText = document.body.textContent;
+        await clickByText("Start this card");
         return {
-          h1: document.querySelector("h1")?.textContent,
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth,
-          bodyScrollWidth: document.body.scrollWidth,
-          innerHeight: window.innerHeight,
-          railTop: railRect?.top,
-          railBottom: railRect?.bottom,
-          railHeight: railRect?.height,
-          centerInsideRail: Boolean(center && rail && rail.contains(center))
+          eventText,
+          studioText: document.body.textContent,
+          heading: document.querySelector("h1")?.textContent,
+          adminRows: document.querySelectorAll(".adminHeroCard, .adapterRow").length
         };
       })()`
     );
 
-    expect(layout.h1).toBe("CustomCard");
-    expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
-    expect(layout.scrollWidth).toBe(layout.clientWidth);
-    expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
-    // The mobile nav must be a bottom tab bar, never a full-screen overlay.
-    expect(layout.railHeight).toBeLessThan(150);
-    expect(Math.abs((layout.railBottom ?? 0) - layout.innerHeight)).toBeLessThanOrEqual(2);
-    expect(layout.railTop ?? 0).toBeGreaterThan(layout.innerHeight * 0.7);
-    expect(layout.centerInsideRail).toBe(false);
+    expect(result.eventText).toContain("Anniversary card for Sara and Ahmed");
+    expect(result.eventText).toContain("Brooklyn, NY");
+    expect(result.heading).toBe("Your card, their story");
+    expect(result.studioText).toContain("Sara and Ahmed");
+    expect(result.adminRows).toBe(0);
   }, 30000);
 
-  it("keeps customer and mobile routes keyboard-labeled for repo-local accessibility evidence", async () => {
+  it("keeps the customer shell labeled and mobile-width safe", async () => {
     const sessionId = await createPage(390, 900);
     const result = await evaluate(
       sessionId,
-      `(async () => {
+      `(() => {
         const accessibleName = (node) =>
           node.getAttribute("aria-label") ||
           node.getAttribute("title") ||
@@ -294,510 +237,81 @@ describeWithChrome("CustomCard UI smoke", () => {
           node.textContent?.trim() ||
           node.getAttribute("value") ||
           "";
-        const inspectRoute = () => {
-          const focusableControls = [...document.querySelectorAll("a[href], button, input, textarea, select")]
-            .filter((node) => !node.disabled && node.getAttribute("aria-hidden") !== "true")
-            .map((node) => ({
-              tag: node.tagName.toLowerCase(),
-              className: node.className,
-              text: node.textContent?.trim() ?? "",
-              ariaLabel: node.getAttribute("aria-label"),
-              name: accessibleName(node)
-            }));
-          const missingNames = focusableControls.filter((control) => !control.name.trim());
-          const headingLevels = [...document.querySelectorAll("h1, h2, h3")].map((node) => node.tagName.toLowerCase());
-          return {
-            focusableControls,
-            missingNames,
-            headingLevels,
-            skipHref: document.querySelector(".skipLink")?.getAttribute("href"),
-            skipTargetExists: !!document.querySelector("#main-content"),
-            navLabeled: !!document.querySelector('[aria-label="CustomCard navigation"]'),
-            mainExists: !!document.querySelector("main#main-content"),
-            checkoutStatusLabeled: !!document.querySelector('[aria-label="Checkout status"]'),
-            chatComposerLabeled: !!document.querySelector('textarea[aria-label="Customer chat message"]'),
-            mobileShellLabeled: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
-            mobileSummaryLabeled: !!document.querySelector('[aria-label="Mobile customer summary"]'),
-            mobileSafeguardsLabeled: !!document.querySelector('[aria-label="Mobile checkout safeguards"]')
-          };
-        };
-
-        const customer = inspectRoute();
-        window.history.pushState({}, "", "?view=studio");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        const studio = inspectRoute();
-        window.history.pushState({}, "", "?view=mobile");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        const mobile = inspectRoute();
-        return { customer, studio, mobile };
-      })()`
-    );
-
-    expect(result.customer.skipHref).toBe("#main-content");
-    expect(result.customer.skipTargetExists).toBe(true);
-    expect(result.customer.navLabeled).toBe(true);
-    expect(result.customer.mainExists).toBe(true);
-    expect(result.customer.checkoutStatusLabeled).toBe(true);
-    expect(result.customer.missingNames).toEqual([]);
-    expect(result.customer.focusableControls.length).toBeGreaterThan(3);
-    expect(result.customer.headingLevels[0]).toBe("h1");
-    expect(result.studio.chatComposerLabeled).toBe(true);
-    expect(result.studio.headingLevels[0]).toBe("h1");
-    expect(result.mobile.mobileShellLabeled).toBe(true);
-    expect(result.mobile.mobileSummaryLabeled).toBe(true);
-    expect(result.mobile.mobileSafeguardsLabeled).toBe(true);
-    expect(result.mobile.missingNames).toEqual([]);
-    expect(result.mobile.focusableControls.length).toBeGreaterThan(3);
-    expect(result.mobile.headingLevels[0]).toBe("h1");
-  }, 30000);
-
-  it("renders the mobile app preview from the shared customer app contract", async () => {
-    const sessionId = await createPage(390, 900);
-    const result = await evaluate(
-      sessionId,
-      `(async () => {
-        window.history.pushState({}, "", "?view=mobile");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const controls = [...document.querySelectorAll("a[href], button, input, textarea, select")]
+          .filter((node) => !node.disabled && node.getAttribute("aria-hidden") !== "true")
+          .map((node) => ({ tag: node.tagName.toLowerCase(), name: accessibleName(node) }));
         return {
-          h2: document.querySelector("h2")?.textContent,
-          text: document.body.textContent,
-          hasMobileShell: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
-          hasContractPanel: !!document.querySelector('[aria-label="Mobile app contract"]'),
-          hasCustomerSummary: !!document.querySelector('[aria-label="Mobile customer summary"]'),
-          primaryActions: document.querySelectorAll('.mobilePrimaryAction[data-action-priority="primary"]').length,
-          contentType: document.contentType,
-          bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
-          deviceSections: document.querySelectorAll(".mobileSection").length,
-          contractBlocks: document.querySelectorAll(".mobileContractBlock").length,
-          currentSearch: window.location.search,
+          h1: document.querySelector("h1")?.textContent,
+          skipHref: document.querySelector(".skipLink")?.getAttribute("href"),
+          skipTargetExists: !!document.querySelector("#main-content"),
+          navLabeled: !!document.querySelector('[aria-label="CustomCard navigation"]'),
+          missingNames: controls.filter((control) => !control.name.trim()),
+          bodyScrollWidth: document.body.scrollWidth,
           scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth,
-          bodyScrollWidth: document.body.scrollWidth
+          clientWidth: document.documentElement.clientWidth
         };
       })()`
     );
 
-    expect(result.h2).toBe("Mobile app");
-    expect(result.hasMobileShell).toBe(true);
-    expect(result.hasContractPanel).toBe(false);
-    expect(result.hasCustomerSummary).toBe(true);
-    expect(result.primaryActions).toBe(1);
-    expect(result.contentType).toBe("text/html");
-    expect(result.bodyIsJson).toBe(false);
-    expect(result.currentSearch).toBe("?view=mobile");
-    expect(result.text).toContain("Your card assistant");
-    expect(result.text).toContain("Review Sara and Ahmed's card");
-    expect(result.text).toContain("Google Calendar is not connected yet");
-    expect(result.text).toContain("Apple Calendar ICS export");
-    expect(result.text).toContain("Review calendar options");
-    expect(result.text).toContain("Import an invite");
-    expect(result.text).not.toContain("Future calendar sync");
-    expect(result.text).not.toContain("Continue with Google");
-    expect(result.text).not.toContain("Continue with Apple");
-    expect(result.text).toContain("Cards to review");
-    expect(result.text).toContain("Card actions");
-    expect(result.text).toContain("Card assistant");
-    expect(result.text).toContain("Printing options");
-    expect(result.text).toContain("Approve proof first");
-    expect(result.text).not.toContain("Cheapest known price");
-    expect(result.text).toContain("Finish manually");
-    expect(result.text).toContain("Saved offline");
-    expect(result.text).toContain("Confirm pickup, shipping, payment, and coupons at checkout before ordering.");
-    expect(result.text).not.toContain("Mobile contract");
-    expect(result.text).not.toContain("live proof claims blocked");
-    expect(result.text).not.toContain("ExpoManifest");
-    expect(result.text).not.toContain("bundleUrl");
-    expect(result.deviceSections).toBeGreaterThanOrEqual(10);
-    expect(result.contractBlocks).toBe(0);
+    expect(result.h1).toContain("Make someone");
+    expect(result.skipHref).toBe("#main-content");
+    expect(result.skipTargetExists).toBe(true);
+    expect(result.navLabeled).toBe(true);
+    expect(result.missingNames).toEqual([]);
     expect(result.bodyScrollWidth).toBe(result.clientWidth);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("opens the mobile UI directly from the browser preview route", async () => {
-    const sessionId = await createPage(390, 900, "?view=mobile");
+  it("gates the admin panel behind authenticated admin access", async () => {
+    const sessionId = await createPage(1280, 900, "?view=admin");
     const result = await evaluate(
       sessionId,
       `(() => ({
         h1: document.querySelector("h1")?.textContent,
-        h2: document.querySelector("h2")?.textContent,
         text: document.body.textContent,
-        hasMobileShell: !!document.querySelector('[aria-label="CustomCard native customer shell"]'),
-        hasContractPanel: !!document.querySelector('[aria-label="Mobile app contract"]'),
-        hasCustomerSummary: !!document.querySelector('[aria-label="Mobile customer summary"]'),
-        primaryActions: document.querySelectorAll('.mobilePrimaryAction[data-action-priority="primary"]').length,
-        activeNav: document.querySelector('.navButton.active')?.textContent,
-        contentType: document.contentType,
-        bodyIsJson: document.body.textContent?.trim().startsWith("{") ?? false,
-        introCopyLineRight: Math.ceil(
-          Math.max(
-            ...[
-              ...[...document.querySelectorAll(".mobilePreviewIntro p")].find((node) =>
-                node.textContent?.includes("Same customer screen model")
-              )?.getClientRects() ?? []
-            ].map((rect) => rect.right),
-            0
-          )
-        ),
-        mobileDeviceRight: Math.ceil(document.querySelector(".mobileDevice")?.getBoundingClientRect().right ?? 0),
-        mobileDeviceScrollWidth: document.querySelector(".mobileDevice")?.scrollWidth ?? 0,
-        mobileDeviceClientWidth: document.querySelector(".mobileDevice")?.clientWidth ?? 0,
-        mobileScreenScrollWidth: document.querySelector(".mobileScreen")?.scrollWidth ?? 0,
-        mobileScreenClientWidth: document.querySelector(".mobileScreen")?.clientWidth ?? 0,
+        adminCards: document.querySelectorAll(".adminHeroCard").length,
+        adapterRows: document.querySelectorAll(".adapterRow").length,
+        signInButtons: [...document.querySelectorAll("button")].filter((node) => node.textContent?.includes("Sign in")).length,
         scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-        bodyScrollWidth: document.body.scrollWidth
+        clientWidth: document.documentElement.clientWidth
       }))()`
     );
 
-    expect(result.h1).toBe("CustomCard");
-    expect(result.h2).toBe("Mobile app");
-    expect(result.hasMobileShell).toBe(true);
-    expect(result.hasContractPanel).toBe(false);
-    expect(result.hasCustomerSummary).toBe(true);
-    expect(result.primaryActions).toBe(1);
-    // Mobile app nav is gated behind ?ops=1; view is still reachable via URL route
-    // expect(result.activeNav).toContain("Mobile app");
-    expect(result.contentType).toBe("text/html");
-    expect(result.bodyIsJson).toBe(false);
-    expect(result.text).toContain("Your card assistant");
-    expect(result.text).toContain("Review Sara and Ahmed's card");
-    expect(result.text).toContain("Cards to review");
-    expect(result.text).not.toContain("Mobile contract");
-    expect(result.text).not.toContain("ExpoManifest");
-    expect(result.text).not.toContain("bundleUrl");
-    expect(result.introCopyLineRight).toBeLessThanOrEqual(result.clientWidth);
-    expect(result.mobileDeviceRight).toBeLessThanOrEqual(result.clientWidth);
-    expect(result.mobileDeviceScrollWidth).toBe(result.mobileDeviceClientWidth);
-    expect(result.mobileScreenScrollWidth).toBe(result.mobileScreenClientWidth);
-    expect(result.bodyScrollWidth).toBe(result.clientWidth);
+    expect(result.h1).toBe("Admin panel");
+    expect(result.text).toContain("Private operations");
+    expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
+    expect(result.text).toContain("Sign in with a CustomCard admin account");
+    expect(result.text).not.toContain("Integration owner workflow");
+    expect(result.text).not.toContain("Required env");
+    expect(result.adminCards).toBe(0);
+    expect(result.adapterRows).toBe(0);
+    expect(result.signInButtons).toBeGreaterThanOrEqual(1);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("exposes customer and admin panels without overflow", async () => {
-    const sessionId = await createPage(1280, 900);
+  it("gates adapter readiness behind authenticated admin access", async () => {
+    const sessionId = await createPage(1280, 900, "?view=adapters");
     const result = await evaluate(
       sessionId,
-      `(async () => {
-        const clickByText = async (label) => {
-          const button = [...document.querySelectorAll("button")].find((node) =>
-            node.textContent.includes(label)
-          );
-          if (!button) throw new Error("Missing button: " + label);
-          button.click();
-          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        };
-
-        const initialCustomerText = document.body.textContent;
-        const initialOccasionChips = [...document.querySelectorAll(".occasionChip")].map((node) => node.textContent);
-        const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
-        const initialPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
-        const initialSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
-        const initialPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
-          node.getAttribute("placeholder")
-        );
-        const initialSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
-        const setupName = document.querySelector("#setupName");
-        if (!setupName) throw new Error("Missing setup name input");
-        const setNameValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-        setNameValue.call(setupName, "Abdul");
-        setupName.dispatchEvent(new Event("input", { bubbles: true }));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Create local workspace");
-        const workspaceText = document.body.textContent;
-        const workspaceJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
-        const workspacePrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
-        const workspaceSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
-        const workspacePlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
-          node.getAttribute("placeholder")
-        );
-        const workspaceSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
-        await clickByText("Review event");
-        const eventsText = document.body.textContent;
-        const eventsCalendarText = document.querySelector('[aria-label="Calendar onboarding choices"]')?.textContent;
-        const eventsCalendarChoices = [...document.querySelectorAll(".calendarChoice")].map((node) => ({
-          text: node.textContent,
-          status: node.querySelector("em")?.textContent,
-          className: node.className,
-          startMode: node.getAttribute("data-start-mode"),
-          startRoute: node.getAttribute("data-start-route"),
-          nextRoute: node.getAttribute("data-next-route"),
-          clientProviderRequest: node.getAttribute("data-client-provider-request")
-        }));
-        await clickByText("Generate card");
-        const chatComposer = document.querySelector('textarea[aria-label="Customer chat message"]');
-        if (!chatComposer) throw new Error("Missing customer chat composer in studio");
-        const setChatValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-        setChatValue.call(chatComposer, "Can you keep this personal and avoid automatic checkout?");
-        chatComposer.dispatchEvent(new Event("input", { bubbles: true }));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Send");
-        const studioText = document.body.textContent;
-        const chatBubbles = document.querySelectorAll(".chatBubble").length;
-        const studioPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
-          node.getAttribute("placeholder")
-        );
-        await clickByText("Your cards");
-        const reviewedCustomerText = document.body.textContent;
-        const reviewedJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
-        const reviewedPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
-        const reviewedSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
-        const reviewedPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
-          node.getAttribute("placeholder")
-        );
-        const reviewedSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
-        window.history.pushState({}, "", "?view=admin&ops=1");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        return {
-          initialCustomerText,
-          initialOccasionChips,
-          initialJourneyActions,
-          initialPrimaryActions,
-          initialSupportingActions,
-          initialSupportingPrimaryActions,
-          initialPlaceholders,
-          workspaceText,
-          workspaceJourneyActions,
-          workspacePrimaryActions,
-          workspaceSupportingActions,
-          workspaceSupportingPrimaryActions,
-          workspacePlaceholders,
-          eventsText,
-          eventsCalendarText,
-          eventsCalendarChoices,
-          studioText,
-          studioPlaceholders,
-          chatBubbles,
-          reviewedCustomerText,
-          reviewedJourneyActions,
-          reviewedPrimaryActions,
-          reviewedSupportingActions,
-          reviewedSupportingPrimaryActions,
-          reviewedPlaceholders,
-          adminText: document.body.textContent,
-          metricCount: document.querySelectorAll(".toolPanel .metric, .adminHeroRow .heroSubStats span").length,
-          gatedRows: document.querySelectorAll(".adapterMini.credential-gated").length,
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth
-        };
-      })()`
+      `(() => ({
+        h1: document.querySelector("h1")?.textContent,
+        text: document.body.textContent,
+        adapterRows: document.querySelectorAll(".adapterRow").length,
+        adminCards: document.querySelectorAll(".adminHeroCard").length,
+        navAdminLinks: [...document.querySelectorAll(".navlink-admin")].map((node) => node.textContent),
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth
+      }))()`
     );
 
-    expect(result.initialCustomerText).toContain("Your cards");
-    expect(result.initialCustomerText).toContain("Pick the occasion");
-    expect(result.initialOccasionChips.join(" ")).toContain("Birthday");
-    expect(result.initialOccasionChips.join(" ")).toContain("Sympathy");
-    expect(result.initialCustomerText).toContain("Create private workspace");
-    expect(result.initialCustomerText).toContain("Create local workspace");
-    expect(result.initialCustomerText).toContain("Import an invite");
-    expect(result.initialCustomerText).toContain("Private by design");
-    expect(result.initialCustomerText).not.toContain("Continue with Google");
-    expect(result.initialCustomerText).not.toContain("Google Calendar connection");
-    expect(result.initialCustomerText).not.toContain("Personal card workflow");
-    expect(result.initialCustomerText).not.toContain("Card assistant");
-    expect(result.initialCustomerText).not.toContain("Compare print options");
-    expect(result.initialCustomerText).not.toContain("Best available options");
-    expect(result.initialCustomerText).not.toContain("Cheapest known price");
-    expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
-    expect(result.initialJourneyActions).toHaveLength(1);
-    expect(result.initialPrimaryActions).toBe(1);
-    expect(result.initialSupportingActions.join(" ")).toContain("Import an invite");
-    expect(result.initialSupportingPrimaryActions).toBe(0);
-    expect(result.workspaceText).toContain("Workspace ready");
-    expect(result.workspaceText).toContain("Coming up");
-    expect(result.workspaceText).toContain("Review event");
-    expect(result.workspaceText).not.toContain("Compare print options");
-    expect(result.workspaceText).not.toContain("Best available options");
-    expect(result.workspaceText).not.toContain("Cheapest known price");
-    expect(result.workspaceJourneyActions.join(" ")).toContain("Review event");
-    expect(result.workspaceJourneyActions).toHaveLength(1);
-    expect(result.workspacePrimaryActions).toBe(1);
-    expect(result.workspaceSupportingActions.join(" ")).toContain("Add memory");
-    expect(result.workspaceSupportingPrimaryActions).toBe(0);
-    expect(result.eventsText).toContain("Add event details");
-    expect(result.eventsText).toContain("Where events can come from");
-    expect(result.eventsCalendarText).toContain("Google Calendar connection");
-    expect(result.eventsCalendarText).toContain("Apple Calendar ICS export");
-    expect(result.eventsCalendarText).not.toContain("Continue with Google");
-    expect(result.eventsCalendarText).not.toContain("Continue with Apple");
-    expect(result.eventsCalendarText).not.toContain("Future calendar sync");
-    expect(result.eventsCalendarChoices).toEqual([
-      expect.objectContaining({
-        className: expect.stringContaining("ready-local"),
-        status: "Available now",
-        text: expect.stringContaining("Customer-provided invite text or ICS event metadata only.")
-      }),
-      expect.objectContaining({
-        className: expect.stringContaining("credential-gated"),
-        status: "Coming soon",
-        text: expect.stringContaining("Event metadata only after explicit consent; raw descriptions stay out of storage.")
-      }),
-      expect.objectContaining({
-        className: expect.stringContaining("manual-export"),
-        status: "Export from app",
-        text: expect.stringContaining(
-          "Customer exports an .ics file or downloads a temporary iCloud.com ICS copy, then pastes selected event data."
-        )
-      })
-    ]);
-    expect(result.studioText).toContain("Make it theirs");
-    expect(result.studioText).toContain("Card assistant");
-    expect(result.studioText).toContain("Private local replies");
-    expect(result.studioText).toContain("Runs in this browser");
-    expect(result.studioText).toContain("No outside transcript");
-    expect(result.studioText).toContain("This reply stayed local and did not store an outside transcript.");
-    expect(result.studioText).toContain("Card language");
-    expect(result.studioText).toContain("Ar EG");
-    expect(result.studioText).not.toContain("Language readiness");
-    expect(result.chatBubbles).toBeGreaterThanOrEqual(2);
-    expect(result.reviewedCustomerText).toContain("Best available options");
-    expect(result.reviewedCustomerText).toContain("Lowest current estimate");
-    expect(result.reviewedCustomerText).toContain("Estimate only");
-    expect(result.reviewedCustomerText).not.toContain("Cheapest known price");
-    expect(result.reviewedCustomerText).toContain("Fastest pickup candidate");
-    expect(result.reviewedCustomerText).toContain("Cheapest shipped option");
-    expect(result.reviewedCustomerText).toContain("Compare print options");
-    expect(result.reviewedJourneyActions.join(" ")).toContain("Compare print options");
-    expect(result.reviewedJourneyActions).toHaveLength(1);
-    expect(result.reviewedPrimaryActions).toBe(1);
-    expect(result.reviewedSupportingActions.join(" ")).not.toContain("Compare print options");
-    expect(result.reviewedSupportingActions.join(" ")).toContain("Add memory");
-    expect(result.reviewedSupportingPrimaryActions).toBe(0);
-    expect(result.reviewedCustomerText).not.toContain("provider adapters gated");
-    expect(result.reviewedCustomerText).not.toContain("No live model call");
-    for (const customerSnapshot of [
-      result.initialCustomerText,
-      result.initialPlaceholders.join(" "),
-      result.workspaceText,
-      result.workspacePlaceholders.join(" "),
-      result.studioPlaceholders.join(" "),
-      result.reviewedCustomerText,
-      result.reviewedPlaceholders.join(" ")
-    ]) {
-      expect(customerSnapshot).not.toMatch(customerVisibleImplementationTermPattern);
-    }
-    expect(result.adminText).toContain("Admin panel");
-    expect(result.adminText).toContain("Integration owner workflow");
-    expect(result.adminText).toContain("Credential vault setup");
-    expect(result.adminText).toContain("Hosted account-token verification");
-    expect(result.adminText).toContain("Alert route drill");
-    expect(result.adminText).toContain("Incident review runbook");
-    expect(result.adminText).toContain("Live enabled0");
-    expect(result.adminText).toContain("Required env");
-    expect(result.adminText).toContain("No-network readiness");
-    expect(result.adminText).toContain("Provider governance");
-    expect(result.adminText).toContain("Locale readiness");
-    expect(result.adminText).toContain("Launch gates");
-    expect(result.adminText).toContain("AI provider readiness");
-    expect(result.adminText).toContain("Live AI off");
-    expect(result.adminText).toContain("Prompt audits");
-    expect(result.adminText).toContain("Retail fulfillment readiness");
-    expect(result.adminText).toContain("Direct orders off");
-    expect(result.adminText).toContain("Recovery events");
-    expect(result.adminText).toContain("Payment readiness");
-    expect(result.adminText).toContain("Live charges off");
-    expect(result.adminText).toContain("Ledger events");
-    expect(result.adminText).toContain("Refund void and dispute drills");
-    expect(result.adminText).toContain("Mobile render readiness");
-    expect(result.adminText).toContain("Emulator proof missing");
-    expect(result.adminText).toContain("Native shell source render contract");
-    expect(result.adminText).toContain("Signed native artifact proof");
-    expect(result.adminText).toContain("Hosted API proof readiness");
-    expect(result.adminText).toContain("Public DB proof missing");
-    expect(result.adminText).toContain("Vercel project link");
-    expect(result.adminText).toContain("Hosted account-token verification");
-    expect(result.adminText).toContain("Reviewer DB seed readiness");
-    expect(result.adminText).toContain("Hosted seed proof missing");
-    expect(result.adminText).toContain("Hosted seed execution proof");
-    expect(result.adminText).toContain("Rollback cleanup drill");
-    expect(result.adminText).toContain("Cloud artifact proof readiness");
-    expect(result.adminText).toContain("Applied proof missing");
-    expect(result.adminText).toContain("Applied bucket ARN proof");
-    expect(result.adminText).toContain("IAM policy output proof");
-    expect(result.adminText).toContain("Signed URL cloud probe");
-    expect(result.adminText).toContain("Business engagement readiness");
-    expect(result.adminText).toContain("Live sends off");
-    expect(result.adminText).toContain("Popular CRM OAuth contracts");
-    expect(result.adminText).toContain("Customer message channel contracts");
-    expect(result.adminText).toContain("External audit readiness");
-    expect(result.adminText).toContain("End-to-end coverage");
-    expect(result.adminText).toContain("CRM and workflow integrations");
-    expect(result.adminText).toContain("Capacity profiles");
-    expect(result.adminText).toContain("Cheap droplet");
-    expect(result.adminText).toContain("SaaS scale");
-    expect(result.adminText).toContain("Queue-backed profiles");
-    expect(result.adminText).toContain("Live calls");
-    expect(result.adminText).toContain("Production user auth");
-    expect(result.adminText).toContain("Live payment charges and refunds");
-    expect(result.adminText).toContain("Vercel deployment and DB access");
-    expect(result.adminText).toContain("Physical print certification");
-    expect(result.adminText).toContain("External security assessment");
-    expect(result.adminText).toContain("Public claims");
-    expect(result.adminText).toContain("Customer workspace to print options");
-    expect(result.adminText).toContain("Postgres HTTP integration workflow");
-    expect(result.adminText).toContain("Live proofs");
-    expect(result.adminText).toContain("RTL review");
-    expect(result.adminText).toContain("Budget capped");
-    expect(result.adminText).toContain("Credential gaps");
-    expect(result.adminText).toContain("OPENAI_API_KEY");
-    expect(result.adminText).toContain("MISTRAL_API_KEY");
-    expect(result.adminText).toContain("LEONARDO_API_KEY");
-    expect(result.adminText).toContain("SALESFORCE_INSTANCE_URL");
-    expect(result.adminText).toContain("HUBSPOT_PRIVATE_APP_TOKEN");
-    expect(result.adminText).toContain("ZAPIER_WEBHOOK_URL");
-    expect(result.adminText).toContain("Walgreens live order");
-    expect(result.metricCount).toBeGreaterThanOrEqual(10);
-    expect(result.gatedRows).toBeGreaterThanOrEqual(8);
-    expect(result.scrollWidth).toBe(result.clientWidth);
-  }, 30000);
-
-  it("exposes ready free adapters and gated production integrations", async () => {
-    const sessionId = await createPage(1280, 900);
-    const result = await evaluate(
-      sessionId,
-      `(async () => {
-        window.history.pushState({}, "", "?view=adapters&ops=1");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        return {
-          heading: document.querySelector("h2")?.textContent,
-          text: document.body.textContent,
-          readyRows: [...document.querySelectorAll(".adapterRow.ready-local")].length,
-          gatedRows: [...document.querySelectorAll(".adapterRow.credential-gated")].length,
-          contractRows: [...document.querySelectorAll(".adapterRow.contract-only")].length,
-          blockedRows: [...document.querySelectorAll(".adapterRow.blocked")].length,
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth
-        };
-      })()`
-    );
-
-    expect(result.heading).toContain("Adapter readiness");
-    expect(result.text).toContain("Local workspace auth");
-    expect(result.text).toContain("ICS / invite paste");
-    expect(result.text).toContain("OpenAI Responses chat");
-    expect(result.text).toContain("OpenAI Images");
-    expect(result.text).toContain("Gmail metadata adapter");
-    expect(result.text).toContain("Microsoft Graph calendar");
-    expect(result.text).toContain("Salesforce CRM lifecycle sync");
-    expect(result.text).toContain("HubSpot CRM lifecycle sync");
-    expect(result.text).toContain("Zapier webhook workflow");
-    expect(result.text).toContain("Google Sheets lifecycle sync");
-    expect(result.text).toContain("Search adapters");
-    expect(result.text).toContain("All capabilities");
-    expect(result.text).toContain("Walgreens live order");
-    expect(result.text).toContain("Public printer pricing research");
-    expect(result.text).toContain("Local print package export");
-    expect(result.text).toContain("Dry run: local fallback ready");
-    expect(result.text).toContain("Dry run: blocked by gates");
-    expect(result.text).toContain("missing OPENAI_API_KEY");
-    expect(result.readyRows).toBeGreaterThanOrEqual(18);
-    expect(result.gatedRows).toBeGreaterThanOrEqual(69);
-    expect(result.contractRows).toBeGreaterThanOrEqual(6);
-    expect(result.blockedRows).toBe(6);
+    expect(result.h1).toBe("Adapters");
+    expect(result.text).toContain("Private operations");
+    expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
+    expect(result.text).not.toContain("Local workspace auth");
+    expect(result.text).not.toContain("Dry run: blocked by gates");
+    expect(result.adapterRows).toBe(0);
+    expect(result.adminCards).toBe(0);
+    expect(result.navAdminLinks).toEqual([]);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
@@ -829,9 +343,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       { expression, awaitPromise: true, returnByValue: true },
       sessionId
     );
-    if (result.exceptionDetails) {
-      throw new Error(result.exceptionDetails.text);
-    }
+    if (result.exceptionDetails) throw new Error(result.exceptionDetails.text);
     return result.result.value;
   }
 
@@ -857,9 +369,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       };
       const timer = setTimeout(() => {
         const index = eventWaiters.indexOf(waiter);
-        if (index !== -1) {
-          eventWaiters.splice(index, 1);
-        }
+        if (index !== -1) eventWaiters.splice(index, 1);
         reject(new Error(`Timed out waiting for ${method}`));
       }, timeout);
       eventWaiters.push(waiter);
@@ -882,9 +392,7 @@ async function waitForDebuggingVersion(
   for (let attempt = 0; attempt < 200; attempt += 1) {
     try {
       const response = await fetch(`http://127.0.0.1:${port}/json/version`);
-      if (response.ok) {
-        return response.json() as Promise<{ webSocketDebuggerUrl: string }>;
-      }
+      if (response.ok) return response.json() as Promise<{ webSocketDebuggerUrl: string }>;
     } catch {
       // Chrome is still starting.
     }

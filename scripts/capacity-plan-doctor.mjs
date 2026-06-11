@@ -1,5 +1,17 @@
-import { readFileSync } from "node:fs";
 import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlanData.mjs";
+import {
+  blockersFromFailedChecks,
+  checkArrayIncludes,
+  checkExact,
+  checkIncludes,
+  checkMinimum,
+  checkNoBlockers,
+  exitIfBlocked,
+  failedChecks,
+  printDoctorReport,
+  readTextFiles,
+  summarizeCheckLanes
+} from "./doctor-harness.mjs";
 
 const files = {
   capacityTest: "src/capacityPlan.test.ts",
@@ -11,9 +23,7 @@ const files = {
   docs: "docs/platform-expansion-design.md"
 };
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readTextFiles(files);
 
 const summary = summarizeCapacityPlan(capacityProfiles);
 const validationBlockers = validateCapacityProfiles(capacityProfiles);
@@ -54,77 +64,23 @@ const checks = [
   checkExact("safety", "no-real-orders", summary.realOrdersEnabled, 0)
 ];
 
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
+const lanes = summarizeCheckLanes(checks);
+const failed = failedChecks(checks);
+
+printDoctorReport({
+  service: "customcard-capacity-plan-doctor",
+  status: failed.length === 0 ? "ready" : "blocked",
+  profiles: summary.total,
+  maxDailyCards: summary.maxDailyCards,
+  maxDailyImageGenerations: summary.maxDailyImageGenerations,
+  liveProviderCalls: summary.liveProviderCalls > 0,
+  realOrdersEnabled: summary.realOrdersEnabled > 0,
+  lanes,
+  checks,
+  blockers: blockersFromFailedChecks(checks)
 });
-const failed = checks.filter((check) => !check.passed);
 
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-capacity-plan-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      profiles: summary.total,
-      maxDailyCards: summary.maxDailyCards,
-      maxDailyImageGenerations: summary.maxDailyImageGenerations,
-      liveProviderCalls: summary.liveProviderCalls > 0,
-      realOrdersEnabled: summary.realOrdersEnabled > 0,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkMinimum(lane, id, actual, minimum) {
-  return {
-    id,
-    lane,
-    passed: actual >= minimum,
-    detail: actual >= minimum ? `${actual} is at least ${minimum}.` : `${actual} is below required minimum ${minimum}.`
-  };
-}
-
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkArrayIncludes(lane, id, values, required) {
-  const missing = required.filter((needle) => !values.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required capacity signals.`
-        : `Missing capacity signals: ${missing.join(", ")}`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "Executable capacity contract has no blockers." : blockers.join(" ")
-  };
-}
+exitIfBlocked(checks);
 
 function checkProfilesShape(lane, id, profiles) {
   const requiredKeys = [
@@ -158,18 +114,5 @@ function checkProfilesShape(lane, id, profiles) {
       missing.length === 0
         ? `Validated ${profiles.length} executable capacity profile shapes.`
         : `Missing capacity profile fields: ${missing.join(", ")}`
-  };
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required capacity signals.`
-        : `Missing capacity signals: ${missing.join(", ")}`
   };
 }

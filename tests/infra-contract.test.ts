@@ -1607,6 +1607,14 @@ describe("production infrastructure contract", () => {
           queueJobs: boolean;
         };
         api: { statefulRoutes: number; idempotentMutations: number };
+        localBrowserState: {
+          auditItems: number;
+          dbRequiredItems: number;
+          objectStoreRequiredItems: number;
+          browserOnlyItems: number;
+          workspaceKey: string;
+          browserOnlyKeys: string[];
+        };
         safety: { rawContentStored: boolean; liveExternalCalls: boolean; realOrdersEnabled: boolean };
       };
       blockers: unknown[];
@@ -1630,6 +1638,14 @@ describe("production infrastructure contract", () => {
       queueJobs: true
     });
     expect(report.readiness.api).toMatchObject({ statefulRoutes: 16, idempotentMutations: 10 });
+    expect(report.readiness.localBrowserState).toMatchObject({
+      auditItems: 5,
+      dbRequiredItems: 4,
+      objectStoreRequiredItems: 1,
+      browserOnlyItems: 1,
+      workspaceKey: "customcard-free-workspace-v1",
+      browserOnlyKeys: ["customcard-theme-v1"]
+    });
     expect(report.readiness.safety).toMatchObject({
       rawContentStored: false,
       liveExternalCalls: false,

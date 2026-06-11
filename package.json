@@ -20,6 +20,9 @@
     "account:doctor:live": "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled node scripts/account-auth-doctor.mjs",
     "artifact:doctor": "node scripts/artifact-store-doctor.mjs",
     "artifact:doctor:s3:live": "CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs",
+    "r2:bucket:list": "wrangler r2 bucket list",
+    "r2:bucket:create": "wrangler r2 bucket create",
+    "r2:bucket:create:prod": "wrangler r2 bucket create customcard-prod",
     "cloud:doctor": "node scripts/cloud-artifact-iac-doctor.mjs",
     "cloud:artifact:proof:doctor": "node scripts/cloud-artifact-proof-readiness-doctor.mjs",
     "persistence:doctor": "node scripts/persistence-doctor.mjs",
@@ -66,6 +69,7 @@
     "@vitest/coverage-v8": "^4.1.7",
     "typescript": "^6.0.3",
     "vite": "^8.0.15",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.7",
+    "wrangler": "^4.99.0"
   }
 }

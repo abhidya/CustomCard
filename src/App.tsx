@@ -1858,7 +1858,7 @@ function HandoffView({
   );
 }
 
-function AdminPanelView({
+export function AdminPanelView({
   readiness,
   localizationSummary,
   model,
@@ -2724,7 +2724,7 @@ function AdminOperationTaskRow({ sourceLabel, task }: { sourceLabel: string; tas
   );
 }
 
-function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, RuntimeReadiness> }) {
+export function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<string, RuntimeReadiness> }) {
   const [statusFilter, setStatusFilter] = useState<AdapterStatusFilter>("all");
   const [capabilityFilter, setCapabilityFilter] = useState<AdapterCapabilityFilter>("all");
   const [query, setQuery] = useState("");

@@ -3,6 +3,7 @@ import {
   apiRouteContracts,
   buildApiBootstrapPayload,
   buildApiReadinessSummary,
+  hostedCheckoutExemptRouteIds,
   resolveApiContractResponse,
   validateApiContracts,
   type ApiRouteContract
@@ -33,13 +34,15 @@ describe("api contracts", () => {
         "data-requests"
       ])
     );
-    expect(apiRouteContracts.every((route) => route.externalNetworkCalls === false)).toBe(true);
+    expect(apiRouteContracts.filter((route) => !hostedCheckoutExemptRouteIds.has(route.id)).every((route) => route.externalNetworkCalls === false)).toBe(true);
     expect(apiRouteContracts.every((route) => route.realOrdersEnabled === false)).toBe(true);
   });
 
   it("keeps mutations idempotent and admin routes session-gated", () => {
     const mutations = apiRouteContracts.filter((route) => route.method === "POST");
+    const nonCheckoutMutations = mutations.filter((route) => !hostedCheckoutExemptRouteIds.has(route.id));
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
+    const adminPersistenceReadiness = apiRouteContracts.find((route) => route.id === "admin-persistence-readiness");
     const adminDemoReset = apiRouteContracts.find((route) => route.id === "admin-demo-reset");
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
     const importPreview = apiRouteContracts.find((route) => route.id === "import-preview");
@@ -50,8 +53,8 @@ describe("api contracts", () => {
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
-    expect(mutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
-    expect(mutations.every((route) => route.requestSchema.includes("X-Idempotency-Key"))).toBe(true);
+    expect(nonCheckoutMutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
+    expect(nonCheckoutMutations.every((route) => route.requestSchema.includes("X-Idempotency-Key"))).toBe(true);
     expect(adminRoutes.every((route) => route.auth === "admin-session")).toBe(true);
     expect(adminDemoReset).toMatchObject({
       method: "POST",
@@ -60,6 +63,7 @@ describe("api contracts", () => {
       externalNetworkCalls: false
     });
     expect(adminDemoReset?.responseSchema).toEqual(expect.arrayContaining(["seedSummary", "signedArtifactUrls"]));
+    expect(adminPersistenceReadiness?.responseSchema).toEqual(expect.arrayContaining(["localBrowserState", "blockers"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(importPreview?.requestSchema).toEqual(
@@ -164,7 +168,7 @@ describe("api contracts", () => {
 
     expect(summary.status).toBe("ready");
     expect(summary.routes.total).toBe(apiRouteContracts.length);
-    expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
+    expect(summary.routes.idempotentMutations).toBe(apiRouteContracts.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length);
     expect(summary.providers.total).toBeGreaterThanOrEqual(124);
     expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(91);
     expect(summary.governance.total).toBe(summary.providers.total);

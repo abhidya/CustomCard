@@ -1,18 +1,5 @@
 import { createApiRuntime, hashSessionToken } from "./api-runtime.mjs";
-
-const routes = [
-  { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-contract" },
-  { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "calendar-connection-start", method: "POST", path: "/api/calendar/connections/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "retail-printer-operation-start", method: "POST", path: "/api/retail-printers/operations/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "retail-printer-coupon-portal-evidence", method: "POST", path: "/api/retail-printers/coupon-portal-evidence", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
-];
+import { apiRouteContracts as routes } from "../src/apiRouteContractsData.mjs";
 
 const customerToken = "postgres-customer-session-token";
 const adminToken = "postgres-admin-session-token";

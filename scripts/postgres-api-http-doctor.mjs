@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import pg from "pg";
 import { hashSessionToken } from "./api-runtime.mjs";
+import { apiRoutePathById, repositoryBackedCustomerRouteIds } from "../src/apiRouteContractsData.mjs";
 
 const requiredGate = "enabled";
 const guardValue = process.env.CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR;
@@ -21,25 +22,6 @@ if (!databaseUrl) {
 const host = "127.0.0.1";
 const customerToken = "live-postgres-http-customer-session-token";
 const adminToken = "live-postgres-http-admin-session-token";
-const repositoryBackedCustomerRouteIds = [
-  "import-preview",
-  "relationship-memories",
-  "card-projects",
-  "render-packets",
-  "manual-vendor-handoff",
-  "data-requests"
-];
-const routePaths = {
-  "import-preview": "/api/import-preview",
-  "calendar-connection-start": "/api/calendar/connections/start",
-  "retail-printer-operation-start": "/api/retail-printers/operations/start",
-  "retail-printer-coupon-portal-evidence": "/api/retail-printers/coupon-portal-evidence",
-  "relationship-memories": "/api/memories/review",
-  "card-projects": "/api/card-projects",
-  "render-packets": "/api/render-packets",
-  "manual-vendor-handoff": "/api/vendor-handoff/manual",
-  "data-requests": "/api/data-requests"
-};
 const mutationCases = [
   {
     id: "import-preview",
@@ -365,7 +347,7 @@ try {
 
   for (const mutationCase of mutationCases) {
     await runCheck(mutationCase.checkId, async () => {
-      const result = await postJson(routePaths[mutationCase.id], mutationCase.body, {
+      const result = await postJson(apiRoutePathById[mutationCase.id], mutationCase.body, {
         headers: {
           ...bearer(customerToken),
           "X-Idempotency-Key": mutationCase.idempotencyKey
@@ -385,7 +367,7 @@ try {
 
   await runCheck("replays and conflicts Postgres HTTP idempotency", async () => {
     const renderCase = mutationCases.find((candidate) => candidate.id === "render-packets");
-    const replay = await postJson(routePaths["render-packets"], renderCase.body, {
+    const replay = await postJson(apiRoutePathById["render-packets"], renderCase.body, {
       headers: {
         ...bearer(customerToken),
         "X-Idempotency-Key": renderCase.idempotencyKey
@@ -394,7 +376,7 @@ try {
     expect(replay.payload.idempotencyReplayed === true, "HTTP replay should be marked.");
     expect(replay.payload.runtimeMode === "postgres", "HTTP replay should return stored postgres response.");
 
-    const conflict = await postJson(routePaths["render-packets"], { projectId: "changed-live-postgres-http" }, {
+    const conflict = await postJson(apiRoutePathById["render-packets"], { projectId: "changed-live-postgres-http" }, {
       headers: {
         ...bearer(customerToken),
         "X-Idempotency-Key": renderCase.idempotencyKey

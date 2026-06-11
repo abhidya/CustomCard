@@ -48,7 +48,12 @@ environment configuration instead of static placeholders.
 
 ## Free MVP Capabilities
 
-- Local workspace auth using browser storage only.
+- Local workspace auth using browser storage only. The local persistence audit
+  in `src/localPersistenceAudit.ts` tracks the customer data that should move
+  to durable storage for hosted mode: workspace identity, approved relationship
+  memories, saved event queue decisions, and card history/render metadata. SVG
+  and PDF render bytes belong in object storage; the theme preference can stay
+  browser-local.
 - Manual invite text and `.ics` paste import.
 - Local vCard and CSV contact/address import.
 - Admin-only business CRM CSV lifecycle import plus gated Salesforce, HubSpot,
@@ -315,8 +320,11 @@ OBJECT_STORE_URL=http://minio:9000
 OBJECT_STORE_BUCKET=customcard-dev
 OBJECT_STORE_ACCESS_KEY_ID=replace-me-do-not-commit-real-secret
 OBJECT_STORE_SECRET_ACCESS_KEY=replace-me-do-not-commit-real-secret
+OBJECT_STORE_READ_ACCESS_KEY_ID=replace-me-do-not-commit-real-secret
+OBJECT_STORE_READ_SECRET_ACCESS_KEY=replace-me-do-not-commit-real-secret
 OBJECT_STORE_REGION=us-east-1
 OBJECT_STORE_SIGNING_SECRET=replace-me-do-not-commit-real-secret
+OBJECT_STORE_PUBLIC_BASE_URL=http://127.0.0.1:4173/api/artifacts
 ARTIFACT_SIGNED_URL_TTL_MINUTES=15
 CUSTOMCARD_API_RUNTIME=contract
 AUTH_SESSION_SECRET=replace-me-do-not-commit-real-secret
@@ -325,6 +333,33 @@ CUSTOMCARD_ADMIN_SESSION_TOKEN=replace-me-do-not-commit-real-secret
 IDEMPOTENCY_KEY_TTL_HOURS=24
 REAL_ORDER_KILL_SWITCH=disabled
 ```
+
+For Cloudflare R2, use the account S3 endpoint as `OBJECT_STORE_URL`, set
+`OBJECT_STORE_BUCKET` to the R2 bucket name, use `OBJECT_STORE_REGION=auto`, and
+point `OBJECT_STORE_PUBLIC_BASE_URL` at the hosted CustomCard artifact route,
+for example `https://customcard-three.vercel.app/api/artifacts`. Write-capable
+S3 credentials go in `OBJECT_STORE_ACCESS_KEY_ID` /
+`OBJECT_STORE_SECRET_ACCESS_KEY`; optional read-only S3 credentials go in
+`OBJECT_STORE_READ_ACCESS_KEY_ID` / `OBJECT_STORE_READ_SECRET_ACCESS_KEY`.
+Create the R2 bucket in Cloudflare before enabling the hosted runtime because
+object-scoped R2 tokens can write objects but cannot create missing buckets.
+This repo includes [Wrangler R2 bucket command](https://developers.cloudflare.com/r2/reference/wrangler-commands/)
+wrappers for that account-level setup:
+
+```sh
+CLOUDFLARE_ACCOUNT_ID=<cloudflare-account-id> \
+CLOUDFLARE_API_TOKEN=<short-lived-r2-account-token> \
+npm run r2:bucket:create:prod
+
+CLOUDFLARE_ACCOUNT_ID=<cloudflare-account-id> \
+CLOUDFLARE_API_TOKEN=<short-lived-r2-account-token> \
+npm run r2:bucket:list
+```
+
+Use an account token for these Wrangler bucket-admin commands and the S3
+credentials for the runtime `OBJECT_STORE_*` variables. For R2 smoke tests with
+object-scoped S3 credentials, run `npm run artifact:doctor:s3:live` with
+`CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE=existing`.
 
 Mobile shell variable:
 

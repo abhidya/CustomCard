@@ -32,34 +32,13 @@ import {
   walgreensCheckoutUploadRoute
 } from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
+import { apiRouteContracts, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
 
 const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
 const host = process.env.HOST ?? "0.0.0.0";
 
-export const routes = [
-  { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-contract" },
-  { id: "route-catalog", method: "GET", path: "/api/routes", audience: "public", auth: "none", runtimeMode: "local-contract" },
-  { id: "customer-bootstrap", method: "GET", path: "/api/customer/bootstrap", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "mobile-bootstrap", method: "GET", path: "/api/mobile/bootstrap", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "admin-provider-catalog", method: "GET", path: "/api/admin/provider-catalog", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "admin-provider-governance", method: "GET", path: "/api/admin/provider-governance", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "admin-persistence-readiness", method: "GET", path: "/api/admin/persistence-readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "admin-demo-reset", method: "POST", path: "/api/admin/demo-reset", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "calendar-connection-start", method: "POST", path: "/api/calendar/connections/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "retail-printer-operation-start", method: "POST", path: "/api/retail-printers/operations/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "retail-printer-coupon-portal-evidence", method: "POST", path: retailPrinterCouponPortalEvidenceRoute, audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "walgreens-checkout-upload", method: "POST", path: walgreensCheckoutUploadRoute, audience: "customer", auth: "none", runtimeMode: "local-contract" },
-  { id: "walgreens-checkout-session", method: "POST", path: walgreensCheckoutSessionRoute, audience: "customer", auth: "none", runtimeMode: "local-contract" },
-  { id: "walgreens-checkout-callback", method: "GET", path: walgreensCheckoutCallbackRoute, audience: "public", auth: "none", runtimeMode: "local-contract" }
-];
+export const routes = apiRouteContracts;
 
 const walgreensCheckout = createWalgreensHostedCheckoutService({
   env: process.env,
@@ -368,7 +347,22 @@ export const readiness = {
     dataRequestRepository: true,
     renderPacketRepository: true,
     renderPacketArtifacts: true,
-    signedArtifactUrls: true
+    signedArtifactUrls: true,
+    localBrowserState: {
+      audited: true,
+      auditSource: "src/localPersistenceAudit.ts",
+      localStorageKeys: ["customcard-free-workspace-v1", "customcard-theme-v1"],
+      dbRequiredItems: 4,
+      objectStoreRequiredItems: 1,
+      browserOnlyItems: 1,
+      dbRequiredData: [
+        "workspace identity",
+        "approved relationship memories",
+        "saved event queue and decisions",
+        "card history and render metadata"
+      ],
+      browserOnlyData: ["theme preference"]
+    }
   }
 };
 const apiRuntime = createApiRuntime({ env: process.env, routes });
@@ -691,26 +685,7 @@ function decodeArtifactObjectKey(path) {
 
 function validateApiServerContract() {
   const blockers = [];
-  const requiredRoutes = new Set([
-    "/api/health",
-    "/api/routes",
-    "/api/customer/bootstrap",
-    "/api/mobile/bootstrap",
-    "/api/admin/readiness",
-    "/api/admin/provider-catalog",
-    "/api/admin/provider-governance",
-    "/api/admin/persistence-readiness",
-    "/api/admin/demo-reset",
-    "/api/import-preview",
-    "/api/calendar/connections/start",
-    "/api/retail-printers/operations/start",
-    retailPrinterCouponPortalEvidenceRoute,
-    "/api/card-projects",
-    "/api/memories/review",
-    "/api/render-packets",
-    "/api/vendor-handoff/manual",
-    "/api/data-requests"
-  ]);
+  const requiredRoutes = new Set(requiredApiRoutePaths);
   const routePaths = new Set(routes.map((route) => route.path));
 
   for (const requiredRoute of requiredRoutes) {
@@ -718,7 +693,8 @@ function validateApiServerContract() {
   }
   for (const route of routes) {
     if (route.audience === "admin" && route.auth !== "admin-session") blockers.push(`Admin route ${route.id} is not gated.`);
-    if (route.audience === "customer" && route.auth !== "customer-session") {
+    const localContractCustomerRoute = route.audience === "customer" && route.runtimeMode === "local-contract" && route.auth === "none";
+    if (route.audience === "customer" && route.auth !== "customer-session" && !localContractCustomerRoute) {
       blockers.push(`Customer route ${route.id} is not gated.`);
     }
   }
@@ -1049,6 +1025,13 @@ function validateApiServerContract() {
   if (!readiness.persistence.renderPacketRepository) blockers.push("API readiness is missing render-packet repository persistence.");
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
+  if (!readiness.persistence.localBrowserState?.audited) blockers.push("API readiness is missing local browser persistence audit.");
+  if (readiness.persistence.localBrowserState?.dbRequiredItems !== 4) {
+    blockers.push("API readiness must track four browser-local customer data groups for database migration.");
+  }
+  if (readiness.persistence.localBrowserState?.objectStoreRequiredItems !== 1) {
+    blockers.push("API readiness must track render artifacts as object-store migration work.");
+  }
   blockers.push(...apiRuntime.validate());
 
   return blockers;

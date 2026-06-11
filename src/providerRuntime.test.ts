@@ -369,12 +369,12 @@ const completeRuntimeInput: ProviderRuntimeInput = {
 };
 
 describe("provider runtime contracts", () => {
-  it("keeps runtime dispatch behind explicit no-network capability seams", () => {
+  it("keeps runtime dispatch behind explicit live-network capability seams", () => {
     const seamCapabilities = providerRuntimeSeams.map((seam) => seam.capability);
     const catalogCapabilities = Array.from(new Set(providerCatalog.map((adapter) => adapter.capability))).sort();
 
     expect([...seamCapabilities].sort()).toEqual(catalogCapabilities);
-    expect(providerRuntimeSeams.every((seam) => seam.buildsNoNetworkContracts && !seam.liveNetworkDefault)).toBe(true);
+    expect(providerRuntimeSeams.every((seam) => !seam.buildsNoNetworkContracts && seam.buildsLiveNetworkContracts && seam.liveNetworkDefault)).toBe(true);
     expect(providerRuntimeSeams.find((seam) => seam.capability === "text-chat")).toMatchObject({
       inputKey: "textChat",
       defaultMode: "prepared-request"
@@ -384,7 +384,7 @@ describe("provider runtime contracts", () => {
     });
   });
 
-  it("covers every catalog adapter with a no-network dry run", () => {
+  it("covers every catalog adapter with a live-network request check", () => {
     expect(validateRuntimeCoverage()).toEqual([]);
 
     for (const adapter of providerCatalog) {
@@ -448,7 +448,7 @@ describe("provider runtime contracts", () => {
     expect(testCredentialReadiness.missingCredentials).toContain("OPENAI_API_KEY");
   });
 
-  it("builds no-network hosted auth request contracts for enabled identity providers", () => {
+  it("builds live-network hosted auth request contracts for enabled identity providers", () => {
     const providerIds = [
       "auth0-oidc-auth",
       "clerk-session-auth",
@@ -468,7 +468,7 @@ describe("provider runtime contracts", () => {
       const serializedBody = JSON.stringify(result.request?.body ?? {});
 
       expect(result.mode, providerId).toBe("prepared-request");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["auth-session", "no-password-storage"])
       );
@@ -495,7 +495,7 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("builds redacted no-network text request contracts for enabled chat providers", () => {
+  it("builds redacted live-network text request contracts for enabled chat providers", () => {
     const providerIds = [
       "openai-responses-chat",
       "azure-openai-chat",
@@ -521,7 +521,7 @@ describe("provider runtime contracts", () => {
 
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("POST");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(serializedHeaders, providerId).not.toContain("test-");
       expect(serializedBody, providerId).toContain("[redacted-email]");
       expect(serializedBody, providerId).toContain("[redacted-phone]");
@@ -578,7 +578,7 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("builds redacted no-network image request contracts for enabled image providers", () => {
+  it("builds redacted live-network image request contracts for enabled image providers", () => {
     const providerIds = [
       "openai-images",
       "azure-openai-image",
@@ -606,7 +606,7 @@ describe("provider runtime contracts", () => {
 
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("POST");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(serializedHeaders, providerId).not.toContain("test-");
       expect(serializedBody, providerId).toContain("print_approval_required");
       expect(result.request?.panelRequests, providerId).toHaveLength(4);
@@ -703,7 +703,7 @@ describe("provider runtime contracts", () => {
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("GET");
       expect(result.request?.body, providerId).toBeUndefined();
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(JSON.stringify(result.request?.headers), providerId).not.toContain("test-");
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["metadata-only", "no-raw-content"])
@@ -755,7 +755,7 @@ describe("provider runtime contracts", () => {
       const result = buildContactImportRuntime(providerId, contactInput, readyEnv, openGates);
 
       expect(result.mode, providerId).toBe("prepared-request");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["contact-metadata", "address-book", "no-raw-notes", "no-photos"])
       );
@@ -780,7 +780,7 @@ describe("provider runtime contracts", () => {
     });
   });
 
-  it("builds metadata-only no-network CRM lifecycle request contracts", () => {
+  it("builds metadata-only live-network CRM lifecycle request contracts", () => {
     const providerIds = [
       "salesforce-crm-lifecycle",
       "hubspot-crm-lifecycle",
@@ -804,7 +804,7 @@ describe("provider runtime contracts", () => {
       const serializedUrl = result.request?.url ?? "";
 
       expect(result.mode, providerId).toBe("prepared-request");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["crm-customer-metadata", "lifecycle-dates", "opt-in-required"])
       );
@@ -889,7 +889,7 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("builds metadata-only no-network workflow integration request contracts", () => {
+  it("builds metadata-only live-network workflow integration request contracts", () => {
     const providerIds = [
       "zapier-webhook-workflow",
       "make-webhook-workflow",
@@ -910,7 +910,7 @@ describe("provider runtime contracts", () => {
 
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("POST");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["workflow-metadata", "lifecycle-campaign", "PII-redacted", "opt-in-required"])
       );
@@ -981,7 +981,7 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("builds redacted no-network notification request contracts", () => {
+  it("builds redacted live-network notification request contracts", () => {
     const providerIds = [
       "resend-email-notification",
       "sendgrid-email-notification",
@@ -1006,7 +1006,7 @@ describe("provider runtime contracts", () => {
 
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("POST");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["notification-recipient", "status-message", "PII-redacted", "opt-in-required"])
       );
@@ -1082,7 +1082,7 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("builds sandbox-only no-network payment request contracts", () => {
+  it("builds sandbox-capable live-network payment request contracts", () => {
     const providerIds = [
       "stripe-checkout-payment",
       "paypal-orders-payment",
@@ -1097,7 +1097,7 @@ describe("provider runtime contracts", () => {
 
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("POST");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["payment-intent", "no-card-data-storage", "idempotent-mutation", "sandbox-only"])
       );
@@ -1153,7 +1153,7 @@ describe("provider runtime contracts", () => {
     );
   });
 
-  it("builds redacted no-network observability request contracts", () => {
+  it("builds redacted live-network observability request contracts", () => {
     const providerIds = [
       "sentry-error-observability",
       "posthog-product-observability",
@@ -1170,7 +1170,7 @@ describe("provider runtime contracts", () => {
 
       expect(result.mode, providerId).toBe("prepared-request");
       expect(result.request?.method, providerId).toBe("POST");
-      expect(result.request?.noNetwork, providerId).toBe(true);
+      expect(result.request?.noNetwork, providerId).toBe(false);
       expect(result.request?.dataClassifications, providerId).toEqual(
         expect.arrayContaining(["operational-telemetry", "PII-redacted", "sampled", "retention-governed"])
       );

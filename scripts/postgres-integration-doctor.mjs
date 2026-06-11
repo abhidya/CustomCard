@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import pg from "pg";
 import { createApiRuntime, hashSessionToken } from "./api-runtime.mjs";
+import { apiRouteContracts as routes, repositoryBackedCustomerRouteIds } from "../src/apiRouteContractsData.mjs";
 
 const requiredGate = "enabled";
 const guardValue = process.env.CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR;
@@ -16,30 +17,8 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const routes = [
-  { id: "health", method: "GET", path: "/api/health", audience: "public", auth: "none", runtimeMode: "local-contract" },
-  { id: "admin-readiness", method: "GET", path: "/api/admin/readiness", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "import-preview", method: "POST", path: "/api/import-preview", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "calendar-connection-start", method: "POST", path: "/api/calendar/connections/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "retail-printer-operation-start", method: "POST", path: "/api/retail-printers/operations/start", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "retail-printer-coupon-portal-evidence", method: "POST", path: "/api/retail-printers/coupon-portal-evidence", audience: "admin", auth: "admin-session", runtimeMode: "durable-api" },
-  { id: "card-projects", method: "POST", path: "/api/card-projects", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
-  { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
-];
-
 const customerToken = "live-postgres-customer-session-token";
 const adminToken = "live-postgres-admin-session-token";
-const repositoryBackedCustomerRouteIds = [
-  "import-preview",
-  "relationship-memories",
-  "card-projects",
-  "render-packets",
-  "manual-vendor-handoff",
-  "data-requests"
-];
 const doctorDatabase = `customcard_doctor_${process.pid}_${Date.now()}`.replace(/[^a-zA-Z0-9_]/g, "_");
 const adminUrl = databaseUrl;
 const doctorUrl = buildDatabaseUrl(databaseUrl, doctorDatabase);

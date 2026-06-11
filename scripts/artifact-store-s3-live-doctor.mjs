@@ -11,6 +11,8 @@ const secretAccessKey = process.env.OBJECT_STORE_SECRET_ACCESS_KEY ?? process.en
 const region = process.env.OBJECT_STORE_REGION ?? process.env.AWS_REGION ?? "us-east-1";
 const signingSecret = process.env.OBJECT_STORE_SIGNING_SECRET ?? "";
 const expiresInMinutes = Number(process.env.ARTIFACT_SIGNED_URL_TTL_MINUTES ?? 15);
+const bucketMode = process.env.CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE ?? "isolated";
+const useExistingBucket = bucketMode === "existing";
 
 if (guardValue !== requiredGate) {
   console.error("Set CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled to run the live S3-compatible artifact doctor.");
@@ -23,7 +25,7 @@ if (startupBlockers.length > 0) {
   process.exit(1);
 }
 
-const bucket = buildDoctorBucketName(configuredBucket);
+const bucket = useExistingBucket ? configuredBucket : buildDoctorBucketName(configuredBucket);
 let client;
 const blockers = [];
 const cleanupWarnings = [];
@@ -56,7 +58,7 @@ async function runDoctor() {
     blockers.push(...prefixBlockers("handoff", await validateArtifactHandoffContract(handoff, signingSecret)));
 
     await client.waitUntilReady();
-    await client.createBucket(bucket);
+    if (!useExistingBucket) await client.createBucket(bucket);
     result = await writeS3CompatibleArtifactStore(printPackage, handoff, client);
     blockers.push(...prefixBlockers("s3-live", result.blockers));
 
@@ -106,12 +108,13 @@ class SigV4S3CompatibleArtifactClient {
         if (health.ok) return;
         lastError = new Error(`MinIO health returned ${health.status}.`);
       } catch (error) {
-        try {
-          await this.request({ method: "GET", bucket: "", key: "", body: "", headers: {}, expectedStatuses: [200, 403] });
-          return;
-        } catch (fallbackError) {
-          lastError = fallbackError instanceof Error ? fallbackError : error;
-        }
+        lastError = error instanceof Error ? error : new Error(String(error));
+      }
+      try {
+        await this.request({ method: "GET", bucket: "", key: "", body: "", headers: {}, expectedStatuses: [200, 403] });
+        return;
+      } catch (fallbackError) {
+        lastError = fallbackError instanceof Error ? fallbackError : lastError;
       }
       await delay(500);
     }
@@ -289,6 +292,7 @@ function validateStartupConfig() {
   if (endpoint.startsWith("file://")) blockers.push("Live S3-compatible artifact doctor cannot use a file:// object store URL.");
   if (endpoint && !/^https?:\/\//.test(endpoint)) blockers.push("Live S3-compatible artifact doctor requires an http(s) endpoint URL.");
   if (!configuredBucket) blockers.push("OBJECT_STORE_BUCKET is required for the live S3-compatible artifact doctor.");
+  if (!["isolated", "existing"].includes(bucketMode)) blockers.push("CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE must be isolated or existing.");
   if (!accessKeyId) blockers.push("OBJECT_STORE_ACCESS_KEY_ID or AWS_ACCESS_KEY_ID is required.");
   if (!secretAccessKey) blockers.push("OBJECT_STORE_SECRET_ACCESS_KEY or AWS_SECRET_ACCESS_KEY is required.");
   if (!region) blockers.push("OBJECT_STORE_REGION or AWS_REGION is required.");
@@ -327,7 +331,8 @@ function printReport(status) {
           url: endpoint,
           region,
           configuredBucket,
-          isolatedBucket: bucket,
+          bucket,
+          bucketMode,
           pathStyle: true
         },
         artifactCount: result?.artifactCount ?? 0,

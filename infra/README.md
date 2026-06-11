@@ -49,7 +49,10 @@ CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled DATABASE_URL=postgres://... npm r
 CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled DATABASE_URL=postgres://... npm run api:doctor:postgres:http
 CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled DATABASE_URL=postgres://... npm run account:doctor:live
 npm run artifact:doctor
+CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... npm run r2:bucket:create:prod
+CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... npm run r2:bucket:list
 CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled OBJECT_STORE_URL=http://127.0.0.1:9000 OBJECT_STORE_BUCKET=customcard-ci-artifacts OBJECT_STORE_ACCESS_KEY_ID=customcard OBJECT_STORE_SECRET_ACCESS_KEY=customcard-dev-only OBJECT_STORE_REGION=us-east-1 OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
+CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE=existing OBJECT_STORE_URL=https://<account-id>.r2.cloudflarestorage.com OBJECT_STORE_BUCKET=customcard-prod OBJECT_STORE_REGION=auto OBJECT_STORE_SIGNING_SECRET=test-object-store-signing-secret-32 npm run artifact:doctor:s3:live
 npm run persistence:doctor
 npm run demo:doctor
 ```
@@ -115,6 +118,26 @@ production cloud bucket policy/IAM contract is now represented by
 `infra/aws/artifact-store` and checked by `npm run cloud:doctor`; live AWS apply,
 Access Analyzer review, and account-specific IAM validation remain separate from
 this repo-local proof.
+
+The hosted API can persist render-packet image artifacts through
+`scripts/object-store-runtime.mjs` when `CUSTOMCARD_ARTIFACT_PERSISTENCE=enabled`
+and `CUSTOMCARD_API_RUNTIME` is `memory` or `postgres`. For Cloudflare R2, set
+`OBJECT_STORE_URL` to the account S3 endpoint, `OBJECT_STORE_BUCKET` to the R2
+bucket, `OBJECT_STORE_REGION=auto`, `OBJECT_STORE_PUBLIC_BASE_URL` to the hosted
+`/api/artifacts` route, and mirror the write-capable S3 credentials into
+`OBJECT_STORE_ACCESS_KEY_ID` / `OBJECT_STORE_SECRET_ACCESS_KEY`. Optional
+read-only R2 credentials can be supplied through
+`OBJECT_STORE_READ_ACCESS_KEY_ID` / `OBJECT_STORE_READ_SECRET_ACCESS_KEY` for
+future download-only lanes while signed API URLs continue to use
+`OBJECT_STORE_SIGNING_SECRET`. The bucket must already exist; object-scoped R2
+tokens are enough for artifact writes and reads, but they do not create buckets.
+Run `npm run r2:bucket:create:prod` or `npm run r2:bucket:create --
+<bucket-name>` with a short-lived Cloudflare R2 account token when the bucket
+needs to be provisioned through [Wrangler](https://developers.cloudflare.com/r2/buckets/create-buckets/).
+For live R2 verification with object-scoped S3 credentials, set
+`CUSTOMCARD_S3_ARTIFACT_DOCTOR_BUCKET_MODE=existing` so the doctor writes under
+a temporary project prefix inside the configured bucket and only deletes the
+objects it created.
 
 The AWS artifact-store module provisions only the artifact storage boundary:
 public access block, bucket-owner-enforced ownership, versioning, AES256
@@ -206,8 +229,13 @@ when budget allows.
   `GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `DATADOG_SITE`,
   `BETTERSTACK_SOURCE_TOKEN`, `BETTERSTACK_INGESTING_HOST`.
 - Object-store artifact signer and live S3-compatible doctor:
-  `OBJECT_STORE_SIGNING_SECRET`, `OBJECT_STORE_ACCESS_KEY_ID`,
-  `OBJECT_STORE_SECRET_ACCESS_KEY`, `OBJECT_STORE_REGION`.
+  `CUSTOMCARD_ARTIFACT_PERSISTENCE`, `OBJECT_STORE_URL`,
+  `OBJECT_STORE_BUCKET`, `OBJECT_STORE_ACCESS_KEY_ID`,
+  `OBJECT_STORE_SECRET_ACCESS_KEY`, `OBJECT_STORE_READ_ACCESS_KEY_ID`,
+  `OBJECT_STORE_READ_SECRET_ACCESS_KEY`, `OBJECT_STORE_REGION`,
+  `OBJECT_STORE_PUBLIC_BASE_URL`, `OBJECT_STORE_SIGNING_SECRET`,
+  `ARTIFACT_SIGNED_URL_TTL_MINUTES`. Bucket-admin setup also uses
+  `CLOUDFLARE_ACCOUNT_ID` and a short-lived `CLOUDFLARE_API_TOKEN`.
 - Live vendor adapters: `WALGREENS_VENDOR_MODE`, `CVS_VENDOR_MODE`,
   `FEDEX_VENDOR_MODE`, `WALMART_VENDOR_MODE`, `STAPLES_VENDOR_MODE`,
   `OFFICE_DEPOT_VENDOR_MODE`.

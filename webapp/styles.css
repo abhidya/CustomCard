@@ -146,6 +146,13 @@ a { color: inherit; }
 }
 .navlink:hover { color: var(--ink); background: var(--second-soft); }
 .navlink[data-active="true"] { background: var(--ink); color: var(--bg); }
+.navlink-admin { color: var(--accent); }
+.navdivider {
+  width: 1px;
+  min-height: 22px;
+  margin: 7px 4px;
+  background: var(--line);
+}
 .navnum {
   display: inline-block; margin-right: 7px; font-size: 11px;
   opacity: 0.55; font-variant-numeric: tabular-nums;
@@ -618,6 +625,109 @@ a { color: inherit; }
 .reveal-3 { animation-delay: 0.19s; }
 @keyframes reveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ---------- Auth-gated admin lane ---------- */
+.shell[data-admin-view="true"] {
+  max-width: 1380px;
+}
+
+.adminSurface {
+  padding: 42px 0 130px;
+}
+
+.adminSurfaceHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.adminSurfaceHead h1,
+.adminGate h1 {
+  margin: 0 0 7px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  line-height: 1.04;
+}
+
+.adminSurfaceHead p,
+.adminGate p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.adminBadge,
+.adminGateIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.adminBadge {
+  padding: 8px 13px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminGateIcon {
+  width: 52px;
+  height: 52px;
+  justify-content: center;
+}
+
+.adminLegacySurface {
+  min-width: 0;
+}
+
+.adminGate {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  margin: 56px 0 120px;
+  padding: 26px;
+}
+
+.adminGate small {
+  display: block;
+  max-width: 720px;
+  margin-top: 12px;
+  color: var(--ink-faint);
+}
+
+.adminGate code {
+  border-radius: 6px;
+  background: var(--surface-alt);
+  color: var(--ink);
+  padding: 2px 5px;
+  font-size: 0.9em;
+}
+
+.adminGateActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adminGateActions > span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.adminLegacySurface .adminPanel,
+.adminLegacySurface .adaptersView {
+  background: transparent;
+}
+
 @media (max-width: 760px) {
   .shell { padding: 0 18px 170px; }
   .mainnav { order: 3; width: 100%; overflow-x: auto; }
@@ -628,4 +738,13 @@ a { color: inherit; }
   .fieldrow { grid-template-columns: 1fr; }
   .ctadock { bottom: 14px; gap: 10px; padding-left: 16px; }
   .ctadock-meta small { max-width: 130px; }
+  .adminSurfaceHead,
+  .adminGate,
+  .adminGateActions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .adminGate {
+    display: flex;
+  }
 }

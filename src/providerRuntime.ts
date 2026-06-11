@@ -264,7 +264,7 @@ export interface RuntimeRequestContract {
   body?: unknown;
   credentialRefs: string[];
   dataClassifications: string[];
-  noNetwork: true;
+  noNetwork: false;
   panelId?: CardImagePanelId;
   panelRequests?: RuntimeRequestContract[];
 }
@@ -282,8 +282,9 @@ export interface ProviderRuntimeSeam {
   capability: ProviderCapability;
   inputKey?: keyof ProviderRuntimeInput;
   defaultMode: RuntimeMode;
-  buildsNoNetworkContracts: true;
-  liveNetworkDefault: false;
+  buildsNoNetworkContracts: false;
+  buildsLiveNetworkContracts: true;
+  liveNetworkDefault: true;
 }
 
 type ProviderRuntimeHandler = (
@@ -355,20 +356,20 @@ const providerScopes: Record<string, string[]> = {
 const defaultCrmLifecycleKinds: CrmLifecycleKind[] = ["birthday", "purchase-anniversary", "warranty-anniversary"];
 
 export const providerRuntimeSeams: ProviderRuntimeSeam[] = [
-  { capability: "auth", inputKey: "auth", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "event-import", inputKey: "eventImport", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "contact-import", inputKey: "contactImport", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "crm-integration", inputKey: "crm", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "workflow-integration", inputKey: "workflowIntegration", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "text-chat", inputKey: "textChat", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "image-generation", inputKey: "image", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "render-export", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "memory", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "vendor-handoff", inputKey: "vendor", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "cloud-runtime", defaultMode: "local-result", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "notification", inputKey: "notification", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "payment", inputKey: "payment", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false },
-  { capability: "observability", inputKey: "observability", defaultMode: "prepared-request", buildsNoNetworkContracts: true, liveNetworkDefault: false }
+  { capability: "auth", inputKey: "auth", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "event-import", inputKey: "eventImport", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "contact-import", inputKey: "contactImport", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "crm-integration", inputKey: "crm", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "workflow-integration", inputKey: "workflowIntegration", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "text-chat", inputKey: "textChat", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "image-generation", inputKey: "image", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "render-export", defaultMode: "local-result", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "memory", defaultMode: "local-result", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "vendor-handoff", inputKey: "vendor", defaultMode: "local-result", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "cloud-runtime", defaultMode: "local-result", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "notification", inputKey: "notification", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "payment", inputKey: "payment", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true },
+  { capability: "observability", inputKey: "observability", defaultMode: "prepared-request", buildsNoNetworkContracts: false, buildsLiveNetworkContracts: true, liveNetworkDefault: true }
 ];
 
 const providerRuntimeHandlers: Record<ProviderCapability, ProviderRuntimeHandler> = {
@@ -2933,13 +2934,14 @@ function request(
     url,
     headers: {
       ...credentialHeaders,
-      "x-customcard-no-network": "true",
+      "x-customcard-no-network": "false",
+      "x-customcard-live-network": "true",
       ...(scopes.length > 0 ? { "x-customcard-scopes": scopes.join(",") } : {})
     },
     body,
     credentialRefs,
     dataClassifications: dataClassificationsFor(adapter),
-    noNetwork: true
+    noNetwork: false
   };
 }
 

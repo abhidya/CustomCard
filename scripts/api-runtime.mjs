@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
+import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/apiRouteContractsData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
@@ -510,22 +511,13 @@ function prepareIdempotentMutation({ route, request, authContext, bodyText }) {
 
 const mutationBodyContracts = {
   "import-preview": {
-    requiredFields: [
-      "sourceKind",
-      "metadataOnlyPayload.title",
-      "metadataOnlyPayload.recipientName",
-      "metadataOnlyPayload.startsAt"
-    ],
-    detail:
-      "Import preview requires explicit metadata-only event fields or server-parsed raw invite/ICS text before event/opportunity persistence.",
+    ...mutationBodyContractSpecs["import-preview"],
     missingFields(body) {
       return resolveImportPreviewMetadata(body).missingFields;
     }
   },
   "calendar-connection-start": {
-    requiredFields: ["calendarChoiceId"],
-    detail:
-      "Calendar connection start requires an explicit provider choice so the server can return the safe start packet without client-owned provider logic.",
+    ...mutationBodyContractSpecs["calendar-connection-start"],
     missingFields(body) {
       const calendarChoiceId = String(body.calendarChoiceId ?? body.choiceId ?? body.providerId ?? "").trim();
       return ["manual-invite-or-ics", "google-calendar-events", "icloud-ics-fallback"].includes(calendarChoiceId)
@@ -534,9 +526,7 @@ const mutationBodyContracts = {
     }
   },
   "retail-printer-operation-start": {
-    requiredFields: ["vendorId", "operation"],
-    detail:
-      "Retail printer operation start requires an explicit vendor and operation so the server can return the safe packet without client-owned provider logic.",
+    ...mutationBodyContractSpecs["retail-printer-operation-start"],
     missingFields(body) {
       const missingFields = [];
       const vendorId = String(body.vendorId ?? body.providerId ?? body.selectedVendorId ?? "").trim();
@@ -547,23 +537,19 @@ const mutationBodyContracts = {
     }
   },
   "retail-printer-coupon-portal-evidence": {
-    requiredFields: ["evidenceArtifact"],
-    detail:
-      "Retail printer coupon portal evidence requires a server-validated evidence artifact captured from the same provider portal cart; clients may not choose coupon sources or compute coupon pricing.",
+    ...mutationBodyContractSpecs["retail-printer-coupon-portal-evidence"],
     missingFields(body) {
       return missingRetailPrinterCouponPortalEvidenceFields(body);
     }
   },
   "render-packets": {
-    requiredFields: ["projectId"],
-    detail: "Render packet creation requires an explicit card project before artifact records can be prepared.",
+    ...mutationBodyContractSpecs["render-packets"],
     missingFields(body) {
       return hasRequiredText(body.projectId) ? [] : ["projectId"];
     }
   },
   "card-projects": {
-    requiredFields: ["opportunityId", "recipientName"],
-    detail: "Card project creation requires an explicit opportunity and recipient before project records can be prepared.",
+    ...mutationBodyContractSpecs["card-projects"],
     missingFields(body) {
       const missingFields = [];
       if (!hasRequiredText(body.opportunityId)) missingFields.push("opportunityId");
@@ -572,8 +558,7 @@ const mutationBodyContracts = {
     }
   },
   "relationship-memories": {
-    requiredFields: ["recipientName", "text", "decision"],
-    detail: "Relationship memory review requires explicit recipient, reviewed memory text, and approve/forget decision.",
+    ...mutationBodyContractSpecs["relationship-memories"],
     missingFields(body) {
       const missingFields = [];
       if (!hasRequiredText(body.recipientName ?? body.recipient)) missingFields.push("recipientName");
@@ -583,8 +568,7 @@ const mutationBodyContracts = {
     }
   },
   "manual-vendor-handoff": {
-    requiredFields: ["projectId", "renderPacketId", "storeId", "externalShareApproval"],
-    detail: "Manual vendor handoff requires explicit project, render packet, selected store, and external-share approval state.",
+    ...mutationBodyContractSpecs["manual-vendor-handoff"],
     missingFields(body) {
       const missingFields = [];
       if (!hasRequiredText(body.projectId ?? body.cardProjectId)) missingFields.push("projectId");
@@ -597,8 +581,7 @@ const mutationBodyContracts = {
     }
   },
   "data-requests": {
-    requiredFields: ["requestType", "region", "consentGranted"],
-    detail: "Data request intake requires explicit request type, region, and customer confirmation before privacy records can be prepared.",
+    ...mutationBodyContractSpecs["data-requests"],
     missingFields(body) {
       const missingFields = [];
       if (!hasValidDataRequestType(body.requestType ?? body.type)) missingFields.push("requestType");
@@ -1432,39 +1415,7 @@ function buildDataRequestRepositoryPayload(record, runtimeMode) {
 }
 
 function persistedTablesForRoute(route) {
-  if (route.id === "relationship-memories") return ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"];
-  if (route.id === "render-packets") {
-    return ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "provider_call_events", "api_jobs", "audit_log"];
-  }
-  if (route.id === "manual-vendor-handoff") {
-    return ["auth_sessions", "idempotency_keys", "render_packets", "orders", "order_events", "consent_records", "api_jobs", "audit_log"];
-  }
-  if (route.id === "card-projects") return ["auth_sessions", "idempotency_keys", "card_opportunities", "relationship_memories", "card_projects", "audit_log"];
-  if (route.id === "import-preview") return ["auth_sessions", "idempotency_keys", "provider_connections", "imported_events", "card_opportunities", "audit_log"];
-  if (route.id === "retail-printer-operation-start") return ["auth_sessions", "idempotency_keys", "audit_log"];
-  if (route.id === "retail-printer-coupon-portal-evidence") return ["auth_sessions", "idempotency_keys", "audit_log"];
-  if (route.id === "admin-demo-reset") {
-    return [
-      "auth_sessions",
-      "idempotency_keys",
-      "users",
-      "provider_connections",
-      "imported_events",
-      "card_opportunities",
-      "relationship_memories",
-      "card_projects",
-      "render_packets",
-      "orders",
-      "order_events",
-      "vendor_quotes",
-      "consent_records",
-      "data_requests",
-      "provider_call_events",
-      "audit_log"
-    ];
-  }
-  if (route.id === "data-requests") return ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"];
-  return ["auth_sessions", "idempotency_keys", "audit_log"];
+  return persistedTablesForRouteId(route.id);
 }
 
 function authError(statusCode, status, route) {

@@ -213,7 +213,7 @@ function resolveObjectStoreConfig(env) {
   if (required && !secretAccessKey) blockers.push("OBJECT_STORE_SECRET_ACCESS_KEY is required.");
   if (required && signingSecret.length < 32) blockers.push("OBJECT_STORE_SIGNING_SECRET must be at least 32 characters.");
   if (required && !isSafePublicBaseUrl(publicBaseUrl)) blockers.push("OBJECT_STORE_PUBLIC_BASE_URL must be https or localhost/127.0.0.1 http.");
-  if (required && !isSupportedEndpoint(endpoint)) blockers.push("OBJECT_STORE_URL must be memory://, http://, https://, or s3://.");
+  if (required && !isSupportedEndpoint(endpoint)) blockers.push("OBJECT_STORE_URL must be memory://, http://, or https://.");
 
   return {
     configured: required && blockers.length === 0,
@@ -538,7 +538,7 @@ function resolvePublicBaseUrl(env) {
 }
 
 function signedUrlExpiry(minutes, fromDate) {
-  return new Date(fromDate.getTime() + minutes * 60_000).toISOString();
+  return new Date(Math.floor((fromDate.getTime() + minutes * 60_000) / 1000) * 1000).toISOString();
 }
 
 function clampSignedUrlMinutes(value) {
@@ -558,7 +558,7 @@ function redactEndpoint(endpoint) {
 }
 
 function isSupportedEndpoint(value) {
-  return value.startsWith("memory://") || value.startsWith("https://") || value.startsWith("http://") || value.startsWith("s3://");
+  return value.startsWith("memory://") || value.startsWith("https://") || value.startsWith("http://");
 }
 
 function isSafeBucketName(value) {

@@ -23,7 +23,7 @@ that layer as a package and rebuild only the view seam.
 | Styling | Tailwind CSS v4 + shadcn/ui primitives | shadcn copies components into the repo — consistent with the "repo-local CSS, no design-system dependency" rule in DESIGN.md, while ending the 3,200-line hand-maintained `styles.css` |
 | Server state | TanStack Query | The moment live providers unlock (auth, calendar import, AI gen), every surface needs caching/retry/optimistic states; the current ad-hoc `fetch` in `appStateOrchestrator` won't scale |
 | Validation | Zod at every network boundary | Matches the existing contract-first culture; the API contracts in `apiContracts.ts` translate naturally |
-| Local-first state | Keep localStorage workspace, wrap behind a storage interface | The privacy posture ("cards stay in this browser") is the differentiator — keep it, and let Postgres become an *opt-in sync*, not a replacement |
+| Local-first state | Keep a local draft/cache interface, but treat `src/localPersistenceAudit.ts` as the source of truth for what must sync to Postgres/object storage | The privacy posture ("cards stay in this browser") is useful for the free path, but hosted identity, approved memories, event queue decisions, and card history/render metadata need durable storage |
 
 **Cheaper alternative (also valid):** stay on Vite, add TanStack Router + Tailwind, and build
 the landing page as a separate static site. Choose this if SEO pages can live on a subdomain

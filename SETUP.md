@@ -460,7 +460,8 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | Mobile shell | Expo (`apps/mobile/`) | [expo.dev](https://expo.dev/) |
 | Hosting | Vercel | [vercel.com/docs](https://vercel.com/docs) |
 | Database | Postgres 15 (Neon recommended) | [neon.tech/docs](https://neon.tech/docs) |
-| Object store | S3-compatible (contracts in `src/artifactStore.ts`) | — |
+| Object store | S3-compatible / Cloudflare R2 (`scripts/object-store-runtime.mjs`) | [Cloudflare R2](https://developers.cloudflare.com/r2/) |
+| R2 bucket admin | Wrangler CLI (`npm run r2:bucket:*`) | [Wrangler R2 commands](https://developers.cloudflare.com/r2/reference/wrangler-commands/) |
 
 ---
 
@@ -471,6 +472,7 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | Card studio (templates) | ✅ Local, no keys | — |
 | Memory (add/remove) | ✅ Local, no keys | — |
 | Print export (SVG + PDF) | ✅ Local, no keys | — |
+| Render artifact persistence | 🔑 Needs `OBJECT_STORE_*` + `CUSTOMCARD_API_RUNTIME=memory` or `postgres` | `CUSTOMCARD_ARTIFACT_PERSISTENCE` |
 | Fulfillment estimates | ✅ Public prices, local | — |
 | Manual vendor handoff | ✅ Link + checklist | — |
 | AI card generation | 🔑 Needs `VITE_CARD_GEN_URL` + sidecar | `liveProviderCallsEnabled` |
