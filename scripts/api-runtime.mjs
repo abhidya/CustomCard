@@ -1,22 +1,43 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/apiRouteContractsData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
+const productionEnvNames = new Set(["prod", "production"]);
+
+function isProductionRuntimeEnv(env) {
+  const customCardEnv = String(env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
+  const nodeEnv = String(env.NODE_ENV ?? "").trim().toLowerCase();
+  return productionEnvNames.has(customCardEnv) || nodeEnv === "production";
+}
 
 export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
-  const requestedMode = env.CUSTOMCARD_API_RUNTIME ?? "contract";
+  const configuredMode = String(env.CUSTOMCARD_API_RUNTIME ?? "").trim();
+  const requestedMode = configuredMode || "contract";
   const objectStoreRuntime = createObjectStoreRuntime({ env });
   if (!runtimeModes.has(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime });
+  if (isProductionRuntimeEnv(env) && requestedMode !== "postgres") {
+    return createInvalidApiRuntime({
+      requestedMode: configuredMode || "(missing)",
+      routes,
+      objectStoreRuntime,
+      validationMessage:
+        "Production API runtime requires CUSTOMCARD_API_RUNTIME=postgres. Contract and memory runtimes are reviewer-only and do not provide durable production auth/idempotency."
+    });
+  }
   const mode = requestedMode;
   if (mode === "memory") return createMemoryApiRuntime({ env, routes, objectStoreRuntime });
   if (mode === "postgres") return createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime });
   return createContractApiRuntime({ routes, objectStoreRuntime });
 }
 
-export function hashSessionToken(token) {
+export function hashSessionToken(token, sessionSecret = "") {
+  const normalizedSecret = String(sessionSecret ?? "");
+  if (normalizedSecret.length >= 32) {
+    return createHmac("sha256", normalizedSecret).update(token).digest("hex");
+  }
   return createHash("sha256").update(token).digest("hex");
 }
 
@@ -98,7 +119,7 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
   };
 }
 
-function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime }) {
+function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, validationMessage }) {
   const contractRuntime = createContractApiRuntime({ routes, objectStoreRuntime });
   return {
     ...contractRuntime,
@@ -111,7 +132,7 @@ function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime }) 
       };
     },
     validate() {
-      return [`Unsupported CUSTOMCARD_API_RUNTIME: ${requestedMode}. Expected contract, memory, or postgres.`];
+      return [validationMessage ?? `Unsupported CUSTOMCARD_API_RUNTIME: ${requestedMode}. Expected contract, memory, or postgres.`];
     }
   };
 }
@@ -133,8 +154,8 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const consentRecords = new Map();
   const dataRequests = new Map();
 
-  addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo");
-  addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo");
+  addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo", env.AUTH_SESSION_SECRET);
+  addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo", env.AUTH_SESSION_SECRET);
 
   return {
     mode: "memory",
@@ -171,7 +192,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       return blockers;
     },
     async authorize(route, request) {
-      return authorizeFromSessions(route, request, sessions);
+      return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
     },
     async persistMutation({ route, request, authContext, bodyText, responsePayload }) {
       const prepared = prepareIdempotentMutation({ route, request, authContext, bodyText, responsePayload });
@@ -296,7 +317,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       if (!token) return authError(401, "auth-required", route);
 
       const pool = await getPool();
-      const sessionHash = hashSessionToken(token);
+      const sessionHash = hashSessionToken(token, env.AUTH_SESSION_SECRET);
       const result = await pool.query(
         `SELECT s.id AS session_id, s.user_id, s.role, u.email
          FROM auth_sessions s
@@ -451,22 +472,22 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
   };
 }
 
-function addSession(sessions, token, role, userId) {
+function addSession(sessions, token, role, userId, sessionSecret) {
   if (!token) return;
-  sessions.set(hashSessionToken(token), {
+  sessions.set(hashSessionToken(token, sessionSecret), {
     id: stableRuntimeId("session", role, userId),
     role,
     userId
   });
 }
 
-function authorizeFromSessions(route, request, sessions) {
+function authorizeFromSessions(route, request, sessions, sessionSecret) {
   if (route.audience === "public") {
     return { ok: true, role: "public", userId: "public", sessionId: "public" };
   }
   const token = readBearerToken(request);
   if (!token) return authError(401, "auth-required", route);
-  const session = sessions.get(hashSessionToken(token));
+  const session = sessions.get(hashSessionToken(token, sessionSecret));
   if (!session) return authError(401, "invalid-session", route);
   const requiredRole = route.audience === "admin" ? "admin" : "customer";
   if (session.role !== requiredRole) return authError(403, "wrong-role", route);

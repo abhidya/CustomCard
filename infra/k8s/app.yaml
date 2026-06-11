@@ -4,6 +4,7 @@ metadata:
   name: customcard-config
 data:
   CUSTOMCARD_ENV: "prod"
+  CUSTOMCARD_API_RUNTIME: "postgres"
   OBJECT_STORE_URL: "s3://customcard-prod"
   OBJECT_STORE_BUCKET: "customcard-prod"
   ARTIFACT_SIGNED_URL_TTL_MINUTES: "15"
@@ -154,7 +155,7 @@ spec:
                 name: customcard-config
           livenessProbe:
             exec:
-              command: ["node", "-e", "for (const key of ['DATABASE_URL','QUEUE_URL','OBJECT_STORE_URL','OBJECT_STORE_SIGNING_SECRET','REAL_ORDER_KILL_SWITCH']) if (!process.env[key]) process.exit(1)"]
+              command: ["node", "-e", "for (const key of ['CUSTOMCARD_API_RUNTIME','DATABASE_URL','QUEUE_URL','OBJECT_STORE_URL','OBJECT_STORE_SIGNING_SECRET','AUTH_SESSION_SECRET','REAL_ORDER_KILL_SWITCH']) if (!process.env[key]) process.exit(1); if (process.env.CUSTOMCARD_ENV === 'prod' && process.env.CUSTOMCARD_API_RUNTIME !== 'postgres') process.exit(1)"]
             initialDelaySeconds: 10
             periodSeconds: 30
           resources:

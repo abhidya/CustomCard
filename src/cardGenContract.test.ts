@@ -8,6 +8,7 @@ import {
   type CardGenRequest,
   type CardGenResponse
 } from "./cardGenContract";
+import { renderPacketPanelIds, renderPacketTarget } from "./renderPacketContract";
 
 const baseRequest: CardGenRequest = {
   sender: "Manny",
@@ -57,6 +58,11 @@ const validResponse: CardGenResponse = {
 };
 
 describe("buildCardGenSidecarContract", () => {
+  it("uses the shared Render Packet panel order and target dimensions", () => {
+    expect(requiredCardPanelIds).toEqual(renderPacketPanelIds);
+    expect(renderPacketTarget).toMatchObject({ widthPixels: 1500, heightPixels: 2100, dpi: 300 });
+  });
+
   it("returns a contract with liveProviderCallsEnabled false when url is null", () => {
     const contract = buildCardGenSidecarContract({ cardGenUrl: null, imageGenEnabled: false });
     expect(contract.liveProviderCallsEnabled).toBe(false);
@@ -104,6 +110,10 @@ describe("buildCardGenSidecarContract", () => {
   it("lists required sidecar env vars", () => {
     const contract = buildCardGenSidecarContract({ cardGenUrl: null, imageGenEnabled: false });
     expect(contract.sidecarRequiredEnv).toContain("ANTHROPIC_API_KEY");
+    expect(contract.sidecarRequiredEnv).toContain("CARD_GEN_API_TOKEN");
+    expect(contract.sidecarOptionalEnv).toEqual(
+      expect.arrayContaining(["CARD_GEN_ALLOWED_ORIGINS", "CARD_GEN_RATE_LIMIT_PER_MINUTE", "CARD_GEN_MAX_BODY_BYTES"])
+    );
     expect(contract.frontendRequiredEnv).toContain("VITE_CARD_GEN_URL");
   });
 });

@@ -1,16 +1,15 @@
 import { ArrowRight, Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
-import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AdminPanelView, AdaptersView } from "../src/App";
 import {
-  addMemory,
-  createLocalWorkspace,
-  removeMemory,
+  addApprovedRelationshipMemory,
+  removeApprovedRelationshipMemory,
   type CardDraftInput,
   type CardPanel,
   type LocalWorkspace,
   type VendorId
-} from "../src/freeMvp";
+} from "../src/customerWorkflow";
 import { buildPanelSvgExportFile, type PrintExportFile } from "../src/printExport";
 import {
   initialViewFromLocation,
@@ -61,6 +60,7 @@ function updateViewRoute(view: ViewId) {
 export default function App() {
   const [theme, setTheme] = useTheme();
   const adminAccess = useAdminAccess();
+  const { getToken } = useAuth();
   const state = useAppState();
   const {
     activeView,
@@ -103,6 +103,15 @@ export default function App() {
   const visibleCustomerView = isAdminView || activeView === "mobile" ? "customer" : activeView;
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
+  const customerEmail = workspace?.email || authForm.email;
+
+  const getCustomerApiToken = useCallback(async () => {
+    try {
+      return (await getToken()) ?? undefined;
+    } catch {
+      return undefined;
+    }
+  }, [getToken]);
 
   /* ---------- navigation ---------- */
   function openView(view: ViewId) {
@@ -122,15 +131,21 @@ export default function App() {
   }
 
   function addNote() {
-    const base = workspace ?? createLocalWorkspace(authForm.name, authForm.email, reviewerReferenceDate);
-    saveWorkspace(addMemory(base, memoryForm.recipient, memoryForm.note, reviewerReferenceDate));
+    saveWorkspace(
+      addApprovedRelationshipMemory(
+        workspace,
+        { name: authForm.name, email: authForm.email },
+        memoryForm,
+        reviewerReferenceDate
+      )
+    );
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
     setExportStatus("Note saved");
   }
 
   function deleteNote(memoryId: string) {
     if (!workspace) return;
-    saveWorkspace(removeMemory(workspace, memoryId));
+    saveWorkspace(removeApprovedRelationshipMemory(workspace, memoryId));
     setExportStatus("Note removed");
   }
 
@@ -335,6 +350,8 @@ export default function App() {
 
         {!isAdminView && visibleCustomerView === "opportunities" ? (
           <EventsView
+            calendarConnectionStartPackets={state.calendarConnectionStartPackets}
+            getCustomerApiToken={getCustomerApiToken}
             inviteText={inviteText}
             onAccept={acceptOpportunity}
             onDismiss={dismissOpportunity}
@@ -370,6 +387,8 @@ export default function App() {
         {!isAdminView && visibleCustomerView === "handoff" ? (
           <PrintView
             handoff={handoff}
+            checkoutCustomerDefaults={{ name: draftInput.sender, email: customerEmail }}
+            getCustomerApiToken={getCustomerApiToken}
             onCopyChecklist={copyChecklist}
             onDownloadPackage={downloadPrintPackage}
             onDownloadPanels={downloadPanels}

@@ -33,14 +33,26 @@ import {
 } from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 import { apiRouteContracts, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
+import {
+  aiCardGenerateRoute,
+  aiChatRespondRoute,
+  createAiCardGenerationService,
+  loadLocalAiEnvFiles
+} from "./ai-card-generator.mjs";
 
 const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
 const host = process.env.HOST ?? "0.0.0.0";
 
+loadLocalAiEnvFiles();
+
 export const routes = apiRouteContracts;
 
 const walgreensCheckout = createWalgreensHostedCheckoutService({
+  env: process.env,
+  fetchImpl: (...args) => globalThis.fetch(...args)
+});
+const aiGenerationService = createAiCardGenerationService({
   env: process.env,
   fetchImpl: (...args) => globalThis.fetch(...args)
 });
@@ -603,6 +615,34 @@ async function serveApi(request, response, requestUrl) {
     return;
   }
 
+  if (path === aiCardGenerateRoute || path === aiChatRespondRoute) {
+    if (!request.headers?.["x-idempotency-key"]) {
+      sendJson(response, 400, {
+        service: "customcard-api",
+        status: "missing-idempotency-key",
+        path
+      });
+      return;
+    }
+    let parsedBody;
+    try {
+      const rawBody = await readRequestBody(request, 128_000);
+      parsedBody = rawBody ? JSON.parse(rawBody) : {};
+    } catch {
+      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+      return;
+    }
+    const rateKey = String(request.headers?.["x-forwarded-for"] ?? request.socket?.remoteAddress ?? "unknown")
+      .split(",")[0]
+      .trim();
+    const result =
+      path === aiCardGenerateRoute
+        ? await aiGenerationService.generateCard(parsedBody, { rateKey })
+        : await aiGenerationService.respondChat(parsedBody, { rateKey });
+    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload });
+    return;
+  }
+
   const bodyText = await readRequestBody(request);
   const persistedMutation = await apiRuntime.persistMutation({
     route,
@@ -693,8 +733,7 @@ function validateApiServerContract() {
   }
   for (const route of routes) {
     if (route.audience === "admin" && route.auth !== "admin-session") blockers.push(`Admin route ${route.id} is not gated.`);
-    const localContractCustomerRoute = route.audience === "customer" && route.runtimeMode === "local-contract" && route.auth === "none";
-    if (route.audience === "customer" && route.auth !== "customer-session" && !localContractCustomerRoute) {
+    if (route.audience === "customer" && route.auth !== "customer-session") {
       blockers.push(`Customer route ${route.id} is not gated.`);
     }
   }

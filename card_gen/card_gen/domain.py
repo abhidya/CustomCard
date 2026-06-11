@@ -6,36 +6,49 @@ speaks the same contract as the browser app.
 
 from __future__ import annotations
 
-from typing import Literal
+import json
+from pathlib import Path
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+_CONTRACT_PATH = Path(__file__).resolve().parents[2] / "render-packet-contract.json"
+_CONTRACT = json.loads(_CONTRACT_PATH.read_text(encoding="utf-8"))
+PANEL_IDS = tuple(_CONTRACT["panelIds"])
+PANEL_WIDTH = _CONTRACT["target"]["widthPixels"]
+PANEL_HEIGHT = _CONTRACT["target"]["heightPixels"]
+HEADLINE_MAX_CHARACTERS = _CONTRACT["copyLimits"]["headlineMaxCharacters"]
+BODY_MAX_CHARACTERS = _CONTRACT["copyLimits"]["bodyMaxCharacters"]
+ART_DIRECTION_MIN_CHARACTERS = _CONTRACT["copyLimits"]["artDirectionMinCharacters"]
+ART_DIRECTION_MAX_CHARACTERS = _CONTRACT["copyLimits"]["artDirectionMaxCharacters"]
+
 PanelId = Literal["front", "inside-left", "inside-right", "back"]
+MemoryNote = Annotated[str, Field(min_length=1, max_length=500)]
 
 
 class CardDraftInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    sender: str = Field(min_length=1)
-    recipient: str = Field(min_length=1)
-    relationship: str = Field(min_length=1)
-    occasion: str = Field(min_length=1)
-    tone: str = Field(min_length=1)
-    style: str = Field(min_length=1)
-    language: str = "English"
-    personal_note: str = ""
-    memory_notes: list[str] = Field(default_factory=list)
+    sender: str = Field(min_length=1, max_length=120)
+    recipient: str = Field(min_length=1, max_length=120)
+    relationship: str = Field(min_length=1, max_length=120)
+    occasion: str = Field(min_length=1, max_length=120)
+    tone: str = Field(min_length=1, max_length=80)
+    style: str = Field(min_length=1, max_length=120)
+    language: str = Field(default="English", min_length=1, max_length=80)
+    personal_note: str = Field(default="", max_length=1_000)
+    memory_notes: list[MemoryNote] = Field(default_factory=list, max_length=12)
 
 
 class PanelCopy(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: PanelId
-    headline: str = Field(min_length=1, max_length=120)
-    body: str = Field(min_length=1, max_length=600)
+    headline: str = Field(min_length=1, max_length=HEADLINE_MAX_CHARACTERS)
+    body: str = Field(min_length=1, max_length=BODY_MAX_CHARACTERS)
     art_direction: str = Field(
-        min_length=10,
-        max_length=400,
+        min_length=ART_DIRECTION_MIN_CHARACTERS,
+        max_length=ART_DIRECTION_MAX_CHARACTERS,
         description="Brief visual prompt for the image generator: style, palette, mood, composition.",
     )
 
@@ -62,8 +75,8 @@ class CardImageResult(BaseModel):
     panel_id: PanelId
     image_url: str
     revised_prompt: str | None = None
-    width: int = 1500
-    height: int = 2100
+    width: int = PANEL_WIDTH
+    height: int = PANEL_HEIGHT
 
 
 class CardGenerationResult(BaseModel):

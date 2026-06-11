@@ -9,7 +9,7 @@
  *
  * Sidecar startup:
  *   cd card_gen
- *   ANTHROPIC_API_KEY=sk-... uv run uvicorn card_gen.app:app --reload --port 8001
+ *   ANTHROPIC_API_KEY=sk-... CARD_GEN_API_TOKEN=... uv run uvicorn card_gen.app:app --reload --port 8001
  */
 
 import {
@@ -87,8 +87,17 @@ export interface CardGenSidecarContract {
   imageGenEnabled: boolean;
   noNetworkProof: true;
   frontendRequiredEnv: ["VITE_CARD_GEN_URL"];
-  sidecarRequiredEnv: ["ANTHROPIC_API_KEY"];
-  sidecarOptionalEnv: ["OPENAI_API_KEY", "CARD_IMAGE_ENABLED", "CARD_TEXT_MODEL", "CARD_IMAGE_MODEL"];
+  sidecarRequiredEnv: ["ANTHROPIC_API_KEY", "CARD_GEN_API_TOKEN"];
+  sidecarOptionalEnv: [
+    "CARD_GEN_ALLOWED_ORIGINS",
+    "CARD_GEN_RATE_LIMIT_PER_MINUTE",
+    "CARD_GEN_MAX_BODY_BYTES",
+    "CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL",
+    "OPENAI_API_KEY",
+    "CARD_IMAGE_ENABLED",
+    "CARD_TEXT_MODEL",
+    "CARD_IMAGE_MODEL"
+  ];
   blockedReasons: string[];
 }
 
@@ -108,8 +117,17 @@ export function buildCardGenSidecarContract(env: {
     imageGenEnabled: env.imageGenEnabled,
     noNetworkProof: true,
     frontendRequiredEnv: ["VITE_CARD_GEN_URL"],
-    sidecarRequiredEnv: ["ANTHROPIC_API_KEY"],
-    sidecarOptionalEnv: ["OPENAI_API_KEY", "CARD_IMAGE_ENABLED", "CARD_TEXT_MODEL", "CARD_IMAGE_MODEL"],
+    sidecarRequiredEnv: ["ANTHROPIC_API_KEY", "CARD_GEN_API_TOKEN"],
+    sidecarOptionalEnv: [
+      "CARD_GEN_ALLOWED_ORIGINS",
+      "CARD_GEN_RATE_LIMIT_PER_MINUTE",
+      "CARD_GEN_MAX_BODY_BYTES",
+      "CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL",
+      "OPENAI_API_KEY",
+      "CARD_IMAGE_ENABLED",
+      "CARD_TEXT_MODEL",
+      "CARD_IMAGE_MODEL"
+    ],
     blockedReasons: [
       ...(env.cardGenUrl ? [] : ["VITE_CARD_GEN_URL is not set — sidecar URL required to enable AI generation."]),
       ...(env.imageGenEnabled ? [] : ["Image generation disabled — set OPENAI_API_KEY and CARD_IMAGE_ENABLED=true on the sidecar."])

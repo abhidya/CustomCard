@@ -65,7 +65,9 @@ When you want the "Generate with AI" button to work:
 ```bash
 # Terminal 1 — sidecar
 cd card_gen
-ANTHROPIC_API_KEY=sk-ant-... uv run uvicorn card_gen.app:app --reload --port 8001
+ANTHROPIC_API_KEY=sk-ant-... CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL=true \
+  CARD_GEN_ALLOWED_ORIGINS=http://127.0.0.1:5173,http://localhost:5173 \
+  uv run uvicorn card_gen.app:app --reload --port 8001
 
 # Terminal 2 — app with sidecar URL
 VITE_CARD_GEN_URL=http://localhost:8001 npm run dev
@@ -74,7 +76,8 @@ VITE_CARD_GEN_URL=http://localhost:8001 npm run dev
 Image generation (optional, requires OpenAI key):
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-... OPENAI_API_KEY=sk-... CARD_IMAGE_ENABLED=true \
+ANTHROPIC_API_KEY=sk-ant-... CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL=true \
+  OPENAI_API_KEY=sk-... CARD_IMAGE_ENABLED=true \
   uv run uvicorn card_gen.app:app --reload --port 8001
 ```
 
@@ -127,9 +130,11 @@ Optional — AI sidecar on QA. Deploy the sidecar to [Railway](https://railway.a
 ```bash
 # On Railway: add a new service, point to card_gen/, set:
 #   ANTHROPIC_API_KEY=sk-ant-...
+#   CARD_GEN_API_TOKEN=<32+ char secret>
+#   CARD_GEN_ALLOWED_ORIGINS=https://your-preview.vercel.app
 #   PORT=8001
-# Then add to Vercel preview:
-vercel env add VITE_CARD_GEN_URL preview     # value: https://your-sidecar.railway.app
+# Add VITE_CARD_GEN_URL only when requests go through a trusted backend/proxy
+# that attaches Authorization: Bearer $CARD_GEN_API_TOKEN.
 ```
 
 ### 2c. Deploy to QA
@@ -219,11 +224,12 @@ curl https://customcard-three.vercel.app/api/health
 # 1. railway.app → New project → Deploy from GitHub → select CustomCard → root: card_gen/
 # 2. Set env vars in Railway dashboard:
 #    ANTHROPIC_API_KEY=sk-ant-...
+#    CARD_GEN_API_TOKEN=<32+ char secret>
+#    CARD_GEN_ALLOWED_ORIGINS=https://customcard-three.vercel.app
 #    OPENAI_API_KEY=sk-...       (optional, for image gen)
 #    CARD_IMAGE_ENABLED=true     (optional)
-# 3. Copy the Railway URL and add to Vercel production:
-vercel env add VITE_CARD_GEN_URL production   # https://customcard-sidecar.up.railway.app
-vercel --prod                                  # redeploy to pick up the new env var
+# 3. Keep VITE_CARD_GEN_URL unset in production until a trusted backend/proxy
+#    can attach Authorization: Bearer $CARD_GEN_API_TOKEN.
 ```
 
 ---
@@ -241,10 +247,12 @@ All gates are `false` by default. Flip them one at a time after the required evi
 VITE_CARD_GEN_URL=http://localhost:8001 npm run dev
 
 # On Vercel (production):
-vercel env add VITE_CARD_GEN_URL production   # your deployed sidecar URL
+# keep VITE_CARD_GEN_URL unset until the sidecar is called through a trusted backend/proxy
 ```
 
-No code change needed — the gate reads `VITE_CARD_GEN_URL` at build time.
+The sidecar requires `Authorization: Bearer $CARD_GEN_API_TOKEN` outside the
+explicit localhost-only development opt-in, so do not point browser builds
+directly at a hosted sidecar without a trusted proxy.
 
 Required: `ANTHROPIC_API_KEY` on the sidecar server only. It never touches the browser.
 
@@ -432,8 +440,11 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `VITE_CLERK_PUBLISHABLE_KEY` | Vercel / `.env.local` | Yes | Clerk React publishable key |
 | `VITE_CARD_GEN_URL` | Vercel / `.env.local` | No | AI sidecar URL — enables Generate with AI button |
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
-| `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` or `local` |
+| `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |
 | `ANTHROPIC_API_KEY` | Sidecar server only | For AI gen | Text generation model — never in browser |
+| `CARD_GEN_API_TOKEN` | Sidecar server only | For AI gen | Bearer token required by `/generate` outside local dev |
+| `CARD_GEN_ALLOWED_ORIGINS` | Sidecar server only | For AI gen | Comma-separated CORS origins |
+| `CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL` | Local sidecar only | No | `true` enables unauthenticated `/generate` only from localhost |
 | `OPENAI_API_KEY` | Sidecar server only | For image gen | Image generation — never in browser |
 | `CARD_IMAGE_ENABLED` | Sidecar server only | No | `true` to enable image generation |
 | `CARD_TEXT_MODEL` | Sidecar server only | No | Defaults to `claude-sonnet-4-6` |

@@ -50,10 +50,12 @@ import {
   type ReviewerDbSeedReadinessItem
 } from "./readinessSummary";
 import {
-  addMemory,
+  addApprovedRelationshipMemory,
   buildOpportunity,
   buildPanelSvg,
   buildVendorHandoff,
+  buildCustomerChatSession,
+  buildCustomerWebExperienceFromState,
   createLocalWorkspace,
   daysUntilLabel,
   freeAdapterLabels,
@@ -62,7 +64,7 @@ import {
   occasionStarters,
   parseFreeImport,
   recordCardExport,
-  removeMemory,
+  removeApprovedRelationshipMemory,
   saveEventToWorkspace,
   setSavedEventStatus,
   upcomingSavedEvents,
@@ -80,8 +82,11 @@ import {
   type Tone,
   type VendorHandoff,
   type VendorId,
-  type VisualStyle
-} from "./freeMvp";
+  type VisualStyle,
+  type CustomerChatSession,
+  type CustomerWebAction,
+  type CustomerWebActionId
+} from "./customerWorkflow";
 import {
   buildAdminPanelModel,
   capabilityLabels,
@@ -92,12 +97,6 @@ import {
   type ProviderCapability,
   type ProviderStatus
 } from "./providerCatalog";
-import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
-import {
-  buildCustomerWebExperienceFromState,
-  type CustomerWebAction,
-  type CustomerWebActionId
-} from "./customerWebExperience";
 import { reviewerDraftOptions, reviewerWorkspaceKey } from "./reviewerBootstrap";
 import {
   getSupportedLocale,
@@ -144,6 +143,7 @@ import {
   type FulfillmentRecommendationSet
 } from "./fulfillmentRecommendation";
 import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile, type PrintExportPackage } from "./printExport";
+import { type AiFlowAdminConfig, type AiFlowConfigSummary } from "./aiFlowConfig";
 
 import { useAppState, initialViewFromLocation, type ViewId } from "./appStateOrchestrator";
 type AdapterStatusFilter = ProviderStatus | "all";
@@ -217,6 +217,7 @@ function App() {
     customerChatMessages, setCustomerChatMessages,
     draftInput, setDraftInput,
     aiDraft, aiCardGenLoading, triggerAiCardGen, cardGenAvailable,
+    aiFlowConfigs, setAiFlowConfigs, aiFlowSummary,
     memories,
     signal,
     pricingComparison,
@@ -272,17 +273,17 @@ function App() {
     const now = new Date();
     if (!workspace) {
       const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, now);
-      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, now);
+      const withMemory = addApprovedRelationshipMemory(nextWorkspace, authForm, memoryForm, now);
       saveWorkspace(withMemory);
     } else {
-      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, now));
+      saveWorkspace(addApprovedRelationshipMemory(workspace, authForm, memoryForm, now));
     }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
   }
 
   function deleteMemory(memoryId: string) {
     if (!workspace) return;
-    saveWorkspace(removeMemory(workspace, memoryId));
+    saveWorkspace(removeApprovedRelationshipMemory(workspace, memoryId));
   }
 
   function scanImport() {
@@ -380,20 +381,50 @@ function App() {
     }
   }
 
-  function sendCustomerChat() {
-    const nextSession = buildCustomerChatSession(
-      {
-        recipientName: opportunity.recipient,
-        customerMessage: customerChatInput,
-        approvedMemoryNotes,
-        locale: selectedLocale.locale,
-        fulfillmentContext
-      },
-      customerChatSession.messages
-    );
-
-    setCustomerChatMessages(nextSession.messages);
+  async function sendCustomerChat() {
+    const customerMessage = customerChatInput.trim();
+    if (!customerMessage) return;
+    const existingMessages = customerChatSession.messages;
     setCustomerChatInput("");
+    try {
+      const response = await fetch("/api/ai/chat/respond", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Idempotency-Key": buildClientIdempotencyKey("chat")
+        },
+        body: JSON.stringify({
+          customer_message: customerMessage,
+          recipient_name: opportunity.recipient,
+          approved_memory_notes: approvedMemoryNotes,
+          locale: selectedLocale.locale,
+          fulfillment_context: fulfillmentContext,
+          aiFlowConfig: aiFlowConfigs
+        })
+      });
+      if (!response.ok) throw new Error(`AI chat route returned ${response.status}`);
+      const result = (await response.json()) as { assistant_message?: string };
+      const assistantText = result.assistant_message?.trim();
+      if (!assistantText) throw new Error("AI chat route returned an empty response");
+      setCustomerChatMessages([
+        ...existingMessages,
+        { role: "customer", text: customerMessage },
+        { role: "assistant", text: assistantText }
+      ]);
+    } catch {
+      const nextSession = buildCustomerChatSession(
+        {
+          recipientName: opportunity.recipient,
+          customerMessage,
+          approvedMemoryNotes,
+          locale: selectedLocale.locale,
+          fulfillmentContext
+        },
+        existingMessages
+      );
+
+      setCustomerChatMessages(nextSession.messages);
+    }
   }
 
   return (
@@ -614,6 +645,9 @@ function App() {
             providerGovernance={providerGovernance}
             productionReadiness={productionReadiness}
             runtimeReadiness={runtimeReadiness}
+            aiFlowConfigs={aiFlowConfigs}
+            aiFlowSummary={aiFlowSummary}
+            onAiFlowConfigsChange={setAiFlowConfigs}
           />
         )}
 
@@ -1859,16 +1893,22 @@ function HandoffView({
 }
 
 export function AdminPanelView({
+  aiFlowConfigs,
+  aiFlowSummary,
   readiness,
   localizationSummary,
   model,
+  onAiFlowConfigsChange,
   providerGovernance,
   productionReadiness,
   runtimeReadiness
 }: {
+  aiFlowConfigs: AiFlowAdminConfig[];
+  aiFlowSummary: AiFlowConfigSummary;
   readiness: ReadinessSummary;
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
+  onAiFlowConfigsChange: (configs: AiFlowAdminConfig[]) => void;
   providerGovernance: ProviderGovernanceSummary;
   productionReadiness: ProductionReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
@@ -2083,6 +2123,12 @@ export function AdminPanelView({
             Every paid or gated adapter maps to a ready local fallback before live network calls can be enabled.
           </p>
         </article>
+
+        <AiFlowConfigPanel
+          configs={aiFlowConfigs}
+          summary={aiFlowSummary}
+          onChange={onAiFlowConfigsChange}
+        />
 
         <article className="toolPanel adminWide">
           <div className="sectionHeader compact">

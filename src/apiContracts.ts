@@ -126,11 +126,12 @@ import { buildPrinterPricingComparison } from "./printerPricing.ts";
 import { buildFulfillmentRecommendations } from "./fulfillmentRecommendation.ts";
 import {
   apiRouteContracts as apiRouteContractData,
+  gatedProviderNetworkRouteIds,
   hostedCheckoutExemptRouteIds,
   requiredApiRouteIds
 } from "./apiRouteContractsData.mjs";
 
-export { hostedCheckoutExemptRouteIds, requiredApiRouteIds };
+export { gatedProviderNetworkRouteIds, hostedCheckoutExemptRouteIds, requiredApiRouteIds };
 
 export type ApiMethod = "GET" | "POST";
 export type ApiAudience = "public" | "customer" | "admin";
@@ -453,7 +454,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     if (route.audience === "admin" && route.auth !== "admin-session") {
       issues.push(`Admin route ${route.id} must require admin-session auth.`);
     }
-    if (route.audience === "customer" && route.auth !== "customer-session" && !hostedCheckoutExempt) {
+    if (route.audience === "customer" && route.auth !== "customer-session") {
       issues.push(`Customer route ${route.id} must require customer-session auth.`);
     }
     if (route.method === "POST" && !route.idempotencyKeyRequired && !hostedCheckoutExempt) {
@@ -462,7 +463,8 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     if (route.method === "POST" && !route.requestSchema.includes("X-Idempotency-Key") && !hostedCheckoutExempt) {
       issues.push(`Mutation route ${route.id} must name X-Idempotency-Key in the request schema.`);
     }
-    if (route.externalNetworkCalls && !hostedCheckoutExempt) {
+    const gatedProviderNetworkRoute = gatedProviderNetworkRouteIds.has(route.id);
+    if (route.externalNetworkCalls && !gatedProviderNetworkRoute) {
       issues.push(`Route ${route.id} must not make live external calls.`);
     }
     if (route.externalNetworkCalls && route.id === "walgreens-checkout-callback") {

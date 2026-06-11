@@ -91,6 +91,8 @@ describe("production infrastructure contract", () => {
     expect(devCompose).toContain("OBJECT_STORE_ACCESS_KEY_ID: customcard");
     expect(devCompose).toContain("OBJECT_STORE_SECRET_ACCESS_KEY: customcard-dev-only");
     expect(dropletCompose).toContain("customcard_prod");
+    expect(dropletCompose).toContain("CUSTOMCARD_API_RUNTIME: postgres");
+    expect(dropletCompose).toContain("AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}");
     expect(dropletCompose).toContain("${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}");
     expect(dropletCompose).toContain("SECRET_PROVIDER: managed_secret_store");
     expect(dropletCompose).not.toContain("SECRET_PROVIDER: local_env");
@@ -120,6 +122,8 @@ describe("production infrastructure contract", () => {
     expect(k8s).toContain("secretRef:");
     expect(k8s).toContain("configMapRef:");
     expect(k8s).toContain("REAL_ORDER_KILL_SWITCH");
+    expect(k8s).toContain('CUSTOMCARD_API_RUNTIME: "postgres"');
+    expect(k8s).toContain("AUTH_SESSION_SECRET");
     expect(k8s).toContain("OBJECT_STORE_BUCKET");
     expect(k8s).toContain("OBJECT_STORE_SIGNING_SECRET");
     expect(k8s).toContain("ARTIFACT_SIGNED_URL_TTL_MINUTES");

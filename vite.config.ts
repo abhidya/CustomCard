@@ -1,8 +1,16 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import { loadEnv, type Plugin } from "vite";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import {
+  aiCardGenerateRoute,
+  aiChatRespondRoute,
+  createAiCardGenerationService,
+  loadLocalAiEnvFiles
+} from "./scripts/ai-card-generator.mjs";
 
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), customCardAiApiPlugin(mode)],
   test: {
     coverage: {
       include: [
@@ -70,4 +78,73 @@ export default defineConfig({
     environment: "node",
     globals: true
   }
-});
+}));
+
+function customCardAiApiPlugin(mode: string): Plugin {
+  const env = {
+    ...process.env,
+    ...loadEnv(mode, process.cwd(), "")
+  };
+  loadLocalAiEnvFiles({ target: env });
+  const service = createAiCardGenerationService({
+    env,
+    fetchImpl: (...args) => fetch(...args)
+  });
+
+  return {
+    name: "customcard-ai-api",
+    configureServer(server) {
+      server.middlewares.use(async (request, response, next) => {
+        const url = new URL(request.url ?? "/", "http://localhost");
+        if (url.pathname !== aiCardGenerateRoute && url.pathname !== aiChatRespondRoute) {
+          next();
+          return;
+        }
+        if (request.method !== "POST") {
+          sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path: url.pathname });
+          return;
+        }
+        if (!request.headers["x-idempotency-key"]) {
+          sendJson(response, 400, { service: "customcard-api", status: "missing-idempotency-key", path: url.pathname });
+          return;
+        }
+        let body: Record<string, unknown>;
+        try {
+          const rawBody = await readRequestBody(request, 128_000);
+          body = rawBody ? JSON.parse(rawBody) as Record<string, unknown> : {};
+        } catch {
+          sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path: url.pathname });
+          return;
+        }
+        const rateKey = String(request.headers["x-forwarded-for"] ?? request.socket.remoteAddress ?? "unknown")
+          .split(",")[0]
+          .trim();
+        const result =
+          url.pathname === aiCardGenerateRoute
+            ? await service.generateCard(body, { rateKey })
+            : await service.respondChat(body, { rateKey });
+        sendJson(response, result.statusCode, { service: "customcard-api", ...(result.payload as Record<string, unknown>) });
+      });
+    }
+  };
+}
+
+function readRequestBody(request: IncomingMessage, limit: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    request.setEncoding("utf8");
+    request.on("data", (chunk: string) => {
+      body += chunk;
+      if (body.length > limit) reject(new Error("request body too large"));
+    });
+    request.on("end", () => resolve(body));
+    request.on("error", reject);
+  });
+}
+
+function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
+  response.statusCode = statusCode;
+  response.setHeader("Content-Type", "application/json; charset=utf-8");
+  response.setHeader("Cache-Control", "no-store");
+  response.end(JSON.stringify(payload));
+}

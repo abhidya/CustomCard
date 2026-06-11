@@ -57,6 +57,16 @@ export function checkArrayIncludes(lane, id, values, required, noun = "signals")
   };
 }
 
+export function checkAbsent(lane, id, text, forbidden, noun = "signals") {
+  const present = forbidden.filter((needle) => text.includes(needle));
+  return {
+    id,
+    lane,
+    passed: present.length === 0,
+    detail: present.length === 0 ? `No forbidden ${noun} found.` : `Forbidden ${noun} present: ${present.join(", ")}`
+  };
+}
+
 export function summarizeCheckLanes(checks) {
   return Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
     const laneChecks = checks.filter((check) => check.lane === lane);

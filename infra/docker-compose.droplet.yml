@@ -8,10 +8,12 @@ services:
       - "80:4173"
     environment:
       CUSTOMCARD_ENV: prod
+      CUSTOMCARD_API_RUNTIME: postgres
       DATABASE_URL: postgres://customcard:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/customcard_prod
       QUEUE_URL: redis://redis:6379/0
       OBJECT_STORE_URL: file:///data/objects
       OBJECT_STORE_SIGNING_SECRET: ${OBJECT_STORE_SIGNING_SECRET:?set OBJECT_STORE_SIGNING_SECRET}
+      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
       REAL_ORDER_KILL_SWITCH: disabled
@@ -35,10 +37,12 @@ services:
     command: npm run worker
     environment:
       CUSTOMCARD_ENV: prod
+      CUSTOMCARD_API_RUNTIME: postgres
       DATABASE_URL: postgres://customcard:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/customcard_prod
       QUEUE_URL: redis://redis:6379/0
       OBJECT_STORE_URL: file:///data/objects
       OBJECT_STORE_SIGNING_SECRET: ${OBJECT_STORE_SIGNING_SECRET:?set OBJECT_STORE_SIGNING_SECRET}
+      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       SECRET_PROVIDER: managed_secret_store
       REAL_ORDER_KILL_SWITCH: disabled

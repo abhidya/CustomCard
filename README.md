@@ -288,6 +288,7 @@ variables such as:
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
 CUSTOMCARD_API_RUNTIME=postgres
 DATABASE_URL=postgres://...
+AUTH_SESSION_SECRET=...
 CUSTOMCARD_CUSTOMER_SESSION_TOKEN=...
 CUSTOMCARD_ADMIN_SESSION_TOKEN=...
 ```
@@ -333,6 +334,12 @@ CUSTOMCARD_ADMIN_SESSION_TOKEN=replace-me-do-not-commit-real-secret
 IDEMPOTENCY_KEY_TTL_HOURS=24
 REAL_ORDER_KILL_SWITCH=disabled
 ```
+
+`CUSTOMCARD_API_RUNTIME=contract` is for local reviewer/static workflows only.
+Production-shaped environments (`CUSTOMCARD_ENV=prod|production` or
+`NODE_ENV=production`) must set `CUSTOMCARD_API_RUNTIME=postgres`; the runtime
+doctor rejects contract or memory modes there so auth and idempotency stay
+durable.
 
 For Cloudflare R2, use the account S3 endpoint as `OBJECT_STORE_URL`, set
 `OBJECT_STORE_BUCKET` to the R2 bucket name, use `OBJECT_STORE_REGION=auto`, and

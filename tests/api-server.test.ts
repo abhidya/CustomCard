@@ -3,6 +3,17 @@ import { describe, expect, it } from "vitest";
 import { handleApiRequest } from "../scripts/api-server.mjs";
 
 const shellDoctorTimeoutMs = 15_000;
+const runtimeDoctorEnv = {
+  ...process.env,
+  CUSTOMCARD_ENV: "prod",
+  CUSTOMCARD_API_RUNTIME: "postgres",
+  DATABASE_URL: "postgres://customcard:customcard@127.0.0.1:5432/customcard_ci",
+  QUEUE_URL: "redis://runtime-doctor",
+  OBJECT_STORE_URL: "file:///tmp/customcard-runtime-doctor",
+  OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
+  AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+  REAL_ORDER_KILL_SWITCH: "disabled"
+};
 
 function walgreensPortalEvidenceArtifact() {
   return {
@@ -518,7 +529,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(21);
+    expect(report.readiness.routes.total).toBe(23);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -595,6 +606,55 @@ describe("api server wrapper", () => {
     expect(report.blockers).toContain("Unsupported CUSTOMCARD_API_RUNTIME: surprise-runtime. Expected contract, memory, or postgres.");
   });
 
+  it("blocks production-shaped API doctors from falling back to contract runtime", () => {
+    for (const customcardRuntime of ["", "contract", "memory"]) {
+      const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          CUSTOMCARD_ENV: "prod",
+          NODE_ENV: "test",
+          CUSTOMCARD_API_RUNTIME: customcardRuntime
+        },
+        stdio: ["ignore", "pipe", "pipe"]
+      });
+      const report = JSON.parse(result.stdout) as {
+        status: string;
+        readiness: { runtime: { mode: string; requestedMode: string } };
+        blockers: string[];
+      };
+
+      expect(result.status).toBe(1);
+      expect(report.status).toBe("blocked");
+      expect(report.readiness.runtime.mode).toBe("invalid");
+      expect(report.blockers).toContain(
+        "Production API runtime requires CUSTOMCARD_API_RUNTIME=postgres. Contract and memory runtimes are reviewer-only and do not provide durable production auth/idempotency."
+      );
+    }
+  });
+
+  it("requires an explicit durable API runtime in runtime doctor", () => {
+    const ready = spawnSync(process.execPath, ["scripts/validate-runtime-env.mjs"], {
+      encoding: "utf8",
+      env: runtimeDoctorEnv,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    expect(ready.status).toBe(0);
+    expect(JSON.parse(ready.stdout)).toMatchObject({
+      service: "customcard-runtime-doctor",
+      status: "ready",
+      apiRuntime: "postgres"
+    });
+
+    const contract = spawnSync(process.execPath, ["scripts/validate-runtime-env.mjs"], {
+      encoding: "utf8",
+      env: { ...runtimeDoctorEnv, CUSTOMCARD_API_RUNTIME: "contract" },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    expect(contract.status).toBe(1);
+    expect(contract.stderr).toContain("CustomCard production runtime requires CUSTOMCARD_API_RUNTIME=postgres.");
+  });
+
   it("serves API readiness, bootstrap, and contract-only mutation responses", async () => {
     const port = 6100 + Math.floor(Math.random() * 1000);
     const server = spawn("node", ["scripts/api-server.mjs"], {
@@ -617,7 +677,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 21, admin: 6, idempotentMutations: 12 });
+      expect(readiness.routes).toMatchObject({ total: 23, admin: 6, idempotentMutations: 14 });
       expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 124,
@@ -1407,6 +1467,7 @@ describe("api server wrapper", () => {
       env: {
         ...process.env,
         CUSTOMCARD_API_RUNTIME: "memory",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
         HOST: "127.0.0.1",
@@ -2008,6 +2069,7 @@ describe("api server wrapper", () => {
         HOST: "127.0.0.1",
         PORT: String(port),
         CUSTOMCARD_API_RUNTIME: "memory",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token",
         CUSTOMCARD_ARTIFACT_PERSISTENCE: "enabled",

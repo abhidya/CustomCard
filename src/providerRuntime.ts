@@ -63,6 +63,10 @@ export interface TextChatRuntimeInput {
   recipientName: string;
   approvedMemoryNotes: string[];
   locale: string;
+  model?: string;
+  promptInstructions?: string;
+  maxTokens?: number;
+  temperature?: number;
 }
 
 export interface AuthRuntimeInput {
@@ -78,6 +82,8 @@ export interface ImageRuntimeInput {
   style: string;
   locale: string;
   printApproved: boolean;
+  model?: string;
+  promptInstructions?: string;
   senderName?: string;
   frontCoverText?: string;
   insideLeftText?: string;
@@ -492,7 +498,7 @@ export function buildTextChatRuntime(
   );
   const readiness = getProviderRuntimeReadiness(adapter.id, env, { ...gates, piiMinimized: true });
 
-  return blockedOrRequest(adapter, readiness, () => buildTextChatRequest(adapter, sanitized, env));
+  return blockedOrRequest(adapter, readiness, () => buildTextChatRequest(adapter, sanitized, input, env));
 }
 
 export function buildImageGenerationRuntime(
@@ -552,7 +558,7 @@ export function buildImageGenerationRuntime(
     humanApprovalBeforePrint: input.printApproved || gates.humanApprovalBeforePrint
   });
 
-  return blockedOrRequest(adapter, readiness, () => buildImageRequest(adapter, sanitized, promptPlan, env));
+  return blockedOrRequest(adapter, readiness, () => buildImageRequest(adapter, sanitized, promptPlan, input, env));
 }
 
 export function buildEventImportRuntime(
@@ -975,6 +981,95 @@ function cloudflareWorkersAiTokenRef(env: ProviderRuntimeEnv, preferredCredentia
   return hasUsableEnvValue(env[preferredCredential]) ? preferredCredential : "CLOUDFLARE_API_TOKEN";
 }
 
+function configuredModel(
+  requestedModel: string | undefined,
+  envKeys: string[],
+  env: ProviderRuntimeEnv,
+  fallbackModel: string
+): string {
+  if (requestedModel?.trim()) return requestedModel.trim();
+  for (const envKey of envKeys) {
+    if (hasUsableEnvValue(env[envKey])) return String(env[envKey]).trim();
+  }
+  return fallbackModel;
+}
+
+function configuredNumber(value: number | undefined, fallback: number): number {
+  return Number.isFinite(value) ? Number(value) : fallback;
+}
+
+function textModelEnvKeys(adapterId: string): string[] {
+  const envKeysByAdapter: Record<string, string[]> = {
+    "cloudflare-workers-ai-chat": ["CUSTOMCARD_CLOUDFLARE_TEXT_MODEL", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+    "openai-responses-chat": ["CUSTOMCARD_OPENAI_TEXT_MODEL", "OPENAI_TEXT_MODEL", "CARD_TEXT_MODEL"],
+    "anthropic-messages-chat": ["CUSTOMCARD_ANTHROPIC_TEXT_MODEL", "ANTHROPIC_MODEL", "CARD_TEXT_MODEL"],
+    "google-gemini-chat": ["CUSTOMCARD_GEMINI_TEXT_MODEL", "GEMINI_TEXT_MODEL", "GOOGLE_GENERATIVE_AI_MODEL"],
+    "huggingface-chat": ["CUSTOMCARD_HUGGINGFACE_TEXT_MODEL", "HUGGINGFACE_TEXT_MODEL"],
+    "mistral-chat": ["CUSTOMCARD_MISTRAL_TEXT_MODEL", "MISTRAL_MODEL"],
+    "cohere-chat": ["CUSTOMCARD_COHERE_TEXT_MODEL", "COHERE_MODEL"],
+    "perplexity-sonar-chat": ["CUSTOMCARD_PERPLEXITY_TEXT_MODEL", "PERPLEXITY_MODEL"],
+    "xai-chat": ["CUSTOMCARD_XAI_TEXT_MODEL", "XAI_MODEL"],
+    "together-chat": ["CUSTOMCARD_TOGETHER_TEXT_MODEL", "TOGETHER_TEXT_MODEL"],
+    "groq-chat": ["CUSTOMCARD_GROQ_TEXT_MODEL", "GROQ_MODEL"],
+    "deepseek-chat": ["CUSTOMCARD_DEEPSEEK_TEXT_MODEL", "DEEPSEEK_MODEL"],
+    "fireworks-chat": ["CUSTOMCARD_FIREWORKS_TEXT_MODEL", "FIREWORKS_TEXT_MODEL"],
+    "self-hosted-openai-compatible-chat": ["CUSTOMCARD_SELF_HOSTED_TEXT_MODEL", "SELF_HOSTED_LLM_MODEL"]
+  };
+  return envKeysByAdapter[adapterId] ?? [];
+}
+
+function imageModelEnvKeys(adapterId: string): string[] {
+  const envKeysByAdapter: Record<string, string[]> = {
+    "cloudflare-workers-ai-image": ["CUSTOMCARD_CLOUDFLARE_IMAGE_MODEL", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+    "openai-images": ["CUSTOMCARD_OPENAI_IMAGE_MODEL", "OPENAI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+    "azure-openai-image": ["CUSTOMCARD_AZURE_OPENAI_IMAGE_MODEL", "AZURE_OPENAI_IMAGE_DEPLOYMENT", "CARD_IMAGE_MODEL"],
+    "aws-bedrock-image": ["CUSTOMCARD_BEDROCK_IMAGE_MODEL", "BEDROCK_IMAGE_MODEL_ID"],
+    "google-gemini-image": ["CUSTOMCARD_GEMINI_IMAGE_MODEL", "GEMINI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+    "huggingface-image": ["CUSTOMCARD_HUGGINGFACE_IMAGE_MODEL", "HUGGINGFACE_IMAGE_MODEL"],
+    "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
+    "together-image": ["CUSTOMCARD_TOGETHER_IMAGE_MODEL", "TOGETHER_IMAGE_MODEL"],
+    "fal-image": ["CUSTOMCARD_FAL_IMAGE_MODEL", "FAL_IMAGE_MODEL"],
+    "bfl-flux-image": ["CUSTOMCARD_BFL_IMAGE_MODEL", "BFL_IMAGE_MODEL"],
+    "luma-image": ["CUSTOMCARD_LUMA_IMAGE_MODEL", "LUMA_IMAGE_MODEL"],
+    "replicate-image": ["CUSTOMCARD_REPLICATE_IMAGE_MODEL", "REPLICATE_IMAGE_MODEL"]
+  };
+  return envKeysByAdapter[adapterId] ?? [];
+}
+
+function defaultTextModel(adapterId: string): string {
+  const defaults: Record<string, string> = {
+    "openai-responses-chat": "gpt-4o-mini",
+    "anthropic-messages-chat": "claude-3-5-haiku-latest",
+    "google-gemini-chat": "gemini-1.5-flash",
+    "huggingface-chat": "meta-llama/Llama-3.2-3B-Instruct",
+    "mistral-chat": "mistral-small-latest",
+    "cohere-chat": "command-r7b-12-2024",
+    "perplexity-sonar-chat": "sonar",
+    "xai-chat": "grok-3-mini",
+    "together-chat": "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+    "groq-chat": "llama-3.1-8b-instant",
+    "deepseek-chat": "deepseek-chat",
+    "fireworks-chat": "accounts/fireworks/models/llama-v3p1-8b-instruct",
+    "self-hosted-openai-compatible-chat": "local-default"
+  };
+  return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}";
+}
+
+function defaultImageModel(adapterId: string): string {
+  const defaults: Record<string, string> = {
+    "openai-images": "gpt-image-1",
+    "google-gemini-image": "gemini-2.0-flash-preview-image-generation",
+    "huggingface-image": "black-forest-labs/FLUX.1-schnell",
+    "stability-stable-image": "stable-image-core",
+    "together-image": "black-forest-labs/FLUX.1-schnell-Free",
+    "fal-image": "fal-ai/flux/schnell",
+    "bfl-flux-image": "flux-pro",
+    "luma-image": "photon-1",
+    "replicate-image": "black-forest-labs/flux-schnell"
+  };
+  return defaults[adapterId] ?? "{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}";
+}
+
 function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): RuntimeRequestContract {
   const authMetadata = {
     requested_role: input.requestedRole,
@@ -1075,19 +1170,24 @@ function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): Ru
 function buildTextChatRequest(
   adapter: ProviderAdapter,
   sanitized: SanitizedText,
+  input: TextChatRuntimeInput,
   env: ProviderRuntimeEnv = {}
 ): RuntimeRequestContract {
+  const model = configuredModel(input.model, textModelEnvKeys(adapter.id), env, defaultTextModel(adapter.id));
+  const maxTokens = configuredNumber(input.maxTokens, 700);
+  const temperature = configuredNumber(input.temperature, 0.4);
   const prompt = [
-    "You are CustomCard's card concierge.",
-    "Use only customer-approved memories.",
-    "Do not claim an order was placed.",
+    input.promptInstructions || "You are CustomCard's card concierge.",
+    "Use only customer-approved memories and do not claim an order was placed.",
     sanitized.text
   ].join("\n");
 
   if (adapter.id === "openai-responses-chat") {
     return request(adapter, "POST", "https://api.openai.com/v1/responses", ["OPENAI_API_KEY"], {
-      model: "admin-selected-low-cost-text-model",
+      model,
       input: prompt,
+      max_output_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
@@ -1100,7 +1200,8 @@ function buildTextChatRequest(
       ["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_CHAT_DEPLOYMENT"],
       {
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 700,
+        max_tokens: maxTokens,
+        temperature,
         metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
       },
       [],
@@ -1116,7 +1217,7 @@ function buildTextChatRequest(
       ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "BEDROCK_TEXT_MODEL_ID"],
       {
         messages: [{ role: "user", content: [{ text: prompt }] }],
-        inferenceConfig: { maxTokens: 700, temperature: 0.4 },
+        inferenceConfig: { maxTokens, temperature },
         metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
       },
       [],
@@ -1130,8 +1231,9 @@ function buildTextChatRequest(
 
   if (adapter.id === "anthropic-messages-chat") {
     return request(adapter, "POST", "https://api.anthropic.com/v1/messages", ["ANTHROPIC_API_KEY"], {
-      model: "admin-selected-anthropic-model",
-      max_tokens: 700,
+      model,
+      max_tokens: maxTokens,
+      temperature,
       messages: [{ role: "user", content: prompt }],
       metadata: { redactions: sanitized.redactions }
     }, [], {
@@ -1143,6 +1245,7 @@ function buildTextChatRequest(
   if (adapter.id === "google-gemini-chat") {
     return request(adapter, "POST", "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent", ["GOOGLE_GENERATIVE_AI_API_KEY"], {
       contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens, temperature },
       metadata: { redactions: sanitized.redactions }
     }, [], {
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
@@ -1157,8 +1260,10 @@ function buildTextChatRequest(
       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
       ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
       {
-        model: "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}",
+        model,
         messages: [{ role: "user", content: prompt }],
+        max_tokens: maxTokens,
+        temperature,
         metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
       },
       [],
@@ -1168,79 +1273,99 @@ function buildTextChatRequest(
 
   if (adapter.id === "huggingface-chat") {
     return request(adapter, "POST", "https://router.huggingface.co/v1/chat/completions", ["HUGGINGFACE_API_TOKEN"], {
-      model: "admin-allowlisted-chat-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions }
     });
   }
 
   if (adapter.id === "mistral-chat") {
     return request(adapter, "POST", "https://api.mistral.ai/v1/chat/completions", ["MISTRAL_API_KEY"], {
-      model: "admin-selected-mistral-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "cohere-chat") {
     return request(adapter, "POST", "https://api.cohere.com/v2/chat", ["COHERE_API_KEY"], {
-      model: "admin-selected-cohere-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "perplexity-sonar-chat") {
     return request(adapter, "POST", "https://api.perplexity.ai/chat/completions", ["PERPLEXITY_API_KEY"], {
-      model: "admin-selected-sonar-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "xai-chat") {
     return request(adapter, "POST", "https://api.x.ai/v1/chat/completions", ["XAI_API_KEY"], {
-      model: "admin-selected-grok-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "together-chat") {
     return request(adapter, "POST", "https://api.together.xyz/v1/chat/completions", ["TOGETHER_API_KEY"], {
-      model: "admin-allowlisted-together-chat-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "groq-chat") {
     return request(adapter, "POST", "https://api.groq.com/openai/v1/chat/completions", ["GROQ_API_KEY"], {
-      model: "admin-selected-groq-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "deepseek-chat") {
     return request(adapter, "POST", "https://api.deepseek.com/chat/completions", ["DEEPSEEK_API_KEY"], {
-      model: "admin-selected-deepseek-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   if (adapter.id === "fireworks-chat") {
     return request(adapter, "POST", "https://api.fireworks.ai/inference/v1/chat/completions", ["FIREWORKS_API_KEY"], {
-      model: "admin-selected-fireworks-model",
+      model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxTokens,
+      temperature,
       metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
     });
   }
 
   return request(adapter, "POST", "{SELF_HOSTED_LLM_BASE_URL}/v1/chat/completions", ["SELF_HOSTED_LLM_API_KEY"], {
-    model: "admin-allowlisted-self-hosted-model",
+    model,
     messages: [{ role: "user", content: prompt }],
+    max_tokens: maxTokens,
+    temperature,
     metadata: { redactions: sanitized.redactions }
   });
 }
@@ -1263,6 +1388,7 @@ function buildCardImagePromptPlan(sanitized: SanitizedText, input: ImageRuntimeI
     "Treat generated text as untrusted until proofed; exact names and multilingual text require deterministic overlay or human QA before print."
   ];
   const sharedPrompt = [
+    input.promptInstructions || "Create CustomCard print artwork using the configured admin prompt policy.",
     "Create a coordinated print-ready vertical 5x7 inch folded greeting card image set.",
     "Required final panel set: FRONT COVER, BACK COVER, INSIDE LEFT PANEL, INSIDE RIGHT PANEL.",
     "Execution strategy: generate one separate image per panel. Do not combine panels into a four-panel collage, grid, mockup, folded preview, or contact sheet.",
@@ -1368,10 +1494,11 @@ function buildImageRequest(
   adapter: ProviderAdapter,
   sanitized: SanitizedText,
   promptPlan: CardImagePromptPlan,
+  input: ImageRuntimeInput,
   env: ProviderRuntimeEnv = {}
 ): RuntimeRequestContract {
   const panelRequests = promptPlan.panelPrompts.map((panel) => ({
-    ...buildSinglePanelImageRequest(adapter, sanitized, promptPlan, panel, env),
+    ...buildSinglePanelImageRequest(adapter, sanitized, promptPlan, panel, input, env),
     panelId: panel.panelId
   }));
 
@@ -1386,14 +1513,16 @@ function buildSinglePanelImageRequest(
   sanitized: SanitizedText,
   promptPlan: CardImagePromptPlan,
   panel: CardImagePanelPrompt,
+  input: ImageRuntimeInput,
   env: ProviderRuntimeEnv = {}
 ): RuntimeRequestContract {
   const prompt = panel.prompt;
   const metadata = imagePanelMetadata(sanitized, promptPlan, panel);
+  const model = configuredModel(input.model, imageModelEnvKeys(adapter.id), env, defaultImageModel(adapter.id));
 
   if (adapter.id === "openai-images") {
     return request(adapter, "POST", "https://api.openai.com/v1/images/generations", ["OPENAI_API_KEY"], {
-      model: "admin-selected-low-cost-image-model",
+      model,
       prompt,
       size: "1024x1536",
       n: 1,
@@ -1408,6 +1537,7 @@ function buildSinglePanelImageRequest(
       "{AZURE_OPENAI_ENDPOINT}/openai/deployments/{AZURE_OPENAI_IMAGE_DEPLOYMENT}/images/generations?api-version=2024-10-21",
       ["AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_IMAGE_DEPLOYMENT"],
       {
+        model,
         prompt,
         size: "1024x1536",
         n: 1,
@@ -1426,6 +1556,7 @@ function buildSinglePanelImageRequest(
       ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "BEDROCK_IMAGE_MODEL_ID"],
       {
         taskType: "TEXT_IMAGE",
+        model,
         textToImageParams: { text: prompt },
         imageGenerationConfig: { numberOfImages: 1, quality: "standard", width: 1024, height: 1536 },
         metadata
@@ -1441,6 +1572,7 @@ function buildSinglePanelImageRequest(
 
   if (adapter.id === "google-gemini-image") {
     return request(adapter, "POST", "https://generativelanguage.googleapis.com/v1beta/models/{image-model}:generateContent", ["GOOGLE_GENERATIVE_AI_API_KEY"], {
+      model,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: { responseModalities: ["IMAGE"] },
       metadata
@@ -1457,6 +1589,7 @@ function buildSinglePanelImageRequest(
       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
       ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
       {
+        model,
         prompt,
         width: 1024,
         height: 1536,
@@ -1469,6 +1602,7 @@ function buildSinglePanelImageRequest(
 
   if (adapter.id === "stability-stable-image") {
     return request(adapter, "POST", "https://api.stability.ai/v2beta/stable-image/generate/core", ["STABILITY_API_KEY"], {
+      model,
       prompt,
       output_format: "png",
       metadata
@@ -1477,7 +1611,7 @@ function buildSinglePanelImageRequest(
 
   if (adapter.id === "huggingface-image") {
     return request(adapter, "POST", "https://router.huggingface.co/v1/images/generations", ["HUGGINGFACE_API_TOKEN"], {
-      model: "admin-allowlisted-image-model",
+      model,
       prompt,
       metadata
     });
@@ -1494,7 +1628,7 @@ function buildSinglePanelImageRequest(
 
   if (adapter.id === "together-image") {
     return request(adapter, "POST", "https://api.together.xyz/v1/images/generations", ["TOGETHER_API_KEY"], {
-      model: "admin-allowlisted-together-image-model",
+      model,
       prompt,
       width: 1024,
       height: 1536,
@@ -1530,6 +1664,7 @@ function buildSinglePanelImageRequest(
       "https://queue.fal.run/{admin-selected-fal-image-model}",
       ["FAL_KEY"],
       {
+        model,
         prompt,
         image_size: { width: 1024, height: 1536 },
         num_images: 1,
@@ -1547,6 +1682,7 @@ function buildSinglePanelImageRequest(
       "https://api.bfl.ai/v1/{admin-selected-flux-model}",
       ["BFL_API_KEY"],
       {
+        model,
         prompt,
         width: 1024,
         height: 1536,
@@ -1605,7 +1741,7 @@ function buildSinglePanelImageRequest(
       {
         prompt,
         aspect_ratio: "2:3",
-        model: "admin-selected-luma-image-model",
+        model,
         metadata
       },
       [],
@@ -1614,7 +1750,7 @@ function buildSinglePanelImageRequest(
   }
 
   return request(adapter, "POST", "https://api.replicate.com/v1/predictions", ["REPLICATE_API_TOKEN"], {
-    version: "admin-allowlisted-image-model-version",
+    version: model,
     input: { prompt },
     metadata
   });

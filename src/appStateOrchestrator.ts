@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
 import { buildFulfillmentRecommendations, type FulfillmentRecommendationSet } from "./fulfillmentRecommendation";
 import {
   buildOpportunity,
   buildVendorHandoff,
+  buildCustomerChatSession,
   generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
@@ -19,8 +19,9 @@ import {
   type Tone,
   type VendorHandoff,
   type VendorId,
-  type VisualStyle
-} from "./freeMvp";
+  type VisualStyle,
+  type CustomerChatSession
+} from "./customerWorkflow";
 import { getSupportedLocale, summarizeLocalizationReadiness, type LocalizationReadinessSummary, type SupportedLocale, type SupportedLocaleCode } from "./localization";
 import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
 import { buildAdminPanelModel, providerCatalog, type AdminPanelModel } from "./providerCatalog";
@@ -30,6 +31,14 @@ import { buildPrinterPricingComparison } from "./printerPricing";
 import { buildPrintExportPackage, type PrintExportPackage } from "./printExport";
 import { getProviderRuntimeReadiness, type RuntimeReadiness } from "./providerRuntime";
 import { buildReadinessSummary, type ReadinessSummary } from "./readinessSummary";
+import {
+  buildBrowserAiFlowSummary,
+  loadBrowserAiFlowAdminConfigs,
+  normalizeAiFlowAdminConfigs,
+  saveBrowserAiFlowAdminConfigs,
+  type AiFlowAdminConfig,
+  type AiFlowConfigSummary
+} from "./aiFlowConfig";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
 
 export interface ReviewerAuthForm {
@@ -59,7 +68,8 @@ export const reviewerDraftOptions: {
 
 export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
 
-const cardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
+const legacyCardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
+const sameOriginCardGenPath = "/api/ai/card/generate";
 
 export interface AppState {
   activeView: ViewId;
@@ -93,6 +103,9 @@ export interface AppState {
   aiCardGenLoading: boolean;
   triggerAiCardGen: () => void;
   cardGenAvailable: boolean;
+  aiFlowConfigs: AiFlowAdminConfig[];
+  setAiFlowConfigs: (configs: AiFlowAdminConfig[]) => void;
+  aiFlowSummary: AiFlowConfigSummary;
 
   memories: LocalWorkspace["memories"];
   signal: ReturnType<typeof parseFreeImport>;
@@ -167,6 +180,7 @@ export function useAppState(): AppState {
   );
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
   const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
+  const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => loadBrowserAiFlowAdminConfigs());
 
   useEffect(() => {
     setDraftInput((current) => ({
@@ -218,6 +232,12 @@ export function useAppState(): AppState {
   const readiness = useMemo(() => buildReadinessSummary(), []);
   const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
+  const aiFlowSummary = useMemo(() => buildBrowserAiFlowSummary(aiFlowConfigs), [aiFlowConfigs]);
+  const setAiFlowConfigs = useCallback((configs: AiFlowAdminConfig[]) => {
+    const normalized = normalizeAiFlowAdminConfigs(configs);
+    setAiFlowConfigsState(normalized);
+    saveBrowserAiFlowAdminConfigs(normalized);
+  }, []);
   // Chat starts empty: the conversation belongs to the customer, not a scripted transcript.
   const customerChatSession = useMemo(
     () =>
@@ -235,8 +255,8 @@ export function useAppState(): AppState {
   );
 
   const triggerAiCardGen = useCallback(() => {
-    if (!cardGenApiUrl || aiCardGenLoading) return;
-    const body = JSON.stringify({
+    if (aiCardGenLoading) return;
+    const baseBody = {
       sender: draftInput.sender,
       recipient: draftInput.recipient,
       relationship: draftInput.relationship,
@@ -246,9 +266,24 @@ export function useAppState(): AppState {
       language: draftInput.language,
       personal_note: draftInput.personalNote,
       memory_notes: approvedMemoryNotes
-    });
+    };
+    const body = JSON.stringify(
+      legacyCardGenApiUrl
+        ? baseBody
+        : {
+            ...baseBody,
+            aiFlowConfig: aiFlowConfigs
+          }
+    );
     setAiCardGenLoading(true);
-    fetch(`${cardGenApiUrl}/generate`, { method: "POST", headers: { "Content-Type": "application/json" }, body })
+    fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": buildIdempotencyKey("card-gen")
+      },
+      body
+    })
       .then((res) => {
         if (!res.ok) throw new Error(`Card gen service returned ${res.status}`);
         return res.json();
@@ -275,7 +310,7 @@ export function useAppState(): AppState {
       })
       .catch((err: unknown) => { console.error("AI card gen failed:", err); })
       .finally(() => { setAiCardGenLoading(false); });
-  }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput]);
+  }, [aiCardGenLoading, aiFlowConfigs, approvedMemoryNotes, draft, draftInput]);
 
   return {
     activeView, setActiveView,
@@ -294,7 +329,10 @@ export function useAppState(): AppState {
     aiDraft,
     aiCardGenLoading,
     triggerAiCardGen,
-    cardGenAvailable: Boolean(cardGenApiUrl),
+    cardGenAvailable: true,
+    aiFlowConfigs,
+    setAiFlowConfigs,
+    aiFlowSummary,
     memories,
     signal,
     pricingComparison,
@@ -316,4 +354,9 @@ export function useAppState(): AppState {
     runtimeReadiness,
     customerChatSession
   };
+}
+
+function buildIdempotencyKey(prefix: string): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }

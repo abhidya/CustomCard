@@ -60,6 +60,19 @@ class TestCardDraftInput:
         assert inp.personal_note == ""
         assert inp.memory_notes == []
 
+    def test_rejects_overlong_input_fields(self) -> None:
+        with pytest.raises(Exception):
+            CardDraftInput.model_validate({**_minimal_input().model_dump(), "recipient": "x" * 121})
+
+        with pytest.raises(Exception):
+            CardDraftInput.model_validate({**_minimal_input().model_dump(), "personal_note": "x" * 1001})
+
+        with pytest.raises(Exception):
+            CardDraftInput.model_validate({**_minimal_input().model_dump(), "memory_notes": ["x" * 501]})
+
+        with pytest.raises(Exception):
+            CardDraftInput.model_validate({**_minimal_input().model_dump(), "memory_notes": ["note"] * 13})
+
 
 class TestPanelCopy:
     def test_valid_panel_ids(self) -> None:

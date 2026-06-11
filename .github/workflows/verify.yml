@@ -26,12 +26,13 @@ jobs:
           --health-retries 10
     env:
       CUSTOMCARD_ENV: dev
+      CUSTOMCARD_API_RUNTIME: contract
       DATABASE_URL: postgres://customcard:customcard@127.0.0.1:5432/customcard_ci
       QUEUE_URL: redis://x
       OBJECT_STORE_URL: file:///tmp/customcard-objects
       OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
-      AUTH_SESSION_SECRET: test-session-secret
+      AUTH_SESSION_SECRET: test-auth-session-secret-32-chars
       REAL_ORDER_KILL_SWITCH: disabled
       CUSTOMCARD_API_BASE_URL: http://127.0.0.1:5173
     steps:
@@ -44,6 +45,11 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install dependencies
         run: npm ci
 
@@ -52,6 +58,9 @@ jobs:
 
       - name: Validate deployment readiness
         run: npm run deployment:doctor
+
+      - name: Validate runtime environment contract
+        run: npm run runtime:doctor
 
       - name: Validate cloud artifact IaC
         run: npm run cloud:doctor
@@ -197,3 +206,11 @@ jobs:
 
       - name: Validate mobile native release contract
         run: npm run mobile:release:doctor
+
+      - name: Audit mobile dependency tree
+        run: npm --prefix apps/mobile audit --audit-level=high
+
+      - name: Audit Python sidecar dependencies
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          python -m pip_audit -r card_gen/requirements.lock

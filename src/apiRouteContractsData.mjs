@@ -90,6 +90,71 @@ export const apiRouteContracts = [
     backedBy: ["mobileExperience", "validateMobileExperience"]
   },
   {
+    id: "ai-chat-respond",
+    method: "POST",
+    path: "/api/ai/chat/respond",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "queue-backed",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "customer_message",
+      "recipient_name",
+      "approved_memory_notes",
+      "locale",
+      "aiFlowConfig"
+    ],
+    responseSchema: [
+      "assistant_message",
+      "ai_flow",
+      "live_provider_calls_enabled",
+      "fallback_queued",
+      "external_network_calls"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Customer chat text is redacted and sent only to the server-selected AI provider when server-side live AI gates are enabled, configured, rate-limited, and fallback-covered; the route does not persist transcripts.",
+    backedBy: ["customer-session auth", "aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "deterministic-customer-chat fallback"]
+  },
+  {
+    id: "ai-card-generate",
+    method: "POST",
+    path: "/api/ai/card/generate",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "queue-backed",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "sender",
+      "recipient",
+      "relationship",
+      "occasion",
+      "tone",
+      "style",
+      "language",
+      "memory_notes",
+      "aiFlowConfig"
+    ],
+    responseSchema: [
+      "draft_id",
+      "card_copy",
+      "images",
+      "generated_by",
+      "ai_flow",
+      "live_provider_calls_enabled",
+      "fallback_queued",
+      "external_network_calls"
+    ],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Card fields and approved memories are minimized and sent only to the server-selected AI provider when server-side live AI gates are enabled, configured, rate-limited, and fallback-covered; the route does not place orders or store raw drafts.",
+    backedBy: ["customer-session auth", "aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "browser-svg-renderer fallback"]
+  },
+  {
     id: "admin-readiness",
     method: "GET",
     path: "/api/admin/readiness",
@@ -375,7 +440,7 @@ export const apiRouteContracts = [
     method: "POST",
     path: "/api/walgreens/checkout/upload",
     audience: "customer",
-    auth: "none",
+    auth: "customer-session",
     runtimeMode: "local-contract",
     requestSchema: ["imageBase64"],
     responseSchema: ["ok", "imageUrl", "imageName", "expiresAtIso"],
@@ -384,14 +449,14 @@ export const apiRouteContracts = [
     realOrdersEnabled: false,
     piiPolicy:
       "Card JPEG bytes are forwarded to Walgreens write-only photo storage; no customer identity fields are sent and nothing is persisted locally.",
-    backedBy: ["walgreensHostedCheckout service", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
+    backedBy: ["walgreensHostedCheckout service", "customer-session auth", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
   },
   {
     id: "walgreens-checkout-session",
     method: "POST",
     path: "/api/walgreens/checkout/session",
     audience: "customer",
-    auth: "none",
+    auth: "customer-session",
     runtimeMode: "local-contract",
     requestSchema: ["customer", "images", "lat", "lng"],
     responseSchema: ["ok", "checkoutUrl", "window", "imageCount", "mode"],
@@ -400,7 +465,7 @@ export const apiRouteContracts = [
     realOrdersEnabled: false,
     piiPolicy:
       "Customer name, email, and phone are validated, sanitized, and forwarded once to the Walgreens mweb5url checkout service to pre-fill their hosted checkout; nothing is persisted locally.",
-    backedBy: ["walgreensHostedCheckout service", "trusted image URL allowlist", "WALGREENS_VENDOR_MODE gate"]
+    backedBy: ["walgreensHostedCheckout service", "customer-session auth", "trusted image URL allowlist", "WALGREENS_VENDOR_MODE gate"]
   },
   {
     id: "walgreens-checkout-callback",
@@ -423,6 +488,12 @@ export const hostedCheckoutExemptRouteIds = new Set([
   "walgreens-checkout-upload",
   "walgreens-checkout-session",
   "walgreens-checkout-callback"
+]);
+
+export const gatedProviderNetworkRouteIds = new Set([
+  ...hostedCheckoutExemptRouteIds,
+  "ai-chat-respond",
+  "ai-card-generate"
 ]);
 
 export const requiredApiRouteIds = apiRouteContracts.map((route) => route.id);

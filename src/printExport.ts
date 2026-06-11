@@ -14,7 +14,7 @@ import {
   type CardPanel,
   type CardValidation,
   type VendorHandoff
-} from "./freeMvp";
+} from "./customerWorkflow";
 import {
   hasOrderedRenderPacketPanels,
   panelMatchesRenderPacketTarget,

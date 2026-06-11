@@ -14,7 +14,7 @@ import {
   type FreeImportSignal,
   type LocalWorkspace,
   type MemoryItem
-} from "./freeMvp";
+} from "./customerWorkflow";
 
 export type DemoSeedTable =
   | "users"

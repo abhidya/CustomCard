@@ -3,13 +3,22 @@ import {
   apiRouteContracts,
   buildApiBootstrapPayload,
   buildApiReadinessSummary,
+  gatedProviderNetworkRouteIds,
   hostedCheckoutExemptRouteIds,
   resolveApiContractResponse,
   validateApiContracts,
   type ApiRouteContract
 } from "./apiContracts";
+import { apiRouteContracts as apiRouteContractData, persistedTablesForRouteId } from "./apiRouteContractsData.mjs";
 
 describe("api contracts", () => {
+  it("uses the Node-safe route contract data as the canonical route interface", () => {
+    expect(apiRouteContracts).toBe(apiRouteContractData);
+    expect(persistedTablesForRouteId("render-packets")).toEqual(
+      expect.arrayContaining(["render_packets", "provider_call_events", "api_jobs"])
+    );
+  });
+
   it("defines customer, admin, mobile, render, and handoff API routes with safe defaults", () => {
     expect(validateApiContracts()).toEqual([]);
     expect(apiRouteContracts.map((route) => route.id)).toEqual(
@@ -34,7 +43,7 @@ describe("api contracts", () => {
         "data-requests"
       ])
     );
-    expect(apiRouteContracts.filter((route) => !hostedCheckoutExemptRouteIds.has(route.id)).every((route) => route.externalNetworkCalls === false)).toBe(true);
+    expect(apiRouteContracts.filter((route) => !gatedProviderNetworkRouteIds.has(route.id)).every((route) => route.externalNetworkCalls === false)).toBe(true);
     expect(apiRouteContracts.every((route) => route.realOrdersEnabled === false)).toBe(true);
   });
 
@@ -51,6 +60,8 @@ describe("api contracts", () => {
     const retailPrinterCouponPortalEvidence = apiRouteContracts.find((route) => route.id === "retail-printer-coupon-portal-evidence");
     const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
+    const walgreensCheckoutUpload = apiRouteContracts.find((route) => route.id === "walgreens-checkout-upload");
+    const walgreensCheckoutSession = apiRouteContracts.find((route) => route.id === "walgreens-checkout-session");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
     expect(nonCheckoutMutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
@@ -158,6 +169,22 @@ describe("api contracts", () => {
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
+    expect(walgreensCheckoutUpload).toMatchObject({
+      method: "POST",
+      audience: "customer",
+      auth: "customer-session",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: true,
+      realOrdersEnabled: false
+    });
+    expect(walgreensCheckoutSession).toMatchObject({
+      method: "POST",
+      audience: "customer",
+      auth: "customer-session",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: true,
+      realOrdersEnabled: false
+    });
     expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
       expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])
     );
@@ -875,6 +902,11 @@ describe("api contracts", () => {
         idempotencyKeyRequired: false,
         requestSchema: ["opportunityId"],
         piiPolicy: "raw content stored"
+      },
+      {
+        ...apiRouteContracts.find((route) => route.id === "walgreens-checkout-upload")!,
+        id: "unsafe-checkout-upload",
+        auth: "none"
       }
     ];
 
@@ -884,6 +916,7 @@ describe("api contracts", () => {
         "Mutation route unsafe-mutation must require an idempotency key.",
         "Mutation route unsafe-mutation must name X-Idempotency-Key in the request schema.",
         "Route unsafe-mutation must not allow raw content policy language.",
+        "Customer route unsafe-checkout-upload must require customer-session auth.",
         "Missing API route contract: health"
       ])
     );

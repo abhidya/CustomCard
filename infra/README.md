@@ -72,8 +72,11 @@ The Kubernetes web deployment probes `/api/health`, and the production Docker
 image starts `scripts/api-server.mjs` so the same container can serve the static
 web bundle and the contract-first API endpoints.
 
-The API runtime defaults to `CUSTOMCARD_API_RUNTIME=contract` for reviewer/static
-serving. `npm run api:doctor:memory` sets test customer/admin session tokens and
+The API runtime defaults to `CUSTOMCARD_API_RUNTIME=contract` only for local
+reviewer/static serving. Production-shaped environments must set
+`CUSTOMCARD_API_RUNTIME=postgres`; `runtime:doctor` rejects contract or memory
+there so auth sessions and idempotency records are durable. `npm run
+api:doctor:memory` sets test customer/admin session tokens and
 validates Bearer auth plus `X-Idempotency-Key` replay without a live database.
 `npm run api:doctor:postgres` injects a fake Postgres pool into the same runtime
 path and validates session lookup, wrong-role blocking, idempotency replay,
@@ -158,8 +161,8 @@ The Kubernetes `Secret` in `k8s/app.yaml` is intentionally empty and annotated a
 pre-created by a secret manager. Production clusters should source the required
 keys from the platform secret manager, External Secrets, Sealed Secrets, or an
 equivalent operator-approved mechanism. The `runtime:doctor` check rejects empty
-values, known placeholders, and any live-order kill switch value other than
-`disabled`.
+values, known placeholders, short auth/signing secrets, non-Postgres production
+API runtimes, and any live-order kill switch value other than `disabled`.
 
 Signed artifact handoff requires `OBJECT_STORE_SIGNING_SECRET` to be present and
 at least 32 characters. The committed manifests also keep
