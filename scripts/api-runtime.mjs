@@ -1,16 +1,18 @@
 import { createHash } from "node:crypto";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
+import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
 
 export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
   const requestedMode = env.CUSTOMCARD_API_RUNTIME ?? "contract";
-  if (!runtimeModes.has(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes });
+  const objectStoreRuntime = createObjectStoreRuntime({ env });
+  if (!runtimeModes.has(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime });
   const mode = requestedMode;
-  if (mode === "memory") return createMemoryApiRuntime({ env, routes });
-  if (mode === "postgres") return createPostgresApiRuntime({ env, routes, postgresPoolFactory });
-  return createContractApiRuntime({ routes });
+  if (mode === "memory") return createMemoryApiRuntime({ env, routes, objectStoreRuntime });
+  if (mode === "postgres") return createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime });
+  return createContractApiRuntime({ routes, objectStoreRuntime });
 }
 
 export function hashSessionToken(token) {
@@ -21,7 +23,7 @@ export function requestHash(routeId, bodyText) {
   return createHash("sha256").update(`${routeId}:${bodyText || "{}"}`).digest("hex");
 }
 
-function createContractApiRuntime({ routes }) {
+function createContractApiRuntime({ routes, objectStoreRuntime }) {
   return {
     mode: "contract",
     describe() {
@@ -45,11 +47,12 @@ function createContractApiRuntime({ routes }) {
         orderEventRecords: 0,
         consentRecords: 0,
         dataRequestRecords: 0,
-        statefulRoutes: routes.filter((route) => route.audience !== "public").length
+        statefulRoutes: routes.filter((route) => route.audience !== "public").length,
+        artifactStore: objectStoreRuntime.describe()
       };
     },
     validate() {
-      return [];
+      return objectStoreRuntime.validate();
     },
     async authorize(route) {
       if (route.audience === "admin" && route.method === "POST") {
@@ -85,14 +88,17 @@ function createContractApiRuntime({ routes }) {
         }
       };
     },
+    async readArtifact(input) {
+      return objectStoreRuntime.readSignedArtifact(input);
+    },
     async close() {
       return undefined;
     }
   };
 }
 
-function createInvalidApiRuntime({ requestedMode, routes }) {
-  const contractRuntime = createContractApiRuntime({ routes });
+function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime }) {
+  const contractRuntime = createContractApiRuntime({ routes, objectStoreRuntime });
   return {
     ...contractRuntime,
     mode: "invalid",
@@ -109,7 +115,7 @@ function createInvalidApiRuntime({ requestedMode, routes }) {
   };
 }
 
-function createMemoryApiRuntime({ env, routes }) {
+function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const sessions = new Map();
   const idempotencyRecords = new Map();
   const auditRecords = [];
@@ -152,13 +158,15 @@ function createMemoryApiRuntime({ env, routes }) {
         orderEventRecords: orderEvents.size,
         consentRecords: consentRecords.size,
         dataRequestRecords: dataRequests.size,
-        statefulRoutes: routes.filter((route) => route.audience !== "public").length
+        statefulRoutes: routes.filter((route) => route.audience !== "public").length,
+        artifactStore: objectStoreRuntime.describe()
       };
     },
     validate() {
       const blockers = [];
       if (!env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN) blockers.push("Memory API runtime requires CUSTOMCARD_CUSTOMER_SESSION_TOKEN.");
       if (!env.CUSTOMCARD_ADMIN_SESSION_TOKEN) blockers.push("Memory API runtime requires CUSTOMCARD_ADMIN_SESSION_TOKEN.");
+      blockers.push(...objectStoreRuntime.validate());
       return blockers;
     },
     async authorize(route, request) {
@@ -171,7 +179,7 @@ function createMemoryApiRuntime({ env, routes }) {
       const existing = idempotencyRecords.get(prepared.recordKey);
       if (existing) return replayOrConflict(existing, prepared.requestHash);
 
-      const routePersistence = persistMemoryRouteMutation({
+      const routePersistence = await persistMemoryRouteMutation({
         repositories: {
           providerConnections,
           importedEvents,
@@ -187,7 +195,8 @@ function createMemoryApiRuntime({ env, routes }) {
         },
         route,
         authContext,
-        bodyText
+        bodyText,
+        objectStoreRuntime
       });
       const payload = decorateMutationPayload({
         route,
@@ -221,13 +230,16 @@ function createMemoryApiRuntime({ env, routes }) {
 
       return { ok: true, statusCode: 202, payload };
     },
+    async readArtifact(input) {
+      return objectStoreRuntime.readSignedArtifact(input);
+    },
     async close() {
       return undefined;
     }
   };
 }
 
-function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
+function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime }) {
   let poolPromise;
 
   async function getPool() {
@@ -265,12 +277,14 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         orderEventRecords: null,
         consentRecords: null,
         dataRequestRecords: null,
-        statefulRoutes: routes.filter((route) => route.audience !== "public").length
+        statefulRoutes: routes.filter((route) => route.audience !== "public").length,
+        artifactStore: objectStoreRuntime.describe()
       };
     },
     validate() {
       const blockers = [];
       if (!env.DATABASE_URL) blockers.push("Postgres API runtime requires DATABASE_URL.");
+      blockers.push(...objectStoreRuntime.validate());
       return blockers;
     },
     async authorize(route, request) {
@@ -337,7 +351,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
           client,
           route,
           authContext,
-          bodyText
+          bodyText,
+          objectStoreRuntime
         });
         const responseBody = decorateMutationPayload({
           route,
@@ -423,6 +438,9 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
       } finally {
         client.release();
       }
+    },
+    async readArtifact(input) {
+      return objectStoreRuntime.readSignedArtifact(input);
     },
     async close() {
       if (!poolPromise) return;
@@ -669,7 +687,7 @@ function decorateMutationPayload({ route, authContext, responsePayload, runtimeM
   };
 }
 
-function persistMemoryRouteMutation({ repositories, route, authContext, bodyText }) {
+async function persistMemoryRouteMutation({ repositories, route, authContext, bodyText, objectStoreRuntime }) {
   if (route.id === "import-preview") {
     const record = buildImportPreviewRecord({ authContext, bodyText });
     repositories.providerConnections.set(record.providerConnection.id, record.providerConnection);
@@ -701,16 +719,18 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
 
   if (route.id === "render-packets") {
     const record = buildRenderPacketRecord({ authContext, bodyText });
-    repositories.renderPackets.set(record.id, record);
+    const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
+    const persistedRecord = artifactPersistence.record;
+    repositories.renderPackets.set(persistedRecord.id, persistedRecord);
     const providerCallEvent = buildRenderProviderCallEvent({
       authContext,
       bodyText,
-      idempotencyId: stableRuntimeId("idem", authContext.userId, route.id, record.id)
+      idempotencyId: stableRuntimeId("idem", authContext.userId, route.id, persistedRecord.id)
     });
     repositories.providerCallEvents.set(providerCallEvent.id, providerCallEvent);
     return {
       persisted: true,
-      payload: buildRenderPacketRepositoryPayload(record, "memory")
+      payload: buildRenderPacketRepositoryPayload(persistedRecord, "memory", artifactPersistence.payload)
     };
   }
 
@@ -738,7 +758,7 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
   return undefined;
 }
 
-async function persistPostgresRouteMutation({ client, route, authContext, bodyText }) {
+async function persistPostgresRouteMutation({ client, route, authContext, bodyText, objectStoreRuntime }) {
   if (route.id === "import-preview") {
     const record = buildImportPreviewRecord({ authContext, bodyText });
     await client.query(
@@ -937,6 +957,8 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
 
   if (route.id === "render-packets") {
     const record = buildRenderPacketRecord({ authContext, bodyText });
+    const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
+    const persistedRecord = artifactPersistence.record;
     await client.query(
       `INSERT INTO render_packets
          (id, project_id, kind, width, height, dpi, locale, direction, safe_zone_passed, text_overflow,
@@ -963,28 +985,28 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
          external_share_approval_required = EXCLUDED.external_share_approval_required,
          real_orders_enabled = FALSE`,
       [
-        record.id,
-        record.projectId,
-        record.kind,
-        record.width,
-        record.height,
-        record.dpi,
-        record.locale,
-        record.direction,
-        record.safeZonePassed,
-        record.textOverflow,
-        record.checksum,
-        record.artifactUri,
-        record.storageProvider,
-        record.artifactCount,
-        JSON.stringify(record.artifactManifest),
-        record.signedUrlExpiresAt,
-        record.externalShareApprovalRequired
+        persistedRecord.id,
+        persistedRecord.projectId,
+        persistedRecord.kind,
+        persistedRecord.width,
+        persistedRecord.height,
+        persistedRecord.dpi,
+        persistedRecord.locale,
+        persistedRecord.direction,
+        persistedRecord.safeZonePassed,
+        persistedRecord.textOverflow,
+        persistedRecord.checksum,
+        persistedRecord.artifactUri,
+        persistedRecord.storageProvider,
+        persistedRecord.artifactCount,
+        JSON.stringify(persistedRecord.artifactManifest),
+        persistedRecord.signedUrlExpiresAt,
+        persistedRecord.externalShareApprovalRequired
       ]
     );
     return {
       persisted: true,
-      payload: buildRenderPacketRepositoryPayload(record, "postgres")
+      payload: buildRenderPacketRepositoryPayload(persistedRecord, "postgres", artifactPersistence.payload)
     };
   }
 
@@ -1250,11 +1272,13 @@ function buildRenderProviderCallEvent({ authContext, bodyText, idempotencyId }) 
   };
 }
 
-function buildRenderPacketRepositoryPayload(record, runtimeMode) {
+function buildRenderPacketRepositoryPayload(record, runtimeMode, artifactPersistencePayload) {
   return {
     renderPacketId: record.id,
     checksum: record.checksum,
     artifactManifest: record.artifactManifest,
+    ...(record.signedArtifactUrls ? { signedArtifactUrls: record.signedArtifactUrls } : {}),
+    ...(artifactPersistencePayload ?? {}),
     repository: {
       table: "render_packets",
       runtimeMode,

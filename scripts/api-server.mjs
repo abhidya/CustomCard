@@ -414,10 +414,26 @@ if (process.argv.includes("--doctor")) {
 
 export async function handleApiRequest(request, response) {
   const requestUrl = new URL(request.url ?? "/", `http://${request.headers?.host ?? "localhost"}`);
-  await serveApi(request, response, requestUrl.pathname);
+  await serveApi(request, response, requestUrl);
 }
 
-async function serveApi(request, response, path) {
+async function serveApi(request, response, requestUrl) {
+  const path = requestUrl.pathname;
+  if (path.startsWith("/api/artifacts/")) {
+    if (request.method !== "GET") {
+      sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path });
+      return;
+    }
+    const objectKey = decodeArtifactObjectKey(path);
+    const artifact = await apiRuntime.readArtifact({ objectKey, query: requestUrl.searchParams });
+    if (artifact.body) {
+      sendArtifact(response, artifact);
+    } else {
+      sendJson(response, artifact.statusCode ?? 500, { service: "customcard-api", ...(artifact.payload ?? {}) });
+    }
+    return;
+  }
+
   const route = routes.find((candidate) => candidate.path === path);
   if (!route) {
     sendJson(response, 404, { service: "customcard-api", status: "not-found", path });
@@ -650,11 +666,27 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload));
 }
 
+function sendArtifact(response, artifact) {
+  response.statusCode = artifact.statusCode;
+  response.setHeader("Content-Type", artifact.contentType ?? "application/octet-stream");
+  response.setHeader("Content-Length", String(artifact.body.length));
+  applySecurityHeaders(response, artifact.cacheControl ?? "private, max-age=60");
+  response.end(artifact.body);
+}
+
 function applySecurityHeaders(response, cacheControl) {
   for (const [header, value] of Object.entries(securityHeaders)) {
     response.setHeader(header, value);
   }
   response.setHeader("Cache-Control", cacheControl);
+}
+
+function decodeArtifactObjectKey(path) {
+  return path
+    .slice("/api/artifacts/".length)
+    .split("/")
+    .map((segment) => decodeURIComponent(segment))
+    .join("/");
 }
 
 function validateApiServerContract() {

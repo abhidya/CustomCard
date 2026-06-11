@@ -1986,6 +1986,90 @@ describe("api server wrapper", () => {
       await waitForExit(server);
     }
   }, 30_000);
+
+  it("persists render artifacts to the configured object store and serves signed downloads", async () => {
+    const port = 6300 + Math.floor(Math.random() * 1000);
+    const customerToken = "test-customer-session-token";
+    const server = spawn("node", ["scripts/api-server.mjs"], {
+      env: {
+        ...process.env,
+        HOST: "127.0.0.1",
+        PORT: String(port),
+        CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token",
+        CUSTOMCARD_ARTIFACT_PERSISTENCE: "enabled",
+        OBJECT_STORE_URL: "memory://cloudflare-r2",
+        OBJECT_STORE_BUCKET: "customcard-prod",
+        OBJECT_STORE_ACCESS_KEY_ID: "write-key",
+        OBJECT_STORE_SECRET_ACCESS_KEY: "write-secret",
+        OBJECT_STORE_READ_ACCESS_KEY_ID: "read-key",
+        OBJECT_STORE_READ_SECRET_ACCESS_KEY: "read-secret",
+        OBJECT_STORE_REGION: "auto",
+        OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
+        OBJECT_STORE_PUBLIC_BASE_URL: `http://127.0.0.1:${port}/api/artifacts`
+      },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    try {
+      await waitForApi(port, server);
+      const response = await postJson(
+        port,
+        "/api/render-packets",
+        {
+          projectId: "project-r2-api",
+          renderPacketId: "render-packet-r2-api",
+          artifacts: [
+            {
+              kind: "panel-svg",
+              fileName: "front.svg",
+              mimeType: "image/svg+xml",
+              text: "<svg viewBox=\"0 0 1500 2100\"><text>Stored card</text></svg>",
+              panelId: "front"
+            }
+          ]
+        },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "render-packets-r2-store"
+        }
+      );
+      expect(response.status).toBe(202);
+      const payload = await response.json();
+      expect(payload).toMatchObject({
+        runtimeMode: "memory",
+        repositoryPersisted: true,
+        artifactManifest: expect.objectContaining({
+          storageProvider: "s3-compatible",
+          bucket: "customcard-prod",
+          persistenceStatus: "stored",
+          liveNetworkCalls: false,
+          blockers: []
+        }),
+        artifactPersistence: {
+          status: "stored",
+          storageProvider: "s3-compatible",
+          provider: "memory-s3-compatible",
+          bucket: "customcard-prod",
+          artifactCount: 1,
+          verifiedWrites: 1,
+          manifestStored: true,
+          liveNetworkCalls: false,
+          blockers: []
+        },
+        signedArtifactUrls: [expect.objectContaining({ method: "GET", signatureVersion: "hmac-sha256-v1" })]
+      });
+
+      const artifactResponse = await fetch(payload.signedArtifactUrls[0].url);
+      expect(artifactResponse.status).toBe(200);
+      expect(artifactResponse.headers.get("content-type")).toBe("image/svg+xml");
+      expect(await artifactResponse.text()).toContain("Stored card");
+    } finally {
+      server.kill();
+      await waitForExit(server);
+    }
+  }, 30_000);
 });
 
 function createMockResponse() {
