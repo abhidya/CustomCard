@@ -27,16 +27,18 @@ export function PrintView({
   printPackage,
   onDownloadPackage,
   onDownloadPanels,
-  onCopyChecklist
+  onCopyChecklist,
+  manualUploadSteps
 }: {
   panels: CardPanel[];
   checkoutCustomerDefaults?: CheckoutCustomerDefaults;
   getCustomerApiToken?: () => Promise<string | undefined>;
   pricingComparison: PrinterPricingComparison;
   printPackage: PrintExportPackage;
-  onDownloadPackage: () => void;
-  onDownloadPanels: () => void;
+  onDownloadPackage: () => void | Promise<void>;
+  onDownloadPanels: () => void | Promise<void>;
   onCopyChecklist: () => void;
+  manualUploadSteps: string[];
 }) {
   const [checkoutCustomer, setCheckoutCustomer] = useState(() => buildCheckoutCustomer(checkoutCustomerDefaults));
   const [checkoutStatus, setCheckoutStatus] = useState<{
@@ -61,6 +63,7 @@ export function PrintView({
       ? walgreensOption.couponApplication.offer
       : undefined;
   const canUseWalgreensCheckout = printPackage.manifest.passed;
+  const walgreensUploadUrl = walgreensEstimate?.observation.source.url;
 
   useEffect(() => {
     setCheckoutCustomer((current) => mergeCheckoutCustomerDefaults(current, checkoutCustomerDefaults));
@@ -111,7 +114,10 @@ export function PrintView({
       setCheckoutStatus({
         tone: "warn",
         title: "Hosted checkout unavailable",
-        detail: error instanceof Error ? error.message : "Download the print package and upload it manually."
+        detail:
+          error instanceof Error
+            ? error.message
+            : "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now."
       });
     } finally {
       setCheckoutLoading(false);
@@ -121,14 +127,14 @@ export function PrintView({
   return (
     <>
       <header className="pagehead reveal">
-        <h1>Checkout at Walgreens</h1>
-        <p>Your approved card is ready for Walgreens crop review, pickup selection, and payment.</p>
+        <h1>Print at Walgreens</h1>
+        <p>Hosted checkout is waiting on Walgreens enablement. Save the print package and upload the numbered panels manually for now.</p>
       </header>
 
       <div className="print">
         <div className="printpane reveal reveal-1">
           <section className="panelcard printsection">
-            <h2>Walgreens partner checkout</h2>
+            <h2>Walgreens print details</h2>
             <div className="partnercheckout">
               <div>
                 <span>Partner</span>
@@ -162,40 +168,51 @@ export function PrintView({
             <p>Walgreens confirms the final total, crop, pickup store, and payment before the order is placed.</p>
           </section>
 
-          <section className="panelcard printsection">
-            <h2>Save your card files</h2>
+          <section className="panelcard printsection printsection-manual">
+            <h2>Manual Walgreens upload</h2>
+            <p>Save one package with JPG upload panels, source SVGs, a PDF proof, the manifest, and these steps.</p>
             <div className="downloadrow">
               <button
                 className="btn btn-primary"
                 disabled={!printPackage.manifest.passed}
-                onClick={onDownloadPackage}
+                onClick={() => void onDownloadPackage()}
                 type="button"
               >
                 <Download size={16} />
                 Save print package
               </button>
-              <button className="btn btn-ghost" onClick={onDownloadPanels} type="button">
+              <button className="btn btn-ghost" onClick={() => void onDownloadPanels()} type="button">
                 <FileDown size={16} />
-                Panels only
+                Save upload panels
               </button>
+              {walgreensUploadUrl ? (
+                <a className="btn btn-ghost" href={walgreensUploadUrl} rel="noreferrer" target="_blank">
+                  Open Walgreens upload
+                  <ExternalLink size={16} />
+                </a>
+              ) : null}
               <button className="btn btn-ghost" onClick={onCopyChecklist} type="button">
                 <ClipboardList size={16} />
-                Copy checklist
+                Copy steps
               </button>
             </div>
+            <ol className="manualsteps">
+              {manualUploadSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
             <span className="filemeta">
-              {panels.length} print panels + combined PDF, sized for 5 × 7.
+              {panels.length} upload panels + source files + combined PDF, sized for 5 × 7.
             </span>
           </section>
         </div>
 
         <div className="printpane reveal reveal-2">
           <section className="panelcard printsection">
-            <h2>Walgreens checkout</h2>
+            <h2>Hosted checkout</h2>
             <div className="checkoutbox">
               <p>
-                We send your approved card to Walgreens. You review the crop, choose the pickup store, confirm the total,
-                and pay with Walgreens.
+                Use this only after Walgreens PhotoPrints enablement is complete. The manual package above is the working path today.
               </p>
               <div className="checkoutgrid">
                 <label>
@@ -235,12 +252,12 @@ export function PrintView({
                 </label>
               </div>
               <button
-                className="btn btn-primary"
+                className="btn btn-ghost"
                 disabled={!canUseWalgreensCheckout || checkoutLoading}
                 onClick={openWalgreensCheckout}
                 type="button"
               >
-                {checkoutLoading ? "Preparing..." : "Continue to Walgreens"}
+                {checkoutLoading ? "Preparing..." : "Try hosted checkout"}
                 <ExternalLink size={16} />
               </button>
               {checkoutStatus ? (

@@ -168,11 +168,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.homeText).not.toContain("Adapter readiness");
     expect(result.studioHeading).toBe("Your card, their story");
     expect(result.panelCount).toBe(4);
-    expect(result.printHeading).toBe("Checkout at Walgreens");
-    expect(result.printText).toContain("Walgreens partner checkout");
-    expect(result.printText).toContain("Save your card files");
-    expect(result.printText).toContain("Walgreens checkout");
-    expect(result.printText).toContain("Continue to Walgreens");
+    expect(result.printHeading).toBe("Print at Walgreens");
+    expect(result.printText).toContain("Walgreens print details");
+    expect(result.printText).toContain("Manual Walgreens upload");
+    expect(result.printText).toContain("Hosted checkout");
+    expect(result.printText).toContain("Try hosted checkout");
     expect(result.printText).toContain("Walgreens handles payment");
     expect(result.printText).not.toContain("Manual fallback");
     expect(result.printText).not.toContain("CVS");
@@ -180,6 +180,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.printText).not.toContain("Walmart");
     expect(result.printText).not.toContain("Staples");
     expect(result.downloadButtons.join(" ")).toContain("Save print package");
+    expect(result.downloadButtons.join(" ")).toContain("Save upload panels");
+    expect(result.downloadButtons.join(" ")).toContain("Copy steps");
     expect(result.checkoutInputs).toBe(4);
     expect(result.storeSteps).toBe(0);
     expect(result.adminRows).toBe(0);

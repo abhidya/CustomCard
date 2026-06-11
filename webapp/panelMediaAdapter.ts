@@ -38,6 +38,16 @@ export function jpegDataUrlByteLength(dataUrl: string): number {
   return Math.floor((base64.length * 3) / 4) - padding;
 }
 
+export function jpegDataUrlToBytes(dataUrl: string): Uint8Array {
+  const base64 = dataUrl.includes(",") ? dataUrl.split(",").pop() ?? "" : dataUrl;
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();

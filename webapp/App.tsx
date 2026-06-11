@@ -18,12 +18,17 @@ import {
   type ViewId
 } from "../src/appStateOrchestrator";
 import {
+  buildHandoffChecklistText,
+  type ArchiveEntry,
   copyHandoffChecklist,
-  downloadExportFiles,
+  downloadArchiveEntries,
+  downloadExportArchive,
+  downloadPrintPackageArchive,
   postCustomerMutation,
   useDraftAutosave
 } from "./customerShellCommands";
 import { buildDraftProgressState } from "./draftProgress";
+import { jpegDataUrlToBytes, panelToJpegBase64 } from "./panelMediaAdapter";
 import {
   adminNavItems,
   canEnterAdminSurface,
@@ -229,14 +234,34 @@ export default function App() {
   }
 
   /* ---------- downloads ---------- */
-  function downloadPrintPackage() {
-    downloadExportFiles(printPackage.files);
-    setExportStatus("Print package downloading");
+  async function downloadPrintPackage() {
+    setExportStatus("Preparing print package");
+    const checklistEntry = buildManualUploadChecklistEntry(displayDraft.id, buildHandoffChecklistText(handoff));
+
+    try {
+      const uploadEntries = await buildUploadPanelImageEntries(displayPanels);
+      downloadPrintPackageArchive(printPackage, [...uploadEntries, checklistEntry]);
+      setExportStatus("Print package saved");
+    } catch {
+      downloadPrintPackageArchive(printPackage, [checklistEntry]);
+      setExportStatus("Print package saved; upload panels need browser rendering");
+    }
   }
 
-  function downloadPanels() {
-    downloadExportFiles(displayPanels.map((panel) => buildPanelSvgExportFile(panel, displayDraft.id)));
-    setExportStatus("Card panels downloading");
+  async function downloadPanels() {
+    setExportStatus("Preparing upload panels");
+
+    try {
+      const uploadEntries = await buildUploadPanelImageEntries(displayPanels);
+      downloadArchiveEntries(uploadEntries, `${displayDraft.id}-walgreens-upload-panels.zip`);
+      setExportStatus("Upload panels saved");
+    } catch {
+      downloadExportArchive(
+        displayPanels.map((panel) => buildPanelSvgExportFile(panel, displayDraft.id)),
+        `${displayDraft.id}-source-panels.zip`
+      );
+      setExportStatus("Source panels saved");
+    }
   }
 
   async function copyChecklist() {
@@ -304,7 +329,7 @@ export default function App() {
           label: "Continue to print",
           icon: <ArrowRight size={16} />,
           disabled: false,
-          meta: priceLabel ? `est. ${priceLabel} at Walgreens · same-day pickup` : "Checkout at Walgreens",
+          meta: priceLabel ? `est. ${priceLabel} at Walgreens · same-day pickup` : "Print at Walgreens",
           metaTitle: `Card for ${draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient}`,
           onClick: () => openView("handoff")
         }
@@ -502,6 +527,7 @@ export default function App() {
             onCopyChecklist={copyChecklist}
             onDownloadPackage={downloadPrintPackage}
             onDownloadPanels={downloadPanels}
+            manualUploadSteps={handoff.checklist}
             panels={displayPanels}
             pricingComparison={pricingComparison}
             printPackage={printPackage}
@@ -530,6 +556,25 @@ export default function App() {
       {toast ? <Toast message={toast} /> : null}
     </div>
   );
+}
+
+async function buildUploadPanelImageEntries(panels: CardPanel[]): Promise<ArchiveEntry[]> {
+  return Promise.all(
+    panels.map(async (panel, index) => {
+      const imageDataUrl = await panelToJpegBase64(panel);
+      return {
+        path: `upload-jpg/${String(index + 1).padStart(2, "0")}-${panel.id}.jpg`,
+        bytes: jpegDataUrlToBytes(imageDataUrl)
+      };
+    })
+  );
+}
+
+function buildManualUploadChecklistEntry(draftId: string, checklistText: string): ArchiveEntry {
+  return {
+    path: `${draftId}-manual-upload-steps.txt`,
+    bytes: checklistText
+  };
 }
 
 function buildCalendarImportReviewText(imported: string | null): string {

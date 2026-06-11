@@ -331,11 +331,11 @@ export function validateCardDraft(draft: CardDraft): CardValidation {
 export function buildVendorHandoff(vendorId: VendorId, validation: CardValidation): VendorHandoff {
   const vendorName = vendorNames[vendorId];
   const checklist = [
-    "Download the four SVG panels.",
-    "Open the printer upload page in a normal browser tab.",
+    "Save the print package from CustomCard.",
+    `Open the ${vendorName} 5x7 folded upload page in a normal browser tab.`,
     "Select 5x7 folded or double-sided card when available.",
-    "Upload front, inside-left, inside-right, and back in order.",
-    "Inspect crop, fold, spelling, pickup store, and date.",
+    "Upload the numbered JPG panels in order: front, inside-left, inside-right, and back.",
+    "Inspect crop, fold direction, spelling, quantity, pickup store, and date.",
     validation.passed ? "Approve only after the preview matches the local panels." : "Fix validation errors before upload."
   ];
 

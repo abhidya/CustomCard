@@ -159,8 +159,8 @@ describe("customer shell server render", () => {
     expect(studio.text).toContain("Continue to print");
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
-    expect(print.text).toContain("Checkout at Walgreens");
-    expect(print.text).toContain("Continue to Walgreens");
+    expect(print.text).toContain("Print at Walgreens");
+    expect(print.text).toContain("Try hosted checkout");
     expect(print.text).toContain("Save print package");
     expect(print.text).not.toContain("Sign in to continue");
     expect(print.text).not.toContain("Account required");
@@ -269,13 +269,15 @@ describe("customer shell server render", () => {
     });
 
     it("renders print options with downloads and the outside-checkout boundary", () => {
-      const { text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
+    const { text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
 
-      expect(text).toContain("Checkout at Walgreens");
-      expect(text).toContain("Walgreens partner checkout");
+      expect(text).toContain("Print at Walgreens");
+      expect(text).toContain("Walgreens print details");
+      expect(text).toContain("Manual Walgreens upload");
       expect(text).toContain("Save print package");
-      expect(text).toContain("Panels only");
-      expect(text).toContain("Copy checklist");
+      expect(text).toContain("Save upload panels");
+      expect(text).toContain("Copy steps");
+      expect(text).toContain("Open Walgreens upload");
       expect(text).toContain("Walgreens confirms the final total");
     });
 

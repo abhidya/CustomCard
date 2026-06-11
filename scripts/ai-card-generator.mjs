@@ -12,8 +12,31 @@ const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
 const cardCopyJsonSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["panels", "memory_citations"],
+  required: ["theme_guide", "panels", "memory_citations"],
   properties: {
+    theme_guide: {
+      type: "object",
+      additionalProperties: false,
+      required: ["theme_title", "palette", "motifs", "border_style", "front_back_pairing", "interior_pairing"],
+      properties: {
+        theme_title: { type: "string", maxLength: 120 },
+        palette: {
+          type: "array",
+          minItems: 3,
+          maxItems: 6,
+          items: { type: "string", maxLength: 80 }
+        },
+        motifs: {
+          type: "array",
+          minItems: 3,
+          maxItems: 8,
+          items: { type: "string", maxLength: 80 }
+        },
+        border_style: { type: "string", maxLength: 180 },
+        front_back_pairing: { type: "string", maxLength: 220 },
+        interior_pairing: { type: "string", maxLength: 220 }
+      }
+    },
     panels: {
       type: "array",
       minItems: 4,
@@ -623,6 +646,14 @@ function buildCardCopyPrompt(input) {
       task:
         "Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.",
       required_schema: {
+        theme_guide: {
+          theme_title: "string",
+          palette: ["string"],
+          motifs: ["string"],
+          border_style: "string",
+          front_back_pairing: "string",
+          interior_pairing: "string"
+        },
         panels: requiredPanelIds.map((id) => ({
           id,
           headline: "string",
@@ -634,7 +665,7 @@ function buildCardCopyPrompt(input) {
         memory_citations: ["string"]
       },
       section_order: [
-        "Choose one cohesive card concept internally from the occasion, personal_note, style, and approved memory_notes.",
+        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.",
         "Write the panel copy so the card has an emotional arc from cover to interior to back.",
         "Write art_direction as layout notes for app-rendered typography and print-safe artwork.",
         "Write each image_prompt as a separate one-panel visual request for the image provider."
@@ -653,9 +684,12 @@ function buildCardCopyPrompt(input) {
         "All body text must fit a 5x7 card panel with generous margins."
       ],
       layout_requirements: [
+        "theme_guide is binding: every panel must reuse its palette, motifs, and border_style.",
         "art_direction must name the panel's layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.",
         "front and back should visually match each other.",
         "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
+        "inside-left and inside-right must be decorative border or frame designs with a calm blank/low-contrast center reserved for app-rendered text.",
+        "Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.",
         "Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative."
       ],
       image_prompt_requirements: [
@@ -665,6 +699,7 @@ function buildCardCopyPrompt(input) {
         "image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.",
         "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
         "Reserve clean text-safe space for the app overlay where the panel copy belongs.",
+        "For inside-left and inside-right, explicitly include: decorative border or frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs.",
         "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
         "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
         "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text."
@@ -725,9 +760,9 @@ function buildPanelImagePrompt(input, panelId, panel) {
     front:
       "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy.",
     "inside-left":
-      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; use a subtle low-contrast decorative pattern with gentle edge emphasis.",
+      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; decorative border/frame design, sparse edge and corner motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins.",
     "inside-right":
-      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; use a subtle low-contrast decorative pattern with gentle corner emphasis.",
+      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching decorative border/frame design, sparse edge and corner motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins.",
     back:
       "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with subtle coordinating ornamentation near the lower area."
   }[panelId];
@@ -889,7 +924,76 @@ function normalizeChatInput(body) {
   };
 }
 
+function normalizeThemeGuide(rawThemeGuide, input) {
+  const fallback = buildThemeGuide(input);
+  const raw = rawThemeGuide && typeof rawThemeGuide === "object" ? rawThemeGuide : {};
+  const palette = Array.isArray(raw.palette) ? raw.palette.map(cleanText).filter(Boolean).slice(0, 6) : [];
+  const motifs = Array.isArray(raw.motifs) ? raw.motifs.map(cleanText).filter(Boolean).slice(0, 8) : [];
+  return {
+    theme_title: truncate(cleanText(raw.theme_title || raw.themeTitle || fallback.theme_title), 120),
+    palette: palette.length >= 3 ? palette : fallback.palette,
+    motifs: motifs.length >= 3 ? motifs : fallback.motifs,
+    border_style: truncate(cleanText(raw.border_style || raw.borderStyle || fallback.border_style), 180),
+    front_back_pairing: truncate(cleanText(raw.front_back_pairing || raw.frontBackPairing || fallback.front_back_pairing), 220),
+    interior_pairing: truncate(cleanText(raw.interior_pairing || raw.interiorPairing || fallback.interior_pairing), 220)
+  };
+}
+
+function buildThemeGuide(input) {
+  const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  if (/\b(med|medical|doctor|physician|md|white coat|stethoscope)\b/.test(source)) {
+    return themeGuide({
+      title: "From Dream to Doctor",
+      palette: ["deep navy", "white coat ivory", "soft gold"],
+      motifs: ["stethoscope line", "graduation cap", "ECG curve", "anatomy sketch texture"],
+      border: "thin gold-and-navy medical stationery border with sparse corner linework"
+    });
+  }
+  if (/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    return themeGuide({
+      title: "Local Thanks",
+      palette: ["warm cream", "deep teal", "soft gold", "citrus yellow"],
+      motifs: ["citrus slice", "teal leaf", "ribbon curve", "boutique awning silhouette"],
+      border: "handmade editorial border with citrus-and-leaf corner ornaments"
+    });
+  }
+  if (/\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source)) {
+    return themeGuide({
+      title: "Steady Hands",
+      palette: ["blueprint blue", "golden yellow", "workshop green"],
+      motifs: ["wrench icon", "measuring tape", "pencil line", "small hardware detail"],
+      border: "blueprint-line border with sparse tool icons tucked into corners"
+    });
+  }
+  if (/\b(birthday|botanical|fern|flower|trail|hike)\b/.test(source)) {
+    return themeGuide({
+      title: "Morning Garden",
+      palette: ["warm cream", "deep green", "morning gold"],
+      motifs: ["fern frond", "tiny trail flower", "coffee steam curve", "soft leaf pattern"],
+      border: "watercolor botanical border with sparse fern corners"
+    });
+  }
+  return themeGuide({
+    title: truncate(input.occasion || "Personal Card", 80),
+    palette: ["warm ivory", "soft accent color", "deep neutral"],
+    motifs: ["subtle ornament", "ribbon curve", "small symbolic icon"],
+    border: `${truncate(input.style || "refined stationery", 90)} decorative border with sparse corner motifs`
+  });
+}
+
+function themeGuide({ title, palette, motifs, border }) {
+  return {
+    theme_title: title,
+    palette,
+    motifs,
+    border_style: border,
+    front_back_pairing: "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
+    interior_pairing: "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+  };
+}
+
 function normalizeCardCopy(parsed, input) {
+  const rawThemeGuide = parsed?.theme_guide || parsed?.themeGuide || parsed?.card_copy?.theme_guide || parsed?.cardCopy?.themeGuide;
   const rawPanels = Array.isArray(parsed?.panels)
     ? parsed.panels
     : Array.isArray(parsed?.card_copy?.panels)
@@ -916,12 +1020,14 @@ function normalizeCardCopy(parsed, input) {
       ? parsed.memoryCitations
       : input.memory_notes.slice(0, 2);
   return {
+    theme_guide: normalizeThemeGuide(rawThemeGuide, input),
     panels,
     memory_citations: memoryCitations.map(cleanText).filter(Boolean).slice(0, 4)
   };
 }
 
 function buildFallbackCardCopy(input) {
+  const themeGuide = buildThemeGuide(input);
   const firstMemory = input.memory_notes[0] || "";
   const secondMemory = input.memory_notes[1] || "";
   const openingBody = truncate(
@@ -942,15 +1048,16 @@ function buildFallbackCardCopy(input) {
     520
   );
   return {
+    theme_guide: themeGuide,
     panels: [
       {
         id: "front",
         headline: `For ${truncate(input.recipient, 80)}`,
         body: `${truncate(input.occasion, 80)} with a ${truncate(input.tone, 70)} feeling.`,
-        art_direction: `${input.style} front cover with a clear title area, generous safe margins, coordinated palette, and motif system that can echo on the back panel.`,
+        art_direction: `${themeGuide.theme_title} front cover with ${themeGuide.border_style}, clear title area, generous safe margins, ${themeGuide.palette.join(", ")} palette, and motifs that echo on the back panel.`,
         image_prompt: buildPanelImagePrompt(input, "front", {
           ...panelDefaults.front,
-          art_direction: `${input.style} front cover with a clear title area, generous safe margins, coordinated palette, and motif system that can echo on the back panel.`
+          art_direction: `${themeGuide.theme_title} front cover with ${themeGuide.border_style}, clear title area, generous safe margins, ${themeGuide.palette.join(", ")} palette, and motifs that echo on the back panel.`
         }),
         image_negative_prompt: normalizeImageNegativePrompt(panelDefaults.front.image_negative_prompt)
       },
@@ -958,10 +1065,10 @@ function buildFallbackCardCopy(input) {
         id: "inside-left",
         headline: "For this moment",
         body: openingBody,
-        art_direction: `${input.style} inside-left panel with a quiet decorative border, low-contrast center for opening copy, and ornaments that match the inside-right panel.`,
+        art_direction: `${themeGuide.theme_title} inside-left panel with ${themeGuide.border_style}, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.`,
         image_prompt: buildPanelImagePrompt(input, "inside-left", {
           ...panelDefaults["inside-left"],
-          art_direction: `${input.style} inside-left panel with a quiet decorative border, low-contrast center for opening copy, and ornaments that match the inside-right panel.`
+          art_direction: `${themeGuide.theme_title} inside-left panel with ${themeGuide.border_style}, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.`
         }),
         image_negative_prompt: normalizeImageNegativePrompt(panelDefaults["inside-left"].image_negative_prompt)
       },
@@ -969,10 +1076,10 @@ function buildFallbackCardCopy(input) {
         id: "inside-right",
         headline: `From ${truncate(input.sender, 80)}`,
         body: mainBody,
-        art_direction: `${input.style} inside-right message panel with matching interior border, readable app typography area, balanced spacing, and a natural sign-off zone.`,
+        art_direction: `${themeGuide.theme_title} inside-right message panel with matching ${themeGuide.border_style}, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.`,
         image_prompt: buildPanelImagePrompt(input, "inside-right", {
           ...panelDefaults["inside-right"],
-          art_direction: `${input.style} inside-right message panel with matching interior border, readable app typography area, balanced spacing, and a natural sign-off zone.`
+          art_direction: `${themeGuide.theme_title} inside-right message panel with matching ${themeGuide.border_style}, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.`
         }),
         image_negative_prompt: normalizeImageNegativePrompt(panelDefaults["inside-right"].image_negative_prompt)
       },
@@ -980,10 +1087,10 @@ function buildFallbackCardCopy(input) {
         id: "back",
         headline: "CustomCard",
         body: `Made for ${truncate(input.recipient, 70)} with CustomCard.`,
-        art_direction: `${input.style} back panel with mostly negative space, subtle lower ornamentation, and border details that visually pair with the front cover.`,
+        art_direction: `${themeGuide.theme_title} back panel with mostly negative space, subtle lower ornamentation, ${themeGuide.border_style}, and border details that visually pair with the front cover.`,
         image_prompt: buildPanelImagePrompt(input, "back", {
           ...panelDefaults.back,
-          art_direction: `${input.style} back panel with mostly negative space, subtle lower ornamentation, and border details that visually pair with the front cover.`
+          art_direction: `${themeGuide.theme_title} back panel with mostly negative space, subtle lower ornamentation, ${themeGuide.border_style}, and border details that visually pair with the front cover.`
         }),
         image_negative_prompt: normalizeImageNegativePrompt(panelDefaults.back.image_negative_prompt)
       }

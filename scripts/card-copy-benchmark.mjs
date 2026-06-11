@@ -221,6 +221,10 @@ export function evaluateCardCopy({ cardCopy, request }) {
   let layoutPoints = 0;
   let imagePoints = 0;
   let safetyPoints = 10;
+  const themeGuide = normalizeThemeGuide(cardCopy?.theme_guide || cardCopy?.themeGuide);
+  if (!themeGuide) {
+    blockers.push("Card copy must include a theme_guide with palette, motifs, border_style, and front/interior pairing notes.");
+  }
 
   for (const panelId of panelIds) {
     const panel = panelsById.get(panelId) || {};
@@ -259,6 +263,13 @@ export function evaluateCardCopy({ cardCopy, request }) {
       blockers.push(`${panelId}: image_prompt risks mockup/collage output.`);
       safetyPoints -= 2;
     }
+    if (panelId.startsWith("inside") && !hasInteriorBorderTextSpace(`${artDirection} ${imagePrompt}`)) {
+      blockers.push(`${panelId}: inside panel must specify decorative border/frame, quiet center, clean text-safe area, and sparse edge/corner motifs.`);
+    }
+    if (panelId.startsWith("inside") && containsBusyInterior(imagePrompt)) {
+      blockers.push(`${panelId}: inside image_prompt is too busy for message text.`);
+      safetyPoints -= 1;
+    }
     for (const required of ["readable text", "fake text", "letters", "people", "hands", "folded card mockup", "product photo"]) {
       if (!negativePrompt.includes(required)) warnings.push(`${panelId}: negative prompt missing ${required}.`);
     }
@@ -280,6 +291,9 @@ export function evaluateCardCopy({ cardCopy, request }) {
     subScores.coordination = 5;
   } else {
     warnings.push("No explicit cross-panel coordination language found.");
+  }
+  if (themeGuide && !themeTermsUsedAcrossPanels(themeGuide, panels)) {
+    blockers.push("Panel art directions and image prompts must reuse theme_guide palette, motifs, and border_style across the set.");
   }
 
   const score = Object.values(subScores).reduce((sum, value) => sum + value, 0);
@@ -320,6 +334,9 @@ function buildFixtureComparison({ fixture, payload, evaluation }) {
   }
   if (evaluation.warnings.length > 0) {
     lines.push("## Warnings", "", ...evaluation.warnings.map((warning) => `- ${warning}`), "");
+  }
+  if (payload.card_copy?.theme_guide) {
+    lines.push("## Theme Guide", "", "```json", JSON.stringify(payload.card_copy.theme_guide, null, 2), "```", "");
   }
   lines.push("## Panel Copy", "");
   for (const panel of payload.card_copy?.panels || []) {
@@ -556,6 +573,47 @@ function containsOrderClaim(text) {
     .replace(/\bno order(?:s)? (?:was|were)? ?placed\b/gi, "");
   return /\b(?:ordered|payment|paid|shipped|delivered|checkout completed)\b/i.test(withoutNegatedClaims) ||
     /\border (?:was|is|has been|will be) placed\b/i.test(withoutNegatedClaims);
+}
+
+function hasInteriorBorderTextSpace(value) {
+  const text = cleanText(value);
+  return /\b(border|frame|framing|edge|corner|ornament)\b/i.test(text) &&
+    /\b(quiet|blank|calm|open|negative|low[- ]contrast|subtle)\b/i.test(text) &&
+    /\b(center|centre|middle|message area|text area|text-safe|typography area)\b/i.test(text) &&
+    /\b(text-safe|app overlay|app-rendered|reserved for text|typography area|message)\b/i.test(text) &&
+    /\b(sparse|low-density|gentle|subtle|edge|corner)\b/i.test(text);
+}
+
+function containsBusyInterior(value) {
+  const text = cleanText(value);
+  return /\b(busy|dense|full-surface|all-over|cluttered|packed|maximalist|filled with|covered in)\b/i.test(text) &&
+    !/\b(quiet|blank|calm|open|negative|low[- ]contrast|text-safe)\b/i.test(text);
+}
+
+function normalizeThemeGuide(value) {
+  if (!value || typeof value !== "object") return undefined;
+  const palette = Array.isArray(value.palette) ? value.palette.map(cleanText).filter(Boolean) : [];
+  const motifs = Array.isArray(value.motifs) ? value.motifs.map(cleanText).filter(Boolean) : [];
+  const borderStyle = cleanText(value.border_style || value.borderStyle);
+  const frontBackPairing = cleanText(value.front_back_pairing || value.frontBackPairing);
+  const interiorPairing = cleanText(value.interior_pairing || value.interiorPairing);
+  if (palette.length < 3 || motifs.length < 3 || !borderStyle || !frontBackPairing || !interiorPairing) return undefined;
+  return { palette, motifs, borderStyle, frontBackPairing, interiorPairing };
+}
+
+function themeTermsUsedAcrossPanels(themeGuide, panels) {
+  const combined = cleanText(panels.map((panel) => `${panel?.art_direction || ""} ${panel?.image_prompt || ""}`).join(" ")).toLowerCase();
+  const paletteHits = themeGuide.palette.filter((term) => termHits(combined, term)).length;
+  const motifHits = themeGuide.motifs.filter((term) => termHits(combined, term)).length;
+  return paletteHits >= 2 && motifHits >= 2 && termHits(combined, themeGuide.borderStyle);
+}
+
+function termHits(text, term) {
+  return cleanText(term)
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((part) => part.length >= 4)
+    .some((part) => text.includes(part));
 }
 
 function countMatches(value, regex) {

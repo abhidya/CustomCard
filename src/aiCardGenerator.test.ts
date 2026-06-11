@@ -96,7 +96,7 @@ describe("AI card generator service", () => {
     expect(requestBody.messages[0].content).toContain("theme, layout, and copy plan");
     expect(userPrompt.section_order).toEqual(
       expect.arrayContaining([
-        "Choose one cohesive card concept internally from the occasion, personal_note, style, and approved memory_notes."
+        "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels."
       ])
     );
     expect(userPrompt.copy_requirements).toEqual(
@@ -113,8 +113,11 @@ describe("AI card generator service", () => {
     expect(requestBody.response_format).toMatchObject({
       type: "json_schema",
       json_schema: {
-            required: ["panels", "memory_citations"],
+            required: ["theme_guide", "panels", "memory_citations"],
             properties: {
+              theme_guide: {
+                required: ["theme_title", "palette", "motifs", "border_style", "front_back_pairing", "interior_pairing"]
+              },
               panels: {
                 minItems: 4,
                 maxItems: 4,

@@ -1,9 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
 import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCustomerField } from "../webapp/checkoutModel";
-import { buildBrowserIdempotencyKey, postCustomerMutation } from "../webapp/customerShellCommands";
+import {
+  buildBrowserIdempotencyKey,
+  buildHandoffChecklistText,
+  buildZipArchiveBlob,
+  postCustomerMutation
+} from "../webapp/customerShellCommands";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
-import { jpegDataUrlByteLength } from "../webapp/panelMediaAdapter";
+import { jpegDataUrlByteLength, jpegDataUrlToBytes } from "../webapp/panelMediaAdapter";
 import {
   adminNavItems,
   customerNavItems,
@@ -17,7 +22,7 @@ import {
   shouldShowTopNav
 } from "../webapp/routePolicy";
 import { createWalgreensCheckoutSession } from "../webapp/walgreensCheckoutAdapter";
-import type { CardPanel } from "../src/customerWorkflow";
+import type { CardPanel, VendorHandoff } from "../src/customerWorkflow";
 import type { PrintExportPackage } from "../src/printExport";
 import type { CardDraftInput } from "../src/customerWorkflow";
 
@@ -101,6 +106,39 @@ describe("frontend architecture seams", () => {
     expect(key).toMatch(/^api-customer-draft-state-/);
   });
 
+  it("builds one archive for browser print downloads", async () => {
+    const archive = buildZipArchiveBlob([
+      { path: "upload-jpg/01-front.jpg", bytes: new Uint8Array([1, 2, 3]) },
+      { path: "manual-upload-steps.txt", bytes: "Open Walgreens and upload the numbered panels." }
+    ]);
+    const bytes = new Uint8Array(await archive.arrayBuffer());
+    const archiveText = new TextDecoder().decode(bytes);
+
+    expect(archive.type).toBe("application/zip");
+    expect(Array.from(bytes.slice(0, 4))).toEqual([80, 75, 3, 4]);
+    expect(Array.from(bytes.slice(-22, -18))).toEqual([80, 75, 5, 6]);
+    expect(archiveText).toContain("upload-jpg/01-front.jpg");
+    expect(archiveText).toContain("manual-upload-steps.txt");
+    expect(archiveText).toContain("Open Walgreens and upload the numbered panels.");
+  });
+
+  it("turns the handoff checklist into package and clipboard copy", () => {
+    const handoff: VendorHandoff = {
+      vendorId: "walgreens",
+      vendorName: "Walgreens",
+      mode: "manual-upload",
+      costControl: "free-app-no-paid-api",
+      realOrdersEnabled: false,
+      canPlaceRealOrder: false,
+      checklist: ["Save the print package from CustomCard.", "Upload the numbered JPG panels in order."],
+      disabledReasons: []
+    };
+
+    expect(buildHandoffChecklistText(handoff)).toContain("Walgreens print checklist");
+    expect(buildHandoffChecklistText(handoff)).toContain("1. Save the print package from CustomCard.");
+    expect(buildHandoffChecklistText(handoff)).toContain("2. Upload the numbered JPG panels in order.");
+  });
+
   it("surfaces failed customer mutations instead of reporting false persistence success", async () => {
     const fetchMock = vi.fn(async () => ({
       ok: false,
@@ -150,6 +188,7 @@ describe("frontend architecture seams", () => {
   it("measures JPEG data URLs before Walgreens upload", () => {
     expect(jpegDataUrlByteLength("data:image/jpeg;base64,/9j/AA==")).toBe(4);
     expect(jpegDataUrlByteLength("/9j/AA==")).toBe(4);
+    expect(Array.from(jpegDataUrlToBytes("data:image/jpeg;base64,SGVsbG8="))).toEqual([72, 101, 108, 108, 111]);
   });
 
   it("normalizes calendar connection outcomes outside EventsView", () => {

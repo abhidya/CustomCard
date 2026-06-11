@@ -1334,7 +1334,40 @@ a { color: inherit; }
 .coupon small { font-size: 12.5px; color: var(--ink-soft); }
 
 .downloadrow { display: flex; gap: 10px; flex-wrap: wrap; }
+.downloadrow a.btn { text-decoration: none; }
 .filemeta { font-size: 13px; color: var(--ink-faint); }
+
+.manualsteps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: manual-step;
+}
+.manualsteps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.42;
+}
+.manualsteps li::before {
+  counter-increment: manual-step;
+  content: counter(manual-step);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 760;
+}
 
 .storesteps { display: grid; gap: 10px; }
 .storestep {
