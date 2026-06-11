@@ -685,7 +685,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 25, admin: 6, idempotentMutations: 15 });
+      expect(readiness.routes).toMatchObject({ total: 26, admin: 7, idempotentMutations: 15 });
       expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 124,
@@ -2273,6 +2273,7 @@ describe("api server wrapper", () => {
   it("persists render artifacts to the configured object store and serves signed downloads", async () => {
     const port = 6300 + Math.floor(Math.random() * 1000);
     const customerToken = "test-customer-session-token";
+    const adminToken = "test-admin-session-token";
     const server = spawn("node", ["scripts/api-server.mjs"], {
       env: {
         ...process.env,
@@ -2281,7 +2282,7 @@ describe("api server wrapper", () => {
         CUSTOMCARD_API_RUNTIME: "memory",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
-        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
         CUSTOMCARD_ARTIFACT_PERSISTENCE: "enabled",
         OBJECT_STORE_URL: "memory://cloudflare-r2",
         OBJECT_STORE_BUCKET: "customcard-prod",
@@ -2349,6 +2350,29 @@ describe("api server wrapper", () => {
       expect(artifactResponse.status).toBe(200);
       expect(artifactResponse.headers.get("content-type")).toBe("image/svg+xml");
       expect(await artifactResponse.text()).toContain("Stored card");
+
+      const bucket = await getJson(
+        port,
+        "/api/admin/artifacts/bucket?prefix=projects/project-r2-api&limit=10",
+        bearer(adminToken)
+      );
+      expect(bucket).toMatchObject({
+        service: "customcard-api",
+        status: "ready",
+        objectStore: {
+          provider: "memory-s3-compatible",
+          bucket: "customcard-prod",
+          credentialMode: "write-read-split"
+        },
+        objectCount: 2,
+        blockers: []
+      });
+      expect(bucket.objects.map((object: { objectKey: string }) => object.objectKey)).toEqual([
+        "projects/project-r2-api/render-packets/render-packet-r2-api/artifact-handoff-manifest.json",
+        "projects/project-r2-api/render-packets/render-packet-r2-api/front.svg"
+      ]);
+      expect(JSON.stringify(bucket)).not.toContain("write-secret");
+      expect(JSON.stringify(bucket)).not.toContain("read-secret");
     } finally {
       server.kill();
       await waitForExit(server);

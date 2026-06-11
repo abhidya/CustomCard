@@ -10,6 +10,8 @@ describe("Vite API middleware", () => {
   let previousGoogleClientSecret: string | undefined;
   let previousGoogleRedirectUri: string | undefined;
   let previousWalgreensMode: string | undefined;
+  let previousAiCardCopyLive: string | undefined;
+  let previousAiCardImageLive: string | undefined;
 
   beforeAll(async () => {
     previousApiRuntime = process.env.CUSTOMCARD_API_RUNTIME;
@@ -17,11 +19,15 @@ describe("Vite API middleware", () => {
     previousGoogleClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
     previousGoogleRedirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
     previousWalgreensMode = process.env.WALGREENS_VENDOR_MODE;
+    previousAiCardCopyLive = process.env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED;
+    previousAiCardImageLive = process.env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED;
     process.env.CUSTOMCARD_API_RUNTIME = "contract";
     process.env.GOOGLE_OAUTH_CLIENT_ID = "test-google-calendar-client.apps.googleusercontent.com";
     process.env.GOOGLE_OAUTH_CLIENT_SECRET = "test-google-calendar-secret";
     process.env.GOOGLE_OAUTH_REDIRECT_URI = "http://127.0.0.1:5173/oauth/callback";
     process.env.WALGREENS_VENDOR_MODE = "disabled_until_certified";
+    process.env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = "false";
+    process.env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "false";
 
     server = await createServer({
       root: process.cwd(),
@@ -45,6 +51,8 @@ describe("Vite API middleware", () => {
     restoreEnv("GOOGLE_OAUTH_CLIENT_SECRET", previousGoogleClientSecret);
     restoreEnv("GOOGLE_OAUTH_REDIRECT_URI", previousGoogleRedirectUri);
     restoreEnv("WALGREENS_VENDOR_MODE", previousWalgreensMode);
+    restoreEnv("CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED", previousAiCardCopyLive);
+    restoreEnv("CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED", previousAiCardImageLive);
   });
 
   it("serves Google Calendar connection start through the JSON API handler", async () => {
@@ -88,6 +96,38 @@ describe("Vite API middleware", () => {
       ok: false,
       error: "Walgreens checkout is not enabled."
     });
+  });
+
+  it("serves AI card generation through the JSON API handler", async () => {
+    const response = await fetch(`${baseUrl}/api/ai/card/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Idempotency-Key": "ai-card-vite-middleware" },
+      body: JSON.stringify({
+        sender: "Maya",
+        recipient: "Nadia",
+        relationship: "sisters",
+        occasion: "birthday",
+        tone: "warm",
+        style: "botanical",
+        language: "English",
+        personal_note: "She makes every family dinner feel easy.",
+        memory_notes: ["She loves jasmine tea and handwritten notes."]
+      })
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    const body = await response.json();
+    expect(body).toMatchObject({
+      draft_id: expect.any(String),
+      generated_by: "ai-text-only",
+      ai_flow: {
+        card_copy: {
+          adapter_id: expect.any(String)
+        }
+      }
+    });
+    expect(body.card_copy.panels).toHaveLength(4);
   });
 });
 

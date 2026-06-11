@@ -15,6 +15,8 @@ const files = {
   workflow: ".github/workflows/verify.yml",
   vercel: "vercel.json",
   vercelApiHandler: "api/[...path].js",
+  vercelAiCardGenerateHandler: "api/ai/card/generate.js",
+  vercelAiChatRespondHandler: "api/ai/chat/respond.js",
   envExample: "infra/env/.env.example",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
@@ -73,7 +75,7 @@ const checks = [
     "covers hosted env, routes, deployment protection, token verification, and backup policy explicitly",
     "flags unsafe hosted proof claims"
   ]),
-  checkIncludes("vercel-source", "vercel-serverless-source-signals", `${contents.vercel}\n${contents.vercelApiHandler}`, [
+  checkIncludes("vercel-source", "vercel-serverless-source-signals", `${contents.vercel}\n${contents.vercelApiHandler}\n${contents.vercelAiCardGenerateHandler}\n${contents.vercelAiChatRespondHandler}`, [
     '"buildCommand": "npm run build"',
     '"source": "/api/(.*)"',
     '"destination": "/api/$1"',

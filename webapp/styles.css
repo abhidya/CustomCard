@@ -251,68 +251,6 @@ a { color: inherit; }
 .emptyhub { padding: 30px; display: grid; gap: 18px; max-width: 560px; }
 .emptyhub p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
 
-/* ---------- Operations console ---------- */
-.opsGrid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
-}
-@media (max-width: 880px) { .opsGrid { grid-template-columns: 1fr; } }
-.opsCard { padding: 22px; display: grid; gap: 14px; align-content: start; }
-.opsCard-wide { grid-column: 1 / -1; }
-.opsCardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.opsCardHead h2 {
-  font-family: var(--font-display); font-weight: var(--display-weight);
-  letter-spacing: var(--display-tracking); font-size: 21px; margin: 0;
-}
-.opsStatus {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 680; letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 5px 11px; border-radius: 999px;
-  background: #b3742c1f; color: #8a5a1d;
-}
-.opsStatus[data-ok="true"] { background: var(--second-soft); color: var(--second); }
-.opsFacts { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
-.opsFacts li {
-  display: flex; justify-content: space-between; gap: 14px;
-  font-size: 14px; color: var(--ink-soft);
-  border-bottom: 1px solid var(--line-soft); padding-bottom: 9px;
-}
-.opsFacts strong { color: var(--ink); font-weight: 640; font-variant-numeric: tabular-nums; }
-.opsProbes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.opsProbes li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.opsProbeDot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--line); }
-.opsProbeDot[data-state="ok"] { background: var(--second); }
-.opsProbeDot[data-state="fail"] { background: var(--accent); }
-.opsProbeDot[data-state="wait"] { animation: probepulse 1s infinite alternate; }
-@keyframes probepulse { from { opacity: 0.4; } to { opacity: 1; } }
-.opsProbeName { flex: 1; font-weight: 560; }
-.opsProbeMs { color: var(--ink-faint); font-variant-numeric: tabular-nums; font-size: 13px; }
-.opsNote { margin: 0; font-size: 14px; color: var(--ink-soft); }
-.opsNote code { font-size: 12.5px; background: var(--surface-alt); border: 1px solid var(--line-soft); border-radius: 5px; padding: 1px 5px; }
-.opsFoot { font-size: 12.5px; color: var(--ink-faint); }
-.opsCard .btn-ghost { justify-self: start; text-decoration: none; }
-.flowList { display: grid; gap: 14px; }
-.flowRow {
-  border: 1px solid var(--line-soft); border-radius: var(--radius-s);
-  background: var(--surface-alt); padding: 15px 16px; display: grid; gap: 12px;
-}
-.flowRowHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.flowRowHead strong { font-size: 15px; font-weight: 640; }
-.flowControls { display: grid; grid-template-columns: 1fr 1fr 130px; gap: 12px; }
-@media (max-width: 720px) { .flowControls { grid-template-columns: 1fr; } }
-.flowControls label {
-  display: grid; gap: 5px; font-size: 12.5px; font-weight: 620; color: var(--ink-soft);
-}
-.flowControls select, .flowControls input {
-  border: 1px solid var(--line); border-radius: var(--radius-s);
-  background: var(--surface); color: var(--ink);
-  padding: 9px 10px; font-size: 14px; outline: none; font-weight: 480;
-}
-.flowControls select:focus, .flowControls input:focus {
-  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
-}
-.flowBlocked { font-size: 12.5px; color: #8a5a1d; }
-.opsAudit { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
-
 .homeActions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -406,6 +344,520 @@ a { color: inherit; }
 .panelcard {
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius-l); box-shadow: var(--shadow-card);
+}
+
+/* ---------- Admin ops console ---------- */
+.opsShell {
+  display: grid;
+  gap: 18px;
+}
+
+.opsShell .pagehead {
+  padding-top: 8px;
+}
+
+.opsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.opsCard {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+}
+
+.opsCard-wide {
+  grid-column: 1 / -1;
+}
+
+.opsCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.opsCardHead h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.opsStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #7a4f0d;
+  background: #fff2d3;
+  font-size: 12px;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.opsStatus[data-ok="true"] {
+  color: #165b4e;
+  background: #e5f5ef;
+}
+
+.opsFacts,
+.opsProbes {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opsFacts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.opsFacts-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.opsFacts li {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+
+.opsFacts span,
+.opsFoot,
+.opsNote,
+.opsProbes span,
+.flowBlocked {
+  color: var(--ink-soft);
+}
+
+.opsFacts span {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.opsFacts strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.opsProbes li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.opsProbeDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #b68b2e;
+}
+
+.opsProbeDot[data-state="ok"] {
+  background: #258477;
+}
+
+.opsProbeDot[data-state="fail"] {
+  background: #b94a36;
+}
+
+.opsProbeDot[data-state="wait"] {
+  animation: probepulse 1s infinite alternate;
+}
+
+@keyframes probepulse {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.opsProbeName,
+.opsProbeMs {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.opsProbeMs {
+  color: var(--ink-faint);
+  text-align: right;
+}
+
+.opsFoot,
+.flowBlocked {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.opsNote {
+  margin: 0;
+}
+
+.opsNote code {
+  border: 1px solid var(--line-soft);
+  border-radius: 5px;
+  background: var(--surface-alt);
+  padding: 1px 5px;
+  font-size: 12.5px;
+}
+
+.opsEmpty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-s);
+  color: var(--ink-soft);
+  background: var(--surface-alt);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.opsJobList,
+.opsJob,
+.opsJobPanels,
+.opsBucketList,
+.flowList,
+.flowRow {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.opsJob {
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.opsJob:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.opsJobHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.opsJobHead strong,
+.opsJobHead span,
+.opsJobMeta span,
+.opsJobPanelTitle strong,
+.opsJobPanelTitle span,
+.opsJobPanel p,
+.opsJobPanel small,
+.opsJobPanel summary,
+.opsJobPanel pre {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.opsJobHead strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.opsJobHead span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.opsJobHead em {
+  justify-self: end;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #165b4e;
+  background: #e5f5ef;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.opsJobMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.opsJobMeta span {
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--surface-alt);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.opsJobPanels {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.opsJobPanel {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.opsJobPanel img,
+.opsJobMissing {
+  width: 78px;
+  aspect-ratio: 5 / 7;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+
+.opsJobPanel img {
+  display: block;
+  object-fit: cover;
+}
+
+.opsJobMissing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-faint);
+}
+
+.opsJobPanelBody {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.opsJobPanelTitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.opsJobPanelTitle strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.opsJobPanelTitle span,
+.opsJobPanel small {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.opsJobPanel p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.opsJobPanel details {
+  min-width: 0;
+}
+
+.opsJobPanel summary {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.opsJobPanel pre {
+  max-height: 170px;
+  margin: 6px 0 0;
+  overflow: auto;
+  padding: 8px;
+  border-radius: var(--radius-s);
+  color: var(--ink);
+  background: var(--surface-alt);
+  font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+}
+
+.opsBucketControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  min-width: 0;
+}
+
+.opsBucketControls label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.opsBucketControls input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.opsBucketObject {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.opsBucketObject:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.opsBucketObject strong,
+.opsBucketObject span,
+.opsBucketObject a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.opsBucketObject strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.opsBucketObject span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.opsBucketMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.opsBucketMeta span,
+.opsBucketMeta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  font-size: 12px;
+  font-weight: 720;
+  text-decoration: none;
+}
+
+.opsBucketMeta a {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.flowRow {
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.flowRow:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.flowRowHead,
+.flowControls {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.flowRowHead {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.flowRowHead strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.flowControls {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.flowControls label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.flowControls select,
+.flowControls input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.opsAudit {
+  min-width: 0;
 }
 
 /* ---------- Studio ---------- */
@@ -1558,6 +2010,27 @@ a { color: inherit; }
   }
   .adminGate {
     display: flex;
+  }
+  .opsGrid,
+  .opsFacts,
+  .opsFacts-four,
+  .opsJobPanels,
+  .opsBucketControls,
+  .opsBucketObject,
+  .flowControls {
+    grid-template-columns: 1fr;
+  }
+  .opsCardHead,
+  .opsJobHead,
+  .flowRowHead {
+    grid-template-columns: 1fr;
+  }
+  .opsStatus,
+  .opsJobHead em {
+    justify-self: start;
+  }
+  .opsBucketMeta {
+    justify-content: flex-start;
   }
   .legalSummaryGrid,
   .legalRegionGrid,

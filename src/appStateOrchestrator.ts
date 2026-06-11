@@ -106,6 +106,7 @@ export interface AppState {
 
   aiDraft: CardDraft | null;
   aiCardGenLoading: boolean;
+  aiCardGenStatus: string;
   aiGenerationJobs: AiGenerationJobEvidence[];
   triggerAiCardGen: () => void;
   cardGenAvailable: boolean;
@@ -173,6 +174,7 @@ export function useAppState(): AppState {
   );
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
   const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
+  const [aiCardGenStatus, setAiCardGenStatus] = useState("");
   const [aiGenerationJobs, setAiGenerationJobs] = useState<AiGenerationJobEvidence[]>([]);
   const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => loadBrowserAiFlowAdminConfigs());
 
@@ -199,7 +201,10 @@ export function useAppState(): AppState {
     };
   }, []);
 
-  useEffect(() => { setAiDraft(null); }, [draftInput]);
+  useEffect(() => {
+    setAiDraft(null);
+    setAiCardGenStatus("");
+  }, [draftInput]);
 
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
   const validation = useMemo(() => validateCardDraft(draft), [draft]);
@@ -269,6 +274,7 @@ export function useAppState(): AppState {
           }
     );
     setAiCardGenLoading(true);
+    setAiCardGenStatus("Writing your AI draft...");
     fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
       method: "POST",
       headers: {
@@ -277,10 +283,7 @@ export function useAppState(): AppState {
       },
       body
     })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Card gen service returned ${res.status}`);
-        return res.json();
-      })
+      .then(readAiGenerationResponse)
       .then((result: AiGenerationApiResult) => {
         const imageByPanel = new Map<string, string>(
           (result.images as Array<{ panel_id: string; image_url: string }> | undefined ?? []).map((img) => [img.panel_id, img.image_url])
@@ -300,11 +303,15 @@ export function useAppState(): AppState {
         });
         const hasImages = imageByPanel.size > 0;
         setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+        setAiCardGenStatus(hasImages ? "AI draft applied with artwork." : "AI draft applied with generated copy.");
         setAiGenerationJobs((current) =>
           prependAiGenerationJob(current, buildAiGenerationJobEvidence({ result, draft }), 10)
         );
       })
-      .catch((err: unknown) => { console.error("AI card gen failed:", err); })
+      .catch((err: unknown) => {
+        console.error("AI card gen failed:", err);
+        setAiCardGenStatus(err instanceof Error ? err.message : "AI writing failed. Try again in a moment.");
+      })
       .finally(() => { setAiCardGenLoading(false); });
   }, [aiCardGenLoading, aiFlowConfigs, approvedMemoryNotes, draft, draftInput]);
 
@@ -324,6 +331,7 @@ export function useAppState(): AppState {
     draftInput, setDraftInput,
     aiDraft,
     aiCardGenLoading,
+    aiCardGenStatus,
     aiGenerationJobs,
     triggerAiCardGen,
     cardGenAvailable: true,
@@ -356,4 +364,34 @@ export function useAppState(): AppState {
 function buildIdempotencyKey(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+async function readAiGenerationResponse(response: Response): Promise<AiGenerationApiResult> {
+  const contentType = response.headers.get("content-type") ?? "";
+  const payload = contentType.includes("application/json")
+    ? await response.json() as Record<string, unknown>
+    : undefined;
+
+  if (!response.ok) {
+    throw new Error(formatAiGenerationHttpError(response.status, payload));
+  }
+  if (!payload || !Array.isArray((payload.card_copy as { panels?: unknown } | undefined)?.panels)) {
+    throw new Error("AI writing returned an unexpected response.");
+  }
+  return payload as AiGenerationApiResult;
+}
+
+function formatAiGenerationHttpError(status: number, payload: Record<string, unknown> | undefined): string {
+  const detail = readAiGenerationErrorDetail(payload);
+  if (status === 404) return "AI writing route is unavailable. Redeploy the API and try again.";
+  if (status === 401 || status === 403) return "AI writing needs a signed-in session.";
+  return detail ? `AI writing failed: ${detail}` : `AI writing returned HTTP ${status}.`;
+}
+
+function readAiGenerationErrorDetail(payload: Record<string, unknown> | undefined): string {
+  for (const key of ["detail", "error", "status", "message"]) {
+    const value = payload?.[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
 }

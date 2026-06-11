@@ -24,39 +24,41 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("keeps browser defaults provider-agnostic but lets the server decide credential readiness", () => {
+  it("keeps Cloudflare as the preferred image adapter while live calls stay disabled by default", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
 
     expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
-    expect(cardImage?.primaryAdapterId).toBe("browser-svg-renderer");
+    expect(cardImage?.primaryAdapterId).toBe("cloudflare-workers-ai-image");
+    expect(cardImage?.fallbackAdapterId).toBe("browser-svg-renderer");
     expect(cardImage?.liveProviderCallsEnabled).toBe(false);
   });
 
-  it("keeps card-image on the deterministic print-safe adapter even when Cloudflare image credentials exist", () => {
+  it("routes card-image to Cloudflare when image credentials and live calls are enabled", () => {
     const flow = resolveAiFlowConfig("card-image", {
       ...cloudflareEnv,
       CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
-    expect(flow.primaryAdapterId).toBe("browser-svg-renderer");
+    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
     expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(flow.model).toBe("@cf/bytedance/stable-diffusion-xl-lightning");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("routes card-image to Cloudflare only when explicitly configured", () => {
+  it("allows the deterministic SVG renderer as an explicit card-image override", () => {
     const flow = resolveAiFlowConfig("card-image", {
       ...cloudflareEnv,
-      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
       CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
     });
 
-    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
-    expect(flow.model).toBe("@cf/bytedance/stable-diffusion-xl-lightning");
+    expect(flow.primaryAdapterId).toBe("browser-svg-renderer");
+    expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);

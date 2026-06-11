@@ -4,6 +4,7 @@ const maxSignedUrlMinutes = 60;
 const defaultSignedUrlMinutes = 15;
 const maxArtifactCount = 12;
 const maxArtifactBytes = 8_000_000;
+const maxBucketListObjects = 50;
 const memoryStores = new Map();
 
 export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...args) => globalThis.fetch(...args), now = () => new Date() } = {}) {
@@ -12,17 +13,7 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
 
   return {
     describe() {
-      return {
-        configured: config.configured,
-        provider: config.provider,
-        endpoint: config.safeEndpoint,
-        bucket: config.bucket || null,
-        publicBaseUrl: config.publicBaseUrl || null,
-        signedUrlTtlMinutes: config.expiresInMinutes,
-        liveNetworkCalls: config.liveNetworkCalls,
-        credentialMode: config.readCredentialsConfigured ? "write-read-split" : config.writeCredentialsConfigured ? "writer-shared" : "unconfigured",
-        blockers: config.blockers
-      };
+      return buildObjectStoreDescription(config);
     },
     validate() {
       return config.required ? config.blockers.map((blocker) => `Object store persistence: ${blocker}`) : [];
@@ -187,7 +178,55 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
         contentType: stored.contentType,
         cacheControl: "private, max-age=60"
       };
+    },
+    async listBucketArtifacts({ query } = {}) {
+      const prefix = safeListPrefix(query?.get?.("prefix") ?? query?.prefix ?? "projects/");
+      const limit = clampBucketListLimit(query?.get?.("limit") ?? query?.limit);
+      const objectStore = buildObjectStoreDescription(config);
+      if (!config.configured || !client) {
+        return {
+          statusCode: 503,
+          payload: {
+            status: "artifact-store-unconfigured",
+            objectStore,
+            prefix,
+            limit,
+            objects: [],
+            blockers: config.blockers.length ? config.blockers : ["Object store persistence is not configured."]
+          }
+        };
+      }
+      const listed = await client.listObjects({ prefix, limit });
+      const expiresAtIso = signedUrlExpiry(config.expiresInMinutes, now());
+      const objects = listed.objects.map((object) => buildBucketObjectSummary({ object, config, expiresAtIso }));
+      return {
+        statusCode: 200,
+        payload: {
+          status: "ready",
+          objectStore,
+          prefix,
+          limit,
+          objectCount: objects.length,
+          truncated: Boolean(listed.truncated),
+          objects,
+          blockers: []
+        }
+      };
     }
+  };
+}
+
+function buildObjectStoreDescription(config) {
+  return {
+    configured: config.configured,
+    provider: config.provider,
+    endpoint: config.safeEndpoint,
+    bucket: config.bucket || null,
+    publicBaseUrl: config.publicBaseUrl || null,
+    signedUrlTtlMinutes: config.expiresInMinutes,
+    liveNetworkCalls: config.liveNetworkCalls,
+    credentialMode: config.readCredentialsConfigured ? "write-read-split" : config.writeCredentialsConfigured ? "writer-shared" : "unconfigured",
+    blockers: config.blockers
   };
 }
 
@@ -251,7 +290,8 @@ function createMemoryObjectStoreClient(config) {
       store.set(input.key, {
         body: Buffer.from(input.body),
         contentType: input.contentType,
-        metadata: { ...input.metadata }
+        metadata: { ...input.metadata },
+        lastModifiedIso: new Date().toISOString()
       });
     },
     async getObject(input) {
@@ -262,7 +302,34 @@ function createMemoryObjectStoreClient(config) {
         contentType: object.contentType,
         metadata: { ...object.metadata }
       };
+    },
+    async headObject(input) {
+      const object = store.get(input.key);
+      if (!object) throw new Error(`Object not found: ${input.key}`);
+      return summarizeStoredObject(input.key, object);
+    },
+    async listObjects({ prefix, limit }) {
+      const matching = Array.from(store.entries())
+        .filter(([key]) => key.startsWith(prefix))
+        .sort(([first], [second]) => first.localeCompare(second));
+      const entries = matching
+        .slice(0, limit)
+        .map(([key, object]) => summarizeStoredObject(key, object));
+      return {
+        objects: entries,
+        truncated: matching.length > entries.length
+      };
     }
+  };
+}
+
+function summarizeStoredObject(key, object) {
+  return {
+    key,
+    byteLength: object.body.length,
+    contentType: object.contentType,
+    lastModifiedIso: object.lastModifiedIso,
+    metadata: { ...object.metadata }
   };
 }
 
@@ -304,23 +371,85 @@ function createSigV4ObjectStoreClient({ config, fetchImpl }) {
         body: response.body,
         contentType: response.contentType
       };
+    },
+    async headObject(input) {
+      const readConfig = config.readCredentialsConfigured
+        ? {
+            ...config,
+            accessKeyId: config.readAccessKeyId,
+            secretAccessKey: config.readSecretAccessKey
+          }
+        : config;
+      const response = await signedRequest({
+        config: readConfig,
+        fetchImpl,
+        method: "HEAD",
+        key: input.key,
+        body: Buffer.alloc(0),
+        headers: {},
+        expectedStatuses: [200]
+      });
+      return {
+        key: input.key,
+        byteLength: Number(response.headers["content-length"] ?? 0) || 0,
+        contentType: response.contentType,
+        lastModifiedIso: safeResponseDate(response.headers["last-modified"]),
+        metadata: metadataFromResponseHeaders(response.headers)
+      };
+    },
+    async listObjects({ prefix, limit }) {
+      const readConfig = config.readCredentialsConfigured
+        ? {
+            ...config,
+            accessKeyId: config.readAccessKeyId,
+            secretAccessKey: config.readSecretAccessKey
+          }
+        : config;
+      const response = await signedRequest({
+        config: readConfig,
+        fetchImpl,
+        method: "GET",
+        key: "",
+        body: Buffer.alloc(0),
+        headers: {},
+        queryParams: {
+          "list-type": "2",
+          "max-keys": String(limit),
+          prefix
+        },
+        expectedStatuses: [200]
+      });
+      const listed = parseListObjectsXml(response.body.toString("utf8"));
+      const objects = await Promise.all(
+        listed.objects.slice(0, limit).map(async (object) => {
+          try {
+            return { ...object, ...(await this.headObject({ key: object.key })) };
+          } catch {
+            return object;
+          }
+        })
+      );
+      return { objects, truncated: listed.truncated };
     }
   };
 }
 
-async function signedRequest({ config, fetchImpl, method, key, body, headers, expectedStatuses }) {
+async function signedRequest({ config, fetchImpl, method, key, body, headers, queryParams = {}, expectedStatuses }) {
   const requestBody = Buffer.isBuffer(body) ? body : Buffer.from(body ?? "");
+  const canonicalQuery = buildCanonicalQueryString(queryParams);
   const requestHeaders = buildSignedHeaders({
     config,
     method,
     key,
+    canonicalQuery,
     body: requestBody,
     headers
   });
-  const response = await fetchImpl(`${trimTrailingSlash(config.endpoint)}${buildCanonicalUri(config.bucket, key)}`, {
+  const requestUrl = `${trimTrailingSlash(config.endpoint)}${buildCanonicalUri(config.bucket, key)}${canonicalQuery ? `?${canonicalQuery}` : ""}`;
+  const response = await fetchImpl(requestUrl, {
     method,
     headers: requestHeaders,
-    body: method === "GET" || method === "DELETE" ? undefined : requestBody
+    body: method === "GET" || method === "HEAD" || method === "DELETE" ? undefined : requestBody
   });
   const responseBody = Buffer.from(await response.arrayBuffer());
   if (!expectedStatuses.includes(response.status)) {
@@ -329,11 +458,12 @@ async function signedRequest({ config, fetchImpl, method, key, body, headers, ex
   return {
     status: response.status,
     body: responseBody,
-    contentType: response.headers.get("content-type") ?? "application/octet-stream"
+    contentType: response.headers.get("content-type") ?? "application/octet-stream",
+    headers: responseHeadersToObject(response.headers)
   };
 }
 
-function buildSignedHeaders({ config, method, key, body, headers }) {
+function buildSignedHeaders({ config, method, key, canonicalQuery = "", body, headers }) {
   const url = new URL(config.endpoint);
   const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, "");
   const dateStamp = amzDate.slice(0, 8);
@@ -350,7 +480,7 @@ function buildSignedHeaders({ config, method, key, body, headers }) {
   const canonicalRequest = [
     method,
     buildCanonicalUri(config.bucket, key),
-    "",
+    canonicalQuery,
     `${canonicalHeaders}\n`,
     signedHeaders,
     payloadHash
@@ -368,6 +498,133 @@ function buildSignedHeaders({ config, method, key, body, headers }) {
     ...canonicalHeadersInput,
     Authorization: `AWS4-HMAC-SHA256 Credential=${config.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
   };
+}
+
+function buildBucketObjectSummary({ object, config, expiresAtIso }) {
+  const metadata = object.metadata ?? {};
+  const contentHashValue = metadata.contentHash || metadata.contenthash || metadata["content-hash"] || "";
+  const projectId = metadata.projectId || metadata.projectid || object.key.split("/")[1] || "";
+  const signature = contentHashValue && projectId
+    ? createHmac("sha256", config.signingSecret)
+        .update(signaturePayloadFor(projectId, object.key, contentHashValue, expiresAtIso))
+        .digest("hex")
+    : "";
+  return {
+    objectKey: object.key,
+    fileName: object.key.split("/").pop() ?? object.key,
+    byteLength: object.byteLength,
+    contentType: object.contentType || "application/octet-stream",
+    lastModifiedIso: object.lastModifiedIso || "",
+    metadata: sanitizeObjectMetadata(metadata),
+    signedDownload: signature
+      ? {
+          method: "GET",
+          url: buildSignedUrl(config.publicBaseUrl, object.key, contentHashValue, expiresAtIso, signature),
+          expiresAtIso,
+          signatureVersion: "hmac-sha256-v1"
+        }
+      : null
+  };
+}
+
+function sanitizeObjectMetadata(metadata) {
+  const allowed = [
+    "artifactRole",
+    "artifactrole",
+    "contentHash",
+    "contenthash",
+    "draftId",
+    "draftid",
+    "fileName",
+    "filename",
+    "kind",
+    "panelId",
+    "panelid",
+    "projectId",
+    "projectid",
+    "realOrdersEnabled",
+    "realordersenabled",
+    "renderPacketId",
+    "renderpacketid"
+  ];
+  return Object.fromEntries(
+    Object.entries(metadata)
+      .filter(([key]) => allowed.includes(key))
+      .map(([key, value]) => [key, String(value).slice(0, 240)])
+  );
+}
+
+function metadataFromResponseHeaders(headers) {
+  const metadata = {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (!key.startsWith("x-amz-meta-")) continue;
+    const metadataKey = key.slice("x-amz-meta-".length).replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
+    metadata[metadataKey] = value;
+  }
+  return metadata;
+}
+
+function responseHeadersToObject(headers) {
+  const result = {};
+  headers.forEach((value, key) => {
+    result[key.toLowerCase()] = value;
+  });
+  return result;
+}
+
+function parseListObjectsXml(xml) {
+  const objects = [];
+  const contentsPattern = /<Contents>([\s\S]*?)<\/Contents>/g;
+  let match;
+  while ((match = contentsPattern.exec(xml))) {
+    const contents = match[1];
+    const key = decodeXmlText(readXmlTag(contents, "Key"));
+    if (!key) continue;
+    objects.push({
+      key,
+      byteLength: Number(readXmlTag(contents, "Size")) || 0,
+      contentType: "application/octet-stream",
+      lastModifiedIso: safeResponseDate(readXmlTag(contents, "LastModified")),
+      metadata: {}
+    });
+  }
+  return {
+    objects,
+    truncated: readXmlTag(xml, "IsTruncated").trim().toLowerCase() === "true"
+  };
+}
+
+function readXmlTag(xml, tag) {
+  const match = new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`).exec(xml);
+  return match?.[1] ?? "";
+}
+
+function decodeXmlText(value) {
+  return value
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function safeResponseDate(value) {
+  const timestamp = Date.parse(String(value ?? ""));
+  return Number.isNaN(timestamp) ? "" : new Date(timestamp).toISOString();
+}
+
+function buildCanonicalQueryString(queryParams) {
+  return Object.entries(queryParams)
+    .filter(([, value]) => value !== undefined && value !== null && String(value) !== "")
+    .flatMap(([key, value]) => Array.isArray(value) ? value.map((item) => [key, item]) : [[key, value]])
+    .map(([key, value]) => [awsEncode(key), awsEncode(String(value))])
+    .sort(([firstKey, firstValue], [secondKey, secondValue]) => firstKey.localeCompare(secondKey) || firstValue.localeCompare(secondValue))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+}
+
+function awsEncode(value) {
+  return encodeURIComponent(value).replace(/[!'()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
 }
 
 function parseRenderArtifacts(body) {
@@ -599,6 +856,21 @@ function safeArtifactKind(value) {
 function safePanelId(value) {
   const text = String(value ?? "").trim();
   return text ? text.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 80) : undefined;
+}
+
+function safeListPrefix(value) {
+  const text = String(value ?? "projects/").trim();
+  if (!text) return "";
+  if (text.length > 240 || text.includes("\\") || text.startsWith("/")) return "projects/";
+  const segments = text.split("/").filter(Boolean);
+  if (segments.some((segment) => segment === "." || segment === ".." || !/^[a-zA-Z0-9._-]+$/.test(segment))) return "projects/";
+  return text;
+}
+
+function clampBucketListLimit(value) {
+  const parsed = Number(value ?? 20);
+  if (!Number.isInteger(parsed)) return 20;
+  return Math.max(1, Math.min(maxBucketListObjects, parsed));
 }
 
 function safeEqualHex(actual, expected) {

@@ -576,6 +576,12 @@ async function serveApi(request, response, requestUrl) {
     return;
   }
 
+  if (path === "/api/admin/artifacts/bucket") {
+    const result = await apiRuntime.listArtifacts({ query: requestUrl.searchParams, authContext });
+    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload });
+    return;
+  }
+
   if (path === "/api/mobile/bootstrap") {
     sendJson(response, 200, {
       ...mobileBootstrap,

@@ -334,6 +334,24 @@ export function resolveApiContractResponse(path: string) {
   if (path === "/api/admin/provider-governance") {
     return summarizeProviderGovernance();
   }
+  if (path === "/api/admin/artifacts/bucket") {
+    return {
+      service: "customcard-api",
+      status: "artifact-store-unconfigured",
+      objectStore: {
+        configured: false,
+        provider: "unconfigured",
+        bucket: null,
+        liveNetworkCalls: false,
+        credentialMode: "unconfigured"
+      },
+      prefix: "projects/",
+      objectCount: 0,
+      truncated: false,
+      objects: [],
+      blockers: ["Object store persistence is not configured."]
+    };
+  }
   if (path === "/api/calendar/connections/start") {
     return buildCalendarConnectionStartResponse();
   }

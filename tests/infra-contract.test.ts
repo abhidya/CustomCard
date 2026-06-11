@@ -593,6 +593,8 @@ describe("production infrastructure contract", () => {
     const handler = read("api/[...path].js");
     const calendarStartHandler = read("api/calendar/connections/start.js");
     const oauthCallbackHandler = read("api/oauth/callback.js");
+    const aiCardGenerateHandler = read("api/ai/card/generate.js");
+    const aiChatRespondHandler = read("api/ai/chat/respond.js");
     const walgreensUploadHandler = read("api/walgreens/checkout/upload.js");
     const walgreensSessionHandler = read("api/walgreens/checkout/session.js");
     const walgreensCallbackHandler = read("api/walgreens/checkout/callback.js");
@@ -610,6 +612,7 @@ describe("production infrastructure contract", () => {
     ]);
     expect(handler).toContain("handleApiRequest");
     expect(`${calendarStartHandler}\n${oauthCallbackHandler}`).toContain("handleApiRequest");
+    expect(`${aiCardGenerateHandler}\n${aiChatRespondHandler}`).toContain("handleApiRequest");
     expect(`${walgreensUploadHandler}\n${walgreensSessionHandler}\n${walgreensCallbackHandler}`).toContain("handleApiRequest");
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");

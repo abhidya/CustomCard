@@ -73,7 +73,7 @@ export const aiFlowDefinitions = [
     flowId: "card-image",
     label: "Card image",
     capability: "image-generation",
-    defaultPrimaryAdapterId: "browser-svg-renderer",
+    defaultPrimaryAdapterId: "cloudflare-workers-ai-image",
     defaultFallbackAdapterId: "browser-svg-renderer",
     allowedAdapterIds: imageProviderAdapterIds,
     liveDefault: false,

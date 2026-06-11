@@ -209,6 +209,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events"], true, false, false),
   routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),
+  routePersistence("admin-artifact-bucket", "read-only", "admin", ["auth_sessions", "render_packets", "audit_log"], true, false, false),
   routePersistence(
     "admin-demo-reset",
     "mutation",

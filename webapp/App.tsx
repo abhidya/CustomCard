@@ -97,6 +97,7 @@ export default function App() {
     aiFlowSummary,
     aiDraft,
     aiCardGenLoading,
+    aiCardGenStatus,
     aiGenerationJobs,
     triggerAiCardGen,
     cardGenAvailable,
@@ -478,6 +479,7 @@ export default function App() {
             aiActive={aiDraft !== null}
             aiAvailable={cardGenAvailable}
             aiLoading={aiCardGenLoading}
+            aiStatus={aiCardGenStatus}
             aiRequiresSignIn={!isSignedIn}
             draft={displayDraft}
             draftInput={draftInput}

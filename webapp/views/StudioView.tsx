@@ -35,6 +35,7 @@ export function StudioView({
   aiAvailable,
   aiLoading,
   aiActive,
+  aiStatus,
   aiRequiresSignIn,
   onAddNote,
   onField,
@@ -46,6 +47,7 @@ export function StudioView({
   aiAvailable: boolean;
   aiLoading: boolean;
   aiActive: boolean;
+  aiStatus?: string;
   aiRequiresSignIn: boolean;
   onAddNote: () => void;
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
@@ -201,7 +203,9 @@ export function StudioView({
                 <span className="ainote">
                   {aiRequiresSignIn
                     ? "Create and print without an account. AI writing needs sign-in."
-                    : aiActive
+                    : aiStatus
+                      ? aiStatus
+                      : aiActive
                       ? "AI draft applied — edit anything above to reset."
                       : "Uses your details and notes."}
                 </span>

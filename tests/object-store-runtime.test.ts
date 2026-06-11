@@ -96,5 +96,30 @@ describe("object store runtime", () => {
     expect(downloaded.statusCode).toBe(200);
     expect(downloaded.contentType).toBe("image/svg+xml");
     expect(downloaded.body.toString("utf8")).toContain("Hello");
+
+    const bucket = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({ prefix: "projects/project-test", limit: "10" })
+    });
+
+    expect(bucket.statusCode).toBe(200);
+    expect(bucket.payload).toMatchObject({
+      status: "ready",
+      objectStore: {
+        provider: "memory-s3-compatible",
+        bucket: "customcard-prod",
+        credentialMode: "write-read-split"
+      },
+      objectCount: 2,
+      blockers: []
+    });
+    expect(bucket.payload.objects.map((object) => object.objectKey)).toEqual([
+      "projects/project-test/render-packets/render-packet-test/artifact-handoff-manifest.json",
+      "projects/project-test/render-packets/render-packet-test/front.svg"
+    ]);
+    expect(bucket.payload.objects.find((object) => object.fileName === "front.svg")?.signedDownload?.url).toContain(
+      "/api/artifacts/projects/project-test/render-packets/render-packet-test/front.svg?"
+    );
+    expect(JSON.stringify(bucket.payload)).not.toContain("write-secret");
+    expect(JSON.stringify(bucket.payload)).not.toContain("read-secret");
   });
 });

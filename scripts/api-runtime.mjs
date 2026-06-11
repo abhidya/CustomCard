@@ -121,6 +121,9 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
     },
+    async listArtifacts(input) {
+      return objectStoreRuntime.listBucketArtifacts(input);
+    },
     async readDraftState({ authContext }) {
       return buildDraftStateReadPayload(undefined, "contract", authContext);
     },
@@ -268,6 +271,9 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     },
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
+    },
+    async listArtifacts(input) {
+      return objectStoreRuntime.listBucketArtifacts(input);
     },
     async persistGoogleCalendarImport({ record }) {
       providerConnections.set(record.providerConnection.id, record.providerConnection);
@@ -488,6 +494,9 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     },
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
+    },
+    async listArtifacts(input) {
+      return objectStoreRuntime.listBucketArtifacts(input);
     },
     async persistGoogleCalendarImport({ authContext, record }) {
       const pool = await getPool();

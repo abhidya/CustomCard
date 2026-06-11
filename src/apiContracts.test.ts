@@ -35,6 +35,7 @@ describe("api contracts", () => {
         "admin-provider-catalog",
         "admin-provider-governance",
         "admin-persistence-readiness",
+        "admin-artifact-bucket",
         "admin-demo-reset",
         "import-preview",
         "calendar-connection-start",
@@ -56,6 +57,7 @@ describe("api contracts", () => {
     const nonCheckoutMutations = mutations.filter((route) => !hostedCheckoutExemptRouteIds.has(route.id));
     const adminRoutes = apiRouteContracts.filter((route) => route.audience === "admin");
     const adminPersistenceReadiness = apiRouteContracts.find((route) => route.id === "admin-persistence-readiness");
+    const adminArtifactBucket = apiRouteContracts.find((route) => route.id === "admin-artifact-bucket");
     const adminDemoReset = apiRouteContracts.find((route) => route.id === "admin-demo-reset");
     const renderPackets = apiRouteContracts.find((route) => route.id === "render-packets");
     const importPreview = apiRouteContracts.find((route) => route.id === "import-preview");
@@ -83,6 +85,15 @@ describe("api contracts", () => {
     });
     expect(adminDemoReset?.responseSchema).toEqual(expect.arrayContaining(["seedSummary", "signedArtifactUrls"]));
     expect(adminPersistenceReadiness?.responseSchema).toEqual(expect.arrayContaining(["localBrowserState", "blockers"]));
+    expect(adminArtifactBucket).toMatchObject({
+      method: "GET",
+      path: "/api/admin/artifacts/bucket",
+      audience: "admin",
+      auth: "admin-session",
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
+    expect(adminArtifactBucket?.responseSchema).toEqual(expect.arrayContaining(["objectStore", "objects", "blockers"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(importPreview?.requestSchema).toEqual(
@@ -837,6 +848,20 @@ describe("api contracts", () => {
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
+    });
+    expect(resolveApiContractResponse("/api/admin/artifacts/bucket")).toMatchObject({
+      service: "customcard-api",
+      status: "artifact-store-unconfigured",
+      objectStore: {
+        configured: false,
+        provider: "unconfigured",
+        bucket: null,
+        liveNetworkCalls: false,
+        credentialMode: "unconfigured"
+      },
+      objectCount: 0,
+      objects: [],
+      blockers: expect.arrayContaining(["Object store persistence is not configured."])
     });
     expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);
     expect(resolveApiContractResponse("/api/mobile/bootstrap")).toMatchObject({

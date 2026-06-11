@@ -22,6 +22,36 @@ interface ProbeTarget {
   url: string;
 }
 
+interface BucketObject {
+  objectKey: string;
+  fileName: string;
+  byteLength: number;
+  contentType: string;
+  lastModifiedIso?: string;
+  metadata?: Record<string, string>;
+  signedDownload?: {
+    url: string;
+    expiresAtIso: string;
+  } | null;
+}
+
+interface BucketViewerPayload {
+  status?: string;
+  objectStore?: {
+    configured?: boolean;
+    provider?: string;
+    bucket?: string | null;
+    endpoint?: string;
+    credentialMode?: string;
+    liveNetworkCalls?: boolean;
+  };
+  prefix?: string;
+  objectCount?: number;
+  truncated?: boolean;
+  objects?: BucketObject[];
+  blockers?: string[];
+}
+
 function buildProbeTargets(): ProbeTarget[] {
   const cardGenUrl = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
   return [
@@ -89,6 +119,31 @@ export function AdminView({
   const latestAiJobs = aiGenerationJobs.slice(0, 3);
   const latestAiJob = latestAiJobs[0];
   const generatedPanels = aiGenerationJobs.reduce((total, job) => total + job.imageCount, 0);
+  const [bucketPrefix, setBucketPrefix] = useState("projects/");
+  const [bucketPayload, setBucketPayload] = useState<BucketViewerPayload | null>(null);
+  const [bucketLoading, setBucketLoading] = useState(false);
+  const [bucketError, setBucketError] = useState("");
+
+  const loadBucketObjects = useCallback(() => {
+    const params = new URLSearchParams({ prefix: bucketPrefix, limit: "20" });
+    setBucketLoading(true);
+    setBucketError("");
+    fetch(`/api/admin/artifacts/bucket?${params.toString()}`, { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.status || `Bucket viewer returned HTTP ${response.status}`);
+        setBucketPayload(payload as BucketViewerPayload);
+      })
+      .catch((error: unknown) => {
+        setBucketPayload(null);
+        setBucketError(error instanceof Error ? error.message : "Bucket viewer is unavailable.");
+      })
+      .finally(() => setBucketLoading(false));
+  }, [bucketPrefix]);
+
+  useEffect(() => {
+    loadBucketObjects();
+  }, [loadBucketObjects]);
 
   return (
     <section className="opsShell reveal">
@@ -248,6 +303,94 @@ export function AdminView({
           )}
         </section>
 
+        {/* ---- Object bucket viewer ---- */}
+        <section className="panelcard opsCard opsCard-wide opsBucketCard">
+          <div className="opsCardHead">
+            <h2>Bucket viewer</h2>
+            <span className="opsStatus" data-ok={Boolean(bucketPayload?.objectStore?.configured)}>
+              {bucketLoading ? "Loading" : bucketPayload?.objectStore?.configured ? "Configured" : "Needs object store"}
+            </span>
+          </div>
+
+          <div className="opsBucketControls">
+            <label>
+              Prefix
+              <input
+                autoCapitalize="none"
+                autoCorrect="off"
+                onChange={(event) => setBucketPrefix(event.target.value)}
+                spellCheck={false}
+                value={bucketPrefix}
+              />
+            </label>
+            <button className="btn btn-ghost btn-sm" onClick={loadBucketObjects} type="button">
+              <RefreshCw size={14} />
+              Refresh
+            </button>
+          </div>
+
+          <ul className="opsFacts opsFacts-four">
+            <li>
+              <span>Provider</span>
+              <strong>{bucketPayload?.objectStore?.provider ?? "Unknown"}</strong>
+            </li>
+            <li>
+              <span>Bucket</span>
+              <strong>{bucketPayload?.objectStore?.bucket ?? "Not configured"}</strong>
+            </li>
+            <li>
+              <span>Objects</span>
+              <strong>{bucketPayload?.objectCount ?? 0}{bucketPayload?.truncated ? "+" : ""}</strong>
+            </li>
+            <li>
+              <span>Credentials</span>
+              <strong>{bucketPayload?.objectStore?.credentialMode ?? "unconfigured"}</strong>
+            </li>
+          </ul>
+
+          {bucketError ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>{bucketError}</span>
+            </div>
+          ) : null}
+          {bucketPayload?.blockers?.length ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>{bucketPayload.blockers[0]}</span>
+            </div>
+          ) : null}
+          {bucketPayload?.objects?.length ? (
+            <div className="opsBucketList" aria-label="Object-store bucket objects">
+              {bucketPayload.objects.map((object) => (
+                <article className="opsBucketObject" key={object.objectKey}>
+                  <div>
+                    <strong>{object.fileName}</strong>
+                    <span>{object.objectKey}</span>
+                  </div>
+                  <div className="opsBucketMeta">
+                    <span>{formatBytes(object.byteLength)}</span>
+                    <span>{object.contentType}</span>
+                    {object.lastModifiedIso ? <span>{formatJobTime(object.lastModifiedIso)}</span> : null}
+                    {object.metadata?.kind ? <span>{object.metadata.kind}</span> : null}
+                    {object.signedDownload?.url ? (
+                      <a href={object.signedDownload.url} rel="noreferrer" target="_blank">
+                        Open signed
+                        <ExternalLink size={12} />
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : !bucketLoading && !bucketError ? (
+            <div className="opsEmpty">
+              <Info size={16} />
+              <span>No bucket objects found for this prefix.</span>
+            </div>
+          ) : null}
+        </section>
+
         {/* ---- Users ---- */}
         <section className="panelcard opsCard">
           <div className="opsCardHead">
@@ -356,4 +499,11 @@ function formatJobTime(createdAtIso: string): string {
   const date = new Date(createdAtIso);
   if (Number.isNaN(date.getTime())) return createdAtIso;
   return date.toLocaleString();
+}
+
+function formatBytes(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "0 B";
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }

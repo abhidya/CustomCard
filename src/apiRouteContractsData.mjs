@@ -269,6 +269,21 @@ export const apiRouteContracts = [
     backedBy: ["persistence contracts", "migration doctor"]
   },
   {
+    id: "admin-artifact-bucket",
+    method: "GET",
+    path: "/api/admin/artifacts/bucket",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession", "prefix", "limit"],
+    responseSchema: ["objectStore", "prefix", "objectCount", "objects", "blockers"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Object-store metadata only; no raw card text or object-store credentials are returned.",
+    backedBy: ["object-store runtime", "signed artifact read contract"]
+  },
+  {
     id: "admin-demo-reset",
     method: "POST",
     path: "/api/admin/demo-reset",

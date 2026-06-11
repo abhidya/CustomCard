@@ -35,33 +35,33 @@ Cloudflare JSON Mode-capable default in this repo's live path, and card-copy
 requests send a JSON Schema through `response_format` so panel copy is not
 prompt-only JSON.
 
-Use `browser-svg-renderer` as the production-safe card-image adapter when the
-card needs print-perfect panels with deterministic app typography. The live RCA
-found that Cloudflare SDXL Lightning and Flux can still create physical card
-mockups, signage, or fake lettering even when the prompt asks for no text. The
-SVG adapter keeps image persistence unblocked, has no image-provider cost, and
-renders flat 1500 x 2100 artwork layers that the app can overlay with real text.
+Use `cloudflare-workers-ai-image` as the preferred live card-image adapter right
+now. The app still keeps `browser-svg-renderer` as the deterministic fallback and
+debug path for flat 1500 x 2100 artwork layers, but Cloudflare remains visible in
+admin and is the primary live image route when credentials and live calls are
+enabled.
 
-Use `@cf/bytedance/stable-diffusion-xl-lightning` only for exploratory image
-provider drafts. It is the cheapest practical image default on Cloudflare
-Workers AI and is fast enough for iteration, but it has not passed the
-no-fake-text greeting-card benchmark.
+Use `@cf/bytedance/stable-diffusion-xl-lightning` as the current Cloudflare image
+default. It is the cheapest practical image default on Cloudflare Workers AI and
+is fast enough for iteration; keep deterministic typography in app overlays and
+review generated images for fake lettering or physical mockup artifacts.
 
 Use `@cf/black-forest-labs/flux-1-schnell` as the image quality fallback when
 prompt adherence matters more than the absolute lowest cost. Use
 `@cf/runwayml/stable-diffusion-v1-5-inpainting` only when an edit or mask-based
 inpainting workflow is explicitly needed.
 
-Set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer` for the verified
-print-safe path. Set it to `cloudflare-workers-ai-image` only when intentionally
-testing Workers AI image output.
+Set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image` for the
+preferred live image path. Set it to `browser-svg-renderer` for deterministic
+RCA, no-network debugging, or a print-safe fallback when provider output needs a
+pause.
 
 ## Fallback Order
 
 1. Cloudflare LLM JSON Mode default: `@cf/meta/llama-3.1-8b-instruct-fast`.
 2. Cloudflare LLM quality fallback: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
-3. Production-safe image default: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer`.
-4. Cloudflare image experiment: `@cf/bytedance/stable-diffusion-xl-lightning`.
+3. Preferred live image adapter: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image`.
+4. Deterministic image fallback/debug adapter: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer`.
 5. Cloudflare image quality experiment: `@cf/black-forest-labs/flux-1-schnell`.
 6. Hugging Face specialty image fallback for non-commercial typography/layout experiments, especially Ideogram 4.
 7. DeepAI `text2img` as a simple last-resort image API fallback.
@@ -100,6 +100,9 @@ intended:
 npm run card:benchmark -- --live --image-adapter browser-svg-renderer --fixtures small-business-thank-you,medical-graduation,dad-fix-anything,botanical-birthday
 ```
 
+Use `--image-adapter cloudflare-workers-ai-image` when validating the preferred
+live provider path.
+
 Benchmark logs redact authorization headers, Cloudflare account IDs, object
 store credentials, signed URLs, and data URLs. Keep
 `src/cardGenerationBenchmarkRedaction.test.ts` passing before committing new
@@ -108,7 +111,7 @@ evidence.
 ## Deployment
 
 Set the same Cloudflare env vars in Vercel for Production, Preview, and
-Development before promoting a live AI path. For print-safe card images, also
-set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer` and
+Development before promoting a live AI path. For the preferred live card-image
+route, set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=cloudflare-workers-ai-image` and
 `CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED=true`. Do not commit `.env`,
 `.env.local`, or copied Cloudflare API tokens.
