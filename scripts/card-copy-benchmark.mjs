@@ -1,0 +1,573 @@
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
+import { resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
+
+const repoRoot = resolve(import.meta.dirname, "..");
+const outputRoot = resolve(repoRoot, "docs/evidence/card-copy-comparisons");
+const panelIds = ["front", "inside-left", "inside-right", "back"];
+const defaultFixtureIds = ["small-business-thank-you", "medical-graduation", "dad-fix-anything", "botanical-birthday"];
+
+const referencePrompt = `Create 4 separate print-ready vertical 5x7 inch card images for a folded greeting card set.
+
+Important output requirements:
+Generate exactly four separate images:
+1. FRONT COVER
+2. BACK COVER
+3. INSIDE LEFT PANEL
+4. INSIDE RIGHT PANEL
+
+Each image must be portrait orientation, 5x7 ratio, flat artwork only, no mockup, no shadows, no table, no background scene, no folds, no labels, no crop marks, no instruction text. Artwork should extend cleanly to the edges with a safe inner margin so nothing important is cut off when printed.
+
+The four panels must look like one coordinated card set. Use matching borders, colors, floral elements, patterns, typography, and decorative spacing. The front cover and back cover should visually match. The inside left and inside right panels should also match each other and feel like the opened interior of the card.
+
+Overall style: Luxury folded greeting card, elegant stationery design, print-ready, high resolution, refined typography, balanced composition, premium paper texture, subtle decorative border, heirloom quality, sophisticated and celebration-appropriate.`;
+
+const fixtures = {
+  "small-business-thank-you": {
+    id: "small-business-thank-you",
+    category: "Small business thank-you AI card",
+    competitorCategory: "Small business thank-you AI card",
+    competitorPrompt: "thanks for supporting our small business",
+    request: {
+      sender: "CustomCard",
+      recipient: "loyal customers",
+      relationship: "small business to repeat customer",
+      occasion: "thank-you for supporting a small business",
+      tone: "warm, sincere, polished, grateful, not salesy",
+      style:
+        "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+      language: "English",
+      personal_note:
+        "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+      memory_notes: [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+        "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+      ]
+    }
+  },
+  "medical-graduation": {
+    id: "medical-graduation",
+    category: "Medical school graduation folded card",
+    competitorCategory: "Photo-card print product",
+    competitorPrompt: "graduation milestone card",
+    request: {
+      sender: "Manny",
+      recipient: "my brother",
+      relationship: "brother",
+      occasion: "medical school graduation",
+      tone: "proud, emotional, premium, warm family pride, not cheesy",
+      style: "deep navy, white, soft gold, elegant medical graduation stationery",
+      language: "English",
+      personal_note:
+        "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+      memory_notes: [
+        "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+        "The family is proud of his discipline, patience, heart, and dedication.",
+        "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+      ]
+    }
+  },
+  "dad-fix-anything": {
+    id: "dad-fix-anything",
+    category: "Father's Day repair-themed card",
+    competitorCategory: "Free template card maker",
+    competitorPrompt: "dad who can fix anything",
+    request: {
+      sender: "Manny",
+      recipient: "Dad",
+      relationship: "child to father",
+      occasion: "Father's Day",
+      tone: "warm, funny, sincere, practical love",
+      style: "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+      language: "English",
+      personal_note:
+        "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+      memory_notes: [
+        "Dad shows love by fixing the small things before anyone asks.",
+        "The card should feel printable, cheerful, and original.",
+        "Use tools as symbols, not a cluttered hardware-store scene."
+      ]
+    }
+  },
+  "botanical-birthday": {
+    id: "botanical-birthday",
+    category: "Personalized botanical birthday card",
+    competitorCategory: "Personalized physical card catalog",
+    competitorPrompt: "custom birthday card",
+    request: {
+      sender: "Manny",
+      recipient: "Sara",
+      relationship: "friend",
+      occasion: "birthday",
+      tone: "warm, grateful, relaxed, quietly joyful",
+      style: "botanical watercolor, morning light, cream paper, deep green accents",
+      language: "English",
+      personal_note: "She loves morning hikes, coffee, and the fern by her kitchen window.",
+      memory_notes: [
+        "She keeps a fern by the kitchen window.",
+        "She loves morning hikes and tiny trail flowers.",
+        "The birthday card should feel personal without feeling overly sentimental."
+      ]
+    }
+  }
+};
+
+if (isMainModule()) {
+  await main();
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const selectedFixtureIds = (args.fixtures || defaultFixtureIds.join(",")).split(",").map((value) => value.trim()).filter(Boolean);
+  const env = loadBenchmarkEnv();
+  const live = isLiveBenchmarkEnabled(args, env);
+  env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = live ? "true" : "false";
+  env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "false";
+  if (args["copy-adapter"]) env.CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID = args["copy-adapter"];
+  if (args.model) env.CUSTOMCARD_AI_CARD_COPY_MODEL = args.model;
+
+  const runStamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const runId = `card-copy-benchmark-${runStamp}`;
+  const runDir = resolve(outputRoot, runId);
+  mkdirSync(runDir, { recursive: true });
+  writeMarkdown(resolve(runDir, "reference-card-prompt.md"), `# Reference Card Prompt\n\n${referencePrompt}\n`);
+
+  const providerHttp = [];
+  const fetchImpl = createLoggingFetch(providerHttp, env);
+  const service = createAiCardGenerationService({ env, fetchImpl });
+  const summary = {
+    runId,
+    createdAtIso: new Date().toISOString(),
+    liveProviderCallsEnabled: live,
+    fixtureIds: selectedFixtureIds,
+    outputDir: relativePath(runDir),
+    referencePromptSha256: sha256(referencePrompt),
+    envRouting: {
+      aiEnvSources: [".env.local", "infra/env/.env"].filter((filePath) => existsSync(resolve(repoRoot, filePath))),
+      configuredProviderKeys: Object.keys(env).filter((key) => isSafeConfiguredKey(key)).sort(),
+      secretsRedacted: true
+    },
+    resolvedFlowsBeforeRun: summarizeFlows(resolveAiFlowConfigs(env)),
+    fixtures: []
+  };
+
+  for (const fixtureId of selectedFixtureIds) {
+    const fixture = fixtures[fixtureId];
+    if (!fixture) throw new Error(`Unknown card-copy benchmark fixture: ${fixtureId}`);
+    summary.fixtures.push(await runFixture({ fixture, service, providerHttp, runDir, runStamp, env }));
+  }
+
+  summary.providerHttp = providerHttp;
+  writeJson(resolve(runDir, "debug-log.json"), sanitizeForLog(summary, env));
+  writeMarkdown(resolve(runDir, "README.md"), buildRunReadme(summary));
+  const failed = summary.fixtures.filter((fixture) => !fixture.evaluation.passed);
+  console.log(JSON.stringify({ runId, outputDir: relativePath(runDir), failed: failed.map((fixture) => fixture.id) }, null, 2));
+  if (args["require-pass"] && failed.length > 0) process.exitCode = 1;
+}
+
+async function runFixture({ fixture, service, providerHttp, runDir, runStamp, env }) {
+  const fixtureDir = resolve(runDir, fixture.id);
+  mkdirSync(fixtureDir, { recursive: true });
+  const providerStartIndex = providerHttp.length;
+  const response = await service.generateCard(fixture.request, { rateKey: `copy-benchmark-${fixture.id}-${runStamp}` });
+  const payload = sanitizeForLog(response.payload, env);
+  const cardCopy = payload.card_copy || {};
+  const evaluation = evaluateCardCopy({ cardCopy, request: fixture.request });
+  const fixtureProviderCalls = providerHttp.slice(providerStartIndex);
+  writeJson(resolve(fixtureDir, "card-copy-output.json"), payload);
+  writeJson(resolve(fixtureDir, "evaluation.json"), evaluation);
+  writeJson(resolve(fixtureDir, "provider-http.json"), fixtureProviderCalls);
+  writeMarkdown(resolve(fixtureDir, "comparison.md"), buildFixtureComparison({ fixture, payload, evaluation }));
+
+  return {
+    id: fixture.id,
+    category: fixture.category,
+    competitorPrompt: fixture.competitorPrompt,
+    statusCode: response.statusCode,
+    generatedBy: payload.generated_by,
+    outputDir: relativePath(fixtureDir),
+    cardCopyModel: payload.ai_flow?.card_copy?.model,
+    providerFailure: payload.ai_flow?.card_copy?.provider_failure,
+    evaluation
+  };
+}
+
+export function evaluateCardCopy({ cardCopy, request }) {
+  const panels = Array.isArray(cardCopy?.panels) ? cardCopy.panels : [];
+  const panelsById = new Map(panels.map((panel) => [panel?.id, panel]));
+  const blockers = [];
+  const warnings = [];
+  const subScores = {
+    schema: 0,
+    copyRichness: 0,
+    layoutDirection: 0,
+    imagePrompt: 0,
+    safety: 0,
+    memoryGrounding: 0,
+    coordination: 0
+  };
+
+  if (panels.map((panel) => panel?.id).join("|") === panelIds.join("|")) {
+    subScores.schema = 15;
+  } else {
+    blockers.push("Card copy must include exactly four panels in order: front, inside-left, inside-right, back.");
+  }
+
+  let copyPoints = 0;
+  let layoutPoints = 0;
+  let imagePoints = 0;
+  let safetyPoints = 10;
+
+  for (const panelId of panelIds) {
+    const panel = panelsById.get(panelId) || {};
+    const body = cleanText(panel.body);
+    const headline = cleanText(panel.headline);
+    const artDirection = cleanText(panel.art_direction || panel.artDirection);
+    const imagePrompt = cleanText(panel.image_prompt || panel.imagePrompt);
+    const negativePrompt = cleanText(panel.image_negative_prompt || panel.imageNegativePrompt).toLowerCase();
+
+    if (!headline) blockers.push(`${panelId}: missing headline.`);
+    if (panelId === "inside-left" && body.length >= 120 && wordCount(body) >= 18) copyPoints += 6;
+    if (panelId === "inside-right" && body.length >= 180 && wordCount(body) >= 28) copyPoints += 8;
+    if (panelId === "front" && body.length <= 180) copyPoints += 2;
+    if (panelId === "back" && body.length <= 180) copyPoints += 2;
+    if (panelId.startsWith("inside") && body.length < (panelId === "inside-left" ? 120 : 180)) {
+      blockers.push(`${panelId}: body is terse (${body.length} chars).`);
+    }
+    if (/\b(order|ordered|payment|paid|shipped|delivered|checkout completed)\b/i.test(`${headline} ${body}`)) {
+      blockers.push(`${panelId}: copy makes order/payment/shipping claims.`);
+      safetyPoints -= 3;
+    }
+
+    const layoutHits = countMatches(
+      artDirection,
+      /\b(layout|safe|margin|border|ornament|typography|type|text|space|palette|matching|coordinated|front|back|inside|spread)\b/gi
+    );
+    if (artDirection.length >= 90 && layoutHits >= 3) layoutPoints += 5;
+    else warnings.push(`${panelId}: art_direction lacks enough layout/theme detail.`);
+
+    if (imagePrompt.length >= 180) imagePoints += 2;
+    if (/\b5x7\b/i.test(imagePrompt)) imagePoints += 1;
+    if (/\b(flat|2d|full-bleed|print panel|print-ready)\b/i.test(imagePrompt)) imagePoints += 1;
+    if (panelPromptMentionsPanel(imagePrompt, panelId)) imagePoints += 1;
+    if (/\b(no readable text|no words|no letters)\b/i.test(imagePrompt)) imagePoints += 1;
+    if (containsForbiddenImageScene(imagePrompt)) {
+      blockers.push(`${panelId}: image_prompt risks mockup/collage output.`);
+      safetyPoints -= 2;
+    }
+    for (const required of ["readable text", "fake text", "letters", "people", "hands", "folded card mockup", "product photo"]) {
+      if (!negativePrompt.includes(required)) warnings.push(`${panelId}: negative prompt missing ${required}.`);
+    }
+  }
+
+  subScores.copyRichness = Math.min(20, copyPoints);
+  subScores.layoutDirection = Math.min(20, layoutPoints);
+  subScores.imagePrompt = Math.min(20, imagePoints);
+  subScores.safety = Math.max(0, Math.min(10, safetyPoints));
+
+  const citations = Array.isArray(cardCopy?.memory_citations) ? cardCopy.memory_citations.map(cleanText).filter(Boolean) : [];
+  if (!request.memory_notes?.length || citations.length > 0) subScores.memoryGrounding = 10;
+  else warnings.push("No memory citations returned for memory-backed fixture.");
+
+  const combinedDirections = panels
+    .map((panel) => `${panel?.art_direction || ""} ${panel?.image_prompt || ""}`)
+    .join(" ");
+  if (/\b(coordinated|matching|pair|echo|same palette|visual match|opened interior|front and back|inside-left and inside-right)\b/i.test(combinedDirections)) {
+    subScores.coordination = 5;
+  } else {
+    warnings.push("No explicit cross-panel coordination language found.");
+  }
+
+  const score = Object.values(subScores).reduce((sum, value) => sum + value, 0);
+  return {
+    passed: blockers.length === 0 && score >= 82,
+    score,
+    subScores,
+    blockers,
+    warnings,
+    panelStats: panelIds.map((panelId) => {
+      const panel = panelsById.get(panelId) || {};
+      return {
+        panelId,
+        headlineChars: cleanText(panel.headline).length,
+        bodyChars: cleanText(panel.body).length,
+        bodyWords: wordCount(panel.body),
+        artDirectionChars: cleanText(panel.art_direction || panel.artDirection).length,
+        imagePromptChars: cleanText(panel.image_prompt || panel.imagePrompt).length
+      };
+    })
+  };
+}
+
+function buildFixtureComparison({ fixture, payload, evaluation }) {
+  const lines = [
+    `# ${fixture.category}`,
+    "",
+    `- Competitor prompt/category: ${fixture.competitorPrompt}`,
+    `- Generated by: ${payload.generated_by}`,
+    `- Card copy model: ${payload.ai_flow?.card_copy?.model || "n/a"}`,
+    `- Provider failure: ${payload.ai_flow?.card_copy?.provider_failure || "n/a"}`,
+    `- Score: ${evaluation.score}/100`,
+    `- Passed: ${evaluation.passed ? "yes" : "no"}`,
+    ""
+  ];
+  if (evaluation.blockers.length > 0) {
+    lines.push("## Blockers", "", ...evaluation.blockers.map((blocker) => `- ${blocker}`), "");
+  }
+  if (evaluation.warnings.length > 0) {
+    lines.push("## Warnings", "", ...evaluation.warnings.map((warning) => `- ${warning}`), "");
+  }
+  lines.push("## Panel Copy", "");
+  for (const panel of payload.card_copy?.panels || []) {
+    lines.push(
+      `### ${panel.id}`,
+      "",
+      `Headline: ${panel.headline || ""}`,
+      "",
+      panel.body || "",
+      "",
+      `Art direction: ${panel.art_direction || ""}`,
+      "",
+      `Image prompt: ${panel.image_prompt || ""}`,
+      ""
+    );
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function buildRunReadme(summary) {
+  const lines = [
+    `# ${summary.runId}`,
+    "",
+    "Card-copy benchmark run for theme, layout, and content richness.",
+    "",
+    `Reference prompt hash: \`${summary.referencePromptSha256}\``,
+    "",
+    "| Fixture | Category | Score | Passed | Evidence |",
+    "|---|---|---:|---|---|"
+  ];
+  for (const fixture of summary.fixtures) {
+    lines.push(
+      `| ${fixture.id} | ${fixture.category} | ${fixture.evaluation.score} | ${fixture.evaluation.passed ? "yes" : "no"} | [open](${fixture.id}/comparison.md) |`
+    );
+  }
+  lines.push("");
+  lines.push("Provider HTTP is redacted in each fixture folder and in `debug-log.json`.");
+  return `${lines.join("\n")}\n`;
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
+}
+
+function isLiveBenchmarkEnabled(args, env) {
+  return args.live === true || args.live === "true" || String(env.CUSTOMCARD_COPY_BENCHMARK_LIVE || "").toLowerCase() === "enabled";
+}
+
+function loadBenchmarkEnv() {
+  const target = { ...process.env };
+  for (const filePath of [".env.local", "infra/env/.env"]) {
+    const absolutePath = resolve(repoRoot, filePath);
+    if (!existsSync(absolutePath)) continue;
+    const parsed = parseDotenv(readFileSync(absolutePath, "utf8"));
+    for (const [key, value] of Object.entries(parsed)) {
+      if (!target[key]) target[key] = value;
+    }
+  }
+  loadLocalAiEnvFiles({ cwd: repoRoot, target });
+  return target;
+}
+
+function createLoggingFetch(logs, env) {
+  return async function loggingFetch(url, options = {}) {
+    const started = Date.now();
+    const response = await fetch(url, options);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get("content-type") || "";
+    logs.push({
+      url: redactUrl(String(url), env),
+      method: options.method || "GET",
+      request: {
+        headers: redactHeaders(options.headers || {}, env),
+        body: sanitizeForLog(parseBody(options.body), env)
+      },
+      response: {
+        status: response.status,
+        ok: response.ok,
+        contentType,
+        contentLength: response.headers.get("content-length"),
+        byteLength: buffer.length,
+        body: contentType.includes("application/json") ? sanitizeForLog(parseJson(buffer.toString("utf8")), env) : undefined
+      },
+      durationMs: Date.now() - started
+    });
+    return new Response(buffer, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    });
+  };
+}
+
+function summarizeFlows(flows) {
+  return flows.map((flow) => ({
+    flowId: flow.flowId,
+    primaryAdapterId: flow.primaryAdapterId,
+    fallbackAdapterId: flow.fallbackAdapterId,
+    model: flow.model,
+    liveProviderCallsEnabled: flow.liveProviderCallsEnabled,
+    readyForLiveCalls: flow.readyForLiveCalls,
+    queueEnabled: flow.queueEnabled,
+    fallbackQueueEnabled: flow.fallbackQueueEnabled,
+    configuredAdapterIds: flow.configuredAdapterIds,
+    blockedReasons: flow.blockedReasons
+  }));
+}
+
+function parseBody(body) {
+  if (!body) return undefined;
+  if (typeof body !== "string") return "<non-string-body>";
+  return parseJson(body) ?? body;
+}
+
+function parseJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
+function parseDotenv(text) {
+  const parsed = {};
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+    const index = trimmed.indexOf("=");
+    const key = trimmed.slice(0, index).trim();
+    let value = trimmed.slice(index + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
+    if (key) parsed[key] = value;
+  }
+  return parsed;
+}
+
+function redactHeaders(headers, env = {}) {
+  const entries = headers instanceof Headers ? Array.from(headers.entries()) : Object.entries(headers);
+  return Object.fromEntries(
+    entries.map(([key, value]) => [
+      key,
+      /authorization|token|secret|key|cookie/i.test(key) ? "<redacted>" : redactUrl(String(value), env)
+    ])
+  );
+}
+
+function redactUrl(value, env = {}) {
+  let text = value;
+  const accountId = String(env.CLOUDFLARE_ACCOUNT_ID || "");
+  if (accountId) text = text.split(accountId).join("<redacted-account>");
+  text = text.replace(/accounts\/[^/]+/g, "accounts/<redacted-account>");
+  text = text.replace(/https:\/\/[^./]+\.r2\.cloudflarestorage\.com/g, "https://<redacted-account>.r2.cloudflarestorage.com");
+  return text;
+}
+
+function sanitizeForLog(value, env) {
+  if (Array.isArray(value)) return value.map((item) => sanitizeForLog(item, env));
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        isSecretKey(key) ? "<redacted>" : sanitizeForLog(item, env)
+      ])
+    );
+  }
+  if (typeof value !== "string") return value;
+  if (value.startsWith("data:")) return `<data-url ${value.length} chars>`;
+  let text = value;
+  for (const secretKey of Object.keys(env)) {
+    if (!isSecretKey(secretKey)) continue;
+    const secret = String(env[secretKey] || "");
+    if (secret.length >= 8) text = text.split(secret).join("<redacted>");
+  }
+  text = redactUrl(text, env);
+  return text.length > 5000 ? `${text.slice(0, 5000)}...<truncated ${text.length} chars>` : text;
+}
+
+function isSecretKey(key) {
+  return /TOKEN|SECRET|PASSWORD|PRIVATE|ACCESS_KEY|API_KEY|SIGNATURE|AUTHORIZATION|COOKIE/i.test(key);
+}
+
+function isSafeConfiguredKey(key) {
+  return /^(CUSTOMCARD_AI_|CLOUDFLARE_)/.test(key);
+}
+
+function writeJson(filePath, value) {
+  mkdirSync(resolve(filePath, ".."), { recursive: true });
+  writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+  return filePath;
+}
+
+function writeMarkdown(filePath, value) {
+  mkdirSync(resolve(filePath, ".."), { recursive: true });
+  writeFileSync(filePath, value);
+  return filePath;
+}
+
+function panelPromptMentionsPanel(prompt, panelId) {
+  if (panelId === "inside-left") return /\binside[- ]left\b/i.test(prompt);
+  if (panelId === "inside-right") return /\binside[- ]right\b/i.test(prompt);
+  return new RegExp(`\\b${panelId}\\b`, "i").test(prompt);
+}
+
+function containsForbiddenImageScene(prompt) {
+  const withoutNegatedBans = cleanText(prompt)
+    .replace(/\bno\s+(?:physical\s+)?(?:card\s+)?mockups?\b/gi, "")
+    .replace(/\bnot\s+(?:a\s+)?(?:physical\s+)?(?:card\s+)?mockups?\b/gi, "")
+    .replace(/\bno\s+tabletop(?:\s+scene)?\b/gi, "")
+    .replace(/\bnot\s+(?:a\s+)?tabletop(?:\s+scene)?\b/gi, "");
+  return /\b(?:mockup|tabletop|folded preview|four-panel collage|contact sheet)\b/i.test(withoutNegatedBans);
+}
+
+function countMatches(value, regex) {
+  return cleanText(value).match(regex)?.length || 0;
+}
+
+function cleanText(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+function wordCount(value) {
+  return cleanText(value).split(/\s+/).filter(Boolean).length;
+}
+
+function sha256(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function relativePath(filePath) {
+  return filePath.replace(`${repoRoot}/`, "");
+}
+
+function isMainModule() {
+  return import.meta.url === pathToFileURL(process.argv[1] || "").href;
+}

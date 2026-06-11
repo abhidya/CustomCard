@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "score": 98,
+  "subScores": {
+    "schema": 15,
+    "copyRichness": 18,
+    "layoutDirection": 20,
+    "imagePrompt": 20,
+    "safety": 10,
+    "memoryGrounding": 10,
+    "coordination": 5
+  },
+  "blockers": [],
+  "warnings": [
+    "front: negative prompt missing fake text.",
+    "front: negative prompt missing letters.",
+    "front: negative prompt missing product photo.",
+    "inside-left: negative prompt missing fake text.",
+    "inside-left: negative prompt missing letters.",
+    "inside-left: negative prompt missing product photo.",
+    "inside-right: negative prompt missing fake text.",
+    "inside-right: negative prompt missing letters.",
+    "inside-right: negative prompt missing product photo.",
+    "back: negative prompt missing fake text.",
+    "back: negative prompt missing letters.",
+    "back: negative prompt missing product photo."
+  ],
+  "panelStats": [
+    {
+      "panelId": "front",
+      "headlineChars": 7,
+      "bodyChars": 65,
+      "bodyWords": 10,
+      "artDirectionChars": 220,
+      "imagePromptChars": 865
+    },
+    {
+      "panelId": "inside-left",
+      "headlineChars": 15,
+      "bodyChars": 242,
+      "bodyWords": 41,
+      "artDirectionChars": 226,
+      "imagePromptChars": 819
+    },
+    {
+      "panelId": "inside-right",
+      "headlineChars": 10,
+      "bodyChars": 287,
+      "bodyWords": 45,
+      "artDirectionChars": 224,
+      "imagePromptChars": 822
+    },
+    {
+      "panelId": "back",
+      "headlineChars": 10,
+      "bodyChars": 29,
+      "bodyWords": 5,
+      "artDirectionChars": 216,
+      "imagePromptChars": 834
+    }
+  ]
+}

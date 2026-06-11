@@ -122,4 +122,75 @@ describe("object store runtime", () => {
     expect(JSON.stringify(bucket.payload)).not.toContain("write-secret");
     expect(JSON.stringify(bucket.payload)).not.toContain("read-secret");
   });
+
+  it("paginates bucket listings with a continuation cursor", async () => {
+    const runtime = createObjectStoreRuntime({
+      env: objectStoreEnv,
+      now: () => new Date("2026-06-11T12:00:00.000Z")
+    });
+    const record = {
+      id: "render-packet-page",
+      projectId: "project-page",
+      kind: "validated_print_packet",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      locale: "en-US",
+      direction: "ltr",
+      safeZonePassed: true,
+      textOverflow: false,
+      checksum: "cc_87654321",
+      artifactUri: "file:///tmp/customcard-artifacts/projects/project-page/render-packets/render-packet-page/manifest.json",
+      storageProvider: "filesystem",
+      artifactCount: 6,
+      artifactManifest: {
+        renderPacketId: "render-packet-page",
+        projectId: "project-page",
+        storageProvider: "filesystem",
+        artifactCount: 6,
+        manifestChecksum: "cc_87654321",
+        signedUrlExpiresAt: "2026-06-11T12:15:00.000Z",
+        externalShareApprovalRequired: true,
+        realOrdersEnabled: false
+      },
+      signedUrlExpiresAt: "2026-06-11T12:15:00.000Z",
+      externalShareApprovalRequired: true
+    };
+
+    await runtime.persistRenderPacketArtifacts({
+      record,
+      bodyText: JSON.stringify({
+        artifacts: [
+          { kind: "panel-svg", fileName: "front.svg", mimeType: "image/svg+xml", text: "<svg>front</svg>" },
+          { kind: "panel-svg", fileName: "inside.svg", mimeType: "image/svg+xml", text: "<svg>inside</svg>" }
+        ]
+      })
+    });
+
+    const firstPage = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({ prefix: "projects/project-page", limit: "1" })
+    });
+    expect(firstPage.payload).toMatchObject({
+      objectCount: 1,
+      truncated: true,
+      nextCursor: "projects/project-page/render-packets/render-packet-page/artifact-handoff-manifest.json"
+    });
+
+    const secondPage = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({
+        prefix: "projects/project-page",
+        limit: "2",
+        cursor: firstPage.payload.nextCursor
+      })
+    });
+    expect(secondPage.payload).toMatchObject({
+      objectCount: 2,
+      truncated: false,
+      nextCursor: null
+    });
+    expect(secondPage.payload.objects.map((object) => object.objectKey)).toEqual([
+      "projects/project-page/render-packets/render-packet-page/front.svg",
+      "projects/project-page/render-packets/render-packet-page/inside.svg"
+    ]);
+  });
 });

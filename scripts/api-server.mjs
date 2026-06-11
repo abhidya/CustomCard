@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, createHmac, randomBytes } from "node:crypto";
+import { createCipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
@@ -507,6 +507,11 @@ export async function handleApiRequest(request, response) {
 
 async function serveApi(request, response, requestUrl) {
   const path = requestUrl.pathname;
+  if (apiRuntime.mode === "invalid" && path !== "/api/health") {
+    sendJson(response, 503, invalidApiRuntimePayload(path));
+    return;
+  }
+
   if (path === googleCalendarOAuthCallbackRoute || path === googleCalendarApiOAuthCallbackRoute) {
     await handleGoogleCalendarOAuthCallback(request, response, requestUrl);
     return;
@@ -534,6 +539,16 @@ async function serveApi(request, response, requestUrl) {
   }
 
   await apiRouteFamilies.handlePostAuthRoute({ path, request, requestUrl, response, route, authContext });
+}
+
+function invalidApiRuntimePayload(path) {
+  return {
+    service: "customcard-api",
+    status: "api-runtime-invalid",
+    path,
+    runtime: apiRuntime.describe(),
+    blockers: apiRuntime.validate()
+  };
 }
 
 function isCliEntrypoint() {
@@ -1340,14 +1355,17 @@ function buildGoogleCalendarConnectionStart(
   }
 
   const returnTo = safeReturnToUrl(requestBody.returnTo, requestOrigin);
-  const state = buildOAuthState("google-calendar-events", returnTo, {
-    authContext,
-    env
+  const statePayload = buildOAuthStatePayload("google-calendar-events", returnTo, {
+    authContext
   });
+  const state = encodeOAuthState(statePayload, env);
+  const codeVerifier = oauthCodeVerifier(statePayload, env);
+  const codeChallenge = oauthCodeChallenge(codeVerifier);
   const providerRequestUrl = buildGoogleCalendarAuthorizationUrl({
     clientId: config.clientId,
     redirectUri: config.redirectUri,
-    state
+    state,
+    codeChallenge
   });
 
   return {
@@ -1365,6 +1383,9 @@ function buildGoogleCalendarConnectionStart(
       state,
       scopes: [googleCalendarOAuthScopeUri],
       tokenExchangeRequired: true,
+      pkce: {
+        codeChallengeMethod: "S256"
+      },
       credentialStorageEnabled: false,
       rawContentStored: false
     },
@@ -1385,7 +1406,7 @@ function buildGoogleCalendarConnectionStart(
   };
 }
 
-function buildGoogleCalendarAuthorizationUrl({ clientId, redirectUri, state }) {
+function buildGoogleCalendarAuthorizationUrl({ clientId, redirectUri, state, codeChallenge }) {
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);
@@ -1394,6 +1415,8 @@ function buildGoogleCalendarAuthorizationUrl({ clientId, redirectUri, state }) {
   url.searchParams.set("access_type", "offline");
   url.searchParams.set("include_granted_scopes", "true");
   url.searchParams.set("prompt", "consent");
+  url.searchParams.set("code_challenge", codeChallenge);
+  url.searchParams.set("code_challenge_method", "S256");
   url.searchParams.set("state", state);
   return url.toString();
 }
@@ -1439,7 +1462,9 @@ async function handleGoogleCalendarOAuthCallback(request, response, requestUrl) 
   }
 
   try {
-    const token = await exchangeGoogleOAuthCode(code, process.env);
+    const token = await exchangeGoogleOAuthCode(code, process.env, {
+      codeVerifier: oauthCodeVerifier(stateResult.payload, process.env)
+    });
     const eventsPayload = await fetchGoogleCalendarEvents(token.accessToken, process.env);
     const authContext = {
       role: "customer",
@@ -1494,8 +1519,8 @@ function wantsJson(request) {
   return String(request.headers?.accept ?? "").includes("application/json");
 }
 
-function buildOAuthState(choiceId, returnTo, { authContext, env, nowMs = Date.now() }) {
-  const payload = {
+function buildOAuthStatePayload(choiceId, returnTo, { authContext, nowMs = Date.now() }) {
+  return {
     version: 1,
     provider: "google-calendar",
     choiceId,
@@ -1506,6 +1531,9 @@ function buildOAuthState(choiceId, returnTo, { authContext, env, nowMs = Date.no
     expiresAtMs: nowMs + 15 * 60_000,
     nonce: randomBytes(18).toString("base64url")
   };
+}
+
+function encodeOAuthState(payload, env) {
   const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
   return `${encoded}.${signOAuthState(encoded, env)}`;
 }
@@ -1515,7 +1543,7 @@ function verifyOAuthState(value, env, nowMs = Date.now()) {
   const [encoded, signature] = text.split(".");
   if (!encoded || !signature) return { ok: false, detail: "OAuth state is missing or malformed." };
   const expected = signOAuthState(encoded, env);
-  if (signature !== expected) return { ok: false, detail: "OAuth state signature did not match." };
+  if (!safeEqualText(signature, expected)) return { ok: false, detail: "OAuth state signature did not match." };
   try {
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
     if (payload.provider !== "google-calendar" || payload.choiceId !== "google-calendar-events") {
@@ -1534,6 +1562,22 @@ function signOAuthState(encodedPayload, env) {
   return createHmac("sha256", oauthStateSecret(env)).update(encodedPayload).digest("base64url");
 }
 
+function oauthCodeVerifier(payload, env) {
+  return createHmac("sha256", oauthStateSecret(env))
+    .update(`pkce:${payload.provider}:${payload.choiceId}:${payload.userId}:${payload.sessionId}:${payload.issuedAtMs}:${payload.nonce}`)
+    .digest("base64url");
+}
+
+function oauthCodeChallenge(codeVerifier) {
+  return createHash("sha256").update(codeVerifier).digest("base64url");
+}
+
+function safeEqualText(actual, expected) {
+  const actualBuffer = Buffer.from(String(actual ?? ""));
+  const expectedBuffer = Buffer.from(String(expected ?? ""));
+  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
+}
+
 function oauthStateSecret(env) {
   return usableEnvValue(env.GOOGLE_OAUTH_STATE_SECRET) ||
     usableEnvValue(env.AUTH_SESSION_SECRET) ||
@@ -1541,7 +1585,7 @@ function oauthStateSecret(env) {
     "customcard-local-oauth-state-development-secret";
 }
 
-async function exchangeGoogleOAuthCode(code, env, fetchImpl = globalThis.fetch) {
+async function exchangeGoogleOAuthCode(code, env, { codeVerifier, fetchImpl = globalThis.fetch } = {}) {
   const redirectUri = usableEnvValue(env.GOOGLE_OAUTH_REDIRECT_URI) || usableEnvValue(env.GOOGLE_CALENDAR_REDIRECT_URI);
   const clientId = usableEnvValue(env.GOOGLE_OAUTH_CLIENT_ID);
   const clientSecret = usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET);
@@ -1558,6 +1602,7 @@ async function exchangeGoogleOAuthCode(code, env, fetchImpl = globalThis.fetch) 
     redirect_uri: redirectUri,
     grant_type: "authorization_code"
   });
+  if (codeVerifier) body.set("code_verifier", codeVerifier);
   const response = await fetchImpl(usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENDPOINT) || "https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

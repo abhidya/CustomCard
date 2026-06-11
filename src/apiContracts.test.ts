@@ -93,7 +93,7 @@ describe("api contracts", () => {
       externalNetworkCalls: false,
       realOrdersEnabled: false
     });
-    expect(adminArtifactBucket?.responseSchema).toEqual(expect.arrayContaining(["objectStore", "objects", "blockers"]));
+    expect(adminArtifactBucket?.responseSchema).toEqual(expect.arrayContaining(["objectStore", "truncated", "nextCursor", "objects", "blockers"]));
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(importPreview?.requestSchema).toEqual(
@@ -211,7 +211,7 @@ describe("api contracts", () => {
     expect(walgreensCheckoutUpload).toMatchObject({
       method: "POST",
       audience: "customer",
-      auth: "none",
+      auth: "customer-session",
       idempotencyKeyRequired: false,
       externalNetworkCalls: true,
       realOrdersEnabled: false
@@ -219,7 +219,7 @@ describe("api contracts", () => {
     expect(walgreensCheckoutSession).toMatchObject({
       method: "POST",
       audience: "customer",
-      auth: "none",
+      auth: "customer-session",
       idempotencyKeyRequired: false,
       externalNetworkCalls: true,
       realOrdersEnabled: false
@@ -860,6 +860,7 @@ describe("api contracts", () => {
         credentialMode: "unconfigured"
       },
       objectCount: 0,
+      nextCursor: null,
       objects: [],
       blockers: expect.arrayContaining(["Object store persistence is not configured."])
     });

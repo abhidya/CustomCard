@@ -72,11 +72,13 @@ export function createApiRouteFamilies(deps) {
 
   function handleStaticContractRoute({ path, response }) {
     if (path === "/api/health") {
-      sendJson(response, 200, {
+      const blockers = apiRuntime.validate();
+      sendJson(response, blockers.length === 0 ? 200 : 503, {
         service: "customcard-api",
-        status: "ready",
+        status: blockers.length === 0 ? "ready" : "blocked",
         realOrdersEnabled: false,
-        runtime: apiRuntime.describe()
+        runtime: apiRuntime.describe(),
+        blockers
       });
       return true;
     }

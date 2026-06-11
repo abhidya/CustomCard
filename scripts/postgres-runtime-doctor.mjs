@@ -587,9 +587,17 @@ function createFakeClient(state) {
           routeId: params[2],
           idempotencyKey: params[3],
           requestHash: params[4],
-          responseBody: JSON.parse(params[5]),
-          status: "completed"
+          responseBody: {},
+          status: "processing"
         });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("UPDATE idempotency_keys")) {
+        const record = Array.from(state.idempotencyRecords.values()).find((candidate) => candidate.id === params[0]);
+        if (!record) return { rows: [], rowCount: 0 };
+        record.responseBody = JSON.parse(params[1]);
+        record.status = "completed";
         return { rows: [], rowCount: 1 };
       }
 

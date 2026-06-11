@@ -58,7 +58,11 @@ describe("Vite API middleware", () => {
   it("serves Google Calendar connection start through the JSON API handler", async () => {
     const response = await fetch(`${baseUrl}/api/calendar/connections/start`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Idempotency-Key": "calendar-vite-middleware" },
+      headers: {
+        Authorization: "Bearer contract-customer-token",
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": "calendar-vite-middleware"
+      },
       body: JSON.stringify({ calendarChoiceId: "google-calendar-events", returnTo: `${baseUrl}/?view=events` })
     });
 
@@ -89,19 +93,23 @@ describe("Vite API middleware", () => {
       body: JSON.stringify({ imageBase64: "" })
     });
 
-    expect(response.status).toBe(503);
+    expect(response.status).toBe(401);
     expect(response.headers.get("content-type")).toContain("application/json");
     await expect(response.json()).resolves.toMatchObject({
       service: "customcard-api",
-      ok: false,
-      error: "Walgreens checkout is not enabled."
+      status: "auth-required",
+      requiredAuth: "customer-session"
     });
   });
 
   it("serves AI card generation through the JSON API handler", async () => {
     const response = await fetch(`${baseUrl}/api/ai/card/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Idempotency-Key": "ai-card-vite-middleware" },
+      headers: {
+        Authorization: "Bearer contract-customer-token",
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": "ai-card-vite-middleware"
+      },
       body: JSON.stringify({
         sender: "Maya",
         recipient: "Nadia",

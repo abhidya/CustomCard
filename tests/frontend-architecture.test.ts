@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
 import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCustomerField } from "../webapp/checkoutModel";
-import { buildBrowserIdempotencyKey } from "../webapp/customerShellCommands";
+import { buildBrowserIdempotencyKey, postCustomerMutation } from "../webapp/customerShellCommands";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
 import { jpegDataUrlByteLength } from "../webapp/panelMediaAdapter";
 import {
@@ -99,6 +99,28 @@ describe("frontend architecture seams", () => {
   it("keeps customer API mutation command details outside App shell", () => {
     const key = buildBrowserIdempotencyKey("/api/customer/draft-state");
     expect(key).toMatch(/^api-customer-draft-state-/);
+  });
+
+  it("surfaces failed customer mutations instead of reporting false persistence success", async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({ status: "draft-save-failed" })
+    })) as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetchMock);
+
+    try {
+      await expect(
+        postCustomerMutation(async () => "token-123", "/api/customer/draft-state", { status: "draft" })
+      ).rejects.toThrow("draft-save-failed");
+      const [, init] = fetchMock.mock.calls[0];
+      expect(init?.method).toBe("POST");
+      expect(init?.headers).toBeInstanceOf(Headers);
+      expect((init?.headers as Headers).get("Authorization")).toBe("Bearer token-123");
+      expect((init?.headers as Headers).get("X-Idempotency-Key")).toMatch(/^api-customer-draft-state-/);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("normalizes checkout customer defaults and edits outside PrintView", () => {

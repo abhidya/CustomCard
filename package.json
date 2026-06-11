@@ -31,6 +31,7 @@
     "api:doctor:postgres:http": "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs",
     "account:doctor:live": "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled node scripts/account-auth-doctor.mjs",
     "card:benchmark": "node scripts/card-generation-benchmark.mjs",
+    "card:copy-benchmark": "node scripts/card-copy-benchmark.mjs",
     "artifact:doctor": "node scripts/artifact-store-doctor.mjs",
     "artifact:doctor:s3:live": "CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs",
     "r2:bucket:list": "wrangler r2 bucket list",

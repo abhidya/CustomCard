@@ -124,7 +124,7 @@ export function useDraftAutosave({
     if (!enabled || !hydrated.current || !draftProgress.hasMeaningfulProgress) return;
     const timer = window.setTimeout(() => {
       const body = JSON.parse(draftSnapshot) as Record<string, unknown>;
-      void postCustomerMutation(getToken, "/api/customer/draft-state", body);
+      void postCustomerMutation(getToken, "/api/customer/draft-state", body).catch(() => undefined);
     }, 700);
 
     return () => window.clearTimeout(timer);
@@ -146,11 +146,15 @@ export async function postCustomerMutation(
   const headers = await buildCustomerHeaders(getToken);
   headers.set("Content-Type", "application/json");
   headers.set("X-Idempotency-Key", buildBrowserIdempotencyKey(path));
-  await fetch(path, {
+  const response = await fetch(path, {
     method: "POST",
     headers,
     body: JSON.stringify(body)
   });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({})) as { status?: unknown };
+    throw new Error(String(detail.status ?? `customer-mutation-http-${response.status}`));
+  }
 }
 
 export async function buildCustomerHeaders(getToken: () => Promise<string | null>): Promise<Headers> {

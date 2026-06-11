@@ -6,9 +6,14 @@ export interface AiHttpResult {
   payload: unknown;
 }
 
+export interface AiRequestContext {
+  rateKey?: string;
+  trustRequestAiFlowConfig?: boolean;
+}
+
 export interface AiService {
-  generateCard(body: Record<string, unknown>, requestContext?: { rateKey?: string }): Promise<AiHttpResult>;
-  respondChat(body: Record<string, unknown>, requestContext?: { rateKey?: string }): Promise<AiHttpResult>;
+  generateCard(body: Record<string, unknown>, requestContext?: AiRequestContext): Promise<AiHttpResult>;
+  respondChat(body: Record<string, unknown>, requestContext?: AiRequestContext): Promise<AiHttpResult>;
 }
 
 export function loadLocalAiEnvFiles(options?: {

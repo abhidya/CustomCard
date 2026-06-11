@@ -86,11 +86,30 @@ describe("AI card generator service", () => {
     const result = await service.generateCard(cardRequest, { rateKey: "test-card" });
     const firstCall = fetchImpl.mock.calls[0] as unknown as [RequestInfo | URL, RequestInit?];
     const requestBody = JSON.parse(String(firstCall[1]?.body));
+    const userPrompt = JSON.parse(requestBody.messages[1].content);
 
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(String(firstCall[0])).toContain("/ai/v1/chat/completions");
     expect(requestBody.model).toBe(cloudflareTextModel);
+    expect(requestBody.max_tokens).toBe(2200);
+    expect(requestBody.messages[0].content).toContain("theme, layout, and copy plan");
+    expect(userPrompt.section_order).toEqual(
+      expect.arrayContaining([
+        "Choose one cohesive card concept internally from the occasion, personal_note, style, and approved memory_notes."
+      ])
+    );
+    expect(userPrompt.copy_requirements).toEqual(
+      expect.arrayContaining([
+        "inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate."
+      ])
+    );
+    expect(userPrompt.layout_requirements).toEqual(
+      expect.arrayContaining([
+        "front and back should visually match each other.",
+        "inside-left and inside-right should visually match each other and feel like the opened interior spread."
+      ])
+    );
     expect(requestBody.response_format).toMatchObject({
       type: "json_schema",
       json_schema: {
@@ -122,7 +141,7 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("fallback_queued");
   });
 
-  it("honors an admin live-provider off toggle even when credentials exist", async () => {
+  it("honors a trusted admin live-provider off toggle even when credentials exist", async () => {
     const fetchImpl = vi.fn();
     const service = createAiCardGenerationService({
       env: {
@@ -137,7 +156,10 @@ describe("AI card generator service", () => {
       config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: false } : config
     );
 
-    const result = await service.generateCard({ ...cardRequest, aiFlowConfig }, { rateKey: "test-admin-off" });
+    const result = await service.generateCard(
+      { ...cardRequest, aiFlowConfig },
+      { rateKey: "test-admin-off", trustRequestAiFlowConfig: true }
+    );
 
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).not.toHaveBeenCalled();
@@ -172,6 +194,39 @@ describe("AI card generator service", () => {
     expect(result.payload).toMatchObject({
       live_provider_calls_enabled: true
     });
+  });
+
+  it("ignores request-scoped provider toggles from untrusted customer contexts even when env opt-in exists", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ panels: [] }) } }]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "true"
+      },
+      fetchImpl
+    });
+    const aiFlowConfig = buildDefaultAiFlowAdminConfigs().map((config) =>
+      config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: false } : config
+    );
+
+    const result = await service.generateCard({ ...cardRequest, aiFlowConfig }, { rateKey: "test-untrusted-config" });
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(result.payload).toMatchObject({
+      live_provider_calls_enabled: true,
+      external_network_calls: true
+    });
+    expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 
   it("generates one live image request for each 5x7 card panel", async () => {

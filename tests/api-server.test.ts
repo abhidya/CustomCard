@@ -634,6 +634,63 @@ describe("api server wrapper", () => {
     }
   }, shellDoctorTimeoutMs);
 
+  it("fails closed for invalid production runtime before public API handlers", async () => {
+    const port = 6200 + Math.floor(Math.random() * 1000);
+    const server = spawn("node", ["scripts/api-server.mjs"], {
+      env: {
+        ...process.env,
+        NODE_ENV: "production",
+        CUSTOMCARD_API_RUNTIME: "contract",
+        HOST: "127.0.0.1",
+        PORT: String(port)
+      },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    try {
+      await waitForApiPort(port, server);
+
+      const healthResponse = await fetch(`http://127.0.0.1:${port}/api/health`);
+      expect(healthResponse.status).toBe(503);
+      expect(await healthResponse.json()).toMatchObject({
+        service: "customcard-api",
+        status: "blocked",
+        runtime: {
+          mode: "invalid",
+          requestedMode: "contract"
+        }
+      });
+
+      const routesResponse = await fetch(`http://127.0.0.1:${port}/api/routes`);
+      expect(routesResponse.status).toBe(503);
+      expect(await routesResponse.json()).toMatchObject({
+        status: "api-runtime-invalid",
+        path: "/api/routes",
+        runtime: {
+          mode: "invalid",
+          requestedMode: "contract"
+        }
+      });
+
+      const artifactResponse = await fetch(`http://127.0.0.1:${port}/api/artifacts/projects/project/render-packets/render/front.svg`);
+      expect(artifactResponse.status).toBe(503);
+      expect(await artifactResponse.json()).toMatchObject({
+        status: "api-runtime-invalid",
+        path: "/api/artifacts/projects/project/render-packets/render/front.svg"
+      });
+
+      const oauthResponse = await fetch(`http://127.0.0.1:${port}/oauth/callback?state=bad&code=fake`);
+      expect(oauthResponse.status).toBe(503);
+      expect(await oauthResponse.json()).toMatchObject({
+        status: "api-runtime-invalid",
+        path: "/oauth/callback"
+      });
+    } finally {
+      server.kill();
+      await waitForExit(server);
+    }
+  }, 30_000);
+
   it("requires an explicit durable API runtime in runtime doctor", () => {
     const ready = spawnSync(process.execPath, ["scripts/validate-runtime-env.mjs"], {
       encoding: "utf8",
@@ -1043,7 +1100,8 @@ describe("api server wrapper", () => {
       const missingCalendarChoice = await postJson(
         port,
         "/api/calendar/connections/start",
-        {}
+        {},
+        bearer("contract-customer-token")
       );
       expect(missingCalendarChoice.status).toBe(400);
       expect(await missingCalendarChoice.json()).toMatchObject({
@@ -1056,7 +1114,8 @@ describe("api server wrapper", () => {
       const googleConnectionStart = await postJson(
         port,
         "/api/calendar/connections/start",
-        { calendarChoiceId: "google-calendar-events" }
+        { calendarChoiceId: "google-calendar-events" },
+        bearer("contract-customer-token")
       );
       expect(googleConnectionStart.status).toBe(202);
       expect(await googleConnectionStart.json()).toMatchObject({
@@ -1548,18 +1607,30 @@ describe("api server wrapper", () => {
         bestAvailablePriceRequiresCouponPortalEvidence: true
       });
 
-      const anonymousWalgreensUpload = await postJson(
+      const unauthenticatedWalgreensUpload = await postJson(
         port,
         "/api/walgreens/checkout/upload",
         { imageBase64: "anonymous-checkout-reaches-walgreens-gate" }
       );
-      expect(anonymousWalgreensUpload.status).toBe(503);
-      expect(await anonymousWalgreensUpload.json()).toMatchObject({
+      expect(unauthenticatedWalgreensUpload.status).toBe(401);
+      expect(await unauthenticatedWalgreensUpload.json()).toMatchObject({
+        status: "auth-required",
+        requiredAuth: "customer-session"
+      });
+
+      const authenticatedWalgreensUpload = await postJson(
+        port,
+        "/api/walgreens/checkout/upload",
+        { imageBase64: "authenticated-checkout-reaches-walgreens-gate" },
+        bearer(customerToken)
+      );
+      expect(authenticatedWalgreensUpload.status).toBe(503);
+      expect(await authenticatedWalgreensUpload.json()).toMatchObject({
         ok: false,
         error: "Walgreens checkout is not enabled."
       });
 
-      const anonymousWalgreensSession = await postJson(
+      const unauthenticatedWalgreensSession = await postJson(
         port,
         "/api/walgreens/checkout/session",
         {
@@ -1572,8 +1643,28 @@ describe("api server wrapper", () => {
           images: ["https://customcard.invalid/Image-demo.jpg"]
         }
       );
-      expect(anonymousWalgreensSession.status).toBe(503);
-      expect(await anonymousWalgreensSession.json()).toMatchObject({
+      expect(unauthenticatedWalgreensSession.status).toBe(401);
+      expect(await unauthenticatedWalgreensSession.json()).toMatchObject({
+        status: "auth-required",
+        requiredAuth: "customer-session"
+      });
+
+      const authenticatedWalgreensSession = await postJson(
+        port,
+        "/api/walgreens/checkout/session",
+        {
+          customer: {
+            firstName: "Maya",
+            lastName: "Patel",
+            email: "maya@example.com",
+            phone: "3125550199"
+          },
+          images: ["https://customcard.invalid/Image-demo.jpg"]
+        },
+        bearer(customerToken)
+      );
+      expect(authenticatedWalgreensSession.status).toBe(503);
+      expect(await authenticatedWalgreensSession.json()).toMatchObject({
         ok: false,
         error: "Walgreens checkout is not enabled."
       });
@@ -2217,6 +2308,8 @@ describe("api server wrapper", () => {
       expect(providerUrl.host).toBe("accounts.google.com");
       expect(providerUrl.searchParams.get("redirect_uri")).toBe(`http://127.0.0.1:${port}/oauth/callback`);
       expect(providerUrl.searchParams.get("scope")).toBe("https://www.googleapis.com/auth/calendar.events.readonly");
+      expect(providerUrl.searchParams.get("code_challenge_method")).toBe("S256");
+      expect(providerUrl.searchParams.get("code_challenge")).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
       const callbackResponse = await fetch(
         `http://127.0.0.1:${port}/oauth/callback?code=fake-auth-code&state=${encodeURIComponent(providerUrl.searchParams.get("state") ?? "")}`,
@@ -2255,6 +2348,7 @@ describe("api server wrapper", () => {
       expect(serialized).not.toContain("This raw description must not be stored");
       expect(serialized).not.toContain("fake-google-refresh-token");
       expect(google.requests).toEqual(expect.arrayContaining(["POST /token", "GET /calendar/v3/calendars/primary/events"]));
+      expect(new URLSearchParams(google.tokenRequestBodies[0]).get("code_verifier")).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
       const health = await getJson(port, "/api/health");
       expect(health.runtime).toMatchObject({
@@ -2415,22 +2509,31 @@ function bearer(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
-async function startFakeGoogleCalendarServer(): Promise<{ port: number; server: Server; requests: string[] }> {
+async function startFakeGoogleCalendarServer(): Promise<{ port: number; server: Server; requests: string[]; tokenRequestBodies: string[] }> {
   const requests: string[] = [];
+  const tokenRequestBodies: string[] = [];
   const server = createServer((request, response) => {
     const url = new URL(request.url ?? "/", "http://127.0.0.1");
     requests.push(`${request.method} ${url.pathname}`);
     if (request.method === "POST" && url.pathname === "/token") {
-      response.setHeader("Content-Type", "application/json; charset=utf-8");
-      response.end(
-        JSON.stringify({
-          access_token: "fake-google-access-token",
-          refresh_token: "fake-google-refresh-token",
-          expires_in: 3600,
-          token_type: "Bearer",
-          scope: "https://www.googleapis.com/auth/calendar.events.readonly"
-        })
-      );
+      let body = "";
+      request.setEncoding("utf8");
+      request.on("data", (chunk) => {
+        body += chunk;
+      });
+      request.on("end", () => {
+        tokenRequestBodies.push(body);
+        response.setHeader("Content-Type", "application/json; charset=utf-8");
+        response.end(
+          JSON.stringify({
+            access_token: "fake-google-access-token",
+            refresh_token: "fake-google-refresh-token",
+            expires_in: 3600,
+            token_type: "Bearer",
+            scope: "https://www.googleapis.com/auth/calendar.events.readonly"
+          })
+        );
+      });
       return;
     }
     if (request.method === "GET" && url.pathname === "/calendar/v3/calendars/primary/events") {
@@ -2458,7 +2561,7 @@ async function startFakeGoogleCalendarServer(): Promise<{ port: number; server: 
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
   if (!address || typeof address === "string") throw new Error("Fake Google server did not expose a port.");
-  return { port: address.port, server, requests };
+  return { port: address.port, server, requests, tokenRequestBodies };
 }
 
 function closeServer(server: Server): Promise<void> {
@@ -2500,6 +2603,28 @@ async function waitForApi(port: number, server: ChildProcess): Promise<void> {
   }
 
   throw new Error(`API server did not start: ${stderr}`);
+}
+
+async function waitForApiPort(port: number, server: ChildProcess): Promise<void> {
+  let stderr = "";
+  server.stderr?.on("data", (chunk) => {
+    stderr += String(chunk);
+  });
+
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    if (server.exitCode !== null) {
+      throw new Error(`API server exited early: ${stderr}`);
+    }
+    try {
+      await fetch(`http://127.0.0.1:${port}/api/health`);
+      return;
+    } catch {
+      // Server is still starting.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  throw new Error(`API server did not open a port: ${stderr}`);
 }
 
 async function waitForExit(server: ChildProcess): Promise<void> {

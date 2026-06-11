@@ -69,23 +69,23 @@ describe("customer chat contract", () => {
       });
     };
 
-    const result = await sendCustomerChatMessage(
-      { ...baseInput, aiFlowConfig: [{ providerId: "deterministic-customer-chat" }] },
-      { fetchImpl, idempotencyKey: "chat-test-key" }
-    );
+    const result = await sendCustomerChatMessage(baseInput, { fetchImpl, idempotencyKey: "chat-test-key" });
 
     expect(result.usedFallback).toBe(false);
     expect(validateCustomerChatSession(result.session)).toEqual([]);
     expect(calls).toHaveLength(1);
     expect(calls[0].input).toBe("/api/ai/chat/respond");
     expect(calls[0].init?.headers).toMatchObject({ "X-Idempotency-Key": "chat-test-key" });
-    expect(JSON.parse(calls[0].init?.body as string)).toMatchObject({
+    const requestBody = JSON.parse(calls[0].init?.body as string);
+    expect(requestBody).toMatchObject({
       customer_message: baseInput.customerMessage,
       recipient_name: baseInput.recipientName,
       approved_memory_notes: baseInput.approvedMemoryNotes,
       locale: baseInput.locale,
       fulfillment_context: baseInput.fulfillmentContext
     });
+    expect(requestBody).not.toHaveProperty("aiFlowConfig");
+    expect(requestBody).not.toHaveProperty("ai_flow_config");
     expect(result.messages.at(-2)).toMatchObject({
       role: "customer",
       text: expect.stringContaining("[redacted-email]")

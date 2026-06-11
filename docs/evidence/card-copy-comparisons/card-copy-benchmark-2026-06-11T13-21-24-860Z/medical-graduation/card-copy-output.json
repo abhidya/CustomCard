@@ -1,0 +1,86 @@
+{
+  "draft_id": "ai-mq9j0jvg-my-brother",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "For my brother",
+        "body": "medical school graduation with a proud, emotional, premium, warm family pride, not cheesy feeling.",
+        "art_direction": "deep navy, white, soft gold, elegant medical graduation stationery front cover with a clear title area, generous safe margins, coordinated palette, and motif system that can echo on the back panel.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
+      },
+      {
+        "id": "inside-left",
+        "headline": "For this moment",
+        "body": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right. It should carry this approved detail: He pushed through years of exams, late nights, long shifts, and sacrifices.",
+        "art_direction": "deep navy, white, soft gold, elegant medical graduation stationery inside-left panel with a quiet decorative border, low-contrast center for opening copy, and ornaments that match the inside-right panel.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; use a subtle low-contrast decorative pattern with gentle edge emphasis. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Manny",
+        "body": "I wanted this card to feel like proud, emotional, premium, warm family pride, not cheesy, with a design language of deep navy, white, soft gold, elegant medical graduation stationery. The heart of it is simple: The family is proud of his discipline, patience, heart, and dedication. With care, Manny.",
+        "art_direction": "deep navy, white, soft gold, elegant medical graduation stationery inside-right message panel with matching interior border, readable app typography area, balanced spacing, and a natural sign-off zone.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; use a subtle low-contrast decorative pattern with gentle corner emphasis. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
+      },
+      {
+        "id": "back",
+        "headline": "CustomCard",
+        "body": "Made for my brother with CustomCard.",
+        "art_direction": "deep navy, white, soft gold, elegant medical graduation stationery back panel with mostly negative space, subtle lower ornamentation, and border details that visually pair with the front cover.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with subtle coordinating ornamentation near the lower area. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
+      }
+    ],
+    "memory_citations": [
+      "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+      "The family is proud of his discipline, patience, heart, and dedication."
+    ]
+  },
+  "images": [],
+  "generated_by": "ai-text-only",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-copy."
+      ],
+      "provider_failure": "Live provider calls disabled for card-copy."
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-image."
+      ],
+      "provider_failure": "Live provider calls disabled for card-image."
+    }
+  },
+  "live_provider_calls_enabled": false,
+  "fallback_queued": true,
+  "external_network_calls": false
+}

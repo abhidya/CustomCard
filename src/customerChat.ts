@@ -42,7 +42,6 @@ export type CustomerChatFetch = (input: RequestInfo | URL, init?: RequestInit) =
 
 export interface CustomerChatSendInput extends CustomerChatInput {
   existingMessages?: ChatMessage[];
-  aiFlowConfig?: unknown;
 }
 
 export interface CustomerChatSendOptions {
@@ -86,8 +85,7 @@ export async function sendCustomerChatMessage(
         recipient_name: input.recipientName,
         approved_memory_notes: input.approvedMemoryNotes,
         locale: input.locale,
-        fulfillment_context: input.fulfillmentContext,
-        aiFlowConfig: input.aiFlowConfig
+        fulfillment_context: input.fulfillmentContext
       })
     });
     if (!response.ok) throw new Error(`Customer chat route returned ${response.status}.`);

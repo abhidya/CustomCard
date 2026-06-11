@@ -116,6 +116,12 @@ Walgreens hosted checkout can be enabled in sandbox with server-only env values:
 `infra/env/.env`, or Vercel environment variables only; tracked examples use
 placeholders.
 
+Local `.env.local` and `infra/env/.env` files are operator-owned, ignored
+secret files. Security scans may report them, but cleanup work must not delete,
+move, truncate, or overwrite those files unless the operator explicitly asks for
+that exact action in the same turn. Report the finding and recommend rotation or
+secret-manager sync instead.
+
 Useful modes:
 
 ```sh
@@ -269,6 +275,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and PR expectations.
 Do not commit secrets, live provider tokens, customer data, card message content,
 or retail checkout artifacts with private information. The app should fail
 closed when required production variables are missing or placeholders.
+
+Ignored local env files (`.env.local` and `infra/env/.env`) are allowed to exist
+in the working tree for development. Treat them as local credentials: do not
+remove them during automated security cleanup; use redacted reporting only.
 
 See [SECURITY.md](SECURITY.md) for vulnerability reporting and current security
 boundaries.

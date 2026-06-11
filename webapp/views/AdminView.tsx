@@ -48,6 +48,7 @@ interface BucketViewerPayload {
   prefix?: string;
   objectCount?: number;
   truncated?: boolean;
+  nextCursor?: string | null;
   objects?: BucketObject[];
   blockers?: string[];
 }
@@ -77,12 +78,14 @@ export function AdminView({
   aiGenerationJobs,
   aiFlowSummary,
   onAiFlowConfigsChange,
+  getAdminApiToken,
   fullAudit
 }: {
   aiFlowConfigs: AiFlowAdminConfig[];
   aiGenerationJobs: AiGenerationJobEvidence[];
   aiFlowSummary: AiFlowConfigSummary;
   onAiFlowConfigsChange: (configs: AiFlowAdminConfig[]) => void;
+  getAdminApiToken?: () => Promise<string | undefined>;
   fullAudit: ReactNode;
 }) {
   /* ---------- live dependency probes ---------- */
@@ -124,22 +127,28 @@ export function AdminView({
   const [bucketLoading, setBucketLoading] = useState(false);
   const [bucketError, setBucketError] = useState("");
 
-  const loadBucketObjects = useCallback(() => {
+  const loadBucketObjects = useCallback((cursor?: string) => {
     const params = new URLSearchParams({ prefix: bucketPrefix, limit: "20" });
+    if (cursor) params.set("cursor", cursor);
     setBucketLoading(true);
     setBucketError("");
-    fetch(`/api/admin/artifacts/bucket?${params.toString()}`, { cache: "no-store" })
+    const headers = new Headers();
+    Promise.resolve(getAdminApiToken?.())
+      .then((token) => {
+        if (token) headers.set("Authorization", `Bearer ${token}`);
+        return fetch(`/api/admin/artifacts/bucket?${params.toString()}`, { cache: "no-store", headers });
+      })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(payload.status || `Bucket viewer returned HTTP ${response.status}`);
-        setBucketPayload(payload as BucketViewerPayload);
+        setBucketPayload((current) => mergeBucketPayload(current, payload as BucketViewerPayload, Boolean(cursor)));
       })
       .catch((error: unknown) => {
-        setBucketPayload(null);
+        if (!cursor) setBucketPayload(null);
         setBucketError(error instanceof Error ? error.message : "Bucket viewer is unavailable.");
       })
       .finally(() => setBucketLoading(false));
-  }, [bucketPrefix]);
+  }, [bucketPrefix, getAdminApiToken]);
 
   useEffect(() => {
     loadBucketObjects();
@@ -323,7 +332,7 @@ export function AdminView({
                 value={bucketPrefix}
               />
             </label>
-            <button className="btn btn-ghost btn-sm" onClick={loadBucketObjects} type="button">
+            <button className="btn btn-ghost btn-sm" onClick={() => loadBucketObjects()} type="button">
               <RefreshCw size={14} />
               Refresh
             </button>
@@ -388,6 +397,12 @@ export function AdminView({
               <Info size={16} />
               <span>No bucket objects found for this prefix.</span>
             </div>
+          ) : null}
+          {bucketPayload?.truncated && bucketPayload.nextCursor ? (
+            <button className="btn btn-ghost btn-sm" disabled={bucketLoading} onClick={() => loadBucketObjects(bucketPayload.nextCursor ?? undefined)} type="button">
+              <RefreshCw size={14} />
+              Load more
+            </button>
           ) : null}
         </section>
 
@@ -506,4 +521,14 @@ function formatBytes(value: number): string {
   if (value < 1024) return `${value} B`;
   if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function mergeBucketPayload(current: BucketViewerPayload | null, next: BucketViewerPayload, append: boolean): BucketViewerPayload {
+  if (!append || !current?.objects?.length) return next;
+  const objects = [...current.objects, ...(next.objects ?? [])];
+  return {
+    ...next,
+    objectCount: objects.length,
+    objects
+  };
 }

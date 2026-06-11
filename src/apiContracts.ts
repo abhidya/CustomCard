@@ -348,6 +348,7 @@ export function resolveApiContractResponse(path: string) {
       prefix: "projects/",
       objectCount: 0,
       truncated: false,
+      nextCursor: null,
       objects: [],
       blockers: ["Object store persistence is not configured."]
     };

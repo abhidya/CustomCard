@@ -45,6 +45,17 @@ export function requestHash(routeId, bodyText) {
   return createHash("sha256").update(`${routeId}:${bodyText || "{}"}`).digest("hex");
 }
 
+export function postgresPoolConfig(env = process.env) {
+  return {
+    connectionString: env.DATABASE_URL,
+    max: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_MAX, 5, 1, 20),
+    connectionTimeoutMillis: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_CONNECTION_TIMEOUT_MS, 5000, 1000, 30_000),
+    idleTimeoutMillis: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_IDLE_TIMEOUT_MS, 10_000, 1000, 120_000),
+    allowExitOnIdle: env.CUSTOMCARD_POSTGRES_POOL_ALLOW_EXIT_ON_IDLE !== "false",
+    ssl: env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
+  };
+}
+
 function createContractApiRuntime({ routes, objectStoreRuntime }) {
   return {
     mode: "contract",
@@ -77,7 +88,7 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
     validate() {
       return objectStoreRuntime.validate();
     },
-    async authorize(route) {
+    async authorize(route, request) {
       if (route.audience === "admin" && route.method === "POST") {
         return {
           ok: false,
@@ -91,10 +102,13 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
         };
       }
       if (route.auth === "none") return anonymousAuthContext(route);
+      if (route.externalNetworkCalls && !readBearerToken(request)) {
+        return authError(401, "auth-required", route);
+      }
       return {
         ok: true,
-        role: route.audience,
-        userId: route.audience === "admin" ? "contract-admin" : "contract-customer",
+        role: requiredRoleForAuth(route.auth),
+        userId: route.auth === "admin-session" ? "contract-admin" : "contract-customer",
         sessionId: "contract-session"
       };
     },
@@ -135,6 +149,13 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
 
 function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, validationMessage }) {
   const contractRuntime = createContractApiRuntime({ routes, objectStoreRuntime });
+  const blockers = [validationMessage ?? `Unsupported CUSTOMCARD_API_RUNTIME: ${requestedMode}. Expected contract, memory, or postgres.`];
+  const payload = {
+    service: "customcard-api",
+    status: "api-runtime-invalid",
+    requestedMode,
+    blockers
+  };
   return {
     ...contractRuntime,
     mode: "invalid",
@@ -146,7 +167,26 @@ function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, va
       };
     },
     validate() {
-      return [validationMessage ?? `Unsupported CUSTOMCARD_API_RUNTIME: ${requestedMode}. Expected contract, memory, or postgres.`];
+      return blockers;
+    },
+    async authorize(route) {
+      if (route.auth === "none") return anonymousAuthContext(route);
+      return { ok: false, statusCode: 503, payload: { ...payload, route: route.id } };
+    },
+    async persistMutation({ route }) {
+      return { ok: false, statusCode: 503, payload: { ...payload, route: route.id } };
+    },
+    async persistGoogleCalendarImport() {
+      return { persisted: false, payload };
+    },
+    async readArtifact() {
+      return { statusCode: 503, payload };
+    },
+    async listArtifacts() {
+      return { statusCode: 503, payload: { ...payload, objects: [], objectCount: 0 } };
+    },
+    async readDraftState() {
+      return { ...payload, draftState: null };
     }
   };
 }
@@ -300,10 +340,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     if (!poolPromise) {
       poolPromise = postgresPoolFactory
         ? Promise.resolve(postgresPoolFactory({ env }))
-        : import("pg").then(({ Pool }) => new Pool({
-            connectionString: env.DATABASE_URL,
-            ssl: env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
-          }));
+        : import("pg").then(({ Pool }) => new Pool(postgresPoolConfig(env)));
     }
     return poolPromise;
   }
@@ -311,11 +348,17 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
   return {
     mode: "postgres",
     describe() {
+      const poolConfig = postgresPoolConfig(env);
       return {
         mode: "postgres",
         authEnforced: true,
         idempotencyEnforced: true,
         postgresConfigured: Boolean(env.DATABASE_URL),
+        pool: {
+          max: poolConfig.max,
+          connectionTimeoutMillis: poolConfig.connectionTimeoutMillis,
+          idleTimeoutMillis: poolConfig.idleTimeoutMillis
+        },
         sessionsConfigured: null,
         idempotencyRecords: null,
         auditRecords: null,
@@ -380,14 +423,23 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
-        const existing = await client.query(
-          `SELECT request_hash, response_body, status
-           FROM idempotency_keys
-           WHERE user_id = $1 AND route_id = $2 AND idempotency_key = $3
-           FOR UPDATE`,
-          [authContext.userId, route.id, prepared.idempotencyKey]
+        const idempotencyId = stableRuntimeId("idem", authContext.userId, route.id, prepared.idempotencyKey);
+        const reserved = await client.query(
+          `INSERT INTO idempotency_keys
+             (id, user_id, route_id, idempotency_key, request_hash, response_body, status, expires_at)
+           VALUES ($1, $2, $3, $4, $5, '{}'::jsonb, 'processing', NOW() + INTERVAL '24 hours')
+           ON CONFLICT DO NOTHING`,
+          [idempotencyId, authContext.userId, route.id, prepared.idempotencyKey, prepared.requestHash]
         );
-        if (existing.rows[0]) {
+
+        if (reserved.rowCount === 0) {
+          const existing = await client.query(
+            `SELECT request_hash, response_body, status
+             FROM idempotency_keys
+             WHERE user_id = $1 AND route_id = $2 AND idempotency_key = $3
+             FOR UPDATE`,
+            [authContext.userId, route.id, prepared.idempotencyKey]
+          );
           await client.query("COMMIT");
           return replayOrConflict(
             {
@@ -399,7 +451,6 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           );
         }
 
-        const idempotencyId = stableRuntimeId("idem", authContext.userId, route.id, prepared.idempotencyKey);
         const routePersistence = await persistPostgresRouteMutation({
           client,
           route,
@@ -416,31 +467,12 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           idempotencyReplayed: false,
           routePersistence
         });
-        const inserted = await client.query(
-          `INSERT INTO idempotency_keys
-             (id, user_id, route_id, idempotency_key, request_hash, response_body, status, expires_at)
-           VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'completed', NOW() + INTERVAL '24 hours')
-           ON CONFLICT DO NOTHING`,
-          [idempotencyId, authContext.userId, route.id, prepared.idempotencyKey, prepared.requestHash, JSON.stringify(responseBody)]
+        await client.query(
+          `UPDATE idempotency_keys
+           SET response_body = $2::jsonb, status = 'completed'
+           WHERE id = $1`,
+          [idempotencyId, JSON.stringify(responseBody)]
         );
-        if (inserted.rowCount === 0) {
-          const raced = await client.query(
-            `SELECT request_hash, response_body, status
-             FROM idempotency_keys
-             WHERE user_id = $1 AND route_id = $2 AND idempotency_key = $3
-             FOR UPDATE`,
-            [authContext.userId, route.id, prepared.idempotencyKey]
-          );
-          await client.query("COMMIT");
-          return replayOrConflict(
-            {
-              requestHash: raced.rows[0]?.request_hash ?? "",
-              responseBody: normalizeJson(raced.rows[0]?.response_body ?? {}),
-              statusCode: 202
-            },
-            prepared.requestHash
-          );
-        }
         if (route.id === "render-packets") {
           const providerCallEvent = buildRenderProviderCallEvent({ authContext, bodyText, idempotencyId });
           await client.query(
@@ -1947,6 +1979,12 @@ function safeFutureTimestamp(value, fallback) {
 }
 
 function safeInteger(value, fallback, min, max) {
+  const number = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(min, Math.min(max, number));
+}
+
+function safeIntegerEnv(value, fallback, min, max) {
   const number = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(number)) return fallback;
   return Math.max(min, Math.min(max, number));

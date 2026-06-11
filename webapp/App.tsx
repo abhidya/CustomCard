@@ -188,14 +188,18 @@ export default function App() {
     );
     saveWorkspace(nextWorkspace);
     if (isSignedIn) {
+      setExportStatus("Note saving");
       void postCustomerMutation(getToken, "/api/memories/review", {
-        recipientName: memoryForm.recipient,
-        text: memoryForm.note,
-        decision: "approve"
-      });
+          recipientName: memoryForm.recipient,
+          text: memoryForm.note,
+          decision: "approve"
+        })
+        .then(() => setExportStatus("Note saved"))
+        .catch(() => setExportStatus("Note saved locally; sync failed"));
+    } else {
+      setExportStatus("Note saved");
     }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
-    setExportStatus("Note saved");
   }
 
   function deleteNote(memoryId: string) {
@@ -392,6 +396,7 @@ export default function App() {
                 aiFlowConfigs={aiFlowConfigs}
                 aiGenerationJobs={aiGenerationJobs}
                 aiFlowSummary={aiFlowSummary}
+                getAdminApiToken={getCustomerApiToken}
                 onAiFlowConfigsChange={setAiFlowConfigs}
                 fullAudit={
                   <AdminPanelView

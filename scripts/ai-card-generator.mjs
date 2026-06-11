@@ -96,7 +96,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
 
   return {
     async generateCard(body, requestContext = {}) {
-      const adminConfig = requestScopedAiFlowConfig(body, env);
+      const adminConfig = requestScopedAiFlowConfig(body, env, requestContext);
       const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
       const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
       const rateLimit = checkRateLimit(rateBuckets, requestContext.rateKey, copyFlow);
@@ -195,7 +195,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
     },
 
     async respondChat(body, requestContext = {}) {
-      const adminConfig = requestScopedAiFlowConfig(body, env);
+      const adminConfig = requestScopedAiFlowConfig(body, env, requestContext);
       const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
       const rateLimit = checkRateLimit(rateBuckets, requestContext.rateKey, flow);
       if (rateLimit) return rateLimit;
@@ -241,8 +241,9 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
   };
 }
 
-function requestScopedAiFlowConfig(body, env) {
+function requestScopedAiFlowConfig(body, env, requestContext = {}) {
   if (String(env.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG ?? "false").toLowerCase() !== "true") return [];
+  if (requestContext.trustRequestAiFlowConfig !== true) return [];
   return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? []);
 }
 
@@ -619,7 +620,8 @@ function buildMessages(systemPrompt, userPrompt) {
 function buildCardCopyPrompt(input) {
   return JSON.stringify(
     {
-      task: "Generate greeting card copy and literal image-generation prompts as JSON only.",
+      task:
+        "Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.",
       required_schema: {
         panels: requiredPanelIds.map((id) => ({
           id,
@@ -631,22 +633,46 @@ function buildCardCopyPrompt(input) {
         })),
         memory_citations: ["string"]
       },
-      constraints: [
+      section_order: [
+        "Choose one cohesive card concept internally from the occasion, personal_note, style, and approved memory_notes.",
+        "Write the panel copy so the card has an emotional arc from cover to interior to back.",
+        "Write art_direction as layout notes for app-rendered typography and print-safe artwork.",
+        "Write each image_prompt as a separate one-panel visual request for the image provider."
+      ],
+      copy_requirements: [
         "Exactly four panels.",
         "Use each panel id exactly once in this order: front, inside-left, inside-right, back.",
         "Use only provided memory_notes.",
         "No order/payment claims.",
-        "headline <= 120 characters.",
-        "body <= 600 characters.",
+        "Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.",
+        "Do not produce generic one-line cards unless the input is extremely thin.",
+        "front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.",
+        "inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.",
+        "inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.",
+        "back body <= 160 characters and should feel quiet, polished, and optional.",
+        "All body text must fit a 5x7 card panel with generous margins."
+      ],
+      layout_requirements: [
+        "art_direction must name the panel's layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.",
+        "front and back should visually match each other.",
+        "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
+        "Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative."
+      ],
+      image_prompt_requirements: [
         "image_prompt is the exact prompt the image model will receive for that panel.",
+        "image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.",
         "image_prompt must be a concrete visual composition, not a restatement of form fields.",
         "image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.",
         "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
+        "Reserve clean text-safe space for the app overlay where the panel copy belongs.",
         "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
+        "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
+        "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text."
+      ],
+      safety_requirements: [
         "Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.",
         "Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.",
         "Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.",
-        "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.",
         "image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.",
         "Return JSON only, no markdown."
       ],
@@ -879,7 +905,7 @@ function normalizeCardCopy(parsed, input) {
       art_direction: truncate(cleanText(raw.art_direction || raw.artDirection || defaults.art_direction), 500),
       image_prompt: truncate(cleanText(raw.image_prompt || raw.imagePrompt || defaults.image_prompt), 1200),
       image_negative_prompt: truncate(
-        cleanText(raw.image_negative_prompt || raw.imageNegativePrompt || defaults.image_negative_prompt),
+        normalizeImageNegativePrompt(raw.image_negative_prompt || raw.imageNegativePrompt || defaults.image_negative_prompt),
         500
       )
     };
@@ -896,53 +922,70 @@ function normalizeCardCopy(parsed, input) {
 }
 
 function buildFallbackCardCopy(input) {
+  const firstMemory = input.memory_notes[0] || "";
+  const secondMemory = input.memory_notes[1] || "";
+  const openingBody = truncate(
+    [
+      input.personal_note || `This ${input.occasion} card is for ${input.recipient}, from ${input.sender}.`,
+      firstMemory ? `It should carry this approved detail: ${firstMemory}` : "It should feel specific, finished, and warm without inventing private history."
+    ].join(" "),
+    420
+  );
+  const mainBody = truncate(
+    [
+      `I wanted this card to feel like ${input.tone}, with a design language of ${input.style}.`,
+      secondMemory || firstMemory
+        ? `The heart of it is simple: ${secondMemory || firstMemory}`
+        : `The heart of it is simple: this moment deserves more than a generic note.`,
+      `With care, ${input.sender}.`
+    ].join(" "),
+    520
+  );
   return {
     panels: [
       {
         id: "front",
         headline: `For ${truncate(input.recipient, 80)}`,
-        body: `A ${input.tone} ${input.occasion} card made with care.`,
-        art_direction: `${input.style} cover, print-safe margins, coordinated palette.`,
+        body: `${truncate(input.occasion, 80)} with a ${truncate(input.tone, 70)} feeling.`,
+        art_direction: `${input.style} front cover with a clear title area, generous safe margins, coordinated palette, and motif system that can echo on the back panel.`,
         image_prompt: buildPanelImagePrompt(input, "front", {
           ...panelDefaults.front,
-          art_direction: `${input.style} cover, print-safe margins, coordinated palette.`
+          art_direction: `${input.style} front cover with a clear title area, generous safe margins, coordinated palette, and motif system that can echo on the back panel.`
         }),
-        image_negative_prompt: panelDefaults.front.image_negative_prompt
+        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults.front.image_negative_prompt)
       },
       {
         id: "inside-left",
-        headline: "Thinking of you",
-        body: input.personal_note || `A warm note for ${input.recipient} on this ${input.occasion}.`,
-        art_direction: `${input.style} interior, quiet decorative border.`,
+        headline: "For this moment",
+        body: openingBody,
+        art_direction: `${input.style} inside-left panel with a quiet decorative border, low-contrast center for opening copy, and ornaments that match the inside-right panel.`,
         image_prompt: buildPanelImagePrompt(input, "inside-left", {
           ...panelDefaults["inside-left"],
-          art_direction: `${input.style} interior, quiet decorative border.`
+          art_direction: `${input.style} inside-left panel with a quiet decorative border, low-contrast center for opening copy, and ornaments that match the inside-right panel.`
         }),
-        image_negative_prompt: panelDefaults["inside-left"].image_negative_prompt
+        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults["inside-left"].image_negative_prompt)
       },
       {
         id: "inside-right",
         headline: `From ${truncate(input.sender, 80)}`,
-        body: input.memory_notes[0]
-          ? `This made me think of you: ${truncate(input.memory_notes[0], 420)}`
-          : `With appreciation for everything that makes this ${input.occasion} special.`,
-        art_direction: `${input.style} message panel, readable type area, matching inside-left.`,
+        body: mainBody,
+        art_direction: `${input.style} inside-right message panel with matching interior border, readable app typography area, balanced spacing, and a natural sign-off zone.`,
         image_prompt: buildPanelImagePrompt(input, "inside-right", {
           ...panelDefaults["inside-right"],
-          art_direction: `${input.style} message panel, readable type area, matching inside-left.`
+          art_direction: `${input.style} inside-right message panel with matching interior border, readable app typography area, balanced spacing, and a natural sign-off zone.`
         }),
-        image_negative_prompt: panelDefaults["inside-right"].image_negative_prompt
+        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults["inside-right"].image_negative_prompt)
       },
       {
         id: "back",
         headline: "CustomCard",
-        body: "Made with CustomCard. Printed locally.",
-        art_direction: "Minimal back panel with small coordinating ornament.",
+        body: `Made for ${truncate(input.recipient, 70)} with CustomCard.`,
+        art_direction: `${input.style} back panel with mostly negative space, subtle lower ornamentation, and border details that visually pair with the front cover.`,
         image_prompt: buildPanelImagePrompt(input, "back", {
           ...panelDefaults.back,
-          art_direction: "Minimal back panel with small coordinating ornament."
+          art_direction: `${input.style} back panel with mostly negative space, subtle lower ornamentation, and border details that visually pair with the front cover.`
         }),
-        image_negative_prompt: panelDefaults.back.image_negative_prompt
+        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults.back.image_negative_prompt)
       }
     ],
     memory_citations: input.memory_notes.slice(0, 2)

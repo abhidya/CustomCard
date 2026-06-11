@@ -275,8 +275,8 @@ export const apiRouteContracts = [
     audience: "admin",
     auth: "admin-session",
     runtimeMode: "durable-api",
-    requestSchema: ["adminSession", "prefix", "limit"],
-    responseSchema: ["objectStore", "prefix", "objectCount", "objects", "blockers"],
+    requestSchema: ["adminSession", "prefix", "limit", "cursor"],
+    responseSchema: ["objectStore", "prefix", "objectCount", "truncated", "nextCursor", "objects", "blockers"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -493,7 +493,7 @@ export const apiRouteContracts = [
     method: "POST",
     path: "/api/walgreens/checkout/upload",
     audience: "customer",
-    auth: "none",
+    auth: "customer-session",
     runtimeMode: "local-contract",
     requestSchema: ["imageBase64"],
     responseSchema: ["ok", "imageUrl", "imageName", "expiresAtIso"],
@@ -501,15 +501,15 @@ export const apiRouteContracts = [
     externalNetworkCalls: true,
     realOrdersEnabled: false,
     piiPolicy:
-      "Card JPEG bytes are forwarded to Walgreens write-only photo storage from an anonymous checkout flow; no customer identity fields are sent and nothing is persisted locally.",
-    backedBy: ["walgreensHostedCheckout service", "anonymous checkout boundary", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
+      "Card JPEG bytes are forwarded to Walgreens write-only photo storage only after customer-session auth; no customer identity fields are sent and nothing is persisted locally.",
+    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
   },
   {
     id: "walgreens-checkout-session",
     method: "POST",
     path: "/api/walgreens/checkout/session",
     audience: "customer",
-    auth: "none",
+    auth: "customer-session",
     runtimeMode: "local-contract",
     requestSchema: ["customer", "images", "lat", "lng"],
     responseSchema: ["ok", "checkoutUrl", "window", "imageCount", "mode"],
@@ -517,8 +517,8 @@ export const apiRouteContracts = [
     externalNetworkCalls: true,
     realOrdersEnabled: false,
     piiPolicy:
-      "Customer name, email, and phone are validated, sanitized, and forwarded once from an anonymous checkout flow to the Walgreens mweb5url checkout service to pre-fill their hosted checkout; nothing is persisted locally.",
-    backedBy: ["walgreensHostedCheckout service", "anonymous checkout boundary", "trusted image URL allowlist", "WALGREENS_VENDOR_MODE gate"]
+      "Customer name, email, and phone are validated, sanitized, and forwarded once after customer-session auth to the Walgreens mweb5url checkout service to pre-fill hosted checkout; nothing is persisted locally.",
+    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "trusted image URL allowlist", "WALGREENS_VENDOR_MODE gate"]
   },
   {
     id: "walgreens-checkout-callback",

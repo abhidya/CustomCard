@@ -265,14 +265,7 @@ export function useAppState(): AppState {
       personal_note: draftInput.personalNote,
       memory_notes: approvedMemoryNotes
     };
-    const body = JSON.stringify(
-      legacyCardGenApiUrl
-        ? baseBody
-        : {
-            ...baseBody,
-            aiFlowConfig: aiFlowConfigs
-          }
-    );
+    const body = JSON.stringify(baseBody);
     setAiCardGenLoading(true);
     setAiCardGenStatus("Generating copy and artwork...");
     fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
@@ -303,11 +296,14 @@ export function useAppState(): AppState {
         });
         const panelCount = basePanels.length;
         const hasImages = imageByPanel.size > 0;
+        const artworkFailure = readArtworkFailure(result);
         setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
         setAiCardGenStatus(
           hasImages
             ? `AI card applied with ${imageByPanel.size}/${panelCount} artwork panels.`
-            : "AI copy applied; artwork was not returned."
+            : artworkFailure
+              ? `AI copy applied; artwork blocked: ${artworkFailure}`
+              : "AI copy applied; artwork was not returned."
         );
         setAiGenerationJobs((current) =>
           prependAiGenerationJob(current, buildAiGenerationJobEvidence({ result, draft }), 10)
@@ -318,7 +314,7 @@ export function useAppState(): AppState {
         setAiCardGenStatus(err instanceof Error ? err.message : "AI card generation failed. Try again in a moment.");
       })
       .finally(() => { setAiCardGenLoading(false); });
-  }, [aiCardGenLoading, aiFlowConfigs, approvedMemoryNotes, draft, draftInput]);
+  }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput]);
 
   return {
     activeView, setActiveView,
@@ -399,4 +395,13 @@ function readAiGenerationErrorDetail(payload: Record<string, unknown> | undefine
     if (typeof value === "string" && value.trim()) return value.trim();
   }
   return "";
+}
+
+function readArtworkFailure(result: AiGenerationApiResult): string {
+  const failure = result.ai_flow?.card_image?.provider_failure;
+  if (typeof failure !== "string" || !failure.trim()) return "";
+  if (/Live provider calls disabled for card-image/i.test(failure)) {
+    return "image generation is disabled in server settings.";
+  }
+  return failure.trim();
 }

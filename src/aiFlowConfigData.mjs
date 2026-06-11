@@ -64,10 +64,10 @@ export const aiFlowDefinitions = [
     monthlyBudgetCents: 3000,
     perRequestBudgetCents: 12,
     maxRetries: 1,
-    maxTokens: 1200,
-    temperature: 0.55,
+    maxTokens: 2200,
+    temperature: 0.62,
     promptInstructions:
-      "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+      "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
   },
   {
     flowId: "card-image",

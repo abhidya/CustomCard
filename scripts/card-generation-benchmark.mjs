@@ -11,9 +11,10 @@ const repoRoot = resolve(import.meta.dirname, "..");
 const outputRoot = resolve(repoRoot, "docs/evidence/generated-card-comparisons");
 const competitorManifestPath = resolve(repoRoot, "docs/evidence/competitor-card-examples/manifest.json");
 const panelIds = ["front", "inside-left", "inside-right", "back"];
-const defaultFixtureIds = ["small-business-thank-you", "medical-graduation", "dad-fix-anything"];
+export const cardGenerationBenchmarkDefaultFixtureIds = ["small-business-thank-you", "medical-graduation", "dad-fix-anything"];
+const defaultFixtureIds = cardGenerationBenchmarkDefaultFixtureIds;
 
-const fixtures = {
+export const cardGenerationBenchmarkFixtures = {
   "small-business-thank-you": {
     id: "small-business-thank-you",
     category: "Small business thank-you AI card",
@@ -103,6 +104,7 @@ const fixtures = {
     }
   }
 };
+const fixtures = cardGenerationBenchmarkFixtures;
 
 if (isMainModule()) {
   await main();

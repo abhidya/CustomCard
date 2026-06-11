@@ -182,6 +182,7 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
     async listBucketArtifacts({ query } = {}) {
       const prefix = safeListPrefix(query?.get?.("prefix") ?? query?.prefix ?? "projects/");
       const limit = clampBucketListLimit(query?.get?.("limit") ?? query?.limit);
+      const cursor = safeContinuationToken(query?.get?.("cursor") ?? query?.get?.("continuationToken") ?? query?.cursor ?? query?.continuationToken);
       const objectStore = buildObjectStoreDescription(config);
       if (!config.configured || !client) {
         return {
@@ -191,12 +192,13 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
             objectStore,
             prefix,
             limit,
+            cursor,
             objects: [],
             blockers: config.blockers.length ? config.blockers : ["Object store persistence is not configured."]
           }
         };
       }
-      const listed = await client.listObjects({ prefix, limit });
+      const listed = await client.listObjects({ prefix, limit, cursor });
       const expiresAtIso = signedUrlExpiry(config.expiresInMinutes, now());
       const objects = listed.objects.map((object) => buildBucketObjectSummary({ object, config, expiresAtIso }));
       return {
@@ -206,8 +208,10 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
           objectStore,
           prefix,
           limit,
+          cursor,
           objectCount: objects.length,
           truncated: Boolean(listed.truncated),
+          nextCursor: listed.nextCursor ?? null,
           objects,
           blockers: []
         }
@@ -308,16 +312,20 @@ function createMemoryObjectStoreClient(config) {
       if (!object) throw new Error(`Object not found: ${input.key}`);
       return summarizeStoredObject(input.key, object);
     },
-    async listObjects({ prefix, limit }) {
+    async listObjects({ prefix, limit, cursor }) {
       const matching = Array.from(store.entries())
         .filter(([key]) => key.startsWith(prefix))
         .sort(([first], [second]) => first.localeCompare(second));
+      const cursorIndex = cursor ? matching.findIndex(([key]) => key > cursor) : 0;
+      const startIndex = cursor ? (cursorIndex >= 0 ? cursorIndex : matching.length) : 0;
       const entries = matching
-        .slice(0, limit)
+        .slice(startIndex, startIndex + limit)
         .map(([key, object]) => summarizeStoredObject(key, object));
+      const nextIndex = startIndex + entries.length;
       return {
         objects: entries,
-        truncated: matching.length > entries.length
+        truncated: matching.length > nextIndex,
+        nextCursor: matching.length > nextIndex ? entries.at(-1)?.key ?? null : null
       };
     }
   };
@@ -397,7 +405,7 @@ function createSigV4ObjectStoreClient({ config, fetchImpl }) {
         metadata: metadataFromResponseHeaders(response.headers)
       };
     },
-    async listObjects({ prefix, limit }) {
+    async listObjects({ prefix, limit, cursor }) {
       const readConfig = config.readCredentialsConfigured
         ? {
             ...config,
@@ -415,7 +423,8 @@ function createSigV4ObjectStoreClient({ config, fetchImpl }) {
         queryParams: {
           "list-type": "2",
           "max-keys": String(limit),
-          prefix
+          prefix,
+          "continuation-token": cursor
         },
         expectedStatuses: [200]
       });
@@ -429,7 +438,7 @@ function createSigV4ObjectStoreClient({ config, fetchImpl }) {
           }
         })
       );
-      return { objects, truncated: listed.truncated };
+      return { objects, truncated: listed.truncated, nextCursor: listed.nextCursor };
     }
   };
 }
@@ -590,7 +599,8 @@ function parseListObjectsXml(xml) {
   }
   return {
     objects,
-    truncated: readXmlTag(xml, "IsTruncated").trim().toLowerCase() === "true"
+    truncated: readXmlTag(xml, "IsTruncated").trim().toLowerCase() === "true",
+    nextCursor: decodeXmlText(readXmlTag(xml, "NextContinuationToken")).trim() || null
   };
 }
 
@@ -864,6 +874,12 @@ function safeListPrefix(value) {
   if (text.length > 240 || text.includes("\\") || text.startsWith("/")) return "projects/";
   const segments = text.split("/").filter(Boolean);
   if (segments.some((segment) => segment === "." || segment === ".." || !/^[a-zA-Z0-9._-]+$/.test(segment))) return "projects/";
+  return text;
+}
+
+function safeContinuationToken(value) {
+  const text = String(value ?? "").trim();
+  if (!text || text.length > 1024 || /[\u0000-\u001f]/.test(text)) return "";
   return text;
 }
 
