@@ -7,8 +7,7 @@ import {
   removeApprovedRelationshipMemory,
   type CardDraftInput,
   type CardPanel,
-  type LocalWorkspace,
-  type VendorId
+  type LocalWorkspace
 } from "../src/customerWorkflow";
 import { buildPanelSvgExportFile, type PrintExportFile } from "../src/printExport";
 import {
@@ -61,6 +60,7 @@ export default function App() {
   const [theme, setTheme] = useTheme();
   const adminAccess = useAdminAccess();
   const { getToken } = useAuth();
+  const { user } = useUser();
   const state = useAppState();
   const {
     activeView,
@@ -71,7 +71,6 @@ export default function App() {
     inviteText,
     setInviteText,
     setOpportunityDecision,
-    vendorId,
     setVendorId,
     memoryForm,
     setMemoryForm,
@@ -106,7 +105,14 @@ export default function App() {
   const visibleCustomerView = isAdminView || activeView === "mobile" ? "customer" : activeView;
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
-  const customerEmail = workspace?.email || authForm.email;
+  const customerEmail = user?.primaryEmailAddress?.emailAddress || workspace?.email || authForm.email;
+  const checkoutProfile = {
+    name: user?.fullName || authForm.name || draftInput.sender,
+    firstName: user?.firstName ?? undefined,
+    lastName: user?.lastName ?? undefined,
+    email: customerEmail,
+    phone: user?.primaryPhoneNumber?.phoneNumber ?? user?.phoneNumbers?.[0]?.phoneNumber ?? ""
+  };
 
   const getCustomerApiToken = useCallback(async () => {
     try {
@@ -225,18 +231,22 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [exportStatus]);
 
+  useEffect(() => {
+    setVendorId("walgreens");
+  }, [setVendorId]);
+
   /* ---------- live CTA ---------- */
-  const estimate = pricingComparison.selectedVendorOptions[0];
+  const estimate = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
   const priceLabel = estimate?.effectiveSubtotalLabel;
   const designing = visibleCustomerView === "studio";
   const printing = visibleCustomerView === "handoff";
 
   const cta = printing
     ? {
-        label: "Download print package",
+        label: "Save card files",
         icon: <Download size={16} />,
         disabled: !printPackage.manifest.passed,
-        meta: priceLabel ? `est. ${priceLabel} at ${handoff.vendorName}` : `Quote at ${handoff.vendorName}`,
+        meta: priceLabel ? `est. ${priceLabel} at Walgreens` : "Walgreens confirms price at checkout",
         metaTitle: validation.passed ? "Your card is print-ready" : "Almost ready",
         onClick: downloadPrintPackage
       }
@@ -245,7 +255,7 @@ export default function App() {
           label: "Continue to print",
           icon: <ArrowRight size={16} />,
           disabled: false,
-          meta: priceLabel ? `est. ${priceLabel} at ${handoff.vendorName} · same-day pickup` : "Compare print shops",
+          meta: priceLabel ? `est. ${priceLabel} at Walgreens · same-day pickup` : "Checkout at Walgreens",
           metaTitle: `Card for ${draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient}`,
           onClick: () => openView("handoff")
         }
@@ -392,17 +402,14 @@ export default function App() {
 
         {!isAdminView && visibleCustomerView === "handoff" ? (
           <PrintView
-            handoff={handoff}
-            checkoutCustomerDefaults={{ name: draftInput.sender, email: customerEmail }}
+            checkoutCustomerDefaults={checkoutProfile}
             getCustomerApiToken={getCustomerApiToken}
             onCopyChecklist={copyChecklist}
             onDownloadPackage={downloadPrintPackage}
             onDownloadPanels={downloadPanels}
-            onVendor={(value: VendorId) => setVendorId(value)}
             panels={displayPanels}
             pricingComparison={pricingComparison}
             printPackage={printPackage}
-            vendorId={vendorId}
           />
         ) : null}
       </main>

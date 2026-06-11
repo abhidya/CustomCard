@@ -177,8 +177,24 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("route-catalog", "none", "public", [], false, false, false),
   routePersistence("customer-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
   routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
-  routePersistence("ai-chat-respond", "mutation", "public", ["idempotency_keys", "provider_call_events", "api_jobs", "audit_log"], false, true, true),
-  routePersistence("ai-card-generate", "mutation", "public", ["idempotency_keys", "provider_call_events", "api_jobs", "audit_log"], false, true, true),
+  routePersistence(
+    "ai-chat-respond",
+    "mutation",
+    "customer",
+    ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
+    true,
+    true,
+    true
+  ),
+  routePersistence(
+    "ai-card-generate",
+    "mutation",
+    "customer",
+    ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
+    true,
+    true,
+    true
+  ),
   routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events"], true, false, false),
   routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events", "audit_log"], true, false, false),

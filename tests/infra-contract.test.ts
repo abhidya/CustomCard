@@ -440,14 +440,16 @@ describe("production infrastructure contract", () => {
   });
 
   it("keeps customer app bootstrap naming out of demo-only contracts", () => {
-    const appSource = read("src/App.tsx");
+    const webAppSource = read("webapp/App.tsx");
+    const appStateSource = read("src/appStateOrchestrator.ts");
     const reviewerBootstrap = read("src/reviewerBootstrap.ts");
 
-    expect(appSource).toContain("./reviewerBootstrap");
-    expect(appSource).toContain("reviewerDraftOptions");
-    expect(appSource).toContain("reviewerWorkspaceKey");
-    expect(appSource).not.toContain("./demoBootstrap");
-    expect(appSource).not.toContain("demoInitialAuthForm");
+    expect(webAppSource).toContain("../src/appStateOrchestrator");
+    expect(appStateSource).toContain("reviewerDraftOptions");
+    expect(appStateSource).toContain("reviewerWorkspaceKey");
+    expect(webAppSource).not.toContain("./demoBootstrap");
+    expect(appStateSource).not.toContain("./demoBootstrap");
+    expect(appStateSource).not.toContain("demoInitialAuthForm");
     expect(reviewerBootstrap).toContain("ReviewerAuthForm");
     expect(reviewerBootstrap).toContain("reviewerDraftOptions");
     expect(reviewerBootstrap).not.toContain("DemoAuthForm");

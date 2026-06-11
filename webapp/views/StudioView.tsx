@@ -151,7 +151,7 @@ export function StudioView({
                 value={draftInput.style}
               />
             </Field>
-            <Field label="Language">
+            <Field label="Card language">
               <Chips onValue={(value) => onField("language", value)} options={languages} value={draftInput.language} />
             </Field>
           </Step>

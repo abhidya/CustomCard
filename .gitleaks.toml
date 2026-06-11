@@ -1,0 +1,13 @@
+title = "CustomCard gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented non-secret historical examples"
+regexTarget = "match"
+regexes = [
+  '''VITE_CLERK_PUBLISHABLE_KEY=pk_(test|live)_[A-Za-z0-9_$-]+''',
+  '''"X-Idempotency-Key": "[A-Za-z0-9_-]+"''',
+  '''credentials, (security|relationship/legal) review'''
+]

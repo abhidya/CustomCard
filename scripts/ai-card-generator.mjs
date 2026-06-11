@@ -176,7 +176,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
 }
 
 function requestScopedAiFlowConfig(body, env) {
-  if (String(env.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG ?? "true").toLowerCase() === "false") return [];
+  if (String(env.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG ?? "false").toLowerCase() !== "true") return [];
   return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? []);
 }
 

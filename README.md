@@ -205,7 +205,8 @@ environment configuration instead of static placeholders.
 - API contract/server boundary with `/api/health`, customer/admin bootstrap,
   mobile bootstrap with sign-in/import, next-action, queue, memory-review,
   print-proof, fulfillment recommendation, and offline-sync state, provider
-  readiness, explicit contract/memory/Postgres
+  readiness, customer-session-gated same-origin AI chat/card generation routes
+  with server-owned provider configuration, explicit contract/memory/Postgres
   runtime modes, tested memory-mode auth/idempotency replay, fake-pool and
   isolated live Postgres route-scoped auth/idempotency/audit/queue runtime
   checks, process-level Postgres HTTP auth/idempotency/repository smoke,
@@ -285,7 +286,7 @@ without database credentials; DB-backed API access requires Vercel environment
 variables such as:
 
 ```sh
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_replace_with_clerk_publishable_key
 CUSTOMCARD_API_RUNTIME=postgres
 DATABASE_URL=postgres://...
 AUTH_SESSION_SECRET=...
@@ -304,7 +305,7 @@ The local web console uses the public Clerk React publishable key in
 `.env.local`:
 
 ```sh
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_replace_with_clerk_publishable_key
 ```
 
 It does not need provider or vendor credentials. Runtime scripts and deployment

@@ -219,3 +219,18 @@ requiring readers to parse a dense dependency graph before understanding the vie
 structure. The hook provides a typed `AppState` interface as the test surface; the
 initial-view and workspace-loading helpers become testable without rendering the
 full component tree.
+
+## D016: Promote ReadinessSummary Into A Domain Manifest
+
+Decision: create `readinessDomains.ts` as the canonical manifest for the 12
+Readiness Register domains. `readinessSummary.ts` now re-exports that seam;
+`apiContracts.ts` builds API readiness, customer bootstrap readiness payloads, and
+readiness validation through `buildReadinessSummary()` and
+`validateReadinessDomains()` instead of importing each domain directly.
+
+Reason: D011 collapsed the admin fan-out, but the same domain list still leaked
+into API bootstrap and API validation. The manifest concentrates each domain's
+payload, summary function, and validator in one module, so adding or changing a
+Readiness Register no longer requires hand-editing every API caller. The deletion
+test: removing the manifest makes the domain list reappear in both
+`readinessSummary.ts` and `apiContracts.ts`.

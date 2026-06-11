@@ -63,15 +63,23 @@ const WALGREENS_RATE_LIMIT = 30;
 const WALGREENS_RATE_WINDOW_MS = 60_000;
 
 function walgreensRateLimited(request) {
-  const key = String(request.headers?.["x-forwarded-for"] ?? request.socket?.remoteAddress ?? "unknown")
-    .split(",")[0]
-    .trim();
+  const key = clientRateLimitKey(request);
   const now = Date.now();
   const fresh = (walgreensRateBuckets.get(key) ?? []).filter((timestamp) => now - timestamp < WALGREENS_RATE_WINDOW_MS);
   fresh.push(now);
   if (walgreensRateBuckets.size > 10_000) walgreensRateBuckets.clear();
   walgreensRateBuckets.set(key, fresh);
   return fresh.length > WALGREENS_RATE_LIMIT;
+}
+
+function clientRateLimitKey(request) {
+  const remoteAddress = String(request.socket?.remoteAddress ?? "unknown").trim() || "unknown";
+  if (process.env.CUSTOMCARD_TRUST_PROXY_HEADERS !== "true") return remoteAddress;
+
+  const forwardedFor = String(request.headers?.["x-forwarded-for"] ?? "")
+    .split(",")[0]
+    .trim();
+  return forwardedFor || remoteAddress;
 }
 
 const mobileBootstrap = {
@@ -632,9 +640,7 @@ async function serveApi(request, response, requestUrl) {
       sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
       return;
     }
-    const rateKey = String(request.headers?.["x-forwarded-for"] ?? request.socket?.remoteAddress ?? "unknown")
-      .split(",")[0]
-      .trim();
+    const rateKey = clientRateLimitKey(request);
     const result =
       path === aiCardGenerateRoute
         ? await aiGenerationService.generateCard(parsedBody, { rateKey })

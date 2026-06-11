@@ -10,6 +10,7 @@ import { buildReadinessSummary } from "./readinessSummary";
 import { buildAdminPanelModel, providerCatalog } from "./providerCatalog";
 import { summarizeProviderGovernance } from "./providerGovernance";
 import { getProviderRuntimeReadiness } from "./providerRuntime";
+import { buildProviderOpsModel } from "./providerOps";
 import { productionLaunchGates, summarizeProductionReadiness } from "./productionReadiness";
 
 function buildPortal(): AdminPortalModel {
@@ -29,6 +30,22 @@ function buildPortal(): AdminPortalModel {
     model,
     readiness,
     providerGovernance: summarizeProviderGovernance(),
+    providerOps: buildProviderOpsModel({
+      model,
+      readiness,
+      providerGovernance: summarizeProviderGovernance(),
+      runtimeReadiness: new Map(providerCatalog.map((adapter) => [adapter.id, getProviderRuntimeReadiness(adapter.id)])),
+      aiFlowSummary: {
+        total: 0,
+        liveEnabled: 0,
+        readyForLiveCalls: 0,
+        queued: 0,
+        fallbackQueued: 0,
+        blocked: 0,
+        configuredProviders: [],
+        flows: []
+      }
+    }),
     productionReadiness: summarizeProductionReadiness(),
     runtimeReadiness: new Map(providerCatalog.map((adapter) => [adapter.id, getProviderRuntimeReadiness(adapter.id)])),
     adminOperationsWorkflow
@@ -50,11 +67,30 @@ describe("admin portal", () => {
     expect(portal.areas.orders.records.map((record) => record.label)).toEqual(
       expect.arrayContaining(["Manual handoff orders", "Order status state machine", "Vendor confirmation status"])
     );
+    expect(portal.areas.orders.orderQueue).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "order-demo-manual-handoff",
+          provider: "Walgreens",
+          status: "vendor_handoff_blocked"
+        }),
+        expect.objectContaining({
+          id: "manual-vendor-handoff-approved",
+          status: "vendor_handoff_ready"
+        })
+      ])
+    );
     expect(portal.areas.users.records.map((record) => record.label)).toEqual(
       expect.arrayContaining(["Admin roles and sessions", "Customer account lookup", "Data request desk"])
     );
     expect(portal.areas.assets.records.map((record) => record.label)).toEqual(
       expect.arrayContaining(["Generated card panels", "Object-store artifacts", "Signed mobile artifacts"])
+    );
+    expect(portal.areas.providers.records.map((record) => record.label)).toEqual(
+      expect.arrayContaining(["User management gates", "ORR latency and alert gates"])
+    );
+    expect(portal.areas.providers.metrics.map((metric) => metric.label)).toEqual(
+      expect.arrayContaining(["Available", "Env configured", "Fallback queues", "Latency gates", "User env"])
     );
   });
 
@@ -67,7 +103,7 @@ describe("admin portal", () => {
     expect(filterAdminPortalRecords(portal.areas.assets.records, { status: "blocked" }).map((record) => record.id)).toEqual(
       expect.arrayContaining(["assets-object-store", "assets-mobile-artifacts"])
     );
-    expect(filterAdminPortalRecords(portal.areas.providers.records, { query: "credential" }).length).toBeGreaterThan(0);
+    expect(filterAdminPortalRecords(portal.areas.providers.records, { query: "Provider Ops" }).length).toBeGreaterThan(0);
   });
 
   it("rejects unsafe portal records before they reach the admin UI", () => {

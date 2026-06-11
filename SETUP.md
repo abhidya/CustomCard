@@ -33,7 +33,7 @@ npm install
 Create `.env.local` from `.env.example` and keep the Clerk React key:
 
 ```bash
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_replace_with_clerk_publishable_key
 ```
 
 Clerk React setup follows the current quickstart:
@@ -119,7 +119,7 @@ npm install -g vercel   # one-time
 vercel link             # links this directory to your Vercel project
 
 # Set QA env vars (preview scope only)
-vercel env add VITE_CLERK_PUBLISHABLE_KEY preview # value: pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+vercel env add VITE_CLERK_PUBLISHABLE_KEY preview # value: pk_test_replace_with_clerk_publishable_key
 vercel env add DATABASE_URL preview          # paste your Neon connection string
 vercel env add CUSTOMCARD_API_RUNTIME preview   # value: postgres
 vercel env add NODE_ENV preview              # value: production
@@ -190,7 +190,7 @@ DATABASE_URL="postgres://..." npm run migrate
 ### 3c. Set Vercel production env vars
 
 ```bash
-vercel env add VITE_CLERK_PUBLISHABLE_KEY production # value: pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+vercel env add VITE_CLERK_PUBLISHABLE_KEY production # value: pk_test_replace_with_clerk_publishable_key
 vercel env add DATABASE_URL production           # Neon production connection string
 vercel env add CUSTOMCARD_API_RUNTIME production # value: postgres
 vercel env add NODE_ENV production               # value: production
@@ -441,6 +441,8 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `VITE_CARD_GEN_URL` | Vercel / `.env.local` | No | AI sidecar URL — enables Generate with AI button |
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |
+| `CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG` | Server env only | No | Defaults to `false`; set `true` only for trusted admin/operator flows that may override server AI provider config |
+| `CUSTOMCARD_TRUST_PROXY_HEADERS` | Server env only | No | Defaults to `false`; set `true` only behind a trusted proxy before using `X-Forwarded-For` for rate limits |
 | `ANTHROPIC_API_KEY` | Sidecar server only | For AI gen | Text generation model — never in browser |
 | `CARD_GEN_API_TOKEN` | Sidecar server only | For AI gen | Bearer token required by `/generate` outside local dev |
 | `CARD_GEN_ALLOWED_ORIGINS` | Sidecar server only | For AI gen | Comma-separated CORS origins |

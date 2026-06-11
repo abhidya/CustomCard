@@ -9,7 +9,10 @@ import { checkAbsent, checkExact, checkIncludes, checkNoBlockers } from "./docto
 const files = {
   apiServer: "scripts/api-server.mjs",
   app: "src/App.tsx",
+  webappApp: "webapp/App.tsx",
+  webappPrint: "webapp/views/PrintView.tsx",
   styles: "src/styles.css",
+  webappStyles: "webapp/styles.css",
   migration: "infra/migrations/001_initial_schema.sql",
   artifactHandoff: "src/artifactHandoff.ts",
   runtimeEnv: "scripts/validate-runtime-env.mjs",
@@ -66,15 +69,15 @@ const checks = [
     "OBJECT_STORE_SIGNING_SECRET",
     "REAL_ORDER_KILL_SWITCH=disabled"
   ]),
-  checkIncludes("accessibility", "semantic-app-shell", contents.app, [
+  checkIncludes("accessibility", "semantic-app-shell", `${contents.app}\n${contents.webappApp}\n${contents.webappPrint}`, [
     'className="skipLink"',
     'href="#main-content"',
     'aria-label="CustomCard navigation"',
-    '<main className="appMain" id="main-content">',
+    'id="main-content"',
     'aria-label="Checkout status"',
     "aria-label={`${capability.label} ready-local adapter coverage`}"
   ]),
-  checkIncludes("accessibility", "skip-link-focus-style", contents.styles, [
+  checkIncludes("accessibility", "skip-link-focus-style", `${contents.styles}\n${contents.webappStyles}`, [
     ".skipLink",
     ".skipLink:focus",
     "transform: translateY(0)"
@@ -128,4 +131,3 @@ console.log(
 );
 
 if (failed.length > 0) process.exit(1);
-

@@ -196,6 +196,10 @@ it after each meaningful implementation pass.
   manifests, raw-content storage blocks, signed-artifact share controls, and
   app-shell landmarks/skip-link behavior while reporting that no external audit
   or legal review is claimed.
+- Same-origin AI chat/card generation routes are customer-session API routes,
+  not public provider relays. Tests cover missing/wrong-role auth blocking,
+  server-owned AI flow configuration by default, and live-provider opt-in only
+  through explicit server configuration.
 - External audit readiness is checked by `npm run external:audit:doctor`, which
   verifies the 15-item launch evidence register, production-gate mappings,
   admin/API surfaces, CI wiring, no public production claims, and no attached

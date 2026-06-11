@@ -1,0 +1,80 @@
+{
+  "draft_id": "ai-mq99geu2-loyal-customers",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "For you",
+        "body": "A card made with care.",
+        "art_direction": "Coordinated front cover artwork with safe margins."
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thinking of you",
+        "body": "A note for this moment.",
+        "art_direction": "Soft interior panel with room for a short message."
+      },
+      {
+        "id": "inside-right",
+        "headline": "From the heart",
+        "body": "With warm wishes.",
+        "art_direction": "Main message panel with readable typography and generous margins."
+      },
+      {
+        "id": "back",
+        "headline": "CustomCard",
+        "body": "Made with CustomCard. Printed locally.",
+        "art_direction": "Clean coordinating back panel with minimal ornamentation."
+      }
+    ],
+    "memory_citations": [
+      "The customer chose an independent small business instead of a large marketplace.",
+      "The owner wants the message to feel handmade, specific, and grateful rather than promotional."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 150094 chars>",
+      "revised_prompt": "Create one portrait 5x7 print panel at a time. Do not make a collage or folded mockup. Leave safe margins and reserve exact typography for deterministic app overlays when the provider cannot guarantee spelling.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.2-3b-instruct",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

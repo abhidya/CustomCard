@@ -1,7 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { buildReadinessSummary } from "./readinessSummary";
+import { buildApiBootstrapPayload, buildApiReadinessSummary } from "./apiContracts";
+import {
+  buildReadinessSummary,
+  readinessDomainIds,
+  validateReadinessDomains
+} from "./readinessSummary";
 
 describe("readinessSummary", () => {
+  it("keeps the readiness domain manifest as the single domain list", () => {
+    expect(readinessDomainIds).toEqual([
+      "aiProvider",
+      "businessEngagement",
+      "capacity",
+      "cloudArtifactProof",
+      "e2eCoverage",
+      "externalAudit",
+      "hostedApi",
+      "mobileRender",
+      "observability",
+      "payment",
+      "retailFulfillment",
+      "reviewerDbSeed"
+    ]);
+    expect(new Set(readinessDomainIds).size).toBe(readinessDomainIds.length);
+    expect(validateReadinessDomains()).toEqual([]);
+  });
+
   it("builds a summary with all 12 readiness domains present", () => {
     const summary = buildReadinessSummary();
 
@@ -55,5 +79,21 @@ describe("readinessSummary", () => {
     expect(payment.summary.liveChargesEnabled).toBe(0);
     expect(hostedApi.summary.liveProviderCalls).toBe(0);
     expect(retailFulfillment.summary.directOrderEnabled).toBe(0);
+  });
+
+  it("feeds API readiness and bootstrap from the same readiness seam", () => {
+    const readiness = buildReadinessSummary();
+    const apiReadiness = buildApiReadinessSummary();
+    const bootstrap = buildApiBootstrapPayload();
+
+    expect(apiReadiness.aiProviderReadiness).toEqual(readiness.aiProvider.summary);
+    expect(apiReadiness.paymentReadiness).toEqual(readiness.payment.summary);
+    expect(apiReadiness.hostedApiReadiness).toEqual(readiness.hostedApi.summary);
+    expect(apiReadiness.businessEngagementReadiness).toEqual(readiness.businessEngagement.summary);
+
+    expect(bootstrap.aiProviderReadiness.items).toBe(readiness.aiProvider.items);
+    expect(bootstrap.capacity.profiles).toBe(readiness.capacity.profiles);
+    expect(bootstrap.cloudArtifactProofReadiness.items).toBe(readiness.cloudArtifactProof.items);
+    expect(bootstrap.reviewerDbSeedReadiness.items).toBe(readiness.reviewerDbSeed.items);
   });
 });

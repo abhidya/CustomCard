@@ -537,6 +537,37 @@ a { color: inherit; }
 .vendor-price[data-quote="true"] { font-size: 13.5px; font-weight: 560; color: var(--ink-faint); }
 .vendor-eta { font-size: 12px; color: var(--ink-faint); }
 
+.partnercheckout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 560px) { .partnercheckout { grid-template-columns: 1fr; } }
+.partnercheckout > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  padding: 13px 15px;
+}
+.partnercheckout span,
+.partnercheckout strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.partnercheckout span {
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 640;
+}
+.partnercheckout strong {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .coupon {
   display: flex; gap: 14px; align-items: center;
   border: 1px dashed var(--second); border-radius: var(--radius-s);

@@ -98,7 +98,8 @@ describe("AI card generator service", () => {
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
-        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.2-3b-instruct"
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.2-3b-instruct",
+        CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "true"
       },
       fetchImpl
     });
@@ -111,6 +112,36 @@ describe("AI card generator service", () => {
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
+  });
+
+  it("ignores request-scoped provider toggles unless explicitly enabled", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ panels: [] }) } }]
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.2-3b-instruct"
+      },
+      fetchImpl
+    });
+    const aiFlowConfig = buildDefaultAiFlowAdminConfigs().map((config) =>
+      config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: false } : config
+    );
+
+    const result = await service.generateCard({ ...cardRequest, aiFlowConfig }, { rateKey: "test-request-config-ignored" });
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(result.payload).toMatchObject({
+      live_provider_calls_enabled: true
+    });
   });
 
   it("uses the customer-chat flow for chat replies", async () => {

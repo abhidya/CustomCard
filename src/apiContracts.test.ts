@@ -192,8 +192,8 @@ describe("api contracts", () => {
     expect(aiChatRespond).toMatchObject({
       method: "POST",
       path: "/api/ai/chat/respond",
-      audience: "public",
-      auth: "none",
+      audience: "customer",
+      auth: "customer-session",
       idempotencyKeyRequired: true,
       externalNetworkCalls: true,
       realOrdersEnabled: false
@@ -201,13 +201,15 @@ describe("api contracts", () => {
     expect(aiCardGenerate).toMatchObject({
       method: "POST",
       path: "/api/ai/card/generate",
-      audience: "public",
-      auth: "none",
+      audience: "customer",
+      auth: "customer-session",
       idempotencyKeyRequired: true,
       externalNetworkCalls: true,
       realOrdersEnabled: false
     });
-    expect(aiCardGenerate?.requestSchema).toEqual(expect.arrayContaining(["aiFlowConfig", "memory_notes"]));
+    expect(aiCardGenerate?.requestSchema).toEqual(expect.arrayContaining(["memory_notes"]));
+    expect(aiCardGenerate?.requestSchema).not.toContain("aiFlowConfig");
+    expect(aiChatRespond?.requestSchema).not.toContain("aiFlowConfig");
     expect(aiChatRespond?.responseSchema).toEqual(expect.arrayContaining(["ai_flow", "fallback_queued"]));
     expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
       expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])

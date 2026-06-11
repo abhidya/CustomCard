@@ -1,22 +1,8 @@
 import { ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
-import { useState } from "react";
-import { buildPanelSvg, type CardPanel, type VendorHandoff, type VendorId } from "../../src/customerWorkflow";
+import { useEffect, useState } from "react";
+import { buildPanelSvg, type CardPanel } from "../../src/customerWorkflow";
 import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
 import type { PrintExportPackage } from "../../src/printExport";
-import { getRetailPrinterProductLink, type RetailPrinterVendorId } from "../../src/retailPrinterAdapters";
-import { buildRetailPrinterOperationStartPackets } from "../../src/retailPrinterOperationStart";
-
-const vendors: VendorId[] = ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"];
-
-const vendorLabels: Record<VendorId, string> = {
-  walgreens: "Walgreens",
-  cvs: "CVS",
-  fedex: "FedEx Office",
-  walmart: "Walmart",
-  staples: "Staples",
-  "office-depot": "Office Depot",
-  "local-print-shop": "Local print shop"
-};
 
 const speedLabels: Record<string, string> = {
   "same-day": "Same-day pickup",
@@ -25,53 +11,26 @@ const speedLabels: Record<string, string> = {
   "manual-confirm": "Ask in store"
 };
 
-const operationCopy: Record<string, { label: string; detail: string }> = {
-  "fetch-price": { label: "Check the price", detail: "Confirm price, pickup time, and any discount code in their cart." },
-  "upload-image": { label: "Upload your card", detail: "Use the downloaded files and check crop, fold, and preview." },
-  "place-order": { label: "Place the order", detail: "Review everything once more, then pay at the store's checkout." }
-};
-
-const operationOrder = ["fetch-price", "upload-image", "place-order"];
-
-const startPackets = buildRetailPrinterOperationStartPackets();
-
-function toRetailVendorId(vendorId: VendorId): RetailPrinterVendorId | undefined {
-  if (vendorId === "walmart" || vendorId === "fedex" || vendorId === "cvs" || vendorId === "walgreens") return vendorId;
-  return undefined;
-}
-
 export function PrintView({
-  vendorId,
   panels,
-  handoff,
   checkoutCustomerDefaults,
   getCustomerApiToken,
   pricingComparison,
   printPackage,
-  onVendor,
   onDownloadPackage,
   onDownloadPanels,
   onCopyChecklist
 }: {
-  vendorId: VendorId;
   panels: CardPanel[];
-  handoff: VendorHandoff;
-  checkoutCustomerDefaults?: { name?: string; email?: string };
+  checkoutCustomerDefaults?: { name?: string; firstName?: string; lastName?: string; email?: string; phone?: string };
   getCustomerApiToken?: () => Promise<string | undefined>;
   pricingComparison: PrinterPricingComparison;
   printPackage: PrintExportPackage;
-  onVendor: (vendorId: VendorId) => void;
   onDownloadPackage: () => void;
   onDownloadPanels: () => void;
   onCopyChecklist: () => void;
 }) {
-  const initialName = splitName(checkoutCustomerDefaults?.name);
-  const [checkoutCustomer, setCheckoutCustomer] = useState({
-    firstName: initialName.firstName,
-    lastName: initialName.lastName,
-    email: checkoutCustomerDefaults?.email ?? "",
-    phone: ""
-  });
+  const [checkoutCustomer, setCheckoutCustomer] = useState(() => buildCheckoutCustomer(checkoutCustomerDefaults));
   const [checkoutStatus, setCheckoutStatus] = useState<{
     tone: "ok" | "warn";
     title: string;
@@ -79,31 +38,43 @@ export function PrintView({
     checkoutUrl?: string;
   } | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const estimateByVendor = new Map<VendorId, PrinterPriceEstimate>();
+  const estimateByVendor = new Map<string, PrinterPriceEstimate>();
   for (const estimate of pricingComparison.rankedKnownPrices) {
     if (!estimateByVendor.has(estimate.observation.vendorId)) {
       estimateByVendor.set(estimate.observation.vendorId, estimate);
     }
   }
 
-  const selected = pricingComparison.selectedVendorOptions[0];
+  const walgreensEstimate = estimateByVendor.get("walgreens");
+  const walgreensOption = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
   const selectedCoupon =
-    selected &&
-    (selected.couponApplication.status === "applied" || selected.couponApplication.status === "portal-evidence-required")
-      ? selected.couponApplication.offer
+    walgreensOption &&
+    (walgreensOption.couponApplication.status === "applied" || walgreensOption.couponApplication.status === "portal-evidence-required")
+      ? walgreensOption.couponApplication.offer
       : undefined;
+  const canUseWalgreensCheckout = printPackage.manifest.passed;
 
-  const retailVendorId = toRetailVendorId(vendorId);
-  const storeUrl = retailVendorId ? getRetailPrinterProductLink(retailVendorId).productUrl : undefined;
-  const canUseWalgreensCheckout = vendorId === "walgreens" && printPackage.manifest.passed;
-  const steps = retailVendorId
-    ? startPackets
-        .filter((packet) => packet.vendorId === retailVendorId)
-        .sort((a, b) => operationOrder.indexOf(a.operation) - operationOrder.indexOf(b.operation))
-    : [];
+  useEffect(() => {
+    const nextDefaults = buildCheckoutCustomer(checkoutCustomerDefaults);
+    setCheckoutCustomer((current) => ({
+      firstName: current.firstName || nextDefaults.firstName,
+      lastName: current.lastName || nextDefaults.lastName,
+      email: current.email || nextDefaults.email,
+      phone: current.phone || nextDefaults.phone
+    }));
+  }, [
+    checkoutCustomerDefaults?.email,
+    checkoutCustomerDefaults?.firstName,
+    checkoutCustomerDefaults?.lastName,
+    checkoutCustomerDefaults?.name,
+    checkoutCustomerDefaults?.phone
+  ]);
 
   function updateCheckoutCustomer(field: keyof typeof checkoutCustomer, value: string) {
-    setCheckoutCustomer((current) => ({ ...current, [field]: value }));
+    setCheckoutCustomer((current) => ({
+      ...current,
+      [field]: field === "phone" ? normalizePhone(value) : value
+    }));
   }
 
   async function openWalgreensCheckout() {
@@ -171,7 +142,7 @@ export function PrintView({
           sessionPayload?.detail ??
           sessionPayload?.error ??
           sessionPayload?.blockers?.join(" ") ??
-          "Walgreens hosted checkout is not ready."
+          "Walgreens checkout is not ready."
         );
       }
 
@@ -203,57 +174,49 @@ export function PrintView({
   return (
     <>
       <header className="pagehead reveal">
-        <h1>Print it nearby</h1>
-        <p>Pick a print shop, download your card, and have it in hand today.</p>
+        <h1>Checkout at Walgreens</h1>
+        <p>Your approved card is ready for Walgreens crop review, pickup selection, and payment.</p>
       </header>
 
       <div className="print">
         <div className="printpane reveal reveal-1">
           <section className="panelcard printsection">
-            <h2>Choose a print shop</h2>
-            <div className="vendorgrid">
-              {vendors.map((candidate) => {
-                const estimate = estimateByVendor.get(candidate);
-                return (
-                  <button
-                    className="vendor"
-                    data-on={candidate === vendorId}
-                    key={candidate}
-                    onClick={() => onVendor(candidate)}
-                    type="button"
-                  >
-                    <span className="vendor-name">{vendorLabels[candidate]}</span>
-                    {estimate ? (
-                      <>
-                        <span className="vendor-price">{estimate.effectiveSubtotalLabel}</span>
-                        <span className="vendor-eta">{speedLabels[estimate.observation.speed] ?? estimate.observation.speed}</span>
-                      </>
-                    ) : (
-                      <span className="vendor-price" data-quote="true">
-                        Quote at store
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            <h2>Walgreens partner checkout</h2>
+            <div className="partnercheckout">
+              <div>
+                <span>Partner</span>
+                <strong>Walgreens</strong>
+              </div>
+              <div>
+                <span>Card</span>
+                <strong>5 × 7 folded</strong>
+              </div>
+              <div>
+                <span>Estimated price</span>
+                <strong>{walgreensEstimate?.effectiveSubtotalLabel ?? "Confirmed at checkout"}</strong>
+              </div>
+              <div>
+                <span>Pickup</span>
+                <strong>{walgreensEstimate ? speedLabels[walgreensEstimate.observation.speed] ?? walgreensEstimate.observation.speed : "Choose at Walgreens"}</strong>
+              </div>
             </div>
-            {selectedCoupon && selected ? (
+            {selectedCoupon && walgreensOption ? (
               <div className="coupon">
                 <span className="couponcode">{selectedCoupon.code}</span>
                 <div>
                   <strong>{selectedCoupon.discountPercent}% off card products</strong>
                   <small>
-                    Enter it at {selected.observation.vendorName} checkout by {selectedCoupon.endsAtIso.slice(0, 10)} — the
+                    Enter it at Walgreens checkout by {selectedCoupon.endsAtIso.slice(0, 10)} — the
                     store applies the final discount.
                   </small>
                 </div>
               </div>
             ) : null}
-            <p>Estimates from public store pricing — the store confirms the final total at checkout.</p>
+            <p>Walgreens confirms the final total, crop, pickup store, and payment before the order is placed.</p>
           </section>
 
           <section className="panelcard printsection">
-            <h2>Download your card</h2>
+            <h2>Save your card files</h2>
             <div className="downloadrow">
               <button
                 className="btn btn-primary"
@@ -262,7 +225,7 @@ export function PrintView({
                 type="button"
               >
                 <Download size={16} />
-                Download print package
+                Save print package
               </button>
               <button className="btn btn-ghost" onClick={onDownloadPanels} type="button">
                 <FileDown size={16} />
@@ -274,119 +237,80 @@ export function PrintView({
               </button>
             </div>
             <span className="filemeta">
-              {panels.length} print panels + combined PDF, sized for 5 × 7 — exactly what the store upload page expects.
+              {panels.length} print panels + combined PDF, sized for 5 × 7.
             </span>
           </section>
         </div>
 
         <div className="printpane reveal reveal-2">
           <section className="panelcard printsection">
-            <h2>{vendorId === "walgreens" ? "Walgreens hosted checkout" : `Upload at ${handoff.vendorName}`}</h2>
-            {vendorId === "walgreens" ? (
-              <div className="checkoutbox">
-                <p>
-                  CustomCard prepares your card files. Walgreens hosts store selection, crop review, terms, payment, and
-                  final order placement.
-                </p>
-                <div className="checkoutgrid">
-                  <label>
-                    <span>First name</span>
-                    <input
-                      autoComplete="given-name"
-                      onChange={(event) => updateCheckoutCustomer("firstName", event.target.value)}
-                      value={checkoutCustomer.firstName}
-                    />
-                  </label>
-                  <label>
-                    <span>Last name</span>
-                    <input
-                      autoComplete="family-name"
-                      onChange={(event) => updateCheckoutCustomer("lastName", event.target.value)}
-                      value={checkoutCustomer.lastName}
-                    />
-                  </label>
-                  <label>
-                    <span>Email</span>
-                    <input
-                      autoComplete="email"
-                      inputMode="email"
-                      onChange={(event) => updateCheckoutCustomer("email", event.target.value)}
-                      value={checkoutCustomer.email}
-                    />
-                  </label>
-                  <label>
-                    <span>Phone</span>
-                    <input
-                      autoComplete="tel"
-                      inputMode="tel"
-                      onChange={(event) => updateCheckoutCustomer("phone", event.target.value)}
-                      placeholder="10 digits"
-                      value={checkoutCustomer.phone}
-                    />
-                  </label>
-                </div>
-                <button
-                  className="btn btn-primary"
-                  disabled={!canUseWalgreensCheckout || checkoutLoading}
-                  onClick={openWalgreensCheckout}
-                  type="button"
-                >
-                  {checkoutLoading ? "Preparing..." : "Open Walgreens checkout"}
-                  <ExternalLink size={16} />
-                </button>
-                {checkoutStatus ? (
-                  <div className={`checkoutstatus checkoutstatus-${checkoutStatus.tone}`} aria-live="polite">
-                    <strong>{checkoutStatus.title}</strong>
-                    <span>{checkoutStatus.detail}</span>
-                    {checkoutStatus.checkoutUrl ? (
-                      <a href={checkoutStatus.checkoutUrl} rel="noreferrer" target="_blank">
-                        Reopen checkout
-                      </a>
-                    ) : null}
-                  </div>
-                ) : null}
+            <h2>Walgreens checkout</h2>
+            <div className="checkoutbox">
+              <p>
+                We send your approved card to Walgreens. You review the crop, choose the pickup store, confirm the total,
+                and pay with Walgreens.
+              </p>
+              <div className="checkoutgrid">
+                <label>
+                  <span>First name</span>
+                  <input
+                    autoComplete="given-name"
+                    onChange={(event) => updateCheckoutCustomer("firstName", event.target.value)}
+                    value={checkoutCustomer.firstName}
+                  />
+                </label>
+                <label>
+                  <span>Last name</span>
+                  <input
+                    autoComplete="family-name"
+                    onChange={(event) => updateCheckoutCustomer("lastName", event.target.value)}
+                    value={checkoutCustomer.lastName}
+                  />
+                </label>
+                <label>
+                  <span>Email</span>
+                  <input
+                    autoComplete="email"
+                    inputMode="email"
+                    onChange={(event) => updateCheckoutCustomer("email", event.target.value)}
+                    value={checkoutCustomer.email}
+                  />
+                </label>
+                <label>
+                  <span>Phone</span>
+                  <input
+                    autoComplete="tel"
+                    inputMode="tel"
+                    onChange={(event) => updateCheckoutCustomer("phone", event.target.value)}
+                    placeholder="10 digits"
+                    value={checkoutCustomer.phone}
+                  />
+                </label>
               </div>
-            ) : null}
-
-            <h3>{vendorId === "walgreens" ? "Manual fallback" : "Store checklist"}</h3>
-            {steps.length > 0 ? (
-              <div className="storesteps">
-                {steps.map((packet, index) => {
-                  const copy = operationCopy[packet.operation];
-                  return (
-                    <a className="storestep" href={packet.providerPortalUrl} key={packet.id} rel="noreferrer" target="_blank">
-                      <span className="storestep-num">{index + 1}</span>
-                      <span>
-                        <strong>{copy?.label ?? packet.operation}</strong>
-                        <small>{copy?.detail}</small>
-                      </span>
-                      <ExternalLink className="storestep-ext" size={15} />
+              <button
+                className="btn btn-primary"
+                disabled={!canUseWalgreensCheckout || checkoutLoading}
+                onClick={openWalgreensCheckout}
+                type="button"
+              >
+                {checkoutLoading ? "Preparing..." : "Continue to Walgreens"}
+                <ExternalLink size={16} />
+              </button>
+              {checkoutStatus ? (
+                <div className={`checkoutstatus checkoutstatus-${checkoutStatus.tone}`} aria-live="polite">
+                  <strong>{checkoutStatus.title}</strong>
+                  <span>{checkoutStatus.detail}</span>
+                  {checkoutStatus.checkoutUrl ? (
+                    <a href={checkoutStatus.checkoutUrl} rel="noreferrer" target="_blank">
+                      Reopen Walgreens
                     </a>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="storesteps">
-                {handoff.checklist.slice(0, 4).map((item, index) => (
-                  <div className="storestep" key={item}>
-                    <span className="storestep-num">{index + 1}</span>
-                    <span>
-                      <strong>{item}</strong>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {storeUrl ? (
-              <a className="textlink" href={storeUrl} rel="noreferrer" target="_blank">
-                Open {handoff.vendorName} card printing
-              </a>
-            ) : null}
-            <div className="trustline">
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            <div className="trustline" aria-label="Checkout status">
               <ShieldCheck size={16} />
-              {vendorId === "walgreens"
-                ? "Walgreens hosts checkout and payment — CustomCard does not collect card details."
-                : "You review and pay at the print shop — CustomCard never charges you or places orders."}
+              Walgreens handles payment. CustomCard does not collect card details.
             </div>
           </section>
         </div>
@@ -401,6 +325,21 @@ function splitName(name = "") {
     firstName: parts[0] ?? "",
     lastName: parts.slice(1).join(" ") || parts[0] || ""
   };
+}
+
+function buildCheckoutCustomer(defaults?: { name?: string; firstName?: string; lastName?: string; email?: string; phone?: string }) {
+  const split = splitName(defaults?.name);
+  return {
+    firstName: defaults?.firstName || split.firstName,
+    lastName: defaults?.lastName || split.lastName,
+    email: defaults?.email ?? "",
+    phone: normalizePhone(defaults?.phone ?? "")
+  };
+}
+
+function normalizePhone(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  return digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits.slice(0, 10);
 }
 
 async function panelToJpegBase64(panel: CardPanel): Promise<string> {

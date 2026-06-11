@@ -5,6 +5,7 @@ const files = {
   pricing: "src/printerPricing.ts",
   pricingTest: "src/printerPricing.test.ts",
   app: "src/App.tsx",
+  webappPrint: "webapp/views/PrintView.tsx",
   apiServer: "scripts/api-server.mjs",
   apiRuntime: "scripts/api-runtime.mjs",
   couponCollector: "scripts/printer-coupon-collector.mjs",
@@ -113,9 +114,9 @@ const checks = [
     "expect(cvsOffer?.code).not.toBe(\"GRADUATION\")",
     "marks stale public printer pricing before showing it as current"
   ]),
-  checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.apiServer}`, [
-    "Price estimate",
-    "Public prices are not final checkout totals.",
+  checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.webappPrint}\n${contents.apiServer}`, [
+    "Estimated price",
+    "Walgreens confirms the final total",
     "knownPriceCount: 12",
     "sourceCount: 8",
     "couponSourceCount: 4",
@@ -129,7 +130,7 @@ const checks = [
     "couponPortalApplicationTargetCount: 5",
     "providerPortalApplicationRequired: true",
     "bestAvailablePriceRequiresCouponPortalEvidence: true",
-    "refreshReport.totalObservations",
+    "rankedKnownPrices",
     "liveQuote: false"
   ]),
   checkIncludes("surfaces", "server-owned-coupon-portal-evidence-api", `${contents.apiServer}\n${contents.apiRuntime}\n${contents.apiContracts}\n${contents.couponPortalEvidenceData}\n${contents.retailOperationStartData}`, [

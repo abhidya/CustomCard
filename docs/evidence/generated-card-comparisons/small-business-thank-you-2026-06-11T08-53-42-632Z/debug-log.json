@@ -1,0 +1,371 @@
+{
+  "runId": "small-business-thank-you-2026-06-11T08-53-42-632Z",
+  "createdAtIso": "2026-06-11T08:53:42.639Z",
+  "benchmark": {
+    "category": "Small business thank-you AI card",
+    "competitor": "Adobe Express",
+    "competitorPrompt": "thanks for supporting our small business",
+    "competitorSource": "https://www.adobe.com/express/create/ai/card",
+    "competitorLocalFile": "docs/evidence/competitor-card-examples/adobe-express-small-business-thanks.png",
+    "competitorSha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+  },
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "AZURE_OPENAI_API_KEY",
+      "AZURE_OPENAI_CHAT_DEPLOYMENT",
+      "AZURE_OPENAI_ENDPOINT",
+      "AZURE_OPENAI_IMAGE_DEPLOYMENT",
+      "BFL_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "DEEPSEEK_API_KEY",
+      "FAL_KEY",
+      "FIREWORKS_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "GROQ_API_KEY",
+      "HUGGINGFACE_API_TOKEN",
+      "MISTRAL_API_KEY",
+      "OPENAI_API_KEY",
+      "PERPLEXITY_API_KEY",
+      "REPLICATE_API_TOKEN",
+      "STABILITY_API_KEY",
+      "TOGETHER_API_KEY",
+      "XAI_API_KEY"
+    ],
+    "objectStoreConfiguredKeys": [
+      "CUSTOMCARD_ARTIFACT_PERSISTENCE",
+      "OBJECT_STORE_ACCESS_KEY_ID",
+      "OBJECT_STORE_BUCKET",
+      "OBJECT_STORE_PUBLIC_BASE_URL",
+      "OBJECT_STORE_READ_ACCESS_KEY_ID",
+      "OBJECT_STORE_READ_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_REGION",
+      "OBJECT_STORE_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_SIGNING_SECRET",
+      "OBJECT_STORE_URL"
+    ],
+    "secretsRedacted": true
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.2-3b-instruct",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.2-3b-instruct",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "cloudflare-workers-ai-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-image",
+        "browser-svg-renderer"
+      ],
+      "blockedReasons": []
+    }
+  ],
+  "effectivePrompt": {
+    "uiUxIntent": "Generate an original CustomCard counterpart to Adobe Express small-business thank-you example, using CustomCard structured card UX: four editable panels, safe-zone print layout, privacy-safe memory notes, deterministic typography, and persisted render artifacts.",
+    "requestBody": {
+      "sender": "CustomCard",
+      "recipient": "loyal customers",
+      "relationship": "small business to repeat customer",
+      "occasion": "thank-you for supporting a small business",
+      "tone": "warm, sincere, polished, grateful, not salesy",
+      "style": "CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays",
+      "language": "English",
+      "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+      "memory_notes": [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+        "CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts."
+      ],
+      "aiFlowConfig": [
+        {
+          "flowId": "card-copy",
+          "primaryAdapterId": "cloudflare-workers-ai-chat",
+          "fallbackAdapterId": "deterministic-customer-chat",
+          "liveProviderCallsEnabled": true,
+          "queueEnabled": false,
+          "fallbackQueueEnabled": true,
+          "model": "@cf/meta/llama-3.2-3b-instruct",
+          "promptInstructions": "Write print-safe folded greeting card copy. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and keep each panel concise enough for a 5x7 print layout.",
+          "rateLimitPerMinute": 10,
+          "monthlyBudgetCents": 3000,
+          "perRequestBudgetCents": 12,
+          "maxRetries": 1,
+          "maxTokens": 1200,
+          "temperature": 0.55
+        },
+        {
+          "flowId": "card-image",
+          "primaryAdapterId": "cloudflare-workers-ai-image",
+          "fallbackAdapterId": "browser-svg-renderer",
+          "liveProviderCallsEnabled": true,
+          "queueEnabled": true,
+          "fallbackQueueEnabled": true,
+          "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "promptInstructions": "Create one portrait 5x7 print panel at a time. Do not make a collage or folded mockup. Leave safe margins and reserve exact typography for deterministic app overlays when the provider cannot guarantee spelling.",
+          "rateLimitPerMinute": 4,
+          "monthlyBudgetCents": 3000,
+          "perRequestBudgetCents": 75,
+          "maxRetries": 0,
+          "maxTokens": 0,
+          "temperature": 0
+        }
+      ]
+    },
+    "copySystemPrompt": "Write print-safe folded greeting card copy. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and keep each panel concise enough for a 5x7 print layout.",
+    "copyUserPrompt": "{\n  \"task\": \"Generate greeting card copy JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"CustomCard\",\n    \"recipient\": \"loyal customers\",\n    \"relationship\": \"small business to repeat customer\",\n    \"occasion\": \"thank-you for supporting a small business\",\n    \"tone\": \"warm, sincere, polished, grateful, not salesy\",\n    \"style\": \"CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.\",\n    \"memory_notes\": [\n      \"The customer chose an independent small business instead of a large marketplace.\",\n      \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n      \"CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts.\"\n    ]\n  }\n}",
+    "imageSystemPrompt": "Create one portrait 5x7 print panel at a time. Do not make a collage or folded mockup. Leave safe margins and reserve exact typography for deterministic app overlays when the provider cannot guarantee spelling.",
+    "imagePromptTemplate": "Portrait 5x7 greeting card front cover artwork, print-ready, flat artwork only. Text is applied by CustomCard overlay."
+  },
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.2-3b-instruct",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Write print-safe folded greeting card copy. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and keep each panel concise enough for a 5x7 print layout."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate greeting card copy JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"Return JSON only, \n...<truncated>...\n\",\n    \"occasion\": \"thank-you for supporting a small business\",\n    \"tone\": \"warm, sincere, polished, grateful, not salesy\",\n    \"style\": \"CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.\",\n    \"memory_notes\": [\n      \"The customer chose an independent small business instead of a large marketplace.\",\n      \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n      \"CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": 1200,
+          "temperature": 0.55
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null
+      },
+      "durationMs": 1810
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Portrait 5x7 greeting card front cover artwork, print-ready, flat artwork only. Recipient: loyal customers. Occasion: thank-you for supporting a small business. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Art direction: Coordinated front cover artwork with safe margins.. No collage, no mockup, no table scene, no crop marks. Leave safe margins for deterministic text overlay."
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "112554"
+      },
+      "durationMs": 4185
+    }
+  ],
+  "generation": {
+    "draft_id": "ai-mq99geu2-loyal-customers",
+    "card_copy": {
+      "panels": [
+        {
+          "id": "front",
+          "headline": "For you",
+          "body": "A card made with care.",
+          "art_direction": "Coordinated front cover artwork with safe margins."
+        },
+        {
+          "id": "inside-left",
+          "headline": "Thinking of you",
+          "body": "A note for this moment.",
+          "art_direction": "Soft interior panel with room for a short message."
+        },
+        {
+          "id": "inside-right",
+          "headline": "From the heart",
+          "body": "With warm wishes.",
+          "art_direction": "Main message panel with readable typography and generous margins."
+        },
+        {
+          "id": "back",
+          "headline": "CustomCard",
+          "body": "Made with CustomCard. Printed locally.",
+          "art_direction": "Clean coordinating back panel with minimal ornamentation."
+        }
+      ],
+      "memory_citations": [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional."
+      ]
+    },
+    "images": [
+      {
+        "panel_id": "front",
+        "image_url": "<data-url 150094 chars>",
+        "revised_prompt": "Create one portrait 5x7 print panel at a time. Do not make a collage or folded mockup. Leave safe margins and reserve exact typography for deterministic app overlays when the provider cannot guarantee spelling.",
+        "width": 1500,
+        "height": 2100
+      }
+    ],
+    "generated_by": "ai-text-and-image",
+    "ai_flow": {
+      "card_copy": {
+        "flow_id": "card-copy",
+        "adapter_id": "cloudflare-workers-ai-chat",
+        "primary_adapter_id": "cloudflare-workers-ai-chat",
+        "fallback_adapter_id": "deterministic-customer-chat",
+        "model": "@cf/meta/llama-3.2-3b-instruct",
+        "rate_limit_per_minute": 10,
+        "monthly_budget_cents": 3000,
+        "per_request_budget_cents": 12,
+        "queue_enabled": false,
+        "fallback_queue_enabled": true,
+        "live_provider_calls_enabled": true,
+        "ready_for_live_calls": true,
+        "blocked_reasons": []
+      },
+      "card_image": {
+        "flow_id": "card-image",
+        "adapter_id": "cloudflare-workers-ai-image",
+        "primary_adapter_id": "cloudflare-workers-ai-image",
+        "fallback_adapter_id": "browser-svg-renderer",
+        "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+        "rate_limit_per_minute": 4,
+        "monthly_budget_cents": 3000,
+        "per_request_budget_cents": 75,
+        "queue_enabled": true,
+        "fallback_queue_enabled": true,
+        "live_provider_calls_enabled": true,
+        "ready_for_live_calls": true,
+        "blocked_reasons": []
+      }
+    },
+    "live_provider_calls_enabled": true,
+    "fallback_queued": false,
+    "external_network_calls": true
+  },
+  "files": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-small-business-thanks-front.svg",
+      "sha256": "cc8730d162c4b95cae5ee300d64d002922eeb7f5f35390494fcf6d47ba788656"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-ai-output.json",
+      "sha256": "6f40f719e89cdc459b6c259c52250c92b58a6bd8638b0366c9e59ecc654c04ff"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-2026-06-11T08-53-42-632Z/effective-prompt.json",
+      "sha256": "54b60763b9e0c79d7a0c069c0874001744003ac9f5419341d4e9de8e2a1d3f64"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-2026-06-11T08-53-42-632Z/comparison.md",
+      "sha256": "95abe93fbd0708cf460e426676f9540281cb41d2735dff81a032a2c1ce28b4b3"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-provider-front-art.jpg",
+      "sha256": "d0b66d990f67c5a4218af52ef6b58c557df7e133424bf189964f25c997550152"
+    }
+  ],
+  "persistence": {
+    "signedArtifactUrls": [
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:4173/api/artifacts/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-small-business-thanks-front.svg?expires=1781168928&contentHash=sha256-cc8730d162c4b95cae5ee300d64d002922eeb7f5f35390494fcf6d47ba788656&signature=<redacted>&v=hmac-sha256-v1",
+        "expiresAtIso": "2026-06-11T09:08:48.000Z",
+        "signature": "<redacted>",
+        "signatureVersion": "hmac-sha256-v1",
+        "signaturePayload": "GET\nbenchmark-small-business-thank-you\nprojects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-small-business-thanks-front.svg\nsha256-cc8730d162c4b95cae5ee300d64d002922eeb7f5f35390494fcf6d47ba788656\n2026-06-11T09:08:48.000Z"
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:4173/api/artifacts/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-ai-output.json?expires=1781168928&contentHash=sha256-6f40f719e89cdc459b6c259c52250c92b58a6bd8638b0366c9e59ecc654c04ff&signature=<redacted>&v=hmac-sha256-v1",
+        "expiresAtIso": "2026-06-11T09:08:48.000Z",
+        "signature": "<redacted>",
+        "signatureVersion": "hmac-sha256-v1",
+        "signaturePayload": "GET\nbenchmark-small-business-thank-you\nprojects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-ai-output.json\nsha256-6f40f719e89cdc459b6c259c52250c92b58a6bd8638b0366c9e59ecc654c04ff\n2026-06-11T09:08:48.000Z"
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:4173/api/artifacts/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-provider-front-art.jpg?expires=1781168928&contentHash=sha256-d0b66d990f67c5a4218af52ef6b58c557df7e133424bf189964f25c997550152&signature=<redacted>&v=hmac-sha256-v1",
+        "expiresAtIso": "2026-06-11T09:08:48.000Z",
+        "signature": "<redacted>",
+        "signatureVersion": "hmac-sha256-v1",
+        "signaturePayload": "GET\nbenchmark-small-business-thank-you\nprojects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/customcard-provider-front-art.jpg\nsha256-d0b66d990f67c5a4218af52ef6b58c557df7e133424bf189964f25c997550152\n2026-06-11T09:08:48.000Z"
+      }
+    ],
+    "artifactPersistence": {
+      "status": "stored",
+      "storageProvider": "s3-compatible",
+      "provider": "cloudflare-r2",
+      "bucket": "customcard-prod",
+      "artifactCount": 3,
+      "verifiedWrites": 3,
+      "manifestStored": true,
+      "liveNetworkCalls": true,
+      "blockers": []
+    },
+    "artifactUri": "https://5def128db25828fb04363ccfa18a2bad.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/artifact-handoff-manifest.json",
+    "signedUrlExpiresAt": "2026-06-11T09:08:48.000Z"
+  },
+  "comparison": {
+    "competitorPrompt": "thanks for supporting our small business",
+    "ourPromptSummary": "Generate an original CustomCard counterpart to Adobe Express small-business thank-you example, using CustomCard structured card UX: four editable panels, safe-zone print layout, privacy-safe memory notes, deterministic typography, and persisted render artifacts.",
+    "ourFrontHeadline": "For you",
+    "ourFrontBody": "A card made with care.",
+    "textProvider": "cloudflare-workers-ai-chat",
+    "imageProvider": "cloudflare-workers-ai-image",
+    "persisted": "stored"
+  },
+  "errors": []
+}

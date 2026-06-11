@@ -5,6 +5,7 @@ const files = {
   localization: "src/localization.ts",
   localizationTest: "src/localization.test.ts",
   app: "src/App.tsx",
+  webappStudio: "webapp/views/StudioView.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
   mobileExperience: "apps/mobile/src/customerExperience.ts",
@@ -45,7 +46,7 @@ const checks = [
     "reports missing bundles",
     "Unsafe localization claim"
   ]),
-  checkIncludes("surfaces", "web-and-api-localization-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "web-and-api-localization-surfaces", `${contents.app}\n${contents.webappStudio}\n${contents.apiContracts}\n${contents.apiServer}`, [
     "Card language",
     "Locale readiness",
     "summarizeLocalizationReadiness",
@@ -110,4 +111,3 @@ if (failed.length > 0) process.exit(1);
 function countMatches(text, pattern) {
   return [...text.matchAll(pattern)].length;
 }
-

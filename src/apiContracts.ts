@@ -1,93 +1,37 @@
 import { mobileExperience, summarizeMobileExperience, validateMobileExperience } from "../apps/mobile/src/customerExperience.ts";
 import {
-  aiProviderReadinessItems,
-  summarizeAiProviderReadiness,
-  validateAiProviderReadiness,
+  buildReadinessSummary,
+  validateReadinessDomains,
   type AiProviderReadinessItem,
-  type AiProviderReadinessSummary
-} from "./aiProviderReadiness";
-import {
-  capacityProfiles,
-  summarizeCapacityPlan,
-  validateCapacityProfiles,
+  type AiProviderReadinessSummary,
+  type BusinessEngagementReadinessItem,
+  type BusinessEngagementReadinessSummary,
   type CapacityPlanSummary,
-  type CapacityProfile
-} from "./capacityPlan";
-import {
-  externalAuditReadinessItems,
-  summarizeExternalAuditReadiness,
-  validateExternalAuditReadiness,
-  type ExternalAuditReadinessItem,
-  type ExternalAuditReadinessSummary
-} from "./externalAuditReadiness";
-import {
-  e2eCoverageItems,
-  summarizeE2eCoverage,
-  validateE2eCoverage,
+  type CapacityProfile,
+  type CloudArtifactProofReadinessItem,
+  type CloudArtifactProofReadinessSummary,
   type E2eCoverageItem,
-  type E2eCoverageSummary
-} from "./e2eCoverage";
+  type E2eCoverageSummary,
+  type ExternalAuditReadinessItem,
+  type ExternalAuditReadinessSummary,
+  type HostedApiReadinessItem,
+  type HostedApiReadinessSummary,
+  type MobileRenderReadinessItem,
+  type MobileRenderReadinessSummary,
+  type ObservabilityReadinessItem,
+  type ObservabilityReadinessSummary,
+  type PaymentReadinessItem,
+  type PaymentReadinessSummary,
+  type RetailFulfillmentReadinessItem,
+  type RetailFulfillmentReadinessSummary,
+  type ReviewerDbSeedReadinessItem,
+  type ReviewerDbSeedReadinessSummary
+} from "./readinessSummary";
 import {
   summarizeLocalizationReadiness,
   supportedLocales,
   type LocalizationReadinessSummary
 } from "./localization.ts";
-import {
-  observabilityReadinessItems,
-  summarizeObservabilityReadiness,
-  validateObservabilityReadiness,
-  type ObservabilityReadinessItem,
-  type ObservabilityReadinessSummary
-} from "./observabilityReadiness";
-import {
-  retailFulfillmentReadinessItems,
-  summarizeRetailFulfillmentReadiness,
-  validateRetailFulfillmentReadiness,
-  type RetailFulfillmentReadinessItem,
-  type RetailFulfillmentReadinessSummary
-} from "./retailFulfillmentReadiness";
-import {
-  paymentReadinessItems,
-  summarizePaymentReadiness,
-  validatePaymentReadiness,
-  type PaymentReadinessItem,
-  type PaymentReadinessSummary
-} from "./paymentReadiness";
-import {
-  mobileRenderReadinessItems,
-  summarizeMobileRenderReadiness,
-  validateMobileRenderReadiness,
-  type MobileRenderReadinessItem,
-  type MobileRenderReadinessSummary
-} from "./mobileRenderReadiness";
-import {
-  hostedApiReadinessItems,
-  summarizeHostedApiReadiness,
-  validateHostedApiReadiness,
-  type HostedApiReadinessItem,
-  type HostedApiReadinessSummary
-} from "./hostedApiReadiness";
-import {
-  reviewerDbSeedReadinessItems,
-  summarizeReviewerDbSeedReadiness,
-  validateReviewerDbSeedReadiness,
-  type ReviewerDbSeedReadinessItem,
-  type ReviewerDbSeedReadinessSummary
-} from "./reviewerDbSeedReadiness";
-import {
-  cloudArtifactProofReadinessItems,
-  summarizeCloudArtifactProofReadiness,
-  validateCloudArtifactProofReadiness,
-  type CloudArtifactProofReadinessItem,
-  type CloudArtifactProofReadinessSummary
-} from "./cloudArtifactProofReadiness";
-import {
-  businessEngagementReadinessItems,
-  summarizeBusinessEngagementReadiness,
-  validateBusinessEngagementReadiness,
-  type BusinessEngagementReadinessItem,
-  type BusinessEngagementReadinessSummary
-} from "./businessEngagementReadiness";
 import {
   buildCalendarConnectionStartPackets,
   buildCalendarConnectionStartResponse,
@@ -272,6 +216,7 @@ export const apiRouteContracts: ApiRouteContract[] = apiRouteContractData;
 
 export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteContracts): ApiReadinessSummary {
   const runtimeReadiness = providerCatalog.map((adapter) => getProviderRuntimeReadiness(adapter.id));
+  const readiness = buildReadinessSummary();
   const blockers = validateApiContracts(routes);
 
   return {
@@ -289,18 +234,18 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     governance: summarizeProviderGovernance(),
     localization: summarizeLocalizationReadiness(),
     production: summarizeProductionReadiness(),
-    externalAudit: summarizeExternalAuditReadiness(),
-    e2eCoverage: summarizeE2eCoverage(),
-    aiProviderReadiness: summarizeAiProviderReadiness(),
-    capacity: summarizeCapacityPlan(),
-    observability: summarizeObservabilityReadiness(),
-    retailFulfillment: summarizeRetailFulfillmentReadiness(),
-    paymentReadiness: summarizePaymentReadiness(),
-    mobileRenderReadiness: summarizeMobileRenderReadiness(),
-    hostedApiReadiness: summarizeHostedApiReadiness(),
-    reviewerDbSeedReadiness: summarizeReviewerDbSeedReadiness(),
-    cloudArtifactProofReadiness: summarizeCloudArtifactProofReadiness(),
-    businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
+    externalAudit: readiness.externalAudit.summary,
+    e2eCoverage: readiness.e2eCoverage.summary,
+    aiProviderReadiness: readiness.aiProvider.summary,
+    capacity: readiness.capacity.summary,
+    observability: readiness.observability.summary,
+    retailFulfillment: readiness.retailFulfillment.summary,
+    paymentReadiness: readiness.payment.summary,
+    mobileRenderReadiness: readiness.mobileRender.summary,
+    hostedApiReadiness: readiness.hostedApi.summary,
+    reviewerDbSeedReadiness: readiness.reviewerDbSeed.summary,
+    cloudArtifactProofReadiness: readiness.cloudArtifactProof.summary,
+    businessEngagementReadiness: readiness.businessEngagement.summary,
     runtime: summarizeApiRuntime(runtimeReadiness),
     mobile: summarizeMobileExperience(),
     blockers
@@ -311,6 +256,7 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
   const printerPricing = buildPrinterPricingComparison("walgreens");
   const calendarStartPackets = buildCalendarConnectionStartPackets();
   const retailOperationStartPackets = buildRetailPrinterOperationStartPackets();
+  const readiness = buildReadinessSummary();
 
   return {
     customer: buildCustomerPanelModel(),
@@ -324,54 +270,18 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
       gates: productionLaunchGates,
       summary: summarizeProductionReadiness()
     },
-    externalAudit: {
-      items: externalAuditReadinessItems,
-      summary: summarizeExternalAuditReadiness()
-    },
-    e2eCoverage: {
-      items: e2eCoverageItems,
-      summary: summarizeE2eCoverage()
-    },
-    aiProviderReadiness: {
-      items: aiProviderReadinessItems,
-      summary: summarizeAiProviderReadiness()
-    },
-    capacity: {
-      profiles: capacityProfiles,
-      summary: summarizeCapacityPlan()
-    },
-    observability: {
-      items: observabilityReadinessItems,
-      summary: summarizeObservabilityReadiness()
-    },
-    retailFulfillment: {
-      items: retailFulfillmentReadinessItems,
-      summary: summarizeRetailFulfillmentReadiness()
-    },
-    paymentReadiness: {
-      items: paymentReadinessItems,
-      summary: summarizePaymentReadiness()
-    },
-    mobileRenderReadiness: {
-      items: mobileRenderReadinessItems,
-      summary: summarizeMobileRenderReadiness()
-    },
-    hostedApiReadiness: {
-      items: hostedApiReadinessItems,
-      summary: summarizeHostedApiReadiness()
-    },
-    reviewerDbSeedReadiness: {
-      items: reviewerDbSeedReadinessItems,
-      summary: summarizeReviewerDbSeedReadiness()
-    },
-    cloudArtifactProofReadiness: {
-      items: cloudArtifactProofReadinessItems,
-      summary: summarizeCloudArtifactProofReadiness()
-    },
-    businessEngagementReadiness: {
-      items: businessEngagementReadinessItems,
-      summary: summarizeBusinessEngagementReadiness()
-    },
+    externalAudit: readiness.externalAudit,
+    e2eCoverage: readiness.e2eCoverage,
+    aiProviderReadiness: readiness.aiProvider,
+    capacity: readiness.capacity,
+    observability: readiness.observability,
+    retailFulfillment: readiness.retailFulfillment,
+    paymentReadiness: readiness.payment,
+    mobileRenderReadiness: readiness.mobileRender,
+    hostedApiReadiness: readiness.hostedApi,
+    reviewerDbSeedReadiness: readiness.reviewerDbSeed,
+    cloudArtifactProofReadiness: readiness.cloudArtifactProof,
+    businessEngagementReadiness: readiness.businessEngagement,
     chatTranscript: buildCustomerChatTranscript("Sara and Ahmed"),
     customerChat: buildCustomerChatSession({
       recipientName: "Sara and Ahmed",
@@ -489,42 +399,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
   for (const retailOperationIssue of validateRetailPrinterOperationStartPackets()) {
     issues.push(retailOperationIssue);
   }
-  for (const capacityIssue of validateCapacityProfiles()) {
-    issues.push(capacityIssue);
-  }
-  for (const externalAuditIssue of validateExternalAuditReadiness()) {
-    issues.push(externalAuditIssue);
-  }
-  for (const e2eCoverageIssue of validateE2eCoverage()) {
-    issues.push(e2eCoverageIssue);
-  }
-  for (const aiProviderReadinessIssue of validateAiProviderReadiness()) {
-    issues.push(aiProviderReadinessIssue);
-  }
-  for (const observabilityIssue of validateObservabilityReadiness()) {
-    issues.push(observabilityIssue);
-  }
-  for (const retailFulfillmentIssue of validateRetailFulfillmentReadiness()) {
-    issues.push(retailFulfillmentIssue);
-  }
-  for (const paymentReadinessIssue of validatePaymentReadiness()) {
-    issues.push(paymentReadinessIssue);
-  }
-  for (const mobileRenderReadinessIssue of validateMobileRenderReadiness()) {
-    issues.push(mobileRenderReadinessIssue);
-  }
-  for (const hostedApiReadinessIssue of validateHostedApiReadiness()) {
-    issues.push(hostedApiReadinessIssue);
-  }
-  for (const reviewerDbSeedReadinessIssue of validateReviewerDbSeedReadiness()) {
-    issues.push(reviewerDbSeedReadinessIssue);
-  }
-  for (const cloudArtifactProofReadinessIssue of validateCloudArtifactProofReadiness()) {
-    issues.push(cloudArtifactProofReadinessIssue);
-  }
-  for (const businessEngagementReadinessIssue of validateBusinessEngagementReadiness()) {
-    issues.push(businessEngagementReadinessIssue);
-  }
+  issues.push(...validateReadinessDomains());
 
   return issues;
 }

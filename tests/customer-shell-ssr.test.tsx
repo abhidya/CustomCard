@@ -1,11 +1,20 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderToString } from "react-dom/server";
-import { createElement } from "react";
-import App from "../src/App";
+import { createElement, type ReactNode } from "react";
+import App from "../webapp/App";
 import {
   customerVisibleFixtureTermPattern,
   customerVisibleImplementationTermPattern
 } from "../src/customerWebExperience";
+
+vi.mock("@clerk/react", () => ({
+  Show: ({ children, when }: { children: ReactNode; when: string }) => when === "signed-out" ? children : null,
+  SignInButton: ({ children }: { children: ReactNode }) => children,
+  SignUpButton: ({ children }: { children: ReactNode }) => children,
+  UserButton: () => null,
+  useAuth: () => ({ getToken: async () => undefined }),
+  useUser: () => ({ isLoaded: true, isSignedIn: false, user: null })
+}));
 
 /**
  * Server-render smoke for the customer shell. Headless Chrome is not always
@@ -98,95 +107,93 @@ describe("customer shell server render", () => {
   it("renders the first-run home around the occasion-first hero", () => {
     const { text } = renderShell();
 
-    expect(text).toContain("CustomCard");
-    expect(text).toContain("Make someone's");
-    expect(text).toContain("Pick the occasion");
-    for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
-      expect(text).toContain(label);
-    }
-    expect(text).toContain("Or paste an invite, calendar export, or short note");
-    expect(text).toContain("Create private workspace");
-    expect(text).toContain("Create local workspace");
-    expect(text).toContain("No account needed. Cards stay private in this browser.");
-    expect(text).toContain("Import an invite");
-    expect(text).toContain("Private by design");
+      expect(text).toContain("CustomCard");
+      expect(text).toContain("Make someone's");
+      expect(text).toContain("Pick the occasion");
+      for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
+        expect(text).toContain(label);
+      }
+      expect(text).toContain("Cards that feel hand-made");
+      expect(text).toContain("Or paste an invite or calendar event");
+      expect(text).toContain("Sign in");
+      expect(text).toContain("Sign up");
 
-    // Console-era furniture must stay gone from the customer home.
-    expect(text).not.toContain("Personal card workflow");
-    expect(text).not.toContain("Manual import");
-    expect(text).not.toContain("Google Calendar connection");
-    expect(text).not.toContain("Card assistant");
-    expect(text).not.toContain("Language readiness");
-    expect(text).not.toContain("Print options after proof");
-  });
+      // Console-era furniture must stay gone from the customer home.
+      expect(text).not.toContain("Personal card workflow");
+      expect(text).not.toContain("Manual import");
+      expect(text).not.toContain("Google Calendar connection");
+      expect(text).not.toContain("Card assistant");
+      expect(text).not.toContain("Language readiness");
+      expect(text).not.toContain("Print options after proof");
+      expect(text).not.toContain("Admin panel");
+      expect(text).not.toContain("Adapter readiness");
+    });
 
-  it("renders the returning-customer home with queue and history", () => {
-    const { text, html } = renderShell({ storedWorkspace: sampleWorkspace });
+    it("renders saved notes from a returning workspace", () => {
+      const storedWorkspace = {
+        ...sampleWorkspace,
+        memories: [
+          {
+            id: "memory-sara",
+            recipient: "Sara",
+            note: "She still laughs about the burnt birthday pancakes.",
+            approved: true,
+            createdAtIso: "2026-06-01T12:00:00.000Z"
+          }
+        ]
+      };
+      const { text } = renderShell({ search: "?view=memory", storedWorkspace });
 
-    expect(text).toContain("Hello, Maya");
-    expect(text).toContain("Coming up");
-    expect(text).toContain("Workspace ready");
-    expect(text).toContain("Review event");
-    expect(text).toContain("Anniversary card for Sara and Ahmed");
-    expect(text).toContain("Date needed");
-    expect(text).toContain("Make card");
-    expect(text).toContain("Recent cards");
-    expect(text).toContain("Birthday card for Maya");
-    expect(html).toContain("data:image/svg+xml");
-    expect(text).not.toContain("Create local workspace");
-  });
+      expect(text).toContain("Little things worth remembering");
+      expect(text).toContain("Save a note");
+      expect(text).toContain("Sara");
+      expect(text).toContain("burnt birthday pancakes");
+      expect(text).not.toContain("No notes yet");
+    });
 
-  it("keeps exactly one primary next action on the home view", () => {
-    for (const storedWorkspace of [undefined, sampleWorkspace]) {
-      const { html } = renderShell({ storedWorkspace });
-      const primaryCount = html.split('data-action-priority="primary"').length - 1;
-      expect(primaryCount).toBe(1);
-    }
-  });
+    it("keeps exactly one primary next action on the home view", () => {
+      for (const storedWorkspace of [undefined, sampleWorkspace]) {
+        const { html } = renderShell({ storedWorkspace });
+        const primaryCount = html.split('class="btn btn-primary"').length - 1;
+        expect(primaryCount).toBe(1);
+      }
+    });
 
-  it("renders the events view with import box and calendar sources", () => {
-    const { text } = renderShell({ search: "?view=opportunities" });
+    it("renders the events view with import box and calendar sources", () => {
+      const { text } = renderShell({ search: "?view=opportunities" });
 
-    expect(text).toContain("Add event details");
-    expect(text).toContain("Read event");
-    expect(text).toContain("Generate card");
-    expect(text).toContain("Save for later");
-    expect(text).toContain("Where events can come from");
-    expect(text).toContain("Google Calendar connection");
-    expect(text).toContain("Apple Calendar ICS export");
-    expect(text).toContain("Coming soon");
-    expect(text).toContain("Export from app");
-  });
+      expect(text).toContain("Never miss a moment");
+      expect(text).toContain("Paste invite or ICS");
+      expect(text).toContain("Google Calendar");
+      expect(text).toContain("Apple Calendar export");
+      expect(text).toContain("Add an occasion");
+      expect(text).toContain("Try an example");
+      expect(text).toContain("Nothing here yet");
+    });
 
-  it("renders the studio as a card stage with the assistant inside", () => {
-    const { html, text } = renderShell({ search: "?view=studio", storedWorkspace: sampleWorkspace });
+    it("renders the studio as a print-preview card stage", () => {
+      const { html, text } = renderShell({ search: "?view=studio", storedWorkspace: sampleWorkspace });
 
-    expect(text).toContain("Your card");
-    expect(text).toContain("Make it theirs");
-    expect(text).toContain("Tone");
-    expect(text).toContain("Style");
-    expect(text).toContain("Card language");
-    expect(text).toContain("Ar EG");
-    expect(text).toContain("Print safe");
-    expect(text).toContain("Continue to print options");
-    expect(text).toContain("Card assistant");
-    expect(text).toContain("Private local replies");
-    expect(text).toContain("Runs in this browser");
-    expect(text).toContain("No outside transcript");
-    expect(html).toContain('aria-label="Customer chat message"');
-    expect(html.split("panelPreview").length - 1).toBeGreaterThanOrEqual(4);
-  });
+      expect(text).toContain("Your card, their story");
+      expect(text).toContain("Who it's for");
+      expect(text).toContain("Tone");
+      expect(text).toContain("Style");
+      expect(text).toContain("Card language");
+      expect(text).toContain("Make it personal");
+      expect(text).toContain("Continue to print");
+      expect(html.split("pagetab").length - 1).toBeGreaterThanOrEqual(4);
+    });
 
-  it("renders print options with downloads and the outside-checkout boundary", () => {
-    const { text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
+    it("renders print options with downloads and the outside-checkout boundary", () => {
+      const { text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
 
-    expect(text).toContain("Print your card");
-    expect(text).toContain("Download print package");
-    expect(text).toContain("Download SVG set");
-    expect(text).toContain("Print-ready files");
-    expect(text).toContain("Checkout happens outside CustomCard");
-    expect(text).toContain("Price estimate");
-  });
+      expect(text).toContain("Checkout at Walgreens");
+      expect(text).toContain("Walgreens partner checkout");
+      expect(text).toContain("Save print package");
+      expect(text).toContain("Panels only");
+      expect(text).toContain("Copy checklist");
+      expect(text).toContain("Walgreens confirms the final total");
+    });
 
   it("keeps customer-visible views free of fixture and implementation terms", () => {
     const views = ["", "?view=opportunities", "?view=studio", "?view=memory"];

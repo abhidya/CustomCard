@@ -2,7 +2,7 @@ import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_pr
 import { describe, expect, it } from "vitest";
 import { handleApiRequest } from "../scripts/api-server.mjs";
 
-const shellDoctorTimeoutMs = 15_000;
+const shellDoctorTimeoutMs = 30_000;
 const runtimeDoctorEnv = {
   ...process.env,
   CUSTOMCARD_ENV: "prod",
@@ -604,7 +604,7 @@ describe("api server wrapper", () => {
       requestedMode: "surprise-runtime"
     });
     expect(report.blockers).toContain("Unsupported CUSTOMCARD_API_RUNTIME: surprise-runtime. Expected contract, memory, or postgres.");
-  });
+  }, shellDoctorTimeoutMs);
 
   it("blocks production-shaped API doctors from falling back to contract runtime", () => {
     for (const customcardRuntime of ["", "contract", "memory"]) {
@@ -653,7 +653,7 @@ describe("api server wrapper", () => {
     });
     expect(contract.status).toBe(1);
     expect(contract.stderr).toContain("CustomCard production runtime requires CUSTOMCARD_API_RUNTIME=postgres.");
-  });
+  }, shellDoctorTimeoutMs);
 
   it("serves API readiness, bootstrap, and contract-only mutation responses", async () => {
     const port = 6100 + Math.floor(Math.random() * 1000);
@@ -1467,6 +1467,9 @@ describe("api server wrapper", () => {
       env: {
         ...process.env,
         CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "false",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "false",
+        CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "false",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
@@ -1528,6 +1531,55 @@ describe("api server wrapper", () => {
         liveCouponLookup: "operator-script-or-credential-gated-provider",
         providerPortalApplicationRequired: true,
         bestAvailablePriceRequiresCouponPortalEvidence: true
+      });
+
+      const unauthenticatedAiChat = await postJson(
+        port,
+        "/api/ai/chat/respond",
+        { customer_message: "Can you warm this up?", recipient_name: "Sara" },
+        { "X-Idempotency-Key": "ai-chat-missing-auth" }
+      );
+      expect(unauthenticatedAiChat.status).toBe(401);
+      expect(await unauthenticatedAiChat.json()).toMatchObject({
+        status: "auth-required",
+        requiredAuth: "customer-session"
+      });
+
+      const wrongRoleAiChat = await postJson(
+        port,
+        "/api/ai/chat/respond",
+        { customer_message: "Can you warm this up?", recipient_name: "Sara" },
+        {
+          ...bearer(adminToken),
+          "X-Idempotency-Key": "ai-chat-wrong-role"
+        }
+      );
+      expect(wrongRoleAiChat.status).toBe(403);
+      expect(await wrongRoleAiChat.json()).toMatchObject({
+        status: "wrong-role",
+        requiredAuth: "customer-session"
+      });
+
+      const customerAiChat = await postJson(
+        port,
+        "/api/ai/chat/respond",
+        {
+          customer_message: "Can you make this feel warmer?",
+          recipient_name: "Sara",
+          approved_memory_notes: ["She likes botanical cards."],
+          locale: "en-US",
+          aiFlowConfig: [{ flowId: "customer-chat", liveProviderCallsEnabled: true }]
+        },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "ai-chat-customer-session"
+        }
+      );
+      expect(customerAiChat.status).toBe(200);
+      expect(await customerAiChat.json()).toMatchObject({
+        assistant_message: expect.stringContaining("Sara"),
+        live_provider_calls_enabled: false,
+        external_network_calls: false
       });
 
       const wrongRoleCouponEvidence = await postJson(

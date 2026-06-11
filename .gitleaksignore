@@ -1,0 +1,8 @@
+# Historical non-secret findings reviewed during the 2026-06-11 security pass.
+c707ac21928d4b3ff2e78a59457d0f58d69390be:.env.example:generic-api-key:11
+c707ac21928d4b3ff2e78a59457d0f58d69390be:SETUP.md:generic-api-key:36
+c707ac21928d4b3ff2e78a59457d0f58d69390be:README.md:generic-api-key:282
+c707ac21928d4b3ff2e78a59457d0f58d69390be:README.md:generic-api-key:300
+b4fca50c66fd9359a1b2dec1b2d479faa348b6e0:docs/printer-pricing-research.md:generic-api-key:352
+b4fca50c66fd9359a1b2dec1b2d479faa348b6e0:docs/printer-pricing-research.md:generic-api-key:353
+73acfc4d773874a73a61989c54a228aace16022b:tests/api-server.test.ts:generic-api-key:539

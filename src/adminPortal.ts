@@ -1,6 +1,7 @@
 import type { AdminOperationsWorkflow } from "./adminOperations";
 import type { AdminPanelModel } from "./providerCatalog";
 import type { ProviderGovernanceSummary } from "./providerGovernance";
+import type { ProviderOpsModel, ProviderOpsProvider } from "./providerOps";
 import type { RuntimeReadiness } from "./providerRuntime";
 import type { ProductionReadinessSummary } from "./productionReadiness";
 import type { ReadinessSummary } from "./readinessSummary";
@@ -91,6 +92,7 @@ export interface AdminPortalModelInput {
   model: AdminPanelModel;
   readiness: ReadinessSummary;
   providerGovernance: ProviderGovernanceSummary;
+  providerOps: ProviderOpsModel;
   productionReadiness: ProductionReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
   adminOperationsWorkflow: AdminOperationsWorkflow;
@@ -119,7 +121,7 @@ export function buildAdminPortalModel(input: AdminPortalModelInput): AdminPortal
     orderQueues: orders.records.length,
     userQueues: users.records.length,
     assetQueues: assets.records.length,
-    providerQueues: input.model.gatedProviders.length + input.model.blockedProviders.length,
+    providerQueues: input.providerOps.summary.fallbackQueues,
     launchGates: launch.records.length,
     liveMutationsEnabled: records.filter((record) => record.liveMutationEnabled).length,
     rawContentExposed: records.filter((record) => record.rawContentExposed).length
@@ -586,21 +588,23 @@ function buildAssetsArea(input: AdminPortalModelInput): AdminPortalArea {
 }
 
 function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number, runtimeReady: number): AdminPortalArea {
-  const { model, providerGovernance } = input;
+  const { providerOps } = input;
 
   return {
     id: "providers",
     label: "Providers",
-    eyebrow: "Provider governance",
-    summary: "Credential gates, blocked vendors, cost caps, rate limits, and dry-run provider readiness.",
+    eyebrow: "Provider operations",
+    summary: "Env-available providers, live feature gates, fallback queues, limits, ORR latency, and user-management gates.",
     metrics: [
-      { label: "Gated", value: `${model.gatedProviders.length}` },
-      { label: "Blocked", value: `${model.blockedProviders.length}` },
-      { label: "Ready local", value: `${model.readyLocalProviders.length}` },
-      { label: "Budget capped", value: `${providerGovernance.budgetCapped}` },
-      { label: "Rate limited", value: `${providerGovernance.rateLimited}` },
+      { label: "Available", value: `${providerOps.summary.availableProviders}` },
+      { label: "Env configured", value: `${providerOps.summary.envConfiguredProviders}` },
+      { label: "Live ready", value: `${providerOps.summary.liveReadyProviders}` },
+      { label: "Feature gated", value: `${providerOps.summary.liveGatedProviders}` },
+      { label: "Fallback queues", value: `${providerOps.summary.fallbackQueues}` },
+      { label: "Latency gates", value: `${providerOps.orr.latencyGateRequired}` },
       { label: "Runtime blocked", value: `${runtimeBlocked}` },
-      { label: "Runtime ready", value: `${runtimeReady}` }
+      { label: "Runtime ready", value: `${runtimeReady}` },
+      { label: "User env", value: `${providerOps.users.userManagementRequiredEnv.length}` }
     ],
     controls: [
       offControl("provider-live-calls", "Live provider calls", "Requires credentials, network allowlist, spend cap, and fallback coverage."),
@@ -608,36 +612,58 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
       offControl("provider-direct-orders", "Direct vendor orders", "Requires retail certification and kill-switch proof.")
     ],
     records: [
-      ...model.gatedProviders.slice(0, 5).map((adapter) =>
-        record({
-          id: `provider-gated-${adapter.id}`,
-          label: adapter.label,
-          domain: adapter.provider,
-          owner: "Provider integrations",
-          source: "Provider catalog",
-          status: "attention",
-          risk: "medium",
-          detail: adapter.detail,
-          action: `Attach credentials and safety gates for ${adapter.provider} before live use.`,
-          evidence: adapter.safetyGates.slice(0, 3)
-        })
-      ),
-      ...model.blockedProviders.slice(0, 4).map((adapter) =>
-        record({
-          id: `provider-blocked-${adapter.id}`,
-          label: adapter.label,
-          domain: adapter.provider,
-          owner: "Provider integrations",
-          source: "Provider catalog",
-          status: "blocked",
-          risk: "high",
-          detail: adapter.detail,
-          action: `Keep ${adapter.provider} blocked until certification and fallback evidence are attached.`,
-          evidence: adapter.safetyGates.slice(0, 3)
-        })
-      )
+      ...providerOps.selectedProviders.slice(0, 8).map(providerOpsRecord),
+      record({
+        id: "provider-user-management",
+        label: "User management gates",
+        domain: "Identity and support",
+        owner: "Identity and access",
+        source: "Provider Ops",
+        status: providerOps.users.liveMessagesEnabled > 0 || providerOps.users.crmWritesEnabled > 0 ? "blocked" : "attention",
+        risk: "high",
+        detail: `${providerOps.users.adminTokenProofs} admin token proofs, ${providerOps.users.customerTokenProofs} customer token proofs, ${providerOps.users.optInGates} opt-in gates.`,
+        action: "Keep admin/customer support queues metadata-only until hosted token, seed, opt-in, and audit evidence are attached.",
+        evidence: providerOps.users.userManagementRequiredEnv.slice(0, 4)
+      }),
+      record({
+        id: "provider-orr-latency",
+        label: "ORR latency and alert gates",
+        domain: "Operations readiness",
+        owner: "Observability and audit",
+        source: "Provider Ops",
+        status: providerOps.orr.productionAlertsEnabled > 0 || providerOps.orr.liveIngestionEnabled > 0 ? "blocked" : "attention",
+        risk: "medium",
+        detail: `${providerOps.orr.latencyGateRequired} provider latency gates, ${providerOps.orr.alertRoutesRequired} alert routes, ${providerOps.orr.maxRetentionDays} day max retention.`,
+        action: "Attach latency budget, alert route, sampling, retention, and incident review evidence before live provider operations.",
+        evidence: ["Latency budget evidence", "Alert routing drill", "Retention policy proof"]
+      })
     ]
   };
+}
+
+function providerOpsRecord(provider: ProviderOpsProvider): AdminPortalRecord {
+  const status: AdminPortalStatus =
+    provider.liveGate === "blocked" || provider.liveGate === "contract-only" ? "blocked" : provider.liveGate === "live-ready" ? "ready" : "attention";
+  const evidence = provider.missingEnv.length > 0
+    ? provider.missingEnv.slice(0, 3)
+    : provider.blockedReasons.length > 0
+      ? provider.blockedReasons.slice(0, 3)
+      : [`Fallback: ${provider.fallbackAdapterId}`];
+
+  return record({
+    id: `provider-ops-${provider.adapterId}`,
+    label: provider.label,
+    domain: provider.capabilityLabel,
+    owner: "Provider integrations",
+    source: "Provider Ops",
+    status,
+    risk: provider.liveGate === "live-ready" || provider.liveGate === "local-ready" ? "low" : "medium",
+    detail: `${provider.availability}; ${provider.liveGate}; fallback ${provider.fallbackAdapterId}; ${provider.rateLimitPerMinute}/min.`,
+    action: provider.liveGate === "live-ready"
+      ? "Keep spend, queue, and ORR evidence attached while live use is enabled."
+      : "Attach missing env, safety gates, fallback queue, and ORR evidence before live use.",
+    evidence
+  });
 }
 
 function buildLaunchArea(input: AdminPortalModelInput): AdminPortalArea {
