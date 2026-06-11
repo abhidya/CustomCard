@@ -64,6 +64,10 @@ const readyEnv: ProviderRuntimeEnv = {
   CLERK_AUTHORIZED_PARTIES: "https://customcard.test",
   CLERK_JWT_KEY: "configured-clerk-jwt-key",
   CLERK_SECRET_KEY: "configured-clerk-secret-key",
+  CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
+  CLOUDFLARE_API_TOKEN: "configured-cloudflare-api-token",
+  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
+  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct",
   COHERE_API_KEY: "configured-cohere-key",
   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
   COGNITO_DOMAIN: "customcard-auth",
@@ -79,6 +83,7 @@ const readyEnv: ProviderRuntimeEnv = {
   DATABASE_URL: "postgres://customcard:test@localhost:5432/customcard",
   DATADOG_API_KEY: "configured-datadog-api-key",
   DATADOG_SITE: "datadoghq.com",
+  DEEPAI_API_KEY: "configured-deepai-key",
   DEEPSEEK_API_KEY: "configured-deepseek-key",
   DYNAMICS_CLIENT_ID: "configured-dynamics-client-id",
   DYNAMICS_CLIENT_SECRET: "configured-dynamics-client-secret",
@@ -495,6 +500,7 @@ describe("provider runtime contracts", () => {
       "aws-bedrock-converse-chat",
       "anthropic-messages-chat",
       "google-gemini-chat",
+      "cloudflare-workers-ai-chat",
       "huggingface-chat",
       "mistral-chat",
       "cohere-chat",
@@ -535,6 +541,10 @@ describe("provider runtime contracts", () => {
     expect(buildTextChatRuntime("google-gemini-chat", textInput, readyEnv, openGates).request?.headers).toMatchObject({
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"
     });
+    expect(buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
+      headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
+    });
     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
       "https://api.cohere.com/v2/chat"
     );
@@ -564,8 +574,10 @@ describe("provider runtime contracts", () => {
       "azure-openai-image",
       "aws-bedrock-image",
       "google-gemini-image",
+      "cloudflare-workers-ai-image",
       "stability-stable-image",
       "huggingface-image",
+      "deepai-text2img-image",
       "replicate-image",
       "together-image",
       "ideogram-image",
@@ -618,6 +630,14 @@ describe("provider runtime contracts", () => {
     expect(buildImageGenerationRuntime("aws-bedrock-image", imageInput, readyEnv, openGates).request?.url).toBe(
       "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_IMAGE_MODEL_ID}/invoke"
     );
+    expect(buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
+      headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
+    });
+    expect(buildImageGenerationRuntime("deepai-text2img-image", imageInput, readyEnv, openGates).request).toMatchObject({
+      url: "https://api.deepai.org/api/text2img",
+      headers: expect.objectContaining({ "api-key": "{DEEPAI_API_KEY}" })
+    });
     expect(buildImageGenerationRuntime("ideogram-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "Api-Key": "{IDEOGRAM_API_KEY}"
     });

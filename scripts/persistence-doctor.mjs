@@ -36,6 +36,7 @@ const requiredTables = [
   "consent_records",
   "data_requests",
   "idempotency_keys",
+  "provider_call_events",
   "api_jobs",
   "audit_log"
 ];
@@ -62,6 +63,14 @@ const migrationSignals = [
   "request_hash TEXT NOT NULL",
   "CHECK (char_length(request_hash) >= 12)",
   "response_body JSONB NOT NULL",
+  "CREATE TABLE provider_call_events",
+  "tenant_id TEXT NOT NULL",
+  "adapter_id TEXT NOT NULL",
+  "month_bucket TEXT NOT NULL",
+  "estimated_cost_cents INTEGER NOT NULL",
+  "pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE)",
+  "live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE)",
+  "CREATE INDEX idx_provider_call_events_tenant_month",
   "CREATE TABLE api_jobs",
   "idempotency_key_id TEXT REFERENCES idempotency_keys(id)",
   "status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled'))",
@@ -86,6 +95,7 @@ const apiSignals = [
   "accountIdentityTable: true",
   "accountRecoveryTable: true",
   "idempotencyTable: true",
+  "providerUsageLedgerTable: true",
   "appendOnlyAudit: true",
   "relationshipMemoryRepository: true",
   "/api/memories/review",
@@ -126,6 +136,7 @@ const postgresRuntimeSignals = [
   "INSERT INTO consent_records",
   "INSERT INTO data_requests",
   "INSERT INTO idempotency_keys",
+  "INSERT INTO provider_call_events",
   "INSERT INTO audit_log",
   "INSERT INTO api_jobs"
 ];
@@ -313,6 +324,7 @@ const report = {
       manualVendorHandoffRepository: true,
       dataRequestRepository: true,
       idempotencyReplay: true,
+      providerUsageLedger: true,
       queueJobs: true,
       auditLog: true
     },

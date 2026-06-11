@@ -18,6 +18,7 @@ export type PersistenceTableName =
   | "consent_records"
   | "data_requests"
   | "idempotency_keys"
+  | "provider_call_events"
   | "api_jobs"
   | "audit_log";
 
@@ -53,6 +54,7 @@ export interface PersistenceReadinessSummary {
     appendOnly: number;
     authSessionTable: boolean;
     idempotencyTable: boolean;
+    providerUsageLedgerTable: boolean;
     jobTable: boolean;
   };
   routes: {
@@ -85,6 +87,7 @@ export const requiredPersistenceTableNames: PersistenceTableName[] = [
   "consent_records",
   "data_requests",
   "idempotency_keys",
+  "provider_call_events",
   "api_jobs",
   "audit_log"
 ];
@@ -133,6 +136,33 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
     ["idx_idempotency_keys_user_route", "unique_idempotency_replay"],
     true
   ),
+  table(
+    "provider_call_events",
+    [
+      "id",
+      "tenant_id",
+      "route_id",
+      "idempotency_key_id",
+      "adapter_id",
+      "capability",
+      "status",
+      "fallback_reason",
+      "month_bucket",
+      "request_units",
+      "estimated_cost_cents",
+      "actual_cost_cents",
+      "rate_limit_window_start",
+      "pii_free",
+      "live_network_call"
+    ],
+    [
+      "idx_provider_call_events_tenant_month",
+      "idx_provider_call_events_adapter_window",
+      "idx_provider_call_events_status"
+    ],
+    true,
+    true
+  ),
   table("api_jobs", ["id", "user_id", "route_id", "idempotency_key_id", "status", "payload", "result"], ["idx_api_jobs_user_status"], true),
   table("audit_log", ["id", "subject_type", "subject_id", "actor_id", "action", "metadata"], ["idx_audit_subject"], true, true)
 ];
@@ -142,9 +172,9 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("route-catalog", "none", "public", [], false, false, false),
   routePersistence("customer-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
   routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
-  routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "audit_log"], true, false, false),
-  routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections"], true, false, false),
-  routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "audit_log"], true, false, false),
+  routePersistence("admin-readiness", "read-only", "admin", ["auth_sessions", "account_identities", "account_recovery_challenges", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
+  routePersistence("admin-provider-catalog", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events"], true, false, false),
+  routePersistence("admin-provider-governance", "read-only", "admin", ["auth_sessions", "provider_connections", "provider_call_events", "audit_log"], true, false, false),
   routePersistence("admin-persistence-readiness", "read-only", "admin", ["auth_sessions", "idempotency_keys", "api_jobs", "audit_log"], true, false, false),
   routePersistence(
     "admin-demo-reset",
@@ -167,6 +197,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
       "vendor_quotes",
       "consent_records",
       "data_requests",
+      "provider_call_events",
       "audit_log"
     ],
     true,
@@ -179,7 +210,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("retail-printer-coupon-portal-evidence", "mutation", "admin", ["auth_sessions", "idempotency_keys", "audit_log"], true, true, false),
   routePersistence("card-projects", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_opportunities", "relationship_memories", "card_projects", "audit_log"], true, true, false),
   routePersistence("relationship-memories", "mutation", "customer", ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"], true, true, false),
-  routePersistence("render-packets", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "api_jobs", "audit_log"], true, true, true),
+  routePersistence("render-packets", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "provider_call_events", "api_jobs", "audit_log"], true, true, true),
   routePersistence("manual-vendor-handoff", "mutation", "customer", ["auth_sessions", "idempotency_keys", "render_packets", "orders", "order_events", "consent_records", "api_jobs", "audit_log"], true, true, true),
   routePersistence("data-requests", "mutation", "customer", ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"], true, true, false)
 ];
@@ -206,6 +237,14 @@ export const migrationRequiredSignals = [
   "request_hash TEXT NOT NULL",
   "CHECK (char_length(request_hash) >= 12)",
   "response_body JSONB NOT NULL",
+  "CREATE TABLE provider_call_events",
+  "tenant_id TEXT NOT NULL",
+  "adapter_id TEXT NOT NULL",
+  "month_bucket TEXT NOT NULL",
+  "estimated_cost_cents INTEGER NOT NULL",
+  "pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE)",
+  "live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE)",
+  "CREATE INDEX idx_provider_call_events_tenant_month",
   "CREATE TABLE api_jobs",
   "idempotency_key_id TEXT REFERENCES idempotency_keys(id)",
   "status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled'))",
@@ -240,6 +279,7 @@ export function buildPersistenceReadinessSummary(
       appendOnly: tables.filter((contract) => contract.appendOnly).length,
       authSessionTable: tables.some((contract) => contract.name === "auth_sessions"),
       idempotencyTable: tables.some((contract) => contract.name === "idempotency_keys"),
+      providerUsageLedgerTable: tables.some((contract) => contract.name === "provider_call_events"),
       jobTable: tables.some((contract) => contract.name === "api_jobs")
     },
     routes: {
@@ -290,6 +330,27 @@ export function validatePersistenceContracts(
       for (const column of ["user_id", "route_id", "idempotency_key", "request_hash", "response_body", "status", "expires_at"]) {
         if (!tableContract.requiredColumns.includes(column)) issues.push("idempotency_keys must include replay-safe columns.");
       }
+    }
+    if (tableContract.name === "provider_call_events") {
+      for (const column of [
+        "tenant_id",
+        "route_id",
+        "idempotency_key_id",
+        "adapter_id",
+        "capability",
+        "status",
+        "fallback_reason",
+        "month_bucket",
+        "request_units",
+        "estimated_cost_cents",
+        "actual_cost_cents",
+        "rate_limit_window_start",
+        "pii_free",
+        "live_network_call"
+      ]) {
+        if (!tableContract.requiredColumns.includes(column)) issues.push("provider_call_events must include provider spend ledger columns.");
+      }
+      if (!tableContract.appendOnly) issues.push("provider_call_events must be append-only.");
     }
     if (tableContract.name === "audit_log" && !tableContract.appendOnly) {
       issues.push("audit_log must be append-only.");

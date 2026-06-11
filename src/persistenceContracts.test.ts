@@ -43,9 +43,10 @@ describe("persistence contracts", () => {
     const summary = buildPersistenceReadinessSummary();
 
     expect(summary.status).toBe("ready");
-    expect(summary.tables.total).toBe(18);
+    expect(summary.tables.total).toBe(19);
     expect(summary.tables.authSessionTable).toBe(true);
     expect(summary.tables.idempotencyTable).toBe(true);
+    expect(summary.tables.providerUsageLedgerTable).toBe(true);
     expect(summary.tables.jobTable).toBe(true);
     expect(persistenceTableContracts.find((contract) => contract.name === "account_identities")?.requiredColumns).toEqual(
       expect.arrayContaining(["provider_subject", "raw_profile_stored", "claims_schema"])
@@ -56,6 +57,13 @@ describe("persistence contracts", () => {
     expect(summary.tables.rawContentAllowed).toBe(0);
     expect(persistenceTableContracts.find((contract) => contract.name === "render_packets")?.requiredColumns).toEqual(
       expect.arrayContaining(["artifact_manifest", "signed_url_expires_at", "external_share_approval_required", "real_orders_enabled"])
+    );
+    expect(persistenceTableContracts.find((contract) => contract.name === "provider_call_events")).toMatchObject({
+      appendOnly: true,
+      requiredColumns: expect.arrayContaining(["tenant_id", "adapter_id", "month_bucket", "estimated_cost_cents", "pii_free", "live_network_call"])
+    });
+    expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "render-packets")?.persistedTables).toContain(
+      "provider_call_events"
     );
     expect(summary.routes.schemaBacked).toBe(16);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);

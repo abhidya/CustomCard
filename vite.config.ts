@@ -52,6 +52,7 @@ export default defineConfig({
         "src/readinessRegister.mjs",
         "src/providerCatalog.ts",
         "src/providerGovernance.ts",
+        "src/providerOperations.ts",
         "src/retailPrinterAdapters.ts",
         "src/providerRuntime.ts",
         "src/serviceKernel.ts"

@@ -74,10 +74,13 @@ await runCheck("persists idempotent queue-backed mutations", async () => {
   expect(result.payload.renderPacketId === "render-packet-postgres-contract", "render-packet response should include persisted id");
   expect(result.payload.artifactManifest.direction === "rtl", "Arabic render packet should be RTL");
   expect(result.payload.persistedTables.includes("api_jobs"), "queue-backed route should include api_jobs");
+  expect(result.payload.persistedTables.includes("provider_call_events"), "render route should include provider_call_events");
   expect(fakeDb.idempotencyRecords.size === 1, "idempotency record should be inserted");
   expect(fakeDb.auditRecords.length === 1, "audit record should be inserted");
   expect(fakeDb.jobs.length === 1, "queue-backed route should insert an api job");
   expect(fakeDb.renderPackets.length === 1, "render_packets row should be inserted");
+  expect(fakeDb.providerCallEvents.length === 1, "provider_call_events row should be inserted");
+  expect(fakeDb.providerCallEvents[0].liveNetworkCall === false, "provider call ledger must keep live network calls disabled");
 });
 
 await runCheck("persists repository-backed import preview mutations", async () => {
@@ -344,6 +347,7 @@ await runCheck("replays matching idempotent mutations", async () => {
   expect(result.statusCode === 202, "replay should return accepted status");
   expect(result.payload.idempotencyReplayed, "replay should mark idempotencyReplayed");
   expect(fakeDb.idempotencyRecords.size === 6, "replay must not insert another idempotency record");
+  expect(fakeDb.providerCallEvents.length === 1, "replay must not duplicate provider call events");
 });
 
 await runCheck("rejects idempotency conflicts", async () => {
@@ -374,6 +378,7 @@ const report = {
     relationshipMemories: fakeDb.relationshipMemories.length,
     cardProjects: fakeDb.cardProjects.length,
     renderPackets: fakeDb.renderPackets.length,
+    providerCallEvents: fakeDb.providerCallEvents.length,
     orders: fakeDb.orders.length,
     orderEvents: fakeDb.orderEvents.length,
     consentRecords: fakeDb.consentRecords.length,
@@ -431,6 +436,7 @@ function runtimePersistenceCounts(state) {
     relationshipMemories: state.relationshipMemories.length,
     cardProjects: state.cardProjects.length,
     renderPackets: state.renderPackets.length,
+    providerCallEvents: state.providerCallEvents.length,
     orders: state.orders.length,
     orderEvents: state.orderEvents.length,
     consentRecords: state.consentRecords.length,
@@ -476,6 +482,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
     relationshipMemories: [],
     cardProjects: [],
     renderPackets: [],
+    providerCallEvents: [],
     orders: [],
     orderEvents: [],
     consentRecords: [],
@@ -617,6 +624,22 @@ function createFakeClient(state) {
           artifactManifest: JSON.parse(params[14]),
           signedUrlExpiresAt: params[15],
           externalShareApprovalRequired: params[16]
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO provider_call_events")) {
+        state.providerCallEvents.push({
+          id: params[0],
+          tenantId: params[1],
+          userId: params[2],
+          routeId: params[3],
+          idempotencyId: params[4],
+          adapterId: params[5],
+          provider: params[6],
+          capability: params[7],
+          metadata: JSON.parse(params[8]),
+          liveNetworkCall: false
         });
         return { rows: [], rowCount: 1 };
       }

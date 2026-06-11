@@ -107,6 +107,9 @@ jobs:
       - name: Validate provider cost governance
         run: npm run provider:governance:doctor
 
+      - name: Validate provider operations failover
+        run: npm run provider:operations:doctor
+
       - name: Validate capacity plan readiness
         run: npm run capacity:doctor
 

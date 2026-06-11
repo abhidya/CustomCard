@@ -165,8 +165,8 @@ describe("api contracts", () => {
     expect(summary.status).toBe("ready");
     expect(summary.routes.total).toBe(apiRouteContracts.length);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
-    expect(summary.providers.total).toBeGreaterThanOrEqual(121);
-    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(88);
+    expect(summary.providers.total).toBeGreaterThanOrEqual(124);
+    expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(91);
     expect(summary.governance.total).toBe(summary.providers.total);
     expect(summary.governance.blockers).toEqual([]);
     expect(summary.governance.fallbackCovered).toBe(summary.providers.total);
@@ -203,8 +203,8 @@ describe("api contracts", () => {
     });
     expect(summary.aiProviderReadiness).toMatchObject({
       total: 8,
-      textProviderContracts: 15,
-      imageProviderContracts: 15,
+      textProviderContracts: 16,
+      imageProviderContracts: 17,
       localFallbacks: 2,
       liveProviderCallsEnabled: 0,
       externalNetworkCalls: 0,
@@ -535,8 +535,8 @@ describe("api contracts", () => {
     );
     expect(payload.aiProviderReadiness.summary).toMatchObject({
       total: 8,
-      textProviderContracts: 15,
-      imageProviderContracts: 15,
+      textProviderContracts: 16,
+      imageProviderContracts: 17,
       liveProviderCallsEnabled: 0,
       productionTrafficEnabled: 0
     });

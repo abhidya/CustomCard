@@ -211,7 +211,10 @@ Official documentation anchors used for the adapter contracts:
 - n8n webhook node: https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/
 - Workato webhooks: https://docs.workato.com/connectors/workato_app/workato-webhooks.html
 - Pipedream workflow triggers: https://pipedream.com/docs/workflows/steps/triggers/
+- Cloudflare Workers AI REST API: https://developers.cloudflare.com/workers-ai/get-started/rest-api/
+- Cloudflare Workers AI OpenAI-compatible endpoints: https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/
 - Hugging Face Inference Providers: https://huggingface.co/docs/inference-providers/index
+- DeepAI API docs: https://deepai.org/docs
 - Stability image API: https://platform.stability.ai/docs/getting-started/stable-image
 - Replicate HTTP API: https://replicate.com/docs/reference/http
 - Resend send email API: https://resend.com/docs/api-reference/emails/send-email

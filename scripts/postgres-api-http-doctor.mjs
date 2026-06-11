@@ -415,6 +415,7 @@ try {
     expect(finalPersistence.relationshipMemories === 1, "Expected one relationship memory.");
     expect(finalPersistence.cardProjects === 1, "Expected one card project.");
     expect(finalPersistence.renderPackets === 1, "Expected one render packet.");
+    expect(finalPersistence.providerCallEvents === 1, "Expected one provider call event.");
     expect(finalPersistence.orders === 1, "Expected one manual handoff order.");
     expect(finalPersistence.orderEvents === 1, "Expected one manual handoff order event.");
     expect(finalPersistence.consentRecords === 2, "Expected two consent records.");
@@ -477,7 +478,7 @@ async function waitForApi() {
 }
 
 async function readPersistenceCounts(pool) {
-  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, relationshipMemories, cardProjects, renderPackets, orders, orderEvents, consentRecords, dataRequests] = await Promise.all([
+  const [idempotency, audit, jobs, providerConnections, importedEvents, cardOpportunities, relationshipMemories, cardProjects, renderPackets, providerCallEvents, orders, orderEvents, consentRecords, dataRequests] = await Promise.all([
     pool.query("SELECT COUNT(*)::int AS count FROM idempotency_keys"),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_log"),
     pool.query("SELECT COUNT(*)::int AS count FROM api_jobs"),
@@ -487,6 +488,7 @@ async function readPersistenceCounts(pool) {
     pool.query("SELECT COUNT(*)::int AS count FROM relationship_memories"),
     pool.query("SELECT COUNT(*)::int AS count FROM card_projects"),
     pool.query("SELECT COUNT(*)::int AS count FROM render_packets"),
+    pool.query("SELECT COUNT(*)::int AS count FROM provider_call_events"),
     pool.query("SELECT COUNT(*)::int AS count FROM orders"),
     pool.query("SELECT COUNT(*)::int AS count FROM order_events"),
     pool.query("SELECT COUNT(*)::int AS count FROM consent_records"),
@@ -502,6 +504,7 @@ async function readPersistenceCounts(pool) {
     relationshipMemories: relationshipMemories.rows[0].count,
     cardProjects: cardProjects.rows[0].count,
     renderPackets: renderPackets.rows[0].count,
+    providerCallEvents: providerCallEvents.rows[0].count,
     orders: orders.rows[0].count,
     orderEvents: orderEvents.rows[0].count,
     consentRecords: consentRecords.rows[0].count,
@@ -671,6 +674,7 @@ function emptyPersistenceCounts() {
     relationshipMemories: 0,
     cardProjects: 0,
     renderPackets: 0,
+    providerCallEvents: 0,
     orders: 0,
     orderEvents: 0,
     consentRecords: 0,

@@ -40,6 +40,7 @@ function createContractApiRuntime({ routes }) {
         relationshipMemoryRecords: 0,
         cardProjectRecords: 0,
         renderPacketRecords: 0,
+        providerCallEventRecords: 0,
         orderRecords: 0,
         orderEventRecords: 0,
         consentRecords: 0,
@@ -119,6 +120,7 @@ function createMemoryApiRuntime({ env, routes }) {
   const relationshipMemories = new Map();
   const cardProjects = new Map();
   const renderPackets = new Map();
+  const providerCallEvents = new Map();
   const orders = new Map();
   const orderEvents = new Map();
   const consentRecords = new Map();
@@ -145,6 +147,7 @@ function createMemoryApiRuntime({ env, routes }) {
         relationshipMemoryRecords: relationshipMemories.size,
         cardProjectRecords: cardProjects.size,
         renderPacketRecords: renderPackets.size,
+        providerCallEventRecords: providerCallEvents.size,
         orderRecords: orders.size,
         orderEventRecords: orderEvents.size,
         consentRecords: consentRecords.size,
@@ -176,6 +179,7 @@ function createMemoryApiRuntime({ env, routes }) {
           relationshipMemories,
           cardProjects,
           renderPackets,
+          providerCallEvents,
           orders,
           orderEvents,
           consentRecords,
@@ -256,6 +260,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
         relationshipMemoryRecords: null,
         cardProjectRecords: null,
         renderPacketRecords: null,
+        providerCallEventRecords: null,
         orderRecords: null,
         orderEventRecords: null,
         consentRecords: null,
@@ -366,6 +371,30 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory }) {
               statusCode: 202
             },
             prepared.requestHash
+          );
+        }
+        if (route.id === "render-packets") {
+          const providerCallEvent = buildRenderProviderCallEvent({ authContext, bodyText, idempotencyId });
+          await client.query(
+            `INSERT INTO provider_call_events
+               (id, tenant_id, user_id, route_id, idempotency_key_id, adapter_id, provider, capability, status,
+                fallback_from_adapter_id, fallback_reason, month_bucket, request_units, estimated_cost_cents,
+                actual_cost_cents, rate_limit_window_start, latency_ms, error_class, pii_free, live_network_call, metadata)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'fallback-selected',
+                     NULL, 'no-preferred-provider', to_char(NOW(), 'YYYY-MM'), 1, 0,
+                     NULL, date_trunc('minute', NOW()), NULL, NULL, TRUE, FALSE, $9::jsonb)
+             ON CONFLICT (id) DO NOTHING`,
+            [
+              providerCallEvent.id,
+              providerCallEvent.tenantId,
+              authContext.userId,
+              route.id,
+              idempotencyId,
+              providerCallEvent.adapterId,
+              providerCallEvent.provider,
+              providerCallEvent.capability,
+              JSON.stringify(providerCallEvent.metadata)
+            ]
           );
         }
         await client.query(
@@ -673,6 +702,12 @@ function persistMemoryRouteMutation({ repositories, route, authContext, bodyText
   if (route.id === "render-packets") {
     const record = buildRenderPacketRecord({ authContext, bodyText });
     repositories.renderPackets.set(record.id, record);
+    const providerCallEvent = buildRenderProviderCallEvent({
+      authContext,
+      bodyText,
+      idempotencyId: stableRuntimeId("idem", authContext.userId, route.id, record.id)
+    });
+    repositories.providerCallEvents.set(providerCallEvent.id, providerCallEvent);
     return {
       persisted: true,
       payload: buildRenderPacketRepositoryPayload(record, "memory")
@@ -1198,6 +1233,23 @@ function buildRenderPacketRecord({ authContext, bodyText }) {
   };
 }
 
+function buildRenderProviderCallEvent({ authContext, bodyText, idempotencyId }) {
+  const renderPacket = buildRenderPacketRecord({ authContext, bodyText });
+  return {
+    id: stableRuntimeId("provider-call", authContext.userId, "render-packets", idempotencyId),
+    tenantId: authContext.userId,
+    adapterId: "browser-svg-renderer",
+    provider: "CustomCard renderer",
+    capability: "image-generation",
+    metadata: {
+      renderPacketId: renderPacket.id,
+      projectId: renderPacket.projectId,
+      policy: "local-fallback-no-live-network",
+      auditEventName: "provider.fallback.selected"
+    }
+  };
+}
+
 function buildRenderPacketRepositoryPayload(record, runtimeMode) {
   return {
     renderPacketId: record.id,
@@ -1357,7 +1409,9 @@ function buildDataRequestRepositoryPayload(record, runtimeMode) {
 
 function persistedTablesForRoute(route) {
   if (route.id === "relationship-memories") return ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"];
-  if (route.id === "render-packets") return ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "api_jobs", "audit_log"];
+  if (route.id === "render-packets") {
+    return ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "provider_call_events", "api_jobs", "audit_log"];
+  }
   if (route.id === "manual-vendor-handoff") {
     return ["auth_sessions", "idempotency_keys", "render_packets", "orders", "order_events", "consent_records", "api_jobs", "audit_log"];
   }
@@ -1381,6 +1435,7 @@ function persistedTablesForRoute(route) {
       "vendor_quotes",
       "consent_records",
       "data_requests",
+      "provider_call_events",
       "audit_log"
     ];
   }

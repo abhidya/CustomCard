@@ -235,8 +235,11 @@ npm run dev
 ```
 
 Open the Vite URL printed by the dev server. The app opens directly into the
-free local MVP workflow and does not require paid AI, payment, retail, email,
-CRM, or cloud credentials.
+free local MVP workflow. Clerk React auth uses the public
+`VITE_CLERK_PUBLISHABLE_KEY` from `.env.local`; the tracked example is in
+`.env.example`, and the current setup follows the Clerk React quickstart:
+https://clerk.com/docs/react/getting-started/quickstart. The app does not
+require paid AI, payment, retail, email, CRM, or cloud credentials.
 
 To open the mobile customer UI directly in a desktop browser:
 
@@ -276,6 +279,7 @@ without database credentials; DB-backed API access requires Vercel environment
 variables such as:
 
 ```sh
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
 CUSTOMCARD_API_RUNTIME=postgres
 DATABASE_URL=postgres://...
 CUSTOMCARD_CUSTOMER_SESSION_TOKEN=...
@@ -289,9 +293,16 @@ hosted DB doctor is captured. Current Vercel evidence is recorded in
 
 ## Environment
 
-The local web console does not need provider or vendor credentials. Runtime
-scripts and deployment manifests require explicit environment variables so they
-fail closed instead of silently using placeholders.
+The local web console uses the public Clerk React publishable key in
+`.env.local`:
+
+```sh
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+```
+
+It does not need provider or vendor credentials. Runtime scripts and deployment
+manifests require explicit environment variables so they fail closed instead of
+silently using placeholders.
 
 Core runtime variables:
 

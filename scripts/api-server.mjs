@@ -226,22 +226,22 @@ export const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 121,
+    total: 124,
     readyLocal: 18,
-    credentialGated: 88,
+    credentialGated: 91,
     contractOnly: 9,
     blocked: 6
   },
   providerGovernance: {
-    total: 121,
+    total: 124,
     zeroPlatformSpend: 20,
-    budgetCapped: 95,
+    budgetCapped: 98,
     blockedZeroSpend: 6,
-    monthlyBudgetCents: 133200,
+    monthlyBudgetCents: 141700,
     maxPerRequestBudgetCents: 75,
-    rateLimited: 115,
-    queueRequired: 86,
-    fallbackCovered: 121,
+    rateLimited: 118,
+    queueRequired: 89,
+    fallbackCovered: 124,
     liveNetworkDefault: false,
     realOrdersEnabled: false,
     blockers: []
@@ -321,12 +321,13 @@ export const readiness = {
     staticIndexCachePolicy: "no-store"
   },
   persistence: {
-    tables: 18,
+    tables: 19,
     schemaBackedRoutes: 16,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
     idempotencyTable: true,
+    providerUsageLedgerTable: true,
     appendOnlyAudit: true,
     relationshipMemoryRepository: true,
     importPreviewRepository: true,
@@ -608,7 +609,7 @@ function validateApiServerContract() {
   if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
     blockers.push("Every mutation route must require idempotency.");
   }
-  if (readiness.providers.total < 121) blockers.push("Provider API summary is missing expanded adapter coverage.");
+  if (readiness.providers.total < 124) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (readiness.providerGovernance.total !== readiness.providers.total) {
     blockers.push("Provider governance summary must cover every adapter.");
   }
@@ -642,10 +643,10 @@ function validateApiServerContract() {
   if (readiness.e2eCoverage.externalNetworkCalls !== 0) blockers.push("E2E coverage cannot require live external network calls.");
   if (readiness.e2eCoverage.blockers.length > 0) blockers.push("E2E coverage summary has blockers.");
   if (readiness.aiProviderReadiness.total < 8) blockers.push("AI provider readiness must track text/image launch evidence.");
-  if (readiness.aiProviderReadiness.textProviderContracts < 15) {
+  if (readiness.aiProviderReadiness.textProviderContracts < 16) {
     blockers.push("AI provider readiness must cover every text provider contract.");
   }
-  if (readiness.aiProviderReadiness.imageProviderContracts < 15) {
+  if (readiness.aiProviderReadiness.imageProviderContracts < 17) {
     blockers.push("AI provider readiness must cover every image provider contract.");
   }
   if (readiness.aiProviderReadiness.localFallbacks < 2) blockers.push("AI provider readiness must keep local fallbacks.");
@@ -918,6 +919,7 @@ function validateApiServerContract() {
   if (!readiness.persistence.accountIdentityTable) blockers.push("API readiness is missing account identity persistence.");
   if (!readiness.persistence.accountRecoveryTable) blockers.push("API readiness is missing account recovery persistence.");
   if (!readiness.persistence.idempotencyTable) blockers.push("API readiness is missing idempotency persistence.");
+  if (!readiness.persistence.providerUsageLedgerTable) blockers.push("API readiness is missing provider usage ledger persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
   if (!readiness.persistence.relationshipMemoryRepository) blockers.push("API readiness is missing relationship-memory repository persistence.");
   if (!readiness.persistence.importPreviewRepository) blockers.push("API readiness is missing import-preview repository persistence.");
@@ -1217,6 +1219,7 @@ function buildMutationContractPayload(route, bodyText) {
         "vendor_quotes",
         "consent_records",
         "data_requests",
+        "provider_call_events",
         "audit_log"
       ],
       rows: 17,

@@ -15,8 +15,8 @@ describe("AI provider readiness", () => {
       total: 8,
       repoLocalReady: 4,
       evidenceMissing: 4,
-      textProviderContracts: 15,
-      imageProviderContracts: 15,
+      textProviderContracts: 16,
+      imageProviderContracts: 17,
       localFallbacks: 2,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -43,6 +43,7 @@ describe("AI provider readiness", () => {
     expect(inventory?.textAdapterIds).toEqual(
       expect.arrayContaining([
         "openai-responses-chat",
+        "cloudflare-workers-ai-chat",
         "anthropic-messages-chat",
         "google-gemini-chat",
         "mistral-chat",
@@ -52,7 +53,9 @@ describe("AI provider readiness", () => {
     expect(inventory?.imageAdapterIds).toEqual(
       expect.arrayContaining([
         "openai-images",
+        "cloudflare-workers-ai-image",
         "stability-stable-image",
+        "deepai-text2img-image",
         "replicate-image",
         "fal-image",
         "bfl-flux-image",

@@ -271,6 +271,7 @@ describe("api server wrapper", () => {
           accountIdentityTable: boolean;
           accountRecoveryTable: boolean;
           idempotencyTable: boolean;
+          providerUsageLedgerTable: boolean;
           relationshipMemoryRepository: boolean;
           importPreviewRepository: boolean;
           cardProjectRepository: boolean;
@@ -290,6 +291,7 @@ describe("api server wrapper", () => {
           relationshipMemoryRecords: number | null;
           cardProjectRecords: number | null;
           renderPacketRecords: number | null;
+          providerCallEventRecords: number | null;
           orderRecords: number | null;
           orderEventRecords: number | null;
           consentRecords: number | null;
@@ -302,12 +304,12 @@ describe("api server wrapper", () => {
     expect(report.service).toBe("customcard-api-doctor");
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
-    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(121);
+    expect(report.readiness.providers.total).toBeGreaterThanOrEqual(124);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 121,
-      budgetCapped: 95,
+      total: 124,
+      budgetCapped: 98,
       blockedZeroSpend: 6,
-      fallbackCovered: 121,
+      fallbackCovered: 124,
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
@@ -338,8 +340,8 @@ describe("api server wrapper", () => {
       total: 8,
       repoLocalReady: 4,
       evidenceMissing: 4,
-      textProviderContracts: 15,
-      imageProviderContracts: 15,
+      textProviderContracts: 16,
+      imageProviderContracts: 17,
       localFallbacks: 2,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -521,12 +523,13 @@ describe("api server wrapper", () => {
       staticIndexCachePolicy: "no-store"
     });
     expect(report.readiness.persistence).toMatchObject({
-      tables: 18,
+      tables: 19,
       schemaBackedRoutes: 16,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
       idempotencyTable: true,
+      providerUsageLedgerTable: true,
       relationshipMemoryRepository: true,
       importPreviewRepository: true,
       cardProjectRepository: true,
@@ -603,11 +606,11 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 18, admin: 6, idempotentMutations: 10 });
-      expect(readiness.providers).toMatchObject({ total: 121, readyLocal: 18, credentialGated: 88, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 121,
-        fallbackCovered: 121,
-        budgetCapped: 95,
+        total: 124,
+        fallbackCovered: 124,
+        budgetCapped: 98,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -645,8 +648,8 @@ describe("api server wrapper", () => {
         total: 8,
         repoLocalReady: 4,
         evidenceMissing: 4,
-        textProviderContracts: 15,
-        imageProviderContracts: 15,
+        textProviderContracts: 16,
+        imageProviderContracts: 17,
         localFallbacks: 2,
         promptAuditRequired: 6,
         humanReviewRequired: 5,
@@ -791,12 +794,13 @@ describe("api server wrapper", () => {
 
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
-        tables: 18,
+        tables: 19,
         schemaBackedRoutes: 16,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
         idempotencyTable: true,
+        providerUsageLedgerTable: true,
         relationshipMemoryRepository: true,
         importPreviewRepository: true,
         cardProjectRepository: true,
@@ -810,12 +814,12 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 121,
-        monthlyBudgetCents: 133200,
+        total: 124,
+        monthlyBudgetCents: 141700,
         maxPerRequestBudgetCents: 75,
-        rateLimited: 115,
-        queueRequired: 86,
-        fallbackCovered: 121,
+        rateLimited: 118,
+        queueRequired: 89,
+        fallbackCovered: 124,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -1422,9 +1426,10 @@ describe("api server wrapper", () => {
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
         relationshipMemoryRecords: 0,
-        cardProjectRecords: 0,
-        renderPacketRecords: 0,
-        orderRecords: 0,
+	        cardProjectRecords: 0,
+	        renderPacketRecords: 0,
+	        providerCallEventRecords: 0,
+	        orderRecords: 0,
         orderEventRecords: 0,
         consentRecords: 0,
         dataRequestRecords: 0
@@ -1968,9 +1973,10 @@ describe("api server wrapper", () => {
         importedEventRecords: 2,
         cardOpportunityRecords: 2,
         relationshipMemoryRecords: 1,
-        cardProjectRecords: 1,
-        renderPacketRecords: 1,
-        orderRecords: 1,
+	        cardProjectRecords: 1,
+	        renderPacketRecords: 1,
+	        providerCallEventRecords: 1,
+	        orderRecords: 1,
         orderEventRecords: 1,
         consentRecords: 2,
         dataRequestRecords: 1

@@ -1056,6 +1056,21 @@ export const providerCatalog: ProviderAdapter[] = [
     docsUrl: "https://ai.google.dev/gemini-api/docs"
   },
   {
+    id: "cloudflare-workers-ai-chat",
+    label: "Cloudflare Workers AI chat",
+    provider: "Cloudflare Workers AI",
+    capability: "text-chat",
+    lane: "AI provider",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+    safetyGates: ["Provider/model allowlist", "PII minimization", "Rate limit handling", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 42.5,
+    detail: "Optional Workers AI chat adapter using Cloudflare's account-scoped REST endpoint.",
+    docsUrl: "https://developers.cloudflare.com/workers-ai/get-started/rest-api/"
+  },
+  {
     id: "huggingface-chat",
     label: "Hugging Face chat",
     provider: "Hugging Face Inference Providers",
@@ -1279,6 +1294,21 @@ export const providerCatalog: ProviderAdapter[] = [
     docsUrl: "https://ai.google.dev/gemini-api/docs/image-generation"
   },
   {
+    id: "cloudflare-workers-ai-image",
+    label: "Cloudflare Workers AI image",
+    provider: "Cloudflare Workers AI",
+    capability: "image-generation",
+    lane: "AI provider",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+    safetyGates: ["Provider/model allowlist", "Spend limit", "Human approval before print", "Network allowlist"],
+    roleSurface: ["admin"],
+    priority: 51.5,
+    detail: "Optional Cloudflare-hosted text-to-image path through Workers AI REST model execution.",
+    docsUrl: "https://developers.cloudflare.com/workers-ai/get-started/rest-api/"
+  },
+  {
     id: "stability-stable-image",
     label: "Stability AI image",
     provider: "Stability AI",
@@ -1307,6 +1337,21 @@ export const providerCatalog: ProviderAdapter[] = [
     priority: 53,
     detail: "Optional low-cost text-to-image path routed through selected inference providers.",
     docsUrl: "https://huggingface.co/docs/inference-providers/index"
+  },
+  {
+    id: "deepai-text2img-image",
+    label: "DeepAI image",
+    provider: "DeepAI",
+    capability: "image-generation",
+    lane: "AI provider",
+    status: "credential-gated",
+    cost: "usage-based",
+    credentials: ["DEEPAI_API_KEY"],
+    safetyGates: ["Prompt audit", "Spend limit", "Human approval before print", "Rate limit handling"],
+    roleSurface: ["admin"],
+    priority: 53.5,
+    detail: "Optional DeepAI text-to-image adapter for simple prompt-driven card artwork.",
+    docsUrl: "https://deepai.org/docs"
   },
   {
     id: "replicate-image",

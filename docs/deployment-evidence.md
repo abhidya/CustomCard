@@ -25,7 +25,9 @@ Verification:
 - Vercel build ran `npm run build` successfully.
 - Public `GET /` returned HTTP 401 from Vercel deployment protection.
 - Public `GET /api/health` returned HTTP 401 from Vercel deployment protection.
-- `vercel env ls` reported no environment variables for the project.
+- Original `vercel env ls` reported no environment variables for the project.
+- On 2026-06-11, `VITE_CLERK_PUBLISHABLE_KEY` was added to Production,
+  Preview, and Development scopes for Clerk React auth.
 
 Conclusion:
 

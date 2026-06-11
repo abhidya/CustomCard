@@ -1140,6 +1140,22 @@ function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText
     });
   }
 
+  if (adapter.id === "cloudflare-workers-ai-chat") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
+      ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+      {
+        model: "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}",
+        messages: [{ role: "user", content: prompt }],
+        metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
+      },
+      [],
+      { authorization: "Bearer {CLOUDFLARE_API_TOKEN}" }
+    );
+  }
+
   if (adapter.id === "huggingface-chat") {
     return request(adapter, "POST", "https://router.huggingface.co/v1/chat/completions", ["HUGGINGFACE_API_TOKEN"], {
       model: "admin-allowlisted-chat-model",
@@ -1421,6 +1437,23 @@ function buildSinglePanelImageRequest(
     });
   }
 
+  if (adapter.id === "cloudflare-workers-ai-image") {
+    return request(
+      adapter,
+      "POST",
+      "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
+      ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+      {
+        prompt,
+        width: 1024,
+        height: 1536,
+        metadata
+      },
+      [],
+      { authorization: "Bearer {CLOUDFLARE_API_TOKEN}" }
+    );
+  }
+
   if (adapter.id === "stability-stable-image") {
     return request(adapter, "POST", "https://api.stability.ai/v2beta/stable-image/generate/core", ["STABILITY_API_KEY"], {
       prompt,
@@ -1434,6 +1467,15 @@ function buildSinglePanelImageRequest(
       model: "admin-allowlisted-image-model",
       prompt,
       metadata
+    });
+  }
+
+  if (adapter.id === "deepai-text2img-image") {
+    return request(adapter, "POST", "https://api.deepai.org/api/text2img", ["DEEPAI_API_KEY"], {
+      text: prompt,
+      metadata
+    }, [], {
+      "api-key": "{DEEPAI_API_KEY}"
     });
   }
 

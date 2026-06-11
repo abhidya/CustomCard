@@ -1,6 +1,7 @@
 # CustomCard — Setup Guide
 
-Three environments: local dev, QA, production. Start with local dev — it needs zero credentials.
+Three environments: local dev, QA, production. Start with local dev — it needs
+zero credentials for the free local workflow.
 
 ---
 
@@ -29,6 +30,15 @@ cd CustomCard
 npm install
 ```
 
+Create `.env.local` from `.env.example` and keep the Clerk React key:
+
+```bash
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+```
+
+Clerk React setup follows the current quickstart:
+https://clerk.com/docs/react/getting-started/quickstart.
+
 ### Run the app
 
 ```bash
@@ -36,7 +46,8 @@ npm run dev
 # → http://127.0.0.1:5173
 ```
 
-The full app runs locally with no external calls:
+The core card workflow runs locally; Clerk auth uses the configured Clerk
+publishable key:
 - Card studio, memory, print export, fulfillment estimates — all local.
 - All live integration gates are `false` by default (safe to explore freely).
 
@@ -105,6 +116,7 @@ npm install -g vercel   # one-time
 vercel link             # links this directory to your Vercel project
 
 # Set QA env vars (preview scope only)
+vercel env add VITE_CLERK_PUBLISHABLE_KEY preview # value: pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
 vercel env add DATABASE_URL preview          # paste your Neon connection string
 vercel env add CUSTOMCARD_API_RUNTIME preview   # value: postgres
 vercel env add NODE_ENV preview              # value: production
@@ -173,6 +185,7 @@ DATABASE_URL="postgres://..." npm run migrate
 ### 3c. Set Vercel production env vars
 
 ```bash
+vercel env add VITE_CLERK_PUBLISHABLE_KEY production # value: pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
 vercel env add DATABASE_URL production           # Neon production connection string
 vercel env add CUSTOMCARD_API_RUNTIME production # value: postgres
 vercel env add NODE_ENV production               # value: production
@@ -402,6 +415,7 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 
 | Variable | Where set | Required | Purpose |
 |---|---|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | Vercel / `.env.local` | Yes | Clerk React publishable key |
 | `VITE_CARD_GEN_URL` | Vercel / `.env.local` | No | AI sidecar URL — enables Generate with AI button |
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` or `local` |

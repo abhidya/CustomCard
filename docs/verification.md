@@ -71,7 +71,7 @@ it after each meaningful implementation pass.
   live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
   reads every object back, verifies checksums, writes the manifest, cleans up the
   isolated bucket, and keeps external vendor calls plus real orders disabled.
-- Provider adapter coverage currently includes 121 adapters: 18 ready-local, 88
+- Provider adapter coverage currently includes 124 adapters: 18 ready-local, 91
   credential-gated, 9 contract-only, and 6 blocked.
 - Production readiness tests cover 13 launch gates for live auth, OAuth,
   AI/image generation, vendor quotes, payments/refunds, direct retail ordering,
@@ -145,7 +145,9 @@ it after each meaningful implementation pass.
   `world-prize-s-projects/customcard`, deployment
   `dpl_Gh1VhQEDsYh5wf7o3Pz27vJHFwy4`, and serverless function
   `api/[...path]`; public `/` and `/api/health` returned Vercel deployment
-  protection 401 responses, and `vercel env ls` showed no project env vars.
+  protection 401 responses. On 2026-06-11, `vercel env ls` showed
+  `VITE_CLERK_PUBLISHABLE_KEY` present in Production, Preview, and Development
+  scopes for Clerk React auth; DB-backed hosted API vars remain unverified.
 - Hosted API proof readiness is checked by `npm run hosted:api:doctor`, which
   verifies the 8-item Vercel/hosted DB proof register, serverless source
   contract, hosted env requirements, deployment evidence boundary, admin/API
@@ -203,7 +205,7 @@ it after each meaningful implementation pass.
   tests, admin/API surfaces, CI wiring, 100% repo-local coverage, and zero live
   production proofs, real orders, or live external network requirements.
 - AI provider readiness is checked by `npm run ai:doctor`, which verifies the
-  8-item text/image provider readiness register, 15 text provider contracts, 15
+  8-item text/image provider readiness register, 16 text provider contracts, 17
   image provider contracts, 2 local fallbacks, prompt/human-review gates,
   admin/API surfaces, docs, CI wiring, and zero live provider calls, production
   AI traffic, or live external network requirements.
@@ -376,8 +378,8 @@ npm run ai:doctor
 ```
 
 Result: passed. The JSON report marked register, provider-contracts, surfaces,
-docs, CI, and evidence lanes `ready`; it verified 8 AI readiness items, 15 text
-provider contracts, 15 image provider contracts, 2 local fallbacks, 6 prompt
+docs, CI, and evidence lanes `ready`; it verified 8 AI readiness items, 16 text
+provider contracts, 17 image provider contracts, 2 local fallbacks, 6 prompt
 audit gates, 5 human-review gates, zero live provider calls, zero production AI
 traffic, and zero live external network requirements.
 
@@ -466,7 +468,7 @@ npm run provider:governance:doctor
 ```
 
 Result: passed. The JSON report marked catalog, governance, tests, surfaces,
-CI, and safety lanes `ready`; it verified 121 adapters, 57 usage-based adapters,
+CI, and safety lanes `ready`; it verified 131 adapter-id signals, 62 usage-based markers,
 6 blocked live vendor adapters, budget/rate/fallback policy signals, admin/API
 governance surfaces, CI wiring, and no live provider calls or real orders.
 
@@ -506,7 +508,7 @@ npm run api:doctor
 ```
 
 Result: passed. API doctor reported 18 routes, 10 idempotent mutation contracts,
-121 providers, provider governance for all 121 adapters, 16 schema-backed routes,
+124 providers, provider governance for all 124 adapters, 16 schema-backed routes,
 relationship-memory repository readiness, render-packet artifact manifests,
 signed artifact URL contracts, contract runtime mode, no live external calls,
 no real vendor orders, no raw content storage, 13 production launch gates with

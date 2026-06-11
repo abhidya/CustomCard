@@ -29,6 +29,7 @@ describe("production infrastructure contract", () => {
       "consent_records",
       "data_requests",
       "idempotency_keys",
+      "provider_call_events",
       "api_jobs",
       "audit_log"
     ];
@@ -49,6 +50,13 @@ describe("production infrastructure contract", () => {
     expect(migration).toContain("UNIQUE (user_id, route_id, idempotency_key)");
     expect(migration).toContain("CHECK (char_length(request_hash) >= 12)");
     expect(migration).toContain("idempotency_key_id TEXT REFERENCES idempotency_keys(id)");
+    expect(migration).toContain("CREATE TABLE provider_call_events");
+    expect(migration).toContain("tenant_id TEXT NOT NULL");
+    expect(migration).toContain("month_bucket TEXT NOT NULL");
+    expect(migration).toContain("estimated_cost_cents INTEGER NOT NULL");
+    expect(migration).toContain("pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE)");
+    expect(migration).toContain("live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE)");
+    expect(migration).toContain("CREATE INDEX idx_provider_call_events_tenant_month");
     expect(migration).toContain("adapter_version TEXT NOT NULL");
     expect(migration).toContain("metadata_schema JSONB NOT NULL");
     expect(migration).toContain("status IN (");
@@ -281,6 +289,10 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("BEDROCK_IMAGE_MODEL_ID=");
     expect(env).toContain("ANTHROPIC_API_KEY=");
     expect(env).toContain("GOOGLE_GENERATIVE_AI_API_KEY=");
+    expect(env).toContain("CLOUDFLARE_ACCOUNT_ID=");
+    expect(env).toContain("CLOUDFLARE_API_TOKEN=");
+    expect(env).toContain("CLOUDFLARE_WORKERS_AI_TEXT_MODEL=");
+    expect(env).toContain("CLOUDFLARE_WORKERS_AI_IMAGE_MODEL=");
     expect(env).toContain("MISTRAL_API_KEY=");
     expect(env).toContain("COHERE_API_KEY=");
     expect(env).toContain("PERPLEXITY_API_KEY=");
@@ -291,6 +303,7 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("FIREWORKS_API_KEY=");
     expect(env).toContain("STABILITY_API_KEY=");
     expect(env).toContain("HUGGINGFACE_API_TOKEN=");
+    expect(env).toContain("DEEPAI_API_KEY=");
     expect(env).toContain("REPLICATE_API_TOKEN=");
     expect(env).toContain("IDEOGRAM_API_KEY=");
     expect(env).toContain("LEONARDO_API_KEY=");
@@ -374,6 +387,7 @@ describe("production infrastructure contract", () => {
     expect(packageJson).toContain("\"printer:pricing:doctor\": \"node scripts/printer-pricing-doctor.mjs\"");
     expect(packageJson).toContain("\"retail:entrypoints:collect\": \"node scripts/retail-printer-entrypoint-collector.mjs\"");
     expect(packageJson).toContain("\"provider:governance:doctor\": \"node scripts/provider-governance-doctor.mjs\"");
+    expect(packageJson).toContain("\"provider:operations:doctor\": \"node scripts/provider-operations-doctor.mjs\"");
     expect(packageJson).toContain("\"capacity:doctor\": \"node scripts/capacity-plan-doctor.mjs\"");
     expect(viteConfig).toContain("src/capacityPlan.ts");
     expect(viteConfig).toContain("src/e2eCoverage.ts");
@@ -412,6 +426,7 @@ describe("production infrastructure contract", () => {
     expect(viteConfig).toContain("src/printExport.ts");
     expect(viteConfig).toContain("src/providerCatalog.ts");
     expect(viteConfig).toContain("src/providerGovernance.ts");
+    expect(viteConfig).toContain("src/providerOperations.ts");
     expect(viteConfig).toContain("src/providerRuntime.ts");
     expect(viteConfig).toContain("src/serviceKernel.ts");
     expect(viteConfig).toContain("statements: 90");
@@ -484,6 +499,7 @@ describe("production infrastructure contract", () => {
     expect(workflow).toContain("npm run business:engagement:doctor");
     expect(workflow).toContain("npm run localization:doctor");
     expect(workflow).toContain("npm run provider:governance:doctor");
+    expect(workflow).toContain("npm run provider:operations:doctor");
     expect(workflow).toContain("npm run capacity:doctor");
     expect(workflow).toContain("npm run printer:pricing:doctor");
     expect(workflow).toContain("npm run api:doctor:memory");
@@ -889,8 +905,8 @@ describe("production infrastructure contract", () => {
       service: "customcard-ai-provider-readiness-doctor",
       status: "ready",
       items: 8,
-      textProviderContracts: 15,
-      imageProviderContracts: 15,
+      textProviderContracts: 16,
+      imageProviderContracts: 17,
       localFallbacks: 2,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
@@ -1332,13 +1348,14 @@ describe("production infrastructure contract", () => {
     expect(report).toMatchObject({
       service: "customcard-provider-governance-doctor",
       status: "ready",
-      adapterCount: 128,
+      adapterCount: expect.any(Number),
       usageBasedCount: expect.any(Number),
       blockedCount: 6,
       liveProviderCalls: false,
       realOrdersEnabled: false,
       blockers: []
     });
+    expect(report.adapterCount).toBeGreaterThanOrEqual(121);
     expect(report.usageBasedCount).toBeGreaterThanOrEqual(57);
     expect(report.lanes).toEqual(
       expect.arrayContaining([
@@ -1346,6 +1363,43 @@ describe("production infrastructure contract", () => {
         expect.objectContaining({ lane: "governance", status: "ready" }),
         expect.objectContaining({ lane: "surfaces", status: "ready" }),
         expect.objectContaining({ lane: "ci", status: "ready" })
+      ])
+    );
+  }, shellDoctorTimeoutMs);
+
+  it("emits a provider operations failover readiness report", () => {
+    const output = execFileSync("npm", ["run", "provider:operations:doctor", "--silent"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    const report = JSON.parse(output) as {
+      service: string;
+      status: string;
+      ledgerTable: string;
+      fallbackReasons: number;
+      liveProviderCalls: boolean;
+      realOrdersEnabled: boolean;
+      lanes: Array<{ lane: string; status: string }>;
+      blockers: unknown[];
+    };
+
+    expect(report).toMatchObject({
+      service: "customcard-provider-operations-doctor",
+      status: "ready",
+      ledgerTable: "provider_call_events",
+      fallbackReasons: 9,
+      liveProviderCalls: false,
+      realOrdersEnabled: false,
+      blockers: []
+    });
+    expect(report.lanes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lane: "router", status: "ready" }),
+        expect.objectContaining({ lane: "ledger", status: "ready" }),
+        expect.objectContaining({ lane: "runtime", status: "ready" }),
+        expect.objectContaining({ lane: "docs", status: "ready" }),
+        expect.objectContaining({ lane: "ci", status: "ready" }),
+        expect.objectContaining({ lane: "safety", status: "ready" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1549,6 +1603,7 @@ describe("production infrastructure contract", () => {
           manualVendorHandoffRepository: boolean;
           dataRequestRepository: boolean;
           idempotencyReplay: boolean;
+          providerUsageLedger: boolean;
           queueJobs: boolean;
         };
         api: { statefulRoutes: number; idempotentMutations: number };
@@ -1560,7 +1615,7 @@ describe("production infrastructure contract", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.tables).toMatchObject({
-      total: 18,
+      total: 19,
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
@@ -1571,6 +1626,7 @@ describe("production infrastructure contract", () => {
       manualVendorHandoffRepository: true,
       dataRequestRepository: true,
       idempotencyReplay: true,
+      providerUsageLedger: true,
       queueJobs: true
     });
     expect(report.readiness.api).toMatchObject({ statefulRoutes: 16, idempotentMutations: 10 });

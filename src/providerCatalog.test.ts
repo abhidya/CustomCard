@@ -120,6 +120,7 @@ describe("provider catalog", () => {
       "Amazon Bedrock Converse chat",
       "Anthropic Messages chat",
       "Google Gemini chat",
+      "Cloudflare Workers AI chat",
       "Mistral chat",
       "Cohere chat",
       "Perplexity Sonar chat",
@@ -132,9 +133,11 @@ describe("provider catalog", () => {
       "Azure OpenAI image",
       "Amazon Bedrock image",
       "Google Gemini image",
+      "Cloudflare Workers AI image",
       "Stability AI image",
       "Hugging Face chat",
       "Hugging Face image",
+      "DeepAI image",
       "Replicate image",
       "Together image",
       "Ideogram image",
@@ -239,8 +242,13 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("BEDROCK_IMAGE_MODEL_ID");
     expect(admin.coverage.requiredEnv).toContain("ANTHROPIC_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("GOOGLE_GENERATIVE_AI_API_KEY");
+    expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_ACCOUNT_ID");
+    expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_API_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_WORKERS_AI_TEXT_MODEL");
+    expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_WORKERS_AI_IMAGE_MODEL");
     expect(admin.coverage.requiredEnv).toContain("STABILITY_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("HUGGINGFACE_API_TOKEN");
+    expect(admin.coverage.requiredEnv).toContain("DEEPAI_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("MISTRAL_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("COHERE_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("PERPLEXITY_API_KEY");

@@ -215,6 +215,61 @@ CREATE TABLE idempotency_keys (
   UNIQUE (user_id, route_id, idempotency_key)
 );
 
+CREATE TABLE provider_call_events (
+  id TEXT PRIMARY KEY,
+  tenant_id TEXT NOT NULL,
+  user_id TEXT REFERENCES users(id),
+  route_id TEXT NOT NULL,
+  idempotency_key_id TEXT REFERENCES idempotency_keys(id),
+  adapter_id TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  capability TEXT NOT NULL CHECK (
+    capability IN (
+      'auth',
+      'event-import',
+      'contact-import',
+      'crm-integration',
+      'workflow-integration',
+      'text-chat',
+      'image-generation',
+      'render-export',
+      'memory',
+      'vendor-handoff',
+      'cloud-runtime',
+      'notification',
+      'payment',
+      'observability'
+    )
+  ),
+  status TEXT NOT NULL CHECK (status IN ('reserved', 'succeeded', 'failed', 'blocked', 'fallback-selected')),
+  fallback_from_adapter_id TEXT,
+  fallback_reason TEXT CHECK (
+    fallback_reason IS NULL
+    OR fallback_reason IN (
+      'missing-credentials',
+      'safety-gate',
+      'monthly-budget-exceeded',
+      'per-request-budget-exceeded',
+      'rate-limit-exceeded',
+      'provider-blocked',
+      'provider-unavailable',
+      'circuit-open',
+      'no-preferred-provider'
+    )
+  ),
+  month_bucket TEXT NOT NULL CHECK (month_bucket ~ '^[0-9]{4}-[0-9]{2}$'),
+  request_units INTEGER NOT NULL CHECK (request_units >= 1),
+  estimated_cost_cents INTEGER NOT NULL CHECK (estimated_cost_cents >= 0),
+  actual_cost_cents INTEGER CHECK (actual_cost_cents IS NULL OR actual_cost_cents >= 0),
+  rate_limit_window_start TIMESTAMPTZ NOT NULL,
+  latency_ms INTEGER CHECK (latency_ms IS NULL OR latency_ms >= 0),
+  error_class TEXT,
+  pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE),
+  live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE),
+  metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE api_jobs (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
@@ -244,6 +299,9 @@ CREATE UNIQUE INDEX idx_account_identities_provider_subject ON account_identitie
 CREATE INDEX idx_account_recovery_user ON account_recovery_challenges(user_id);
 CREATE UNIQUE INDEX idx_account_recovery_challenge_hash ON account_recovery_challenges(challenge_hash);
 CREATE INDEX idx_provider_connections_user ON provider_connections(user_id);
+CREATE INDEX idx_provider_call_events_tenant_month ON provider_call_events(tenant_id, month_bucket, capability);
+CREATE INDEX idx_provider_call_events_adapter_window ON provider_call_events(adapter_id, rate_limit_window_start);
+CREATE INDEX idx_provider_call_events_status ON provider_call_events(status);
 CREATE INDEX idx_imported_events_connection ON imported_events(connection_id);
 CREATE INDEX idx_card_opportunities_event ON card_opportunities(event_id);
 CREATE INDEX idx_relationship_memories_recipient ON relationship_memories(user_id, recipient_name);

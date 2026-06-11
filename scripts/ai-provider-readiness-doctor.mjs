@@ -27,8 +27,8 @@ const itemIds = aiProviderReadinessItems.map((item) => item.id);
 
 const checks = [
   checkExact("register", "item-count", summary.total, 8),
-  checkExact("register", "text-provider-contracts", summary.textProviderContracts, 15),
-  checkExact("register", "image-provider-contracts", summary.imageProviderContracts, 15),
+  checkExact("register", "text-provider-contracts", summary.textProviderContracts, 16),
+  checkExact("register", "image-provider-contracts", summary.imageProviderContracts, 17),
   checkExact("register", "local-fallbacks", summary.localFallbacks, 2),
   checkExact("register", "no-live-provider-calls", summary.liveProviderCallsEnabled, 0),
   checkExact("register", "no-live-external-network", summary.externalNetworkCalls, 0),
@@ -65,8 +65,11 @@ const checks = [
     "openai-responses-chat",
     "anthropic-messages-chat",
     "google-gemini-chat",
+    "cloudflare-workers-ai-chat",
     "openai-images",
+    "cloudflare-workers-ai-image",
     "stability-stable-image",
+    "deepai-text2img-image",
     "bfl-flux-image",
     "adobe-firefly-image",
     "recraft-image",
