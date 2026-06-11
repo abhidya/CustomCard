@@ -68,16 +68,16 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
   is not live-applied cloud bucket/IAM proof.
 - Text chat: sendable deterministic local chat session in `src/customerChat.ts`
   plus OpenAI Responses, Anthropic Messages, Azure OpenAI, Amazon Bedrock
-  Converse, Google Gemini, Hugging Face, Mistral, Cohere, Perplexity Sonar,
-  xAI, Together, Groq, DeepSeek, Fireworks, and self-hosted OpenAI-compatible
-  endpoints. Customer UI gets the local no-network session; admin/API surfaces
-  keep the gated provider inventory visible.
+  Converse, Google Gemini, Cloudflare Workers AI, Hugging Face, Mistral, Cohere,
+  Perplexity Sonar, xAI, Together, Groq, DeepSeek, Fireworks, and self-hosted
+  OpenAI-compatible endpoints. Customer UI gets the local no-network session;
+  admin/API surfaces keep the gated provider inventory visible.
 - Image generation/rendering: browser SVG renderer plus OpenAI Images, Google
-  Gemini image generation, Azure OpenAI, Amazon Bedrock, Stability AI, Hugging
-  Face, Replicate, Together, Ideogram, Leonardo, fal, Black Forest Labs, Adobe
-  Firefly, Recraft, Luma, local print package export, local filesystem
-  object-store render-packet writes, and injected plus live MinIO/S3-compatible
-  render-packet write/read contracts.
+  Gemini image generation, Azure OpenAI, Amazon Bedrock, Cloudflare Workers AI,
+  Stability AI, Hugging Face, DeepAI, Replicate, Together, Ideogram, Leonardo,
+  fal, Black Forest Labs, Adobe Firefly, Recraft, Luma, local print package
+  export, local filesystem object-store render-packet writes, and injected plus
+  live MinIO/S3-compatible render-packet write/read contracts.
 - Memory: local relationship memory plus Postgres memory contract.
 - Vendor handoff: manual upload ready; Walgreens, CVS, FedEx, Walmart, Staples,
   and Office Depot live ordering blocked.
@@ -213,6 +213,7 @@ Official documentation anchors used for the adapter contracts:
 - Pipedream workflow triggers: https://pipedream.com/docs/workflows/steps/triggers/
 - Cloudflare Workers AI REST API: https://developers.cloudflare.com/workers-ai/get-started/rest-api/
 - Cloudflare Workers AI OpenAI-compatible endpoints: https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/
+- CustomCard Cloudflare Workers AI setup: `docs/cloudflare-workers-ai-setup.md`
 - Hugging Face Inference Providers: https://huggingface.co/docs/inference-providers/index
 - DeepAI API docs: https://deepai.org/docs
 - Stability image API: https://platform.stability.ai/docs/getting-started/stable-image

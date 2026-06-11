@@ -491,7 +491,7 @@ export function buildTextChatRuntime(
   );
   const readiness = getProviderRuntimeReadiness(adapter.id, env, { ...gates, piiMinimized: true });
 
-  return blockedOrRequest(adapter, readiness, () => buildTextChatRequest(adapter, sanitized));
+  return blockedOrRequest(adapter, readiness, () => buildTextChatRequest(adapter, sanitized, env));
 }
 
 export function buildImageGenerationRuntime(
@@ -551,7 +551,7 @@ export function buildImageGenerationRuntime(
     humanApprovalBeforePrint: input.printApproved || gates.humanApprovalBeforePrint
   });
 
-  return blockedOrRequest(adapter, readiness, () => buildImageRequest(adapter, sanitized, promptPlan));
+  return blockedOrRequest(adapter, readiness, () => buildImageRequest(adapter, sanitized, promptPlan, env));
 }
 
 export function buildEventImportRuntime(
@@ -970,6 +970,10 @@ function blockedOrRequest<T>(
   };
 }
 
+function cloudflareWorkersAiTokenRef(env: ProviderRuntimeEnv, preferredCredential: string): string {
+  return hasUsableEnvValue(env[preferredCredential]) ? preferredCredential : "CLOUDFLARE_API_TOKEN";
+}
+
 function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): RuntimeRequestContract {
   const authMetadata = {
     requested_role: input.requestedRole,
@@ -1067,7 +1071,11 @@ function buildAuthRequest(adapter: ProviderAdapter, input: AuthRuntimeInput): Ru
   );
 }
 
-function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText): RuntimeRequestContract {
+function buildTextChatRequest(
+  adapter: ProviderAdapter,
+  sanitized: SanitizedText,
+  env: ProviderRuntimeEnv = {}
+): RuntimeRequestContract {
   const prompt = [
     "You are CustomCard's card concierge.",
     "Use only customer-approved memories.",
@@ -1141,18 +1149,19 @@ function buildTextChatRequest(adapter: ProviderAdapter, sanitized: SanitizedText
   }
 
   if (adapter.id === "cloudflare-workers-ai-chat") {
+    const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN");
     return request(
       adapter,
       "POST",
       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
-      ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
+      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_TEXT_MODEL"],
       {
         model: "{CLOUDFLARE_WORKERS_AI_TEXT_MODEL}",
         messages: [{ role: "user", content: prompt }],
         metadata: { redactions: sanitized.redactions, live_ordering: "disabled" }
       },
       [],
-      { authorization: "Bearer {CLOUDFLARE_API_TOKEN}" }
+      { authorization: `Bearer {${apiTokenRef}}` }
     );
   }
 
@@ -1357,10 +1366,11 @@ function imagePanelMetadata(
 function buildImageRequest(
   adapter: ProviderAdapter,
   sanitized: SanitizedText,
-  promptPlan: CardImagePromptPlan
+  promptPlan: CardImagePromptPlan,
+  env: ProviderRuntimeEnv = {}
 ): RuntimeRequestContract {
   const panelRequests = promptPlan.panelPrompts.map((panel) => ({
-    ...buildSinglePanelImageRequest(adapter, sanitized, promptPlan, panel),
+    ...buildSinglePanelImageRequest(adapter, sanitized, promptPlan, panel, env),
     panelId: panel.panelId
   }));
 
@@ -1374,7 +1384,8 @@ function buildSinglePanelImageRequest(
   adapter: ProviderAdapter,
   sanitized: SanitizedText,
   promptPlan: CardImagePromptPlan,
-  panel: CardImagePanelPrompt
+  panel: CardImagePanelPrompt,
+  env: ProviderRuntimeEnv = {}
 ): RuntimeRequestContract {
   const prompt = panel.prompt;
   const metadata = imagePanelMetadata(sanitized, promptPlan, panel);
@@ -1438,11 +1449,12 @@ function buildSinglePanelImageRequest(
   }
 
   if (adapter.id === "cloudflare-workers-ai-image") {
+    const apiTokenRef = cloudflareWorkersAiTokenRef(env, "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN");
     return request(
       adapter,
       "POST",
       "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
-      ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
       {
         prompt,
         width: 1024,
@@ -1450,7 +1462,7 @@ function buildSinglePanelImageRequest(
         metadata
       },
       [],
-      { authorization: "Bearer {CLOUDFLARE_API_TOKEN}" }
+      { authorization: `Bearer {${apiTokenRef}}` }
     );
   }
 

@@ -179,7 +179,8 @@ environment configuration instead of static placeholders.
   `realOrdersEnabled` held at zero. These are not measured production benchmarks.
 - Adapter catalog covering free local paths plus gated Auth0, Clerk, Supabase
   Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
-  Bedrock, Google, Google People, Microsoft Graph, CardDAV, Mistral, Cohere,
+  Bedrock, Google, Cloudflare Workers AI, Google People, Microsoft Graph,
+  CardDAV, Mistral, Cohere,
   Perplexity, xAI, Together, Groq, DeepSeek, Fireworks, Hugging Face, Stability,
   Replicate, Ideogram, Leonardo, fal, Black Forest Labs, Adobe Firefly, Recraft,
   Luma, Resend, SendGrid, Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API,
@@ -465,6 +466,9 @@ the no-live-production-proof/no-real-order/no-live-network boundary.
 `npm run ai:doctor` verifies the committed text/image AI provider readiness
 register, provider runtime contracts, admin/API surfaces, documentation, and CI
 wiring. It is not live AI generation or model-provider traffic proof.
+Cloudflare Workers AI live env setup, split-token support, recommended default
+models, and fallback order are documented in
+[`docs/cloudflare-workers-ai-setup.md`](docs/cloudflare-workers-ai-setup.md).
 `npm run observability:doctor` verifies the committed telemetry and alerting
 readiness register, provider runtime contracts, admin/API surfaces,
 documentation, and CI wiring. It is not live telemetry ingestion or alert

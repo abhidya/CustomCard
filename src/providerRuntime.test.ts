@@ -66,8 +66,10 @@ const readyEnv: ProviderRuntimeEnv = {
   CLERK_SECRET_KEY: "configured-clerk-secret-key",
   CLOUDFLARE_ACCOUNT_ID: "configured-cloudflare-account-id",
   CLOUDFLARE_API_TOKEN: "configured-cloudflare-api-token",
-  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct",
+  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "configured-cloudflare-image-token",
+  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
+  CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "configured-cloudflare-text-token",
+  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.2-3b-instruct",
   COHERE_API_KEY: "configured-cohere-key",
   COGNITO_APP_CLIENT_ID: "configured-cognito-client-id",
   COGNITO_DOMAIN: "customcard-auth",
@@ -543,6 +545,14 @@ describe("provider runtime contracts", () => {
     });
     expect(buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, readyEnv, openGates).request).toMatchObject({
       url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions",
+      headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN}" })
+    });
+    expect(
+      buildTextChatRuntime("cloudflare-workers-ai-chat", textInput, {
+        ...readyEnv,
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: undefined
+      }, openGates).request
+    ).toMatchObject({
       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
     });
     expect(buildTextChatRuntime("cohere-chat", textInput, readyEnv, openGates).request?.url).toBe(
@@ -632,6 +642,14 @@ describe("provider runtime contracts", () => {
     );
     expect(buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, readyEnv, openGates).request).toMatchObject({
       url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
+      headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN}" })
+    });
+    expect(
+      buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, {
+        ...readyEnv,
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: undefined
+      }, openGates).request
+    ).toMatchObject({
       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_API_TOKEN}" })
     });
     expect(buildImageGenerationRuntime("deepai-text2img-image", imageInput, readyEnv, openGates).request).toMatchObject({

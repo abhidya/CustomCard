@@ -28,6 +28,16 @@ Verification:
 - Original `vercel env ls` reported no environment variables for the project.
 - On 2026-06-11, `VITE_CLERK_PUBLISHABLE_KEY` was added to Production,
   Preview, and Development scopes for Clerk React auth.
+- On 2026-06-11, Cloudflare Workers AI env vars were added to Production,
+  Preview, and Development scopes: `CLOUDFLARE_ACCOUNT_ID`,
+  `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
+  `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
+  `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, and
+  `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`.
+- Local live Cloudflare smoke checks using ignored `.env.local` returned HTTP
+  200 for `@cf/meta/llama-3.2-3b-instruct` chat completions and HTTP 200 with a
+  512x512 JPEG response for
+  `@cf/bytedance/stable-diffusion-xl-lightning` image generation.
 
 Conclusion:
 

@@ -168,6 +168,8 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`,
   `BEDROCK_TEXT_MODEL_ID`, `BEDROCK_IMAGE_MODEL_ID`,
   `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
+  `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,
+  `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`,
   `CLOUDFLARE_WORKERS_AI_TEXT_MODEL`, `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL`,
   `GOOGLE_GENERATIVE_AI_API_KEY`, `MISTRAL_API_KEY`, `COHERE_API_KEY`,
   `PERPLEXITY_API_KEY`, `XAI_API_KEY`, `TOGETHER_API_KEY`, `GROQ_API_KEY`,
@@ -176,6 +178,15 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `LEONARDO_API_KEY`, `FAL_KEY`, `BFL_API_KEY`.
 - Self-hosted model fallback: `SELF_HOSTED_LLM_BASE_URL`,
   `SELF_HOSTED_LLM_API_KEY`.
+
+Cloudflare Workers AI can use one shared `CLOUDFLARE_API_TOKEN` for both
+chat and image generation, or separate lane-specific tokens through
+`CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` and
+`CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. The recommended low-cost defaults are
+`@cf/meta/llama-3.2-3b-instruct` for prompt/chat work and
+`@cf/bytedance/stable-diffusion-xl-lightning` for image generation. Use
+`@cf/black-forest-labs/flux-1-schnell` as the higher-quality image fallback
+when budget allows.
 - Notification providers: `RESEND_API_KEY`, `SENDGRID_API_KEY`,
   `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`,
   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,

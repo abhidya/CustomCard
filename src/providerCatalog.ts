@@ -1067,7 +1067,7 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["Provider/model allowlist", "PII minimization", "Rate limit handling", "Network allowlist"],
     roleSurface: ["admin"],
     priority: 42.5,
-    detail: "Optional Workers AI chat adapter using Cloudflare's account-scoped REST endpoint.",
+    detail: "Optional Workers AI chat adapter using Cloudflare's account-scoped REST endpoint. Uses CLOUDFLARE_API_TOKEN by default, with CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN as an optional lane-specific override.",
     docsUrl: "https://developers.cloudflare.com/workers-ai/get-started/rest-api/"
   },
   {
@@ -1305,7 +1305,7 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["Provider/model allowlist", "Spend limit", "Human approval before print", "Network allowlist"],
     roleSurface: ["admin"],
     priority: 51.5,
-    detail: "Optional Cloudflare-hosted text-to-image path through Workers AI REST model execution.",
+    detail: "Optional Cloudflare-hosted text-to-image path through Workers AI REST model execution. Uses CLOUDFLARE_API_TOKEN by default, with CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN as an optional lane-specific override.",
     docsUrl: "https://developers.cloudflare.com/workers-ai/get-started/rest-api/"
   },
   {
