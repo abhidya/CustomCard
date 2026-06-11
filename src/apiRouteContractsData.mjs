@@ -93,8 +93,8 @@ export const apiRouteContracts = [
     id: "ai-chat-respond",
     method: "POST",
     path: "/api/ai/chat/respond",
-    audience: "customer",
-    auth: "customer-session",
+    audience: "public",
+    auth: "none",
     runtimeMode: "queue-backed",
     requestSchema: [
       "X-Idempotency-Key",
@@ -112,18 +112,18 @@ export const apiRouteContracts = [
       "external_network_calls"
     ],
     idempotencyKeyRequired: true,
-    externalNetworkCalls: false,
+    externalNetworkCalls: true,
     realOrdersEnabled: false,
     piiPolicy:
-      "Customer chat text is redacted and sent only to the server-selected AI provider when server-side live AI gates are enabled, configured, rate-limited, and fallback-covered; the route does not persist transcripts.",
-    backedBy: ["customer-session auth", "aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "deterministic-customer-chat fallback"]
+      "Customer chat text is redacted and sent only to the admin-selected AI provider when the flow is live, configured, rate-limited, and fallback-covered; the route does not persist transcripts.",
+    backedBy: ["aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "deterministic-customer-chat fallback"]
   },
   {
     id: "ai-card-generate",
     method: "POST",
     path: "/api/ai/card/generate",
-    audience: "customer",
-    auth: "customer-session",
+    audience: "public",
+    auth: "none",
     runtimeMode: "queue-backed",
     requestSchema: [
       "X-Idempotency-Key",
@@ -148,11 +148,11 @@ export const apiRouteContracts = [
       "external_network_calls"
     ],
     idempotencyKeyRequired: true,
-    externalNetworkCalls: false,
+    externalNetworkCalls: true,
     realOrdersEnabled: false,
     piiPolicy:
-      "Card fields and approved memories are minimized and sent only to the server-selected AI provider when server-side live AI gates are enabled, configured, rate-limited, and fallback-covered; the route does not place orders or store raw drafts.",
-    backedBy: ["customer-session auth", "aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "browser-svg-renderer fallback"]
+      "Card fields and approved memories are minimized and sent only to the admin-selected AI provider when the flow is live, configured, rate-limited, and fallback-covered; the route does not place orders or store raw drafts.",
+    backedBy: ["aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "browser-svg-renderer fallback"]
   },
   {
     id: "admin-readiness",

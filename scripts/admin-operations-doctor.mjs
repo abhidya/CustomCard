@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { buildAdminOperationsWorkflow, validateAdminOperationsWorkflow } from "../src/adminOperationsData.mjs";
+import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlockers } from "./doctor-harness.mjs";
 
 const files = {
   app: "src/App.tsx",
@@ -7,6 +8,8 @@ const files = {
   adminOperationsData: "src/adminOperationsData.mjs",
   adminOperationsTest: "src/adminOperations.test.ts",
   appSmokeTest: "tests/app-smoke.test.ts",
+  hostedApiReadinessData: "src/hostedApiReadinessData.mjs",
+  observabilityReadinessData: "src/observabilityReadinessData.mjs",
   platformDocs: "docs/platform-expansion-design.md",
   requirementsDocs: "docs/requirements-traceability.md",
   packageJson: "package.json",
@@ -36,7 +39,7 @@ const checks = [
     "keeps credential vault, hosted token, and incident drill work explicit",
     "rejects unsafe or unactionable operations tasks"
   ]),
-  checkIncludes("surfaces", "admin-ui-operation-surface", `${contents.app}\n${contents.adminOperationsData}\n${contents.appSmokeTest}`, [
+  checkIncludes("surfaces", "admin-ui-operation-surface", `${contents.app}\n${contents.adminOperationsData}\n${contents.hostedApiReadinessData}\n${contents.observabilityReadinessData}\n${contents.appSmokeTest}`, [
     "Integration owner workflow",
     "Credential vault setup",
     "Hosted account-token verification",
@@ -188,52 +191,5 @@ function observabilityItem(id, label) {
     liveIngestionEnabled: false,
     externalNetworkCalls: false,
     productionAlertEnabled: false
-  };
-}
-
-function checkMinimum(lane, id, actual, minimum) {
-  return {
-    id,
-    lane,
-    passed: actual >= minimum,
-    detail: actual >= minimum ? `${actual} is at least ${minimum}.` : `${actual} is below required minimum ${minimum}.`
-  };
-}
-
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matches expected ${expected}.` : `${actual} did not match expected ${expected}.`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "No blockers." : blockers.join("; ")
-  };
-}
-
-function checkArrayIncludes(lane, id, values, expectedValues) {
-  const missing = expectedValues.filter((value) => !values.includes(value));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail: missing.length === 0 ? "All expected values found." : `Missing: ${missing.join(", ")}`
-  };
-}
-
-function checkIncludes(lane, id, content, needles) {
-  const missing = needles.filter((needle) => !content.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail: missing.length === 0 ? "All expected text found." : `Missing text: ${missing.join(", ")}`
   };
 }

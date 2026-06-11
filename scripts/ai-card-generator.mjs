@@ -38,6 +38,7 @@ export function loadLocalAiEnvFiles({ cwd = process.cwd(), target = process.env 
     if (!existsSync(absolutePath)) continue;
     const parsed = parseDotenv(readFileSync(absolutePath, "utf8"));
     for (const [key, value] of Object.entries(parsed)) {
+      if (!isAiEnvKey(key)) continue;
       if (!target[key]) target[key] = value;
     }
   }
@@ -175,8 +176,12 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
 }
 
 function requestScopedAiFlowConfig(body, env) {
-  if (String(env.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG ?? "").toLowerCase() !== "true") return [];
+  if (String(env.CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG ?? "true").toLowerCase() === "false") return [];
   return normalizeAiFlowAdminConfigs(body.aiFlowConfig ?? body.ai_flow_config ?? []);
+}
+
+function isAiEnvKey(key) {
+  return /^(CUSTOMCARD_AI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_)/.test(key);
 }
 
 async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPrompt }) {

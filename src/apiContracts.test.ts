@@ -25,6 +25,8 @@ describe("api contracts", () => {
       expect.arrayContaining([
         "health",
         "route-catalog",
+        "ai-chat-respond",
+        "ai-card-generate",
         "customer-bootstrap",
         "mobile-bootstrap",
         "admin-readiness",
@@ -62,6 +64,8 @@ describe("api contracts", () => {
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
     const walgreensCheckoutUpload = apiRouteContracts.find((route) => route.id === "walgreens-checkout-upload");
     const walgreensCheckoutSession = apiRouteContracts.find((route) => route.id === "walgreens-checkout-session");
+    const aiChatRespond = apiRouteContracts.find((route) => route.id === "ai-chat-respond");
+    const aiCardGenerate = apiRouteContracts.find((route) => route.id === "ai-card-generate");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
     expect(nonCheckoutMutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
@@ -185,6 +189,26 @@ describe("api contracts", () => {
       externalNetworkCalls: true,
       realOrdersEnabled: false
     });
+    expect(aiChatRespond).toMatchObject({
+      method: "POST",
+      path: "/api/ai/chat/respond",
+      audience: "public",
+      auth: "none",
+      idempotencyKeyRequired: true,
+      externalNetworkCalls: true,
+      realOrdersEnabled: false
+    });
+    expect(aiCardGenerate).toMatchObject({
+      method: "POST",
+      path: "/api/ai/card/generate",
+      audience: "public",
+      auth: "none",
+      idempotencyKeyRequired: true,
+      externalNetworkCalls: true,
+      realOrdersEnabled: false
+    });
+    expect(aiCardGenerate?.requestSchema).toEqual(expect.arrayContaining(["aiFlowConfig", "memory_notes"]));
+    expect(aiChatRespond?.responseSchema).toEqual(expect.arrayContaining(["ai_flow", "fallback_queued"]));
     expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
       expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])
     );

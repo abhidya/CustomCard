@@ -583,7 +583,7 @@ describe("api server wrapper", () => {
       realOrdersEnabled: false,
       runtime: { mode: "contract" }
     });
-  });
+  }, shellDoctorTimeoutMs);
 
   it("blocks unsupported API runtime modes in doctor output", () => {
     const result = spawnSync("node", ["scripts/api-server.mjs", "--doctor"], {
@@ -631,7 +631,7 @@ describe("api server wrapper", () => {
         "Production API runtime requires CUSTOMCARD_API_RUNTIME=postgres. Contract and memory runtimes are reviewer-only and do not provide durable production auth/idempotency."
       );
     }
-  });
+  }, shellDoctorTimeoutMs);
 
   it("requires an explicit durable API runtime in runtime doctor", () => {
     const ready = spawnSync(process.execPath, ["scripts/validate-runtime-env.mjs"], {

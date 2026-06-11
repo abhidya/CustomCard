@@ -69,7 +69,7 @@ describe("persistence contracts", () => {
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "render-packets")?.persistedTables).toContain(
       "provider_call_events"
     );
-    expect(summary.routes.schemaBacked).toBe(16);
+    expect(summary.routes.schemaBacked).toBe(18);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-demo-reset")).toMatchObject({
       requiredRole: "admin",

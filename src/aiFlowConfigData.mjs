@@ -38,7 +38,7 @@ export const aiFlowDefinitions = [
     defaultPrimaryAdapterId: "cloudflare-workers-ai-chat",
     defaultFallbackAdapterId: "deterministic-customer-chat",
     allowedAdapterIds: textProviderAdapterIds,
-    liveDefault: false,
+    liveDefault: "auto",
     queueDefault: false,
     fallbackQueueDefault: true,
     rateLimitPerMinute: 12,
@@ -57,7 +57,7 @@ export const aiFlowDefinitions = [
     defaultPrimaryAdapterId: "cloudflare-workers-ai-chat",
     defaultFallbackAdapterId: "deterministic-customer-chat",
     allowedAdapterIds: textProviderAdapterIds,
-    liveDefault: false,
+    liveDefault: "auto",
     queueDefault: false,
     fallbackQueueDefault: true,
     rateLimitPerMinute: 10,
@@ -418,8 +418,7 @@ function buildFallbackOverride(definition, env) {
     perRequestBudgetCents: definition.perRequestBudgetCents,
     queueEnabled: definition.queueDefault,
     fallbackQueueEnabled: definition.fallbackQueueDefault,
-    liveProviderCallsEnabled:
-      definition.liveDefault === "auto" ? isAiAdapterConfigured(primaryAdapterId, env) : Boolean(definition.liveDefault),
+    liveProviderCallsEnabled: definition.liveDefault === "auto" ? true : Boolean(definition.liveDefault),
     maxRetries: definition.maxRetries,
     maxTokens: definition.maxTokens,
     temperature: definition.temperature

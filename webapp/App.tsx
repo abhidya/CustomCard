@@ -79,6 +79,9 @@ export default function App() {
     setExportStatus,
     draftInput,
     setDraftInput,
+    aiFlowConfigs,
+    setAiFlowConfigs,
+    aiFlowSummary,
     aiDraft,
     aiCardGenLoading,
     triggerAiCardGen,
@@ -326,8 +329,11 @@ export default function App() {
             activeView={activeView}
             adminPanel={
               <AdminPanelView
+                aiFlowConfigs={aiFlowConfigs}
+                aiFlowSummary={aiFlowSummary}
                 localizationSummary={localizationSummary}
                 model={adminPanelModel}
+                onAiFlowConfigsChange={setAiFlowConfigs}
                 productionReadiness={productionReadiness}
                 providerGovernance={providerGovernance}
                 readiness={readiness}

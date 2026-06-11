@@ -352,6 +352,11 @@ h3 {
   background: #f7d0c6;
 }
 
+.statusChip.amber {
+  color: #4f3511;
+  background: #f4dfb8;
+}
+
 .workspaceBand {
   justify-content: space-between;
   gap: 14px;
@@ -741,6 +746,122 @@ h3 {
   font-weight: 880;
 }
 
+.adminOrderQueue {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d7e0e2;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.adminOrderQueueHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.adminOrderQueueHeader h4 {
+  margin: 1px 0 0;
+  color: #203038;
+  font-size: 0.96rem;
+}
+
+.adminOrderRows {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.adminOrderRow {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.2fr) minmax(140px, 1fr) minmax(110px, 0.8fr) minmax(110px, 0.8fr) minmax(100px, 0.7fr) minmax(120px, 0.8fr);
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e0e7e9;
+  border-left: 4px solid #315b7d;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
+.adminOrderRow > div,
+.adminOrderRow p {
+  min-width: 0;
+}
+
+.adminOrderRow span,
+.adminOrderRow strong,
+.adminOrderRow em,
+.adminOrderRow p {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.adminOrderRow span {
+  color: #68777d;
+  font-size: 0.68rem;
+  font-weight: 790;
+}
+
+.adminOrderRow strong {
+  margin-top: 2px;
+  color: #203038;
+  font-size: 0.78rem;
+  font-weight: 860;
+}
+
+.adminOrderRow em {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 2px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #244656;
+  background: #eaf1f6;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 880;
+}
+
+.adminOrderRow p,
+.adminOrderEvidence {
+  grid-column: 1 / -1;
+}
+
+.adminOrderRow p {
+  margin: 0;
+  color: #52636a;
+  font-size: 0.78rem;
+  font-weight: 720;
+}
+
+.adminOrderEvidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.adminOrderEvidence span {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #425961;
+  background: #eef3f4;
+  font-size: 0.68rem;
+  font-weight: 820;
+}
+
 .adminPortalRecordGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1020,6 +1141,79 @@ h3 {
 
 .runtimeGrid.compactMetrics {
   margin-top: 10px;
+}
+
+.aiFlowPanel {
+  gap: 14px;
+}
+
+.aiFlowRows {
+  display: grid;
+  gap: 12px;
+}
+
+.aiFlowRow {
+  display: grid;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #dbe3e5;
+}
+
+.aiFlowRow:first-child {
+  border-top: 0;
+}
+
+.aiFlowRowHeader,
+.aiFlowToggleRow,
+.aiFlowMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.aiFlowRowHeader {
+  justify-content: space-between;
+}
+
+.aiFlowRowHeader strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.aiFlowRowHeader span,
+.aiFlowMeta span {
+  color: #617079;
+  font-size: 0.78rem;
+}
+
+.aiFlowControls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.aiFlowToggleRow label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  color: #314048;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.aiFlowToggleRow input {
+  width: auto;
+}
+
+.aiPromptField textarea {
+  min-height: 88px;
+}
+
+.aiFlowMeta span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .metric {
@@ -2977,7 +3171,8 @@ h3 {
   .adminOpsOverview,
   .adminOpsLaneGrid,
   .adminPortalSummaryGrid,
-  .adminPortalTabs {
+  .adminPortalTabs,
+  .adminOrderRow {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3075,6 +3270,7 @@ h3 {
   .adminPortalControlStrip,
   .adminPortalRecordGrid,
   .adminPortalMeta,
+  .adminOrderRow,
   .adminOpsOverview,
   .adminOpsLaneGrid,
   .adminOpsTaskList,

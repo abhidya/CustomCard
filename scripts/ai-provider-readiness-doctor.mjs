@@ -4,6 +4,7 @@ import {
   summarizeAiProviderReadiness,
   validateAiProviderReadiness
 } from "../src/aiProviderReadinessData.mjs";
+import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlockers } from "./doctor-harness.mjs";
 
 const files = {
   aiTest: "src/aiProviderReadiness.test.ts",
@@ -139,33 +140,6 @@ console.log(
 
 if (failed.length > 0) process.exit(1);
 
-function checkMinimum(lane, id, actual, minimum) {
-  return {
-    id,
-    lane,
-    passed: actual >= minimum,
-    detail: actual >= minimum ? `${actual} is at least ${minimum}.` : `${actual} is below required minimum ${minimum}.`
-  };
-}
-
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "Executable AI provider readiness contract has no blockers." : blockers.join(" ")
-  };
-}
-
 function checkItemsShape(lane, id, items) {
   const requiredKeys = [
     "id",
@@ -204,28 +178,3 @@ function checkItemsShape(lane, id, items) {
   };
 }
 
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required AI provider readiness signals.`
-        : `Missing AI provider readiness signals: ${missing.join(", ")}`
-  };
-}
-
-function checkArrayIncludes(lane, id, values, required) {
-  const missing = required.filter((needle) => !values.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required AI provider readiness signals.`
-        : `Missing AI provider readiness signals: ${missing.join(", ")}`
-  };
-}

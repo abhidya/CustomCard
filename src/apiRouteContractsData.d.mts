@@ -27,6 +27,7 @@ export interface MutationBodyContractSpec {
 export const retailPrinterOperationStartRoute: "/api/retail-printers/operations/start";
 export const retailPrinterCouponPortalEvidenceRoute: "/api/retail-printers/coupon-portal-evidence";
 export const apiRouteContracts: ApiRouteContractData[];
+export const gatedProviderNetworkRouteIds: Set<string>;
 export const hostedCheckoutExemptRouteIds: Set<string>;
 export const requiredApiRouteIds: string[];
 export const requiredApiRoutePaths: string[];

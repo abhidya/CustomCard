@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { checkAbsent, checkIncludes } from "./doctor-harness.mjs";
 
 const files = {
   devCompose: "infra/docker-compose.dev.yml",
@@ -343,28 +344,3 @@ if (failed.length > 0) {
   process.exit(1);
 }
 
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required deployment signals.`
-        : `Missing required deployment signals: ${missing.join(", ")}`
-  };
-}
-
-function checkAbsent(lane, id, text, forbidden) {
-  const present = forbidden.filter((needle) => text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: present.length === 0,
-    detail:
-      present.length === 0
-        ? `No forbidden deployment placeholders found.`
-        : `Forbidden deployment placeholders present: ${present.join(", ")}`
-  };
-}

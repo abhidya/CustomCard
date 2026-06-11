@@ -4,6 +4,7 @@ import {
   summarizeBusinessEngagementReadiness,
   validateBusinessEngagementReadiness
 } from "../src/businessEngagementReadinessData.mjs";
+import { checkArrayIncludes, checkExact, checkIncludes, checkNoBlockers } from "./doctor-harness.mjs";
 
 const files = {
   readinessTest: "src/businessEngagementReadiness.test.ts",
@@ -101,7 +102,7 @@ const checks = [
     "lifecycleTriggers",
     "live_workflow_send",
     "blocks CRM lifecycle sync when opt-in and review gates are absent",
-    "builds redacted no-network notification request contracts"
+    "builds redacted live-network notification request contracts"
   ]),
   checkIncludes("surfaces", "admin-api-business-engagement-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}`, [
     "Business engagement readiness",
@@ -179,24 +180,6 @@ console.log(
 
 if (failed.length > 0) process.exit(1);
 
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "Executable business engagement readiness contract has no blockers." : blockers.join(" ")
-  };
-}
-
 function checkItemsShape(lane, id, items) {
   const requiredKeys = [
     "id",
@@ -234,31 +217,5 @@ function checkItemsShape(lane, id, items) {
       missing.length === 0
         ? `Validated ${items.length} executable business engagement readiness item shapes.`
         : `Missing business engagement readiness fields: ${missing.join(", ")}`
-  };
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required business engagement readiness signals.`
-        : `Missing business engagement readiness signals: ${missing.join(", ")}`
-  };
-}
-
-function checkArrayIncludes(lane, id, values, required) {
-  const missing = required.filter((needle) => !values.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required business engagement readiness signals.`
-        : `Missing business engagement readiness signals: ${missing.join(", ")}`
   };
 }

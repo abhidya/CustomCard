@@ -1641,7 +1641,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 16, idempotentMutations: 10 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 18, idempotentMutations: 12 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 5,
       dbRequiredItems: 4,

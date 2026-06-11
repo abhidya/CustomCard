@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { e2eCoverageItems, summarizeE2eCoverage, validateE2eCoverage } from "../src/e2eCoverageData.mjs";
+import { checkArrayIncludes, checkExact, checkIncludes, checkNoBlockers } from "./doctor-harness.mjs";
 
 const files = {
   e2eTest: "src/e2eCoverage.test.ts",
@@ -48,8 +49,9 @@ const checks = [
     "flags unsafe or weak coverage claims"
   ]),
   checkIncludes("tests", "backing-test-files", `${contents.appSmoke}\n${contents.mobileTest}\n${contents.apiServerTest}\n${contents.infraTest}`, [
-    "runs local auth, free import, card studio, and print options",
-    "exposes customer and admin panels without overflow",
+    "runs the customer-first create-to-print flow",
+    "turns an invite into a card without exposing admin surfaces",
+    "keeps mobile sign-in, import, queue, chat, print options, and checkout paths",
     "passes the mobile doctor",
     "passes its doctor contract",
     "defines a CI verification workflow"
@@ -108,24 +110,6 @@ console.log(
 
 if (failed.length > 0) process.exit(1);
 
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "Executable E2E coverage contract has no validation blockers." : blockers.join(" ")
-  };
-}
-
 function checkItemsShape(lane, id, items) {
   const requiredKeys = [
     "id",
@@ -156,31 +140,5 @@ function checkItemsShape(lane, id, items) {
       missing.length === 0
         ? `Validated ${items.length} executable E2E coverage item shapes.`
         : `Missing E2E coverage fields: ${missing.join(", ")}`
-  };
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required E2E coverage signals.`
-        : `Missing E2E coverage signals: ${missing.join(", ")}`
-  };
-}
-
-function checkArrayIncludes(lane, id, values, required) {
-  const missing = required.filter((needle) => !values.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required E2E surfaces.`
-        : `Missing E2E surfaces: ${missing.join(", ")}`
   };
 }

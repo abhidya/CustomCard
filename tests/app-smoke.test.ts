@@ -153,6 +153,7 @@ describeWithChrome("CustomCard UI smoke", () => {
           printHeading: document.querySelector("h1")?.textContent,
           printText: document.body.textContent,
           downloadButtons: [...document.querySelectorAll("button")].map((node) => node.textContent),
+          checkoutInputs: [...document.querySelectorAll(".checkoutgrid input")].length,
           storeSteps: document.querySelectorAll(".storestep").length,
           adminRows: document.querySelectorAll(".adminHeroCard, .adapterRow").length,
           scrollWidth: document.documentElement.scrollWidth,
@@ -170,9 +171,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.printHeading).toBe("Print it nearby");
     expect(result.printText).toContain("Choose a print shop");
     expect(result.printText).toContain("Download your card");
-    expect(result.printText).toContain("Print at Walgreens");
-    expect(result.printText).toContain("CustomCard never charges you or places orders");
+    expect(result.printText).toContain("Walgreens hosted checkout");
+    expect(result.printText).toContain("Open Walgreens checkout");
+    expect(result.printText).toContain("Walgreens hosts checkout and payment");
     expect(result.downloadButtons.join(" ")).toContain("Download print package");
+    expect(result.checkoutInputs).toBe(4);
     expect(result.storeSteps).toBeGreaterThanOrEqual(3);
     expect(result.adminRows).toBe(0);
     expect(result.scrollWidth).toBe(result.clientWidth);
@@ -208,9 +211,11 @@ describeWithChrome("CustomCard UI smoke", () => {
         ].join("\\n"));
         await raf();
         const eventText = document.body.textContent;
+        const googleCalendar = [...document.querySelectorAll("button")].find((node) => node.textContent?.includes("Google Calendar"));
         await clickByText("Start this card");
         return {
           eventText,
+          googleCalendarDisabled: googleCalendar?.disabled,
           studioText: document.body.textContent,
           heading: document.querySelector("h1")?.textContent,
           adminRows: document.querySelectorAll(".adminHeroCard, .adapterRow").length
@@ -219,6 +224,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.eventText).toContain("Anniversary card for Sara and Ahmed");
+    expect(result.eventText).toContain("We check server readiness first");
+    expect(result.googleCalendarDisabled).toBe(false);
     expect(result.eventText).toContain("Brooklyn, NY");
     expect(result.heading).toBe("Your card, their story");
     expect(result.studioText).toContain("Sara and Ahmed");

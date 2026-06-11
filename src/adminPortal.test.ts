@@ -41,11 +41,15 @@ describe("admin portal", () => {
 
     expect(validateAdminPortalModel(portal)).toEqual([]);
     expect(portal.summary).toMatchObject({
-      sections: 5,
+      sections: 6,
+      orderQueues: 4,
       liveMutationsEnabled: 0,
       rawContentExposed: 0
     });
-    expect(portal.navigation.map((item) => item.id)).toEqual(["ops", "users", "assets", "providers", "launch"]);
+    expect(portal.navigation.map((item) => item.id)).toEqual(["ops", "orders", "users", "assets", "providers", "launch"]);
+    expect(portal.areas.orders.records.map((record) => record.label)).toEqual(
+      expect.arrayContaining(["Manual handoff orders", "Order status state machine", "Vendor confirmation status"])
+    );
     expect(portal.areas.users.records.map((record) => record.label)).toEqual(
       expect.arrayContaining(["Admin roles and sessions", "Customer account lookup", "Data request desk"])
     );

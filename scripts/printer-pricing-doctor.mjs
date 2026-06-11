@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { checkAbsent, checkExact, checkIncludes, checkMinimum } from "./doctor-harness.mjs";
 
 const files = {
   pricing: "src/printerPricing.ts",
@@ -10,6 +11,7 @@ const files = {
   couponProviderFeeds: "src/printerCouponProviderFeeds.ts",
   couponPortalEvidence: "src/printerCouponPortalEvidence.ts",
   couponPortalEvidenceData: "src/retailPrinterCouponPortalEvidenceData.mjs",
+  retailOperationStartData: "src/retailPrinterOperationStartData.mjs",
   couponBrowserEvidence: "src/printerCouponBrowserEvidence.ts",
   couponBrowserEvidenceTest: "src/printerCouponBrowserEvidence.test.ts",
   apiContracts: "src/apiContracts.ts",
@@ -130,7 +132,7 @@ const checks = [
     "refreshReport.totalObservations",
     "liveQuote: false"
   ]),
-  checkIncludes("surfaces", "server-owned-coupon-portal-evidence-api", `${contents.apiServer}\n${contents.apiRuntime}\n${contents.apiContracts}\n${contents.couponPortalEvidenceData}`, [
+  checkIncludes("surfaces", "server-owned-coupon-portal-evidence-api", `${contents.apiServer}\n${contents.apiRuntime}\n${contents.apiContracts}\n${contents.couponPortalEvidenceData}\n${contents.retailOperationStartData}`, [
     "retail-printer-coupon-portal-evidence",
     "/api/retail-printers/coupon-portal-evidence",
     "buildRetailPrinterCouponPortalEvidenceResponse",
@@ -306,42 +308,4 @@ if (failed.length > 0) process.exit(1);
 
 function countMatches(text, pattern) {
   return [...text.matchAll(pattern)].length;
-}
-
-function checkMinimum(lane, id, actual, minimum) {
-  return {
-    id,
-    lane,
-    passed: actual >= minimum,
-    detail: actual >= minimum ? `${actual} is at least ${minimum}.` : `${actual} is below required minimum ${minimum}.`
-  };
-}
-
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail: missing.length === 0 ? `Found ${required.length} required pricing signals.` : `Missing pricing signals: ${missing.join(", ")}`
-  };
-}
-
-function checkAbsent(lane, id, text, forbidden) {
-  const present = forbidden.filter((needle) => text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: present.length === 0,
-    detail: present.length === 0 ? "No forbidden live pricing claims found." : `Forbidden live pricing claims present: ${present.join(", ")}`
-  };
 }

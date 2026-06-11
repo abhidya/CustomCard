@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { checkAbsent, checkExact, checkIncludes, checkMinimum } from "./doctor-harness.mjs";
 
 const files = {
   localization: "src/localization.ts",
@@ -110,40 +111,3 @@ function countMatches(text, pattern) {
   return [...text.matchAll(pattern)].length;
 }
 
-function checkMinimum(lane, id, actual, minimum) {
-  return {
-    id,
-    lane,
-    passed: actual >= minimum,
-    detail: actual >= minimum ? `${actual} is at least ${minimum}.` : `${actual} is below required minimum ${minimum}.`
-  };
-}
-
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail: missing.length === 0 ? `Found ${required.length} required localization signals.` : `Missing localization signals: ${missing.join(", ")}`
-  };
-}
-
-function checkAbsent(lane, id, text, forbidden) {
-  const present = forbidden.filter((needle) => text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: present.length === 0,
-    detail: present.length === 0 ? "No forbidden localization signals found." : `Forbidden localization signals present: ${present.join(", ")}`
-  };
-}

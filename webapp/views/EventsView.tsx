@@ -1,5 +1,7 @@
 import { CalendarCheck, CalendarDays, FileText, Inbox, LockKeyhole } from "lucide-react";
+import { useState } from "react";
 import type { CardOpportunity, FreeImportSignal } from "../../src/freeMvp";
+import type { CalendarConnectionStartPacket } from "../../src/onboardingCalendar";
 import { sampleInviteText } from "../../src/freeMvp";
 
 const urgencyLabels: Record<CardOpportunity["urgency"], { label: string; tone: "warn" | "ok" | "soft" }> = {
@@ -10,6 +12,8 @@ const urgencyLabels: Record<CardOpportunity["urgency"], { label: string; tone: "
 };
 
 export function EventsView({
+  calendarConnectionStartPackets,
+  getCustomerApiToken,
   inviteText,
   signal,
   opportunity,
@@ -17,6 +21,8 @@ export function EventsView({
   onAccept,
   onDismiss
 }: {
+  calendarConnectionStartPackets: CalendarConnectionStartPacket[];
+  getCustomerApiToken?: () => Promise<string | undefined>;
   inviteText: string;
   signal: FreeImportSignal;
   opportunity: CardOpportunity;
@@ -26,9 +32,79 @@ export function EventsView({
 }) {
   const hasImport = inviteText.trim().length > 0;
   const urgency = urgencyLabels[opportunity.urgency];
+  const googlePacket = calendarConnectionStartPackets.find((packet) => packet.id === "google-calendar-events");
+  const [connectionStatus, setConnectionStatus] = useState<{
+    tone: "ok" | "warn";
+    title: string;
+    detail: string;
+  } | null>(null);
 
   function focusImportBox() {
     document.querySelector<HTMLTextAreaElement>(".importcard textarea")?.focus();
+  }
+
+  async function startCalendarConnection() {
+    setConnectionStatus({ tone: "warn", title: "Checking Google Calendar", detail: "Asking the server what is ready for this account." });
+    try {
+      const token = await getCustomerApiToken?.();
+      const response = await fetch("/api/calendar/connections/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Idempotency-Key": `calendar-google-${Date.now()}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          calendarChoiceId: "google-calendar-events",
+          returnTo: typeof window === "undefined" ? "/" : window.location.href
+        })
+      });
+      const payload = await response.json().catch(() => undefined) as {
+        status?: string;
+        detail?: string;
+        blockers?: string[];
+        nextApiRoute?: string | null;
+        startPacket?: CalendarConnectionStartPacket;
+      } | undefined;
+
+      if (!response.ok) {
+        setConnectionStatus({
+          tone: "warn",
+          title: response.status === 401 ? "Sign in required" : "Connection not ready",
+          detail:
+            payload?.detail ??
+            (response.status === 401
+              ? "Sign in before connecting Google Calendar."
+              : "The calendar connection route is not ready yet.")
+        });
+        return;
+      }
+
+      const packet = payload?.startPacket;
+      if (payload?.status === "ready-local" && payload.nextApiRoute) {
+        setConnectionStatus({
+          tone: "ok",
+          title: "Ready to import",
+          detail: `The next server route is ${payload.nextApiRoute}.`
+        });
+        return;
+      }
+
+      setConnectionStatus({
+        tone: "warn",
+        title: "Google Calendar needs setup",
+        detail:
+          packet?.blockedReason ??
+          payload?.blockers?.join(", ") ??
+          "OAuth scope review, redirect URI, token storage, and revocation proof are required before live connection."
+      });
+    } catch {
+      setConnectionStatus({
+        tone: "warn",
+        title: "Connection check failed",
+        detail: "The calendar connection route could not be reached. Paste an invite or ICS for now."
+      });
+    }
   }
 
   return (
@@ -48,13 +124,13 @@ export function EventsView({
             <small>Ready now. No account sign-in needed.</small>
           </span>
         </button>
-        <button className="sourcechoice" disabled type="button">
+        <button className="sourcechoice" onClick={startCalendarConnection} type="button">
           <span className="sourceicon">
             <CalendarCheck size={18} />
           </span>
           <span>
             <strong>Google Calendar</strong>
-            <small>Client created. Secure connect flow is the next release step.</small>
+            <small>{googlePacket?.requiredScopes[0] ?? "calendar.events.readonly"} only. We check server readiness first.</small>
           </span>
         </button>
         <button className="sourcechoice" onClick={focusImportBox} type="button">
@@ -67,6 +143,13 @@ export function EventsView({
           </span>
         </button>
       </section>
+
+      {connectionStatus ? (
+        <section className={`sourceStatus sourceStatus-${connectionStatus.tone} reveal`} aria-live="polite">
+          <strong>{connectionStatus.title}</strong>
+          <span>{connectionStatus.detail}</span>
+        </section>
+      ) : null}
 
       <div className="events">
         <section className="panelcard importcard reveal reveal-2">

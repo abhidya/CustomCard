@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
+import {
+  apiRouteContracts,
+  apiRoutePathById,
+  hostedCheckoutExemptRouteIds,
+  repositoryBackedCustomerRouteIds
+} from "../src/apiRouteContractsData.mjs";
+import { checkAbsent, checkIncludes } from "./doctor-harness.mjs";
 
 const files = {
+  apiRouteContractsData: "src/apiRouteContractsData.mjs",
   apiContracts: "src/apiContracts.ts",
   apiRuntime: "scripts/api-runtime.mjs",
   apiServer: "scripts/api-server.mjs",
@@ -19,6 +27,13 @@ const files = {
 const contents = Object.fromEntries(
   Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
 );
+const repositoryBackedCustomerRoutePaths = repositoryBackedCustomerRouteIds.map((routeId) => apiRoutePathById[routeId]);
+const schemaBackedRouteCount = apiRouteContracts.filter(
+  (route) => route.id !== "health" && route.id !== "route-catalog" && !hostedCheckoutExemptRouteIds.has(route.id)
+).length;
+const idempotentMutationRouteCount = apiRouteContracts.filter(
+  (route) => route.method === "POST" && !hostedCheckoutExemptRouteIds.has(route.id)
+).length;
 
 const requiredTables = [
   "users",
@@ -122,6 +137,31 @@ const apiSignals = [
   "/api/data-requests",
   "data_requests"
 ];
+const apiRouteDataSignals = [
+  "admin-persistence-readiness",
+  "admin-demo-reset",
+  "requiredApiRoutePaths",
+  "repositoryBackedCustomerRouteIds",
+  "apiRoutePathById",
+  ...repositoryBackedCustomerRouteIds,
+  ...repositoryBackedCustomerRoutePaths
+];
+const apiServerSignals = [
+  "requiredApiRoutePaths",
+  "schemaBackedRoutes",
+  "authSessionTable: true",
+  "accountIdentityTable: true",
+  "accountRecoveryTable: true",
+  "idempotencyTable: true",
+  "providerUsageLedgerTable: true",
+  "appendOnlyAudit: true",
+  "relationshipMemoryRepository: true",
+  "renderPacketRepository: true",
+  "importPreviewRepository: true",
+  "cardProjectRepository: true",
+  "manualVendorHandoffRepository: true",
+  "dataRequestRepository: true"
+];
 const postgresRuntimeSignals = [
   "createPostgresApiRuntime",
   "postgresPoolFactory",
@@ -199,13 +239,8 @@ const postgresApiHttpSignals = [
   "serves public Postgres health and route catalog over HTTP",
   "enforces Postgres HTTP auth on admin and customer routes",
   "blocks missing HTTP idempotency key before repository mutation",
-  "/api/import-preview",
-  "/api/calendar/connections/start",
-  "/api/memories/review",
-  "/api/card-projects",
-  "/api/render-packets",
-  "/api/vendor-handoff/manual",
-  "/api/data-requests",
+  "apiRoutePathById",
+  "repositoryBackedCustomerRouteIds",
   "replays and conflicts Postgres HTTP idempotency",
   "authVerification",
   "customerHttpRoutes",
@@ -298,8 +333,9 @@ const checks = [
   checkIncludes("schema", "idempotency-signals", contents.migration, idempotencySignals),
   checkIncludes("schema", "queue-job-signals", contents.migration, queueJobSignals),
   checkIncludes("schema", "safety-signals", contents.migration, safetySignals),
-  checkIncludes("api", "persistence-route-contract", contents.apiContracts, apiSignals.slice(0, 2)),
-  checkIncludes("api", "server-persistence-readiness", contents.apiServer, apiSignals.slice(1)),
+  checkIncludes("api", "shared-api-route-contract-data", contents.apiRouteContractsData, apiRouteDataSignals),
+  checkIncludes("api", "persistence-route-contract", contents.apiRouteContractsData, apiSignals.slice(0, 2)),
+  checkIncludes("api", "server-persistence-readiness", `${contents.apiServer}\n${contents.apiRouteContractsData}`, apiServerSignals),
   checkIncludes("api", "account-auth-contract", contents.accountAuth, accountAuthSignals),
   checkIncludes("api", "account-auth-doctor", contents.accountAuthDoctor, accountAuthDoctorSignals),
   checkIncludes("api", "artifact-store-contract", contents.artifactStore, artifactStoreSignals),
@@ -309,7 +345,7 @@ const checks = [
   checkIncludes("api", "postgres-runtime-sql-contract", contents.apiRuntime, postgresRuntimeSignals),
   checkIncludes("api", "postgres-runtime-doctor", contents.postgresRuntimeDoctor, postgresDoctorSignals),
   checkIncludes("api", "postgres-integration-doctor", contents.postgresIntegrationDoctor, postgresIntegrationSignals),
-  checkIncludes("api", "postgres-api-http-doctor", contents.postgresApiHttpDoctor, postgresApiHttpSignals),
+  checkIncludes("api", "postgres-api-http-doctor", `${contents.postgresApiHttpDoctor}\n${contents.apiRouteContractsData}`, postgresApiHttpSignals),
   checkAbsent("schema", "no-raw-content-permission", contents.migration, ["raw_content_allowed", "raw_content_stored BOOLEAN NOT NULL DEFAULT TRUE"]),
   checkAbsent("api", "no-live-persistence-claims", `${contents.apiServer}\n${contents.localPersistenceAudit}`, [
     "realOrdersEnabled: true",
@@ -350,9 +386,9 @@ const report = {
       auditLog: true
     },
     api: {
-      statefulRoutes: 16,
+      statefulRoutes: schemaBackedRouteCount,
       adminPersistenceReadiness: true,
-      idempotentMutations: 10
+      idempotentMutations: idempotentMutationRouteCount
     },
     localBrowserState: {
       auditItems: 5,
@@ -376,30 +412,4 @@ console.log(JSON.stringify(report, null, 2));
 
 if (blockers.length > 0) {
   process.exit(1);
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required persistence signals.`
-        : `Missing required persistence signals: ${missing.join(", ")}`
-  };
-}
-
-function checkAbsent(lane, id, text, forbidden) {
-  const present = forbidden.filter((needle) => text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: present.length === 0,
-    detail:
-      present.length === 0
-        ? "No forbidden persistence signals found."
-        : `Forbidden persistence signals present: ${present.join(", ")}`
-  };
 }

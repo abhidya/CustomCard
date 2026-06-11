@@ -4,8 +4,9 @@ import type { ProviderGovernanceSummary } from "./providerGovernance";
 import type { RuntimeReadiness } from "./providerRuntime";
 import type { ProductionReadinessSummary } from "./productionReadiness";
 import type { ReadinessSummary } from "./readinessSummary";
+import type { OrderStatus } from "./serviceKernel";
 
-export type AdminPortalSectionId = "ops" | "users" | "assets" | "providers" | "launch";
+export type AdminPortalSectionId = "ops" | "orders" | "users" | "assets" | "providers" | "launch";
 export type AdminPortalStatus = "ready" | "attention" | "blocked";
 export type AdminPortalRisk = "low" | "medium" | "high";
 
@@ -44,6 +45,20 @@ export interface AdminPortalArea {
   metrics: AdminPortalMetric[];
   controls: AdminPortalControl[];
   records: AdminPortalRecord[];
+  orderQueue?: AdminPortalOrderQueueItem[];
+}
+
+export interface AdminPortalOrderQueueItem {
+  id: string;
+  customer: string;
+  projectId: string;
+  provider: string;
+  status: OrderStatus;
+  source: string;
+  quote: string;
+  pickup: string;
+  nextAction: string;
+  evidence: string[];
 }
 
 export interface AdminPortalNavigationItem {
@@ -56,6 +71,7 @@ export interface AdminPortalNavigationItem {
 export interface AdminPortalSummary {
   sections: number;
   opsSignals: number;
+  orderQueues: number;
   userQueues: number;
   assetQueues: number;
   providerQueues: number;
@@ -90,15 +106,17 @@ export function buildAdminPortalModel(input: AdminPortalModelInput): AdminPortal
   const runtimeBlocked = runtimeItems.filter((item) => item.mode === "blocked").length;
   const runtimeReady = runtimeItems.filter((item) => item.mode === "local-result").length;
   const ops = buildOpsArea(input, runtimeBlocked, runtimeReady);
+  const orders = buildOrdersArea(input);
   const users = buildUsersArea(input);
   const assets = buildAssetsArea(input);
   const providers = buildProvidersArea(input, runtimeBlocked, runtimeReady);
   const launch = buildLaunchArea(input);
-  const areas = { ops, users, assets, providers, launch };
+  const areas = { ops, orders, users, assets, providers, launch };
   const records = Object.values(areas).flatMap((area) => area.records);
   const summary: AdminPortalSummary = {
     sections: Object.keys(areas).length,
     opsSignals: ops.records.length,
+    orderQueues: orders.records.length,
     userQueues: users.records.length,
     assetQueues: assets.records.length,
     providerQueues: input.model.gatedProviders.length + input.model.blockedProviders.length,
@@ -151,7 +169,7 @@ export function filterAdminPortalRecords(records: AdminPortalRecord[], filter: A
 
 export function validateAdminPortalModel(portal: AdminPortalModel): string[] {
   const issues: string[] = [];
-  const requiredSections: AdminPortalSectionId[] = ["ops", "users", "assets", "providers", "launch"];
+  const requiredSections: AdminPortalSectionId[] = ["ops", "orders", "users", "assets", "providers", "launch"];
   const records = Object.values(portal.areas).flatMap((area) => area.records);
 
   for (const section of requiredSections) {
@@ -264,6 +282,122 @@ function buildOpsArea(input: AdminPortalModelInput, runtimeBlocked: number, runt
         evidence: ["Vendor certification", "Recovery drill", "Physical print QA"]
       })
     ]
+  };
+}
+
+function buildOrdersArea(input: AdminPortalModelInput): AdminPortalArea {
+  const { readiness } = input;
+  const directOrdersEnabled = readiness.retailFulfillment.summary.directOrderEnabled;
+  const paymentChargesEnabled = readiness.payment.summary.liveChargesEnabled;
+  const orderQueue: AdminPortalOrderQueueItem[] = [
+    {
+      id: "order-demo-manual-handoff",
+      customer: "Demo customer",
+      projectId: "project-demo-anniversary-card",
+      provider: "Walgreens",
+      status: "vendor_handoff_blocked",
+      source: "demo seed orders row",
+      quote: "Review-only",
+      pickup: "Not confirmed",
+      nextAction: "Use the hosted checkout or manual upload path; no live vendor order API call is made.",
+      evidence: ["orders.status", "order_events.payload", "vendor_quotes.live_quote=false"]
+    },
+    {
+      id: "manual-vendor-handoff-approved",
+      customer: "Signed-in customer",
+      projectId: "from /api/vendor-handoff/manual",
+      provider: "Selected retail printer",
+      status: "vendor_handoff_ready",
+      source: "manual-vendor-handoff mutation",
+      quote: "Not charged",
+      pickup: "Customer confirms with vendor",
+      nextAction: "Verify consent, render packet, and order_events before supporting customer checkout.",
+      evidence: ["consent_records", "orders", "order_events"]
+    },
+    {
+      id: "order-status-recovery-drill",
+      customer: "Support queue",
+      projectId: "service-kernel transition graph",
+      provider: "Any printer",
+      status: "wrong_store",
+      source: "order recovery state machine",
+      quote: "Re-quote required",
+      pickup: "Re-check deadline",
+      nextAction: "Re-quote the correct store, rerender if needed, and keep the audit trail attached.",
+      evidence: ["transitionOrder", "recoveryActions", "auditTrail"]
+    }
+  ];
+
+  return {
+    id: "orders",
+    label: "Orders",
+    eyebrow: "Order status",
+    summary: "Manual handoff order records, status transitions, recovery actions, and blocked live vendor sync.",
+    metrics: [
+      { label: "Order tables", value: "3" },
+      { label: "Tracked rows", value: `${orderQueue.length}` },
+      { label: "Statuses", value: "11" },
+      { label: "Direct orders", value: `${directOrdersEnabled}` },
+      { label: "Live charges", value: `${paymentChargesEnabled}` },
+      { label: "Vendor sync", value: "0" },
+      { label: "Queue writes", value: "manual" }
+    ],
+    controls: [
+      offControl("orders-live-submit", "Submit live vendor orders", "Requires vendor certification, customer approval, payment, and kill-switch proof."),
+      offControl("orders-vendor-status-sync", "Vendor status sync", "Requires certified webhook or polling integration plus recovery runbooks."),
+      offControl("orders-refunds-cancels", "Refunds and cancellations", "Requires payment provider, vendor policy review, and audited support actions.")
+    ],
+    records: [
+      record({
+        id: "orders-manual-handoff",
+        label: "Manual handoff orders",
+        domain: "Orders",
+        owner: "Commerce and fulfillment",
+        source: "manual-vendor-handoff API",
+        status: "attention",
+        risk: "medium",
+        detail: "Customer handoff mutations persist order, order event, consent, queue, and audit records when durable runtime is enabled.",
+        action: "Expose the persisted order list to admins with customer-safe metadata, status, store, quote, pickup window, and recovery actions.",
+        evidence: ["orders table", "order_events table", "manual-vendor-handoff mutation"]
+      }),
+      record({
+        id: "orders-status-state-machine",
+        label: "Order status state machine",
+        domain: "Order lifecycle",
+        owner: "Commerce and fulfillment",
+        source: "service kernel",
+        status: "ready",
+        risk: "medium",
+        detail: "Tracked states include draft, rendered, quoted, external-share approved, handoff blocked/ready, rejected, wrong-store, moved-up, cancelled, and fulfilled.",
+        action: "Keep admin status labels mapped to the service-kernel transition graph before adding live vendor callbacks.",
+        evidence: ["OrderStatus union", "transitionOrder", "migration status check"]
+      }),
+      record({
+        id: "orders-vendor-confirmation",
+        label: "Vendor confirmation status",
+        domain: "Retail fulfillment",
+        owner: "Provider integrations",
+        source: "Retail fulfillment readiness",
+        status: directOrdersEnabled > 0 ? "blocked" : "attention",
+        risk: "high",
+        detail: "No live quote, pickup, payment, cancellation, or vendor confirmation feed is enabled in the customer/admin runtime.",
+        action: "Attach Walgreens/CVS/FedEx/Walmart certification, webhook or polling proof, and recovery drills before showing live vendor-confirmed statuses.",
+        evidence: ["Vendor certification", "Status sync proof", "Recovery drill"]
+      }),
+      record({
+        id: "orders-payment-boundary",
+        label: "Payment and refund boundary",
+        domain: "Payments",
+        owner: "Commerce and fulfillment",
+        source: "Payment readiness",
+        status: paymentChargesEnabled > 0 ? "blocked" : "attention",
+        risk: "high",
+        detail: "Payment providers are contract-only; CustomCard does not charge, refund, or reconcile order payments yet.",
+        action: "Add payment event mapping and refund/dispute runbooks before admins can operate paid orders.",
+        evidence: ["Payment provider contract", "Refund drill", "Reconciliation report"]
+      })
+    ],
+    orderQueue
   };
 }
 

@@ -4,6 +4,7 @@ import {
   summarizeExternalAuditReadiness,
   validateExternalAuditReadiness
 } from "../src/externalAuditReadinessData.mjs";
+import { checkArrayIncludes, checkExact, checkIncludes, checkNoBlockers } from "./doctor-harness.mjs";
 
 const files = {
   auditTest: "src/externalAuditReadiness.test.ts",
@@ -97,24 +98,6 @@ console.log(
 
 if (failed.length > 0) process.exit(1);
 
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "Executable external audit readiness contract has no validation blockers." : blockers.join(" ")
-  };
-}
-
 function checkItemsShape(lane, id, items) {
   const requiredKeys = [
     "id",
@@ -151,28 +134,3 @@ function checkItemsShape(lane, id, items) {
   };
 }
 
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required audit readiness signals.`
-        : `Missing audit readiness signals: ${missing.join(", ")}`
-  };
-}
-
-function checkArrayIncludes(lane, id, values, required) {
-  const missing = required.filter((needle) => !values.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required evidence signals.`
-        : `Missing evidence signals: ${missing.join(", ")}`
-  };
-}

@@ -121,6 +121,7 @@ import {
   filterAdminPortalRecords,
   type AdminPortalArea,
   type AdminPortalModel,
+  type AdminPortalOrderQueueItem,
   type AdminPortalRecord,
   type AdminPortalSectionId,
   type AdminPortalStatus
@@ -2577,6 +2578,7 @@ function AdminPortalCommandCenter({
 
       <div className="adminPortalSummaryGrid" aria-label="Admin portal safety summary">
         <Metric label="Areas" value={`${summary.sections}`} />
+        <Metric label="Order queues" value={`${summary.orderQueues}`} />
         <Metric label="User queues" value={`${summary.userQueues}`} />
         <Metric label="Asset queues" value={`${summary.assetQueues}`} />
         <Metric label="Provider queues" value={`${summary.providerQueues}`} />
@@ -2653,8 +2655,63 @@ function AdminPortalCommandCenter({
         ))}
       </div>
 
+      <AdminPortalOrderQueue rows={area.orderQueue ?? []} />
+
       <AdminPortalRecordGrid records={records} />
     </article>
+  );
+}
+
+function AdminPortalOrderQueue({ rows }: { rows: AdminPortalOrderQueueItem[] }) {
+  if (rows.length === 0) return null;
+
+  return (
+    <section className="adminOrderQueue" aria-label="Order status queue">
+      <div className="adminOrderQueueHeader">
+        <div>
+          <p className="eyebrow">Order queue</p>
+          <h4>Tracked order status</h4>
+        </div>
+        <StatusChip icon={PackageCheck} label={`${rows.length} rows`} tone="blue" />
+      </div>
+      <div className="adminOrderRows">
+        {rows.map((row) => (
+          <article className="adminOrderRow" key={row.id}>
+            <div className="adminOrderMain">
+              <strong>{row.id}</strong>
+              <span>{row.customer}</span>
+            </div>
+            <div>
+              <span>Project</span>
+              <strong>{row.projectId}</strong>
+            </div>
+            <div>
+              <span>Provider</span>
+              <strong>{row.provider}</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <em>{orderStatusLabel(row.status)}</em>
+            </div>
+            <div>
+              <span>Quote</span>
+              <strong>{row.quote}</strong>
+            </div>
+            <div>
+              <span>Pickup</span>
+              <strong>{row.pickup}</strong>
+            </div>
+            <p>{row.nextAction}</p>
+            <div className="adminOrderEvidence">
+              <span>{row.source}</span>
+              {row.evidence.slice(0, 3).map((evidence) => (
+                <span key={`${row.id}-${evidence}`}>{evidence}</span>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -2700,6 +2757,178 @@ function AdminPortalRecordGrid({ records }: { records: AdminPortalRecord[] }) {
         </article>
       ))}
     </div>
+  );
+}
+
+function AiFlowConfigPanel({
+  configs,
+  summary,
+  onChange
+}: {
+  configs: AiFlowAdminConfig[];
+  summary: AiFlowConfigSummary;
+  onChange: (configs: AiFlowAdminConfig[]) => void;
+}) {
+  const configById = new Map(configs.map((config) => [config.flowId, config]));
+
+  function patchFlow(flowId: AiFlowAdminConfig["flowId"], patch: Partial<AiFlowAdminConfig>) {
+    onChange(configs.map((config) => (config.flowId === flowId ? { ...config, ...patch } : config)));
+  }
+
+  return (
+    <article className="toolPanel adminWide aiFlowPanel">
+      <div className="sectionHeader compact">
+        <div>
+          <p className="eyebrow">AI control plane</p>
+          <h3>Flow provider policy</h3>
+        </div>
+        <StatusChip
+          icon={WandSparkles}
+          label={`${summary.readyForLiveCalls}/${summary.total} live-ready`}
+          tone={summary.readyForLiveCalls > 0 ? "green" : "amber"}
+        />
+      </div>
+
+      <div className="runtimeGrid compactMetrics" aria-label="AI flow policy summary">
+        <Metric label="Live toggled" value={`${summary.liveEnabled}`} />
+        <Metric label="Queued" value={`${summary.queued}`} />
+        <Metric label="Fallback queue" value={`${summary.fallbackQueued}`} />
+        <Metric label="Blocked" value={`${summary.blocked}`} />
+      </div>
+
+      <div className="aiFlowRows" aria-label="AI flow provider configuration">
+        {summary.flows.map((flow) => {
+          const config = configById.get(flow.flowId);
+          if (!config) return null;
+          return (
+            <section className="aiFlowRow" key={flow.flowId}>
+              <div className="aiFlowRowHeader">
+                <div>
+                  <strong>{flow.label}</strong>
+                  <span>{flow.capability}</span>
+                </div>
+                <StatusChip
+                  icon={flow.readyForLiveCalls ? CircleCheck : Lock}
+                  label={flow.readyForLiveCalls ? "Ready" : "Fallback"}
+                  tone={flow.readyForLiveCalls ? "green" : "amber"}
+                />
+              </div>
+
+              <div className="aiFlowControls">
+                <label className="fieldStack">
+                  <span>Provider</span>
+                  <select
+                    value={config.primaryAdapterId}
+                    onChange={(event) => patchFlow(flow.flowId, { primaryAdapterId: event.target.value })}
+                  >
+                    {flow.allowedAdapterIds.map((adapterId) => (
+                      <option key={adapterId} value={adapterId}>
+                        {providerAdapterLabel(adapterId)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="fieldStack">
+                  <span>Fallback</span>
+                  <select
+                    value={config.fallbackAdapterId}
+                    onChange={(event) => patchFlow(flow.flowId, { fallbackAdapterId: event.target.value })}
+                  >
+                    {flow.allowedAdapterIds.map((adapterId) => (
+                      <option key={adapterId} value={adapterId}>
+                        {providerAdapterLabel(adapterId)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="fieldStack">
+                  <span>Model</span>
+                  <input
+                    value={config.model}
+                    onChange={(event) => patchFlow(flow.flowId, { model: event.target.value })}
+                  />
+                </label>
+
+                <label className="fieldStack">
+                  <span>Rate/min</span>
+                  <input
+                    min={1}
+                    type="number"
+                    value={config.rateLimitPerMinute}
+                    onChange={(event) => patchFlow(flow.flowId, { rateLimitPerMinute: Number(event.target.value) })}
+                  />
+                </label>
+
+                <label className="fieldStack">
+                  <span>Max/request</span>
+                  <input
+                    min={0}
+                    type="number"
+                    value={config.perRequestBudgetCents}
+                    onChange={(event) => patchFlow(flow.flowId, { perRequestBudgetCents: Number(event.target.value) })}
+                  />
+                </label>
+
+                <label className="fieldStack">
+                  <span>Monthly</span>
+                  <input
+                    min={0}
+                    type="number"
+                    value={config.monthlyBudgetCents}
+                    onChange={(event) => patchFlow(flow.flowId, { monthlyBudgetCents: Number(event.target.value) })}
+                  />
+                </label>
+              </div>
+
+              <div className="aiFlowToggleRow">
+                <label>
+                  <input
+                    checked={config.liveProviderCallsEnabled}
+                    onChange={(event) => patchFlow(flow.flowId, { liveProviderCallsEnabled: event.target.checked })}
+                    type="checkbox"
+                  />
+                  <span>Live provider</span>
+                </label>
+                <label>
+                  <input
+                    checked={config.queueEnabled}
+                    onChange={(event) => patchFlow(flow.flowId, { queueEnabled: event.target.checked })}
+                    type="checkbox"
+                  />
+                  <span>Queue primary</span>
+                </label>
+                <label>
+                  <input
+                    checked={config.fallbackQueueEnabled}
+                    onChange={(event) => patchFlow(flow.flowId, { fallbackQueueEnabled: event.target.checked })}
+                    type="checkbox"
+                  />
+                  <span>Queue fallback</span>
+                </label>
+              </div>
+
+              <label className="fieldStack aiPromptField">
+                <span>Prompt instructions</span>
+                <textarea
+                  value={config.promptInstructions}
+                  onChange={(event) => patchFlow(flow.flowId, { promptInstructions: event.target.value })}
+                />
+              </label>
+
+              <div className="aiFlowMeta">
+                <span>{formatCents(config.perRequestBudgetCents)} max/request</span>
+                <span>{formatCents(config.monthlyBudgetCents)} monthly</span>
+                {flow.blockedReasons.slice(0, 2).map((reason) => (
+                  <span key={`${flow.flowId}-${reason}`}>{reason}</span>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </article>
   );
 }
 
@@ -3195,7 +3424,17 @@ function SegmentedControl({
   );
 }
 
-function StatusChip({ icon: Icon, label, tone }: { icon: LucideIcon; label: string; tone: "green" | "blue" | "red" }) {
+function providerAdapterLabel(adapterId: string): string {
+  const adapter = providerCatalog.find((candidate) => candidate.id === adapterId);
+  return adapter ? adapter.label : formatOption(adapterId);
+}
+
+function buildClientIdempotencyKey(prefix: string): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function StatusChip({ icon: Icon, label, tone }: { icon: LucideIcon; label: string; tone: "green" | "blue" | "red" | "amber" }) {
   return (
     <span className={`statusChip ${tone}`}>
       <Icon size={15} />
@@ -3249,6 +3488,7 @@ function summarizeRuntimeReadiness(readinessMap: Map<string, RuntimeReadiness>) 
 function adminPortalIcon(section: AdminPortalSectionId): ReactNode {
   const props = { size: 17 };
   if (section === "ops") return <Cloud {...props} />;
+  if (section === "orders") return <Store {...props} />;
   if (section === "users") return <UserRound {...props} />;
   if (section === "assets") return <Image {...props} />;
   if (section === "providers") return <Settings {...props} />;
@@ -3272,6 +3512,23 @@ function adminPortalStatusLabel(status: AdminPortalStatus): string {
     attention: "Attention",
     blocked: "Blocked",
     ready: "Ready"
+  };
+  return labels[status];
+}
+
+function orderStatusLabel(status: AdminPortalOrderQueueItem["status"]): string {
+  const labels: Record<AdminPortalOrderQueueItem["status"], string> = {
+    cancelled: "Cancelled",
+    draft: "Draft",
+    event_moved_up: "Event moved up",
+    external_share_approved: "External share approved",
+    fulfilled: "Fulfilled",
+    quoted: "Quoted",
+    rendered: "Rendered",
+    vendor_handoff_blocked: "Handoff blocked",
+    vendor_handoff_ready: "Handoff ready",
+    vendor_rejected: "Vendor rejected",
+    wrong_store: "Wrong store"
   };
   return labels[status];
 }

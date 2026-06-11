@@ -1,0 +1,66 @@
+[
+  {
+    "competitor": "Adobe Express",
+    "category": "AI prompt-to-card generation",
+    "sourcePage": "https://www.adobe.com/express/create/ai/card",
+    "sourceAsset": "https://www.adobe.com/express/media_1e794b77d86a3cc74eea0c8a53c0efa4ce7102411.jpeg?width=1200&height=630&format=pjpg&optimize=medium",
+    "localFile": "adobe-express-ai-card-og.jpeg",
+    "sha256": "dd46df52a9e64c07e88465c08289bdaa3a43e2ddbe692ca690a8aade587215ce",
+    "usage": "Research-only reference for comparing AI prompt entry, generated card preview density, and editable-output positioning."
+  },
+  {
+    "competitor": "Adobe Express",
+    "category": "Small business thank-you AI card",
+    "sourcePage": "https://www.adobe.com/express/create/ai/card",
+    "sourcePrompt": "thanks for supporting our small business",
+    "sourceAsset": "https://www.adobe.com/express/media_19320e8e4290a1cccd4b8131f274d42cd871c660b.png?width=750&format=png&optimize=medium",
+    "localFile": "adobe-express-small-business-thanks.png",
+    "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f",
+    "usage": "Research-only reference for comparing a competitor-touted small-business thank-you card prompt against a CustomCard-generated counterpart."
+  },
+  {
+    "competitor": "Hallmark",
+    "category": "Personalized physical card catalog",
+    "sourcePage": "https://www.hallmark.com/customized-cards/",
+    "sourceAsset": "https://www.hallmark.com/dw/image/v2/AALB_PRD/on/demandware.static/-/Sites-hmk-onesite-Library/default/dw345383a2/images/_plp/cards/customized-cards/2026/01-15-26_6up_custom-cards_feat-cats_birthday.jpg?sw=422&sh=422&q=80",
+    "localFile": "hallmark-custom-birthday-category.jpg",
+    "sha256": "6c4f6f6332f300cf3f4012d45c7436545393be7199988441cbdbf37b9ecf4d7c",
+    "usage": "Research-only reference for comparing occasion cataloging, price/fulfillment cues, and physical-card merchandising."
+  },
+  {
+    "competitor": "Greetings Island",
+    "category": "Free template card maker",
+    "sourcePage": "https://www.greetingsisland.com/",
+    "sourceAsset": "https://images.greetingsisland.com/images/cards/holidays/previews/dad-who-can-fix-anything-31899.jpeg?auto=format,compress&w=324",
+    "localFile": "greetings-island-fathers-day-preview.jpeg",
+    "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979",
+    "usage": "Research-only reference for comparing free template preview cards, casual copy tone, and print-at-home positioning."
+  },
+  {
+    "competitor": "Postable",
+    "category": "Mail-for-you blank card flow",
+    "sourcePage": "https://www.postable.com/cards",
+    "sourceAsset": "https://d2ct96dh4lkill.cloudfront.net/assets/images/your-image-here.png?v=1781126889",
+    "localFile": "postable-blank-card-placeholder.png",
+    "sha256": "591d8411f8b8aec074f01b2198d258cc5274af907da66fc13280c8013c14f283",
+    "usage": "Research-only reference for comparing upload-your-own card affordances and mailing workflow framing."
+  },
+  {
+    "competitor": "Shutterfly",
+    "category": "Photo-card print product",
+    "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+    "sourceAsset": "https://shutterfly.widen.net:443/content/qvtbdnwhwa/webp/syecm0223_c%26s%20lp%20grad%20refresh_collage-feature_gradannounement_card_1.png?quality=100",
+    "localFile": "shutterfly-grad-card-preview.webp",
+    "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622",
+    "usage": "Research-only reference for comparing photo-forward card composition, graduation/milestone merchandising, and print quality signals."
+  },
+  {
+    "competitor": "Paperless Post",
+    "category": "Digital card delivery and tracking",
+    "sourcePage": "https://www.paperlesspost.com/cards/section/online-cards",
+    "sourceAsset": "https://c2.ppassets.com/cmsable_components/cmsable_component_image/567218365/00c0c37e7b555024e5894a4109bf05db-247-4711.png",
+    "localFile": "paperless-post-online-card-preview.png",
+    "sha256": "e43a7805bc6eac522f5690874bcbf77fc7cffc730faf803cf51940019bde3444",
+    "usage": "Research-only reference for comparing online-card presentation, recipient delivery choices, and open-tracking cues."
+  }
+]
