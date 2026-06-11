@@ -590,7 +590,7 @@ describe("production infrastructure contract", () => {
       outputDirectory: string;
       rewrites: Array<{ source: string; destination: string }>;
     };
-    const handler = read("api/[...path].mjs");
+    const handler = read("api/[...path].js");
     const apiServer = read("scripts/api-server.mjs");
     const apiRuntime = read("scripts/api-runtime.mjs");
 

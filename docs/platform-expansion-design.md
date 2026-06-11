@@ -371,7 +371,7 @@ contracts, backed by `scripts/api-runtime.mjs`. It serves `/api/health`,
 `/api/admin/persistence-readiness`, keeps live external calls disabled, and also
 serves the built web app from `dist`.
 
-`vercel.json` and `api/[...path].mjs` add a Vercel deployment seam for the same
+`vercel.json` and `api/[...path].js` add a Vercel deployment seam for the same
 runtime. Vercel serves the built Vite app from `dist` and routes `/api/*` to the
 serverless `handleApiRequest` Module. In contract mode it stays database-free;
 in Postgres mode it requires `CUSTOMCARD_API_RUNTIME=postgres`, `DATABASE_URL`,

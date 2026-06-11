@@ -14,7 +14,7 @@ const files = {
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
   vercel: "vercel.json",
-  vercelApiHandler: "api/[...path].mjs",
+  vercelApiHandler: "api/[...path].js",
   envExample: "infra/env/.env.example",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",

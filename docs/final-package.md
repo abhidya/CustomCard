@@ -100,7 +100,7 @@
   card-project, manual vendor handoff, data-request mutation handling,
   localization readiness payloads, and executable memory-mode Bearer auth plus
   `X-Idempotency-Key` replay/conflict behavior served by
-  `scripts/api-server.mjs`. `api/[...path].mjs` exposes the same handler as a
+  `scripts/api-server.mjs`. `api/[...path].js` exposes the same handler as a
   Vercel serverless route. Fake-pool and isolated live Postgres runtime coverage
   exercise auth-session lookup, idempotency replay/conflict, migration
   application, provider/event/opportunity inserts, card-project inserts,

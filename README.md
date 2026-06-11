@@ -224,7 +224,7 @@ The app has three deployment shapes:
 - **Cloud/serverless mode**: Vercel static build plus `/api/*` serverless route, hosted Postgres, and S3/R2-compatible artifact storage.
 
 `vercel.json` builds the Vite app into `dist` while leaving `/api/*` for the
-`api/[...path].mjs` serverless function; the SPA fallback explicitly excludes
+`api/[...path].js` serverless function; the SPA fallback explicitly excludes
 API paths. Static hosting works without database credentials; DB-backed hosted
 API proof requires environment sync, deployment-protection handling, and hosted
 DB doctor evidence.
@@ -236,7 +236,7 @@ DB doctor evidence.
 | `webapp/` | Main React app shell, routes, views, theme, and CSS. |
 | `src/` | Domain contracts, readiness registers, API contracts, provider runtime, tests, and orchestration. |
 | `scripts/` | Doctors, runtime validators, API/static server, migration runner, worker, and collectors. |
-| `api/[...path].mjs` | Vercel serverless API entrypoint. |
+| `api/[...path].js` | Vercel serverless API entrypoint. |
 | `infra/` | Docker, Kubernetes, migration, env, and AWS artifact-store IaC contracts. |
 | `apps/mobile/` | Expo mobile customer shell and release doctor. |
 | `card_gen/` | Optional Python card-generation sidecar. |

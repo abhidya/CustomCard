@@ -7,7 +7,7 @@ const files = {
   dropletCompose: "infra/docker-compose.droplet.yml",
   envExample: "infra/env/.env.example",
   vercel: "vercel.json",
-  vercelApiHandler: "api/[...path].mjs",
+  vercelApiHandler: "api/[...path].js",
   apiServer: "scripts/api-server.mjs",
   apiRuntime: "scripts/api-runtime.mjs",
   cloudArtifactMain: "infra/aws/artifact-store/main.tf",
