@@ -172,7 +172,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.printText).toContain("Walgreens print details");
     expect(result.printText).toContain("Manual Walgreens upload");
     expect(result.printText).toContain("Hosted checkout");
-    expect(result.printText).toContain("Try hosted checkout");
+    expect(result.printText).toContain("Approve your proof");
+    expect(result.printText).toContain("I approve this proof for printing");
+    expect(result.printText).toContain("Continue to Walgreens");
     expect(result.printText).toContain("Walgreens handles payment");
     expect(result.printText).not.toContain("Manual fallback");
     expect(result.printText).not.toContain("CVS");

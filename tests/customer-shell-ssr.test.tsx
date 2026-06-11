@@ -160,7 +160,10 @@ describe("customer shell server render", () => {
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
     expect(print.text).toContain("Print at Walgreens");
-    expect(print.text).toContain("Try hosted checkout");
+    expect(print.text).toContain("Approve your proof");
+    expect(print.text).toContain("I approve this proof for printing");
+    expect(print.text).toContain("Continue to Walgreens");
+    expect(print.text).toContain("Finish the proof approval checklist to unlock Walgreens checkout.");
     expect(print.text).toContain("Save print package");
     expect(print.text).not.toContain("Sign in to continue");
     expect(print.text).not.toContain("Account required");
@@ -176,6 +179,14 @@ describe("customer shell server render", () => {
         expect(text).toContain(label);
       }
       expect(text).toContain("Cards that feel hand-made");
+      // Landing sections explain the product and the Walgreens boundary.
+      expect(text).toContain("How it works");
+      expect(text).toContain("Pick a moment");
+      expect(text).toContain("Review the proof");
+      expect(text).toContain("Print at Walgreens");
+      expect(text).toContain("Free to create. Private by default.");
+      expect(text).toContain("you pay Walgreens only if you print");
+      expect(text).toContain("You review and approve every word before checkout.");
       // The invite import is a collapsed expander; personal details live under "My cards";
       // print is reached through the create flow, not a home tile.
       expect(text).toContain("Start from an invite or calendar event");
@@ -281,8 +292,28 @@ describe("customer shell server render", () => {
       expect(text).toContain("Walgreens confirms the final total");
     });
 
+  it("renders settings with account, connections, privacy choices, and policies", () => {
+    const signedIn = renderShell({ search: "?view=settings" });
+    expect(signedIn.text).toContain("Settings and privacy");
+    expect(signedIn.text).toContain("Account");
+    expect(signedIn.text).toContain("maya@example.com");
+    expect(signedIn.text).toContain("Connections");
+    expect(signedIn.text).toContain("Calendar connections are optional");
+    expect(signedIn.text).toContain("Privacy choices");
+    expect(signedIn.text).toContain("Send me a copy of my data");
+    expect(signedIn.text).toContain("Delete my data");
+    expect(signedIn.text).toContain("AI helps draft your cards");
+    expect(signedIn.text).toContain("Terms");
+    expect(signedIn.text).toContain("Privacy");
+    expect(signedIn.text).toContain("AI disclosure");
+
+    const signedOut = renderShell({ search: "?view=settings", signedIn: false });
+    expect(signedOut.text).toContain("Sign in to send a privacy request.");
+    expect(signedOut.text).toContain("You're browsing without an account.");
+  });
+
   it("keeps customer-visible views free of fixture and implementation terms", () => {
-    const views = ["", "?view=opportunities", "?view=studio", "?view=memory"];
+    const views = ["", "?view=opportunities", "?view=studio", "?view=memory", "?view=settings", "?view=handoff"];
     for (const search of views) {
       for (const storedWorkspace of [undefined, sampleWorkspace]) {
         const { text } = renderShell({ search, storedWorkspace });

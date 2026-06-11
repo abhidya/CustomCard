@@ -1,6 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
 import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
-import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCustomerField } from "../webapp/checkoutModel";
+import {
+  buildCheckoutCustomer,
+  isCheckoutCustomerComplete,
+  mergeCheckoutCustomerDefaults,
+  updateCheckoutCustomerField,
+  validateCheckoutCustomer
+} from "../webapp/checkoutModel";
+import {
+  emptyProofChecklistState,
+  isProofApproved,
+  proofApprovalProgressLabel,
+  proofChecklistItems,
+  toggleProofChecklistItem,
+  type ProofChecklistState
+} from "../webapp/proofApproval";
 import {
   buildBrowserIdempotencyKey,
   buildHandoffChecklistText,
@@ -52,12 +66,15 @@ describe("frontend architecture seams", () => {
     expect(resolveActiveCustomerNavView("handoff")).toBe("customer");
     expect(resolveActiveCustomerNavView("opportunities")).toBe("customer");
     expect(resolveActiveCustomerNavView("memory")).toBe("memory");
-    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards"]);
+    expect(resolveActiveCustomerNavView("settings")).toBe("settings");
+    expect(resolveVisibleCustomerView("settings")).toBe("settings");
+    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards", "Settings"]);
     expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "Adapters", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
     expect(shouldShowCustomerCta("studio")).toBe(true);
     expect(shouldShowCustomerCta("handoff")).toBe(true);
+    expect(shouldShowCustomerCta("settings")).toBe(false);
     expect(shouldShowCustomerCta("legal")).toBe(false);
     expect(shouldShowCustomerCta("business")).toBe(false);
     expect(shouldShowCustomerCta("admin")).toBe(false);
@@ -183,6 +200,33 @@ describe("frontend architecture seams", () => {
 
     expect(updateCheckoutCustomerField({ firstName: "", lastName: "", email: "", phone: "" }, "phone", "1-212-555-0199"))
       .toMatchObject({ phone: "2125550199" });
+  });
+
+  it("validates checkout prefill fields before Walgreens checkout", () => {
+    const valid = { firstName: "Maya", lastName: "Patel", email: "maya@example.com", phone: "2125550199" };
+    expect(validateCheckoutCustomer(valid)).toEqual([]);
+    expect(isCheckoutCustomerComplete(valid)).toBe(true);
+
+    const issues = validateCheckoutCustomer({ firstName: " ", lastName: "", email: "not-an-email", phone: "555" });
+    expect(issues.map((issue) => issue.field)).toEqual(["firstName", "lastName", "email", "phone"]);
+    expect(isCheckoutCustomerComplete({ ...valid, phone: "555" })).toBe(false);
+  });
+
+  it("requires every proof checklist item before approval unlocks checkout", () => {
+    expect(isProofApproved(emptyProofChecklistState)).toBe(false);
+    expect(proofApprovalProgressLabel(emptyProofChecklistState)).toBe(`0 of ${proofChecklistItems.length} checks done`);
+
+    let state: ProofChecklistState = emptyProofChecklistState;
+    for (const item of proofChecklistItems) {
+      expect(isProofApproved(state)).toBe(false);
+      state = toggleProofChecklistItem(state, item.id);
+    }
+    expect(isProofApproved(state)).toBe(true);
+    expect(proofApprovalProgressLabel(state)).toBe("Proof approved");
+
+    // Unchecking any line revokes approval.
+    const revoked = toggleProofChecklistItem(state, "approve");
+    expect(isProofApproved(revoked)).toBe(false);
   });
 
   it("measures JPEG data URLs before Walgreens upload", () => {
