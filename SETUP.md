@@ -374,17 +374,25 @@ API credentials are available. Sandbox is ready to test against.
 # Vercel — set for Preview first, then Production once certified
 vercel env add WALGREENS_API_KEY preview
 vercel env add WALGREENS_AFF_ID preview
+vercel env add WALGREENS_VENDOR_MODE preview
+vercel env add PUBLIC_APP_ORIGIN preview
 # Optional: revenue share
 vercel env add WALGREENS_PUBLISHER_ID preview
 ```
 
-Local (Docker):
+Local (Vite or Docker):
 ```
-# in infra/env/.env  (gitignored copy of infra/env/.env.example)
+# in .env.local or infra/env/.env  (both gitignored)
 WALGREENS_VENDOR_MODE=sandbox
 WALGREENS_API_KEY=<your-key>
 WALGREENS_AFF_ID=<your-aff-id>
+PUBLIC_APP_ORIGIN=http://127.0.0.1:5173
 ```
+
+`WALGREENS_AFF_ID` is separate from the API key and is required by Walgreens
+when fetching upload credentials. Keep real API keys and AffiliateIDs only in
+`.env.local`, `infra/env/.env`, or Vercel environment variables; never commit
+them to `.env.example`.
 
 Sandbox base URL: `https://services-qa.walgreens.com/api/photo`  
 Production base URL: `https://services.walgreens.com/api/photo`

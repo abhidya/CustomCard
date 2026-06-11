@@ -144,6 +144,7 @@ describe("customer shell server render", () => {
     expect(text).toContain("Pick the occasion");
     expect(text).toContain("Sign in");
     expect(text).toContain("Sign up");
+    expect(text).toContain("Paste invite or calendar event");
     expect(text).not.toContain("Sign in to continue");
     expect(text).not.toContain("Admin panel");
     expect(text).not.toContain("Adapter readiness");
@@ -175,7 +176,9 @@ describe("customer shell server render", () => {
         expect(text).toContain(label);
       }
       expect(text).toContain("Cards that feel hand-made");
-      expect(text).toContain("Or paste an invite or calendar event");
+      expect(text).toContain("Paste invite or calendar event");
+      expect(text).toContain("Add a personal detail");
+      expect(text).toContain("Print this card");
 
       // Console-era furniture must stay gone from the customer home.
       expect(text).not.toContain("Personal card workflow");
@@ -209,11 +212,16 @@ describe("customer shell server render", () => {
       expect(text).not.toContain("burnt birthday pancakes");
     });
 
-    it("keeps exactly one primary next action on the home view", () => {
+    it("keeps bottom next actions scoped to active creation steps", () => {
       for (const storedWorkspace of [undefined, sampleWorkspace]) {
-        const { html } = renderShell({ storedWorkspace });
-        const primaryCount = html.split('class="btn btn-primary"').length - 1;
-        expect(primaryCount).toBe(1);
+        const home = renderShell({ storedWorkspace });
+        expect(home.html).not.toContain('class="ctadock"');
+        expect(home.html.split("homeAction").length - 1).toBeGreaterThanOrEqual(3);
+
+        const studio = renderShell({ search: "?view=studio", storedWorkspace });
+        const dockCount = studio.html.split('class="ctadock"').length - 1;
+        expect(dockCount).toBe(1);
+        expect(studio.text).toContain("Continue to print");
       }
     });
 

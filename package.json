@@ -1,8 +1,20 @@
 {
   "name": "customcard",
   "version": "0.1.0",
+  "description": "Relationship-aware greeting-card CRM and print-production MVP.",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhidya/CustomCard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/abhidya/CustomCard/issues"
+  },
+  "homepage": "https://github.com/abhidya/CustomCard#readme",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "mobile:web:preview": "vite --host 127.0.0.1 --open /?view=mobile",
@@ -18,6 +30,7 @@
     "api:doctor:postgres:live": "CUSTOMCARD_POSTGRES_INTEGRATION_DOCTOR=enabled node scripts/postgres-integration-doctor.mjs",
     "api:doctor:postgres:http": "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled node scripts/postgres-api-http-doctor.mjs",
     "account:doctor:live": "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled node scripts/account-auth-doctor.mjs",
+    "card:benchmark": "node scripts/card-generation-benchmark.mjs",
     "artifact:doctor": "node scripts/artifact-store-doctor.mjs",
     "artifact:doctor:s3:live": "CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs",
     "r2:bucket:list": "wrangler r2 bucket list",

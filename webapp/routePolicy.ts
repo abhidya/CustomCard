@@ -45,7 +45,7 @@ export function resolveActiveCustomerNavView(view: ViewId): ViewId {
 }
 
 export function shouldShowCustomerCta(view: ViewId): boolean {
-  return !isAdminRoute(view) && !isLegalRoute(view) && !isBusinessRoute(view);
+  return view === "studio" || view === "handoff";
 }
 
 export function getAdminTargetLabel(view: ViewId): string {

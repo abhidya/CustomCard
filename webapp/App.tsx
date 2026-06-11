@@ -30,7 +30,6 @@ import {
   isAdminRoute,
   isBusinessRoute,
   isLegalRoute,
-  resolveActiveCustomerNavView,
   resolveVisibleCustomerView,
   shouldShowCustomerCta,
   type AdminAccessPolicy
@@ -44,6 +43,8 @@ import { LegalView } from "./views/LegalView";
 import { NotesView } from "./views/NotesView";
 import { PrintView } from "./views/PrintView";
 import { StudioView } from "./views/StudioView";
+
+type AppThemeId = (typeof themes)[number]["id"];
 
 const configuredAdminEmails = new Set(
   [
@@ -116,7 +117,6 @@ export default function App() {
   const isLegalView = isLegalRoute(activeView);
   const isBusinessView = isBusinessRoute(activeView);
   const visibleCustomerView = resolveVisibleCustomerView(activeView);
-  const visibleNavView = resolveActiveCustomerNavView(activeView);
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
   const customerEmail = user?.primaryEmailAddress?.emailAddress ?? "";
@@ -326,6 +326,8 @@ export default function App() {
 
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
+  const canPrintFromHome = draftProgress.hasMeaningfulProgress && printPackage.manifest.passed;
+  const showTopNav = customerNavItems.length > 0 || adminAccess.isAdmin;
 
   return (
     <div className="shell" data-admin-view={isAdminView ? "true" : undefined}>
@@ -337,35 +339,37 @@ export default function App() {
           <span className="wordmark-glyph">C</span>
           <span className="wordmark-name">CustomCard</span>
         </button>
-        <nav className="mainnav" aria-label="CustomCard navigation">
-          {customerNavItems.map((item) => (
-            <button
-              className="navlink"
-              data-active={item.id === visibleNavView}
-              key={item.id}
-              onClick={() => openView(item.id)}
-              type="button"
-            >
-              {item.label}
-            </button>
-          ))}
-          {adminAccess.isAdmin ? (
-            <>
-              <span className="navdivider" aria-hidden="true" />
-              {adminNavItems.map((item) => (
-                <button
-                  className="navlink navlink-admin"
-                  data-active={item.id === activeView}
-                  key={item.id}
-                  onClick={() => openView(item.id)}
-                  type="button"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </>
-          ) : null}
-        </nav>
+        {showTopNav ? (
+          <nav className="mainnav" aria-label="CustomCard navigation">
+            {customerNavItems.map((item) => (
+              <button
+                className="navlink"
+                data-active={item.id === activeView}
+                key={item.id}
+                onClick={() => openView(item.id)}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
+            {adminAccess.isAdmin ? (
+              <>
+                {customerNavItems.length > 0 ? <span className="navdivider" aria-hidden="true" /> : null}
+                {adminNavItems.map((item) => (
+                  <button
+                    className="navlink navlink-admin"
+                    data-active={item.id === activeView}
+                    key={item.id}
+                    onClick={() => openView(item.id)}
+                    type="button"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </>
+            ) : null}
+          </nav>
+        ) : null}
         <div className="topbar-side">
           <ClerkAuthControls />
           <div className="themeswitch" role="group" aria-label="Theme">
@@ -408,11 +412,15 @@ export default function App() {
 
         {!isAdminView && !isLegalView && !isBusinessView && visibleCustomerView === "customer" ? (
           <HomeView
+            canPrint={canPrintFromHome}
             draft={displayDraft}
             hasProgress={hasProgress}
             onImport={() => openView("opportunities")}
+            onNote={() => openView("memory")}
             onOccasion={startOccasion}
+            onPrint={() => openView("handoff")}
             onResume={() => openView("studio")}
+            printPriceLabel={priceLabel}
           />
         ) : null}
 
@@ -446,6 +454,7 @@ export default function App() {
             draft={displayDraft}
             draftInput={draftInput}
             memories={memories}
+            onAddNote={() => openView("memory")}
             onField={updateDraft}
             onGenerateAi={triggerAiCardGen}
           />
@@ -631,6 +640,71 @@ function buildBrowserIdempotencyKey(path: string): string {
   const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "mutation";
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${routeSlug}-${crypto.randomUUID()}`;
   return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function AccountGateShell({
+  loading,
+  onTheme,
+  theme
+}: {
+  loading: boolean;
+  onTheme: (theme: AppThemeId) => void;
+  theme: AppThemeId;
+}) {
+  return (
+    <div className="shell">
+      <a className="skipLink" href="#main-content">
+        Skip to main content
+      </a>
+      <header className="topbar">
+        <span className="wordmark">
+          <span className="wordmark-glyph">C</span>
+          <span className="wordmark-name">CustomCard</span>
+        </span>
+        <div className="topbar-side">
+          <ClerkAuthControls />
+          <div className="themeswitch" role="group" aria-label="Theme">
+            {themes.map((candidate) => (
+              <button
+                aria-label={candidate.label}
+                className={`themedot themedot-${candidate.id}`}
+                data-on={candidate.id === theme}
+                key={candidate.id}
+                onClick={() => onTheme(candidate.id)}
+                title={candidate.label}
+                type="button"
+              />
+            ))}
+          </div>
+        </div>
+      </header>
+      <main id="main-content">
+        <section className="adminGate panelcard reveal" aria-label="CustomCard sign-in gate">
+          <span className="adminGateIcon">
+            <LockKeyhole size={24} />
+          </span>
+          <div>
+            <p className="eyebrow">Private workspace</p>
+            <h1>Sign in to continue</h1>
+            <p>Your drafts, edits, notes, and print progress stay behind your account.</p>
+          </div>
+          <div className="adminGateActions">
+            <span>{loading ? "Checking account access" : "Account required"}</span>
+            <SignInButton>
+              <button className="btn btn-ink" type="button">
+                Sign in
+              </button>
+            </SignInButton>
+            <SignUpButton>
+              <button className="btn btn-primary" type="button">
+                Sign up
+              </button>
+            </SignUpButton>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
 
 interface AdminAccess extends AdminAccessPolicy {

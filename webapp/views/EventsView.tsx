@@ -3,6 +3,10 @@ import { useState } from "react";
 import type { CardOpportunity, FreeImportSignal } from "../../src/freeMvp";
 import type { CalendarConnectionStartPacket } from "../../src/onboardingCalendar";
 import { sampleInviteText } from "../../src/freeMvp";
+import {
+  startGoogleCalendarConnection,
+  type CalendarConnectionStatus
+} from "../calendarConnectionAdapter";
 
 const urgencyLabels: Record<CardOpportunity["urgency"], { label: string; tone: "warn" | "ok" | "soft" }> = {
   "same-day": { label: "Needs same-day printing", tone: "warn" },
@@ -33,11 +37,7 @@ export function EventsView({
   const hasImport = inviteText.trim().length > 0;
   const urgency = urgencyLabels[opportunity.urgency];
   const googlePacket = calendarConnectionStartPackets.find((packet) => packet.id === "google-calendar-events");
-  const [connectionStatus, setConnectionStatus] = useState<{
-    tone: "ok" | "warn";
-    title: string;
-    detail: string;
-  } | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<CalendarConnectionStatus | null>(null);
 
   function focusImportBox() {
     document.querySelector<HTMLTextAreaElement>(".importcard textarea")?.focus();
@@ -45,78 +45,13 @@ export function EventsView({
 
   async function startCalendarConnection() {
     setConnectionStatus({ tone: "warn", title: "Checking Google Calendar", detail: "Asking the server what is ready for this account." });
-    try {
-      const token = await getCustomerApiToken?.();
-      const response = await fetch("/api/calendar/connections/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Idempotency-Key": `calendar-google-${Date.now()}`,
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          calendarChoiceId: "google-calendar-events",
-          returnTo: typeof window === "undefined" ? "/" : window.location.href
-        })
-      });
-      const payload = await response.json().catch(() => undefined) as {
-        status?: string;
-        detail?: string;
-        blockers?: string[];
-        missingEnv?: string[];
-        nextApiRoute?: string | null;
-        providerRequestUrl?: string | null;
-        startPacket?: CalendarConnectionStartPacket;
-      } | undefined;
-
-      if (!response.ok) {
-        setConnectionStatus({
-          tone: "warn",
-          title: response.status === 401 ? "Sign in required" : "Connection not ready",
-          detail:
-            payload?.detail ??
-            (response.status === 401
-              ? "Sign in before connecting Google Calendar."
-              : "The calendar connection route is not ready yet.")
-        });
-        return;
-      }
-
-      if (payload?.providerRequestUrl) {
-        setConnectionStatus({
-          tone: "ok",
-          title: "Opening Google Calendar",
-          detail: "Redirecting to Google for read-only calendar consent."
-        });
-        window.location.assign(payload.providerRequestUrl);
-        return;
-      }
-
-      const packet = payload?.startPacket;
-      if (payload?.status === "ready-local" && payload.nextApiRoute) {
-        setConnectionStatus({
-          tone: "ok",
-          title: "Ready to import",
-          detail: `The next server route is ${payload.nextApiRoute}.`
-        });
-        return;
-      }
-
-      setConnectionStatus({
-        tone: "warn",
-        title: "Google Calendar needs setup",
-        detail:
-          (payload?.missingEnv?.length ? `Missing env: ${payload.missingEnv.join(", ")}.` : undefined) ??
-          packet?.blockedReason ??
-          payload?.blockers?.join(", ") ??
-          "OAuth scope review, redirect URI, token storage, and revocation proof are required before live connection."
-      });
-    } catch {
-      setConnectionStatus({
-        tone: "warn",
-        title: "Connection check failed",
-        detail: "The calendar connection route could not be reached. Paste an invite or ICS for now."
-      });
+    const result = await startGoogleCalendarConnection({
+      getCustomerApiToken,
+      returnTo: typeof window === "undefined" ? "/" : window.location.href
+    });
+    setConnectionStatus(result.status);
+    if (result.providerRequestUrl) {
+      window.location.assign(result.providerRequestUrl);
     }
   }
 

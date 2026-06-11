@@ -36,6 +36,7 @@ export function StudioView({
   aiLoading,
   aiActive,
   aiRequiresSignIn,
+  onAddNote,
   onField,
   onGenerateAi
 }: {
@@ -46,6 +47,7 @@ export function StudioView({
   aiLoading: boolean;
   aiActive: boolean;
   aiRequiresSignIn: boolean;
+  onAddNote: () => void;
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   onGenerateAi: () => void;
 }) {
@@ -178,7 +180,10 @@ export function StudioView({
                 type="button"
               />
             </div>
-            {aiAvailable ? (
+            <button className="textlink textlink-inline" onClick={onAddNote} type="button">
+              Add or edit saved notes
+            </button>
+            {aiRequiresSignIn || aiAvailable ? (
               <div className="airow">
                 {aiRequiresSignIn ? (
                   <SignInButton mode="modal">

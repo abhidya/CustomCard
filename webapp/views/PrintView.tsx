@@ -1,6 +1,6 @@
 import { ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { buildPanelSvg, type CardPanel } from "../../src/customerWorkflow";
+import type { CardPanel } from "../../src/customerWorkflow";
 import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
 import type { PrintExportPackage } from "../../src/printExport";
 import {
@@ -10,6 +10,7 @@ import {
   type CheckoutCustomerDefaults,
   type CheckoutCustomerField
 } from "../checkoutModel";
+import { createWalgreensCheckoutSession } from "../walgreensCheckoutAdapter";
 
 const speedLabels: Record<string, string> = {
   "same-day": "Same-day pickup",
@@ -85,78 +86,26 @@ export function PrintView({
     });
 
     try {
-      const token = await getCustomerApiToken?.();
-      const headers = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      };
-      const images: string[] = [];
-      for (const panel of panels) {
-        const imageBase64 = await panelToJpegBase64(panel);
-        const uploadResponse = await fetch("/api/walgreens/checkout/upload", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ imageBase64 })
-        });
-        const uploadPayload = await uploadResponse.json().catch(() => undefined) as {
-          ok?: boolean;
-          error?: string;
-          detail?: string;
-          blockers?: string[];
-          imageUrl?: string;
-        } | undefined;
-
-        if (!uploadResponse.ok || !uploadPayload?.ok || !uploadPayload.imageUrl) {
-          throw new Error(
-            uploadPayload?.detail ??
-            uploadPayload?.error ??
-            uploadPayload?.blockers?.join(" ") ??
-            "Walgreens image upload is not ready."
-          );
-        }
-        images.push(uploadPayload.imageUrl);
-      }
-
-      const sessionResponse = await fetch("/api/walgreens/checkout/session", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          customer: checkoutCustomer,
-          images,
-          affNotes: `CustomCard ${printPackage.draftId}`
-        })
+      const session = await createWalgreensCheckoutSession({
+        checkoutCustomer,
+        getCustomerApiToken,
+        panels,
+        printPackage
       });
-      const sessionPayload = await sessionResponse.json().catch(() => undefined) as {
-        ok?: boolean;
-        error?: string;
-        detail?: string;
-        blockers?: string[];
-        checkoutUrl?: string;
-        window?: { width: number; height: number };
-      } | undefined;
-
-      if (!sessionResponse.ok || !sessionPayload?.ok || !sessionPayload.checkoutUrl) {
-        throw new Error(
-          sessionPayload?.detail ??
-          sessionPayload?.error ??
-          sessionPayload?.blockers?.join(" ") ??
-          "Walgreens checkout is not ready."
-        );
-      }
 
       const popup = window.open(
-        sessionPayload.checkoutUrl,
+        session.checkoutUrl,
         "customcard-walgreens-checkout",
-        `popup=yes,width=${sessionPayload.window?.width ?? 540},height=${sessionPayload.window?.height ?? 620}`
+        `popup=yes,width=${session.window?.width ?? 540},height=${session.window?.height ?? 620}`
       );
       if (!popup) {
-        window.location.assign(sessionPayload.checkoutUrl);
+        window.location.assign(session.checkoutUrl);
       }
       setCheckoutStatus({
         tone: "ok",
         title: "Walgreens checkout opened",
         detail: "Review store, price, crop, pickup, terms, and payment inside Walgreens before placing the order.",
-        checkoutUrl: sessionPayload.checkoutUrl
+        checkoutUrl: session.checkoutUrl
       });
     } catch (error) {
       setCheckoutStatus({
@@ -315,33 +264,4 @@ export function PrintView({
       </div>
     </>
   );
-}
-
-async function panelToJpegBase64(panel: CardPanel): Promise<string> {
-  const svg = buildPanelSvg(panel);
-  const svgBlob = new Blob([svg], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(svgBlob);
-  try {
-    const image = await loadImage(url);
-    const canvas = document.createElement("canvas");
-    canvas.width = panel.width;
-    canvas.height = panel.height;
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("Could not prepare card image.");
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/jpeg", 0.92);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Could not render the card image for Walgreens."));
-    image.src = src;
-  });
 }

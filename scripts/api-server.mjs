@@ -45,6 +45,9 @@ const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
 const host = process.env.HOST ?? "0.0.0.0";
 
+loadLocalApiEnvFiles();
+loadLocalAiEnvFiles();
+
 export const routes = apiRouteContracts;
 
 const walgreensCheckout = createWalgreensHostedCheckoutService({
@@ -56,26 +59,22 @@ const aiGenerationService = createAiCardGenerationService({
   fetchImpl: (...args) => globalThis.fetch(...args)
 });
 
-const localApiEnvKeys = new Set([
-  "WALGREENS_VENDOR_MODE",
-  "WALGREENS_API_KEY",
-  "WALGREENS_AFF_ID",
-  "WALGREENS_PUBLISHER_ID",
-  "PUBLIC_APP_ORIGIN",
-  "GOOGLE_OAUTH_CLIENT_ID",
-  "GOOGLE_OAUTH_CLIENT_SECRET",
-  "GOOGLE_OAUTH_REDIRECT_URI",
-  "GOOGLE_CALENDAR_REDIRECT_URI",
-  "GOOGLE_OAUTH_STATE_SECRET",
-  "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
-  "GOOGLE_CALENDAR_ID",
-  "GOOGLE_CALENDAR_IMPORT_MAX_RESULTS"
-]);
-
-loadLocalApiEnvFiles();
-loadLocalAiEnvFiles();
-
 function loadLocalApiEnvFiles({ cwd = process.cwd(), target = process.env } = {}) {
+  const localApiEnvKeys = new Set([
+    "WALGREENS_VENDOR_MODE",
+    "WALGREENS_API_KEY",
+    "WALGREENS_AFF_ID",
+    "WALGREENS_PUBLISHER_ID",
+    "PUBLIC_APP_ORIGIN",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "GOOGLE_OAUTH_CLIENT_SECRET",
+    "GOOGLE_OAUTH_REDIRECT_URI",
+    "GOOGLE_CALENDAR_REDIRECT_URI",
+    "GOOGLE_OAUTH_STATE_SECRET",
+    "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+    "GOOGLE_CALENDAR_ID",
+    "GOOGLE_CALENDAR_IMPORT_MAX_RESULTS"
+  ]);
   for (const filePath of [".env.local", "infra/env/.env"]) {
     const absolutePath = resolve(cwd, filePath);
     if (!existsSync(absolutePath)) continue;

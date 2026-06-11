@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
 import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCustomerField } from "../webapp/checkoutModel";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
 import {
@@ -9,6 +10,9 @@ import {
   resolveVisibleCustomerView,
   shouldShowCustomerCta
 } from "../webapp/routePolicy";
+import { createWalgreensCheckoutSession } from "../webapp/walgreensCheckoutAdapter";
+import type { CardPanel } from "../src/customerWorkflow";
+import type { PrintExportPackage } from "../src/printExport";
 import type { CardDraftInput } from "../src/customerWorkflow";
 
 const defaultDraftInput: CardDraftInput = {
@@ -34,7 +38,9 @@ describe("frontend architecture seams", () => {
     expect(resolveActiveCustomerNavView("business")).toBe("customer");
     expect(resolveActiveCustomerNavView("legal")).toBe("legal");
 
-    expect(shouldShowCustomerCta("customer")).toBe(true);
+    expect(shouldShowCustomerCta("customer")).toBe(false);
+    expect(shouldShowCustomerCta("studio")).toBe(true);
+    expect(shouldShowCustomerCta("handoff")).toBe(true);
     expect(shouldShowCustomerCta("legal")).toBe(false);
     expect(shouldShowCustomerCta("business")).toBe(false);
     expect(shouldShowCustomerCta("admin")).toBe(false);
@@ -90,5 +96,76 @@ describe("frontend architecture seams", () => {
 
     expect(updateCheckoutCustomerField({ firstName: "", lastName: "", email: "", phone: "" }, "phone", "1-212-555-0199"))
       .toMatchObject({ phone: "2125550199" });
+  });
+
+  it("normalizes calendar connection outcomes outside EventsView", () => {
+    expect(resolveCalendarConnectionResult(false, 401, undefined).status).toMatchObject({
+      tone: "warn",
+      title: "Sign in required"
+    });
+
+    expect(resolveCalendarConnectionResult(true, 200, { providerRequestUrl: "https://accounts.google.com/o/oauth2/v2/auth" }))
+      .toMatchObject({
+        providerRequestUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+        status: { tone: "ok", title: "Opening Google Calendar" }
+      });
+
+    expect(resolveCalendarConnectionResult(true, 200, { missingEnv: ["GOOGLE_CLIENT_ID"] }).status.detail)
+      .toBe("Missing env: GOOGLE_CLIENT_ID.");
+  });
+
+  it("creates Walgreens checkout sessions outside PrintView", async () => {
+    const panel = {
+      id: "front",
+      label: "Front",
+      headline: "Hello",
+      body: "Body",
+      artDirection: "Botanical",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      rtl: false,
+      overflowRisk: false
+    } satisfies CardPanel;
+    const calls: Array<{ url: string; body: unknown; authorization?: string }> = [];
+    const fetchImpl = (async (url: string | URL | Request, init?: RequestInit) => {
+      const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+      calls.push({
+        url: String(url),
+        body,
+        authorization: init?.headers && "Authorization" in init.headers ? String(init.headers.Authorization) : undefined
+      });
+      if (String(url).endsWith("/upload")) {
+        return { ok: true, json: async () => ({ ok: true, imageUrl: `https://cdn.example/${calls.length}.jpg` }) };
+      }
+      return {
+        ok: true,
+        json: async () => ({ ok: true, checkoutUrl: "https://photo.walgreens.com/checkout", window: { width: 600, height: 700 } })
+      };
+    }) as typeof fetch;
+
+    const session = await createWalgreensCheckoutSession({
+      checkoutCustomer: { firstName: "Maya", lastName: "Patel", email: "maya@example.com", phone: "2125550199" },
+      fetchImpl,
+      getCustomerApiToken: async () => "token-123",
+      panels: [panel, { ...panel, id: "back", label: "Back" }],
+      printPackage: { draftId: "draft-maya" } as PrintExportPackage,
+      renderPanel: async (candidate) => `jpeg-${candidate.id}`
+    });
+
+    expect(session).toEqual({
+      checkoutUrl: "https://photo.walgreens.com/checkout",
+      window: { width: 600, height: 700 }
+    });
+    expect(calls.map((call) => call.url)).toEqual([
+      "/api/walgreens/checkout/upload",
+      "/api/walgreens/checkout/upload",
+      "/api/walgreens/checkout/session"
+    ]);
+    expect(calls[0].authorization).toBe("Bearer token-123");
+    expect(calls[2].body).toMatchObject({
+      affNotes: "CustomCard draft-maya",
+      images: ["https://cdn.example/1.jpg", "https://cdn.example/2.jpg"]
+    });
   });
 });

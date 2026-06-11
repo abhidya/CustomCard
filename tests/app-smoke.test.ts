@@ -256,7 +256,7 @@ describeWithChrome("CustomCard UI smoke", () => {
           h1: document.querySelector("h1")?.textContent,
           skipHref: document.querySelector(".skipLink")?.getAttribute("href"),
           skipTargetExists: !!document.querySelector("#main-content"),
-          navLabeled: !!document.querySelector('[aria-label="CustomCard navigation"]'),
+          customerNavHidden: !document.querySelector('[aria-label="CustomCard navigation"]'),
           missingNames: controls.filter((control) => !control.name.trim()),
           bodyScrollWidth: document.body.scrollWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -268,7 +268,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toContain("Make someone");
     expect(result.skipHref).toBe("#main-content");
     expect(result.skipTargetExists).toBe(true);
-    expect(result.navLabeled).toBe(true);
+    expect(result.customerNavHidden).toBe(true);
     expect(result.missingNames).toEqual([]);
     expect(result.bodyScrollWidth).toBe(result.clientWidth);
     expect(result.scrollWidth).toBe(result.clientWidth);
@@ -302,7 +302,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.freeTools).toBeGreaterThanOrEqual(6);
     expect(result.policyLinks).toBe(6);
     expect(result.ctaDock).toBe(false);
-    expect(result.activeNav).toEqual(["Legal"]);
+    expect(result.activeNav).toEqual([]);
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 

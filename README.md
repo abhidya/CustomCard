@@ -110,6 +110,12 @@ Postgres, queue, object storage, signed artifact URLs, API runtime mode, session
 tokens, and provider credentials. Runtime scripts fail closed when required
 variables are missing or still use placeholder values.
 
+Walgreens hosted checkout can be enabled in sandbox with server-only env values:
+`WALGREENS_VENDOR_MODE=sandbox`, `WALGREENS_API_KEY`,
+`WALGREENS_AFF_ID`, and `PUBLIC_APP_ORIGIN`. Keep real values in `.env.local`,
+`infra/env/.env`, or Vercel environment variables only; tracked examples use
+placeholders.
+
 Useful modes:
 
 ```sh

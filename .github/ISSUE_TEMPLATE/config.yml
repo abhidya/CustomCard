@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Security report
-    url: https://github.com/abhidya/CustomCard/security/advisories/new
-    about: Use private vulnerability reporting when it is enabled for this repository.
+  - name: Security contact request
+    url: https://github.com/abhidya/CustomCard/issues/new?title=%5BSecurity%5D%20Private%20contact%20request&body=Please%20share%20a%20private%20security%20contact.%20No%20vulnerability%20details%20are%20included%20in%20this%20public%20issue.
+    about: Request a private reporting channel without posting vulnerability details publicly.

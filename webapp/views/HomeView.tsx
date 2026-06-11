@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarPlus, NotebookPen, Printer } from "lucide-react";
 import type { CardDraft } from "../../src/freeMvp";
 import { PanelArt } from "../ui";
 
@@ -13,16 +13,24 @@ const occasions: Array<{ label: string; value: string; color: string }> = [
 
 export function HomeView({
   draft,
+  canPrint,
   hasProgress,
   onOccasion,
   onImport,
-  onResume
+  onNote,
+  onPrint,
+  onResume,
+  printPriceLabel
 }: {
   draft: CardDraft;
+  canPrint: boolean;
   hasProgress: boolean;
   onOccasion: (occasion: string) => void;
   onImport: () => void;
+  onNote: () => void;
+  onPrint: () => void;
   onResume: () => void;
+  printPriceLabel?: string;
 }) {
   return (
     <>
@@ -48,11 +56,35 @@ export function HomeView({
         ))}
       </div>
 
-      <div className="herofoot reveal reveal-2">
-        <button className="textlink" onClick={onImport} type="button">
-          Or paste an invite or calendar event
+      <section className="homeActions reveal reveal-2" aria-label="Card actions">
+        <button className="homeAction homeAction-primary" onClick={onImport} type="button">
+          <span className="homeActionIcon">
+            <CalendarPlus size={18} />
+          </span>
+          <span>
+            <strong>Paste invite or calendar event</strong>
+            <small>Use an email, ICS export, or quick note to start from real details.</small>
+          </span>
         </button>
-      </div>
+        <button className="homeAction" onClick={onNote} type="button">
+          <span className="homeActionIcon">
+            <NotebookPen size={18} />
+          </span>
+          <span>
+            <strong>Add a personal detail</strong>
+            <small>Save a memory, inside joke, or preference for this card.</small>
+          </span>
+        </button>
+        <button className="homeAction" disabled={!canPrint} onClick={onPrint} type="button">
+          <span className="homeActionIcon">
+            <Printer size={18} />
+          </span>
+          <span>
+            <strong>Print this card</strong>
+            <small>{canPrint ? `${printPriceLabel ? `${printPriceLabel} estimate. ` : ""}Review files and pickup.` : "Available after you start the card."}</small>
+          </span>
+        </button>
+      </section>
 
       {hasProgress ? (
         <button className="resume reveal reveal-3" onClick={onResume} type="button">
