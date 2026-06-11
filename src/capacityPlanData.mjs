@@ -135,7 +135,51 @@ export const capacityProfiles = [
   }
 ];
 
+export const capacityEvidenceThresholds = [
+  {
+    id: "api-job-queue-depth",
+    label: "API job queue depth per worker",
+    metric: "queued_api_jobs_per_worker",
+    profiles: ["cheap-droplet", "cloud-native", "saas-scale"],
+    measuredBy: "worker lease query plus api_jobs status counts",
+    warnAt: 50,
+    blockAt: 200,
+    requiredEvidence: "Timestamped api_jobs queued/running/dead_lettered count sampled during load rehearsal."
+  },
+  {
+    id: "postgres-pool-pressure",
+    label: "Postgres pool pressure",
+    metric: "postgres_pool_utilization_percent",
+    profiles: ["cheap-droplet", "cloud-native", "saas-scale"],
+    measuredBy: "Postgres runtime pool describe output plus database connection count",
+    warnAt: 70,
+    blockAt: 85,
+    requiredEvidence: "Pool max, active connection count, and release audit from the API and worker runtimes."
+  },
+  {
+    id: "artifact-write-latency",
+    label: "Render artifact write p95",
+    metric: "artifact_write_p95_ms",
+    profiles: ["cloud-native", "saas-scale"],
+    measuredBy: "artifact store doctor write/read timing",
+    warnAt: 750,
+    blockAt: 1500,
+    requiredEvidence: "Object-store write/read p95 timing from a render-packet artifact rehearsal."
+  },
+  {
+    id: "provider-spend-burn",
+    label: "Provider spend burn rate",
+    metric: "provider_spend_budget_percent",
+    profiles: ["cloud-native", "saas-scale"],
+    measuredBy: "provider_call_events monthly ledger aggregation",
+    warnAt: 80,
+    blockAt: 100,
+    requiredEvidence: "Provider spend ledger sample showing tenant budget percent and fallback selection rate."
+  }
+];
+
 export function summarizeCapacityPlan(profiles = capacityProfiles) {
+  const thresholdBlockers = validateCapacityEvidenceThresholds(capacityEvidenceThresholds, profiles);
   return {
     total: profiles.length,
     localProfiles: profiles.filter((profile) => profile.lane === "local").length,
@@ -147,7 +191,13 @@ export function summarizeCapacityPlan(profiles = capacityProfiles) {
     realOrdersEnabled: profiles.filter((profile) => profile.realOrdersEnabled).length,
     liveProviderCalls: profiles.filter((profile) => profile.liveProviderCalls).length,
     requiredEvidenceCount: profiles.reduce((total, profile) => total + profile.requiredEvidence.length, 0),
-    blockers: validateCapacityProfiles(profiles)
+    sloThresholds: capacityEvidenceThresholds.length,
+    workerBackedThresholds: capacityEvidenceThresholds.filter((threshold) => threshold.measuredBy.includes("worker")).length,
+    databaseThresholds: capacityEvidenceThresholds.filter((threshold) => threshold.metric.includes("postgres")).length,
+    artifactThresholds: capacityEvidenceThresholds.filter((threshold) => threshold.metric.includes("artifact")).length,
+    providerSpendThresholds: capacityEvidenceThresholds.filter((threshold) => threshold.metric.includes("provider_spend")).length,
+    measuredEvidenceRequired: capacityEvidenceThresholds.length,
+    blockers: [...validateCapacityProfiles(profiles), ...thresholdBlockers]
   };
 }
 
@@ -225,6 +275,43 @@ export function validateCapacityProfiles(profiles = capacityProfiles) {
     }
     if (!saasScale.providerPolicy.includes("budget gates")) {
       issues.push("Capacity profile saas-scale must require tenant budget gates.");
+    }
+  }
+
+  return issues;
+}
+
+export function validateCapacityEvidenceThresholds(thresholds = capacityEvidenceThresholds, profiles = capacityProfiles) {
+  const issues = [];
+  const profileIds = new Set(profiles.map((profile) => profile.id));
+  const ids = new Set();
+
+  for (const threshold of thresholds) {
+    if (ids.has(threshold.id)) issues.push(`Duplicate capacity evidence threshold: ${threshold.id}.`);
+    ids.add(threshold.id);
+    if (!threshold.metric) issues.push(`Capacity evidence threshold ${threshold.id} must name a metric.`);
+    if (!threshold.measuredBy) issues.push(`Capacity evidence threshold ${threshold.id} must name a measurement source.`);
+    if (!threshold.requiredEvidence) issues.push(`Capacity evidence threshold ${threshold.id} must name required evidence.`);
+    if (!Number.isFinite(threshold.warnAt) || !Number.isFinite(threshold.blockAt) || threshold.warnAt >= threshold.blockAt) {
+      issues.push(`Capacity evidence threshold ${threshold.id} must set warnAt lower than blockAt.`);
+    }
+    if (!Array.isArray(threshold.profiles) || threshold.profiles.length === 0) {
+      issues.push(`Capacity evidence threshold ${threshold.id} must apply to at least one profile.`);
+      continue;
+    }
+    for (const profileId of threshold.profiles) {
+      if (!profileIds.has(profileId)) issues.push(`Capacity evidence threshold ${threshold.id} references unknown profile ${profileId}.`);
+    }
+  }
+
+  for (const requiredMetric of [
+    "queued_api_jobs_per_worker",
+    "postgres_pool_utilization_percent",
+    "artifact_write_p95_ms",
+    "provider_spend_budget_percent"
+  ]) {
+    if (!thresholds.some((threshold) => threshold.metric === requiredMetric)) {
+      issues.push(`Missing capacity evidence threshold metric: ${requiredMetric}.`);
     }
   }
 

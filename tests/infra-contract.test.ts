@@ -552,6 +552,7 @@ describe("production infrastructure contract", () => {
     const app = read("src/App.tsx");
     const apiContracts = read("src/apiContracts.ts");
     const apiServer = read("scripts/api-server.mjs");
+    const readinessSummaryData = read("src/readinessSummaryData.mjs");
     const summary = summarizeCapacityPlan();
 
     expect(report).toMatchObject({
@@ -581,8 +582,8 @@ describe("production infrastructure contract", () => {
       liveProviderCalls: 0,
       realOrdersEnabled: 0
     });
-    expect(`${app}\n${apiContracts}\n${apiServer}`).toContain("Capacity profiles");
-    expect(`${app}\n${apiContracts}\n${apiServer}`).toContain("summarizeCapacityPlan");
+    expect(`${app}\n${apiContracts}\n${apiServer}\n${readinessSummaryData}`).toContain("Capacity profiles");
+    expect(`${app}\n${apiContracts}\n${apiServer}\n${readinessSummaryData}`).toContain("summarizeCapacityPlan");
   }, shellDoctorTimeoutMs);
 
   it("defines a Vercel static plus serverless API deployment contract", () => {

@@ -19,6 +19,7 @@ const files = {
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   providerRuntime: "src/providerRuntime.ts",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
@@ -74,7 +75,7 @@ const checks = [
     "covers provider contracts and critical alert events explicitly",
     "flags unsafe telemetry claims"
   ]),
-  checkIncludes("surfaces", "admin-api-observability-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-observability-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "Observability readiness",
     "summarizeObservabilityReadiness",
     "observability:",

@@ -11,6 +11,7 @@ const files = {
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   providerCatalog: "src/providerCatalog.ts",
   providerRuntime: "src/providerRuntime.ts",
   packageJson: "package.json",
@@ -53,7 +54,7 @@ const checks = [
     "covers all existing AI text, image, and local fallback adapters explicitly",
     "flags unsafe AI launch claims"
   ]),
-  checkIncludes("surfaces", "admin-api-ai-readiness-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-ai-readiness-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "AI provider readiness",
     "summarizeAiProviderReadiness",
     "aiProviderReadiness",
@@ -177,4 +178,3 @@ function checkItemsShape(lane, id, items) {
         : `Missing AI provider readiness fields: ${missing.join(", ")}`
   };
 }
-

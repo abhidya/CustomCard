@@ -17,6 +17,7 @@ const files = {
   readinessData: "src/cloudArtifactProofReadinessData.mjs",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   adminApp: "src/App.tsx",
   e2eCoverage: "src/e2eCoverageData.mjs",
   platformDocs: "docs/platform-expansion-design.md",
@@ -37,7 +38,7 @@ const validationBlockers = validateCloudArtifactProofReadiness(cloudArtifactProo
 const itemIds = cloudArtifactProofReadinessItems.map((item) => item.id);
 const terraformSource = `${contents.terraformMain}\n${contents.terraformVariables}\n${contents.terraformOutputs}`;
 const localObjectStoreSource = `${contents.cloudIacDoctor}\n${contents.s3LiveDoctor}\n${contents.artifactStore}`;
-const adminApiSource = `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}`;
+const adminApiSource = `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`;
 const docsSource = `${contents.platformDocs}\n${contents.verificationDocs}\n${contents.readme}\n${contents.finalPackage}`;
 const ciSource = `${contents.packageJson}\n${contents.workflow}`;
 

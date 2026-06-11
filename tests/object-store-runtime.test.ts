@@ -21,6 +21,7 @@ describe("object store runtime", () => {
       env: objectStoreEnv,
       now: () => new Date("2026-06-11T12:00:00.000Z")
     });
+    expect(runtime.describe()).toMatchObject({ writeConcurrency: 4 });
     const record = {
       id: "render-packet-test",
       projectId: "project-test",
@@ -82,6 +83,7 @@ describe("object store runtime", () => {
         provider: "memory-s3-compatible",
         bucket: "customcard-prod",
         verifiedWrites: 1,
+        writeConcurrency: 4,
         manifestStored: true
       }
     });
@@ -121,6 +123,60 @@ describe("object store runtime", () => {
     );
     expect(JSON.stringify(bucket.payload)).not.toContain("write-secret");
     expect(JSON.stringify(bucket.payload)).not.toContain("read-secret");
+  });
+
+  it("honors bounded concurrent artifact write/readback verification", async () => {
+    const runtime = createObjectStoreRuntime({
+      env: { ...objectStoreEnv, CUSTOMCARD_ARTIFACT_WRITE_CONCURRENCY: "2" },
+      now: () => new Date("2026-06-11T12:00:00.000Z")
+    });
+    const record = {
+      id: "render-packet-concurrent",
+      projectId: "project-concurrent",
+      kind: "validated_print_packet",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      locale: "en-US",
+      direction: "ltr",
+      safeZonePassed: true,
+      textOverflow: false,
+      checksum: "cc_22222222",
+      artifactUri: "file:///tmp/customcard-artifacts/projects/project-concurrent/render-packets/render-packet-concurrent/manifest.json",
+      storageProvider: "filesystem",
+      artifactCount: 3,
+      artifactManifest: {
+        renderPacketId: "render-packet-concurrent",
+        projectId: "project-concurrent",
+        storageProvider: "filesystem",
+        artifactCount: 3,
+        manifestChecksum: "cc_22222222",
+        signedUrlExpiresAt: "2026-06-11T12:15:00.000Z",
+        externalShareApprovalRequired: true,
+        realOrdersEnabled: false
+      },
+      signedUrlExpiresAt: "2026-06-11T12:15:00.000Z",
+      externalShareApprovalRequired: true
+    };
+
+    const stored = await runtime.persistRenderPacketArtifacts({
+      record,
+      bodyText: JSON.stringify({
+        artifacts: [
+          { kind: "panel-svg", fileName: "front.svg", mimeType: "image/svg+xml", text: "<svg>front</svg>" },
+          { kind: "panel-svg", fileName: "inside.svg", mimeType: "image/svg+xml", text: "<svg>inside</svg>" },
+          { kind: "panel-svg", fileName: "back.svg", mimeType: "image/svg+xml", text: "<svg>back</svg>" }
+        ]
+      })
+    });
+
+    expect(stored.payload.artifactPersistence).toMatchObject({
+      status: "stored",
+      artifactCount: 3,
+      verifiedWrites: 3,
+      writeConcurrency: 2,
+      blockers: []
+    });
   });
 
   it("paginates bucket listings with a continuation cursor", async () => {

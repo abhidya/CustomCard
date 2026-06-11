@@ -21,6 +21,7 @@ const files = {
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
   adminApp: "src/App.tsx",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   postgresHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
   accountDoctor: "scripts/account-auth-doctor.mjs"
 };
@@ -92,7 +93,7 @@ const checks = [
     "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled",
     "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled"
   ]),
-  checkIncludes("surfaces", "admin-api-hosted-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-hosted-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "Hosted API proof readiness",
     "summarizeHostedApiReadiness",
     "hostedApiReadiness",

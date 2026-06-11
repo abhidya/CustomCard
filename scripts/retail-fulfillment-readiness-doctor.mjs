@@ -11,6 +11,7 @@ const files = {
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   providerCatalog: "src/providerCatalog.ts",
   providerRuntime: "src/providerRuntime.ts",
   retailPrinterRegistry: "src/retailPrinterRegistryData.mjs",
@@ -58,7 +59,7 @@ const checks = [
     "covers live vendor adapters, manual fallbacks, and recovery drills explicitly",
     "flags unsafe retail launch claims"
   ]),
-  checkIncludes("surfaces", "admin-api-retail-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-retail-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "Retail fulfillment readiness",
     "summarizeRetailFulfillmentReadiness",
     "retailFulfillment",
@@ -236,4 +237,3 @@ function checkItemsShape(lane, id, items) {
         : `Missing retail fulfillment readiness fields: ${missing.join(", ")}`
   };
 }
-

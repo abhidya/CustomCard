@@ -11,6 +11,7 @@ const files = {
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   productionReadiness: "src/productionReadiness.ts",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
@@ -38,7 +39,7 @@ const checks = [
     "maps every external evidence item back to production launch gates",
     "flags unsafe audit claims"
   ]),
-  checkIncludes("surfaces", "admin-api-audit-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-audit-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "External audit readiness",
     "summarizeExternalAuditReadiness",
     "externalAudit",
@@ -133,4 +134,3 @@ function checkItemsShape(lane, id, items) {
         : `Missing audit readiness fields: ${missing.join(", ")}`
   };
 }
-

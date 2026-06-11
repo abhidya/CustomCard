@@ -11,6 +11,7 @@ const files = {
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
   docs: "docs/platform-expansion-design.md"
@@ -56,7 +57,7 @@ const checks = [
     "passes its doctor contract",
     "defines a CI verification workflow"
   ]),
-  checkIncludes("surfaces", "admin-api-coverage-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-coverage-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "End-to-end coverage",
     "summarizeE2eCoverage",
     "e2eCoverage",

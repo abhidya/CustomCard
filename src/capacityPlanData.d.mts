@@ -39,6 +39,17 @@ export interface CapacityProfile {
   tradeoffs: string[];
 }
 
+export interface CapacityEvidenceThreshold {
+  id: string;
+  label: string;
+  metric: string;
+  profiles: CapacityProfileId[];
+  measuredBy: string;
+  warnAt: number;
+  blockAt: number;
+  requiredEvidence: string;
+}
+
 export interface CapacityPlanSummary {
   total: number;
   localProfiles: number;
@@ -50,9 +61,20 @@ export interface CapacityPlanSummary {
   realOrdersEnabled: number;
   liveProviderCalls: number;
   requiredEvidenceCount: number;
+  sloThresholds: number;
+  workerBackedThresholds: number;
+  databaseThresholds: number;
+  artifactThresholds: number;
+  providerSpendThresholds: number;
+  measuredEvidenceRequired: number;
   blockers: string[];
 }
 
+export const capacityEvidenceThresholds: CapacityEvidenceThreshold[];
 export const capacityProfiles: CapacityProfile[];
 export function summarizeCapacityPlan(profiles?: CapacityProfile[]): CapacityPlanSummary;
+export function validateCapacityEvidenceThresholds(
+  thresholds?: CapacityEvidenceThreshold[],
+  profiles?: CapacityProfile[]
+): string[];
 export function validateCapacityProfiles(profiles?: CapacityProfile[]): string[];

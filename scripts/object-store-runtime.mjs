@@ -66,24 +66,13 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
         })
       );
       const blockers = validateStoredArtifacts(normalizedArtifacts);
+      let verifiedWrites = 0;
       if (blockers.length === 0) {
-        for (const artifact of normalizedArtifacts) {
-          await client.putObject({
-            key: artifact.objectKey,
-            body: artifact.body,
-            contentType: artifact.mimeType,
-            metadata: {
-              projectId: record.projectId,
-              renderPacketId: record.id,
-              fileName: artifact.fileName,
-              kind: artifact.kind,
-              contentHash: artifact.contentHash,
-              realOrdersEnabled: "false"
-            }
-          });
-          const readback = await client.getObject({ key: artifact.objectKey });
-          if (!readback.body.equals(artifact.body)) blockers.push(`Artifact readback mismatch: ${artifact.fileName}`);
-        }
+        const results = await runBounded(normalizedArtifacts, config.writeConcurrency, (artifact) =>
+          persistArtifactWithReadback({ artifact, client, record })
+        );
+        verifiedWrites = results.filter((result) => result.verified).length;
+        blockers.push(...results.flatMap((result) => result.blockers));
       }
 
       const manifest = {
@@ -146,7 +135,8 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
             provider: config.provider,
             bucket: config.bucket,
             artifactCount: normalizedArtifacts.length,
-            verifiedWrites: blockers.length === 0 ? normalizedArtifacts.length : 0,
+            verifiedWrites,
+            writeConcurrency: config.writeConcurrency,
             manifestStored: blockers.length === 0,
             liveNetworkCalls: config.liveNetworkCalls,
             blockers
@@ -228,10 +218,57 @@ function buildObjectStoreDescription(config) {
     bucket: config.bucket || null,
     publicBaseUrl: config.publicBaseUrl || null,
     signedUrlTtlMinutes: config.expiresInMinutes,
+    writeConcurrency: config.writeConcurrency,
     liveNetworkCalls: config.liveNetworkCalls,
     credentialMode: config.readCredentialsConfigured ? "write-read-split" : config.writeCredentialsConfigured ? "writer-shared" : "unconfigured",
     blockers: config.blockers
   };
+}
+
+async function persistArtifactWithReadback({ artifact, client, record }) {
+  const blockers = [];
+  await client.putObject({
+    key: artifact.objectKey,
+    body: artifact.body,
+    contentType: artifact.mimeType,
+    metadata: {
+      projectId: record.projectId,
+      renderPacketId: record.id,
+      fileName: artifact.fileName,
+      kind: artifact.kind,
+      contentHash: artifact.contentHash,
+      realOrdersEnabled: "false"
+    }
+  });
+  const readback = await client.getObject({ key: artifact.objectKey });
+  if (!readback.body.equals(artifact.body)) blockers.push(`Artifact readback mismatch: ${artifact.fileName}`);
+  return { fileName: artifact.fileName, verified: blockers.length === 0, blockers };
+}
+
+async function runBounded(items, concurrency, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(concurrency, items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (nextIndex < items.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        try {
+          results[index] = await worker(items[index], index);
+        } catch (error) {
+          results[index] = {
+            fileName: items[index]?.fileName ?? `artifact-${index}`,
+            verified: false,
+            blockers: [`Artifact persistence failed: ${errorMessage(error)}`]
+          };
+        }
+      }
+    })
+  );
+
+  return results;
 }
 
 function resolveObjectStoreConfig(env) {
@@ -246,6 +283,7 @@ function resolveObjectStoreConfig(env) {
   const expiresInMinutes = clampSignedUrlMinutes(env.ARTIFACT_SIGNED_URL_TTL_MINUTES);
   const provider = providerForEndpoint(endpoint);
   const publicBaseUrl = resolvePublicBaseUrl(env);
+  const writeConcurrency = safeIntegerEnv(env.CUSTOMCARD_ARTIFACT_WRITE_CONCURRENCY, 4, 1, 8);
   const required = env.CUSTOMCARD_ARTIFACT_PERSISTENCE === "enabled" || Boolean(endpoint || bucket || accessKeyId || secretAccessKey);
   const blockers = [];
 
@@ -273,6 +311,7 @@ function resolveObjectStoreConfig(env) {
     signingSecret,
     publicBaseUrl,
     expiresInMinutes,
+    writeConcurrency,
     liveNetworkCalls: Boolean(endpoint && !endpoint.startsWith("memory://")),
     writeCredentialsConfigured: Boolean(accessKeyId && secretAccessKey),
     readCredentialsConfigured: Boolean(readAccessKeyId && readSecretAccessKey),
@@ -889,6 +928,12 @@ function clampBucketListLimit(value) {
   return Math.max(1, Math.min(maxBucketListObjects, parsed));
 }
 
+function safeIntegerEnv(value, fallback, min, max) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
 function safeEqualHex(actual, expected) {
   if (!/^[a-f0-9]+$/i.test(actual) || actual.length !== expected.length) return false;
   return timingSafeEqual(Buffer.from(actual, "hex"), Buffer.from(expected, "hex"));
@@ -901,6 +946,10 @@ function parseJsonBody(bodyText) {
   } catch {
     return {};
   }
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function encodeObjectPath(value) {

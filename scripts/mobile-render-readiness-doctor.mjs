@@ -19,6 +19,7 @@ const files = {
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
   adminApp: "src/App.tsx",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   docs: "docs/platform-expansion-design.md"
 };
 
@@ -100,7 +101,7 @@ const checks = [
     '"buildType": "apk"',
     "signedArtifactBuilt: false"
   ]),
-  checkIncludes("surfaces", "admin-api-mobile-render-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-mobile-render-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "Mobile render readiness",
     "summarizeMobileRenderReadiness",
     "mobileRenderReadiness",
@@ -208,4 +209,3 @@ function checkItemsShape(lane, id, items) {
         : `Missing mobile render readiness fields: ${missing.join(", ")}`
   };
 }
-

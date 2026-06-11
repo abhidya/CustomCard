@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  capacityEvidenceThresholds,
   capacityProfiles,
   summarizeCapacityPlan,
+  validateCapacityEvidenceThresholds,
   validateCapacityProfiles,
+  type CapacityEvidenceThreshold,
   type CapacityProfile
 } from "./capacityPlan";
 
@@ -58,8 +61,26 @@ describe("capacity plan", () => {
       objectStoreBackedProfiles: 4,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
+      sloThresholds: 4,
+      workerBackedThresholds: 1,
+      databaseThresholds: 1,
+      artifactThresholds: 1,
+      providerSpendThresholds: 1,
+      measuredEvidenceRequired: 4,
       blockers: []
     });
+  });
+
+  it("defines measurable SLO thresholds for scaling evidence", () => {
+    expect(validateCapacityEvidenceThresholds()).toEqual([]);
+    expect(capacityEvidenceThresholds.map((threshold) => threshold.metric)).toEqual([
+      "queued_api_jobs_per_worker",
+      "postgres_pool_utilization_percent",
+      "artifact_write_p95_ms",
+      "provider_spend_budget_percent"
+    ]);
+    expect(capacityEvidenceThresholds.every((threshold) => threshold.warnAt < threshold.blockAt)).toBe(true);
+    expect(capacityEvidenceThresholds.every((threshold) => threshold.requiredEvidence.length > 20)).toBe(true);
   });
 
   it("flags capacity plans that hide live traffic, remove queues, or overclaim scaling", () => {
@@ -95,6 +116,34 @@ describe("capacity plan", () => {
         "Capacity profile cheap-droplet must stay single-host with low image budget.",
         "Capacity profile cloud-native must use at least two worker replicas.",
         "Capacity profile cloud-native must use managed object storage."
+      ])
+    );
+  });
+
+  it("flags capacity evidence thresholds that cannot be measured", () => {
+    const unsafeThresholds = [
+      {
+        ...capacityEvidenceThresholds[0],
+        metric: "",
+        profiles: ["missing-profile"],
+        warnAt: 200,
+        blockAt: 50,
+        measuredBy: "",
+        requiredEvidence: ""
+      }
+    ] as unknown as CapacityEvidenceThreshold[];
+
+    expect(validateCapacityEvidenceThresholds(unsafeThresholds)).toEqual(
+      expect.arrayContaining([
+        "Capacity evidence threshold api-job-queue-depth must name a metric.",
+        "Capacity evidence threshold api-job-queue-depth must name a measurement source.",
+        "Capacity evidence threshold api-job-queue-depth must name required evidence.",
+        "Capacity evidence threshold api-job-queue-depth must set warnAt lower than blockAt.",
+        "Capacity evidence threshold api-job-queue-depth references unknown profile missing-profile.",
+        "Missing capacity evidence threshold metric: queued_api_jobs_per_worker.",
+        "Missing capacity evidence threshold metric: postgres_pool_utilization_percent.",
+        "Missing capacity evidence threshold metric: artifact_write_p95_ms.",
+        "Missing capacity evidence threshold metric: provider_spend_budget_percent."
       ])
     );
   });

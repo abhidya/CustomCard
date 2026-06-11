@@ -15,6 +15,7 @@ const files = {
   app: "src/App.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   providerCatalog: "src/providerCatalog.ts",
   providerRuntime: "src/providerRuntime.ts",
   packageJson: "package.json",
@@ -80,7 +81,7 @@ const checks = [
     "covers sandbox payment providers, fallback, and refund ledger events explicitly",
     "flags unsafe payment launch claims"
   ]),
-  checkIncludes("surfaces", "admin-api-payment-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-payment-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "Payment readiness",
     "summarizePaymentReadiness",
     "paymentReadiness",

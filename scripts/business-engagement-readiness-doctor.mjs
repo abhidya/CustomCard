@@ -21,6 +21,7 @@ const files = {
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
   adminApp: "src/App.tsx",
+  readinessSummaryData: "src/readinessSummaryData.mjs",
   e2eCoverage: "src/e2eCoverageData.mjs",
   packageJson: "package.json",
   workflow: ".github/workflows/verify.yml",
@@ -133,7 +134,7 @@ const checks = [
     "blocks CRM lifecycle sync when opt-in and review gates are absent",
     "builds redacted live-network notification request contracts"
   ]),
-  checkIncludes("surfaces", "admin-api-business-engagement-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "admin-api-business-engagement-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
     "Business engagement readiness",
     "summarizeBusinessEngagementReadiness",
     "businessEngagementReadiness",
