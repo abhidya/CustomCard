@@ -289,9 +289,15 @@ CREATE TABLE api_jobs (
   user_id TEXT NOT NULL REFERENCES users(id),
   route_id TEXT NOT NULL,
   idempotency_key_id TEXT REFERENCES idempotency_keys(id),
-  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')),
+  status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'dead_lettered', 'cancelled')),
   payload JSONB NOT NULL DEFAULT '{}'::jsonb,
   result JSONB NOT NULL DEFAULT '{}'::jsonb,
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  max_attempts INTEGER NOT NULL DEFAULT 3 CHECK (max_attempts >= 1 AND max_attempts <= 25),
+  locked_by TEXT,
+  locked_at TIMESTAMPTZ,
+  run_after TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_error TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -329,4 +335,6 @@ CREATE INDEX idx_consent_records_user ON consent_records(user_id);
 CREATE INDEX idx_data_requests_user ON data_requests(user_id);
 CREATE INDEX idx_idempotency_keys_user_route ON idempotency_keys(user_id, route_id);
 CREATE INDEX idx_api_jobs_user_status ON api_jobs(user_id, status);
+CREATE INDEX idx_api_jobs_lease ON api_jobs(status, run_after, created_at);
+CREATE INDEX idx_api_jobs_locked ON api_jobs(locked_at) WHERE status = 'running';
 CREATE INDEX idx_audit_subject ON audit_log(subject_type, subject_id);

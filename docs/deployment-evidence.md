@@ -50,6 +50,57 @@ evidence-missing until Vercel env vars include `CUSTOMCARD_API_RUNTIME=postgres`
 `DATABASE_URL`, customer/admin session tokens, deployment protection is bypassed
 or disabled for verification, and a hosted DB doctor run is captured.
 
+### 2026-06-11 Vercel + Neon Update
+
+Deployment:
+
+- Project: `world-prize-s-projects/customcard`
+- Deployment ID: `dpl_HpqfqeQPNsm8XzVhschj9GfU3PhZ`
+- Deployment URL:
+  `https://customcard-jnz0dzq8b-world-prize-s-projects.vercel.app`
+- Aliases:
+  - `https://customcard-three.vercel.app`
+  - `https://customcard-world-prize-s-projects.vercel.app`
+  - `https://customcard-abhidya-world-prize-s-projects.vercel.app`
+- Status from `vercel inspect`: `Ready`
+- Target from `vercel inspect`: `production`
+- Serverless functions from `vercel inspect`: `api/[...path]`,
+  `api/admin/artifacts/bucket`, `api/admin/persistence-readiness`, and sibling
+  nested API wrappers.
+
+Environment:
+
+- Vercel Marketplace Neon Free resource `customcard-postgres` was connected to
+  the `customcard` project for Production.
+- Production scope now includes `DATABASE_URL`, `POSTGRES_URL`,
+  `POSTGRES_PRISMA_URL`, `POSTGRES_URL_NON_POOLING`, `DATABASE_URL_UNPOOLED`,
+  and companion `PG*`/`POSTGRES_*` keys.
+- Production scope now includes `CUSTOMCARD_API_RUNTIME`.
+- Scoped key inventory is recorded in `docs/vercel-env-structure.md`.
+
+Verification:
+
+- Pulled Production env into `/tmp/customcard-vercel-production.env`, ran
+  `CUSTOMCARD_ENV=production npm run migrate`, and deleted the temp env file.
+- Migration runner applied `001_initial_schema.sql`; the repeat run returned
+  `"applied":[]`.
+- Public `GET /` returned HTTP 200.
+- Public `GET /api/health` returned HTTP 200 with `runtime.mode=postgres`,
+  `postgresConfigured=true`, `authEnforced=true`, `idempotencyEnforced=true`,
+  object store configured, and no blockers.
+- Public unauthenticated `GET /api/admin/artifacts/bucket` returned HTTP 401
+  `auth-required`, proving the route now reaches the app runtime instead of a
+  Vercel-level 404.
+- Public unauthenticated `POST /api/calendar/connections/start` returned HTTP
+  401 `auth-required`, proving the route now reaches the app runtime instead of
+  the prior runtime-invalid 503.
+
+Remaining boundary:
+
+- Legacy Vercel bearer env tokens are not persisted as rows in the Postgres
+  `auth_sessions` table. Authenticated admin/customer smoke probes still require
+  real hosted sessions or an explicit reviewer-session seed flow.
+
 ## Cloud Artifact Handoff Proof
 
 Date: 2026-06-07.

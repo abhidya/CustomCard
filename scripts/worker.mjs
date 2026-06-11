@@ -1,38 +1,20 @@
-const requiredEnv = [
-  "CUSTOMCARD_ENV",
-  "CUSTOMCARD_API_RUNTIME",
-  "DATABASE_URL",
-  "QUEUE_URL",
-  "OBJECT_STORE_URL",
-  "OBJECT_STORE_SIGNING_SECRET",
-  "AUTH_SESSION_SECRET",
-  "REAL_ORDER_KILL_SWITCH"
-];
-const productionEnvNames = new Set(["prod", "production"]);
-const missing = requiredEnv.filter((key) => !process.env[key]);
-const customCardEnv = String(process.env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
-const productionRuntime = productionEnvNames.has(customCardEnv) || process.env.NODE_ENV === "production";
+#!/usr/bin/env node
+import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
 
-if (missing.length > 0) {
-  console.error(`CustomCard worker missing env: ${missing.join(", ")}`);
-  process.exitCode = 1;
-} else if (productionRuntime && process.env.CUSTOMCARD_API_RUNTIME !== "postgres") {
-  console.error("CustomCard worker production runtime requires CUSTOMCARD_API_RUNTIME=postgres.");
-  process.exitCode = 1;
-} else if ((process.env.AUTH_SESSION_SECRET ?? "").length < 32) {
-  console.error("CustomCard worker requires AUTH_SESSION_SECRET to be at least 32 characters.");
-  process.exitCode = 1;
-} else if ((process.env.OBJECT_STORE_SIGNING_SECRET ?? "").length < 32) {
-  console.error("CustomCard worker requires OBJECT_STORE_SIGNING_SECRET to be at least 32 characters.");
-  process.exitCode = 1;
+const args = new Set(process.argv.slice(2));
+const runOnce = args.has("--once") || process.env.CUSTOMCARD_WORKER_PROCESS_ON_START === "true";
+
+if (!runOnce) {
+  const readiness = describeWorkerReadiness();
+  console.log(JSON.stringify(readiness));
+  if (readiness.status !== "ready") process.exitCode = 1;
 } else {
-  console.log(
-    JSON.stringify({
-      service: "customcard-worker",
-      env: process.env.CUSTOMCARD_ENV,
-      queue: "ready",
-      jobs: ["provider-sync", "render-review", "artifact-signing", "vendor-handoff"],
-      idempotency: "required"
-    })
-  );
+  const runtime = createWorkerRuntime();
+  try {
+    const report = await runtime.runOnce();
+    console.log(JSON.stringify(report));
+    if (report.status !== "ready" || report.blockers?.length > 0) process.exitCode = 1;
+  } finally {
+    await runtime.close();
+  }
 }

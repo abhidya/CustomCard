@@ -69,6 +69,10 @@ describe("persistence contracts", () => {
       appendOnly: true,
       requiredColumns: expect.arrayContaining(["tenant_id", "adapter_id", "month_bucket", "estimated_cost_cents", "pii_free", "live_network_call"])
     });
+    expect(persistenceTableContracts.find((contract) => contract.name === "api_jobs")).toMatchObject({
+      requiredColumns: expect.arrayContaining(["attempt_count", "max_attempts", "locked_by", "locked_at", "run_after", "last_error"]),
+      indexes: expect.arrayContaining(["idx_api_jobs_lease", "idx_api_jobs_locked"])
+    });
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "render-packets")?.persistedTables).toContain(
       "provider_call_events"
     );

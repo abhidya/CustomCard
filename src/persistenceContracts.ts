@@ -176,7 +176,26 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
     true,
     true
   ),
-  table("api_jobs", ["id", "user_id", "route_id", "idempotency_key_id", "status", "payload", "result"], ["idx_api_jobs_user_status"], true),
+  table(
+    "api_jobs",
+    [
+      "id",
+      "user_id",
+      "route_id",
+      "idempotency_key_id",
+      "status",
+      "payload",
+      "result",
+      "attempt_count",
+      "max_attempts",
+      "locked_by",
+      "locked_at",
+      "run_after",
+      "last_error"
+    ],
+    ["idx_api_jobs_user_status", "idx_api_jobs_lease", "idx_api_jobs_locked"],
+    true
+  ),
   table("audit_log", ["id", "subject_type", "subject_id", "actor_id", "action", "metadata"], ["idx_audit_subject"], true, true)
 ];
 
@@ -288,8 +307,13 @@ export const migrationRequiredSignals = [
   "CREATE INDEX idx_provider_call_events_tenant_month",
   "CREATE TABLE api_jobs",
   "idempotency_key_id TEXT REFERENCES idempotency_keys(id)",
-  "status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled'))",
+  "status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'dead_lettered', 'cancelled'))",
+  "attempt_count INTEGER NOT NULL DEFAULT 0",
+  "max_attempts INTEGER NOT NULL DEFAULT 3",
+  "run_after TIMESTAMPTZ NOT NULL DEFAULT NOW()",
   "CREATE INDEX idx_api_jobs_user_status",
+  "CREATE INDEX idx_api_jobs_lease",
+  "CREATE INDEX idx_api_jobs_locked",
   "CREATE TABLE audit_log",
   "CHECK (raw_content_stored = FALSE)",
   "storage_provider TEXT NOT NULL",
@@ -404,6 +428,14 @@ export function validatePersistenceContracts(
         "real_orders_enabled"
       ]) {
         if (!tableContract.requiredColumns.includes(column)) issues.push("render_packets must include signed artifact handoff columns.");
+      }
+    }
+    if (tableContract.name === "api_jobs") {
+      for (const column of ["attempt_count", "max_attempts", "locked_by", "locked_at", "run_after", "last_error"]) {
+        if (!tableContract.requiredColumns.includes(column)) issues.push("api_jobs must include worker lease and retry columns.");
+      }
+      for (const index of ["idx_api_jobs_lease", "idx_api_jobs_locked"]) {
+        if (!tableContract.indexes.includes(index)) issues.push("api_jobs must include worker lease indexes.");
       }
     }
   }

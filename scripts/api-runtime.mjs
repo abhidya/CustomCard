@@ -3,6 +3,9 @@ import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/apiRouteContractsData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
+import { createPostgresRuntime, postgresPoolConfig } from "./postgres-runtime.mjs";
+
+export { postgresPoolConfig } from "./postgres-runtime.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
 const productionEnvNames = new Set(["prod", "production"]);
@@ -43,17 +46,6 @@ export function hashSessionToken(token, sessionSecret = "") {
 
 export function requestHash(routeId, bodyText) {
   return createHash("sha256").update(`${routeId}:${bodyText || "{}"}`).digest("hex");
-}
-
-export function postgresPoolConfig(env = process.env) {
-  return {
-    connectionString: env.DATABASE_URL,
-    max: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_MAX, 5, 1, 20),
-    connectionTimeoutMillis: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_CONNECTION_TIMEOUT_MS, 5000, 1000, 30_000),
-    idleTimeoutMillis: safeIntegerEnv(env.CUSTOMCARD_POSTGRES_POOL_IDLE_TIMEOUT_MS, 10_000, 1000, 120_000),
-    allowExitOnIdle: env.CUSTOMCARD_POSTGRES_POOL_ALLOW_EXIT_ON_IDLE !== "false",
-    ssl: env.DATABASE_SSL === "require" ? { rejectUnauthorized: true } : undefined
-  };
 }
 
 function createContractApiRuntime({ routes, objectStoreRuntime }) {
@@ -334,21 +326,16 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
 }
 
 function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime }) {
-  let poolPromise;
+  const postgresRuntime = createPostgresRuntime({ env, postgresPoolFactory });
 
   async function getPool() {
-    if (!poolPromise) {
-      poolPromise = postgresPoolFactory
-        ? Promise.resolve(postgresPoolFactory({ env }))
-        : import("pg").then(({ Pool }) => new Pool(postgresPoolConfig(env)));
-    }
-    return poolPromise;
+    return postgresRuntime.getPool();
   }
 
   return {
     mode: "postgres",
     describe() {
-      const poolConfig = postgresPoolConfig(env);
+      const poolConfig = postgresRuntime.describe();
       return {
         mode: "postgres",
         authEnforced: true,
@@ -357,7 +344,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         pool: {
           max: poolConfig.max,
           connectionTimeoutMillis: poolConfig.connectionTimeoutMillis,
-          idleTimeoutMillis: poolConfig.idleTimeoutMillis
+          idleTimeoutMillis: poolConfig.idleTimeoutMillis,
+          lifecycleAttached: poolConfig.lifecycleAttached
         },
         sessionsConfigured: null,
         idempotencyRecords: null,
@@ -419,10 +407,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       const prepared = prepareIdempotentMutation({ route, request, authContext, bodyText, responsePayload });
       if (!prepared.ok) return prepared;
 
-      const pool = await getPool();
-      const client = await pool.connect();
-      try {
-        await client.query("BEGIN");
+      return postgresRuntime.withTransaction(async (client) => {
         const idempotencyId = stableRuntimeId("idem", authContext.userId, route.id, prepared.idempotencyKey);
         const reserved = await client.query(
           `INSERT INTO idempotency_keys
@@ -440,7 +425,6 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
              FOR UPDATE`,
             [authContext.userId, route.id, prepared.idempotencyKey]
           );
-          await client.query("COMMIT");
           return replayOrConflict(
             {
               requestHash: existing.rows[0].request_hash,
@@ -515,14 +499,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             ]
           );
         }
-        await client.query("COMMIT");
         return { ok: true, statusCode: 202, payload: responseBody };
-      } catch (error) {
-        await client.query("ROLLBACK").catch(() => undefined);
-        throw error;
-      } finally {
-        client.release();
-      }
+      });
     },
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
@@ -531,10 +509,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       return objectStoreRuntime.listBucketArtifacts(input);
     },
     async persistGoogleCalendarImport({ authContext, record }) {
-      const pool = await getPool();
-      const client = await pool.connect();
-      try {
-        await client.query("BEGIN");
+      return postgresRuntime.withTransaction(async (client) => {
         await persistGoogleCalendarImportPostgres(client, authContext, record);
         await client.query(
           `INSERT INTO audit_log (subject_type, subject_id, actor_id, action, metadata)
@@ -549,17 +524,11 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             })
           ]
         );
-        await client.query("COMMIT");
         return {
           persisted: true,
           payload: buildGoogleCalendarImportRepositoryPayload(record, "postgres", true)
         };
-      } catch (error) {
-        await client.query("ROLLBACK").catch(() => undefined);
-        throw error;
-      } finally {
-        client.release();
-      }
+      });
     },
     async readDraftState({ authContext }) {
       const pool = await getPool();
@@ -589,9 +558,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       );
     },
     async close() {
-      if (!poolPromise) return;
-      const pool = await poolPromise;
-      if (typeof pool.end === "function") await pool.end();
+      await postgresRuntime.close();
     }
   };
 }
@@ -1979,12 +1946,6 @@ function safeFutureTimestamp(value, fallback) {
 }
 
 function safeInteger(value, fallback, min, max) {
-  const number = Number.parseInt(String(value ?? ""), 10);
-  if (!Number.isFinite(number)) return fallback;
-  return Math.max(min, Math.min(max, number));
-}
-
-function safeIntegerEnv(value, fallback, min, max) {
   const number = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(number)) return fallback;
   return Math.max(min, Math.min(max, number));

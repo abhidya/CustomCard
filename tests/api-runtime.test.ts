@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 import { createApiRuntime, postgresPoolConfig } from "../scripts/api-runtime.mjs";
+import { createPostgresRuntime } from "../scripts/postgres-runtime.mjs";
 
 const renderPacketsRoute = apiRouteContracts.find((route) => route.id === "render-packets")!;
 const calendarConnectionStartRoute = apiRouteContracts.find((route) => route.id === "calendar-connection-start")!;
@@ -89,5 +90,45 @@ describe("api runtime safety", () => {
       connectionTimeoutMillis: 1000,
       idleTimeoutMillis: 120_000
     });
+  });
+
+  it("attaches the Postgres pool to the serverless lifecycle when enabled", async () => {
+    const pool = {
+      async query() {
+        return { rows: [], rowCount: 0 };
+      },
+      async connect() {
+        return {
+          async query() {
+            return { rows: [], rowCount: 0 };
+          },
+          release() {
+            return undefined;
+          }
+        };
+      },
+      async end() {
+        return undefined;
+      }
+    };
+    const attached: unknown[] = [];
+    const runtime = createPostgresRuntime({
+      env: {
+        DATABASE_URL: "postgres://example/customcard",
+        CUSTOMCARD_POSTGRES_ATTACH_DATABASE_POOL: "enabled"
+      },
+      postgresPoolFactory: () => pool,
+      attachDatabasePool: (candidate: unknown) => attached.push(candidate)
+    });
+
+    await runtime.getPool();
+
+    expect(attached).toEqual([pool]);
+    expect(runtime.describe()).toMatchObject({
+      configured: true,
+      lifecycleAttached: true,
+      max: 5
+    });
+    await runtime.close();
   });
 });
