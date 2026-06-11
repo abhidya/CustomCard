@@ -1238,6 +1238,11 @@ h3 {
   border-color: #172927;
 }
 
+.journeyAction.primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .quickAction svg {
   color: #258477;
 }

@@ -243,7 +243,10 @@ export function buildOpportunity(
 
   return {
     id: `opp-${stableId(`${signal.id}:${memoryMatches.map((memory) => memory.id).join(",")}`)}`,
-    title: `${titleCase(signal.occasion)} card for ${signal.recipients}`,
+    title:
+      signal.occasion === "card"
+        ? `Card for ${signal.recipients}`
+        : `${titleCase(signal.occasion)} card for ${signal.recipients}`,
     recipient: signal.recipients,
     occasion: signal.occasion,
     dateLabel: signal.dateLabel,
@@ -271,7 +274,7 @@ export function getDefaultDraftInput(
     tone: "warm",
     style: "botanical",
     language: "English",
-    personalNote: "Mention their shared patience, humor, and the little rituals that made the year feel full.",
+    personalNote: "",
     useMemory: opportunity.memoryIds.length > 0
   };
 }

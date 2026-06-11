@@ -38,8 +38,9 @@ export interface ReviewerAuthForm {
 }
 
 export const reviewerWorkspaceKey = "customcard-free-workspace-v1";
+// Deterministic clock for tests and reviewer fixtures only; the live app uses the real current date.
 export const reviewerReferenceDate = new Date("2026-06-03T12:00:00.000Z");
-export const reviewerInitialAuthForm: ReviewerAuthForm = { name: "Abdul", email: "abdul@customcard.local" };
+export const reviewerInitialAuthForm: ReviewerAuthForm = { name: "", email: "" };
 export const reviewerInitialScanStatus = "Invite required";
 export const reviewerInitialExportStatus = "Ready to export";
 export const reviewerEmptyMemories: MemoryItem[] = [];
@@ -112,7 +113,6 @@ export interface AppState {
   readiness: ReadinessSummary;
   calendarConnectionStartPackets: CalendarConnectionStartPacket[];
   runtimeReadiness: Map<string, RuntimeReadiness>;
-  seededCustomerChat: CustomerChatSession;
   customerChatSession: CustomerChatSession;
 }
 
@@ -151,11 +151,12 @@ export function useAppState(): AppState {
   const [customerChatInput, setCustomerChatInput] = useState("");
   const [customerChatMessages, setCustomerChatMessages] = useState<CustomerChatSession["messages"] | undefined>();
 
+  const [referenceNow] = useState(() => new Date());
   const memories = workspace?.memories ?? reviewerEmptyMemories;
   const signal = useMemo(() => parseFreeImport(inviteText), [inviteText]);
-  const opportunity = useMemo(() => buildOpportunity(signal, memories, reviewerReferenceDate), [signal, memories]);
+  const opportunity = useMemo(() => buildOpportunity(signal, memories, referenceNow), [signal, memories, referenceNow]);
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
-    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], reviewerReferenceDate))
+    getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], new Date()))
   );
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
   const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
@@ -210,17 +211,7 @@ export function useAppState(): AppState {
   const readiness = useMemo(() => buildReadinessSummary(), []);
   const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
   const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
-  const seededCustomerChat = useMemo(
-    () =>
-      buildCustomerChatSession({
-        recipientName: opportunity.recipient,
-        customerMessage: "",
-        approvedMemoryNotes,
-        locale: selectedLocale.locale,
-        fulfillmentContext
-      }),
-    [approvedMemoryNotes, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
-  );
+  // Chat starts empty: the conversation belongs to the customer, not a scripted transcript.
   const customerChatSession = useMemo(
     () =>
       buildCustomerChatSession(
@@ -231,9 +222,9 @@ export function useAppState(): AppState {
           locale: selectedLocale.locale,
           fulfillmentContext
         },
-        customerChatMessages ?? seededCustomerChat.messages
+        customerChatMessages ?? []
       ),
-    [approvedMemoryNotes, customerChatMessages, fulfillmentContext, opportunity.recipient, seededCustomerChat.messages, selectedLocale.locale]
+    [approvedMemoryNotes, customerChatMessages, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
   );
 
   const triggerAiCardGen = useCallback(() => {
@@ -316,7 +307,6 @@ export function useAppState(): AppState {
     readiness,
     calendarConnectionStartPackets,
     runtimeReadiness,
-    seededCustomerChat,
     customerChatSession
   };
 }

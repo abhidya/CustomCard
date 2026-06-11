@@ -45,7 +45,7 @@ const checks = [
     "Unsafe localization claim"
   ]),
   checkIncludes("surfaces", "web-and-api-localization-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}`, [
-    "Language readiness",
+    "Card language",
     "Locale readiness",
     "summarizeLocalizationReadiness",
     "localization: readiness.localization",

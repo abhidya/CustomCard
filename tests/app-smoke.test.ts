@@ -137,6 +137,12 @@ describeWithChrome("CustomCard UI smoke", () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         };
 
+        const setupName = document.querySelector("#setupName");
+        if (!setupName) throw new Error("Missing setup name input");
+        const setNameValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        setNameValue.call(setupName, "Abdul");
+        setupName.dispatchEvent(new Event("input", { bubbles: true }));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await clickByText("Create local workspace");
         window.history.pushState({}, "", "?view=opportunities");
         window.dispatchEvent(new PopStateEvent("popstate"));
@@ -488,6 +494,12 @@ describeWithChrome("CustomCard UI smoke", () => {
         chatComposer.dispatchEvent(new Event("input", { bubbles: true }));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await clickByText("Send");
+        const setupName = document.querySelector("#setupName");
+        if (!setupName) throw new Error("Missing setup name input");
+        const setNameValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        setNameValue.call(setupName, "Abdul");
+        setupName.dispatchEvent(new Event("input", { bubbles: true }));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await clickByText("Create local workspace");
         const workspaceText = document.body.textContent;
         const workspaceJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
@@ -627,10 +639,10 @@ describeWithChrome("CustomCard UI smoke", () => {
     ]) {
       expect(customerSnapshot).not.toMatch(customerVisibleImplementationTermPattern);
     }
-    expect(result.reviewedCustomerText).toContain("Language readiness");
+    expect(result.reviewedCustomerText).not.toContain("Language readiness");
     expect(result.reviewedCustomerText).toContain("Card language");
     expect(result.reviewedCustomerText).toContain("Ar EG");
-    expect(result.chatBubbles).toBeGreaterThanOrEqual(6);
+    expect(result.chatBubbles).toBeGreaterThanOrEqual(2);
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Integration owner workflow");
     expect(result.adminText).toContain("Credential vault setup");

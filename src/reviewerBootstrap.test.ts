@@ -13,7 +13,7 @@ describe("reviewer bootstrap contract", () => {
   it("keeps the local customer workspace defaults explicit and production-safe", () => {
     expect(reviewerWorkspaceKey).toBe("customcard-free-workspace-v1");
     expect(reviewerReferenceDate.toISOString()).toBe("2026-06-03T12:00:00.000Z");
-    expect(reviewerInitialAuthForm).toEqual({ name: "Abdul", email: "abdul@customcard.local" });
+    expect(reviewerInitialAuthForm).toEqual({ name: "", email: "" });
     expect(reviewerInitialScanStatus).toBe("Invite required");
     expect(reviewerInitialExportStatus).toBe("Ready to export");
     expect(reviewerEmptyMemories).toEqual([]);

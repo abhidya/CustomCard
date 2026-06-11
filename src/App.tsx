@@ -86,15 +86,7 @@ import {
 } from "./providerCatalog";
 import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
 import { buildCustomerWebExperienceFromState, type CustomerWebActionId } from "./customerWebExperience";
-import {
-  reviewerDraftOptions,
-  reviewerEmptyMemories,
-  reviewerInitialAuthForm,
-  reviewerInitialExportStatus,
-  reviewerInitialScanStatus,
-  reviewerReferenceDate,
-  reviewerWorkspaceKey
-} from "./reviewerBootstrap";
+import { reviewerDraftOptions, reviewerWorkspaceKey } from "./reviewerBootstrap";
 import {
   getSupportedLocale,
   supportedLocales,
@@ -160,13 +152,13 @@ interface NavItem {
 
 const customerNavItems: NavItem[] = [
   { id: "customer", label: "Your cards", icon: UserRound },
+  { id: "opportunities", label: "Events", icon: Calendar },
   { id: "studio", label: "Card studio", icon: WandSparkles },
   { id: "memory", label: "Memory", icon: Heart },
   { id: "handoff", label: "Print options", icon: Printer },
 ];
 
 const operatorNavItems: NavItem[] = [
-  { id: "opportunities", label: "Events", icon: Calendar },
   { id: "mobile", label: "Mobile app", icon: Smartphone },
   { id: "admin", label: "Operations", icon: ShieldCheck },
   { id: "adapters", label: "Connections", icon: Settings },
@@ -222,7 +214,6 @@ function App() {
     readiness,
     calendarConnectionStartPackets,
     runtimeReadiness,
-    seededCustomerChat,
     customerChatSession
   } = useAppState();
   const displayPanels = aiDraft?.panels ?? draft.panels;
@@ -245,18 +236,20 @@ function App() {
   }
 
   function startWorkspace() {
-    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, reviewerReferenceDate);
+    if (!authForm.name.trim()) return;
+    const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, new Date());
     saveWorkspace(nextWorkspace);
     setScanStatus("Local workspace ready");
   }
 
   function addApprovedMemory() {
+    const now = new Date();
     if (!workspace) {
-      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, reviewerReferenceDate);
-      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, reviewerReferenceDate);
+      const nextWorkspace = createLocalWorkspace(authForm.name, authForm.email, now);
+      const withMemory = addMemory(nextWorkspace, memoryForm.recipient, memoryForm.note, now);
       saveWorkspace(withMemory);
     } else {
-      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, reviewerReferenceDate));
+      saveWorkspace(addMemory(workspace, memoryForm.recipient, memoryForm.note, now));
     }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
   }
@@ -830,7 +823,7 @@ function CustomerPanelView({
               </div>
               <div>
                 <span>Next occasion</span>
-                <strong>{opportunity.title}</strong>
+                <strong>{opportunity.evidence.length > 0 ? opportunity.title : "No event yet"}</strong>
                 <small>{customerExperience.workspaceHelp}</small>
               </div>
             </div>
@@ -895,16 +888,19 @@ function CustomerPanelView({
             {(() => {
               const action = customerExperience.primaryAction;
               const ActionIcon = customerActionIcons[action.id];
+              const needsName = action.id === "create-workspace" && !authForm.name.trim();
               return (
                 <button
                   className="journeyAction primary"
                   data-action-priority={action.priority}
+                  disabled={needsName}
                   onClick={customerActionHandlers[action.id]}
+                  title={needsName ? "Enter your name above to start" : undefined}
                   type="button"
                 >
                   <ActionIcon size={18} />
                   <span>{action.label}</span>
-                  <small>{action.detail}</small>
+                  <small>{needsName ? "Enter your name above to start." : action.detail}</small>
                 </button>
               );
             })()}
@@ -939,14 +935,27 @@ function CustomerPanelView({
             </span>
           </div>
 
-          <div className="eventRow">
-            <div>
-              <strong>{customerExperience.event.title}</strong>
-              <span>{customerExperience.event.dateLabel}</span>
+          {opportunity.evidence.length > 0 ? (
+            <div className="eventRow">
+              <div>
+                <strong>{customerExperience.event.title}</strong>
+                <span>{customerExperience.event.dateLabel}</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="eventRow">
+              <div>
+                <strong>No event yet</strong>
+                <span>Paste an invite or a short note and the occasion, recipient, and date are found for you.</span>
+              </div>
+              <button className="quietButton" type="button" onClick={() => onNavigate("opportunities")}>
+                <Calendar size={16} />
+                Add your event
+              </button>
+            </div>
+          )}
           <div className="eventLocaleRow">
-            <p className="eyebrow">Language readiness</p>
+            <p className="eyebrow">Language</p>
             <SegmentedControl
               label="Card language"
               options={supportedLocales.map((locale) => locale.locale)}
@@ -1134,6 +1143,7 @@ function OpportunitiesView({
             className="importBox"
             value={inviteText}
             onChange={(event) => onInviteText(event.target.value)}
+            placeholder={"Paste an invite email, a calendar export, or a short note like \"Mom's birthday dinner on July 24\"."}
           />
         </label>
 
@@ -1279,6 +1289,7 @@ function StudioView({
             className="noteBox"
             value={draftInput.personalNote}
             onChange={(event) => onUpdate("personalNote", event.target.value)}
+            placeholder="A shared memory, an inside joke, or what you appreciate about them."
           />
         </label>
 

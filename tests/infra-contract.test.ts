@@ -425,8 +425,8 @@ describe("production infrastructure contract", () => {
     const reviewerBootstrap = read("src/reviewerBootstrap.ts");
 
     expect(appSource).toContain("./reviewerBootstrap");
-    expect(appSource).toContain("reviewerInitialAuthForm");
-    expect(appSource).toContain("reviewerReferenceDate");
+    expect(appSource).toContain("reviewerDraftOptions");
+    expect(appSource).toContain("reviewerWorkspaceKey");
     expect(appSource).not.toContain("./demoBootstrap");
     expect(appSource).not.toContain("demoInitialAuthForm");
     expect(reviewerBootstrap).toContain("ReviewerAuthForm");

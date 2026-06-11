@@ -2,7 +2,8 @@
 
 ## Source of truth
 - Status: Active
-- Last refreshed: 2026-06-04
+- Last refreshed: 2026-06-11
+- Surface walkthrough and demo-debt audit: `docs/ui-ux-walkthrough.md`
 - Primary product surfaces: customer web app, admin operations panel, adapter readiness panel, mobile customer shell.
 - Evidence reviewed: `src/App.tsx`, `src/styles.css`, `src/providerCatalog.ts`, `src/printerPricing.ts`, `docs/platform-expansion-design.md`, `tests/app-smoke.test.ts`.
 

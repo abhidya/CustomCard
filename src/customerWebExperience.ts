@@ -178,7 +178,9 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
       stage === "setup"
         ? "Start with browser storage or paste an invite without connecting an account."
         : stage === "event-review"
-          ? `${input.evidenceCount} source item${input.evidenceCount === 1 ? "" : "s"} are ready for your review before a draft is created.`
+          ? input.evidenceCount === 0
+            ? "Paste an invite or a short note to find your next occasion."
+            : `${input.evidenceCount} source item${input.evidenceCount === 1 ? " is" : "s are"} ready for your review before a draft is created.`
           : "Check copy, names, language, and artwork before export or print options.",
     actions,
     primaryAction,
