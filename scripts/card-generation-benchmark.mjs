@@ -111,12 +111,14 @@ if (isMainModule()) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const selectedFixtureIds = (args.fixtures || defaultFixtureIds.join(",")).split(",").map((value) => value.trim()).filter(Boolean);
+  const env = loadBenchmarkEnv();
+  if (!isLiveBenchmarkEnabled(args, env)) {
+    throw new Error("Live benchmark calls are disabled. Re-run with --live or CUSTOMCARD_BENCHMARK_LIVE=enabled.");
+  }
   const runStamp = new Date().toISOString().replace(/[:.]/g, "-");
   const runId = `card-gen-benchmark-${runStamp}`;
   const runDir = resolve(outputRoot, runId);
   mkdirSync(runDir, { recursive: true });
-
-  const env = loadBenchmarkEnv();
   env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = "true";
   env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "true";
 
@@ -214,7 +216,8 @@ async function runFixture({ fixture, manifest, service, objectStoreRuntime, prov
     panelFiles,
     payload: sanitizedOutput,
     effectivePrompts,
-    runStamp
+    runStamp,
+    env
   });
 
   return {
@@ -237,10 +240,22 @@ function parseArgs(values) {
     const value = values[index];
     if (!value.startsWith("--")) continue;
     const [rawKey, inlineValue] = value.slice(2).split("=");
-    parsed[rawKey] = inlineValue ?? values[index + 1] ?? "";
-    if (inlineValue === undefined) index += 1;
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
   }
   return parsed;
+}
+
+function isLiveBenchmarkEnabled(args, env) {
+  return args.live === true || args.live === "true" || String(env.CUSTOMCARD_BENCHMARK_LIVE || "").toLowerCase() === "enabled";
 }
 
 function loadBenchmarkEnv() {
@@ -263,23 +278,37 @@ function createLoggingFetch(logs, env) {
     const response = await fetch(url, options);
     const buffer = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type") || "";
-    logs.push({
-      url: redactUrl(String(url), env),
-      method: options.method || "GET",
-      request: {
-        headers: redactHeaders(options.headers || {}, env),
-        body: sanitizeForLog(parseBody(options.body), env)
-      },
-      response: {
-        status: response.status,
-        ok: response.ok,
-        contentType,
-        contentLength: response.headers.get("content-length"),
-        byteLength: buffer.length,
-        body: contentType.includes("application/json") ? sanitizeForLog(parseJson(buffer.toString("utf8")), env) : undefined
-      },
-      durationMs: Date.now() - started
-    });
+    try {
+      logs.push({
+        url: redactUrl(String(url), env),
+        method: options.method || "GET",
+        request: {
+          headers: redactHeaders(options.headers || {}, env),
+          body: sanitizeForLog(parseBody(options.body), env)
+        },
+        response: {
+          status: response.status,
+          ok: response.ok,
+          contentType,
+          contentLength: response.headers.get("content-length"),
+          byteLength: buffer.length,
+          body: contentType.includes("application/json") ? sanitizeForLog(parseJson(buffer.toString("utf8")), env) : undefined
+        },
+        durationMs: Date.now() - started
+      });
+    } catch (error) {
+      logs.push({
+        url: redactUrl(String(url), env),
+        method: options.method || "GET",
+        response: {
+          status: response.status,
+          ok: response.ok,
+          contentType,
+          byteLength: buffer.length
+        },
+        logError: error instanceof Error ? error.message : "benchmark logging failed"
+      });
+    }
     return new Response(buffer, {
       status: response.status,
       statusText: response.statusText,
@@ -370,10 +399,6 @@ function panelLayout(panelId) {
 
 async function renderContactSheet({ fixtureDir, fixture, competitor, panelFiles }) {
   const entries = [];
-  if (competitor?.localFile) {
-    const competitorPath = resolve(repoRoot, "docs/evidence/competitor-card-examples", competitor.localFile);
-    if (existsSync(competitorPath)) entries.push({ label: `${competitor.competitor} reference`, path: competitorPath });
-  }
   for (const file of panelFiles) entries.push({ label: `CustomCard ${file.panelId}`, path: resolve(repoRoot, file.previewFile) });
   if (entries.length === 0) return undefined;
 
@@ -412,9 +437,9 @@ async function renderContactSheet({ fixtureDir, fixture, competitor, panelFiles 
   return output;
 }
 
-async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir, panelFiles, payload, effectivePrompts, runStamp }) {
+async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir, panelFiles, payload, effectivePrompts, runStamp, env }) {
   const artifactFiles = [
-    ...panelFiles.flatMap((file) => [resolve(repoRoot, file.providerFile), resolve(repoRoot, file.previewFile)]),
+    ...panelFiles.map((file) => resolve(repoRoot, file.providerFile)),
     writeJson(resolve(fixtureDir, "persisted-customcard-ai-output.json"), payload),
     writeJson(resolve(fixtureDir, "persisted-effective-prompts.json"), effectivePrompts)
   ].filter(Boolean).slice(0, 12);
@@ -442,16 +467,20 @@ async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir
         }))
       })
     });
-    return sanitizeForLog({
-      artifactPersistence: result.payload.artifactPersistence,
-      artifactUri: result.record.artifactUri,
-      signedUrlExpiresAt: result.record.signedUrlExpiresAt
-    });
+    return sanitizeForLog(
+      {
+        artifactPersistence: result.payload.artifactPersistence,
+        artifactUri: result.record.artifactUri,
+        signedUrlExpiresAt: result.record.signedUrlExpiresAt
+      },
+      env
+    );
   } catch (error) {
     return {
       artifactPersistence: {
         status: "blocked",
-        blockers: [error instanceof Error ? error.message : "Artifact persistence failed."]
+        blockers: [error instanceof Error ? error.message : "Artifact persistence failed."],
+        debugStack: error instanceof Error ? sanitizeForLog(error.stack || "", {}) : undefined
       }
     };
   }

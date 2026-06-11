@@ -1,0 +1,106 @@
+{
+  "draft_id": "ai-mq9dwr31-loyal-customers",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Thanks for supporting small businesses!",
+        "body": "Thanks for choosing us over the big guys!",
+        "art_direction": "Warm citrus, cream, and deep teal colors with soft gold accents",
+        "image_prompt": "A premium 5x7 vertical greeting card panel with a warm, handmade texture, featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Grateful for customers like you",
+        "body": "Your loyalty means the world to us!",
+        "art_direction": "Warm, sincere, and polished tone",
+        "image_prompt": "A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Thanks for choosing us",
+        "body": "We're honored to have customers like you!",
+        "art_direction": "Warm, sincere, and polished tone",
+        "image_prompt": "A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a few deep teal accents and a soft gold background.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "Best regards, CustomCard",
+        "body": "Thanks again for your support!",
+        "art_direction": "Warm, sincere, and polished tone",
+        "image_prompt": "A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents, and a few blank spaces for the recipient's information.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 653574 chars>",
+      "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 703006 chars>",
+      "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 548874 chars>",
+      "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 663006 chars>",
+      "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

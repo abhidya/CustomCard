@@ -1,0 +1,278 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"CustomCard\",\n    \"recipient\": \"loyal customers\",\n    \"relationship\": \"small business to repeat customer\",\n    \"occasion\": \"thank-you for supporting a small business\",\n    \"tone\": \"warm, sincere, polished, grateful, not salesy\",\n    \"style\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.\",\n    \"memory_notes\": [\n      \"The customer chose an independent small business instead of a large marketplace.\",\n      \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n      \"CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.55,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "contentLength": null,
+      "byteLength": 3597,
+      "body": {
+        "id": "id-1781175461909",
+        "object": "chat.completion",
+        "created": 1781175461,
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"Warm citrus, cream, and deep teal colors with soft gold accents\",\n      \"body\": \"Thanks for choosing us over the big guys!\",\n      \"headline\": \"Thanks for supporting small businesses!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel with a warm, handmade texture, featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper.\"\n    },\n    {\n      \"art_direction\": \"Warm, sincere, and polished tone\",\n      \"body\": \"Your loyalty means the world to us!\",\n      \"headline\": \"Grateful for customers like you\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents.\"\n    },\n    {\n      \"art_direction\": \"Warm, sincere, and polished tone\",\n      \"body\": \"We're honored to have customers like you!\",\n      \"headline\": \"Thanks for choosing us\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a few deep teal accents and a soft gold background.\"\n    },\n    {\n      \"art_direction\": \"Warm, sincere, and polished tone\",\n      \"body\": \"Thanks again for your support!\",\n      \"headline\": \"Best regards, CustomCard\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents, and a few blank spaces for the recipient's information.\"\n    }\n  ]\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": "<redacted>"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": "<redacted>",
+          "completion_tokens": "<redacted>",
+          "total_tokens": "<redacted>",
+          "prompt_tokens_details": "<redacted>"
+        }
+      }
+    },
+    "durationMs": 6611
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "front",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "490163",
+      "byteLength": 490163
+    },
+    "durationMs": 12021
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-left",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "527237",
+      "byteLength": 527237
+    },
+    "durationMs": 12928
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-right",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "411639",
+      "byteLength": 411639
+    },
+    "durationMs": 11201
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "back",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "497236",
+      "byteLength": 497236
+    },
+    "durationMs": 11445
+  }
+]

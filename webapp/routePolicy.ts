@@ -15,21 +15,17 @@ export const customerNavItems: NavItem[] = [
   { id: "customer", label: "Create" },
   { id: "opportunities", label: "Occasions" },
   { id: "memory", label: "Notes" },
-  { id: "handoff", label: "Print" },
-  { id: "legal", label: "Legal" }
+  { id: "handoff", label: "Print" }
 ];
 
 export const adminNavItems: NavItem[] = [
   { id: "admin", label: "Admin" },
-  { id: "adapters", label: "Adapters" }
+  { id: "adapters", label: "Adapters" },
+  { id: "legal", label: "Legal" }
 ];
 
 export function isAdminRoute(view: ViewId): boolean {
-  return view === "admin" || view === "adapters";
-}
-
-export function isLegalRoute(view: ViewId): boolean {
-  return view === "legal";
+  return view === "admin" || view === "adapters" || view === "legal";
 }
 
 export function isBusinessRoute(view: ViewId): boolean {
@@ -37,7 +33,7 @@ export function isBusinessRoute(view: ViewId): boolean {
 }
 
 export function resolveVisibleCustomerView(view: ViewId): ViewId {
-  return isAdminRoute(view) || view === "mobile" || isLegalRoute(view) || isBusinessRoute(view) ? "customer" : view;
+  return isAdminRoute(view) || view === "mobile" || isBusinessRoute(view) ? "customer" : view;
 }
 
 export function resolveActiveCustomerNavView(view: ViewId): ViewId {
@@ -65,10 +61,12 @@ export function shouldShowTopNav({
 }
 
 export function getAdminTargetLabel(view: ViewId): string {
+  if (view === "legal") return "Legal docs";
   return view === "adapters" ? "Adapters" : "Admin panel";
 }
 
 export function getAdminSurfaceHeading(view: ViewId): string {
+  if (view === "legal") return "Legal readiness and generated docs";
   return view === "adapters" ? "Adapter readiness" : "Admin panel";
 }
 

@@ -1,0 +1,278 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Manny\",\n    \"recipient\": \"Sara\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, grateful, relaxed, quietly joyful\",\n    \"style\": \"botanical watercolor, morning light, cream paper, deep green accents\",\n    \"language\": \"English\",\n    \"personal_note\": \"She loves morning hikes, coffee, and the fern by her kitchen window.\",\n    \"memory_notes\": [\n      \"She keeps a fern by the kitchen window.\",\n      \"She loves morning hikes and tiny trail flowers.\",\n      \"The birthday card should feel personal without feeling overly sentimental.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.55,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "contentLength": null,
+      "byteLength": 3410,
+      "body": {
+        "id": "id-1781175881563",
+        "object": "chat.completion",
+        "created": 1781175881,
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.\",\n      \"body\": \"Wishing you a birthday as bright as the trail flowers you love.\",\n      \"headline\": \"Happy Birthday, Sara\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a delicate fern and a few trail flowers in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.\"\n    },\n    {\n      \"art_direction\": \"Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.\",\n      \"body\": \"You bring joy to my life with your love of nature and adventure.\",\n      \"headline\": \"Wishing You Joy\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a few trail flowers and a sprig of fern, in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.\"\n    },\n    {\n      \"art_direction\": \"Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.\",\n      \"body\": \"May your day be filled with the beauty of nature and the love of friends.\",\n      \"headline\": \"Happy Birthday\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a large fern and a few trail flowers, in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.\"\n    },\n    {\n      \"art_direction\": \"Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.\",\n      \"body\": \"Thank you for being such a wonderful friend.\",\n      \"headline\": \"With Love and Appreciation\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a few trail flowers and a sprig of fern, in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.\"\n    }\n  ]\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": "<redacted>"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": "<redacted>",
+          "completion_tokens": "<redacted>",
+          "total_tokens": "<redacted>",
+          "prompt_tokens_details": "<redacted>"
+        }
+      }
+    },
+    "durationMs": 5840
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "front",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "510587",
+      "byteLength": 510587
+    },
+    "durationMs": 12142
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-left",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "477497",
+      "byteLength": 477497
+    },
+    "durationMs": 11854
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-right",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "337582",
+      "byteLength": 337582
+    },
+    "durationMs": 11783
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "back",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "422634",
+      "byteLength": 422634
+    },
+    "durationMs": 12110
+  }
+]

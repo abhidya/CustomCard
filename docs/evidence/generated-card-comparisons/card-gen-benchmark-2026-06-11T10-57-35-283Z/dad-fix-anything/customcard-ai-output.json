@@ -1,0 +1,110 @@
+{
+  "draft_id": "ai-mq9dzaqh-dad",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Father's Day, Dad!",
+        "body": "A card made with care.",
+        "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+        "image_prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thinking of you",
+        "body": "Thanks for being the one who fixes everything.",
+        "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+        "image_prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From the heart",
+        "body": "Love you for being steady and reliable.",
+        "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+        "image_prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "CustomCard",
+        "body": "From Manny, your handy child.",
+        "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+        "image_prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": [
+      "Dad shows love by fixing the small things before anyone asks.",
+      "The card should feel printable, cheerful, and original.",
+      "Use tools as symbols, not a cluttered hardware-store scene."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 615450 chars>",
+      "revised_prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 477922 chars>",
+      "revised_prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 655630 chars>",
+      "revised_prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 532542 chars>",
+      "revised_prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

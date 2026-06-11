@@ -1,0 +1,106 @@
+{
+  "draft_id": "ai-mq9e5r0c-sara",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Birthday, Sara",
+        "body": "Wishing you a birthday as bright as the trail flowers you love.",
+        "art_direction": "Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.",
+        "image_prompt": "A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a delicate fern and a few trail flowers in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Wishing You Joy",
+        "body": "You bring joy to my life with your love of nature and adventure.",
+        "art_direction": "Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.",
+        "image_prompt": "A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a few trail flowers and a sprig of fern, in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Happy Birthday",
+        "body": "May your day be filled with the beauty of nature and the love of friends.",
+        "art_direction": "Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.",
+        "image_prompt": "A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a large fern and a few trail flowers, in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "With Love and Appreciation",
+        "body": "Thank you for being such a wonderful friend.",
+        "art_direction": "Warm, grateful, and quietly joyful tone with a focus on botanical watercolor and morning light.",
+        "image_prompt": "A 5x7 vertical greeting card with a warm, botanical watercolor background, featuring a few trail flowers and a sprig of fern, in a soft morning light, with deep green accents and cream paper, no people or hands, and a premium, print-ready quality.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 680806 chars>",
+      "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 636686 chars>",
+      "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 450134 chars>",
+      "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 563534 chars>",
+      "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

@@ -591,6 +591,9 @@ describe("production infrastructure contract", () => {
       rewrites: Array<{ source: string; destination: string }>;
     };
     const handler = read("api/[...path].js");
+    const walgreensUploadHandler = read("api/walgreens/checkout/upload.js");
+    const walgreensSessionHandler = read("api/walgreens/checkout/session.js");
+    const walgreensCallbackHandler = read("api/walgreens/checkout/callback.js");
     const apiServer = read("scripts/api-server.mjs");
     const apiRuntime = read("scripts/api-runtime.mjs");
 
@@ -600,6 +603,7 @@ describe("production infrastructure contract", () => {
     });
     expect(vercel.rewrites).toEqual([{ source: "/((?!api/).*)", destination: "/index.html" }]);
     expect(handler).toContain("handleApiRequest");
+    expect(`${walgreensUploadHandler}\n${walgreensSessionHandler}\n${walgreensCallbackHandler}`).toContain("handleApiRequest");
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
     expect(apiRuntime).toContain("DATABASE_URL");

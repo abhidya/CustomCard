@@ -4,6 +4,7 @@ import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCus
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
 import { jpegDataUrlByteLength } from "../webapp/panelMediaAdapter";
 import {
+  adminNavItems,
   customerNavItems,
   getAdminAccessStatus,
   getAdminSurfaceHeading,
@@ -40,8 +41,9 @@ describe("frontend architecture seams", () => {
     expect(resolveVisibleCustomerView("opportunities")).toBe("opportunities");
 
     expect(resolveActiveCustomerNavView("business")).toBe("customer");
-    expect(resolveActiveCustomerNavView("legal")).toBe("legal");
-    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "Occasions", "Notes", "Print", "Legal"]);
+    expect(resolveActiveCustomerNavView("legal")).toBe("customer");
+    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "Occasions", "Notes", "Print"]);
+    expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "Adapters", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
     expect(shouldShowCustomerCta("studio")).toBe(true);
@@ -61,8 +63,10 @@ describe("frontend architecture seams", () => {
 
   it("keeps admin gate labels and statuses behind one policy interface", () => {
     expect(getAdminTargetLabel("adapters")).toBe("Adapters");
+    expect(getAdminTargetLabel("legal")).toBe("Legal docs");
     expect(getAdminTargetLabel("admin")).toBe("Admin panel");
     expect(getAdminSurfaceHeading("adapters")).toBe("Adapter readiness");
+    expect(getAdminSurfaceHeading("legal")).toBe("Legal readiness and generated docs");
     expect(getAdminSurfaceHeading("admin")).toBe("Admin panel");
 
     expect(getAdminAccessStatus({ isLoaded: false, isSignedIn: false, isAdmin: false })).toBe("Checking account access");

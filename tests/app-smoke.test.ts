@@ -274,7 +274,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("shows the free EU and US legal requirements without checkout chrome", async () => {
+  it("moves legal readiness under admin and exposes generated docs in the footer", async () => {
     const sessionId = await createPage(390, 900, "?view=legal");
     const result = await evaluate(
       sessionId,
@@ -284,6 +284,10 @@ describeWithChrome("CustomCard UI smoke", () => {
         legalCards: document.querySelectorAll(".requirementCard").length,
         freeTools: document.querySelectorAll(".freeToolCard").length,
         policyLinks: document.querySelectorAll(".legalLinkCard").length,
+        footerLinks: [...document.querySelectorAll(".appFooter a")].map((node) => ({
+          text: node.textContent,
+          href: node.getAttribute("href")
+        })),
         ctaDock: !!document.querySelector(".ctadock"),
         activeNav: [...document.querySelectorAll(".navlink")]
           .filter((node) => node.getAttribute("data-active") === "true")
@@ -293,14 +297,21 @@ describeWithChrome("CustomCard UI smoke", () => {
       }))()`
     );
 
-    expect(result.h1).toBe("EU and US requirements");
-    expect(result.text).toContain("Free generators and consent tools");
-    expect(result.text).toContain("GDPR privacy notice");
-    expect(result.text).toContain("FTC privacy and security");
-    expect(result.text).toContain("Termly Basic");
-    expect(result.legalCards).toBe(12);
-    expect(result.freeTools).toBeGreaterThanOrEqual(6);
-    expect(result.policyLinks).toBe(6);
+    expect(result.h1).toBe("Legal docs");
+    expect(result.text).toContain("Private operations");
+    expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
+    expect(result.text).toContain("Generated legal docs");
+    expect(result.legalCards).toBe(0);
+    expect(result.freeTools).toBe(0);
+    expect(result.policyLinks).toBe(0);
+    expect(result.footerLinks).toEqual([
+      { text: "Terms", href: "/legal/generated-docs.html#terms" },
+      { text: "Privacy", href: "/legal/generated-docs.html#privacy" },
+      { text: "Cookies", href: "/legal/generated-docs.html#cookies" },
+      { text: "Refunds", href: "/legal/generated-docs.html#refunds" },
+      { text: "AI disclosure", href: "/legal/generated-docs.html#ai-disclosure" },
+      { text: "Privacy choices", href: "/legal/generated-docs.html#privacy-choices" }
+    ]);
     expect(result.ctaDock).toBe(false);
     expect(result.activeNav).toEqual([]);
     expect(result.scrollWidth).toBe(result.clientWidth);

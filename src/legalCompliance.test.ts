@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildLegalPolicyLinks,
   freeLegalToolOptions,
+  generatedLegalDocumentLinks,
+  generatedLegalDocumentPath,
   legalComplianceItems,
   summarizeLegalComplianceReadiness,
   validateLegalComplianceReadiness,
@@ -63,6 +65,21 @@ describe("legal compliance readiness", () => {
       ])
     );
     expect(links.every((link) => link.url.startsWith("https://"))).toBe(true);
+  });
+
+  it("defines generated legal documents for the public footer", () => {
+    expect(generatedLegalDocumentPath).toBe("/legal/generated-docs.html");
+    expect(generatedLegalDocumentLinks).toHaveLength(6);
+    expect(generatedLegalDocumentLinks.map((link) => link.id)).toEqual([
+      "terms",
+      "privacy",
+      "cookies",
+      "refunds",
+      "ai-disclosure",
+      "privacy-choices"
+    ]);
+    expect(generatedLegalDocumentLinks.every((link) => link.path.startsWith(`${generatedLegalDocumentPath}#`))).toBe(true);
+    expect(generatedLegalDocumentLinks.every((link) => link.reviewRequired)).toBe(true);
   });
 
   it("flags unsafe legal-readiness claims before they reach the app", () => {

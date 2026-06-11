@@ -1,0 +1,278 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Manny\",\n    \"recipient\": \"my brother\",\n    \"relationship\": \"brother\",\n    \"occasion\": \"medical school graduation\",\n    \"tone\": \"proud, emotional, premium, warm family pride, not cheesy\",\n    \"style\": \"deep navy, white, soft gold, elegant medical graduation stationery\",\n    \"language\": \"English\",\n    \"personal_note\": \"He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.\",\n    \"memory_notes\": [\n      \"He pushed through years of exams, late nights, long shifts, and sacrifices.\",\n      \"The family is proud of his discipline, patience, heart, and dedication.\",\n      \"Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.55,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "contentLength": null,
+      "byteLength": 3503,
+      "body": {
+        "id": "id-1781175524531",
+        "object": "chat.completion",
+        "created": 1781175524,
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [\n    \"He pushed through years of exams, late nights, long shifts, and sacrifices.\",\n    \"The family is proud of his discipline, patience, heart, and dedication.\",\n    \"Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card front with a white graduation cap on top of a soft gold stethoscope, placed on a deep navy blue background with elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    },\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"Years of discipline and patience have paid off. You've earned your white coat and the respect of your peers.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card inside-left with a white stethoscope on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    },\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"We're proud of the doctor you've become. Your heart, dedication, and perseverance inspire us all.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card inside-right with a white coat on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    },\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"Congratulations on your medical school graduation! We love you more than words can say.\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card back with a soft gold graduation cap on top of a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    }\n  ]\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": "<redacted>"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": "<redacted>",
+          "completion_tokens": "<redacted>",
+          "total_tokens": "<redacted>",
+          "prompt_tokens_details": "<redacted>"
+        }
+      }
+    },
+    "durationMs": 6544
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "front",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "528034",
+      "byteLength": 528034
+    },
+    "durationMs": 11331
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-left",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "719086",
+      "byteLength": 719086
+    },
+    "durationMs": 11233
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-right",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "401460",
+      "byteLength": 401460
+    },
+    "durationMs": 11712
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "<redacted>",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+        "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "back",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "contentLength": "312469",
+      "byteLength": 312469
+    },
+    "durationMs": 11988
+  }
+]

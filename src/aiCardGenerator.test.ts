@@ -215,21 +215,86 @@ describe("AI card generator service", () => {
     expect(imageBodies.map((body) => body.metadata.customcard.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
     expect(imageBodies.every((body) => body.width === 1464 && body.height === 2048)).toBe(true);
     expect(imageBodies.every((body) => body.metadata.customcard.generation_strategy === "one-provider-request-per-panel")).toBe(true);
-    expect(imageBodies[0].prompt).toContain("A premium 5x7 vertical greeting card front design");
-    expect(imageBodies[1].prompt).toContain("inside-left panel");
-    expect(imageBodies[2].prompt).toContain("inside-right message panel");
-    expect(imageBodies[3].prompt).toContain("back cover design");
+    expect(imageBodies[0].prompt).toContain("Flat 2D full-bleed digital illustration");
+    expect(imageBodies[1].prompt).toContain("inside-left print panel");
+    expect(imageBodies[2].prompt).toContain("inside-right print panel");
+    expect(imageBodies[3].prompt).toContain("back print panel");
     expect(imageBodies.every((body) => body.prompt.includes("no readable text"))).toBe(true);
+    expect(imageBodies.every((body) => body.prompt.includes("no words"))).toBe(true);
     expect(imageBodies.every((body) => body.prompt.includes("no logos"))).toBe(true);
     expect(imageBodies.every((body) => body.prompt.includes("no watermark"))).toBe(true);
+    expect(imageBodies.every((body) => body.prompt.includes("No people"))).toBe(true);
+    expect(imageBodies.every((body) => body.prompt.includes("No hands"))).toBe(true);
+    expect(imageBodies.every((body) => body.prompt.includes("not a physical paper card"))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("folded card mockup"))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("tabletop scene"))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("people"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("hands"))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("readable text"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("fake text"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("product photo"))).toBe(true);
     expect(imageBodies.map((body) => body.prompt).join(" ")).not.toMatch(
       /Recipient:|Relationship:|Panel headline|Panel body|Language context|Art direction:/
     );
     expect(JSON.stringify(result.payload)).not.toContain("secret_image");
+  });
+
+  it("repairs unsafe LLM image prompts before sending them to the image provider", async () => {
+    const unsafeCopyResponse = {
+      ...cardCopyResponse,
+      panels: cardCopyResponse.panels.map((panel) =>
+        panel.id === "front"
+          ? {
+              ...panel,
+              image_prompt:
+                "A small business owner holding a 'Thank you' sign with hands visible, surrounded by happy customers, with the shop's logo in the top left and a worn creased paper card.",
+              image_negative_prompt: "readable text, people, hands"
+            }
+          : panel
+      )
+    };
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      if (String(url).includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(unsafeCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response(new Uint8Array([1, 2, 3, 4]), {
+        status: 200,
+        headers: { "content-type": "image/png" }
+      });
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "secret_image",
+        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    await service.generateCard(
+      {
+        ...cardRequest,
+        occasion: "thank-you for supporting a small business",
+        style: "warm citrus, soft gold, deep teal, local shop texture"
+      },
+      { rateKey: "test-card-image-repair" }
+    );
+    const frontImageCall = fetchImpl.mock.calls[1] as unknown as [RequestInfo | URL, RequestInit?];
+    const frontBody = JSON.parse(String(frontImageCall[1]?.body));
+
+    expect(frontBody.prompt).toContain("small-business thank-you theme");
+    expect(frontBody.prompt).toContain("boutique storefront awning");
+    expect(frontBody.prompt).not.toMatch(/owner|customers|holding|['"]?thank you['"]?\s+sign|signage|shop['’]?s logo|creased|worn/i);
+    expect(frontBody.prompt).toMatch(/no readable text/i);
+    expect(frontBody.prompt).toMatch(/no people/i);
+    expect(frontBody.prompt).toMatch(/no hands/i);
   });
 
   it("uses the customer-chat flow for chat replies", async () => {

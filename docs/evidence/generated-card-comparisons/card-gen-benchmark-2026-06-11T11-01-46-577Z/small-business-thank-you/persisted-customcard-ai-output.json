@@ -1,0 +1,106 @@
+{
+  "draft_id": "ai-mq9e23f4-loyal-customers",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Grateful for Your Support",
+        "body": "Thank you for choosing to support local businesses like mine. Your decision makes a real difference in our community.",
+        "art_direction": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+        "image_prompt": "A warm, golden light spills from a small, rustic shop window onto a busy street. The sign above the door reads 'Local Love' in deep teal letters, with a soft gold border. A few handmade cards are visible through the window, with citrus-colored paper and cream-colored envelopes. The background is a soft, gradient blue, evoking a sense of community and connection.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thank You for Being a Part of Our Community",
+        "body": "Your loyalty to small businesses like mine is what keeps our community thriving. Thank you for being a part of it.",
+        "art_direction": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+        "image_prompt": "A delicate, hand-drawn illustration of a small town's main street, with a mix of local shops and community spaces. The buildings are rendered in warm citrus and cream colors, with deep teal accents and soft gold details. The background is a subtle, gradient texture, evoking a sense of depth and history.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Thank You for Being a Part of Our Story",
+        "body": "I'm so grateful for customers like you who understand the value of supporting local businesses. Thank you for being a part of our story.",
+        "art_direction": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+        "image_prompt": "A whimsical, watercolor illustration of a small business owner's workspace, filled with handmade cards, local products, and community ephemera. The colors are a mix of warm citrus, cream, and deep teal, with soft gold accents and a subtle texture. The background is a soft, gradient blue, evoking a sense of creativity and connection.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "Wishing You a Wonderful Day",
+        "body": "Wishing you a wonderful day, filled with love, laughter, and all your favorite things.",
+        "art_direction": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+        "image_prompt": "A beautiful, hand-painted illustration of a sunny day, with a mix of local flowers, greenery, and community spaces. The colors are a mix of warm citrus, cream, and deep teal, with soft gold accents and a subtle texture. The background is a soft, gradient blue, evoking a sense of joy and connection.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 790286 chars>",
+      "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 782070 chars>",
+      "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 767486 chars>",
+      "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 509678 chars>",
+      "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

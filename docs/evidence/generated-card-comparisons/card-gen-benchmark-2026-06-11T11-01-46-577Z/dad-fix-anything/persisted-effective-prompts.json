@@ -1,0 +1,50 @@
+{
+  "fixture": "dad-fix-anything",
+  "category": "Father's Day repair-themed card",
+  "competitor": {
+    "competitor": "Greetings Island",
+    "category": "Free template card maker",
+    "sourcePage": "https://www.greetingsisland.com/",
+    "localFile": "greetings-island-fathers-day-preview.jpeg",
+    "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "Dad",
+    "relationship": "child to father",
+    "occasion": "Father's Day",
+    "tone": "warm, funny, sincere, practical love",
+    "style": "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+    "language": "English",
+    "personal_note": "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+    "memory_notes": [
+      "Dad shows love by fixing the small things before anyone asks.",
+      "The card should feel printable, cheerful, and original.",
+      "Use tools as symbols, not a cluttered hardware-store scene."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "back",
+      "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    }
+  ]
+}

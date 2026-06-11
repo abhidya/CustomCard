@@ -482,9 +482,12 @@ function buildCardCopyPrompt(input) {
         "image_prompt must be a concrete visual composition, not a restatement of form fields.",
         "image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.",
         "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
-        "Prefer symbolic objects, patterns, backgrounds, stationery illustration, and print design details over people or portraits unless a user explicitly asks for a portrait/photo.",
-        "For each image_prompt include: 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, and no logos/no watermark/no readable text.",
-        "image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel.",
+        "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
+        "Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.",
+        "Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.",
+        "Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.",
+        "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.",
+        "image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.",
         "Return JSON only, no markdown."
       ],
       input
@@ -525,7 +528,7 @@ function buildImagePromptPlan(input, cardCopy) {
     const panel = panelsById.get(panelId) ?? panelDefaults[panelId];
     return {
       panel_id: panelId,
-      prompt: normalizeImagePrompt(panel.image_prompt || buildPanelImagePrompt(input, panelId, panel), panelId),
+      prompt: normalizeImagePrompt(panel.image_prompt || buildPanelImagePrompt(input, panelId, panel), panelId, input, panel),
       negative_prompt: normalizeImageNegativePrompt(panel.image_negative_prompt)
     };
   });
@@ -534,35 +537,49 @@ function buildImagePromptPlan(input, cardCopy) {
 function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = {
     front:
-      "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography.",
+      "Flat 2D full-bleed digital illustration for the front panel of a premium vertical 5x7 print design, with the strongest decorative composition and one simple low-detail open area for app-added headline typography.",
     "inside-left":
-      "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note.",
+      "Flat 2D digital illustration/background for a vertical 5x7 inside-left print panel, with decorative support artwork around the edges and open low-detail space for a short app-added note.",
     "inside-right":
-      "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation.",
+      "Flat 2D digital illustration/background for a vertical 5x7 inside-right print panel, with a calm low-detail message area and subtle matching ornamentation.",
     back:
-      "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area."
+      "Flat 2D digital illustration/background for a minimal vertical 5x7 back print panel, with mostly negative space and subtle coordinating ornamentation near the lower area."
   }[panelId];
   const visualBrief = buildVisualBrief(input, panel);
 
   return [
     panelInstruction,
     visualBrief,
-    "Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark."
+    "Premium print-ready flat artwork, full-bleed 2D composition, clean luxury editorial style, minimal clutter, generous safe margins, no readable text, no words, no letters, no handwriting, no calligraphy, no fake text, no logos, no watermark, not a photographed card, not a physical paper card, not a tabletop scene, not a mockup."
   ].join(" ");
 }
 
-function normalizeImagePrompt(prompt, panelId) {
+function normalizeImagePrompt(prompt, panelId, input, panel) {
   const cleaned = cleanText(prompt)
     .replace(/\b(?:Recipient|Relationship|Occasion|Tone|Style|Language context|Panel headline|Panel body|Art direction)\s*:[^.]+\.?/gi, "")
     .replace(/\s+/g, " ")
     .trim();
-  const base = cleaned || panelDefaults[panelId].image_prompt;
+  const base = imagePromptNeedsRepair(cleaned)
+    ? buildPanelImagePrompt(input, panelId, panel)
+    : cleaned || panelDefaults[panelId].image_prompt;
   const guardrails = [];
-  if (!/\b5x7\b/i.test(base)) guardrails.push("5x7 vertical greeting card panel.");
+  if (!/\b5x7\b/i.test(base)) guardrails.push("5x7 vertical print panel.");
+  if (!/\bflat\b/i.test(base) || !/\b2d\b/i.test(base)) guardrails.push("Flat 2D full-bleed digital illustration.");
   if (!/\bno readable text\b/i.test(base)) guardrails.push("No readable text.");
+  if (!/\bno (?:words|letters)\b/i.test(base)) guardrails.push("No words, letters, handwriting, calligraphy, labels, signatures, or fake text.");
+  if (!/\bno people\b/i.test(base)) guardrails.push("No people.");
+  if (!/\bno hands\b/i.test(base)) guardrails.push("No hands.");
   if (!/\bno logos?\b/i.test(base)) guardrails.push("No logos.");
   if (!/\bno watermark\b/i.test(base)) guardrails.push("No watermark.");
+  if (!/\bnot (?:a )?(?:physical|photographed|mockup|photo)\b/i.test(base)) {
+    guardrails.push("Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.");
+  }
   return truncate([base, ...guardrails].join(" "), 1200);
+}
+
+function imagePromptNeedsRepair(prompt) {
+  return /\b(person|people|human|owner|customer|customers|face|portrait|body|hands?|holding|model|signature|handwriting|lettering|readable text|['"]?thank you['"]?\s+sign|signage|sign|worn|creased)\b/i.test(prompt) ||
+    /(?:shop|store|brand|company|business)['’]?\s+logo|\blogo\s+(?:in|at|on|near|as)\b/i.test(prompt);
 }
 
 function normalizeImageNegativePrompt(value) {
@@ -571,6 +588,15 @@ function normalizeImageNegativePrompt(value) {
       [
         ...String(value || "").split(","),
         "readable text",
+        "fake text",
+        "pseudo text",
+        "gibberish text",
+        "letters",
+        "words",
+        "handwriting",
+        "calligraphy",
+        "signature",
+        "label",
         "misspelled text",
         "tiny unreadable lettering",
         "logo",
@@ -579,6 +605,11 @@ function normalizeImageNegativePrompt(value) {
         "crop marks",
         "folded card mockup",
         "physical card mockup",
+        "framed physical card",
+        "paper card photo",
+        "product photo",
+        "photorealistic mockup",
+        "envelope",
         "tabletop scene",
         "desk scene",
         "hands",
@@ -595,13 +626,13 @@ function normalizeImageNegativePrompt(value) {
 function buildVisualBrief(input, panel) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction}`.toLowerCase();
   if (/\b(med|medical|doctor|physician|md|white coat|stethoscope)\b/.test(source)) {
-    return "Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line.";
+    return "Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint unlabeled anatomical linework, and a quiet ECG heartbeat line.";
   }
   if (/\b(graduat|class year|diploma|school)\b/.test(source)) {
     return "Elegant graduation theme: refined navy, ivory, and gold palette with a graduation cap, diploma ribbon, subtle starbursts, celebratory confetti, and clean milestone stationery details.";
   }
   if (/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
-    return "Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture.";
+    return "Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, unlabeled boutique storefront awning, kraft shopping bag with no label, ribbon, botanical sprig, and handmade local-shop texture.";
   }
   if (/\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source)) {
     return "Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration.";

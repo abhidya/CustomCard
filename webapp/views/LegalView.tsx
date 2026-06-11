@@ -1,8 +1,8 @@
 import { CheckCircle2, ExternalLink, FileText, Globe2, Scale, ShieldCheck } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
-  buildLegalPolicyLinks,
   freeLegalToolOptions,
+  generatedLegalDocumentLinks,
   type LegalComplianceItem,
   type LegalComplianceRegion,
   type LegalComplianceSummary
@@ -29,11 +29,9 @@ export function LegalView({
   items: LegalComplianceItem[];
   summary: LegalComplianceSummary;
 }) {
-  const policyLinks = useMemo(() => buildLegalPolicyLinks(import.meta.env as Record<string, unknown>), []);
   const [preferences, setPreferences] = useState<ConsentPreferences>(defaultConsentPreferences);
   const euItems = items.filter((item) => item.region === "eu");
   const usItems = items.filter((item) => item.region === "us");
-  const configuredPolicyCount = policyLinks.filter((link) => link.configured).length;
 
   function togglePreference(key: "analytics" | "marketing") {
     setPreferences((current) => ({
@@ -49,8 +47,8 @@ export function LegalView({
         <p className="eyebrow">Legal readiness</p>
         <h1>EU and US requirements</h1>
         <p>
-          Free generators and consent tools are linked here; CustomCard still keeps public compliance claims blocked
-          until the generated policies, consent setup, and review evidence are attached.
+          Generated policy drafts, free generators, and consent tools are linked here; CustomCard still keeps
+          public compliance claims blocked until the generated policies, consent setup, and review evidence are attached.
         </p>
       </header>
 
@@ -58,7 +56,7 @@ export function LegalView({
         <LegalMetric label="EU items" value={`${summary.euRequirements}`} />
         <LegalMetric label="US items" value={`${summary.usRequirements}`} />
         <LegalMetric label="Free tools" value={`${summary.freeToolOptions}`} />
-        <LegalMetric label="Policies linked" value={`${configuredPolicyCount}/${policyLinks.length}`} />
+        <LegalMetric label="Docs linked" value={`${generatedLegalDocumentLinks.length}`} />
       </section>
 
       <section className="legalPanel legalPolicyPanel" aria-label="Policy links">
@@ -67,16 +65,16 @@ export function LegalView({
             <FileText size={18} />
           </span>
           <div>
-            <h2>Policy links</h2>
-            <p>Use the env URLs after a free generator produces drafts; fallbacks open the free tool path.</p>
+            <h2>Generated policy docs</h2>
+            <p>The public footer points to these generated drafts; source tools stay attached for refresh and review.</p>
           </div>
         </div>
         <div className="legalLinkGrid">
-          {policyLinks.map((link) => (
-            <a className="legalLinkCard" href={link.url} key={link.id} rel="noreferrer" target="_blank">
+          {generatedLegalDocumentLinks.map((link) => (
+            <a className="legalLinkCard" href={link.path} key={link.id}>
               <span>{link.label}</span>
-              <strong>{link.configured ? "Configured" : link.fallbackLabel}</strong>
-              <small>{link.configured ? link.envVar : `Set ${link.envVar}`}</small>
+              <strong>Generated draft</strong>
+              <small>Source: {link.sourceToolLabel}</small>
               <ExternalLink size={15} />
             </a>
           ))}

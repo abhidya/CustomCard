@@ -58,6 +58,15 @@ export interface LegalPolicyLink extends LegalPolicyLinkDefinition {
   fallbackLabel: string;
 }
 
+export interface GeneratedLegalDocumentLink {
+  id: LegalPolicyLinkId;
+  label: string;
+  path: string;
+  sourceToolLabel: string;
+  sourceToolUrl: string;
+  reviewRequired: true;
+}
+
 const requiredLegalComplianceIds = [
   "eu-gdpr-privacy-notice-lawful-basis",
   "eu-cookie-consent-eprivacy",
@@ -154,6 +163,20 @@ export const legalPolicyLinkDefinitions: LegalPolicyLinkDefinition[] = [
   { id: "ai-disclosure", label: "AI disclosure", envVar: "VITE_LEGAL_AI_DISCLOSURE_URL", fallbackToolId: "termsfeed-disclaimer" },
   { id: "privacy-choices", label: "Privacy choices", envVar: "VITE_LEGAL_PRIVACY_CHOICES_URL", fallbackToolId: "termly-basic" }
 ];
+
+export const generatedLegalDocumentPath = "/legal/generated-docs.html";
+
+export const generatedLegalDocumentLinks: GeneratedLegalDocumentLink[] = legalPolicyLinkDefinitions.map((definition) => {
+  const fallbackTool = freeLegalToolOptions.find((tool) => tool.id === definition.fallbackToolId);
+  return {
+    id: definition.id,
+    label: definition.label,
+    path: `${generatedLegalDocumentPath}#${definition.id}`,
+    sourceToolLabel: fallbackTool?.label ?? "Free generator",
+    sourceToolUrl: fallbackTool?.url ?? "#",
+    reviewRequired: true
+  };
+});
 
 export const legalComplianceItems: LegalComplianceItem[] = [
   {

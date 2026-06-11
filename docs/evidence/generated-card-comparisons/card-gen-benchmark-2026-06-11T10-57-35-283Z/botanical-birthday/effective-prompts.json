@@ -1,0 +1,50 @@
+{
+  "fixture": "botanical-birthday",
+  "category": "Personalized botanical birthday card",
+  "competitor": {
+    "competitor": "Hallmark",
+    "category": "Personalized physical card catalog",
+    "sourcePage": "https://www.hallmark.com/customized-cards/",
+    "localFile": "hallmark-custom-birthday-category.jpg",
+    "sha256": "6c4f6f6332f300cf3f4012d45c7436545393be7199988441cbdbf37b9ecf4d7c"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "Sara",
+    "relationship": "friend",
+    "occasion": "birthday",
+    "tone": "warm, grateful, relaxed, quietly joyful",
+    "style": "botanical watercolor, morning light, cream paper, deep green accents",
+    "language": "English",
+    "personal_note": "She loves morning hikes, coffee, and the fern by her kitchen window.",
+    "memory_notes": [
+      "She keeps a fern by the kitchen window.",
+      "She loves morning hikes and tiny trail flowers.",
+      "The birthday card should feel personal without feeling overly sentimental."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper No readable text. No people. No hands. No logos. No watermark.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "back",
+      "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "draft_id": "ai-mq9e4fv6-dad",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Father's Day, Dad!",
+        "body": "A card made with care.",
+        "art_direction": "premium 5x7 vertical greeting card panel",
+        "image_prompt": "A cheerful toolbox with a golden wrench and a few tools, set against a warm golden yellow and green background, with a few blueprint details and a clean printable workshop illustration style, no people/no hands, no logos/no watermark/no readable text",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thanks for being my go-to fix-it guy!",
+        "body": "You're the one I call when the lights won't turn on or the bike chain breaks.",
+        "art_direction": "premium 5x7 vertical greeting card panel",
+        "image_prompt": "A stylized illustration of a bike with a broken chain, set against a warm golden yellow and green background, with a few blueprint details and a clean printable workshop illustration style, a few tools nearby, no people/no hands, no logos/no watermark/no readable text",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Love, Manny",
+        "body": "Here's to many more years of fixing things and making memories together!",
+        "art_direction": "premium 5x7 vertical greeting card panel",
+        "image_prompt": "A stylized illustration of a house with a few tools and a wrench, set against a warm golden yellow and green background, with a few blueprint details and a clean printable workshop illustration style, no people/no hands, no logos/no watermark/no readable text",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "Thanks again, Dad!",
+        "body": "Best regards, Manny",
+        "art_direction": "premium 5x7 vertical greeting card panel",
+        "image_prompt": "A stylized illustration of a toolbox with a few tools and a golden wrench, set against a warm golden yellow and green background, with a few blueprint details and a clean printable workshop illustration style, no people/no hands, no logos/no watermark/no readable text",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 926138 chars>",
+      "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 870142 chars>",
+      "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 988142 chars>",
+      "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 832474 chars>",
+      "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

@@ -1,0 +1,50 @@
+{
+  "fixture": "botanical-birthday",
+  "category": "Personalized botanical birthday card",
+  "competitor": {
+    "competitor": "Hallmark",
+    "category": "Personalized physical card catalog",
+    "sourcePage": "https://www.hallmark.com/customized-cards/",
+    "localFile": "hallmark-custom-birthday-category.jpg",
+    "sha256": "6c4f6f6332f300cf3f4012d45c7436545393be7199988441cbdbf37b9ecf4d7c"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "Sara",
+    "relationship": "friend",
+    "occasion": "birthday",
+    "tone": "warm, grateful, relaxed, quietly joyful",
+    "style": "botanical watercolor, morning light, cream paper, deep green accents",
+    "language": "English",
+    "personal_note": "She loves morning hikes, coffee, and the fern by her kitchen window.",
+    "memory_notes": [
+      "She keeps a fern by the kitchen window.",
+      "She loves morning hikes and tiny trail flowers.",
+      "The birthday card should feel personal without feeling overly sentimental."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "back",
+      "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    }
+  ]
+}

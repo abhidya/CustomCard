@@ -1,0 +1,50 @@
+{
+  "fixture": "medical-graduation",
+  "category": "Medical school graduation folded card",
+  "competitor": {
+    "competitor": "Shutterfly",
+    "category": "Photo-card print product",
+    "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+    "localFile": "shutterfly-grad-card-preview.webp",
+    "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "my brother",
+    "relationship": "brother",
+    "occasion": "medical school graduation",
+    "tone": "proud, emotional, premium, warm family pride, not cheesy",
+    "style": "deep navy, white, soft gold, elegant medical graduation stationery",
+    "language": "English",
+    "personal_note": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+    "memory_notes": [
+      "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+      "The family is proud of his discipline, patience, heart, and dedication.",
+      "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    },
+    {
+      "panelId": "back",
+      "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+    }
+  ]
+}

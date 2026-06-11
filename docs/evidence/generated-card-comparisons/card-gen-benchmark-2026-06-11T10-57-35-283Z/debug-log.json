@@ -1,0 +1,3305 @@
+{
+  "runId": "card-gen-benchmark-2026-06-11T10-57-35-283Z",
+  "createdAtIso": "2026-06-11T10:57:35.288Z",
+  "fixtureIds": [
+    "small-business-thank-you",
+    "medical-graduation",
+    "dad-fix-anything",
+    "botanical-birthday"
+  ],
+  "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ARTIFACT_SIGNED_URL_TTL_MINUTES",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "CUSTOMCARD_ARTIFACT_PERSISTENCE",
+      "OBJECT_STORE_ACCESS_KEY_ID",
+      "OBJECT_STORE_BUCKET",
+      "OBJECT_STORE_PUBLIC_BASE_URL",
+      "OBJECT_STORE_READ_ACCESS_KEY_ID",
+      "OBJECT_STORE_READ_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_REGION",
+      "OBJECT_STORE_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_SIGNING_SECRET",
+      "OBJECT_STORE_URL"
+    ],
+    "secretsRedacted": true
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "cloudflare-workers-ai-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-image",
+        "browser-svg-renderer"
+      ],
+      "blockedReasons": []
+    }
+  ],
+  "objectStore": {
+    "configured": true,
+    "provider": "cloudflare-r2",
+    "endpoint": "https://{account_id}.r2.cloudflarestorage.com",
+    "bucket": "customcard-prod",
+    "publicBaseUrl": "http://127.0.0.1:4173/api/artifacts",
+    "signedUrlTtlMinutes": 15,
+    "liveNetworkCalls": true,
+    "credentialMode": "write-read-split",
+    "blockers": []
+  },
+  "fixtures": [
+    {
+      "id": "small-business-thank-you",
+      "category": "Small business thank-you AI card",
+      "competitor": {
+        "competitor": "Adobe Express",
+        "category": "Small business thank-you AI card",
+        "sourcePage": "https://www.adobe.com/express/create/ai/card",
+        "localFile": "adobe-express-small-business-thanks.png",
+        "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/small-business-thank-you",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/small-business-thank-you/contact-sheet.png",
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "back",
+          "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-11T11:13:34.000Z"
+      }
+    },
+    {
+      "id": "medical-graduation",
+      "category": "Medical school graduation folded card",
+      "competitor": {
+        "competitor": "Shutterfly",
+        "category": "Photo-card print product",
+        "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+        "localFile": "shutterfly-grad-card-preview.webp",
+        "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/medical-graduation",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/medical-graduation/contact-sheet.png",
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "back",
+          "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-11T11:14:33.000Z"
+      }
+    },
+    {
+      "id": "dad-fix-anything",
+      "category": "Father's Day repair-themed card",
+      "competitor": {
+        "competitor": "Greetings Island",
+        "category": "Free template card maker",
+        "sourcePage": "https://www.greetingsisland.com/",
+        "localFile": "greetings-island-fathers-day-preview.jpeg",
+        "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/dad-fix-anything",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/dad-fix-anything/contact-sheet.png",
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "back",
+          "prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-11T11:15:30.000Z"
+      }
+    },
+    {
+      "id": "botanical-birthday",
+      "category": "Personalized botanical birthday card",
+      "competitor": {
+        "competitor": "Hallmark",
+        "category": "Personalized physical card catalog",
+        "sourcePage": "https://www.hallmark.com/customized-cards/",
+        "localFile": "hallmark-custom-birthday-category.jpg",
+        "sha256": "6c4f6f6332f300cf3f4012d45c7436545393be7199988441cbdbf37b9ecf4d7c"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/botanical-birthday",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-11T10-57-35-283Z/botanical-birthday/contact-sheet.png",
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        },
+        {
+          "panelId": "back",
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+          "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-11T11:16:27.000Z"
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"CustomCard\",\n    \"recipient\": \"loyal customers\",\n    \"relationship\": \"small business to repeat customer\",\n    \"occasion\": \"thank-you for supporting a small business\",\n    \"tone\": \"warm, sincere, polished, grateful, not salesy\",\n    \"style\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.\",\n    \"memory_notes\": [\n      \"The customer chose an independent small business instead of a large marketplace.\",\n      \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n      \"CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.55,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3597,
+        "body": {
+          "id": "id-1781175461909",
+          "object": "chat.completion",
+          "created": 1781175461,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"Warm citrus, cream, and deep teal colors with soft gold accents\",\n      \"body\": \"Thanks for choosing us over the big guys!\",\n      \"headline\": \"Thanks for supporting small businesses!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel with a warm, handmade texture, featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper.\"\n    },\n    {\n      \"art_direction\": \"Warm, sincere, and polished tone\",\n      \"body\": \"Your loyalty means the world to us!\",\n      \"headline\": \"Grateful for customers like you\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents.\"\n    },\n    {\n      \"art_direction\": \"Warm, sincere, and polished tone\",\n      \"body\": \"We're honored to have customers like you!\",\n      \"headline\": \"Thanks for choosing us\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a few deep teal accents and a soft gold background.\"\n    },\n    {\n      \"art_direction\": \"Warm, sincere, and polished tone\",\n      \"body\": \"Thanks again for your support!\",\n      \"headline\": \"Best regards, CustomCard\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents, and a few blank spaces for the recipient's information.\"\n    }\n  ]\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 6611
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "490163",
+        "byteLength": 490163
+      },
+      "durationMs": 12021
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-left",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "527237",
+        "byteLength": 527237
+      },
+      "durationMs": 12928
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-right",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "411639",
+        "byteLength": 411639
+      },
+      "durationMs": 11201
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "back",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "497236",
+        "byteLength": 497236
+      },
+      "durationMs": 11445
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "f9a0ffc17cd737a1443bc5a71f3878f1fec731dab269d01c75e92f55a9141638",
+          "x-amz-date": "20260611T105834Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-front.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-f9a0ffc17cd737a1443bc5a71f3878f1fec731dab269d01c75e92f55a9141638",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 441
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105835Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "490163",
+        "byteLength": 490163
+      },
+      "durationMs": 231
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "898ceee22fea6c5dc5cfdd9dd35a4a3328ecad55316bb2282e8c594b223b4b49",
+          "x-amz-date": "20260611T105835Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-left.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-898ceee22fea6c5dc5cfdd9dd35a4a3328ecad55316bb2282e8c594b223b4b49",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 324
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105835Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "527237",
+        "byteLength": 527237
+      },
+      "durationMs": 176
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "6f0185ac03d65b63628115310840450bf4c672173728ee0519314c79e5809ee0",
+          "x-amz-date": "20260611T105836Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-right.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-6f0185ac03d65b63628115310840450bf4c672173728ee0519314c79e5809ee0",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 279
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105836Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "411639",
+        "byteLength": 411639
+      },
+      "durationMs": 212
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "f5c8304f3c2e1267b65980dacdbafdc8ac5971cac4bae4668d5d4b24b5615d8d",
+          "x-amz-date": "20260611T105836Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-back.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-f5c8304f3c2e1267b65980dacdbafdc8ac5971cac4bae4668d5d4b24b5615d8d",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 263
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105836Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "497236",
+        "byteLength": 497236
+      },
+      "durationMs": 357
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "87182e7822749b9717fcd02d105f4a791c7d5552b2daa152067b56491bc0083c",
+          "x-amz-date": "20260611T105837Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-87182e7822749b9717fcd02d105f4a791c7d5552b2daa152067b56491bc0083c",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 179
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105837Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 7204,
+        "body": {
+          "draft_id": "ai-mq9dwr31-loyal-customers",
+          "card_copy": {
+            "panels": [
+              {
+                "id": "front",
+                "headline": "Thanks for supporting small businesses!",
+                "body": "Thanks for choosing us over the big guys!",
+                "art_direction": "Warm citrus, cream, and deep teal colors with soft gold accents",
+                "image_prompt": "A premium 5x7 vertical greeting card panel with a warm, handmade texture, featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Grateful for customers like you",
+                "body": "Your loyalty means the world to us!",
+                "art_direction": "Warm, sincere, and polished tone",
+                "image_prompt": "A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-right",
+                "headline": "Thanks for choosing us",
+                "body": "We're honored to have customers like you!",
+                "art_direction": "Warm, sincere, and polished tone",
+                "image_prompt": "A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business storefront with a 'thank you' sign in soft gold, set against a background of cream and deep teal stripes, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a few deep teal accents and a soft gold background.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "back",
+                "headline": "Best regards, CustomCard",
+                "body": "Thanks again for your support!",
+                "art_direction": "Warm, sincere, and polished tone",
+                "image_prompt": "A premium 5x7 vertical greeting card panel featuring a stylized illustration of a small business owner's hands holding a few locally-made products, surrounded by a warm, handmade texture, with a few citrus fruits and flowers scattered around, and a subtle texture resembling handmade paper, with a soft gold background and a few deep teal accents, and a few blank spaces for the recipient's information.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              }
+            ],
+            "memory_citations": []
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 653574 chars>",
+              "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 703006 chars>",
+              "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 548874 chars>",
+              "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 663006 chars>",
+              "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "cloudflare-workers-ai-image",
+              "primary_adapter_id": "cloudflare-workers-ai-image",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 127
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "2a407a1fc21904bc0c60f4f82ca529ae74871b6b9a52bc27a0e0de81de4b4193",
+          "x-amz-date": "20260611T105837Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-2a407a1fc21904bc0c60f4f82ca529ae74871b6b9a52bc27a0e0de81de4b4193",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 150
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105837Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 4779,
+        "body": {
+          "fixture": "small-business-thank-you",
+          "category": "Small business thank-you AI card",
+          "competitor": {
+            "competitor": "Adobe Express",
+            "category": "Small business thank-you AI card",
+            "sourcePage": "https://www.adobe.com/express/create/ai/card",
+            "localFile": "adobe-express-small-business-thanks.png",
+            "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+          },
+          "requestBody": {
+            "sender": "CustomCard",
+            "recipient": "loyal customers",
+            "relationship": "small business to repeat customer",
+            "occasion": "thank-you for supporting a small business",
+            "tone": "warm, sincere, polished, grateful, not salesy",
+            "style": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+            "language": "English",
+            "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+            "memory_notes": [
+              "The customer chose an independent small business instead of a large marketplace.",
+              "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+              "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "back",
+              "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            }
+          ]
+        }
+      },
+      "durationMs": 92
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "dcadc3a12ceadf30642ad6011c70b5d3238b66f86318fc180a4518e89dbc032d",
+          "x-amz-date": "20260611T105837Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 153
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Manny\",\n    \"recipient\": \"my brother\",\n    \"relationship\": \"brother\",\n    \"occasion\": \"medical school graduation\",\n    \"tone\": \"proud, emotional, premium, warm family pride, not cheesy\",\n    \"style\": \"deep navy, white, soft gold, elegant medical graduation stationery\",\n    \"language\": \"English\",\n    \"personal_note\": \"He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.\",\n    \"memory_notes\": [\n      \"He pushed through years of exams, late nights, long shifts, and sacrifices.\",\n      \"The family is proud of his discipline, patience, heart, and dedication.\",\n      \"Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.55,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3503,
+        "body": {
+          "id": "id-1781175524531",
+          "object": "chat.completion",
+          "created": 1781175524,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [\n    \"He pushed through years of exams, late nights, long shifts, and sacrifices.\",\n    \"The family is proud of his discipline, patience, heart, and dedication.\",\n    \"Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card front with a white graduation cap on top of a soft gold stethoscope, placed on a deep navy blue background with elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    },\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"Years of discipline and patience have paid off. You've earned your white coat and the respect of your peers.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card inside-left with a white stethoscope on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    },\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"We're proud of the doctor you've become. Your heart, dedication, and perseverance inspire us all.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card inside-right with a white coat on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    },\n    {\n      \"art_direction\": \"Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.\",\n      \"body\": \"Congratulations on your medical school graduation! We love you more than words can say.\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A premium 5x7 vertical greeting card back with a soft gold graduation cap on top of a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.\"\n    }\n  ]\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 6544
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "528034",
+        "byteLength": 528034
+      },
+      "durationMs": 11331
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-left",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "719086",
+        "byteLength": 719086
+      },
+      "durationMs": 11233
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-right",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "401460",
+        "byteLength": 401460
+      },
+      "durationMs": 11712
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "back",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "312469",
+        "byteLength": 312469
+      },
+      "durationMs": 11988
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "575c57de140b46260f950dc3dc82acb45c71fdf5eef2e8843a6dfb6672aee98c",
+          "x-amz-date": "20260611T105933Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-front.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-575c57de140b46260f950dc3dc82acb45c71fdf5eef2e8843a6dfb6672aee98c",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 460
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105934Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "528034",
+        "byteLength": 528034
+      },
+      "durationMs": 238
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "4868db60a57d6b11067c256ee467818944cbc6324fa1e3c3f2262195a989a54a",
+          "x-amz-date": "20260611T105934Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-left.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-4868db60a57d6b11067c256ee467818944cbc6324fa1e3c3f2262195a989a54a",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 209
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105934Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "719086",
+        "byteLength": 719086
+      },
+      "durationMs": 196
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "9faa50247e1be5697562f054a562ca25ec5b07ca605e0881adfd19bf931d22f1",
+          "x-amz-date": "20260611T105934Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-right.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-9faa50247e1be5697562f054a562ca25ec5b07ca605e0881adfd19bf931d22f1",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 235
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105935Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "401460",
+        "byteLength": 401460
+      },
+      "durationMs": 147
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "d35735f4dd8d0bee3cbbc29be6de6a422971127979ab5a2c19e5e70a35ba56ca",
+          "x-amz-date": "20260611T105935Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-back.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-d35735f4dd8d0bee3cbbc29be6de6a422971127979ab5a2c19e5e70a35ba56ca",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 284
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105935Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "312469",
+        "byteLength": 312469
+      },
+      "durationMs": 164
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "68de0e37a07d5e44f425c45113134dd8a34debd2a705e2b6cdcd7688c2985d0f",
+          "x-amz-date": "20260611T105935Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-68de0e37a07d5e44f425c45113134dd8a34debd2a705e2b6cdcd7688c2985d0f",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 163
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105935Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 7164,
+        "body": {
+          "draft_id": "ai-mq9dy29s-my-brother",
+          "card_copy": {
+            "panels": [
+              {
+                "id": "front",
+                "headline": "From Dream to Doctor",
+                "body": "A card made with care.",
+                "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+                "image_prompt": "A premium 5x7 vertical greeting card front with a white graduation cap on top of a soft gold stethoscope, placed on a deep navy blue background with elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Thinking of you",
+                "body": "Years of discipline and patience have paid off. You've earned your white coat and the respect of your peers.",
+                "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+                "image_prompt": "A premium 5x7 vertical greeting card inside-left with a white stethoscope on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-right",
+                "headline": "From the heart",
+                "body": "We're proud of the doctor you've become. Your heart, dedication, and perseverance inspire us all.",
+                "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+                "image_prompt": "A premium 5x7 vertical greeting card inside-right with a white coat on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "back",
+                "headline": "CustomCard",
+                "body": "Congratulations on your medical school graduation! We love you more than words can say.",
+                "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+                "image_prompt": "A premium 5x7 vertical greeting card back with a soft gold graduation cap on top of a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              }
+            ],
+            "memory_citations": [
+              "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+              "The family is proud of his discipline, patience, heart, and dedication.",
+              "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+            ]
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 704070 chars>",
+              "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 958806 chars>",
+              "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 535302 chars>",
+              "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 416650 chars>",
+              "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "cloudflare-workers-ai-image",
+              "primary_adapter_id": "cloudflare-workers-ai-image",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 127
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "39531280337ea793f0681021ed2c15bf7fef571d217830fa9d127ff171d05f70",
+          "x-amz-date": "20260611T105936Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-39531280337ea793f0681021ed2c15bf7fef571d217830fa9d127ff171d05f70",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 174
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T105936Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 4641,
+        "body": {
+          "fixture": "medical-graduation",
+          "category": "Medical school graduation folded card",
+          "competitor": {
+            "competitor": "Shutterfly",
+            "category": "Photo-card print product",
+            "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+            "localFile": "shutterfly-grad-card-preview.webp",
+            "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "my brother",
+            "relationship": "brother",
+            "occasion": "medical school graduation",
+            "tone": "proud, emotional, premium, warm family pride, not cheesy",
+            "style": "deep navy, white, soft gold, elegant medical graduation stationery",
+            "language": "English",
+            "personal_note": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+            "memory_notes": [
+              "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+              "The family is proud of his discipline, patience, heart, and dedication.",
+              "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "back",
+              "prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            }
+          ]
+        }
+      },
+      "durationMs": 115
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "c9bd78e42ede4f68278d17189e71667ca5da5f1d8009054e117a9fce496e7daf",
+          "x-amz-date": "20260611T105936Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 185
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Manny\",\n    \"recipient\": \"Dad\",\n    \"relationship\": \"child to father\",\n    \"occasion\": \"Father's Day\",\n    \"tone\": \"warm, funny, sincere, practical love\",\n    \"style\": \"clean printable workshop illustration, blueprint details, golden yellow and green accents\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.\",\n    \"memory_notes\": [\n      \"Dad shows love by fixing the small things before anyone asks.\",\n      \"The card should feel printable, cheerful, and original.\",\n      \"Use tools as symbols, not a cluttered hardware-store scene.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.55,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 2980,
+        "body": {
+          "id": "id-1781175581445",
+          "object": "chat.completion",
+          "created": 1781175581,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [\n    \"Dad shows love by fixing the small things before anyone asks.\",\n    \"The card should feel printable, cheerful, and original.\",\n    \"Use tools as symbols, not a cluttered hardware-store scene.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"clean printable workshop illustration, golden yellow and green accents\",\n      \"body\": \"\",\n      \"headline\": \"Happy Father's Day, Dad!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background\"\n    },\n    {\n      \"art_direction\": \"clean printable workshop illustration, golden yellow and green accents\",\n      \"body\": \"Thanks for being the one who fixes everything.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background\"\n    },\n    {\n      \"art_direction\": \"clean printable workshop illustration, golden yellow and green accents\",\n      \"body\": \"Love you for being steady and reliable.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background\"\n    },\n    {\n      \"art_direction\": \"clean printable workshop illustration, golden yellow and green accents\",\n      \"body\": \"From Manny, your handy child.\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background\"\n    }\n  ]\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 4721
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "461571",
+        "byteLength": 461571
+      },
+      "durationMs": 12241
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-left",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "358423",
+        "byteLength": 358423
+      },
+      "durationMs": 11561
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-right",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "491705",
+        "byteLength": 491705
+      },
+      "durationMs": 11857
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "back",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "399389",
+        "byteLength": 399389
+      },
+      "durationMs": 11325
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "fe215a95968b59fbe799d449e8ac3b057374252246fc1deea93de148450b7feb",
+          "x-amz-date": "20260611T110030Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-front.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-fe215a95968b59fbe799d449e8ac3b057374252246fc1deea93de148450b7feb",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 386
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110030Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "461571",
+        "byteLength": 461571
+      },
+      "durationMs": 402
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "8a438a2a620d34a1a5e0be111109b95be501ed22a2ebdb358d28b39c0115667f",
+          "x-amz-date": "20260611T110031Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-left.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-8a438a2a620d34a1a5e0be111109b95be501ed22a2ebdb358d28b39c0115667f",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 218
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110031Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "358423",
+        "byteLength": 358423
+      },
+      "durationMs": 207
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "cdda698f99c8711326a69bf513aeaa3528cdd7c636da0f6856597bbd44eec834",
+          "x-amz-date": "20260611T110031Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-right.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-cdda698f99c8711326a69bf513aeaa3528cdd7c636da0f6856597bbd44eec834",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 212
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110031Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "491705",
+        "byteLength": 491705
+      },
+      "durationMs": 333
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "951406fe33e4edd282401313d2e2b7a0067f117e16fc2e79fc8badfb7201a257",
+          "x-amz-date": "20260611T110032Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-back.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-951406fe33e4edd282401313d2e2b7a0067f117e16fc2e79fc8badfb7201a257",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 215
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110032Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "399389",
+        "byteLength": 399389
+      },
+      "durationMs": 252
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "f754cc9cc17a7368b57dc075181bcbf05bed99df13d43c3c985b53c22f3124d7",
+          "x-amz-date": "20260611T110032Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-f754cc9cc17a7368b57dc075181bcbf05bed99df13d43c3c985b53c22f3124d7",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 222
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110033Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 5363,
+        "body": {
+          "draft_id": "ai-mq9dzaqh-dad",
+          "card_copy": {
+            "panels": [
+              {
+                "id": "front",
+                "headline": "Happy Father's Day, Dad!",
+                "body": "A card made with care.",
+                "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+                "image_prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Thinking of you",
+                "body": "Thanks for being the one who fixes everything.",
+                "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+                "image_prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-right",
+                "headline": "From the heart",
+                "body": "Love you for being steady and reliable.",
+                "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+                "image_prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "back",
+                "headline": "CustomCard",
+                "body": "From Manny, your handy child.",
+                "art_direction": "clean printable workshop illustration, golden yellow and green accents",
+                "image_prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              }
+            ],
+            "memory_citations": [
+              "Dad shows love by fixing the small things before anyone asks.",
+              "The card should feel printable, cheerful, and original.",
+              "Use tools as symbols, not a cluttered hardware-store scene."
+            ]
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 615450 chars>",
+              "revised_prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 477922 chars>",
+              "revised_prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 655630 chars>",
+              "revised_prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 532542 chars>",
+              "revised_prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "cloudflare-workers-ai-image",
+              "primary_adapter_id": "cloudflare-workers-ai-image",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 123
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "047faf2caed806f7c0b06d68d1c9bdb58bbf7086c2000b2b066c5bf468fa4d9b",
+          "x-amz-date": "20260611T110033Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-047faf2caed806f7c0b06d68d1c9bdb58bbf7086c2000b2b066c5bf468fa4d9b",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 188
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110033Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3274,
+        "body": {
+          "fixture": "dad-fix-anything",
+          "category": "Father's Day repair-themed card",
+          "competitor": {
+            "competitor": "Greetings Island",
+            "category": "Free template card maker",
+            "sourcePage": "https://www.greetingsisland.com/",
+            "localFile": "greetings-island-fathers-day-preview.jpeg",
+            "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "Dad",
+            "relationship": "child to father",
+            "occasion": "Father's Day",
+            "tone": "warm, funny, sincere, practical love",
+            "style": "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+            "language": "English",
+            "personal_note": "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+            "memory_notes": [
+              "Dad shows love by fixing the small things before anyone asks.",
+              "The card should feel printable, cheerful, and original.",
+              "Use tools as symbols, not a cluttered hardware-store scene."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "A cheerful, golden yellow and green illustration of a toolbox with a hammer and screwdriver, surrounded by a blue circle with a smile, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "A stylized illustration of a screwdriver and a wrench, surrounded by a few loose screws and a small blue circle, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "A stylized illustration of a level and a small blue circle, surrounded by a few tools and a blue line, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "back",
+              "prompt": "A stylized illustration of a toolbox with a blue circle and a few tools, on a premium 5x7 vertical greeting card background No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            }
+          ]
+        }
+      },
+      "durationMs": 113
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "adf54f47b209dce9e28e1bbe7f49c8ba9553f2710e85f531e08e8cf6db486c57",
+          "x-amz-date": "20260611T110033Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 199
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, stationery illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"For each image_prompt include: premium 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, no people/no hands, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Manny\",\n    \"recipient\": \"Sara\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, grateful, relaxed, quietly joyful\",\n    \"style\": \"botanical watercolor, morning light, cream paper, deep green accents\",\n    \"language\": \"English\",\n    \"personal_note\": \"She loves morning hikes, coffee, and the fern by her kitchen window.\",\n    \"memory_notes\": [\n      \"She keeps a fern by the kitchen window.\",\n      \"She loves morning hikes and tiny trail flowers.\",\n      \"The birthday card should feel personal without feeling overly sentimental.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.55,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3200,
+        "body": {
+          "id": "id-1781175637169",
+          "object": "chat.completion",
+          "created": 1781175637,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"warm, grateful, relaxed, quietly joyful\",\n      \"body\": \"Wishing you a birthday as bright as the morning sun and as lush as the fern by your kitchen window.\",\n      \"headline\": \"Happy Birthday, Sara!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper\"\n    },\n    {\n      \"art_direction\": \"warm, grateful, relaxed, quietly joyful\",\n      \"body\": \"May your special day be filled with the simple joys of life: a warm cup of coffee, a gentle breeze, and the beauty of nature.\",\n      \"headline\": \"Wishing You a Joyful Birthday!\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper\"\n    },\n    {\n      \"art_direction\": \"warm, grateful, relaxed, quietly joyful\",\n      \"body\": \"Here's to another year of exploring the great outdoors, sipping coffee, and appreciating the little things in life.\",\n      \"headline\": \"Cheers to Another Year!\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper\"\n    },\n    {\n      \"art_direction\": \"warm, grateful, relaxed, quietly joyful\",\n      \"body\": \"Thank you for being an amazing friend and for sharing your love of nature with me.\",\n      \"headline\": \"Thank You for Being You!\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene\",\n      \"image_prompt\": \"a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper\"\n    }\n  ]\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 3402
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "557284",
+        "byteLength": 557284
+      },
+      "durationMs": 11802
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-left",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "564494",
+        "byteLength": 564494
+      },
+      "durationMs": 11903
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-right",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "604661",
+        "byteLength": 604661
+      },
+      "durationMs": 12001
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+          "negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "back",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "539119",
+        "byteLength": 539119
+      },
+      "durationMs": 12157
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e8d1dbf0c0e68a8e490b5d52db20aac52435b4f98ea91063b68133ea5d4e78b2",
+          "x-amz-date": "20260611T110127Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-front.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-e8d1dbf0c0e68a8e490b5d52db20aac52435b4f98ea91063b68133ea5d4e78b2",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 334
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-front.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110127Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "557284",
+        "byteLength": 557284
+      },
+      "durationMs": 319
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "6e9c40114c16060a56da4b10cabdb801633fd8e232541df7926cbc52045676fe",
+          "x-amz-date": "20260611T110127Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-left.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-6e9c40114c16060a56da4b10cabdb801633fd8e232541df7926cbc52045676fe",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 260
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-inside-left.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110128Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "564494",
+        "byteLength": 564494
+      },
+      "durationMs": 214
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "5bcf4b1dff01a86be739d76c0b69bbaa14bb978093f8b25a4a260b8cdaf4cc02",
+          "x-amz-date": "20260611T110128Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-inside-right.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-5bcf4b1dff01a86be739d76c0b69bbaa14bb978093f8b25a4a260b8cdaf4cc02",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 301
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-inside-right.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110128Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "604661",
+        "byteLength": 604661
+      },
+      "durationMs": 185
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e1b29a13ec4a025a59e2a153989baf6eb425fa7cd0f53047a68cd44a47a00949",
+          "x-amz-date": "20260611T110128Z",
+          "content-type": "image/png",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "provider-back.png",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-e1b29a13ec4a025a59e2a153989baf6eb425fa7cd0f53047a68cd44a47a00949",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 286
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/provider-back.png",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110129Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "539119",
+        "byteLength": 539119
+      },
+      "durationMs": 215
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "847979f0bff7a9b65c76b0b4ddbfde080b091f39bab924e50063424cfdec6031",
+          "x-amz-date": "20260611T110129Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-847979f0bff7a9b65c76b0b4ddbfde080b091f39bab924e50063424cfdec6031",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 247
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110129Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 5699,
+        "body": {
+          "draft_id": "ai-mq9e0iem-sara",
+          "card_copy": {
+            "panels": [
+              {
+                "id": "front",
+                "headline": "Happy Birthday, Sara!",
+                "body": "Wishing you a birthday as bright as the morning sun and as lush as the fern by your kitchen window.",
+                "art_direction": "warm, grateful, relaxed, quietly joyful",
+                "image_prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Wishing You a Joyful Birthday!",
+                "body": "May your special day be filled with the simple joys of life: a warm cup of coffee, a gentle breeze, and the beauty of nature.",
+                "art_direction": "warm, grateful, relaxed, quietly joyful",
+                "image_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "inside-right",
+                "headline": "Cheers to Another Year!",
+                "body": "Here's to another year of exploring the great outdoors, sipping coffee, and appreciating the little things in life.",
+                "art_direction": "warm, grateful, relaxed, quietly joyful",
+                "image_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              },
+              {
+                "id": "back",
+                "headline": "Thank You for Being You!",
+                "body": "Thank you for being an amazing friend and for sharing your love of nature with me.",
+                "art_direction": "warm, grateful, relaxed, quietly joyful",
+                "image_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper",
+                "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+              }
+            ],
+            "memory_citations": []
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 743070 chars>",
+              "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 752682 chars>",
+              "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 806238 chars>",
+              "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 718850 chars>",
+              "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "cloudflare-workers-ai-image",
+              "primary_adapter_id": "cloudflare-workers-ai-image",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 112
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "daf0dd796c071e6aa434f8790bac8581e813364084cec0e1022cdbf28d0cf4b8",
+          "x-amz-date": "20260611T110129Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-daf0dd796c071e6aa434f8790bac8581e813364084cec0e1022cdbf28d0cf4b8",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 213
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260611T110129Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3344,
+        "body": {
+          "fixture": "botanical-birthday",
+          "category": "Personalized botanical birthday card",
+          "competitor": {
+            "competitor": "Hallmark",
+            "category": "Personalized physical card catalog",
+            "sourcePage": "https://www.hallmark.com/customized-cards/",
+            "localFile": "hallmark-custom-birthday-category.jpg",
+            "sha256": "6c4f6f6332f300cf3f4012d45c7436545393be7199988441cbdbf37b9ecf4d7c"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "Sara",
+            "relationship": "friend",
+            "occasion": "birthday",
+            "tone": "warm, grateful, relaxed, quietly joyful",
+            "style": "botanical watercolor, morning light, cream paper, deep green accents",
+            "language": "English",
+            "personal_note": "She loves morning hikes, coffee, and the fern by her kitchen window.",
+            "memory_notes": [
+              "She keeps a fern by the kitchen window.",
+              "She loves morning hikes and tiny trail flowers.",
+              "The birthday card should feel personal without feeling overly sentimental."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            },
+            {
+              "panelId": "back",
+              "prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+              "negativePrompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, desk scene"
+            }
+          ]
+        }
+      },
+      "durationMs": 94
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-botanical-birthday/render-packets/rp-botanical-birthday-2026-06-11T10-57-35-283Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "fe649884d9a0316384e313f3b9fdcddaa77405d2062bbd01cd68514e6539aec1",
+          "x-amz-date": "20260611T110129Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-botanical-birthday",
+          "x-amz-meta-renderpacketid": "rp-botanical-birthday-2026-06-11T10-57-35-283Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 158
+    }
+  ]
+}

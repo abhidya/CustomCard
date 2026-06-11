@@ -1,0 +1,106 @@
+{
+  "draft_id": "ai-mq9e0iem-sara",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Birthday, Sara!",
+        "body": "Wishing you a birthday as bright as the morning sun and as lush as the fern by your kitchen window.",
+        "art_direction": "warm, grateful, relaxed, quietly joyful",
+        "image_prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Wishing You a Joyful Birthday!",
+        "body": "May your special day be filled with the simple joys of life: a warm cup of coffee, a gentle breeze, and the beauty of nature.",
+        "art_direction": "warm, grateful, relaxed, quietly joyful",
+        "image_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Cheers to Another Year!",
+        "body": "Here's to another year of exploring the great outdoors, sipping coffee, and appreciating the little things in life.",
+        "art_direction": "warm, grateful, relaxed, quietly joyful",
+        "image_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "Thank You for Being You!",
+        "body": "Thank you for being an amazing friend and for sharing your love of nature with me.",
+        "art_direction": "warm, grateful, relaxed, quietly joyful",
+        "image_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 743070 chars>",
+      "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a serene botanical watercolor scene of a fern in a delicate morning light with deep green accents on cream paper No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 752682 chars>",
+      "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a trail with tiny wildflowers and a few morning clouds on a light blue background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 806238 chars>",
+      "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor scene of a serene forest with a winding path, dappled light, and a few ferns on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 718850 chars>",
+      "revised_prompt": "a premium 5x7 vertical greeting card panel featuring a watercolor illustration of a fern with a few coffee cups and a book on a small table on a soft green background with a subtle texture resembling rough paper No readable text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

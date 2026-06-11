@@ -12,6 +12,7 @@ import {
   type VendorId
 } from "../src/customerWorkflow";
 import { buildPanelSvgExportFile, type PrintExportFile } from "../src/printExport";
+import { generatedLegalDocumentLinks } from "../src/legalCompliance";
 import {
   initialViewFromLocation,
   reviewerReferenceDate,
@@ -29,7 +30,6 @@ import {
   getAdminTargetLabel,
   isAdminRoute,
   isBusinessRoute,
-  isLegalRoute,
   resolveActiveCustomerNavView,
   resolveVisibleCustomerView,
   shouldRenderCustomerNav,
@@ -115,7 +115,6 @@ export default function App() {
   } = state;
 
   const isAdminView = isAdminRoute(activeView);
-  const isLegalView = isLegalRoute(activeView);
   const isBusinessView = isBusinessRoute(activeView);
   const visibleCustomerView = resolveVisibleCustomerView(activeView);
   const visibleNavView = resolveActiveCustomerNavView(activeView);
@@ -414,10 +413,16 @@ export default function App() {
               />
             }
             adaptersPanel={<AdaptersView runtimeReadiness={runtimeReadiness} />}
+            legalPanel={
+              <LegalView
+                items={readiness.legalCompliance.items}
+                summary={readiness.legalCompliance.summary}
+              />
+            }
           />
         ) : null}
 
-        {!isAdminView && !isLegalView && !isBusinessView && visibleCustomerView === "customer" ? (
+        {!isAdminView && !isBusinessView && visibleCustomerView === "customer" ? (
           <HomeView
             canPrint={canPrintFromHome}
             draft={displayDraft}
@@ -489,14 +494,9 @@ export default function App() {
             printPackage={printPackage}
           />
         ) : null}
-
-        {!isAdminView && isLegalView ? (
-          <LegalView
-            items={readiness.legalCompliance.items}
-            summary={readiness.legalCompliance.summary}
-          />
-        ) : null}
       </main>
+
+      <AppFooter />
 
       {shouldShowCustomerCta(activeView) ? <div className="ctadock">
         <span className="ctadock-progress" aria-hidden="true">
@@ -695,12 +695,14 @@ function AdminRoute({
   access,
   activeView,
   adminPanel,
-  adaptersPanel
+  adaptersPanel,
+  legalPanel
 }: {
   access: AdminAccess;
   activeView: ViewId;
   adminPanel: ReactNode;
   adaptersPanel: ReactNode;
+  legalPanel: ReactNode;
 }) {
   if (!canEnterAdminSurface(access)) {
     return <AdminGate access={access} target={getAdminTargetLabel(activeView)} />;
@@ -720,9 +722,27 @@ function AdminRoute({
         </div>
       </div>
       <div className="adminLegacySurface">
-        {activeView === "adapters" ? adaptersPanel : adminPanel}
+        {activeView === "adapters" ? adaptersPanel : activeView === "legal" ? legalPanel : adminPanel}
       </div>
     </section>
+  );
+}
+
+function AppFooter() {
+  return (
+    <footer className="appFooter" aria-label="Generated legal documents">
+      <div>
+        <strong>Generated legal docs</strong>
+        <span>Drafted for CustomCard's current no-live-order, review-required posture.</span>
+      </div>
+      <nav aria-label="Generated legal document links">
+        {generatedLegalDocumentLinks.map((link) => (
+          <a href={link.path} key={link.id}>
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    </footer>
   );
 }
 

@@ -1,0 +1,110 @@
+{
+  "draft_id": "ai-mq9dy29s-my-brother",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "From Dream to Doctor",
+        "body": "A card made with care.",
+        "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+        "image_prompt": "A premium 5x7 vertical greeting card front with a white graduation cap on top of a soft gold stethoscope, placed on a deep navy blue background with elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thinking of you",
+        "body": "Years of discipline and patience have paid off. You've earned your white coat and the respect of your peers.",
+        "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+        "image_prompt": "A premium 5x7 vertical greeting card inside-left with a white stethoscope on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From the heart",
+        "body": "We're proud of the doctor you've become. Your heart, dedication, and perseverance inspire us all.",
+        "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+        "image_prompt": "A premium 5x7 vertical greeting card inside-right with a white coat on a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      },
+      {
+        "id": "back",
+        "headline": "CustomCard",
+        "body": "Congratulations on your medical school graduation! We love you more than words can say.",
+        "art_direction": "Deep navy, white, and soft gold color palette. Elegant medical graduation stationery style.",
+        "image_prompt": "A premium 5x7 vertical greeting card back with a soft gold graduation cap on top of a deep navy blue background, surrounded by elegant anatomy sketch lines and ECG line patterns, no people/no hands.",
+        "image_negative_prompt": "readable text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene"
+      }
+    ],
+    "memory_citations": [
+      "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+      "The family is proud of his discipline, patience, heart, and dedication.",
+      "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 704070 chars>",
+      "revised_prompt": "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 958806 chars>",
+      "revised_prompt": "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 535302 chars>",
+      "revised_prompt": "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 416650 chars>",
+      "revised_prompt": "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area. Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line. Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}
