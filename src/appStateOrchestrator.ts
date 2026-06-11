@@ -135,7 +135,14 @@ export function useAppState(): AppState {
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => {
     try {
       const raw = localStorage.getItem(reviewerWorkspaceKey);
-      return raw ? (JSON.parse(raw) as LocalWorkspace) : undefined;
+      const stored = raw ? (JSON.parse(raw) as LocalWorkspace) : undefined;
+      // Workspaces created by the old prefilled reviewer identity are demo
+      // artifacts, not customer data — clear them once on load.
+      if (stored && stored.name === "Abdul" && stored.email === "abdul@customcard.local") {
+        localStorage.removeItem(reviewerWorkspaceKey);
+        return undefined;
+      }
+      return stored;
     } catch {
       return undefined;
     }

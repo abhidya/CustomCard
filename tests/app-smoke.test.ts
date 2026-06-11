@@ -196,7 +196,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toBe("CustomCard");
     expect(result.opportunityText).toContain("Saved in this browser");
     expect(result.opportunityText).toContain("Anniversary card for Sara and Ahmed");
-    expect(result.studioText).toContain("Card draft");
+    expect(result.studioText).toContain("Make it theirs");
+    expect(result.studioText).toContain("For Sara and Ahmed");
     expect(result.panelCount).toBe(4);
     expect(result.validationRows.join(" ")).toContain("5x7 print size");
     expect(result.validationRows.join(" ")).toContain("No paid services");
@@ -322,11 +323,15 @@ describeWithChrome("CustomCard UI smoke", () => {
         };
 
         const customer = inspectRoute();
+        window.history.pushState({}, "", "?view=studio");
+        window.dispatchEvent(new PopStateEvent("popstate"));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const studio = inspectRoute();
         window.history.pushState({}, "", "?view=mobile");
         window.dispatchEvent(new PopStateEvent("popstate"));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         const mobile = inspectRoute();
-        return { customer, mobile };
+        return { customer, studio, mobile };
       })()`
     );
 
@@ -335,10 +340,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.customer.navLabeled).toBe(true);
     expect(result.customer.mainExists).toBe(true);
     expect(result.customer.checkoutStatusLabeled).toBe(true);
-    expect(result.customer.chatComposerLabeled).toBe(true);
     expect(result.customer.missingNames).toEqual([]);
     expect(result.customer.focusableControls.length).toBeGreaterThan(3);
     expect(result.customer.headingLevels[0]).toBe("h1");
+    expect(result.studio.chatComposerLabeled).toBe(true);
+    expect(result.studio.headingLevels[0]).toBe("h1");
     expect(result.mobile.mobileShellLabeled).toBe(true);
     expect(result.mobile.mobileSummaryLabeled).toBe(true);
     expect(result.mobile.mobileSafeguardsLabeled).toBe(true);
@@ -485,30 +491,14 @@ describeWithChrome("CustomCard UI smoke", () => {
         };
 
         const initialCustomerText = document.body.textContent;
+        const initialOccasionChips = [...document.querySelectorAll(".occasionChip")].map((node) => node.textContent);
         const initialJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
         const initialPrimaryActions = document.querySelectorAll('.journeyAction.primary[data-action-priority="primary"]').length;
         const initialSupportingActions = [...document.querySelectorAll(".supportingAction")].map((node) => node.textContent);
-        const initialCalendarText = document.querySelector('[aria-label="Calendar onboarding choices"]')?.textContent;
-        const initialCalendarChoices = [...document.querySelectorAll(".calendarChoice")].map((node) => ({
-          text: node.textContent,
-          status: node.querySelector("em")?.textContent,
-          className: node.className,
-          startMode: node.getAttribute("data-start-mode"),
-          startRoute: node.getAttribute("data-start-route"),
-          nextRoute: node.getAttribute("data-next-route"),
-          clientProviderRequest: node.getAttribute("data-client-provider-request")
-        }));
         const initialPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
           node.getAttribute("placeholder")
         );
         const initialSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
-        const chatComposer = document.querySelector('textarea[aria-label="Customer chat message"]');
-        if (!chatComposer) throw new Error("Missing customer chat composer");
-        const setChatValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-        setChatValue.call(chatComposer, "Can you keep this personal and avoid automatic checkout?");
-        chatComposer.dispatchEvent(new Event("input", { bubbles: true }));
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await clickByText("Send");
         const setupName = document.querySelector("#setupName");
         if (!setupName) throw new Error("Missing setup name input");
         const setNameValue = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
@@ -525,7 +515,30 @@ describeWithChrome("CustomCard UI smoke", () => {
         );
         const workspaceSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
         await clickByText("Review event");
+        const eventsText = document.body.textContent;
+        const eventsCalendarText = document.querySelector('[aria-label="Calendar onboarding choices"]')?.textContent;
+        const eventsCalendarChoices = [...document.querySelectorAll(".calendarChoice")].map((node) => ({
+          text: node.textContent,
+          status: node.querySelector("em")?.textContent,
+          className: node.className,
+          startMode: node.getAttribute("data-start-mode"),
+          startRoute: node.getAttribute("data-start-route"),
+          nextRoute: node.getAttribute("data-next-route"),
+          clientProviderRequest: node.getAttribute("data-client-provider-request")
+        }));
         await clickByText("Generate card");
+        const chatComposer = document.querySelector('textarea[aria-label="Customer chat message"]');
+        if (!chatComposer) throw new Error("Missing customer chat composer in studio");
+        const setChatValue = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+        setChatValue.call(chatComposer, "Can you keep this personal and avoid automatic checkout?");
+        chatComposer.dispatchEvent(new Event("input", { bubbles: true }));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await clickByText("Send");
+        const studioText = document.body.textContent;
+        const chatBubbles = document.querySelectorAll(".chatBubble").length;
+        const studioPlaceholders = [...document.querySelectorAll("input[placeholder], textarea[placeholder]")].map((node) =>
+          node.getAttribute("placeholder")
+        );
         await clickByText("Your cards");
         const reviewedCustomerText = document.body.textContent;
         const reviewedJourneyActions = [...document.querySelectorAll(".journeyAction")].map((node) => node.textContent);
@@ -535,17 +548,15 @@ describeWithChrome("CustomCard UI smoke", () => {
           node.getAttribute("placeholder")
         );
         const reviewedSupportingPrimaryActions = document.querySelectorAll('.supportingAction[data-action-priority="primary"]').length;
-        const chatBubbles = document.querySelectorAll(".chatBubble").length;
         window.history.pushState({}, "", "?view=admin&ops=1");
         window.dispatchEvent(new PopStateEvent("popstate"));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         return {
           initialCustomerText,
+          initialOccasionChips,
           initialJourneyActions,
           initialPrimaryActions,
           initialSupportingActions,
-          initialCalendarText,
-          initialCalendarChoices,
           initialSupportingPrimaryActions,
           initialPlaceholders,
           workspaceText,
@@ -554,13 +565,18 @@ describeWithChrome("CustomCard UI smoke", () => {
           workspaceSupportingActions,
           workspaceSupportingPrimaryActions,
           workspacePlaceholders,
+          eventsText,
+          eventsCalendarText,
+          eventsCalendarChoices,
+          studioText,
+          studioPlaceholders,
+          chatBubbles,
           reviewedCustomerText,
           reviewedJourneyActions,
           reviewedPrimaryActions,
           reviewedSupportingActions,
           reviewedSupportingPrimaryActions,
           reviewedPlaceholders,
-          chatBubbles,
           adminText: document.body.textContent,
           metricCount: document.querySelectorAll(".toolPanel .metric, .adminHeroRow .heroSubStats span").length,
           gatedRows: document.querySelectorAll(".adapterMini.credential-gated").length,
@@ -571,17 +587,44 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.initialCustomerText).toContain("Your cards");
-    expect(result.initialCustomerText).toContain("Who is the card for?");
-    expect(result.initialCustomerText).toContain("Birthday");
+    expect(result.initialCustomerText).toContain("Pick the occasion");
+    expect(result.initialOccasionChips.join(" ")).toContain("Birthday");
+    expect(result.initialOccasionChips.join(" ")).toContain("Sympathy");
     expect(result.initialCustomerText).toContain("Create private workspace");
     expect(result.initialCustomerText).toContain("Create local workspace");
     expect(result.initialCustomerText).toContain("Import an invite");
-    expect(result.initialCustomerText).toContain("Google Calendar connection");
-    expect(result.initialCustomerText).toContain("Apple Calendar ICS export");
-    expect(result.initialCustomerText).toContain("Coming soon");
+    expect(result.initialCustomerText).toContain("Private by design");
     expect(result.initialCustomerText).not.toContain("Continue with Google");
-    expect(result.initialCustomerText).not.toContain("Continue with Apple");
-    expect(result.initialCalendarChoices).toEqual([
+    expect(result.initialCustomerText).not.toContain("Google Calendar connection");
+    expect(result.initialCustomerText).not.toContain("Personal card workflow");
+    expect(result.initialCustomerText).not.toContain("Card assistant");
+    expect(result.initialCustomerText).not.toContain("Compare print options");
+    expect(result.initialCustomerText).not.toContain("Best available options");
+    expect(result.initialCustomerText).not.toContain("Cheapest known price");
+    expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
+    expect(result.initialJourneyActions).toHaveLength(1);
+    expect(result.initialPrimaryActions).toBe(1);
+    expect(result.initialSupportingActions.join(" ")).toContain("Import an invite");
+    expect(result.initialSupportingPrimaryActions).toBe(0);
+    expect(result.workspaceText).toContain("Workspace ready");
+    expect(result.workspaceText).toContain("Coming up");
+    expect(result.workspaceText).toContain("Review event");
+    expect(result.workspaceText).not.toContain("Compare print options");
+    expect(result.workspaceText).not.toContain("Best available options");
+    expect(result.workspaceText).not.toContain("Cheapest known price");
+    expect(result.workspaceJourneyActions.join(" ")).toContain("Review event");
+    expect(result.workspaceJourneyActions).toHaveLength(1);
+    expect(result.workspacePrimaryActions).toBe(1);
+    expect(result.workspaceSupportingActions.join(" ")).toContain("Add memory");
+    expect(result.workspaceSupportingPrimaryActions).toBe(0);
+    expect(result.eventsText).toContain("Add event details");
+    expect(result.eventsText).toContain("Where events can come from");
+    expect(result.eventsCalendarText).toContain("Google Calendar connection");
+    expect(result.eventsCalendarText).toContain("Apple Calendar ICS export");
+    expect(result.eventsCalendarText).not.toContain("Continue with Google");
+    expect(result.eventsCalendarText).not.toContain("Continue with Apple");
+    expect(result.eventsCalendarText).not.toContain("Future calendar sync");
+    expect(result.eventsCalendarChoices).toEqual([
       expect.objectContaining({
         className: expect.stringContaining("ready-local"),
         status: "Available now",
@@ -600,32 +643,16 @@ describeWithChrome("CustomCard UI smoke", () => {
         )
       })
     ]);
-    expect(result.initialCalendarText).toContain("Google Calendar connection");
-    expect(result.initialCalendarText).toContain("Apple Calendar ICS export");
-    expect(result.initialCalendarText).not.toContain("Continue with Google");
-    expect(result.initialCalendarText).not.toContain("Continue with Apple");
-    expect(result.initialCalendarText).not.toContain("Future calendar sync");
-    expect(result.initialCustomerText).toContain("Print options after proof");
-    expect(result.initialCustomerText).not.toContain("Compare print options");
-    expect(result.initialCustomerText).not.toContain("Best available options");
-    expect(result.initialCustomerText).not.toContain("Cheapest known price");
-    expect(result.initialJourneyActions.join(" ")).toContain("Create local workspace");
-    expect(result.initialJourneyActions).toHaveLength(1);
-    expect(result.initialPrimaryActions).toBe(1);
-    expect(result.initialSupportingActions.join(" ")).toContain("Import an invite");
-    expect(result.initialSupportingPrimaryActions).toBe(0);
-    expect(result.workspaceText).toContain("Workspace ready");
-    expect(result.workspaceText).toContain("Review event");
-    expect(result.workspaceText).not.toContain("Compare print options");
-    expect(result.workspaceText).not.toContain("Best available options");
-    expect(result.workspaceText).not.toContain("Cheapest known price");
-    expect(result.workspaceText).not.toContain("Review and make card");
-    expect(result.workspaceJourneyActions.join(" ")).toContain("Review event");
-    expect(result.workspaceJourneyActions.join(" ")).not.toContain("Make card");
-    expect(result.workspaceJourneyActions).toHaveLength(1);
-    expect(result.workspacePrimaryActions).toBe(1);
-    expect(result.workspaceSupportingActions.join(" ")).toContain("Add memory");
-    expect(result.workspaceSupportingPrimaryActions).toBe(0);
+    expect(result.studioText).toContain("Make it theirs");
+    expect(result.studioText).toContain("Card assistant");
+    expect(result.studioText).toContain("Private local replies");
+    expect(result.studioText).toContain("Runs in this browser");
+    expect(result.studioText).toContain("No outside transcript");
+    expect(result.studioText).toContain("This reply stayed local and did not store an outside transcript.");
+    expect(result.studioText).toContain("Card language");
+    expect(result.studioText).toContain("Ar EG");
+    expect(result.studioText).not.toContain("Language readiness");
+    expect(result.chatBubbles).toBeGreaterThanOrEqual(2);
     expect(result.reviewedCustomerText).toContain("Best available options");
     expect(result.reviewedCustomerText).toContain("Lowest current estimate");
     expect(result.reviewedCustomerText).toContain("Estimate only");
@@ -639,11 +666,6 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.reviewedSupportingActions.join(" ")).not.toContain("Compare print options");
     expect(result.reviewedSupportingActions.join(" ")).toContain("Add memory");
     expect(result.reviewedSupportingPrimaryActions).toBe(0);
-    expect(result.reviewedCustomerText).toContain("Card assistant");
-    expect(result.reviewedCustomerText).toContain("Private local replies");
-    expect(result.reviewedCustomerText).toContain("Runs in this browser");
-    expect(result.reviewedCustomerText).toContain("No outside transcript");
-    expect(result.reviewedCustomerText).toContain("This reply stayed local and did not store an outside transcript.");
     expect(result.reviewedCustomerText).not.toContain("provider adapters gated");
     expect(result.reviewedCustomerText).not.toContain("No live model call");
     for (const customerSnapshot of [
@@ -651,15 +673,12 @@ describeWithChrome("CustomCard UI smoke", () => {
       result.initialPlaceholders.join(" "),
       result.workspaceText,
       result.workspacePlaceholders.join(" "),
+      result.studioPlaceholders.join(" "),
       result.reviewedCustomerText,
       result.reviewedPlaceholders.join(" ")
     ]) {
       expect(customerSnapshot).not.toMatch(customerVisibleImplementationTermPattern);
     }
-    expect(result.reviewedCustomerText).not.toContain("Language readiness");
-    expect(result.reviewedCustomerText).toContain("Card language");
-    expect(result.reviewedCustomerText).toContain("Ar EG");
-    expect(result.chatBubbles).toBeGreaterThanOrEqual(2);
     expect(result.adminText).toContain("Admin panel");
     expect(result.adminText).toContain("Integration owner workflow");
     expect(result.adminText).toContain("Credential vault setup");

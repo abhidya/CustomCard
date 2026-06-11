@@ -154,6 +154,7 @@ describe("free MVP workflow", () => {
     workspace = recordCardExport(workspace, draft, now);
     expect(workspace.cardHistory).toHaveLength(1);
     expect(workspace.cardHistory?.[0]?.title).toBe("Anniversary card for Sara and Ahmed");
+    expect(workspace.cardHistory?.[0]?.frontSvg).toContain("<svg");
 
     for (let index = 0; index < 15; index += 1) {
       const altDraft = { ...draft, id: `draft-${index}` };

@@ -1,10 +1,25 @@
 :root {
-  color: #1e2529;
-  background: #f3f6f7;
+  /* Warm stationery palette */
+  --paper: #f6f1e7;
+  --paper-deep: #efe7d8;
+  --card-face: #fffdf8;
+  --ink: #2b251c;
+  --ink-soft: #6b6354;
+  --ink-faint: #978d7a;
+  --hairline: #e3dac7;
+  --terracotta: #c2543c;
+  --terracotta-deep: #a8462f;
+  --sage: #5d7a6c;
+  --butter: #f3c84d;
+  --rail-ink: #221d15;
+  --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+
+  color: var(--ink);
+  background: var(--paper);
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Avenir Next", Avenir, Seravek, "Gill Sans", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
-  line-height: 1.45;
+  line-height: 1.5;
   text-rendering: optimizeLegibility;
 }
 
@@ -18,10 +33,15 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    linear-gradient(90deg, rgba(49, 91, 125, 0.08) 1px, transparent 1px),
-    linear-gradient(rgba(37, 132, 119, 0.06) 1px, transparent 1px),
-    #f3f6f7;
-  background-size: 28px 28px;
+    radial-gradient(1100px 480px at 85% -8%, rgba(243, 200, 77, 0.13), transparent 62%),
+    radial-gradient(900px 520px at -12% 14%, rgba(93, 122, 108, 0.1), transparent 58%),
+    radial-gradient(rgba(43, 37, 28, 0.028) 1px, transparent 1.4px),
+    var(--paper);
+  background-size:
+    auto,
+    auto,
+    7px 7px,
+    auto;
 }
 
 button,
@@ -94,9 +114,9 @@ textarea {
   gap: 18px;
   height: 100vh;
   padding: 16px 12px;
-  color: #ecf3f1;
-  background: #172927;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1ebdd;
+  background: var(--rail-ink);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .brandBlock,
@@ -246,22 +266,25 @@ textarea {
 .appMain {
   min-width: 0;
   max-width: 100vw;
-  padding: 20px;
+  padding: 18px clamp(16px, 4vw, 40px) 40px;
   overflow-x: hidden;
 }
 
 .topBar {
   justify-content: space-between;
+  align-items: center;
   gap: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .eyebrow {
   margin: 0 0 4px;
-  color: #65747a;
-  font-size: 0.74rem;
-  font-weight: 850;
-  letter-spacing: 0;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -274,10 +297,12 @@ p {
 
 h1 {
   margin: 0;
-  color: #172124;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-  line-height: 0.95;
-  letter-spacing: 0;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 h2,
@@ -288,7 +313,8 @@ h3 {
 }
 
 h2 {
-  font-size: clamp(1.22rem, 2.2vw, 1.75rem);
+  font-family: var(--serif);
+  font-size: clamp(1.22rem, 2.2vw, 1.6rem);
 }
 
 h3 {
@@ -464,10 +490,10 @@ h3 {
 .fulfillmentRecommendation,
 .chatConsole {
   min-width: 0;
-  border: 1px solid #d5dee0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 12px 28px rgba(28, 47, 55, 0.08);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--card-face);
+  box-shadow: 0 1px 2px rgba(43, 37, 28, 0.05), 0 14px 34px rgba(43, 37, 28, 0.07);
 }
 
 .toolPanel,
@@ -3087,10 +3113,10 @@ h3 {
 
 .eyebrow {
   font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #617178;
+  color: var(--ink-faint);
 }
 
 /* ─── Responsive: adminHeroRow stacking ───────────────────────────────────── */
@@ -3234,97 +3260,346 @@ a:focus-visible {
   line-height: 1.45;
 }
 
-/* ─── Occasion-first start card ─────────────────────────────────────────────── */
+/* ─── Home: warm stationery shell ───────────────────────────────────────────── */
 
-.occasionStartCard,
-.recentCardsCard {
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid #d5dee0;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 12px 28px rgba(28, 47, 55, 0.08);
+.homeView {
+  display: grid;
+  gap: 22px;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
-.occasionStartCard.wide,
-.recentCardsCard.wide {
-  grid-column: 1 / -1;
+.homeHero {
+  padding: clamp(18px, 4vw, 30px) 4px 4px;
+}
+
+.heroKicker {
+  margin: 0 0 6px;
+  color: var(--terracotta);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.04;
+  color: var(--ink);
+}
+
+.heroTitle em {
+  font-style: italic;
+  color: var(--terracotta);
+}
+
+.heroSub {
+  margin: 8px 0 18px;
+  color: var(--ink-soft);
+  font-size: 1rem;
 }
 
 .occasionChipRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 9px;
+  margin-bottom: 12px;
 }
 
 .occasionChip {
-  min-height: 40px;
-  padding: 9px 16px;
-  border: 1px solid #cdd9d6;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--hairline);
   border-radius: 999px;
-  background: #f4faf8;
-  color: #1d3b35;
-  font-size: 0.86rem;
-  font-weight: 850;
+  background: var(--card-face);
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(43, 37, 28, 0.06);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
 .occasionChip:hover {
-  border-color: #258477;
-  background: #e3f3ec;
+  transform: translateY(-1px);
+  border-color: var(--terracotta);
+  box-shadow: 0 6px 16px rgba(43, 37, 28, 0.12);
 }
+
+.occasionDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+
+.occasionChip[data-occasion="birthday"] .occasionDot { background: #e2a93b; }
+.occasionChip[data-occasion="anniversary"] .occasionDot { background: #c25c69; }
+.occasionChip[data-occasion="wedding"] .occasionDot { background: #9277a8; }
+.occasionChip[data-occasion="thank-you"] .occasionDot { background: #5d7a6c; }
+.occasionChip[data-occasion="graduation"] .occasionDot { background: #4a7d9e; }
+.occasionChip[data-occasion="sympathy"] .occasionDot { background: #8e8675; }
 
 .occasionImportLink {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   min-height: 40px;
-  padding: 6px 8px;
+  padding: 4px 2px;
   border: 0;
   background: transparent;
-  color: #1f6f60;
-  font-size: 0.8rem;
-  font-weight: 820;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
   text-decoration: underline;
+  text-decoration-color: var(--ink-faint);
+  text-underline-offset: 3px;
 }
 
-/* ─── Saved event queue ─────────────────────────────────────────────────────── */
+.occasionImportLink:hover {
+  color: var(--terracotta);
+}
+
+/* ─── Paper cards (setup / next step) ───────────────────────────────────────── */
+
+.paperCard {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--card-face);
+  box-shadow: 0 1px 2px rgba(43, 37, 28, 0.05), 0 14px 34px rgba(43, 37, 28, 0.07);
+}
+
+.setupCopy {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.setupCopy svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--sage);
+}
+
+.setupCopy h3 {
+  font-family: var(--serif);
+  font-size: 1.18rem;
+}
+
+.setupCopy p {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.journeyProgress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.progressStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--ink-faint);
+  background: var(--paper-deep);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.progressStep::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+
+.progressStep.complete {
+  color: #41614f;
+  background: #e4ecdf;
+}
+
+.progressStep.complete::before {
+  background: var(--sage);
+}
+
+.progressStep.current {
+  color: #fff;
+  background: var(--ink);
+}
+
+.progressStep.current::before {
+  background: var(--butter);
+}
+
+.nextStepBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.nextStepBody > div:first-child {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.nextStepBody h3 {
+  font-family: var(--serif);
+  font-size: 1.18rem;
+}
+
+.nextStepBody p {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.nextStepBody .journeyAction {
+  flex: 0 1 280px;
+  min-height: 0;
+}
+
+/* ─── Home sections ─────────────────────────────────────────────────────────── */
+
+.homeSection {
+  min-width: 0;
+}
+
+.homeSectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.homeSectionHeader h3 {
+  font-family: var(--serif);
+  font-size: 1.22rem;
+}
+
+.textButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--terracotta);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.textButton:hover {
+  color: var(--terracotta-deep);
+}
+
+.homeEmptyState {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px dashed var(--hairline);
+  border-radius: 14px;
+  background: rgba(255, 253, 248, 0.6);
+  color: var(--ink-soft);
+}
+
+.homeEmptyState svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ink-faint);
+}
+
+.homeEmptyState p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+/* ─── Coming up: saved events ───────────────────────────────────────────────── */
 
 .savedEventList {
   display: grid;
   gap: 8px;
-  margin-bottom: 12px;
 }
 
 .savedEventRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid #dbe4e6;
-  border-radius: 8px;
-  background: #f8fbfa;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--card-face);
+  box-shadow: 0 1px 2px rgba(43, 37, 28, 0.05);
 }
 
-.savedEventRow > div:first-child {
+.eventDateBubble {
   display: grid;
-  gap: 2px;
+  place-items: center;
+  flex: none;
+  min-width: 58px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border-radius: 11px;
+  background: var(--paper-deep);
+  color: var(--ink);
+}
+
+.eventDateBubble span {
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.liveEvent .eventDateBubble {
+  color: #6b4a12;
+  background: #f6e8c4;
+}
+
+.savedEventText {
+  flex: 1 1 180px;
+  display: grid;
+  gap: 1px;
   min-width: 0;
 }
 
-.savedEventRow strong,
-.savedEventRow span {
+.savedEventText strong,
+.savedEventText span {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.savedEventRow span {
-  color: #5f7076;
-  font-size: 0.75rem;
-  font-weight: 780;
+.savedEventText strong {
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+
+.savedEventText span {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 650;
 }
 
 .savedEventActions {
@@ -3334,34 +3609,202 @@ a:focus-visible {
   gap: 6px;
 }
 
-/* ─── Recent card history ───────────────────────────────────────────────────── */
+/* ─── Card thumbnails ───────────────────────────────────────────────────────── */
 
-.recentCardList {
+.cardThumbGrid {
   display: grid;
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 14px;
 }
 
-.recentCardRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 10px;
+.cardThumb {
+  position: relative;
+  display: grid;
+  gap: 7px;
   min-width: 0;
-  padding: 9px 12px;
-  border: 1px solid #dbe4e6;
-  border-radius: 8px;
-  background: #f8fbfa;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
 }
 
-.recentCardRow strong {
+.cardThumb img,
+.cardThumbFallback {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+  background: var(--card-face);
+  box-shadow: 0 2px 4px rgba(43, 37, 28, 0.08), 0 10px 22px rgba(43, 37, 28, 0.1);
+  object-fit: cover;
+  transform: rotate(-0.6deg);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.cardThumb:nth-child(even) img,
+.cardThumb:nth-child(even) .cardThumbFallback {
+  transform: rotate(0.7deg);
+}
+
+.cardThumb:hover img,
+.cardThumb:hover .cardThumbFallback {
+  transform: rotate(0deg) translateY(-3px);
+  box-shadow: 0 4px 8px rgba(43, 37, 28, 0.1), 0 16px 30px rgba(43, 37, 28, 0.14);
+}
+
+.cardThumbFallback {
+  display: grid;
+  place-items: center;
+  color: var(--terracotta);
+}
+
+.cardThumb figcaption {
+  display: grid;
+  gap: 1px;
   min-width: 0;
+}
+
+.cardThumb figcaption strong {
+  font-size: 0.8rem;
   overflow-wrap: anywhere;
 }
 
-.recentCardRow span {
-  color: #5f7076;
-  font-size: 0.75rem;
-  font-weight: 780;
+.cardThumb figcaption span {
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.cardThumb.inProgress {
+  grid-template-columns: minmax(0, 150px);
+  cursor: pointer;
+}
+
+.cardThumb.inProgress > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--terracotta);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+/* ─── Privacy footnote ──────────────────────────────────────────────────────── */
+
+.privacyFootnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 6px 0 0;
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+/* ─── Studio: card stage + assistant ────────────────────────────────────────── */
+
+@media (min-width: 1141px) {
+  .studioLayout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  }
+}
+
+.cardStage .panelGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.studioContinue {
+  margin-top: 14px;
+}
+
+.studioAssistant {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--paper-deep);
+}
+
+.assistantHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.assistantHeader h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+}
+
+.assistantHeader h3 svg {
+  color: var(--terracotta);
+}
+
+.assistantBadge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(43, 37, 28, 0.08);
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.studioAssistant .chatRuntimeLine span {
+  border-color: rgba(43, 37, 28, 0.14);
+  color: var(--ink-soft);
+}
+
+.studioAssistant .chatBubble {
+  background: var(--card-face);
+  color: var(--ink);
+}
+
+.studioAssistant .chatBubble.customer {
+  background: #f6e8c4;
+}
+
+.studioAssistant .chatBubble.chatEmptyState {
+  border: 1px dashed rgba(43, 37, 28, 0.18);
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+.studioAssistant .chatComposer textarea {
+  background: var(--card-face);
+  min-height: 58px;
+}
+
+/* ─── Gentle entrance ───────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .homeView > * {
+    animation: riseIn 0.5s ease both;
+  }
+
+  .homeView > *:nth-child(2) { animation-delay: 0.06s; }
+  .homeView > *:nth-child(3) { animation-delay: 0.12s; }
+  .homeView > *:nth-child(4) { animation-delay: 0.18s; }
+  .homeView > *:nth-child(5) { animation-delay: 0.24s; }
+  .homeView > *:nth-child(6) { animation-delay: 0.3s; }
+
+  @keyframes riseIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* ─── Mobile bottom tab bar ─────────────────────────────────────────────────── */
@@ -3384,6 +3827,7 @@ a:focus-visible {
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(255, 255, 255, 0.14);
     border-right: 0;
+    box-shadow: 0 -8px 24px rgba(34, 29, 21, 0.28);
   }
 
   .appRail .brandBlock,
@@ -3420,5 +3864,13 @@ a:focus-visible {
 
   .appMain {
     padding-bottom: 96px;
+  }
+
+  .studioLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardStage .panelGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

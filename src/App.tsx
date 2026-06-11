@@ -93,7 +93,11 @@ import {
   type ProviderStatus
 } from "./providerCatalog";
 import { buildCustomerChatSession, type CustomerChatSession } from "./customerChat";
-import { buildCustomerWebExperienceFromState, type CustomerWebActionId } from "./customerWebExperience";
+import {
+  buildCustomerWebExperienceFromState,
+  type CustomerWebAction,
+  type CustomerWebActionId
+} from "./customerWebExperience";
 import { reviewerDraftOptions, reviewerWorkspaceKey } from "./reviewerBootstrap";
 import {
   getSupportedLocale,
@@ -228,6 +232,8 @@ function App() {
   const opsView = isOpsUnlocked() && (activeView === "admin" || activeView === "adapters");
   const savedEvents = upcomingSavedEvents(workspace);
   const cardHistory = workspace?.cardHistory ?? [];
+  const draftFrontPanel = displayPanels.find((panel) => panel.id === "front");
+  const draftFrontSvg = draftFrontPanel ? buildPanelSvg(draftFrontPanel) : undefined;
 
   function openView(view: ViewId) {
     setActiveView(view);
@@ -439,10 +445,7 @@ function App() {
 
       <main className="appMain" id="main-content">
         <header className="topBar">
-          <div>
-            <p className="eyebrow">Personal card workflow</p>
-            <h1>CustomCard</h1>
-          </div>
+          <h1>CustomCard</h1>
           <div className="topStatus" aria-label="Checkout status">
             {opsView ? (
               <>
@@ -451,11 +454,7 @@ function App() {
                 <StatusChip icon={XCircle} label="Orders need confirmation" tone="red" />
               </>
             ) : (
-              <>
-                <StatusChip icon={ShieldCheck} label="Private review" tone="green" />
-                <StatusChip icon={Calendar} label="Manual import" tone="blue" />
-                <StatusChip icon={Store} label="Best option" tone="blue" />
-              </>
+              <StatusChip icon={Lock} label="Private" tone="green" />
             )}
           </div>
         </header>
@@ -464,16 +463,11 @@ function App() {
           <CustomerPanelView
             authForm={authForm}
             cardHistory={cardHistory}
-            chatInput={customerChatInput}
-            chatSession={customerChatSession}
-            calendarChoices={calendarConnectionStartPackets}
+            draftFrontSvg={draftFrontSvg}
             handoff={handoff}
             localizationSummary={localizationSummary}
             onAuthForm={setAuthForm}
-            onChatInput={setCustomerChatInput}
-            onChatSend={sendCustomerChat}
             onDismissEvent={dismissSavedEvent}
-            onLocale={chooseLocale}
             onMakeCardFromEvent={makeCardFromSavedEvent}
             onNavigate={openView}
             onSnoozeEvent={snoozeSavedEvent}
@@ -534,6 +528,7 @@ function App() {
 
         {activeView === "opportunities" && (
           <OpportunitiesView
+            calendarChoices={calendarConnectionStartPackets}
             canSave={opportunity.evidence.length > 0}
             inviteText={inviteText}
             onDecision={setOpportunityDecision}
@@ -555,14 +550,20 @@ function App() {
           <StudioView
             aiCardGenLoading={aiCardGenLoading}
             cardGenAvailable={cardGenAvailable}
+            chatInput={customerChatInput}
+            chatSession={customerChatSession}
             draftInput={draftInput}
             generatedBy={aiDraft?.generatedBy ?? draft.generatedBy}
             memories={memories}
             onAiGenerate={triggerAiCardGen}
+            onChatInput={setCustomerChatInput}
+            onChatSend={sendCustomerChat}
             onExport={() => openView("handoff")}
+            onLocale={chooseLocale}
             onUpdate={updateDraft}
             opportunity={opportunity}
             panels={displayPanels}
+            selectedLocale={selectedLocale}
             validation={validation}
           />
         )}
@@ -775,17 +776,12 @@ function MobileMiniStat({ label, value }: { label: string; value: string }) {
 
 function CustomerPanelView({
   authForm,
-  calendarChoices,
   cardHistory,
-  chatInput,
-  chatSession,
+  draftFrontSvg,
   handoff,
   localizationSummary,
   onAuthForm,
-  onChatInput,
-  onChatSend,
   onDismissEvent,
-  onLocale,
   onMakeCardFromEvent,
   onNavigate,
   onSnoozeEvent,
@@ -802,17 +798,12 @@ function CustomerPanelView({
   workspace
 }: {
   authForm: { name: string; email: string };
-  calendarChoices: CalendarConnectionStartPacket[];
   cardHistory: CardHistoryEntry[];
-  chatInput: string;
-  chatSession: CustomerChatSession;
+  draftFrontSvg: string | undefined;
   handoff: VendorHandoff;
   localizationSummary: LocalizationReadinessSummary;
   onAuthForm: React.Dispatch<React.SetStateAction<{ name: string; email: string }>>;
-  onChatInput: (value: string) => void;
-  onChatSend: () => void;
   onDismissEvent: (eventId: string) => void;
-  onLocale: (locale: SupportedLocaleCode) => void;
   onMakeCardFromEvent: (savedEvent: SavedEvent) => void;
   onNavigate: (view: ViewId) => void;
   onSnoozeEvent: (eventId: string) => void;
@@ -859,143 +850,70 @@ function CustomerPanelView({
   };
 
   return (
-    <section className="customerPanel">
-      <div className="sectionHeader">
-        <div>
-          <p className="eyebrow">Your workspace</p>
-          <h2>Your cards</h2>
+    <section className="homeView">
+      <div className="homeHero">
+        <p className="heroKicker">
+          {hasWorkspace ? `Hello, ${workspace?.name}` : "Cards that feel hand-made"}
+        </p>
+        <h2 className="heroTitle">
+          Make someone&rsquo;s <em>day</em>.
+        </h2>
+        <p className="heroSub">Pick the occasion — the card starts itself.</p>
+        <div className="occasionChipRow" aria-label="Start a card by occasion">
+          {occasionStarters.map((starter) => (
+            <button
+              className="occasionChip"
+              data-occasion={starter.occasion}
+              key={starter.occasion}
+              onClick={() => onStartOccasion(starter.occasion)}
+              type="button"
+            >
+              <span aria-hidden="true" className="occasionDot" />
+              {starter.label}
+            </button>
+          ))}
         </div>
-        <StatusChip icon={MessageCircle} label={customerExperience.statusLabel} tone="green" />
+        <button className="occasionImportLink" onClick={() => onNavigate("opportunities")} type="button">
+          <ClipboardCheck size={15} />
+          Or paste an invite, calendar export, or short note
+        </button>
       </div>
 
-      <div className="customerGrid">
-        <article className="occasionStartCard wide">
-          <div className="sectionHeader">
+      {!hasWorkspace && (
+        <article className="paperCard setupCard" aria-label="Customer local workspace options">
+          <div className="setupCopy">
+            <ShieldCheck size={18} />
             <div>
-              <p className="eyebrow">Start a card</p>
-              <h3>Who is the card for?</h3>
-            </div>
-            <StatusChip icon={WandSparkles} label="Pick an occasion" tone="blue" />
-          </div>
-          <div className="occasionChipRow" aria-label="Start a card by occasion">
-            {occasionStarters.map((starter) => (
-              <button
-                className="occasionChip"
-                key={starter.occasion}
-                onClick={() => onStartOccasion(starter.occasion)}
-                type="button"
-              >
-                {starter.label}
-              </button>
-            ))}
-          </div>
-          <button className="occasionImportLink" onClick={() => onNavigate("opportunities")} type="button">
-            <ClipboardCheck size={15} />
-            Or paste an invite, calendar export, or short note
-          </button>
-        </article>
-
-        <article className="customerStartCard wide">
-          <div className="sectionHeader">
-            <div>
-              <p className="eyebrow">{customerExperience.eyebrow}</p>
               <h3>{customerExperience.workspaceTitle}</h3>
+              <p>No account needed. Cards stay private in this browser.</p>
             </div>
-            <StatusChip icon={ShieldCheck} label={customerExperience.workspaceStatusLabel} tone="green" />
           </div>
-
-          {hasWorkspace ? (
-            <div className="workspaceSummary" aria-label="Local customer workspace">
-              <div>
-                <span>Your name</span>
-                <strong>{workspace?.name}</strong>
-                <small>{workspace?.email}</small>
-              </div>
-              <div>
-                <span>Next occasion</span>
-                <strong>{opportunity.evidence.length > 0 ? opportunity.title : "No event yet"}</strong>
-                <small>{customerExperience.workspaceHelp}</small>
-              </div>
-            </div>
-          ) : (
-            <div className="customerSetupCopy" aria-label="Customer local workspace options">
-              <ShieldCheck size={20} />
-              <div>
-                <strong>No account needed. Cards stay private in this browser.</strong>
-                <span>{customerExperience.workspaceHelp}</span>
-              </div>
-              <div className="customerSetupForm">
-                <label htmlFor="setupName">Your name</label>
-                <input
-                  id="setupName"
-                  type="text"
-                  placeholder="Your name"
-                  value={authForm.name}
-                  onChange={(e) => onAuthForm((f) => ({ ...f, name: e.target.value }))}
-                />
-                <label htmlFor="setupEmail">Email (optional)</label>
-                <input
-                  id="setupEmail"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={authForm.email}
-                  onChange={(e) => onAuthForm((f) => ({ ...f, email: e.target.value }))}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="calendarOnboardingBox" aria-label="Calendar onboarding choices">
-            {calendarChoices.map((choice) => (
-              <div
-                className={`calendarChoice ${choice.status}`}
-                key={choice.id}
-              >
-                <div>
-                  <strong>{choice.label}</strong>
-                  <span>{choice.dataBoundary}</span>
-                </div>
-                <em>{calendarChoiceStatusLabel(choice)}</em>
-              </div>
-            ))}
-            {calendarChoices.some((c) => c.status === "credential-gated") && (
-              <p className="calendarConnectHint">
-                Google Calendar and Outlook connect coming soon.
-              </p>
-            )}
+          <div className="customerSetupForm">
+            <label htmlFor="setupName">Your name</label>
+            <input
+              id="setupName"
+              type="text"
+              placeholder="Your name"
+              value={authForm.name}
+              onChange={(e) => onAuthForm((f) => ({ ...f, name: e.target.value }))}
+            />
+            <label htmlFor="setupEmail">Email (optional)</label>
+            <input
+              id="setupEmail"
+              type="email"
+              placeholder="you@example.com"
+              value={authForm.email}
+              onChange={(e) => onAuthForm((f) => ({ ...f, email: e.target.value }))}
+            />
           </div>
-
-          <div className="customerFlowSteps" aria-label="Customer journey steps">
-            {customerExperience.flowSteps.map((step) => (
-              <div className={`customerFlowStep ${step.state}`} key={step.label}>
-                <strong>{step.label}</strong>
-                <span>{step.detail}</span>
-              </div>
-            ))}
-          </div>
-
           <div className="journeyActionGrid" aria-label="Customer next action">
-            {(() => {
-              const action = customerExperience.primaryAction;
-              const ActionIcon = customerActionIcons[action.id];
-              const needsName = action.id === "create-workspace" && !authForm.name.trim();
-              return (
-                <button
-                  className="journeyAction primary"
-                  data-action-priority={action.priority}
-                  disabled={needsName}
-                  onClick={customerActionHandlers[action.id]}
-                  title={needsName ? "Enter your name above to start" : undefined}
-                  type="button"
-                >
-                  <ActionIcon size={18} />
-                  <span>{action.label}</span>
-                  <small>{needsName ? "Enter your name above to start." : action.detail}</small>
-                </button>
-              );
-            })()}
+            <NextActionButton
+              action={customerExperience.primaryAction}
+              disabledHint={!authForm.name.trim() ? "Enter your name above to start." : undefined}
+              icon={customerActionIcons[customerExperience.primaryAction.id]}
+              onAction={customerActionHandlers[customerExperience.primaryAction.id]}
+            />
           </div>
-
           {customerExperience.supportingActions.length > 0 && (
             <div className="supportingActionList" aria-label="Other customer tasks">
               {customerExperience.supportingActions.map((action) => {
@@ -1010,48 +928,87 @@ function CustomerPanelView({
               })}
             </div>
           )}
-
-          <p className="panelNote">{customerExperience.panelNote}</p>
         </article>
+      )}
 
-        <article className="eventQueueCard">
-          <div className="sectionHeader compact">
-            <div>
-              <p className="eyebrow">Events</p>
-              <h3>Card opportunities</h3>
-            </div>
-            <span className={opportunity.status === "ready" ? "statePill ready" : "statePill hold"}>
-              {customerExperience.event.statusLabel}
-            </span>
+      {hasWorkspace && (
+        <article className="paperCard nextStepCard">
+          <div className="journeyProgress" aria-label="Customer journey steps">
+            {customerExperience.flowSteps.map((step) => (
+              <span className={`progressStep ${step.state}`} key={step.label}>
+                {step.label}
+              </span>
+            ))}
           </div>
-
-          {opportunity.evidence.length > 0 ? (
-            <div className="eventRow">
-              <div>
-                <strong>{customerExperience.event.title}</strong>
-                <span>{customerExperience.event.dateLabel}</span>
-              </div>
+          <div className="nextStepBody">
+            <div>
+              <h3>{customerExperience.workspaceTitle}</h3>
+              <p>{customerExperience.workspaceHelp}</p>
             </div>
-          ) : (
-            <div className="eventRow">
-              <div>
-                <strong>No event yet</strong>
-                <span>Paste an invite or a short note and the occasion, recipient, and date are found for you.</span>
-              </div>
-              <button className="quietButton" type="button" onClick={() => onNavigate("opportunities")}>
-                <Calendar size={16} />
-                Add your event
-              </button>
+            <NextActionButton
+              action={customerExperience.primaryAction}
+              icon={customerActionIcons[customerExperience.primaryAction.id]}
+              onAction={customerActionHandlers[customerExperience.primaryAction.id]}
+            />
+          </div>
+          {customerExperience.supportingActions.length > 0 && (
+            <div className="supportingActionList" aria-label="Other customer tasks">
+              {customerExperience.supportingActions.map((action) => {
+                const ActionIcon = customerActionIcons[action.id];
+                return (
+                  <button className="supportingAction" key={action.id} onClick={customerActionHandlers[action.id]} type="button">
+                    <ActionIcon size={15} />
+                    <span>{action.label}</span>
+                    <small>{action.detail}</small>
+                  </button>
+                );
+              })}
             </div>
           )}
-          {savedEvents.length > 0 && (
+        </article>
+      )}
+
+      {hasWorkspace && (
+        <section className="homeSection" aria-label="Coming up">
+          <div className="homeSectionHeader">
+            <h3>Coming up</h3>
+            <button className="textButton" onClick={() => onNavigate("opportunities")} type="button">
+              <Plus size={14} />
+              Add an event
+            </button>
+          </div>
+          {savedEvents.length === 0 && opportunity.evidence.length === 0 ? (
+            <div className="homeEmptyState">
+              <Calendar size={18} />
+              <p>No events yet. Paste an invite or a short note and the occasion, recipient, and date are found for you.</p>
+            </div>
+          ) : (
             <div className="savedEventList" aria-label="Your saved events">
+              {opportunity.evidence.length > 0 && (
+                <div className="savedEventRow liveEvent">
+                  <div className="eventDateBubble" aria-hidden="true">
+                    <Calendar size={15} />
+                  </div>
+                  <div className="savedEventText">
+                    <strong>{customerExperience.event.title}</strong>
+                    <span>
+                      {customerExperience.event.dateLabel} · {customerExperience.event.statusLabel}
+                    </span>
+                  </div>
+                  <button className="quietButton" onClick={() => onNavigate("opportunities")} type="button">
+                    Review
+                  </button>
+                </div>
+              )}
               {savedEvents.map((savedEvent) => (
                 <div className="savedEventRow" key={savedEvent.id}>
-                  <div>
+                  <div className="eventDateBubble" aria-hidden="true">
+                    <span>{daysUntilLabel(savedEvent.isoDate)}</span>
+                  </div>
+                  <div className="savedEventText">
                     <strong>{savedEvent.title}</strong>
                     <span>
-                      {savedEvent.dateLabel} · {daysUntilLabel(savedEvent.isoDate)}
+                      {savedEvent.dateLabel}
                       {savedEvent.status === "snoozed" ? " · Snoozed" : ""}
                     </span>
                   </div>
@@ -1083,129 +1040,119 @@ function CustomerPanelView({
               ))}
             </div>
           )}
-          <div className="eventLocaleRow">
-            <p className="eyebrow">Language</p>
-            <SegmentedControl
-              label="Card language"
-              options={supportedLocales.map((locale) => locale.locale)}
-              value={selectedLocale.locale}
-              onValue={(value) => onLocale(value as SupportedLocaleCode)}
+        </section>
+      )}
+
+      {customerExperience.stage === "proof-review" && draftFrontSvg && (
+        <section className="homeSection" aria-label="Card in progress">
+          <div className="homeSectionHeader">
+            <h3>In progress</h3>
+          </div>
+          <button className="cardThumb inProgress" onClick={() => onNavigate("studio")} type="button">
+            <img
+              alt={`Card preview: ${opportunity.title}`}
+              src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(draftFrontSvg)}`}
+            />
+            <span>
+              <WandSparkles size={14} />
+              Continue editing
+            </span>
+          </button>
+        </section>
+      )}
+
+      {customerExperience.fulfillment.showOptions && (
+        <section className="homeSection" aria-label="Print options">
+          <div className="homeSectionHeader">
+            <h3>{customerExperience.fulfillment.title}</h3>
+            <button className="textButton" onClick={() => onNavigate("handoff")} type="button">
+              Compare all
+            </button>
+          </div>
+          <div className="fulfillmentOptionGrid" aria-label="Customer print recommendation">
+            <FulfillmentOption
+              recommendation={customerExperience.fulfillment.lowestEstimate}
+              icon={CreditCard}
+              tag="Cost"
+            />
+            <FulfillmentOption
+              recommendation={customerExperience.fulfillment.fastestPickup}
+              icon={Store}
+              tag="Pickup"
+            />
+            <FulfillmentOption
+              recommendation={customerExperience.fulfillment.cheapestShipped}
+              icon={PackageCheck}
+              tag="Ship"
             />
           </div>
-        </article>
-
-        <article className="fulfillmentRecommendation">
-          <div className="sectionHeader compact">
-            <div>
-              <p className="eyebrow">Print</p>
-              <h3>{customerExperience.fulfillment.title}</h3>
-            </div>
-            <StatusChip icon={Store} label={customerExperience.fulfillment.statusLabel} tone="blue" />
-          </div>
-
-          {customerExperience.fulfillment.showOptions ? (
-            <div className="fulfillmentOptionGrid" aria-label="Customer print recommendation">
-              <FulfillmentOption
-                recommendation={customerExperience.fulfillment.lowestEstimate}
-                icon={CreditCard}
-                tag="Cost"
-              />
-              <FulfillmentOption
-                recommendation={customerExperience.fulfillment.fastestPickup}
-                icon={Store}
-                tag="Pickup"
-              />
-              <FulfillmentOption
-                recommendation={customerExperience.fulfillment.cheapestShipped}
-                icon={PackageCheck}
-                tag="Ship"
-              />
-            </div>
-          ) : (
-            <div className="fulfillmentHold" aria-label="Fulfillment hold">
-              <Printer size={18} />
-              <div>
-                <strong>{customerExperience.fulfillment.holdTitle}</strong>
-                <span>{customerExperience.fulfillment.holdDescription}</span>
-              </div>
-            </div>
-          )}
-
           <div className="confirmationNotice">
             <Info size={16} />
             <span>{customerExperience.fulfillment.disclaimer}</span>
           </div>
-        </article>
+        </section>
+      )}
 
-        {cardHistory.length > 0 && (
-          <article className="recentCardsCard wide">
-            <div className="sectionHeader compact">
-              <div>
-                <p className="eyebrow">Finished</p>
-                <h3>Recent cards</h3>
-              </div>
-              <StatusChip icon={FileDown} label={`${cardHistory.length} exported`} tone="green" />
-            </div>
-            <div className="recentCardList">
-              {cardHistory.map((entry) => (
-                <div className="recentCardRow" key={entry.id}>
+      {cardHistory.length > 0 && (
+        <section className="homeSection" aria-label="Recent cards">
+          <div className="homeSectionHeader">
+            <h3>Recent cards</h3>
+          </div>
+          <div className="cardThumbGrid">
+            {cardHistory.map((entry) => (
+              <figure className="cardThumb" key={entry.id}>
+                {entry.frontSvg ? (
+                  <img
+                    alt={entry.title}
+                    src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(entry.frontSvg)}`}
+                  />
+                ) : (
+                  <div className="cardThumbFallback" aria-hidden="true">
+                    <Heart size={22} />
+                  </div>
+                )}
+                <figcaption>
                   <strong>{entry.title}</strong>
                   <span>{entry.exportedAtIso.slice(0, 10)}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-        )}
-
-        <article className="chatConsole wide">
-          <div className="sectionHeader">
-            <div>
-              <p className="eyebrow">Customer chat</p>
-              <h3>{customerExperience.chatTitle}</h3>
-            </div>
-            <StatusChip icon={Lock} label={customerExperience.chatStatusLabel} tone="blue" />
-          </div>
-          <div className="chatRuntimeLine" aria-label="Customer chat safety">
-            {customerExperience.chatSafetyBadges.map((badge) => (
-              <span key={badge}>{badge}</span>
+                </figcaption>
+              </figure>
             ))}
           </div>
-          <div className="chatLog">
-            {chatSession.messages.length === 0 && (
-              <div className="chatBubble chatEmptyState">
-                <strong>{customerExperience.chatTitle}</strong>
-                <span>Ask about copy ideas, memories to include, print options, or anything about your card.</span>
-              </div>
-            )}
-            {chatSession.messages.map((message, index) => (
-              <div className={`chatBubble ${message.role}`} key={`${message.role}-${index}`}>
-                <strong>{message.role === "customer" ? "You" : customerExperience.chatTitle}</strong>
-                <span>{message.text}</span>
-              </div>
-            ))}
-          </div>
-          <form
-            className="chatComposer"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (chatInput.trim()) onChatSend();
-            }}
-          >
-            <textarea
-              aria-label="Customer chat message"
-              value={chatInput}
-              onChange={(event) => onChatInput(event.target.value)}
-              placeholder="Ask about copy, memories, artwork, pickup, or shipping"
-            />
-            <button className="primaryButton" type="submit" disabled={!chatInput.trim()}>
-              <MessageCircle size={16} />
-              Send
-            </button>
-          </form>
-        </article>
+        </section>
+      )}
 
-      </div>
+      <p className="privacyFootnote">
+        <Lock size={13} />
+        Private by design — your cards and memories stay in this browser.
+      </p>
     </section>
+  );
+}
+
+function NextActionButton({
+  action,
+  disabledHint,
+  icon: ActionIcon,
+  onAction
+}: {
+  action: CustomerWebAction;
+  disabledHint?: string;
+  icon: LucideIcon;
+  onAction: () => void;
+}) {
+  return (
+    <button
+      className="journeyAction primary"
+      data-action-priority={action.priority}
+      disabled={Boolean(disabledHint)}
+      onClick={onAction}
+      title={disabledHint ? "Enter your name above to start" : undefined}
+      type="button"
+    >
+      <ActionIcon size={18} />
+      <span>{action.label}</span>
+      <small>{disabledHint ?? action.detail}</small>
+    </button>
   );
 }
 
@@ -1252,6 +1199,7 @@ function calendarChoiceStatusLabel(choice: CalendarConnectionStartPacket): strin
 }
 
 function OpportunitiesView({
+  calendarChoices,
   canSave,
   inviteText,
   onDecision,
@@ -1264,6 +1212,7 @@ function OpportunitiesView({
   scanStatus,
   warnings
 }: {
+  calendarChoices: CalendarConnectionStartPacket[];
   canSave: boolean;
   inviteText: string;
   onDecision: (decision: OpportunityDecision) => void;
@@ -1310,6 +1259,22 @@ function OpportunitiesView({
             ))}
           </div>
         )}
+
+        <div className="calendarOnboardingBox" aria-label="Calendar onboarding choices">
+          <p className="eyebrow">Where events can come from</p>
+          {calendarChoices.map((choice) => (
+            <div className={`calendarChoice ${choice.status}`} key={choice.id}>
+              <div>
+                <strong>{choice.label}</strong>
+                <span>{choice.dataBoundary}</span>
+              </div>
+              <em>{calendarChoiceStatusLabel(choice)}</em>
+            </div>
+          ))}
+          {calendarChoices.some((c) => c.status === "credential-gated") && (
+            <p className="calendarConnectHint">Google Calendar and Outlook connect coming soon.</p>
+          )}
+        </div>
       </div>
 
       <div className="opportunityCard">
@@ -1367,50 +1332,105 @@ function OpportunitiesView({
 function StudioView({
   aiCardGenLoading,
   cardGenAvailable,
+  chatInput,
+  chatSession,
   draftInput,
   generatedBy,
   memories,
   onAiGenerate,
+  onChatInput,
+  onChatSend,
   onExport,
+  onLocale,
   onUpdate,
   opportunity,
   panels,
+  selectedLocale,
   validation
 }: {
   aiCardGenLoading: boolean;
   cardGenAvailable: boolean;
+  chatInput: string;
+  chatSession: CustomerChatSession;
   draftInput: CardDraftInput;
   generatedBy: string;
   memories: MemoryItem[];
   onAiGenerate: () => void;
+  onChatInput: (value: string) => void;
+  onChatSend: () => void;
   onExport: () => void;
+  onLocale: (locale: SupportedLocaleCode) => void;
   onUpdate: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   opportunity: CardOpportunity;
   panels: CardPanel[];
+  selectedLocale: SupportedLocale;
   validation: CardValidation;
 }) {
   return (
     <section className="studioLayout">
-      <div className="toolPanel">
+      <div className="previewColumn cardStage">
         <div className="sectionHeader">
           <div>
-            <p className="eyebrow">Studio</p>
-            <h2>Card draft</h2>
+            <p className="eyebrow">Your card</p>
+            <h2>{draftInput.recipient ? `For ${draftInput.recipient}` : "Card draft"}</h2>
           </div>
-          <StatusChip
-            icon={validation.passed ? CircleCheck : XCircle}
-            label={validation.passed ? "Print safe" : "Needs fix"}
-            tone={validation.passed ? "green" : "red"}
-          />
+          <div className="studioHeaderActions">
+            {generatedBy !== "deterministic-free-template" && (
+              <span className="aiGenBadge">{generatedBy === "ai-text-and-image" ? "AI image" : "AI text"}</span>
+            )}
+            <StatusChip
+              icon={validation.passed ? CircleCheck : XCircle}
+              label={validation.passed ? "Print safe" : "Needs fix"}
+              tone={validation.passed ? "green" : "red"}
+            />
+          </div>
+        </div>
+        <div className={`panelGrid${aiCardGenLoading ? " panelGridLoading" : ""}`}>
+          {panels.map((panel) => (
+            <PanelPreview key={panel.id} panel={panel} />
+          ))}
+        </div>
+
+        <div className="validationPanel">
+          {validation.checks.map((check) => (
+            <span key={check.label}>
+              {check.passed ? <CircleCheck size={16} /> : <XCircle size={16} />}
+              <strong>{check.label}</strong>
+              {check.detail}
+            </span>
+          ))}
+        </div>
+
+        <button className="primaryButton wide studioContinue" type="button" onClick={onExport}>
+          <Upload size={16} />
+          Continue to print options
+        </button>
+      </div>
+
+      <div className="toolPanel studioDetails">
+        <div className="sectionHeader">
+          <div>
+            <p className="eyebrow">Details</p>
+            <h2>Make it theirs</h2>
+          </div>
+          <button
+            className="aiGenerateButton"
+            type="button"
+            onClick={onAiGenerate}
+            disabled={!cardGenAvailable || aiCardGenLoading}
+            title={cardGenAvailable ? "Generate card copy with AI" : "AI generation not available in this environment"}
+          >
+            {aiCardGenLoading ? "Generating…" : "✦ Generate with AI"}
+          </button>
         </div>
 
         <div className="formGrid">
           <label className="fieldStack">
-            <span>Sender</span>
+            <span>From</span>
             <input value={draftInput.sender} onChange={(event) => onUpdate("sender", event.target.value)} />
           </label>
           <label className="fieldStack">
-            <span>Recipient</span>
+            <span>To</span>
             <input value={draftInput.recipient} onChange={(event) => onUpdate("recipient", event.target.value)} />
           </label>
           <label className="fieldStack">
@@ -1445,6 +1465,12 @@ function StudioView({
           value={draftInput.style}
           onValue={(value) => onUpdate("style", value as VisualStyle)}
         />
+        <SegmentedControl
+          label="Card language"
+          options={supportedLocales.map((locale) => locale.locale)}
+          value={selectedLocale.locale}
+          onValue={(value) => onLocale(value as SupportedLocaleCode)}
+        />
 
         <label className="fieldStack">
           <span>Personal note</span>
@@ -1465,47 +1491,49 @@ function StudioView({
           Use approved memory for {opportunity.recipient}
         </label>
 
-        <button className="primaryButton wide" type="button" onClick={onExport}>
-          <Upload size={16} />
-          Continue to print options
-        </button>
-      </div>
-
-      <div className="previewColumn">
-        <div className="sectionHeader">
-          <div>
-            <p className="eyebrow">Preview</p>
-            <h2>5x7 panels</h2>
+        <div className="studioAssistant" aria-label="Card assistant">
+          <div className="assistantHeader">
+            <h3>
+              <MessageCircle size={15} />
+              Card assistant
+            </h3>
+            <span className="assistantBadge">Private local replies</span>
           </div>
-          <div className="studioHeaderActions">
-            {generatedBy !== "deterministic-free-template" && (
-              <span className="aiGenBadge">{generatedBy === "ai-text-and-image" ? "AI image" : "AI text"}</span>
+          <div className="chatRuntimeLine" aria-label="Customer chat safety">
+            <span>Runs in this browser</span>
+            <span>No outside transcript</span>
+          </div>
+          <div className="chatLog">
+            {chatSession.messages.length === 0 && (
+              <div className="chatBubble chatEmptyState">
+                <span>Ask for copy ideas, memories to include, or printing advice for this card.</span>
+              </div>
             )}
-            <button
-              className="aiGenerateButton"
-              type="button"
-              onClick={onAiGenerate}
-              disabled={!cardGenAvailable || aiCardGenLoading}
-              title={cardGenAvailable ? "Generate card copy with AI" : "AI generation not available in this environment"}
-            >
-              {aiCardGenLoading ? "Generating…" : "✦ Generate with AI"}
-            </button>
+            {chatSession.messages.map((message, index) => (
+              <div className={`chatBubble ${message.role}`} key={`${message.role}-${index}`}>
+                <strong>{message.role === "customer" ? "You" : "Card assistant"}</strong>
+                <span>{message.text}</span>
+              </div>
+            ))}
           </div>
-        </div>
-        <div className={`panelGrid${aiCardGenLoading ? " panelGridLoading" : ""}`}>
-          {panels.map((panel) => (
-            <PanelPreview key={panel.id} panel={panel} />
-          ))}
-        </div>
-
-        <div className="validationPanel">
-          {validation.checks.map((check) => (
-            <span key={check.label}>
-              {check.passed ? <CircleCheck size={16} /> : <XCircle size={16} />}
-              <strong>{check.label}</strong>
-              {check.detail}
-            </span>
-          ))}
+          <form
+            className="chatComposer"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (chatInput.trim()) onChatSend();
+            }}
+          >
+            <textarea
+              aria-label="Customer chat message"
+              value={chatInput}
+              onChange={(event) => onChatInput(event.target.value)}
+              placeholder="Ask about copy, memories, artwork, pickup, or shipping"
+            />
+            <button className="primaryButton" type="submit" disabled={!chatInput.trim()}>
+              <MessageCircle size={16} />
+              Send
+            </button>
+          </form>
         </div>
       </div>
     </section>

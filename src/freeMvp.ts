@@ -36,6 +36,8 @@ export interface CardHistoryEntry {
   recipient: string;
   occasion: string;
   exportedAtIso: string;
+  // Rendered front panel, stored so history can show the real card.
+  frontSvg?: string;
 }
 
 export interface MemoryItem {
@@ -598,12 +600,14 @@ export function recordCardExport(
 ): LocalWorkspace {
   const recipient = cleanText(draft.input.recipient) || "Someone important";
   const occasion = cleanText(draft.input.occasion) || "card";
+  const frontPanel = draft.panels.find((panel) => panel.id === "front");
   const entry: CardHistoryEntry = {
     id: draft.id,
     title: occasion === "card" ? `Card for ${recipient}` : `${titleCase(occasion)} card for ${recipient}`,
     recipient,
     occasion,
-    exportedAtIso: now.toISOString()
+    exportedAtIso: now.toISOString(),
+    frontSvg: frontPanel ? buildPanelSvg(frontPanel) : undefined
   };
   const existing = (workspace.cardHistory ?? []).filter((item) => item.id !== draft.id);
   return {

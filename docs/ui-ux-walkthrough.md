@@ -103,6 +103,23 @@ tests enforce this; keep extending that pattern when new jargon appears.
 
 ## Prioritized backlog
 
+Shipped 2026-06-11 (stationery redesign pass):
+- **Warm stationery design system** — cream paper surfaces, warm ink, terracotta accent, serif
+  display type; the graph-paper console background and full-width status pills are gone.
+- **Home rebuilt around the card** — serif hero ("Make someone's day."), occasion chips with
+  per-occasion color dots, "Coming up" queue with date bubbles, real card thumbnails for
+  recent exports and the in-progress draft, one quiet privacy footnote.
+- **Stepper → progress pills** — the four gray flow-step boxes became a slim pill line inside
+  one next-step card; exactly one primary action per stage (contract preserved and SSR-tested).
+- **Chat moved into the Studio** — "Card assistant" now lives beside the draft it helps with;
+  the home chat console is gone. Calendar-source details moved to the Events view where
+  importing actually happens.
+- **Studio is a card stage** — preview panels lead, details follow; locale picker relocated
+  here as "Card language".
+- **SSR render harness** (`tests/customer-shell-ssr.test.tsx`) — every customer view renders in
+  Node with copy/structure assertions, so shell regressions fail locally without Chrome.
+- **Stale demo-workspace purge** — old prefilled "Abdul" workspaces are cleared on load.
+
 Shipped 2026-06-11 (production build-out pass):
 - **Occasion-first hub** — "Who is the card for?" chips on the home view jump straight into the
   Studio with the occasion prefilled; invite paste remains one tap away.
