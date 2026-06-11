@@ -176,9 +176,12 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
 `env/.env.example` names the credential-gated adapters represented in
 `src/providerCatalog.ts`:
 
-- Google OAuth: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`.
+- Google OAuth: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`.
 - Microsoft Graph: `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`,
   `MICROSOFT_TENANT_ID`.
+- Event platforms: `EVENTBRITE_CLIENT_ID`, `EVENTBRITE_CLIENT_SECRET`,
+  `LUMA_API_KEY`, `MEETUP_CLIENT_ID`, and `MEETUP_CLIENT_SECRET`. Partiful is a
+  contract-only/manual path until an official API exists.
 - Hosted identity providers: `CUSTOMCARD_AUTH_CALLBACK_URL`, `AUTH0_DOMAIN`,
   `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_AUDIENCE`,
   `CLERK_SECRET_KEY`, `CLERK_JWT_KEY`, `CLERK_AUTHORIZED_PARTIES`,
@@ -188,6 +191,10 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
   `COGNITO_USER_POOL_ID`, `COGNITO_APP_CLIENT_ID`.
 - Contact import providers: `CARDDAV_BASE_URL`, `CARDDAV_USERNAME`,
   `CARDDAV_APP_PASSWORD`, `CARDDAV_ADDRESSBOOK_PATH`.
+- CRM/customer lifecycle providers: Salesforce, HubSpot, Zoho, Pipedrive,
+  Dynamics, Shopify, Klaviyo, Mailchimp, ActiveCampaign, BigCommerce,
+  WooCommerce, Square, Intercom, Monday.com, Amazon Selling Partner API, and
+  Etsy keys listed in `env/.env.example`.
 - Text and image AI providers: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
   `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`,
   `AZURE_OPENAI_CHAT_DEPLOYMENT`, `AZURE_OPENAI_IMAGE_DEPLOYMENT`,
@@ -209,16 +216,25 @@ Cloudflare Workers AI can use one shared `CLOUDFLARE_API_TOKEN` for both
 chat and image generation, or separate lane-specific tokens through
 `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` and
 `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`. The recommended low-cost defaults are
-`@cf/meta/llama-3.2-3b-instruct` for prompt/chat work and
-`@cf/bytedance/stable-diffusion-xl-lightning` for image generation. Use
+`@cf/meta/llama-3.1-8b-instruct-fast` for JSON Mode card copy and prompt/chat
+work and `@cf/bytedance/stable-diffusion-xl-lightning` for image generation.
+Use `@cf/meta/llama-3.3-70b-instruct-fp8-fast` as the text quality fallback and
 `@cf/black-forest-labs/flux-1-schnell` as the higher-quality image fallback
 when budget allows.
 - Notification providers: `RESEND_API_KEY`, `SENDGRID_API_KEY`,
   `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`,
   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
   `TWILIO_MESSAGING_SERVICE_SID`, `WHATSAPP_ACCESS_TOKEN`,
-  `WHATSAPP_PHONE_NUMBER_ID`, `EXPO_ACCESS_TOKEN`,
+  `WHATSAPP_PHONE_NUMBER_ID`, `EXPO_ACCESS_TOKEN`, `FIREBASE_PROJECT_ID`,
+  `FIREBASE_SERVICE_ACCOUNT_JSON`, `CUSTOMERIO_APP_API_KEY`,
+  `CUSTOMERIO_TRANSACTIONAL_MESSAGE_ID`, `BRAZE_REST_ENDPOINT`,
+  `BRAZE_REST_API_KEY`, `BRAZE_CANVAS_ID`, `ONESIGNAL_APP_ID`,
+  `ONESIGNAL_REST_API_KEY`, `COURIER_AUTH_TOKEN`, `COURIER_TEMPLATE_ID`,
+  `KNOCK_API_KEY`, `KNOCK_WORKFLOW_KEY`, `NOVU_API_KEY`, `NOVU_WORKFLOW_ID`,
   `TRANSACTIONAL_EMAIL_API_KEY`, `TRANSACTIONAL_EMAIL_FROM`.
+- Workflow providers: Zapier, Make, Slack, Microsoft Teams, Notion, Airtable,
+  Google Sheets, n8n, Workato, and Pipedream keys listed in
+  `env/.env.example`.
 - Payment sandbox providers: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
   `CUSTOMCARD_PAYMENT_SUCCESS_URL`, `CUSTOMCARD_PAYMENT_CANCEL_URL`,
   `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`,

@@ -41,15 +41,17 @@ The canonical list lives in `src/providerCatalog.ts`. It covers:
 - Auth: local workspace auth, hosted email-password contract, and credential-gated
   Auth0, Clerk, Supabase Auth, Firebase Auth, and Amazon Cognito contracts.
 - Event import: ICS/manual note, Gmail, Google Calendar, Microsoft Graph mail,
-  Microsoft Graph calendar, and iCloud ICS fallback.
+  Microsoft Graph calendar, Eventbrite, Luma Events, Meetup, Partiful manual
+  fallback, and iCloud ICS fallback.
 - Contact import: local vCard/CSV parsing, Google People contacts, Microsoft
   Graph contacts, generic CardDAV address books, and iCloud vCard manual
   fallback.
 - Business CRM integration: admin-only CRM CSV lifecycle import plus gated
   Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales, Shopify,
   Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce, Square, and
-  Intercom customer lifecycle contracts for birthday, purchase-anniversary, and
-  warranty-anniversary campaigns.
+  Intercom customer lifecycle contracts in the business engagement register,
+  with additional catalog entries for Monday.com, Amazon Selling Partner API,
+  and Etsy lifecycle contracts.
 - Business engagement readiness: `src/businessEngagementReadiness.ts` and
   `src/businessEngagementReadinessData.mjs` track CRM lifecycle source,
   trigger normalization, card-opportunity review, workflow payload, customer
@@ -188,6 +190,9 @@ Official documentation anchors used for the adapter contracts:
 - Google Calendar API overview: https://developers.google.com/calendar/api/guides/overview
 - Microsoft Graph Outlook mail: https://learn.microsoft.com/en-us/graph/outlook-mail-concept-overview
 - Microsoft Graph Outlook calendar: https://learn.microsoft.com/en-us/graph/outlook-calendar-concept-overview
+- Eventbrite platform API: https://www.eventbrite.com/platform/api
+- Luma public API: https://docs.luma.com/reference/getting-started-with-your-api
+- Meetup GraphQL API: https://www.meetup.com/graphql/guide/
 - Salesforce REST query resource: https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_query.htm
 - HubSpot CRM search: https://developers.hubspot.com/docs/api-reference/latest/crm/search-the-crm
 - Zoho CRM records API: https://www.zoho.com/crm/developer/docs/api/v6/get-records.html
@@ -201,6 +206,9 @@ Official documentation anchors used for the adapter contracts:
 - WooCommerce customers API: https://woocommerce.github.io/woocommerce-rest-api-docs/#list-all-customers
 - Square customers search API: https://developer.squareup.com/reference/square/customers-api/search-customers
 - Intercom contacts search API: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/contacts/searchcontacts
+- Monday.com API reference: https://developer.monday.com/api-reference/docs
+- Amazon Selling Partner API guide: https://developer-docs.amazon.com/sp-api/docs/selling-partner-api-developer-guide
+- Etsy Open API v3: https://developers.etsy.com/documentation
 - Zapier Webhooks trigger: https://help.zapier.com/hc/en-us/articles/8496288690317-Trigger-Zaps-from-webhooks
 - Make webhooks: https://help.make.com/webhooks
 - Slack chat.postMessage: https://docs.slack.dev/reference/methods/chat.postMessage/
@@ -514,8 +522,9 @@ The runtime remains fail-closed:
   relationship-memory repository signals, render-packet repository signals,
   import-preview repository signals, card-project repository signals, manual
   vendor handoff order/consent/event repository signals, data-request
-  privacy/consent repository signals, queue jobs, append-only audit coverage, and
-  15 schema-backed API route mappings.
+  privacy/consent repository signals, queue jobs, provider usage ledger,
+  append-only audit coverage, 20 stateful API routes, 13 idempotent mutations,
+  and local persistence audit counts for browser-local data migration.
 - Production Kubernetes secrets are annotated for pre-created secret-manager
   provisioning.
 - Backups, live observability provider verification, and managed secrets remain
@@ -646,9 +655,9 @@ Implemented checks:
   relationship-memory, render-packet, import-preview, card-project,
   manual-vendor-handoff, and data-request mutations, and
   memory-runtime auth/idempotency behavior.
-- Persistence contract tests validate 18 table contracts, 15 schema-backed API
-  routes, account identity/recovery storage, idempotency replay, queue-backed
-  routes, and migration signals.
+- Persistence contract tests validate 19 table contracts, 20 stateful API
+  routes, 13 idempotent mutations, account identity/recovery storage,
+  idempotency replay, queue-backed routes, and migration signals.
 - `scripts/deployment-readiness.mjs` emits a JSON readiness report and is tested
   by `tests/infra-contract.test.ts`.
 - `.github/workflows/verify.yml` runs install, full checks, deployment doctor,

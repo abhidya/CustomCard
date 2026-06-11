@@ -287,17 +287,21 @@ Current Google OAuth client:
 ```bash
 vercel env add GOOGLE_OAUTH_CLIENT_ID production      # from Google Console
 vercel env add GOOGLE_OAUTH_CLIENT_SECRET production  # kept server-side only
+vercel env add GOOGLE_OAUTH_REDIRECT_URI production   # https://customcard-three.vercel.app/oauth/callback
 ```
 
-Then update `oauthFlowContract.ts` — change `liveOAuthEnabled: false` to `true` in `oauthProviderContracts` for Google Calendar after security review. The `CalendarAdapterReadinessContract` in `onboardingCalendarTypes.ts` has `networkRequestFactory: "not-implemented"` — implement the token exchange handler before flipping.
+The calendar connection start route is env-gated. When `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` are present, `/api/calendar/connections/start` returns a server-generated Google consent URL. Token exchange, credential persistence, revocation, and event import remain separate gates; do not expose the client secret through any `VITE_` variable.
 
 For Outlook: register at [portal.azure.com](https://portal.azure.com/) → App registrations → add `Calendars.Read` delegated permission → set `VITE_MICROSOFT_CLIENT_ID` and `MICROSOFT_TENANT_ID`.
 
 ---
 
-### Event platform integrations (contract-only, no gate flip needed)
+### Event platform integrations (credential-gated, no live import yet)
 
-These adapters are wired as contract-only Provider Adapters in `providerCatalog.ts`. No live calls until `liveOAuthEnabled` is flipped. Credentials can be added at any time — the runtime will produce no-network request contracts until the gate is opened.
+Eventbrite, Luma, and Meetup are credential-gated Provider Adapters in
+`providerCatalog.ts`; Partiful remains manual/contract-only until an official
+API exists. Credentials can be added at any time, but the provider runtime still
+produces no-network request contracts until a future live import gate is opened.
 
 #### Eventbrite
 
@@ -443,6 +447,14 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |
 | `CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG` | Server env only | No | Defaults to `false`; set `true` only for trusted admin/operator flows that may override server AI provider config |
 | `CUSTOMCARD_TRUST_PROXY_HEADERS` | Server env only | No | Defaults to `false`; set `true` only behind a trusted proxy before using `X-Forwarded-For` for rate limits |
+| `CLOUDFLARE_ACCOUNT_ID` | Server env only | For live AI route | Cloudflare account for Workers AI text/image routes |
+| `CLOUDFLARE_API_TOKEN` | Server env only | For live AI route | Shared Workers AI API token if lane-specific tokens are unset |
+| `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN` | Server env only | No | Optional text-lane Workers AI token |
+| `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` | Server env only | No | Optional image-lane Workers AI token |
+| `CLOUDFLARE_WORKERS_AI_TEXT_MODEL` | Server env only | No | Defaults to `@cf/meta/llama-3.1-8b-instruct-fast` |
+| `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` | Server env only | No | Defaults to `@cf/bytedance/stable-diffusion-xl-lightning` |
+| `CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED` | Server env only | No | Enables server-owned live card-copy calls when provider env and gates are ready |
+| `CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED` | Server env only | No | Enables server-owned live panel image calls when provider env and gates are ready |
 | `ANTHROPIC_API_KEY` | Sidecar server only | For AI gen | Text generation model — never in browser |
 | `CARD_GEN_API_TOKEN` | Sidecar server only | For AI gen | Bearer token required by `/generate` outside local dev |
 | `CARD_GEN_ALLOWED_ORIGINS` | Sidecar server only | For AI gen | Comma-separated CORS origins |
@@ -453,6 +465,10 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `CARD_IMAGE_MODEL` | Sidecar server only | No | Defaults to `dall-e-3` |
 | `GOOGLE_OAUTH_CLIENT_ID` | Vercel / ignored env files | For OAuth | Google OAuth client ID |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Vercel / ignored env files | For OAuth | Google OAuth client secret |
+| `GOOGLE_OAUTH_REDIRECT_URI` | Vercel / ignored env files | For Google Calendar OAuth | Authorized redirect URI, for example `https://customcard-three.vercel.app/oauth/callback` |
+| `EVENTBRITE_CLIENT_ID` / `EVENTBRITE_CLIENT_SECRET` | Vercel / ignored env files | For event import contract | Eventbrite OAuth app credentials; live import remains gated |
+| `LUMA_API_KEY` | Vercel / ignored env files | For event import contract | Luma calendar API key; live import remains gated |
+| `MEETUP_CLIENT_ID` / `MEETUP_CLIENT_SECRET` | Vercel / ignored env files | For event import contract | Meetup OAuth app credentials; live import remains gated |
 | `VITE_MICROSOFT_CLIENT_ID` | Vercel / `.env.local` | For Outlook OAuth | Microsoft Entra client ID |
 | `MICROSOFT_TENANT_ID` | Vercel (server only) | For Outlook OAuth | Microsoft tenant ID |
 

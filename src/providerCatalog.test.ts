@@ -13,6 +13,10 @@ import {
   type ProviderCapability
 } from "./providerCatalog";
 import { retailPrinterProductLinks, type RetailPrinterVendorId } from "./retailPrinterAdapters";
+import {
+  retailPrinterProviderDocsUrl,
+  validateRetailPrinterProviderDocsUrls
+} from "./retailPrinterProviderDocs";
 
 describe("provider catalog", () => {
   it("exposes a deterministic registry seam for thin provider clients", () => {
@@ -416,5 +420,22 @@ describe("provider catalog", () => {
       expect(adapter?.docsUrl).toMatch(/^https:\/\//);
       expect(adapter?.docsUrl).not.toMatch(/example\.com|localhost|placeholder|dummy|todo|mock/i);
     }
+  });
+
+  it("keeps retail printer docs validation behind the retail provider docs seam", () => {
+    expect(retailPrinterProviderDocsUrl("walgreens-live-order")).toBe(retailPrinterProductLinks.walgreens.productUrl);
+    expect(
+      validateRetailPrinterProviderDocsUrls([
+        {
+          id: "walgreens-live-order",
+          docsUrl: "https://example.com/demo"
+        }
+      ])
+    ).toEqual(
+      expect.arrayContaining([
+        "Retail printer adapter walgreens-live-order must use its canonical product URL as docsUrl.",
+        "Retail printer adapter walgreens-live-order docsUrl must not be placeholder, demo, localhost, or example content."
+      ])
+    );
   });
 });

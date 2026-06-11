@@ -529,7 +529,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(23);
+      expect(report.readiness.routes.total).toBe(25);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -658,7 +658,14 @@ describe("api server wrapper", () => {
   it("serves API readiness, bootstrap, and contract-only mutation responses", async () => {
     const port = 6100 + Math.floor(Math.random() * 1000);
     const server = spawn("node", ["scripts/api-server.mjs"], {
-      env: { ...process.env, HOST: "127.0.0.1", PORT: String(port) },
+      env: {
+        ...process.env,
+        HOST: "127.0.0.1",
+        PORT: String(port),
+        GOOGLE_OAUTH_CLIENT_ID: "test-google-calendar-client.apps.googleusercontent.com",
+        GOOGLE_OAUTH_CLIENT_SECRET: "test-google-calendar-secret",
+        GOOGLE_OAUTH_REDIRECT_URI: `http://localhost:${port}/oauth/callback`
+      },
       stdio: ["ignore", "pipe", "pipe"]
     });
 
@@ -677,7 +684,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 23, admin: 6, idempotentMutations: 14 });
+      expect(readiness.routes).toMatchObject({ total: 25, admin: 6, idempotentMutations: 15 });
       expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 124,
@@ -1052,27 +1059,33 @@ describe("api server wrapper", () => {
       );
       expect(googleConnectionStart.status).toBe(202);
       expect(await googleConnectionStart.json()).toMatchObject({
-        status: "blocked",
+        status: "oauth-ready",
         route: "calendar-connection-start",
         requestedChoiceId: "google-calendar-events",
-        providerRequestUrl: null,
-        networkRequestPrepared: false,
+        providerRequestUrl: expect.stringContaining("https://accounts.google.com/o/oauth2/v2/auth"),
+        networkRequestPrepared: true,
         credentialStorageEnabled: false,
-        externalNetworkCalls: false,
+        externalNetworkCalls: true,
         realOrdersEnabled: false,
         rawContentStored: false,
         nextApiRoute: null,
-        blockers: [
-          "google-scope-review",
-          "google-oauth-env-and-redirect",
-          "google-revocation-proof",
-          "google-metadata-schema-fixture"
-        ],
+        blockers: [],
+        missingEnv: [],
+        oauth: expect.objectContaining({
+          provider: "google-calendar",
+          redirectUri: `http://localhost:${port}/oauth/callback`,
+          scopes: ["https://www.googleapis.com/auth/calendar.events.readonly"],
+          credentialStorageEnabled: false,
+          rawContentStored: false
+        }),
         startPacket: expect.objectContaining({
           id: "google-calendar-events",
-          startMode: "oauth-evidence-required",
+          startMode: "oauth-provider-redirect",
+          canStartNow: true,
           serverOwned: true,
           clientMayPrepareProviderRequest: false,
+          providerRequestUrl: expect.stringContaining("client_id=test-google-calendar-client.apps.googleusercontent.com"),
+          requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
           requiredScopes: ["calendar.events.readonly"],
           officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"]
         }),

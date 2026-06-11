@@ -57,6 +57,44 @@ export const apiRouteContracts = [
     backedBy: ["buildCustomerPanelModel", "buildCustomerChatSession", "buildPrinterPricingComparison"]
   },
   {
+    id: "customer-draft-state",
+    method: "GET",
+    path: "/api/customer/draft-state/current",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["session"],
+    responseSchema: ["draftState", "updatedAtIso", "repository"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Returns only the signed-in customer's latest in-progress draft state; no browser-local draft data is required.",
+    backedBy: ["draft_states", "customer-session auth"]
+  },
+  {
+    id: "customer-draft-state-save",
+    method: "POST",
+    path: "/api/customer/draft-state",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "draftInput",
+      "status",
+      "opportunityId",
+      "localeCode",
+      "vendorId"
+    ],
+    responseSchema: ["draftStateId", "updatedAtIso", "repository"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Stores signed-in customer draft fields and edit progress in draft_states; raw imported provider content stays out of the payload.",
+    backedBy: ["draft_states", "customer-session auth", "idempotency_keys", "audit_log"]
+  },
+  {
     id: "mobile-bootstrap",
     method: "GET",
     path: "/api/mobile/bootstrap",
@@ -287,12 +325,14 @@ export const apiRouteContracts = [
       "realOrdersEnabled",
       "rawContentStored",
       "nextApiRoute",
+      "missingEnv",
+      "oauth",
       "blockers"
     ],
     idempotencyKeyRequired: true,
-    externalNetworkCalls: false,
+    externalNetworkCalls: true,
     realOrdersEnabled: false,
-    piiPolicy: "Server-owned connection start policy only; no provider credential, raw calendar content, or live provider request returned.",
+    piiPolicy: "Server-owned Google OAuth start policy only; no provider credential or raw calendar content is returned.",
     backedBy: ["buildCalendarConnectionStartPackets", "validateCalendarConnectionStartPackets"]
   },
   {
@@ -490,6 +530,7 @@ export const hostedCheckoutExemptRouteIds = new Set([
 
 export const gatedProviderNetworkRouteIds = new Set([
   ...hostedCheckoutExemptRouteIds,
+  "calendar-connection-start",
   "ai-chat-respond",
   "ai-card-generate"
 ]);
@@ -498,6 +539,8 @@ export const requiredApiRouteIds = apiRouteContracts.map((route) => route.id);
 export const requiredApiRoutePaths = apiRouteContracts.map((route) => route.path);
 
 export const repositoryBackedCustomerRouteIds = [
+  "customer-draft-state",
+  "customer-draft-state-save",
   "import-preview",
   "relationship-memories",
   "card-projects",
@@ -540,6 +583,11 @@ export const mutationBodyContractSpecs = Object.freeze({
     detail:
       "Retail printer coupon portal evidence requires a server-validated evidence artifact captured from the same provider portal cart; clients may not choose coupon sources or compute coupon pricing."
   },
+  "customer-draft-state-save": {
+    requiredFields: ["draftInput", "status"],
+    detail:
+      "Draft autosave requires signed-in draft fields and an explicit progress status so the browser can remain stateless."
+  },
   "render-packets": {
     requiredFields: ["projectId"],
     detail: "Render packet creation requires an explicit card project before artifact records can be prepared."
@@ -563,6 +611,8 @@ export const mutationBodyContractSpecs = Object.freeze({
 });
 
 export const persistedTablesByRouteId = Object.freeze({
+  "customer-draft-state": ["auth_sessions", "draft_states", "audit_log"],
+  "customer-draft-state-save": ["auth_sessions", "idempotency_keys", "draft_states", "audit_log"],
   "relationship-memories": ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"],
   "render-packets": [
     "auth_sessions",

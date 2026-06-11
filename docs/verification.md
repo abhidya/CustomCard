@@ -71,8 +71,8 @@ it after each meaningful implementation pass.
   live S3-compatible endpoint such as MinIO with path-style SigV4 requests,
   reads every object back, verifies checksums, writes the manifest, cleans up the
   isolated bucket, and keeps external vendor calls plus real orders disabled.
-- Provider adapter coverage currently includes 124 adapters: 18 ready-local, 91
-  credential-gated, 9 contract-only, and 6 blocked.
+- Provider adapter coverage currently includes 131 adapters: 18 ready-local, 97
+  credential-gated, 10 contract-only, and 6 blocked.
 - Production readiness tests cover 13 launch gates for live auth, OAuth,
   AI/image generation, vendor quotes, payments/refunds, direct retail ordering,
   telemetry, applied bucket/IAM proof, deployed Postgres API, Vercel DB access,
@@ -511,22 +511,26 @@ live translation provider, no real orders, and no blockers.
 npm run api:doctor
 ```
 
-Result: passed. API doctor reported 18 routes, 10 idempotent mutation contracts,
-124 providers, provider governance for all 124 adapters, 16 schema-backed routes,
-relationship-memory repository readiness, render-packet artifact manifests,
-signed artifact URL contracts, contract runtime mode, no live external calls,
-no real vendor orders, no raw content storage, 13 production launch gates with
-`liveEnabled: 0`, and no blockers.
+Result: blocked in this pass. API service readiness still reported `ready`, 25
+routes, 15 idempotent mutation contracts, 124 API-summary providers, provider
+governance for those 124 adapters, 20 persistence tables, 18 schema-backed
+routes, contract runtime mode, no live external calls, no real vendor orders,
+and no raw content storage. The doctor blocked because API/runtime readiness is
+not yet aligned with the local persistence audit: it must track the four
+browser-local customer data groups and render artifacts as object-store
+migration work. Source `src/providerCatalog.ts` now contains 131 adapters, so
+the API readiness summary is also behind the catalog source.
 
 ```text
 npm run api:doctor:memory
 ```
 
 Result: passed. Memory runtime doctor reported Bearer auth and idempotency
-enforced, 2 configured sessions, 18 routes, 10 idempotent mutation contracts, 121
-providers, 18 persistence tables, relationship-memory repository readiness,
-render-packet artifact manifests, signed artifact URL contracts, no live external
-calls, no real vendor orders, and no blockers.
+enforced, 2 configured sessions, 25 routes, 15 idempotent mutation contracts,
+124 API-summary providers, 20 API-readiness persistence tables,
+relationship-memory repository readiness, render-packet artifact manifests,
+signed artifact URL contracts, no live external calls, no real vendor orders,
+and no blockers.
 
 ```text
 npm run api:doctor:postgres
@@ -622,17 +626,16 @@ objects and bucket.
 npm run persistence:doctor
 ```
 
-Result: passed. Persistence doctor reported 18 required tables, auth-session
+Result: passed. Persistence doctor reported 19 table contracts, auth-session
 persistence, account identity and recovery challenge persistence, idempotency
 replay, relationship-memory repository readiness, render-packet repository
 readiness, import-preview repository readiness, card-project repository
 readiness, retail operation start audit/idempotency readiness, manual vendor
 handoff order/consent/event readiness, data-request privacy/consent readiness,
-queue jobs, render-packet artifact manifest signals,
-artifact-store write/read doctor signals, live S3-compatible artifact doctor
-signals, Postgres runtime SQL/doctor/integration signals, Postgres API HTTP
-doctor signals, account-auth contract/doctor signals, append-only audit
-coverage, 15 schema-backed API routes, and no blockers.
+queue jobs, render-packet artifact manifest signals, provider usage ledger,
+append-only audit coverage, 20 stateful API routes, 13 idempotent mutations, 5
+local persistence audit items, 4 DB-required browser-local data groups, 1
+object-store-required artifact group, 1 browser-only theme key, and no blockers.
 
 ```text
 npm run demo:doctor
@@ -689,9 +692,9 @@ The latest visual pass additionally verified the customer panel appears before
 workspace setup, the admin meters have accessible labels, the adapter matrix
 separates ready-local, credential-gated, contract-only, and live-blocked rows.
 After the provider expansion, pricing-research, print-package, AI-provider,
-hosted-auth, contact-import, CRM, workflow-integration, notification, payment,
-and observability catalog passes the catalog contains 18 ready-local, 69
-credential-gated, 9 contract-only, and 6 blocked adapters. The web mobile
+hosted-auth, contact-import, event-platform, CRM, workflow-integration,
+notification, payment, and observability catalog passes the catalog contains 18
+ready-local, 97 credential-gated, 10 contract-only, and 6 blocked adapters. The web mobile
 customer panel appears before the navigation rail with zero horizontal overflow
 at 1440px desktop and 390px mobile widths. The mobile render readiness admin
 card was also rendered at 1440x1000 and 390x900 with the emulator-proof-missing
@@ -709,7 +712,8 @@ documentation claims found during the audit were corrected.
 
 ## Known Verification Gaps
 
-- No live OAuth integration test.
+- No completed OAuth callback/token exchange/import integration test; the
+  Google connection-start route only prepares an env-gated authorization URL.
 - No production/deployed Postgres migration run in this pass; isolated live
   Postgres migration/runtime integration is covered by doctor.
 - No live external queue, droplet, cloud cluster, or vendor sandbox test.

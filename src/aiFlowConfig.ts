@@ -39,24 +39,15 @@ export type {
 } from "./aiFlowConfigData.mjs";
 
 export function loadBrowserAiFlowAdminConfigs(): AiFlowAdminConfig[] {
-  if (typeof window === "undefined") return buildDefaultAiFlowAdminConfigs();
-  try {
-    const raw = window.localStorage.getItem(aiFlowAdminConfigStorageKey);
-    return normalizeAiFlowAdminConfigs(raw ? JSON.parse(raw) : undefined);
-  } catch {
-    return buildDefaultAiFlowAdminConfigs();
-  }
+  return buildDefaultAiFlowAdminConfigs();
 }
 
 export function saveBrowserAiFlowAdminConfigs(configs: AiFlowAdminConfig[]): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(aiFlowAdminConfigStorageKey, JSON.stringify(normalizeAiFlowAdminConfigs(configs)));
+  normalizeAiFlowAdminConfigs(configs);
 }
 
 export function resetBrowserAiFlowAdminConfigs(): AiFlowAdminConfig[] {
-  const defaults = buildDefaultAiFlowAdminConfigs();
-  saveBrowserAiFlowAdminConfigs(defaults);
-  return defaults;
+  return buildDefaultAiFlowAdminConfigs();
 }
 
 export function buildBrowserAiFlowSummary(configs: AiFlowAdminConfig[]): AiFlowConfigSummary {

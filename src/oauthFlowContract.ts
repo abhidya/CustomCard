@@ -165,7 +165,7 @@ export const oauthProviderContracts: OAuthProviderContract[] = [
     liveOAuthEnabled: false,
     storesProviderCredentials: false,
     rawContentAllowed: false,
-    requiredEnvVars: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+    requiredEnvVars: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
     blockedReasons: [
       "Google OAuth app not registered — requires Google Cloud Console project.",
       "Scopes not reviewed for production — requires security sign-off.",

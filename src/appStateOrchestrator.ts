@@ -35,7 +35,6 @@ import {
   buildBrowserAiFlowSummary,
   loadBrowserAiFlowAdminConfigs,
   normalizeAiFlowAdminConfigs,
-  saveBrowserAiFlowAdminConfigs,
   type AiFlowAdminConfig,
   type AiFlowConfigSummary
 } from "./aiFlowConfig";
@@ -150,7 +149,7 @@ export function useAppState(): AppState {
       const raw = localStorage.getItem(reviewerWorkspaceKey);
       const stored = raw ? (JSON.parse(raw) as LocalWorkspace) : undefined;
       // Workspaces created by the old prefilled reviewer identity are demo
-      // artifacts, not customer data — clear them once on load.
+      // artifacts, not customer data, so clear them once on load.
       if (stored && stored.name === "Abdul" && stored.email === "abdul@customcard.local") {
         localStorage.removeItem(reviewerWorkspaceKey);
         return undefined;
@@ -236,7 +235,6 @@ export function useAppState(): AppState {
   const setAiFlowConfigs = useCallback((configs: AiFlowAdminConfig[]) => {
     const normalized = normalizeAiFlowAdminConfigs(configs);
     setAiFlowConfigsState(normalized);
-    saveBrowserAiFlowAdminConfigs(normalized);
   }, []);
   // Chat starts empty: the conversation belongs to the customer, not a scripted transcript.
   const customerChatSession = useMemo(

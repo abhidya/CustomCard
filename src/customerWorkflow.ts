@@ -63,7 +63,16 @@ export type {
   VendorId,
   VisualStyle
 } from "./freeMvp";
-export { buildCustomerChatSession, validateCustomerChatSession, type CustomerChatSession } from "./customerChat";
+export {
+  buildCustomerChatSession,
+  sendCustomerChatMessage,
+  validateCustomerChatSession,
+  type CustomerChatFetch,
+  type CustomerChatSendInput,
+  type CustomerChatSendOptions,
+  type CustomerChatSendResult,
+  type CustomerChatSession
+} from "./customerChat";
 export {
   buildCustomerWebExperience,
   buildCustomerWebExperienceFromState,

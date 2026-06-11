@@ -38,6 +38,86 @@ export interface CustomerChatSession {
   blockedProviderReasons: string[];
 }
 
+export type CustomerChatFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
+export interface CustomerChatSendInput extends CustomerChatInput {
+  existingMessages?: ChatMessage[];
+  aiFlowConfig?: unknown;
+}
+
+export interface CustomerChatSendOptions {
+  fetchImpl?: CustomerChatFetch;
+  route?: string;
+  idempotencyKey?: string;
+}
+
+export interface CustomerChatSendResult {
+  messages: ChatMessage[];
+  session: CustomerChatSession;
+  usedFallback: boolean;
+  assistantMessage?: string;
+  errorMessage?: string;
+}
+
+export async function sendCustomerChatMessage(
+  input: CustomerChatSendInput,
+  options: CustomerChatSendOptions = {}
+): Promise<CustomerChatSendResult> {
+  const customerMessage = input.customerMessage.trim();
+  const existingMessages = input.existingMessages ?? [];
+  if (!customerMessage) {
+    const session = buildCustomerChatSession({ ...input, customerMessage: "" }, existingMessages);
+    return { messages: session.messages, session, usedFallback: false };
+  }
+
+  const sanitized = sanitizeText(customerMessage);
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch?.bind(globalThis);
+
+  try {
+    if (!fetchImpl) throw new Error("Customer chat route fetch is unavailable.");
+    const response = await fetchImpl(options.route ?? "/api/ai/chat/respond", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.idempotencyKey ? { "X-Idempotency-Key": options.idempotencyKey } : {})
+      },
+      body: JSON.stringify({
+        customer_message: customerMessage,
+        recipient_name: input.recipientName,
+        approved_memory_notes: input.approvedMemoryNotes,
+        locale: input.locale,
+        fulfillment_context: input.fulfillmentContext,
+        aiFlowConfig: input.aiFlowConfig
+      })
+    });
+    if (!response.ok) throw new Error(`Customer chat route returned ${response.status}.`);
+
+    const result = (await response.json()) as { assistant_message?: unknown };
+    const assistantText = typeof result.assistant_message === "string" ? result.assistant_message.trim() : "";
+    if (!assistantText) throw new Error("Customer chat route returned an empty response.");
+
+    const messages: ChatMessage[] = [
+      ...existingMessages,
+      { role: "customer", text: sanitized.text },
+      { role: "assistant", text: assistantText }
+    ];
+    const session = {
+      ...buildCustomerChatSession({ ...input, customerMessage: "" }, messages),
+      redactions: sanitized.redactions
+    };
+
+    return { messages, session, usedFallback: false, assistantMessage: assistantText };
+  } catch (error) {
+    const session = buildCustomerChatSession({ ...input, customerMessage }, existingMessages);
+    return {
+      messages: session.messages,
+      session,
+      usedFallback: true,
+      errorMessage: error instanceof Error ? error.message : "Customer chat route failed."
+    };
+  }
+}
+
 export function buildCustomerChatSession(
   input: CustomerChatInput,
   existingMessages?: ChatMessage[]

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCustomerChatSession,
+  sendCustomerChatMessage,
   validateCustomerChatSession,
   type CustomerChatSession
 } from "./customerChat";
@@ -56,6 +57,52 @@ describe("customer chat contract", () => {
       role: "customer",
       text: "I need a warm card for Sara and Ahmed, and I want pickup to stay manual."
     });
+  });
+
+  it("sends customer chat through one route seam and sanitizes displayed customer text", async () => {
+    const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+    const fetchImpl = async (input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ input, init });
+      return new Response(JSON.stringify({ assistant_message: "Route reply ready." }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    };
+
+    const result = await sendCustomerChatMessage(
+      { ...baseInput, aiFlowConfig: [{ providerId: "deterministic-customer-chat" }] },
+      { fetchImpl, idempotencyKey: "chat-test-key" }
+    );
+
+    expect(result.usedFallback).toBe(false);
+    expect(validateCustomerChatSession(result.session)).toEqual([]);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].input).toBe("/api/ai/chat/respond");
+    expect(calls[0].init?.headers).toMatchObject({ "X-Idempotency-Key": "chat-test-key" });
+    expect(JSON.parse(calls[0].init?.body as string)).toMatchObject({
+      customer_message: baseInput.customerMessage,
+      recipient_name: baseInput.recipientName,
+      approved_memory_notes: baseInput.approvedMemoryNotes,
+      locale: baseInput.locale,
+      fulfillment_context: baseInput.fulfillmentContext
+    });
+    expect(result.messages.at(-2)).toMatchObject({
+      role: "customer",
+      text: expect.stringContaining("[redacted-email]")
+    });
+    expect(result.messages.at(-1)).toMatchObject({ role: "assistant", text: "Route reply ready." });
+  });
+
+  it("falls back to the deterministic local session when the chat route fails", async () => {
+    const result = await sendCustomerChatMessage(baseInput, {
+      fetchImpl: async () => new Response(JSON.stringify({ error: "nope" }), { status: 503 })
+    });
+
+    expect(result.usedFallback).toBe(true);
+    expect(result.errorMessage).toContain("503");
+    expect(validateCustomerChatSession(result.session)).toEqual([]);
+    expect(result.messages.at(-1)?.text).toContain("This reply stayed local");
+    expect(result.messages.at(-2)?.text).not.toContain("sara@example.com");
   });
 
   it("rejects unsafe chat completion claims", () => {

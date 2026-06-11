@@ -9,6 +9,34 @@ export const aiCardGenerateRoute = "/api/ai/card/generate";
 export const aiChatRespondRoute = "/api/ai/chat/respond";
 
 const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
+const cardCopyJsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["panels", "memory_citations"],
+  properties: {
+    panels: {
+      type: "array",
+      minItems: 4,
+      maxItems: 4,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "headline", "body", "art_direction"],
+        properties: {
+          id: { type: "string", enum: requiredPanelIds },
+          headline: { type: "string", maxLength: 120 },
+          body: { type: "string", maxLength: 600 },
+          art_direction: { type: "string", maxLength: 500 }
+        }
+      }
+    },
+    memory_citations: {
+      type: "array",
+      maxItems: 4,
+      items: { type: "string" }
+    }
+  }
+};
 const panelDefaults = {
   front: {
     headline: "For you",
@@ -58,7 +86,8 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
 
       const draftInput = normalizeCardInput(body);
       let cardCopy;
-      let providerFailure = "";
+      let textProviderFailure = "";
+      let imageProviderFailure = "";
       let textProvider = copyFlow.primaryAdapterId;
 
       if (copyFlow.readyForLiveCalls) {
@@ -68,16 +97,17 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
             env,
             fetchImpl,
             systemPrompt: copyFlow.promptInstructions,
-            userPrompt: buildCardCopyPrompt(draftInput)
+            userPrompt: buildCardCopyPrompt(draftInput),
+            responseFormat: buildCardCopyResponseFormat(copyFlow)
           });
           cardCopy = normalizeCardCopy(parseJsonFromText(text), draftInput);
         } catch (error) {
-          providerFailure = error instanceof Error ? error.message : "Provider text generation failed.";
+          textProviderFailure = error instanceof Error ? error.message : "Provider text generation failed.";
           cardCopy = buildFallbackCardCopy(draftInput);
           textProvider = copyFlow.fallbackAdapterId;
         }
       } else {
-        providerFailure = copyFlow.blockedReasons[0] ?? "Live card-copy provider is disabled.";
+        textProviderFailure = copyFlow.blockedReasons[0] ?? "Live card-copy provider is disabled.";
         cardCopy = buildFallbackCardCopy(draftInput);
         textProvider = copyFlow.fallbackAdapterId;
       }
@@ -88,27 +118,41 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
         const imageRateLimit = checkRateLimit(rateBuckets, `${requestContext.rateKey}:image`, imageFlow);
         if (!imageRateLimit) {
           try {
-            const imageUrl = await executeImageProvider({
-              flow: imageFlow,
-              env,
-              fetchImpl,
-              prompt: buildImagePrompt(draftInput, cardCopy.panels[0]?.art_direction ?? "")
-            });
-            if (imageUrl) {
+            const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
+            for (const panelPrompt of imagePromptPlan) {
+              const imageUrl = await executeImageProvider({
+                flow: imageFlow,
+                env,
+                fetchImpl,
+                panelId: panelPrompt.panel_id,
+                prompt: panelPrompt.prompt,
+                negativePrompt: panelPrompt.negative_prompt
+              });
+              if (!imageUrl) continue;
               images.push({
-                panel_id: "front",
+                panel_id: panelPrompt.panel_id,
                 image_url: imageUrl,
-                revised_prompt: imageFlow.promptInstructions,
+                revised_prompt: panelPrompt.prompt,
                 width: 1500,
                 height: 2100
               });
+            }
+            if (images.length === imagePromptPlan.length) {
               imageProvider = imageFlow.primaryAdapterId;
+            } else {
+              imageProviderFailure = `Image provider returned ${images.length} of ${imagePromptPlan.length} required panels.`;
+              images.length = 0;
             }
           } catch (error) {
-            providerFailure = providerFailure || (error instanceof Error ? error.message : "Provider image generation failed.");
+            imageProviderFailure = error instanceof Error ? error.message : "Provider image generation failed.";
+            images.length = 0;
           }
         }
       }
+
+      const fallbackQueued =
+        Boolean(textProviderFailure && copyFlow.fallbackQueueEnabled) ||
+        Boolean(imageProviderFailure && imageFlow.fallbackQueueEnabled);
 
       return {
         statusCode: 200,
@@ -118,12 +162,16 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
           images,
           generated_by: images.length > 0 ? "ai-text-and-image" : "ai-text-only",
           ai_flow: {
-            card_copy: publicFlowState(copyFlow, textProvider, providerFailure),
-            card_image: publicFlowState(imageFlow, imageProvider, imageFlow.readyForLiveCalls ? "" : imageFlow.blockedReasons[0] ?? "")
+            card_copy: publicFlowState(copyFlow, textProvider, textProviderFailure),
+            card_image: publicFlowState(
+              imageFlow,
+              imageProvider,
+              imageProviderFailure || (imageFlow.readyForLiveCalls ? "" : imageFlow.blockedReasons[0] ?? "")
+            )
           },
-          live_provider_calls_enabled: copyFlow.readyForLiveCalls,
-          fallback_queued: Boolean(providerFailure && copyFlow.fallbackQueueEnabled),
-          external_network_calls: copyFlow.readyForLiveCalls
+          live_provider_calls_enabled: copyFlow.readyForLiveCalls || imageFlow.readyForLiveCalls,
+          fallback_queued: fallbackQueued,
+          external_network_calls: copyFlow.readyForLiveCalls || imageFlow.readyForLiveCalls
         }
       };
     },
@@ -184,7 +232,7 @@ function isAiEnvKey(key) {
   return /^(CUSTOMCARD_AI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_)/.test(key);
 }
 
-async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPrompt }) {
+async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
   const adapterId = flow.primaryAdapterId;
   if (adapterId === "deterministic-customer-chat") {
     throw new Error("Deterministic chat is a local fallback, not a live provider.");
@@ -199,7 +247,8 @@ async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPro
         model: flow.model,
         messages: buildMessages(systemPrompt, userPrompt),
         max_tokens: flow.maxTokens || 700,
-        temperature: flow.temperature
+        temperature: flow.temperature,
+        ...(responseFormat ? { response_format: responseFormat } : {})
       }
     });
     return extractText(data);
@@ -272,7 +321,7 @@ async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPro
   throw new Error(`Adapter ${adapterId} is configured but not executable in this runtime yet.`);
 }
 
-async function executeImageProvider({ flow, env, fetchImpl, prompt }) {
+async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
   if (flow.primaryAdapterId === "cloudflare-workers-ai-image") {
     const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
     const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
@@ -284,7 +333,24 @@ async function executeImageProvider({ flow, env, fetchImpl, prompt }) {
           authorization: `Bearer ${token}`,
           "content-type": "application/json"
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({
+          prompt,
+          negative_prompt: negativePrompt,
+          width: 1464,
+          height: 2048,
+          guidance: 3.5,
+          num_steps: 8,
+          metadata: {
+            customcard: {
+              prompt_contract: "folded-card-four-panel-v1",
+              generation_strategy: "one-provider-request-per-panel",
+              panel_id: panelId,
+              target_width: 1500,
+              target_height: 2100,
+              target_dpi: 300
+            }
+          }
+        })
       }
     );
     if (!response.ok) throw new Error(`Cloudflare image provider returned ${response.status}.`);
@@ -382,6 +448,7 @@ function buildCardCopyPrompt(input) {
       },
       constraints: [
         "Exactly four panels.",
+        "Use each panel id exactly once in this order: front, inside-left, inside-right, back.",
         "Use only provided memory_notes.",
         "No order/payment claims.",
         "headline <= 120 characters.",
@@ -393,6 +460,14 @@ function buildCardCopyPrompt(input) {
     null,
     2
   );
+}
+
+function buildCardCopyResponseFormat(flow) {
+  if (flow.primaryAdapterId !== "cloudflare-workers-ai-chat") return undefined;
+  return {
+    type: "json_schema",
+    json_schema: cardCopyJsonSchema
+  };
 }
 
 function buildChatPrompt(input) {
@@ -412,14 +487,63 @@ function buildChatPrompt(input) {
   );
 }
 
-function buildImagePrompt(input, artDirection) {
+function buildImagePromptPlan(input, cardCopy) {
+  const panelsById = new Map((cardCopy.panels ?? []).map((panel) => [panel.id, panel]));
+  return requiredPanelIds.map((panelId) => {
+    const panel = panelsById.get(panelId) ?? panelDefaults[panelId];
+    return {
+      panel_id: panelId,
+      prompt: buildPanelImagePrompt(input, panelId, panel),
+      negative_prompt: [
+        "folded card mockup",
+        "collage",
+        "multiple panels in one image",
+        "tabletop scene",
+        "hands",
+        "watermark",
+        "logo",
+        "QR code",
+        "crop marks",
+        "misspelled text",
+        "tiny unreadable lettering"
+      ].join(", ")
+    };
+  });
+}
+
+function buildPanelImagePrompt(input, panelId, panel) {
+  const role = {
+    front: "FRONT COVER",
+    "inside-left": "INSIDE LEFT PANEL",
+    "inside-right": "INSIDE RIGHT PANEL",
+    back: "BACK COVER"
+  }[panelId];
+  const panelInstruction = {
+    front:
+      "Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays.",
+    "inside-left":
+      "Create a soft coordinating interior-left panel with decorative support artwork and open space for a short memory or note.",
+    "inside-right":
+      "Create a clean main-message interior-right panel with a calm writing area and subtle matching ornamentation.",
+    back:
+      "Create a minimal coordinating back cover with mostly negative space and subtle brand-safe ornamentation near the lower area."
+  }[panelId];
+
   return [
-    "Portrait 5x7 greeting card front cover artwork, print-ready, flat artwork only.",
+    `Generate only the ${role} artwork for a portrait 5x7 folded greeting card panel.`,
+    "This is one standalone print panel, not a folded-card preview and not a collage.",
+    "Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins.",
     `Recipient: ${input.recipient}.`,
+    `Relationship: ${input.relationship}.`,
     `Occasion: ${input.occasion}.`,
+    `Tone: ${input.tone}.`,
     `Style: ${input.style}.`,
-    `Art direction: ${artDirection}.`,
-    "No collage, no mockup, no table scene, no crop marks. Leave safe margins for deterministic text overlay."
+    `Language context: ${input.language}.`,
+    `Panel headline for app overlay: ${panel.headline}.`,
+    `Panel body for app overlay: ${panel.body}.`,
+    `Art direction: ${panel.art_direction}.`,
+    panelInstruction,
+    "Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography."
   ].join(" ");
 }
 
@@ -581,6 +705,8 @@ function checkRateLimit(rateBuckets, rateKey = "unknown", flow) {
 }
 
 function extractText(data) {
+  const parsedMessage = data?.choices?.[0]?.message?.parsed;
+  if (parsedMessage && typeof parsedMessage === "object") return JSON.stringify(parsedMessage);
   const responseOutputText = Array.isArray(data?.output)
     ? data.output
         .flatMap((item) => item?.content ?? [])
@@ -590,14 +716,19 @@ function extractText(data) {
     : "";
   const text =
     data?.choices?.[0]?.message?.content ??
-    data?.result?.response ??
-    data?.response ??
+    stringifyStructuredText(data?.result?.response) ??
+    stringifyStructuredText(data?.response) ??
     data?.output_text ??
     data?.content?.[0]?.text ??
     data?.candidates?.[0]?.content?.parts?.map((part) => part.text).filter(Boolean).join("\n") ??
     responseOutputText;
   if (!text) throw new Error("AI provider response did not contain text.");
   return String(text);
+}
+
+function stringifyStructuredText(value) {
+  if (value === undefined || value === null || value === "") return undefined;
+  return typeof value === "string" ? value : JSON.stringify(value);
 }
 
 function extractImageUrl(data, contentType) {

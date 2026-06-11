@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
@@ -352,8 +353,8 @@ export const readiness = {
     staticIndexCachePolicy: "no-store"
   },
   persistence: {
-    tables: 19,
-    schemaBackedRoutes: 16,
+    tables: 20,
+    schemaBackedRoutes: 18,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
@@ -361,6 +362,7 @@ export const readiness = {
     providerUsageLedgerTable: true,
     appendOnlyAudit: true,
     relationshipMemoryRepository: true,
+    draftStateRepository: true,
     importPreviewRepository: true,
     cardProjectRepository: true,
     manualVendorHandoffRepository: true,
@@ -371,17 +373,14 @@ export const readiness = {
     localBrowserState: {
       audited: true,
       auditSource: "src/localPersistenceAudit.ts",
-      localStorageKeys: ["customcard-free-workspace-v1", "customcard-theme-v1"],
-      dbRequiredItems: 4,
-      objectStoreRequiredItems: 1,
-      browserOnlyItems: 1,
+      localStorageKeys: [],
+      dbRequiredItems: 0,
+      objectStoreRequiredItems: 0,
+      browserOnlyItems: 0,
       dbRequiredData: [
-        "workspace identity",
-        "approved relationship memories",
-        "saved event queue and decisions",
-        "card history and render metadata"
+        "migrated to account-scoped API routes"
       ],
-      browserOnlyData: ["theme preference"]
+      browserOnlyData: []
     }
   }
 };
@@ -539,6 +538,7 @@ async function serveApi(request, response, requestUrl) {
       service: "customcard-api",
       primaryActions: ["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"],
       readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual print checklist"],
+      draftStateRoute: "/api/customer/draft-state/current",
       localization: readiness.localization,
       printerPricing: {
         selectedVendorId: "walgreens",
@@ -581,6 +581,11 @@ async function serveApi(request, response, requestUrl) {
       realOrdersEnabled: false,
       runtime: apiRuntime.describe()
     });
+    return;
+  }
+
+  if (path === "/api/customer/draft-state/current") {
+    sendJson(response, 200, await apiRuntime.readDraftState({ authContext }));
     return;
   }
 
@@ -655,7 +660,7 @@ async function serveApi(request, response, requestUrl) {
     request,
     authContext,
     bodyText,
-    responsePayload: buildMutationContractPayload(route, bodyText)
+    responsePayload: buildMutationContractPayload(route, bodyText, { env: process.env, requestUrl })
   });
   sendJson(response, persistedMutation.statusCode, persistedMutation.payload);
 }
@@ -1061,6 +1066,7 @@ function validateApiServerContract() {
   if (!readiness.persistence.providerUsageLedgerTable) blockers.push("API readiness is missing provider usage ledger persistence.");
   if (!readiness.persistence.appendOnlyAudit) blockers.push("API readiness must use append-only audit persistence.");
   if (!readiness.persistence.relationshipMemoryRepository) blockers.push("API readiness is missing relationship-memory repository persistence.");
+  if (!readiness.persistence.draftStateRepository) blockers.push("API readiness is missing draft-state repository persistence.");
   if (!readiness.persistence.importPreviewRepository) blockers.push("API readiness is missing import-preview repository persistence.");
   if (!readiness.persistence.cardProjectRepository) blockers.push("API readiness is missing card-project repository persistence.");
   if (!readiness.persistence.manualVendorHandoffRepository) {
@@ -1071,18 +1077,18 @@ function validateApiServerContract() {
   if (!readiness.persistence.renderPacketArtifacts) blockers.push("API readiness is missing render-packet artifact manifests.");
   if (!readiness.persistence.signedArtifactUrls) blockers.push("API readiness is missing signed artifact URL contracts.");
   if (!readiness.persistence.localBrowserState?.audited) blockers.push("API readiness is missing local browser persistence audit.");
-  if (readiness.persistence.localBrowserState?.dbRequiredItems !== 4) {
-    blockers.push("API readiness must track four browser-local customer data groups for database migration.");
+  if ((readiness.persistence.localBrowserState?.localStorageKeys ?? []).length !== 0) {
+    blockers.push("API readiness must not require browser localStorage keys.");
   }
-  if (readiness.persistence.localBrowserState?.objectStoreRequiredItems !== 1) {
-    blockers.push("API readiness must track render artifacts as object-store migration work.");
+  if (readiness.persistence.localBrowserState?.dbRequiredItems !== 0) {
+    blockers.push("API readiness must keep browser-local customer data migration count at zero.");
   }
   blockers.push(...apiRuntime.validate());
 
   return blockers;
 }
 
-function buildMutationContractPayload(route, bodyText) {
+function buildMutationContractPayload(route, bodyText, options = {}) {
   const requestBody = parseJsonBody(bodyText);
   const basePayload = {
     service: "customcard-api",
@@ -1149,6 +1155,31 @@ function buildMutationContractPayload(route, bodyText) {
         table: "card_projects",
         runtimeMode: "contract",
         persisted: false
+      }
+    };
+  }
+
+  if (route.id === "customer-draft-state-save") {
+    const draftStateId = safeContractId(requestBody.draftStateId, `draft-state-${stableContractHash(JSON.stringify(requestBody.draftInput ?? {})).slice(0, 8)}`);
+    return {
+      ...basePayload,
+      draftStateId,
+      updatedAtIso: safeTimestamp(requestBody.updatedAtIso, new Date().toISOString()),
+      draftState: {
+        draftStateId,
+        status: safeContractDraftStatus(requestBody.status),
+        draftInput: sanitizeContractDraftInput(requestBody.draftInput),
+        opportunityId: safeContractId(requestBody.opportunityId, ""),
+        opportunityDecision: safeContractOpportunityDecision(requestBody.opportunityDecision),
+        vendorId: safeContractVendorId(requestBody.vendorId),
+        localeCode: safeLocale(requestBody.localeCode ?? requestBody.locale)
+      },
+      repository: {
+        table: "draft_states",
+        runtimeMode: "contract",
+        persisted: false,
+        browserLocalState: false,
+        rawContentStored: false
       }
     };
   }
@@ -1223,21 +1254,32 @@ function buildMutationContractPayload(route, bodyText) {
   if (route.id === "calendar-connection-start") {
     const requestedChoiceId = safeCalendarChoiceId(requestBody.calendarChoiceId ?? requestBody.choiceId ?? requestBody.providerId);
     const startPacket = buildCalendarConnectionStartPacket(requestedChoiceId);
+    const googleStart =
+      requestedChoiceId === "google-calendar-events"
+        ? buildGoogleCalendarConnectionStart(startPacket, {
+            env: options.env ?? process.env,
+            requestBody,
+            requestUrl: options.requestUrl
+          })
+        : null;
+    const effectiveStartPacket = googleStart?.startPacket ?? startPacket;
     return {
       ...basePayload,
-      status: startPacket.canStartNow ? "ready-local" : "blocked",
+      status: googleStart?.status ?? (effectiveStartPacket.canStartNow ? "ready-local" : "blocked"),
       requestedChoiceId,
-      startPacket,
+      startPacket: effectiveStartPacket,
       serverOwned: true,
       clientMayPrepareProviderRequest: false,
-      providerRequestUrl: null,
-      networkRequestPrepared: false,
+      providerRequestUrl: googleStart?.providerRequestUrl ?? null,
+      networkRequestPrepared: googleStart?.networkRequestPrepared ?? false,
       credentialStorageEnabled: false,
-      externalNetworkCalls: false,
+      externalNetworkCalls: googleStart?.externalNetworkCalls ?? false,
       realOrdersEnabled: false,
       rawContentStored: false,
-      nextApiRoute: startPacket.nextApiRoute,
-      blockers: startPacket.missingRepoEvidenceIds,
+      nextApiRoute: effectiveStartPacket.nextApiRoute,
+      blockers: googleStart?.blockers ?? effectiveStartPacket.missingRepoEvidenceIds,
+      missingEnv: googleStart?.missingEnv ?? [],
+      oauth: googleStart?.oauth,
       repository: {
         tables: ["auth_sessions", "idempotency_keys", "audit_log"],
         runtimeMode: "contract",
@@ -1376,6 +1418,128 @@ function buildMutationContractPayload(route, bodyText) {
   return basePayload;
 }
 
+const googleCalendarOAuthScopeUri = "https://www.googleapis.com/auth/calendar.events.readonly";
+const googleCalendarOAuthRequiredEnv = [
+  "GOOGLE_OAUTH_CLIENT_ID",
+  "GOOGLE_OAUTH_CLIENT_SECRET",
+  "GOOGLE_OAUTH_REDIRECT_URI"
+];
+
+function buildGoogleCalendarConnectionStart(basePacket, { env = process.env, requestBody = {}, requestUrl } = {}) {
+  const requestOrigin = requestUrl instanceof URL ? requestUrl.origin : "http://localhost:5173";
+  const redirectUri = usableEnvValue(env.GOOGLE_OAUTH_REDIRECT_URI) || usableEnvValue(env.GOOGLE_CALENDAR_REDIRECT_URI) || "";
+  const config = {
+    clientId: usableEnvValue(env.GOOGLE_OAUTH_CLIENT_ID),
+    clientSecret: usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET),
+    redirectUri
+  };
+  const missingEnv = googleCalendarOAuthRequiredEnv.filter((name) => {
+    if (name === "GOOGLE_OAUTH_CLIENT_ID") return !config.clientId;
+    if (name === "GOOGLE_OAUTH_CLIENT_SECRET") return !config.clientSecret;
+    if (name === "GOOGLE_OAUTH_REDIRECT_URI") return !config.redirectUri;
+    return true;
+  });
+
+  if (missingEnv.length > 0) {
+    const blockers = [
+      ...missingEnv.map((name) => `missing-env:${name}`),
+      ...basePacket.missingRepoEvidenceIds
+    ];
+    return {
+      status: "blocked",
+      providerRequestUrl: null,
+      networkRequestPrepared: false,
+      externalNetworkCalls: false,
+      missingEnv,
+      blockers,
+      startPacket: {
+        ...basePacket,
+        requiredEnv: googleCalendarOAuthRequiredEnv,
+        missingRepoEvidenceIds: blockers,
+        blockedReason: `Missing Google OAuth env: ${missingEnv.join(", ")}.`
+      }
+    };
+  }
+
+  const returnTo = safeReturnToUrl(requestBody.returnTo, requestOrigin);
+  const state = buildOAuthState("google-calendar-events", returnTo);
+  const providerRequestUrl = buildGoogleCalendarAuthorizationUrl({
+    clientId: config.clientId,
+    redirectUri: config.redirectUri,
+    state
+  });
+
+  return {
+    status: "oauth-ready",
+    providerRequestUrl,
+    networkRequestPrepared: true,
+    externalNetworkCalls: true,
+    missingEnv: [],
+    blockers: [],
+    oauth: {
+      provider: "google-calendar",
+      authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+      redirectUri: config.redirectUri,
+      returnTo,
+      state,
+      scopes: [googleCalendarOAuthScopeUri],
+      tokenExchangeRequired: true,
+      credentialStorageEnabled: false,
+      rawContentStored: false
+    },
+    startPacket: {
+      ...basePacket,
+      startMode: "oauth-provider-redirect",
+      canStartNow: true,
+      liveOAuthEnabled: true,
+      networkRequestPrepared: true,
+      externalNetworkCalls: true,
+      providerRequestUrl,
+      nextApiRoute: null,
+      requiredEnv: googleCalendarOAuthRequiredEnv,
+      blockingEvidenceIds: [],
+      missingRepoEvidenceIds: [],
+      blockedReason: undefined
+    }
+  };
+}
+
+function buildGoogleCalendarAuthorizationUrl({ clientId, redirectUri, state }) {
+  const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  url.searchParams.set("client_id", clientId);
+  url.searchParams.set("redirect_uri", redirectUri);
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("scope", googleCalendarOAuthScopeUri);
+  url.searchParams.set("access_type", "offline");
+  url.searchParams.set("include_granted_scopes", "true");
+  url.searchParams.set("prompt", "consent");
+  url.searchParams.set("state", state);
+  return url.toString();
+}
+
+function buildOAuthState(choiceId, returnTo) {
+  const nonce = randomBytes(18).toString("base64url");
+  const digest = createHash("sha256").update(`${choiceId}:${returnTo}:${nonce}`).digest("base64url").slice(0, 18);
+  return `${digest}.${nonce}`;
+}
+
+function safeReturnToUrl(value, fallbackOrigin) {
+  try {
+    const parsed = new URL(String(value ?? ""), fallbackOrigin);
+    const fallback = new URL(fallbackOrigin);
+    return parsed.origin === fallback.origin ? parsed.toString() : `${fallback.origin}/`;
+  } catch {
+    return `${fallbackOrigin}/`;
+  }
+}
+
+function usableEnvValue(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if (/^(replace|todo|changeme|example|placeholder|dummy)/i.test(text)) return "";
+  return text;
+}
+
 function calendarConnectionStartPackets() {
   return [
     buildCalendarConnectionStartPacket("manual-invite-or-ics"),
@@ -1436,7 +1600,7 @@ function buildCalendarConnectionStartPacket(choiceId) {
       canStartNow: false,
       sourceMode: "oauth-readiness",
       officialDocs: ["https://developers.google.com/workspace/calendar/api/auth"],
-      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
       requiredScopes: ["calendar.events.readonly"],
       officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
       dataBoundary: "Event metadata only after explicit consent; raw descriptions stay out of storage.",
@@ -1480,7 +1644,7 @@ function buildCalendarConnectionStartPacket(choiceId) {
           actor: "operator",
           title: "Register OAuth app",
           detail: "Configure the OAuth client, redirect URI, consent screen, and required environment variables.",
-          evidenceRequired: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"]
+          evidenceRequired: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"]
         },
         {
           actor: "operator",
@@ -1617,6 +1781,58 @@ function safeDataRequestStatus(value) {
 function safeMemoryDecision(value) {
   const decision = String(value ?? "approve").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
   return ["approve", "forget"].includes(decision) ? decision : "approve";
+}
+
+function safeContractDraftStatus(value) {
+  const status = String(value ?? "draft").trim().toLowerCase();
+  return ["draft", "in-progress", "ready-for-review"].includes(status) ? status : "draft";
+}
+
+function safeContractOpportunityDecision(value) {
+  const decision = String(value ?? "pending").trim().toLowerCase();
+  return ["pending", "accepted", "snoozed", "dismissed"].includes(decision) ? decision : "pending";
+}
+
+function safeContractVendorId(value) {
+  const vendorId = String(value ?? "walgreens").trim().toLowerCase();
+  return ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"].includes(vendorId)
+    ? vendorId
+    : "walgreens";
+}
+
+function sanitizeContractDraftInput(value) {
+  const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return {
+    sender: safeContractText(input.sender, "Local User"),
+    recipient: safeContractText(input.recipient, "Someone important"),
+    relationship: safeContractText(input.relationship, "Friends"),
+    occasion: safeContractText(input.occasion, "card"),
+    tone: safeContractTone(input.tone),
+    style: safeContractVisualStyle(input.style),
+    language: safeContractLanguage(input.language),
+    personalNote: safeContractLongText(input.personalNote, ""),
+    useMemory: safeBoolean(input.useMemory)
+  };
+}
+
+function safeContractLongText(value, fallback) {
+  const text = String(value ?? "").trim().replace(/\s+/g, " ");
+  return text.slice(0, 1000) || fallback;
+}
+
+function safeContractTone(value) {
+  const tone = String(value ?? "warm").trim().toLowerCase();
+  return ["warm", "playful", "elegant", "reverent"].includes(tone) ? tone : "warm";
+}
+
+function safeContractVisualStyle(value) {
+  const style = String(value ?? "botanical").trim().toLowerCase();
+  return ["botanical", "bold-type", "photo-note", "minimal"].includes(style) ? style : "botanical";
+}
+
+function safeContractLanguage(value) {
+  const language = String(value ?? "English").trim();
+  return ["English", "Spanish", "Urdu", "Arabic"].includes(language) ? language : "English";
 }
 
 function safeTimestamp(value, fallback) {

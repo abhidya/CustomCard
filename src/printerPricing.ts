@@ -6,6 +6,10 @@ import {
   isPrinterCouponActive,
   validatePrinterCouponPortalApplicationEvidence
 } from "./printerCouponCartTerms";
+import {
+  printerCouponCollectionPriority as sharedPrinterCouponCollectionPriority,
+  printerCouponCollectionTargets as sharedPrinterCouponCollectionTargets
+} from "./printerCouponPlanningData.mjs";
 
 export { applyDiscountPercent, hasMatchingProviderPortalCouponEvidence, isPrinterCouponActive, validatePrinterCouponPortalApplicationEvidence };
 
@@ -503,68 +507,8 @@ export const printerCouponPolicy: PrinterCouponPolicy = {
     "Coupons are collected and tested during provider-portal pricing; best-price ranking uses a coupon only after the portal applies it to the same product, quantity, fulfillment mode, and account state."
 };
 
-export const printerCouponCollectionPriority: PrinterCouponCollectionPriorityStep[] = [
-  {
-    id: "credentialed-coupon-provider-feed",
-    order: 1,
-    label: "Credentialed coupon provider feed",
-    collectionMode: "coupon-provider-feed",
-    collectionMethod: "provider-api-feed",
-    evidenceRole: "coupon-discovery",
-    targetRoles: ["provider-feed"],
-    requiresCredentials: true,
-    fallbackAllowed: false,
-    canAffectBestPrice: false,
-    requiredEvidence: ["provider feed response with coupon code, link, expiration, and verification metadata"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "official-retailer-coupon-page",
-    order: 2,
-    label: "Official retailer coupon page",
-    collectionMode: "retailer-public-coupon-page",
-    collectionMethod: "server-fetch-html",
-    evidenceRole: "retailer-source-confirmation",
-    targetRoles: ["coupon-source"],
-    requiresCredentials: false,
-    fallbackAllowed: true,
-    canAffectBestPrice: false,
-    requiredEvidence: ["official retailer coupon page code, product scope, terms, and expiration"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "exact-rendered-print-link",
-    order: 3,
-    label: "Exact rendered Walgreens/CVS print link",
-    collectionMode: "retailer-public-coupon-page",
-    collectionMethod: "rendered-browser-read",
-    evidenceRole: "product-code-price-proof",
-    targetRoles: ["print-entrypoint"],
-    requiresCredentials: false,
-    fallbackAllowed: true,
-    canAffectBestPrice: false,
-    requiredEvidence: ["visible coupon text plus matching product, price, and SKU signals from the exact print link"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "same-cart-provider-portal-proof",
-    order: 4,
-    label: "Same-cart provider portal proof",
-    collectionMode: "provider-portal-checkout",
-    collectionMethod: "provider-portal-cart-evidence",
-    evidenceRole: "best-price-discount-proof",
-    targetRoles: [],
-    requiresCredentials: false,
-    fallbackAllowed: false,
-    canAffectBestPrice: true,
-    requiredEvidence: [
-      "provider portal checkout subtotal after coupon application",
-      "same product, quantity, fulfillment mode, account state, and subtotal math",
-      "no payment or order submission"
-    ],
-    noNetworkRuntime: true
-  }
-];
+export const printerCouponCollectionPriority =
+  sharedPrinterCouponCollectionPriority as unknown as PrinterCouponCollectionPriorityStep[];
 
 export const printerCouponValidationProviders: PrinterCouponValidationProvider[] = [
   {
@@ -646,148 +590,8 @@ export const printerCouponSources = {
   }
 } satisfies Record<string, PrinterCouponSource>;
 
-export const printerCouponCollectionTargets: PrinterCouponCollectionTarget[] = [
-  {
-    id: "walgreens-photo-official-deals",
-    label: "Walgreens Photo official deals page",
-    vendorIds: ["walgreens"],
-    mode: "retailer-public-coupon-page",
-    role: "coupon-source",
-    readiness: "ready-public-page",
-    url: printerCouponSources.walgreensPhotoDeals.url,
-    collectionMethod: "server-fetch-html",
-    credentialEnvKeys: [],
-    sourceProvider: "retailer",
-    maxAgeHours: 24,
-    expectedOfferCodes: ["CRISPCARD"],
-    extractHints: ["Coupon code:", "All Photo Cards and Premium Stationery", "Offer expires", "logged in registered Walgreens.com/Photo"],
-    verificationSignals: ["CRISPCARD", "60% OFF All Photo Cards & Premium Stationery", "Offer expires at 11:59 p.m. CT"],
-    staticHtmlSignalAllowed: true,
-    browserRenderProofRequired: false,
-    legalReviewRequired: true,
-    blockedFields: ["login session", "cart subtotal", "coupon application proof", "tax", "shipping", "store availability"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "walgreens-photo-card-design-entrypoint",
-    label: "Walgreens Photo 5x7 folded card design-detail print entrypoint",
-    vendorIds: ["walgreens"],
-    mode: "retailer-public-coupon-page",
-    role: "print-entrypoint",
-    readiness: "ready-public-page",
-    url: printerCouponSources.walgreensPhotoDeals.confirmationUrls![0],
-    collectionMethod: "rendered-browser-read",
-    credentialEnvKeys: [],
-    sourceProvider: "retailer",
-    maxAgeHours: 24,
-    expectedOfferCodes: ["CRISPCARD"],
-    extractHints: ["5x7 Folded Card", "Price $3.49 each", "CommerceProduct_33272", "Create now"],
-    verificationSignals: ["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"],
-    staticHtmlSignalAllowed: true,
-    browserRenderProofRequired: true,
-    legalReviewRequired: true,
-    blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "cvs-photo-official-coupons",
-    label: "CVS Photo official coupon page",
-    vendorIds: ["cvs"],
-    mode: "retailer-public-coupon-page",
-    role: "coupon-source",
-    readiness: "ready-public-page",
-    url: printerCouponSources.cvsPhotoCoupons.url,
-    collectionMethod: "server-fetch-html",
-    credentialEnvKeys: [],
-    sourceProvider: "retailer",
-    maxAgeHours: 24,
-    expectedOfferCodes: ["JUNESW"],
-    extractHints: ["Promo code:", "50% off Sitewide", "JUNESW", "Offer starts", "Offer valid online and in the CVS Health app"],
-    verificationSignals: ["JUNESW", "50% off Sitewide", "Offer valid online and in the CVS Health app"],
-    staticHtmlSignalAllowed: true,
-    browserRenderProofRequired: false,
-    legalReviewRequired: true,
-    blockedFields: ["logged-in cart", "coupon application proof", "tax", "shipping", "store availability"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "cvs-photo-card-design-entrypoint",
-    label: "CVS Photo 5x7 folded greeting card design-detail print entrypoint",
-    vendorIds: ["cvs"],
-    mode: "retailer-public-coupon-page",
-    role: "print-entrypoint",
-    readiness: "ready-public-page",
-    url: printerCouponSources.cvsPhotoCoupons.confirmationUrls![0],
-    collectionMethod: "rendered-browser-read",
-    credentialEnvKeys: [],
-    sourceProvider: "retailer",
-    maxAgeHours: 24,
-    expectedOfferCodes: ["JUNESW"],
-    extractHints: ["Folded Greeting Card, 5x7", "JSON-LD price 8.98", "50% off Sitewide with promo code JUNESW", "Offer ends 6/20/2026"],
-    verificationSignals: ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"],
-    staticHtmlSignalAllowed: true,
-    browserRenderProofRequired: true,
-    legalReviewRequired: true,
-    blockedFields: ["logged-in cart", "coupon application proof", "tax", "pickup window", "real order placement"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "fmtc-deal-feed",
-    label: "FMTC Deal Feed provider API",
-    vendorIds: ["walgreens", "cvs"],
-    mode: "coupon-provider-feed",
-    role: "provider-feed",
-    readiness: "credential-gated",
-    url: printerCouponSources.fmtcProviderFeed.url,
-    collectionMethod: "provider-api-feed",
-    credentialEnvKeys: ["FMTC_API_TOKEN"],
-    sourceProvider: "affiliate-provider",
-    maxAgeHours: 12,
-    expectedOfferCodes: [],
-    extractHints: ["merchant", "code", "code_verified_at", "link_verified_at", "valid_from", "valid_to"],
-    verificationSignals: ["status", "code_verified_at", "link_verified_at", "end_date"],
-    staticHtmlSignalAllowed: false,
-    browserRenderProofRequired: false,
-    legalReviewRequired: true,
-    blockedFields: [
-      "provider credentials in client",
-      "unapproved affiliate campaign",
-      "provider-only checkout proof",
-      "coupon application proof",
-      "tax",
-      "store availability"
-    ],
-    noNetworkRuntime: true
-  },
-  {
-    id: "rakuten-coupon-feed",
-    label: "Rakuten Advertising Coupon Feed API",
-    vendorIds: ["walgreens", "cvs"],
-    mode: "coupon-provider-feed",
-    role: "provider-feed",
-    readiness: "credential-gated",
-    url: printerCouponSources.rakutenCouponFeed.url,
-    collectionMethod: "provider-api-feed",
-    credentialEnvKeys: ["RAKUTEN_ADVERTISING_API_TOKEN"],
-    sourceProvider: "affiliate-provider",
-    maxAgeHours: 12,
-    expectedOfferCodes: [],
-    extractHints: ["advertiser", "coupon code", "promotional link", "offerstartdate", "offerenddate", "promotion type"],
-    verificationSignals: ["coupon code", "promotional link", "offerstartdate", "offerenddate", "advertiser"],
-    staticHtmlSignalAllowed: false,
-    browserRenderProofRequired: false,
-    legalReviewRequired: true,
-    blockedFields: [
-      "provider credentials in client",
-      "unapproved advertiser relationship",
-      "provider-only checkout proof",
-      "coupon application proof",
-      "tax",
-      "store availability"
-    ],
-    noNetworkRuntime: true
-  }
-];
+export const printerCouponCollectionTargets =
+  sharedPrinterCouponCollectionTargets as unknown as PrinterCouponCollectionTarget[];
 
 export const printerCouponOffers: PrinterCouponOffer[] = [
   {

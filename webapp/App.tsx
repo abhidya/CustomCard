@@ -1,23 +1,25 @@
 import { ArrowRight, Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
 import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AdminPanelView, AdaptersView } from "../src/App";
 import {
   addApprovedRelationshipMemory,
   removeApprovedRelationshipMemory,
   type CardDraftInput,
   type CardPanel,
-  type LocalWorkspace
+  type LocalWorkspace,
+  type OpportunityDecision,
+  type VendorId
 } from "../src/customerWorkflow";
 import { buildPanelSvgExportFile, type PrintExportFile } from "../src/printExport";
 import {
   initialViewFromLocation,
   reviewerReferenceDate,
-  reviewerWorkspaceKey,
   useAppState,
   type ViewId
 } from "../src/appStateOrchestrator";
-import { themes, useTheme } from "./theme";
+import type { SupportedLocaleCode } from "../src/localization";
+import { themes, useTheme, type ThemeId } from "./theme";
 import { Toast } from "./ui";
 import { EventsView } from "./views/EventsView";
 import { HomeView } from "./views/HomeView";
@@ -60,18 +62,21 @@ export default function App() {
   const [theme, setTheme] = useTheme();
   const adminAccess = useAdminAccess();
   const { getToken } = useAuth();
-  const { user } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const state = useAppState();
   const {
     activeView,
     setActiveView,
     workspace,
     setWorkspace,
-    authForm,
     inviteText,
     setInviteText,
+    opportunityDecision,
     setOpportunityDecision,
+    vendorId,
     setVendorId,
+    localeCode,
+    setLocaleCode,
     memoryForm,
     setMemoryForm,
     exportStatus,
@@ -105,9 +110,16 @@ export default function App() {
   const visibleCustomerView = isAdminView || activeView === "mobile" ? "customer" : activeView;
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
-  const customerEmail = user?.primaryEmailAddress?.emailAddress || workspace?.email || authForm.email;
+  const customerEmail = user?.primaryEmailAddress?.emailAddress ?? "";
+  const customerIdentity = useMemo(
+    () => ({
+      name: user?.fullName || draftInput.sender || "CustomCard customer",
+      email: customerEmail
+    }),
+    [customerEmail, draftInput.sender, user?.fullName]
+  );
   const checkoutProfile = {
-    name: user?.fullName || authForm.name || draftInput.sender,
+    name: customerIdentity.name,
     firstName: user?.firstName ?? undefined,
     lastName: user?.lastName ?? undefined,
     email: customerEmail,
@@ -122,6 +134,21 @@ export default function App() {
     }
   }, [getToken]);
 
+  useDraftAutosave({
+    draftInput,
+    enabled: Boolean(isLoaded && isSignedIn),
+    getToken,
+    localeCode,
+    opportunityDecision,
+    opportunityId: opportunity.id,
+    setDraftInput,
+    setLocaleCode,
+    setOpportunityDecision,
+    setVendorId,
+    validationPassed: validation.passed,
+    vendorId
+  });
+
   /* ---------- navigation ---------- */
   function openView(view: ViewId) {
     setActiveView(view);
@@ -132,22 +159,23 @@ export default function App() {
   /* ---------- workspace + notes ---------- */
   function saveWorkspace(next: LocalWorkspace | undefined) {
     setWorkspace(next);
-    if (!next) {
-      localStorage.removeItem(reviewerWorkspaceKey);
-      return;
-    }
-    localStorage.setItem(reviewerWorkspaceKey, JSON.stringify(next));
   }
 
   function addNote() {
-    saveWorkspace(
-      addApprovedRelationshipMemory(
-        workspace,
-        { name: authForm.name, email: authForm.email },
-        memoryForm,
-        reviewerReferenceDate
-      )
+    const nextWorkspace = addApprovedRelationshipMemory(
+      workspace,
+      customerIdentity,
+      memoryForm,
+      reviewerReferenceDate
     );
+    saveWorkspace(nextWorkspace);
+    if (isSignedIn) {
+      void postCustomerMutation(getToken, "/api/memories/review", {
+        recipientName: memoryForm.recipient,
+        text: memoryForm.note,
+        decision: "approve"
+      });
+    }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
     setExportStatus("Note saved");
   }
@@ -270,10 +298,17 @@ export default function App() {
           onClick: () => openView("studio")
         };
 
-  const hasProgress =
-    draftInput.recipient !== "Someone important" ||
-    draftInput.personalNote !== "Mention their shared patience, humor, and the little rituals that made the year feel full." ||
-    inviteText.trim().length > 0;
+  const hasProgress = hasMeaningfulDraftProgress(draftInput) || inviteText.trim().length > 0;
+
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <AccountGateShell
+        loading={!isLoaded}
+        onTheme={setTheme}
+        theme={theme}
+      />
+    );
+  }
 
   return (
     <div className="shell" data-admin-view={isAdminView ? "true" : undefined}>
@@ -431,6 +466,208 @@ export default function App() {
       </div> : null}
 
       {toast ? <Toast message={toast} /> : null}
+    </div>
+  );
+}
+
+interface DraftAutosaveInput {
+  draftInput: CardDraftInput;
+  enabled: boolean;
+  getToken: () => Promise<string | null>;
+  localeCode: SupportedLocaleCode;
+  opportunityDecision: OpportunityDecision;
+  opportunityId: string;
+  setDraftInput: (updater: ((current: CardDraftInput) => CardDraftInput) | CardDraftInput) => void;
+  setLocaleCode: (code: SupportedLocaleCode) => void;
+  setOpportunityDecision: (decision: OpportunityDecision) => void;
+  setVendorId: (vendorId: VendorId) => void;
+  validationPassed: boolean;
+  vendorId: VendorId;
+}
+
+interface SavedDraftState {
+  draftInput?: CardDraftInput;
+  localeCode?: SupportedLocaleCode;
+  opportunityDecision?: OpportunityDecision;
+  vendorId?: VendorId;
+}
+
+function useDraftAutosave({
+  draftInput,
+  enabled,
+  getToken,
+  localeCode,
+  opportunityDecision,
+  opportunityId,
+  setDraftInput,
+  setLocaleCode,
+  setOpportunityDecision,
+  setVendorId,
+  validationPassed,
+  vendorId
+}: DraftAutosaveInput) {
+  const hydrated = useRef(false);
+  const draftHasProgress = hasMeaningfulDraftProgress(draftInput);
+  const draftSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        draftInput,
+        localeCode,
+        opportunityDecision,
+        opportunityId,
+        status: validationPassed ? "ready-for-review" : draftHasProgress ? "in-progress" : "draft",
+        vendorId
+      }),
+    [draftHasProgress, draftInput, localeCode, opportunityDecision, opportunityId, validationPassed, vendorId]
+  );
+
+  useEffect(() => {
+    if (!enabled) {
+      hydrated.current = false;
+      return;
+    }
+
+    let cancelled = false;
+    getCustomerJson(getToken, "/api/customer/draft-state/current")
+      .then((payload) => {
+        if (cancelled) return;
+        const saved = payload?.draftState as SavedDraftState | undefined;
+        if (saved?.draftInput) setDraftInput((current) => ({ ...current, ...saved.draftInput }));
+        if (saved?.localeCode) setLocaleCode(saved.localeCode);
+        if (saved?.opportunityDecision) setOpportunityDecision(saved.opportunityDecision);
+        if (saved?.vendorId) setVendorId(saved.vendorId);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) hydrated.current = true;
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, getToken, setDraftInput, setLocaleCode, setOpportunityDecision, setVendorId]);
+
+  useEffect(() => {
+    if (!enabled || !hydrated.current || !draftHasProgress) return;
+    const timer = window.setTimeout(() => {
+      const body = JSON.parse(draftSnapshot) as Record<string, unknown>;
+      void postCustomerMutation(getToken, "/api/customer/draft-state", body);
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [draftHasProgress, draftSnapshot, enabled, getToken]);
+}
+
+function hasMeaningfulDraftProgress(input: CardDraftInput): boolean {
+  return (
+    input.recipient.trim() !== "Someone important" ||
+    input.sender.trim() !== "Local User" ||
+    input.relationship.trim() !== "Friends" ||
+    input.occasion.trim() !== "card" ||
+    input.tone !== "warm" ||
+    input.style !== "botanical" ||
+    input.language !== "English" ||
+    input.personalNote.trim().length > 0
+  );
+}
+
+async function getCustomerJson(getToken: () => Promise<string | null>, path: string): Promise<Record<string, unknown> | undefined> {
+  const headers = await buildCustomerHeaders(getToken);
+  const response = await fetch(path, { headers });
+  if (!response.ok) return undefined;
+  return response.json() as Promise<Record<string, unknown>>;
+}
+
+async function postCustomerMutation(
+  getToken: () => Promise<string | null>,
+  path: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  const headers = await buildCustomerHeaders(getToken);
+  headers.set("Content-Type", "application/json");
+  headers.set("X-Idempotency-Key", buildBrowserIdempotencyKey(path));
+  await fetch(path, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body)
+  });
+}
+
+async function buildCustomerHeaders(getToken: () => Promise<string | null>): Promise<Headers> {
+  const headers = new Headers();
+  try {
+    const token = await getToken();
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  } catch {
+    /* signed-in UI stays usable while the API session recovers */
+  }
+  return headers;
+}
+
+function buildBrowserIdempotencyKey(path: string): string {
+  const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "mutation";
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${routeSlug}-${crypto.randomUUID()}`;
+  return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function AccountGateShell({
+  loading,
+  onTheme,
+  theme
+}: {
+  loading: boolean;
+  onTheme: (theme: ThemeId) => void;
+  theme: ThemeId;
+}) {
+  return (
+    <div className="shell">
+      <header className="topbar">
+        <span className="wordmark">
+          <span className="wordmark-glyph">C</span>
+          <span className="wordmark-name">CustomCard</span>
+        </span>
+        <div className="topbar-side">
+          <ClerkAuthControls />
+          <div className="themeswitch" role="group" aria-label="Theme">
+            {themes.map((candidate) => (
+              <button
+                aria-label={candidate.label}
+                className={`themedot themedot-${candidate.id}`}
+                data-on={candidate.id === theme}
+                key={candidate.id}
+                onClick={() => onTheme(candidate.id)}
+                title={candidate.label}
+                type="button"
+              />
+            ))}
+          </div>
+        </div>
+      </header>
+      <main id="main-content">
+        <section className="adminGate panelcard reveal" aria-label="CustomCard sign-in gate">
+          <span className="adminGateIcon">
+            <LockKeyhole size={24} />
+          </span>
+          <div>
+            <p className="eyebrow">Private workspace</p>
+            <h1>Sign in to continue</h1>
+            <p>Your drafts, edits, notes, and print progress stay behind your account.</p>
+          </div>
+          <div className="adminGateActions">
+            <span>{loading ? "Checking account access" : "Account required"}</span>
+            <SignInButton>
+              <button className="btn btn-ink" type="button">
+                Sign in
+              </button>
+            </SignInButton>
+            <SignUpButton>
+              <button className="btn btn-primary" type="button">
+                Sign up
+              </button>
+            </SignUpButton>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

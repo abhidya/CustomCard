@@ -63,7 +63,9 @@ export function EventsView({
         status?: string;
         detail?: string;
         blockers?: string[];
+        missingEnv?: string[];
         nextApiRoute?: string | null;
+        providerRequestUrl?: string | null;
         startPacket?: CalendarConnectionStartPacket;
       } | undefined;
 
@@ -77,6 +79,16 @@ export function EventsView({
               ? "Sign in before connecting Google Calendar."
               : "The calendar connection route is not ready yet.")
         });
+        return;
+      }
+
+      if (payload?.providerRequestUrl) {
+        setConnectionStatus({
+          tone: "ok",
+          title: "Opening Google Calendar",
+          detail: "Redirecting to Google for read-only calendar consent."
+        });
+        window.location.assign(payload.providerRequestUrl);
         return;
       }
 
@@ -94,6 +106,7 @@ export function EventsView({
         tone: "warn",
         title: "Google Calendar needs setup",
         detail:
+          (payload?.missingEnv?.length ? `Missing env: ${payload.missingEnv.join(", ")}.` : undefined) ??
           packet?.blockedReason ??
           payload?.blockers?.join(", ") ??
           "OAuth scope review, redirect URI, token storage, and revocation proof are required before live connection."

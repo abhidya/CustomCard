@@ -47,7 +47,7 @@ describe("persistence contracts", () => {
     const summary = buildPersistenceReadinessSummary();
 
     expect(summary.status).toBe("ready");
-    expect(summary.tables.total).toBe(19);
+    expect(summary.tables.total).toBe(20);
     expect(summary.tables.authSessionTable).toBe(true);
     expect(summary.tables.idempotencyTable).toBe(true);
     expect(summary.tables.providerUsageLedgerTable).toBe(true);
@@ -62,6 +62,9 @@ describe("persistence contracts", () => {
     expect(persistenceTableContracts.find((contract) => contract.name === "render_packets")?.requiredColumns).toEqual(
       expect.arrayContaining(["artifact_manifest", "signed_url_expires_at", "external_share_approval_required", "real_orders_enabled"])
     );
+    expect(persistenceTableContracts.find((contract) => contract.name === "draft_states")?.requiredColumns).toEqual(
+      expect.arrayContaining(["user_id", "status", "draft_input", "updated_at", "raw_content_stored"])
+    );
     expect(persistenceTableContracts.find((contract) => contract.name === "provider_call_events")).toMatchObject({
       appendOnly: true,
       requiredColumns: expect.arrayContaining(["tenant_id", "adapter_id", "month_bucket", "estimated_cost_cents", "pii_free", "live_network_call"])
@@ -69,7 +72,12 @@ describe("persistence contracts", () => {
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "render-packets")?.persistedTables).toContain(
       "provider_call_events"
     );
-    expect(summary.routes.schemaBacked).toBe(18);
+    expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "customer-draft-state-save")).toMatchObject({
+      mode: "mutation",
+      requiredRole: "customer",
+      persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "draft_states", "audit_log"])
+    });
+    expect(summary.routes.schemaBacked).toBe(20);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-demo-reset")).toMatchObject({
       requiredRole: "admin",

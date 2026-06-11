@@ -8,26 +8,21 @@ import {
 } from "./localPersistenceAudit";
 
 describe("local persistence audit", () => {
-  it("names the browser-local customer data that must move to durable storage", () => {
+  it("keeps customer state out of browser-local persistence", () => {
     const summary = summarizeLocalPersistenceAudit();
 
     expect(reviewerLocalWorkspaceStorageKey).toBe(reviewerWorkspaceKey);
     expect(summary).toMatchObject({
       service: "customcard-local-persistence-audit",
-      status: "action-required",
-      total: 5,
-      dbRequired: 4,
-      objectStoreRequired: 1,
-      browserOnly: 1,
-      customerDataItems: 4,
-      localStorageKeys: [reviewerLocalWorkspaceStorageKey, browserThemeStorageKey]
+      status: "browser-only-ok",
+      total: 6,
+      dbRequired: 0,
+      objectStoreRequired: 0,
+      browserOnly: 0,
+      customerDataItems: 5,
+      localStorageKeys: []
     });
-    expect(summary.actions.map((action) => action.id)).toEqual([
-      "local-workspace-identity",
-      "approved-relationship-memories",
-      "saved-event-queue-decisions",
-      "card-history-render-preview"
-    ]);
+    expect(summary.actions).toEqual([]);
     expect(summary.targetTables).toEqual(
       expect.arrayContaining([
         "users",
@@ -37,6 +32,7 @@ describe("local persistence audit", () => {
         "provider_connections",
         "imported_events",
         "card_opportunities",
+        "draft_states",
         "card_projects",
         "render_packets",
         "orders",
@@ -48,6 +44,8 @@ describe("local persistence audit", () => {
       expect.arrayContaining([
         "/api/customer/bootstrap",
         "/api/mobile/bootstrap",
+        "/api/customer/draft-state/current",
+        "/api/customer/draft-state",
         "/api/import-preview",
         "/api/memories/review",
         "/api/card-projects",
@@ -62,7 +60,8 @@ describe("local persistence audit", () => {
     const cardHistory = localPersistenceAuditItems.find((item) => item.id === "card-history-render-preview");
 
     expect(themePreference).toMatchObject({
-      currentKey: browserThemeStorageKey,
+      currentSurface: "browser-memory",
+      currentKey: "",
       productionStorage: "browser-only",
       customerData: false,
       targetTables: [],

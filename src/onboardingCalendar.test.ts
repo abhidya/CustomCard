@@ -82,7 +82,11 @@ describe("onboarding and calendar integration contracts", () => {
     const google = calendarAdapterReadinessContracts.find((adapter) => adapter.id === "google-calendar-events");
     expect(google).toBeDefined();
     expect(google?.mode).toBe("oauth-readiness-contract");
-    expect(google?.requiredEnv).toEqual(["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"]);
+    expect(google?.requiredEnv).toEqual([
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI"
+    ]);
     expect(google?.requiredScopes).toEqual(["calendar.events.readonly"]);
     expect(google?.officialScopeUris).toEqual(["https://www.googleapis.com/auth/calendar.events.readonly"]);
 
@@ -201,7 +205,7 @@ describe("onboarding and calendar integration contracts", () => {
     expect(google).toMatchObject({
       canStartNow: false,
       sourceMode: "oauth-readiness",
-      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
       requiredScopes: ["calendar.events.readonly"],
       officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
       officialDocs: ["https://developers.google.com/workspace/calendar/api/auth"],
@@ -328,7 +332,7 @@ describe("onboarding and calendar integration contracts", () => {
       startMode: "oauth-evidence-required",
       canStartNow: false,
       nextApiRoute: null,
-      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+      requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
       requiredScopes: ["calendar.events.readonly"],
       officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
       blockingEvidenceIds: [

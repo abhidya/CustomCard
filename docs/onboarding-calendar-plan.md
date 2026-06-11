@@ -52,7 +52,7 @@ in `src/onboardingCalendar.test.ts`.
 
 | Adapter | Status | Production contract | Live behavior blocked |
 | --- | --- | --- | --- |
-| `google-calendar-events` | Credential-gated | Requires `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`, metadata schema validation, revocation handling, and no raw content storage. | No live OAuth consent flow or provider callback exists in this repo state. |
+| `google-calendar-events` | Credential-gated | Requires `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`, metadata schema validation, revocation handling, and no raw content storage. | `/api/calendar/connections/start` can return a server-generated Google consent URL only when the required env vars exist; callback handling, token exchange, credential persistence, revocation, and background import remain blocked. |
 | `icloud-ics-fallback` | Contract-only | Uses customer-provided ICS export/paste through the existing untrusted-input import path. Apple supports exporting calendar events to `.ics` on Mac and downloading an iCloud.com calendar copy after temporary public sharing; CustomCard stores no Apple account credentials. | No fake iCloud OAuth, app-specific password storage, live CalDAV, or native Apple Calendar sync is implemented. |
 
 Google OAuth setup evidence:
@@ -82,21 +82,25 @@ instead of silently hiding the missing adapter behind an empty fallback.
 | Packet | Customer action | Operator evidence | Blocked surface |
 | --- | --- | --- | --- |
 | `manual-invite-or-ics` | Paste invite text, selected event fields, or ICS text into the local import path; review detected metadata before creating a card. | `/api/import-preview` accepts `metadataOnlyPayload`, `rawImportText`, `rawInviteText`, `rawIcsText`, or `rawCalendarText`; parser tests, API tests, and Postgres runtime doctors prove raw content is not stored or echoed. | None; this is the ready local path. |
-| `google-calendar-events` | Review the Google metadata-only scope and use manual paste while OAuth is not enabled. | OAuth app, redirect URI, consent screen, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, revocation handling, token storage boundary, and metadata schema fixture tests. | No provider request URL, callback, token storage, or network request is prepared in this repo state. |
+| `google-calendar-events` | Review the Google metadata-only scope and use manual paste while OAuth is not enabled. | OAuth app, redirect URI, consent screen, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, revocation handling, token storage boundary, and metadata schema fixture tests. | The base onboarding packet stays blocked; the API server wrapper can prepare an authorization URL only after env is present, and still stores no tokens or imported events. |
 | `icloud-ics-fallback` | Export/download an ICS copy, then paste selected event data into the same local import preview. | Prove Apple credentials are not collected; manual ICS parser tests pass. | No Apple ID, app-specific password, CalDAV session, native sync, or provider credential storage. |
 
 ## Calendar Connection Start API
 
 `buildCalendarConnectionStartPackets()` and
-`buildCalendarConnectionStartResponse()` define the API-owned connection start
-contract used by `/api/calendar/connections/start`. This route returns policy
-and evidence state only. It does not create OAuth URLs, store credentials, start
-background sync, create card opportunities, or call provider networks.
+`buildCalendarConnectionStartResponse()` define the default API-owned
+connection start contract used by `/api/calendar/connections/start`. The typed
+onboarding module returns policy and evidence state only. The Node API server
+adds a Google-specific wrapper: when `GOOGLE_OAUTH_CLIENT_ID`,
+`GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` are set, the route
+returns a server-generated Google authorization URL and an opaque state token.
+It still does not exchange tokens, store credentials, start background sync,
+create card opportunities, or import provider events.
 
 | Choice | Start mode | Server response | Next safe route |
 | --- | --- | --- | --- |
 | `manual-invite-or-ics` | `metadata-import` | Ready local packet; no provider request URL and no credentials. | `/api/import-preview` |
-| `google-calendar-events` | `oauth-evidence-required` | Blocked packet with missing `google-scope-review`, OAuth env/redirect, revocation, and metadata-fixture evidence IDs. | None until evidence exists. |
+| `google-calendar-events` | `oauth-evidence-required` or API-wrapper `oauth-provider-redirect` | Blocked packet with missing `google-scope-review`, OAuth env/redirect, revocation, and metadata-fixture evidence IDs; when env exists, the API wrapper returns `oauth-ready` with a Google consent URL, no credential storage, and no import side effects. | None until callback/token/import gates are implemented. |
 | `icloud-ics-fallback` | `manual-export-guide` | Ready manual export packet with Apple credential collection explicitly forbidden. | `/api/import-preview` |
 
 The API contract is listed in `src/apiContracts.ts`, validated in
@@ -138,7 +142,9 @@ fields, but provider start policy remains server-owned. Client code must keep
 
 ## Guardrails
 
-- No fake live OAuth URLs, callbacks, or provider request factories.
+- No fake live OAuth callbacks, token exchange, credential storage, or provider
+  import factories. Google authorization URLs are server-generated only when
+  required env vars exist.
 - Calendar import contracts are metadata-only: raw pasted invite/ICS text can be
   parsed by `/api/import-preview`, but raw email/calendar body storage and
   response echoing are forbidden.

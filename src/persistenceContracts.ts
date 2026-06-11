@@ -14,6 +14,7 @@ export type PersistenceTableName =
   | "provider_connections"
   | "imported_events"
   | "card_opportunities"
+  | "draft_states"
   | "relationship_memories"
   | "card_projects"
   | "render_packets"
@@ -83,6 +84,7 @@ export const requiredPersistenceTableNames: PersistenceTableName[] = [
   "provider_connections",
   "imported_events",
   "card_opportunities",
+  "draft_states",
   "relationship_memories",
   "card_projects",
   "render_packets",
@@ -111,6 +113,12 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
   table("provider_connections", ["id", "user_id", "provider", "status", "metadata_schema"], ["idx_provider_connections_user"], true),
   table("imported_events", ["id", "connection_id", "title", "starts_at", "source_evidence"], ["idx_imported_events_connection"], true),
   table("card_opportunities", ["id", "event_id", "recipient_name", "decision"], ["idx_card_opportunities_event"], true),
+  table(
+    "draft_states",
+    ["id", "user_id", "status", "draft_input", "updated_at", "raw_content_stored"],
+    ["idx_draft_states_user_updated"],
+    true
+  ),
   table("relationship_memories", ["id", "user_id", "recipient_name", "approved", "forgotten_at"], ["idx_relationship_memories_recipient"], true),
   table("card_projects", ["id", "opportunity_id", "approved_memory_ids"], ["idx_card_projects_opportunity"], true),
   table(
@@ -176,6 +184,8 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("health", "none", "public", [], false, false, false),
   routePersistence("route-catalog", "none", "public", [], false, false, false),
   routePersistence("customer-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
+  routePersistence("customer-draft-state", "read-only", "customer", ["auth_sessions", "draft_states", "audit_log"], true, false, false),
+  routePersistence("customer-draft-state-save", "mutation", "customer", ["auth_sessions", "idempotency_keys", "draft_states", "audit_log"], true, true, false),
   routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
   routePersistence(
     "ai-chat-respond",
@@ -264,6 +274,9 @@ export const migrationRequiredSignals = [
   "CHECK (char_length(request_hash) >= 12)",
   "response_body JSONB NOT NULL",
   "CREATE TABLE provider_call_events",
+  "CREATE TABLE draft_states",
+  "raw_content_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_content_stored = FALSE)",
+  "CREATE INDEX idx_draft_states_user_updated",
   "tenant_id TEXT NOT NULL",
   "adapter_id TEXT NOT NULL",
   "month_bucket TEXT NOT NULL",

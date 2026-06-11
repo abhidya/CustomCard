@@ -1,0 +1,42 @@
+{
+  "uiUxIntent": "Generate an original CustomCard counterpart to Adobe Express small-business thank-you example, using CustomCard structured card UX: JSON-schema card copy, editable 5x7 front panel, safe-zone print layout, privacy-safe memory notes, deterministic typography overlay, and persisted render artifacts.",
+  "benchmarkScope": "front-panel-only image generation to control cost while testing updated prompt routing",
+  "requestBody": {
+    "sender": "CustomCard",
+    "recipient": "loyal customers",
+    "relationship": "small business to repeat customer",
+    "occasion": "thank-you for supporting a small business",
+    "tone": "warm, sincere, polished, grateful, not salesy",
+    "style": "CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays",
+    "language": "English",
+    "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+    "memory_notes": [
+      "The customer chose an independent small business instead of a large marketplace.",
+      "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+      "CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "responseFormat": "Cloudflare JSON Mode json_schema for exactly four copy panels",
+  "frontImagePrompt": "Generate only the FRONT COVER artwork for a portrait 5x7 folded greeting card panel. This is one standalone print panel, not a folded-card preview and not a collage. Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins. Recipient: loyal customers. Relationship: small business to repeat customer. Occasion: thank-you for supporting a small business. Tone: warm, sincere, polished, grateful, not salesy. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Language context: English. Panel headline for app overlay: Grateful for You. Panel body for app overlay: Thank you for choosing us over the big guys. Your support means the world to our small business.. Art direction: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins. Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays. Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography.",
+  "frontNegativePrompt": "folded card mockup, collage, multiple panels in one image, tabletop scene, hands, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+  "imageRequestBody": {
+    "prompt": "Generate only the FRONT COVER artwork for a portrait 5x7 folded greeting card panel. This is one standalone print panel, not a folded-card preview and not a collage. Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins. Recipient: loyal customers. Relationship: small business to repeat customer. Occasion: thank-you for supporting a small business. Tone: warm, sincere, polished, grateful, not salesy. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Language context: English. Panel headline for app overlay: Grateful for You. Panel body for app overlay: Thank you for choosing us over the big guys. Your support means the world to our small business.. Art direction: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins. Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays. Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography.",
+    "negative_prompt": "folded card mockup, collage, multiple panels in one image, tabletop scene, hands, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+    "width": 1464,
+    "height": 2048,
+    "guidance": 3.5,
+    "num_steps": 8,
+    "metadata": {
+      "customcard": {
+        "prompt_contract": "folded-card-four-panel-v1",
+        "generation_strategy": "front-panel-only-benchmark-run",
+        "panel_id": "front",
+        "target_width": 1500,
+        "target_height": 2100,
+        "target_dpi": 300
+      }
+    }
+  }
+}

@@ -78,6 +78,20 @@ CREATE TABLE card_opportunities (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE draft_states (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  status TEXT NOT NULL CHECK (status IN ('draft', 'in-progress', 'ready-for-review')),
+  draft_input JSONB NOT NULL,
+  opportunity_id TEXT NOT NULL,
+  opportunity_decision TEXT NOT NULL,
+  vendor_id TEXT NOT NULL,
+  locale TEXT NOT NULL,
+  raw_content_stored BOOLEAN NOT NULL DEFAULT FALSE CHECK (raw_content_stored = FALSE),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE relationship_memories (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id),
@@ -304,6 +318,7 @@ CREATE INDEX idx_provider_call_events_adapter_window ON provider_call_events(ada
 CREATE INDEX idx_provider_call_events_status ON provider_call_events(status);
 CREATE INDEX idx_imported_events_connection ON imported_events(connection_id);
 CREATE INDEX idx_card_opportunities_event ON card_opportunities(event_id);
+CREATE INDEX idx_draft_states_user_updated ON draft_states(user_id, updated_at DESC);
 CREATE INDEX idx_relationship_memories_recipient ON relationship_memories(user_id, recipient_name);
 CREATE INDEX idx_card_projects_opportunity ON card_projects(opportunity_id);
 CREATE INDEX idx_render_packets_project ON render_packets(project_id);

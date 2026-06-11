@@ -1,0 +1,401 @@
+{
+  "runId": "small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z",
+  "createdAtIso": "2026-06-11T09:46:11.426Z",
+  "benchmark": {
+    "category": "Small business thank-you AI card",
+    "competitor": "Adobe Express",
+    "competitorPrompt": "thanks for supporting our small business",
+    "competitorSource": "https://www.adobe.com/express/create/ai/card",
+    "competitorLocalFile": "docs/evidence/competitor-card-examples/adobe-express-small-business-thanks.png",
+    "competitorSha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+  },
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI"
+    ],
+    "objectStoreConfiguredKeys": [
+      "ARTIFACT_SIGNED_URL_TTL_MINUTES",
+      "CUSTOMCARD_ARTIFACT_PERSISTENCE",
+      "OBJECT_STORE_ACCESS_KEY_ID",
+      "OBJECT_STORE_BUCKET",
+      "OBJECT_STORE_PUBLIC_BASE_URL",
+      "OBJECT_STORE_READ_ACCESS_KEY_ID",
+      "OBJECT_STORE_READ_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_REGION",
+      "OBJECT_STORE_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_SIGNING_SECRET",
+      "OBJECT_STORE_URL"
+    ],
+    "secretsRedacted": true
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "cloudflare-workers-ai-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "liveProviderCallsEnabled": false,
+      "readyForLiveCalls": false,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-image",
+        "browser-svg-renderer"
+      ],
+      "blockedReasons": [
+        "Live provider calls disabled for card-image."
+      ]
+    }
+  ],
+  "effectivePrompt": {
+    "uiUxIntent": "Generate an original CustomCard counterpart to Adobe Express small-business thank-you example, using CustomCard structured card UX: JSON-schema card copy, editable 5x7 front panel, safe-zone print layout, privacy-safe memory notes, deterministic typography overlay, and persisted render artifacts.",
+    "benchmarkScope": "front-panel-only image generation to control cost while testing updated prompt routing",
+    "requestBody": {
+      "sender": "CustomCard",
+      "recipient": "loyal customers",
+      "relationship": "small business to repeat customer",
+      "occasion": "thank-you for supporting a small business",
+      "tone": "warm, sincere, polished, grateful, not salesy",
+      "style": "CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays",
+      "language": "English",
+      "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+      "memory_notes": [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+        "CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts."
+      ]
+    },
+    "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+    "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+    "responseFormat": "Cloudflare JSON Mode json_schema for exactly four copy panels",
+    "frontImagePrompt": "Generate only the FRONT COVER artwork for a portrait 5x7 folded greeting card panel. This is one standalone print panel, not a folded-card preview and not a collage. Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins. Recipient: loyal customers. Relationship: small business to repeat customer. Occasion: thank-you for supporting a small business. Tone: warm, sincere, polished, grateful, not salesy. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Language context: English. Panel headline for app overlay: Grateful for You. Panel body for app overlay: Thank you for choosing us over the big guys. Your support means the world to our small business.. Art direction: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins. Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays. Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography.",
+    "frontNegativePrompt": "folded card mockup, collage, multiple panels in one image, tabletop scene, hands, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+    "imageRequestBody": {
+      "prompt": "Generate only the FRONT COVER artwork for a portrait 5x7 folded greeting card panel. This is one standalone print panel, not a folded-card preview and not a collage. Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins. Recipient: loyal customers. Relationship: small business to repeat customer. Occasion: thank-you for supporting a small business. Tone: warm, sincere, polished, grateful, not salesy. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Language context: English. Panel headline for app overlay: Grateful for You. Panel body for app overlay: Thank you for choosing us over the big guys. Your support means the world to our small business.. Art direction: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins. Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays. Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography.",
+      "negative_prompt": "folded card mockup, collage, multiple panels in one image, tabletop scene, hands, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+      "width": 1464,
+      "height": 2048,
+      "guidance": 3.5,
+      "num_steps": 8,
+      "metadata": {
+        "customcard": {
+          "prompt_contract": "folded-card-four-panel-v1",
+          "generation_strategy": "front-panel-only-benchmark-run",
+          "panel_id": "front",
+          "target_width": 1500,
+          "target_height": 2100,
+          "target_dpi": 300
+        }
+      }
+    }
+  },
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Write print-safe folded greeting card copy. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and keep each panel concise enough for a 5x7 print layout."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate greeting card copy JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"CustomCard\",\n    \"recipient\": \"loyal customers\",\n    \"relationship\": \"small business to repeat customer\",\n    \"occasion\": \"thank-you for supporting a small business\",\n    \"tone\": \"warm, sincere, polished, grateful, not salesy\",\n    \"style\": \"CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.\",\n    \"memory_notes\": [\n      \"The customer chose an independent small business instead of a large marketplace.\",\n      \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n      \"CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.55,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null
+      },
+      "durationMs": 3608
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Generate only the FRONT COVER artwork for a portrait 5x7 folded greeting card panel. This is one standalone print panel, not a folded-card preview and not a collage. Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins. Recipient: loyal customers. Relationship: small business to repeat customer. Occasion: thank-you for supporting a small business. Tone: warm, sincere, polished, grateful, not salesy. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Language context: English. Panel headline for app overlay: Grateful for You. Panel body for app overlay: Thank you for choosing us over the big guys. Your support means the world to our small business.. Art direction: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins. Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays. Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography.",
+          "negative_prompt": "folded card mockup, collage, multiple panels in one image, tabletop scene, hands, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "front-panel-only-benchmark-run",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "554175",
+        "byteLength": 554175
+      },
+      "durationMs": 12729
+    }
+  ],
+  "generation": {
+    "draft_id": "ai-mq9bbulh-loyal-customers",
+    "card_copy": {
+      "panels": [
+        {
+          "id": "front",
+          "headline": "Grateful for You",
+          "body": "Thank you for choosing us over the big guys. Your support means the world to our small business.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        },
+        {
+          "id": "inside-left",
+          "headline": "A Heartfelt Thank You",
+          "body": "We're proud to be a part of our community, and we're honored that you're a part of it too.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        },
+        {
+          "id": "inside-right",
+          "headline": "Thanks for Being an Amazing Customer",
+          "body": "Your loyalty and trust mean everything to us. We're grateful for customers like you.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        },
+        {
+          "id": "back",
+          "headline": "Warm Wishes",
+          "body": "Wishing you all the best, and thank you again for your support.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        }
+      ],
+      "memory_citations": [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+        "CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts."
+      ]
+    },
+    "images": [
+      {
+        "panel_id": "front",
+        "image_url": "<data-url 738923 chars>",
+        "revised_prompt": "Generate only the FRONT COVER artwork for a portrait 5x7 folded greeting card panel. This is one standalone print panel, not a folded-card preview and not a collage. Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins. Recipient: loyal customers. Relationship: small business to repeat customer. Occasion: thank-you for supporting a small business. Tone: warm, sincere, polished, grateful, not salesy. Style: CustomCard small-business editorial: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins, editable typography overlays. Language context: English. Panel headline for app overlay: Grateful for You. Panel body for app overlay: Thank you for choosing us over the big guys. Your support means the world to our small business.. Art direction: warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins. Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays. Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography.",
+        "width": 1500,
+        "height": 2100
+      }
+    ],
+    "generated_by": "ai-text-and-image-front-only",
+    "ai_flow": {
+      "card_copy": {
+        "flow_id": "card-copy",
+        "adapter_id": "cloudflare-workers-ai-chat",
+        "primary_adapter_id": "cloudflare-workers-ai-chat",
+        "fallback_adapter_id": "deterministic-customer-chat",
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "rate_limit_per_minute": 10,
+        "monthly_budget_cents": 3000,
+        "per_request_budget_cents": 12,
+        "queue_enabled": false,
+        "fallback_queue_enabled": true,
+        "live_provider_calls_enabled": true,
+        "ready_for_live_calls": true,
+        "blocked_reasons": []
+      },
+      "card_image": {
+        "flow_id": "card-image",
+        "adapter_id": "cloudflare-workers-ai-image",
+        "primary_adapter_id": "cloudflare-workers-ai-image",
+        "fallback_adapter_id": "browser-svg-renderer",
+        "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+        "rate_limit_per_minute": 4,
+        "monthly_budget_cents": 3000,
+        "per_request_budget_cents": 75,
+        "queue_enabled": true,
+        "fallback_queue_enabled": true,
+        "live_provider_calls_enabled": true,
+        "ready_for_live_calls": true,
+        "blocked_reasons": [
+          "Live provider calls disabled for card-image."
+        ],
+        "provider_failure": "Live provider calls disabled for card-image.",
+        "benchmark_scope": "front-panel-only"
+      }
+    },
+    "live_provider_calls_enabled": true,
+    "fallback_queued": false,
+    "external_network_calls": true
+  },
+  "files": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/customcard-small-business-thanks-front.svg",
+      "sha256": "cc4a1516a177a84cba9ba813c160f7fa43b4610467d5dc32b71fa5481c5fcf3e"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/customcard-ai-output.json",
+      "sha256": "eb81be455219b377cf70f1f3f99dfc48bd55fa1a73dbc9d05eac5903435bf8a6"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/effective-prompt.json",
+      "sha256": "43f4e1d9358e7bfabe618b6d0fb13a2902462b8e68e39d5b503ee11f71d0a0fa"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/comparison.md",
+      "sha256": "de647cfd1208e9274eb2fdba60d3948d77fe6118aa27721a710d8029c0548c85"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/customcard-provider-front-art.jpg",
+      "sha256": "a1dcb745bc4f945d5ca043caa5ced102c2d2a528853388aa4dff1b8ef1a41319"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/customcard-small-business-thanks-front-preview.png",
+      "sha256": "916d64bedbf12ebcbdd979e5d7d91d3a85f2e547d1c5b9105a6e296be917e37a"
+    }
+  ],
+  "persistence": {
+    "artifactPersistence": {
+      "status": "stored",
+      "storageProvider": "s3-compatible",
+      "provider": "cloudflare-r2",
+      "bucket": "customcard-prod",
+      "artifactCount": 3,
+      "verifiedWrites": 3,
+      "manifestStored": true,
+      "liveNetworkCalls": true,
+      "blockers": []
+    },
+    "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z/artifact-handoff-manifest.json",
+    "signedUrlExpiresAt": "2026-06-11T10:01:27.000Z"
+  },
+  "comparison": {
+    "competitorPrompt": "thanks for supporting our small business",
+    "ourPromptSummary": "Generate an original CustomCard counterpart to Adobe Express small-business thank-you example, using CustomCard structured card UX: JSON-schema card copy, editable 5x7 front panel, safe-zone print layout, privacy-safe memory notes, deterministic typography overlay, and persisted render artifacts.",
+    "ourFrontHeadline": "Grateful for You",
+    "ourFrontBody": "Thank you for choosing us over the big guys. Your support means the world to our small business.",
+    "textProvider": "cloudflare-workers-ai-chat",
+    "imageProvider": "cloudflare-workers-ai-image",
+    "persisted": "stored"
+  },
+  "errors": []
+}

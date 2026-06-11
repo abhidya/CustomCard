@@ -279,6 +279,7 @@ describe("production infrastructure contract", () => {
     expect(env).toContain("CARDDAV_ADDRESSBOOK_PATH=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_ID=");
     expect(env).toContain("GOOGLE_OAUTH_CLIENT_SECRET=");
+    expect(env).toContain("GOOGLE_OAUTH_REDIRECT_URI=");
     expect(env).toContain("MICROSOFT_CLIENT_ID=");
     expect(env).toContain("MICROSOFT_CLIENT_SECRET=");
     expect(env).toContain("OPENAI_API_KEY=");

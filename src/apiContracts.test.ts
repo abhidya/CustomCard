@@ -90,7 +90,7 @@ describe("api contracts", () => {
       path: "/api/calendar/connections/start",
       audience: "customer",
       auth: "customer-session",
-      externalNetworkCalls: false,
+      externalNetworkCalls: true,
       realOrdersEnabled: false
     });
     expect(calendarConnectionStart?.requestSchema).toEqual(
@@ -104,6 +104,8 @@ describe("api contracts", () => {
         "providerRequestUrl",
         "networkRequestPrepared",
         "credentialStorageEnabled",
+        "missingEnv",
+        "oauth",
         "rawContentStored",
         "nextApiRoute"
       ])

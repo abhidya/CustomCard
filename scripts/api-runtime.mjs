@@ -61,6 +61,7 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
         providerConnectionRecords: 0,
         importedEventRecords: 0,
         cardOpportunityRecords: 0,
+        draftStateRecords: 0,
         relationshipMemoryRecords: 0,
         cardProjectRecords: 0,
         renderPacketRecords: 0,
@@ -113,6 +114,9 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
     },
+    async readDraftState({ authContext }) {
+      return buildDraftStateReadPayload(undefined, "contract", authContext);
+    },
     async close() {
       return undefined;
     }
@@ -145,6 +149,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const providerConnections = new Map();
   const importedEvents = new Map();
   const cardOpportunities = new Map();
+  const draftStates = new Map();
   const relationshipMemories = new Map();
   const cardProjects = new Map();
   const renderPackets = new Map();
@@ -172,6 +177,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         providerConnectionRecords: providerConnections.size,
         importedEventRecords: importedEvents.size,
         cardOpportunityRecords: cardOpportunities.size,
+        draftStateRecords: draftStates.size,
         relationshipMemoryRecords: relationshipMemories.size,
         cardProjectRecords: cardProjects.size,
         renderPacketRecords: renderPackets.size,
@@ -206,6 +212,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
           providerConnections,
           importedEvents,
           cardOpportunities,
+          draftStates,
           relationshipMemories,
           cardProjects,
           renderPackets,
@@ -255,6 +262,9 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
     },
+    async readDraftState({ authContext }) {
+      return buildDraftStateReadPayload(draftStates.get(authContext.userId), "memory", authContext);
+    },
     async close() {
       return undefined;
     }
@@ -291,6 +301,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         providerConnectionRecords: null,
         importedEventRecords: null,
         cardOpportunityRecords: null,
+        draftStateRecords: null,
         relationshipMemoryRecords: null,
         cardProjectRecords: null,
         renderPacketRecords: null,
@@ -464,6 +475,33 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
     },
+    async readDraftState({ authContext }) {
+      const pool = await getPool();
+      const result = await pool.query(
+        `SELECT id, status, draft_input, opportunity_id, opportunity_decision, vendor_id, locale, updated_at
+         FROM draft_states
+         WHERE user_id = $1
+         ORDER BY updated_at DESC
+         LIMIT 1`,
+        [authContext.userId]
+      );
+      const row = result.rows[0];
+      if (!row) return buildDraftStateReadPayload(undefined, "postgres", authContext);
+      return buildDraftStateReadPayload(
+        {
+          id: row.id,
+          status: row.status,
+          draftInput: normalizeJson(row.draft_input),
+          opportunityId: row.opportunity_id,
+          opportunityDecision: row.opportunity_decision,
+          vendorId: row.vendor_id,
+          localeCode: row.locale,
+          updatedAtIso: new Date(row.updated_at).toISOString()
+        },
+        "postgres",
+        authContext
+      );
+    },
     async close() {
       if (!poolPromise) return;
       const pool = await poolPromise;
@@ -563,6 +601,17 @@ const mutationBodyContracts = {
       return missingRetailPrinterCouponPortalEvidenceFields(body);
     }
   },
+  "customer-draft-state-save": {
+    ...mutationBodyContractSpecs["customer-draft-state-save"],
+    missingFields(body) {
+      const missingFields = [];
+      if (!body.draftInput || typeof body.draftInput !== "object" || Array.isArray(body.draftInput)) {
+        missingFields.push("draftInput");
+      }
+      if (!hasValidDraftStatus(body.status)) missingFields.push("status");
+      return missingFields;
+    }
+  },
   "render-packets": {
     ...mutationBodyContractSpecs["render-packets"],
     missingFields(body) {
@@ -654,6 +703,10 @@ function hasValidDataRequestType(value) {
   return ["export", "delete", "correct", "revoke_consent", "access"].includes(requestType);
 }
 
+function hasValidDraftStatus(value) {
+  return ["draft", "in-progress", "ready-for-review"].includes(String(value ?? "").trim());
+}
+
 function replayOrConflict(record, nextRequestHash) {
   if (record.requestHash !== nextRequestHash) {
     return {
@@ -709,6 +762,15 @@ async function persistMemoryRouteMutation({ repositories, route, authContext, bo
     return {
       persisted: true,
       payload: buildCardProjectRepositoryPayload(record, "memory")
+    };
+  }
+
+  if (route.id === "customer-draft-state-save") {
+    const record = buildDraftStateRecord({ authContext, bodyText });
+    repositories.draftStates.set(authContext.userId, record);
+    return {
+      persisted: true,
+      payload: buildDraftStateRepositoryPayload(record, "memory")
     };
   }
 
@@ -959,6 +1021,39 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     };
   }
 
+  if (route.id === "customer-draft-state-save") {
+    const record = buildDraftStateRecord({ authContext, bodyText });
+    await client.query(
+      `INSERT INTO draft_states
+         (id, user_id, status, draft_input, opportunity_id, opportunity_decision, vendor_id, locale, raw_content_stored, updated_at)
+       VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7, $8, FALSE, $9::timestamptz)
+       ON CONFLICT (id) DO UPDATE SET
+         status = EXCLUDED.status,
+         draft_input = EXCLUDED.draft_input,
+         opportunity_id = EXCLUDED.opportunity_id,
+         opportunity_decision = EXCLUDED.opportunity_decision,
+         vendor_id = EXCLUDED.vendor_id,
+         locale = EXCLUDED.locale,
+         raw_content_stored = FALSE,
+         updated_at = EXCLUDED.updated_at`,
+      [
+        record.id,
+        authContext.userId,
+        record.status,
+        JSON.stringify(record.draftInput),
+        record.opportunityId,
+        record.opportunityDecision,
+        record.vendorId,
+        record.localeCode,
+        record.updatedAtIso
+      ]
+    );
+    return {
+      persisted: true,
+      payload: buildDraftStateRepositoryPayload(record, "postgres")
+    };
+  }
+
   if (route.id === "render-packets") {
     const record = buildRenderPacketRecord({ authContext, bodyText });
     const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
@@ -1156,6 +1251,70 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
       runtimeMode,
       persisted: true
     }
+  };
+}
+
+function buildDraftStateRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const draftInput = sanitizeDraftInput(body.draftInput);
+  const opportunityId = safeId(body.opportunityId, stableRuntimeId("opportunity", authContext.userId, draftInput.recipient, draftInput.occasion));
+  const id = safeId(body.draftStateId ?? body.id, stableRuntimeId("draft-state", authContext.userId));
+
+  return {
+    id,
+    userId: authContext.userId,
+    status: safeDraftStatus(body.status),
+    draftInput,
+    opportunityId,
+    opportunityDecision: safeOpportunityDecision(body.opportunityDecision),
+    vendorId: safeVendorId(body.vendorId),
+    localeCode: safeLocale(body.localeCode ?? body.locale),
+    updatedAtIso: safeTimestamp(body.updatedAtIso, new Date().toISOString())
+  };
+}
+
+function buildDraftStateRepositoryPayload(record, runtimeMode) {
+  return {
+    draftStateId: record.id,
+    updatedAtIso: record.updatedAtIso,
+    draftState: publicDraftState(record),
+    repository: {
+      table: "draft_states",
+      runtimeMode,
+      persisted: true,
+      browserLocalState: false,
+      rawContentStored: false
+    }
+  };
+}
+
+function buildDraftStateReadPayload(record, runtimeMode, authContext) {
+  return {
+    service: "customcard-api",
+    status: "ready",
+    authenticatedUserId: authContext.userId,
+    draftState: record ? publicDraftState(record) : null,
+    updatedAtIso: record?.updatedAtIso ?? null,
+    repository: {
+      table: "draft_states",
+      runtimeMode,
+      persisted: Boolean(record),
+      browserLocalState: false,
+      rawContentStored: false
+    }
+  };
+}
+
+function publicDraftState(record) {
+  return {
+    draftStateId: record.id,
+    status: record.status,
+    draftInput: record.draftInput,
+    opportunityId: record.opportunityId,
+    opportunityDecision: record.opportunityDecision,
+    vendorId: record.vendorId,
+    localeCode: record.localeCode,
+    updatedAtIso: record.updatedAtIso
   };
 }
 
@@ -1529,6 +1688,63 @@ function safeMemorySource(value) {
 function safeMemoryDecision(value) {
   const decision = String(value ?? "approve").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
   return ["approve", "forget"].includes(decision) ? decision : "approve";
+}
+
+function safeDraftStatus(value) {
+  const status = String(value ?? "draft").trim().toLowerCase();
+  return ["draft", "in-progress", "ready-for-review"].includes(status) ? status : "draft";
+}
+
+function safeOpportunityDecision(value) {
+  const decision = String(value ?? "pending").trim().toLowerCase();
+  return ["pending", "accepted", "snoozed", "dismissed"].includes(decision) ? decision : "pending";
+}
+
+function safeVendorId(value) {
+  const vendorId = String(value ?? "walgreens").trim().toLowerCase();
+  return ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"].includes(vendorId)
+    ? vendorId
+    : "walgreens";
+}
+
+function sanitizeDraftInput(value) {
+  const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return {
+    sender: safeDraftText(input.sender, "Local User"),
+    recipient: safeDraftText(input.recipient, "Someone important"),
+    relationship: safeDraftText(input.relationship, "Friends"),
+    occasion: safeDraftText(input.occasion, "card"),
+    tone: safeTone(input.tone),
+    style: safeVisualStyle(input.style),
+    language: safeLanguage(input.language),
+    personalNote: safeLongDraftText(input.personalNote, ""),
+    useMemory: safeBoolean(input.useMemory)
+  };
+}
+
+function safeDraftText(value, fallback) {
+  const text = String(value ?? "").trim().replace(/\s+/g, " ");
+  return text.slice(0, 120) || fallback;
+}
+
+function safeLongDraftText(value, fallback) {
+  const text = String(value ?? "").trim().replace(/\s+/g, " ");
+  return text.slice(0, 1000) || fallback;
+}
+
+function safeTone(value) {
+  const tone = String(value ?? "warm").trim().toLowerCase();
+  return ["warm", "playful", "elegant", "reverent"].includes(tone) ? tone : "warm";
+}
+
+function safeVisualStyle(value) {
+  const style = String(value ?? "botanical").trim().toLowerCase();
+  return ["botanical", "bold-type", "photo-note", "minimal"].includes(style) ? style : "botanical";
+}
+
+function safeLanguage(value) {
+  const language = String(value ?? "English").trim();
+  return ["English", "Spanish", "Urdu", "Arabic"].includes(language) ? language : "English";
 }
 
 function safeText(value, fallback) {

@@ -58,9 +58,9 @@ environment configuration instead of static placeholders.
 - Local vCard and CSV contact/address import.
 - Admin-only business CRM CSV lifecycle import plus gated Salesforce, HubSpot,
   Zoho CRM, Pipedrive, Dynamics 365 Sales, Shopify, Klaviyo, Mailchimp,
-  ActiveCampaign, BigCommerce, WooCommerce, Square, and Intercom customer
-  lifecycle sync contracts for birthday, purchase-anniversary, and
-  warranty-anniversary card campaigns.
+  ActiveCampaign, BigCommerce, WooCommerce, Square, Intercom, Monday.com,
+  Amazon Seller, and Etsy customer lifecycle sync contracts for birthday,
+  purchase-anniversary, and warranty-anniversary card campaigns.
 - Business engagement readiness register in `src/businessEngagementReadiness.ts`
   and `src/businessEngagementReadinessData.mjs` for CRM lifecycle sources,
   trigger normalization, card-opportunity review, workflow payloads, customer
@@ -182,10 +182,11 @@ environment configuration instead of static placeholders.
   executable data in `src/capacityPlanData.mjs`, with queue/object-store posture,
   cost guardrails, required evidence, and `liveProviderCalls` plus
   `realOrdersEnabled` held at zero. These are not measured production benchmarks.
-- Adapter catalog covering free local paths plus gated Auth0, Clerk, Supabase
-  Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure OpenAI, Amazon
-  Bedrock, Google, Cloudflare Workers AI, Google People, Microsoft Graph,
-  CardDAV, Mistral, Cohere,
+- Adapter catalog covering 131 adapters across free local paths, gated Auth0,
+  Clerk, Supabase Auth, Firebase Auth, Amazon Cognito, OpenAI, Anthropic, Azure
+  OpenAI, Amazon Bedrock, Google, Cloudflare Workers AI, Google People,
+  Microsoft Graph, CardDAV, Eventbrite, Meetup, Luma Events, Partiful, Mistral,
+  Cohere,
   Perplexity, xAI, Together, Groq, DeepSeek, Fireworks, Hugging Face, Stability,
   Replicate, Ideogram, Leonardo, fal, Black Forest Labs, Adobe Firefly, Recraft,
   Luma, Resend, SendGrid, Postmark, Mailgun, Twilio SMS, WhatsApp Cloud API,
@@ -194,8 +195,9 @@ environment configuration instead of static placeholders.
   Sentry, PostHog, OpenTelemetry OTLP, Grafana Cloud, Datadog Logs, Better
   Stack Logs, Salesforce, HubSpot, Zoho CRM, Pipedrive, Dynamics 365 Sales,
   Shopify Admin, Klaviyo, Mailchimp, ActiveCampaign, BigCommerce, WooCommerce,
-  Square Customers, Intercom, Zapier, Make, Slack, Microsoft Teams, Notion,
-  Airtable, Google Sheets, n8n, Workato, Pipedream, and vendor contracts.
+  Square Customers, Intercom, Monday.com, Amazon Selling Partner API, Etsy,
+  Zapier, Make, Slack, Microsoft Teams, Notion, Airtable, Google Sheets, n8n,
+  Workato, Pipedream, and vendor contracts.
 - Executable adapter dry runs that validate readiness, reject placeholder
   secrets, redact provider-bound text, prepare no-network request contracts, and
   keep live vendor ordering blocked.
@@ -218,7 +220,8 @@ environment configuration instead of static placeholders.
   event/opportunity writes, relationship-memory repository writes, card-project
   repository writes, render-packet repository writes, manual handoff
   order/consent/event writes, data-request privacy/consent writes, queue jobs,
-  audit logs, and 13 schema-backed API routes.
+  audit logs, 19 persistence table contracts, 20 stateful API routes, and 13
+  idempotent mutation routes.
 - Tested Expo customer app contract for the next-action summary, card queue,
   approval controls, memory review, print-proof checks, local chat, render
   choices, review-only pricing previews, offline idempotent API sync, locale
@@ -377,7 +380,9 @@ CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173
 
 Provider credentials such as `AUTH0_DOMAIN`, `CLERK_SECRET_KEY`,
 `SUPABASE_URL`, `FIREBASE_API_KEY`, `COGNITO_DOMAIN`,
-`CARDDAV_BASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `OPENAI_API_KEY`,
+`CARDDAV_BASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`,
+`GOOGLE_OAUTH_REDIRECT_URI`, `EVENTBRITE_CLIENT_ID`, `EVENTBRITE_CLIENT_SECRET`,
+`MEETUP_CLIENT_ID`, `MEETUP_CLIENT_SECRET`, `OPENAI_API_KEY`,
 `AZURE_OPENAI_API_KEY`, `AWS_ACCESS_KEY_ID`, `ANTHROPIC_API_KEY`,
 `MISTRAL_API_KEY`, `COHERE_API_KEY`, `PERPLEXITY_API_KEY`, `XAI_API_KEY`,
 `TOGETHER_API_KEY`, `GROQ_API_KEY`, `DEEPSEEK_API_KEY`,
@@ -388,14 +393,15 @@ Provider credentials such as `AUTH0_DOMAIN`, `CLERK_SECRET_KEY`,
 `POSTMARK_SERVER_TOKEN`, `MAILGUN_API_KEY`, `TWILIO_ACCOUNT_SID`,
 `WHATSAPP_ACCESS_TOKEN`, `EXPO_ACCESS_TOKEN`, `CUSTOMERIO_APP_API_KEY`,
 `BRAZE_REST_API_KEY`, `ONESIGNAL_REST_API_KEY`, `COURIER_AUTH_TOKEN`,
-`KNOCK_API_KEY`, `NOVU_API_KEY`, `STRIPE_SECRET_KEY`,
+`KNOCK_API_KEY`, `NOVU_API_KEY`, `NOVU_WORKFLOW_ID`, `STRIPE_SECRET_KEY`,
 `PAYPAL_CLIENT_ID`, `SQUARE_ACCESS_TOKEN`, `ADYEN_API_KEY`, `SENTRY_DSN`,
 `POSTHOG_PROJECT_API_KEY`, `OTEL_EXPORTER_OTLP_ENDPOINT`,
 `GRAFANA_OTLP_API_KEY`, `DATADOG_API_KEY`, `BETTERSTACK_SOURCE_TOKEN`,
 Salesforce, HubSpot, Zoho, Pipedrive, Dynamics, Shopify, Klaviyo, Mailchimp,
-ActiveCampaign, BigCommerce, WooCommerce, Square, Intercom, and Microsoft Graph
-keys, plus Zapier, Make, Slack, Teams, Notion, Airtable, Google Sheets, n8n,
-Workato, and Pipedream workflow keys are documented in `infra/env/.env.example`, but live OAuth,
+ActiveCampaign, BigCommerce, WooCommerce, Square, Intercom, Monday.com, Amazon
+Seller, Etsy, and Microsoft Graph keys, plus Zapier, Make, Slack, Teams,
+Notion, Airtable, Google Sheets, n8n, Workato, and Pipedream workflow keys are
+documented in `infra/env/.env.example`, but live OAuth,
 AI/image calls, notification sends, payment charges/refunds, telemetry
 ingestion, CRM sync, workflow sends, live retail quotes, and direct vendor
 ordering are not implemented in this repo state.

@@ -215,7 +215,7 @@ export const calendarAdapterReadinessContracts: CalendarAdapterReadinessContract
     mode: "oauth-readiness-contract",
     launchStatus: "credential-gated",
     catalogAdapterId: "google-calendar-events",
-    requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+    requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
     requiredScopes: ["calendar.events.readonly"],
     officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"],
     safetyGates: [

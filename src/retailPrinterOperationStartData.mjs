@@ -3,6 +3,12 @@ import {
   retailPrinterRegistryOperationKinds,
   retailPrinterRegistryProductLinks
 } from "./retailPrinterRegistryData.mjs";
+import {
+  buildSharedPrinterCouponCollectionPlan,
+  getPrinterCouponCollectionContract,
+  printerCouponCollectionPriority,
+  printerCouponProviderFeedTargets
+} from "./printerCouponPlanningData.mjs";
 
 export const retailPrinterOperationStartRoute = "/api/retail-printers/operations/start";
 export const retailPrinterOperationKinds = retailPrinterRegistryOperationKinds;
@@ -10,354 +16,6 @@ export const retailPrinterProductLinks = retailPrinterRegistryProductLinks;
 
 const sharedForbiddenFields = ["raw relationship memories", "raw payment card data", "unapproved recipient PII"];
 const sharedGateIds = ["vendor-certification", "real-order-kill-switch", "customer-approval"];
-
-const couponProviderFeedTargets = [
-  {
-    id: "fmtc-deal-feed",
-    label: "FMTC Deal Feed provider API",
-    vendorIds: ["walgreens", "cvs"],
-    mode: "coupon-provider-feed",
-    role: "provider-feed",
-    readiness: "credential-gated",
-    url: "https://docs.fmtc.co/kb/deals-4-2-0",
-    collectionMethod: "provider-api-feed",
-    credentialEnvKeys: ["FMTC_API_TOKEN"],
-    sourceProvider: "affiliate-provider",
-    maxAgeHours: 12,
-    expectedOfferCodes: [],
-    verificationSignals: ["status", "code_verified_at", "link_verified_at", "end_date"],
-    staticHtmlSignalAllowed: false,
-    browserRenderProofRequired: false,
-    legalReviewRequired: true,
-    noNetworkRuntime: true
-  },
-  {
-    id: "rakuten-coupon-feed",
-    label: "Rakuten Advertising Coupon Feed API",
-    vendorIds: ["walgreens", "cvs"],
-    mode: "coupon-provider-feed",
-    role: "provider-feed",
-    readiness: "credential-gated",
-    url: "https://pubhelp.rakutenadvertising.com/hc/en-us/articles/5949828511757-Coupon-Feed-API",
-    collectionMethod: "provider-api-feed",
-    credentialEnvKeys: ["RAKUTEN_ADVERTISING_API_TOKEN"],
-    sourceProvider: "affiliate-provider",
-    maxAgeHours: 12,
-    expectedOfferCodes: [],
-    verificationSignals: ["coupon code", "promotional link", "offerstartdate", "offerenddate", "advertiser"],
-    staticHtmlSignalAllowed: false,
-    browserRenderProofRequired: false,
-    legalReviewRequired: true,
-    noNetworkRuntime: true
-  }
-];
-
-const couponCollectionPriority = [
-  {
-    id: "credentialed-coupon-provider-feed",
-    order: 1,
-    label: "Credentialed coupon provider feed",
-    collectionMode: "coupon-provider-feed",
-    collectionMethod: "provider-api-feed",
-    evidenceRole: "coupon-discovery",
-    targetRoles: ["provider-feed"],
-    requiresCredentials: true,
-    fallbackAllowed: false,
-    canAffectBestPrice: false,
-    requiredEvidence: ["provider feed response with coupon code, link, expiration, and verification metadata"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "official-retailer-coupon-page",
-    order: 2,
-    label: "Official retailer coupon page",
-    collectionMode: "retailer-public-coupon-page",
-    collectionMethod: "server-fetch-html",
-    evidenceRole: "retailer-source-confirmation",
-    targetRoles: ["coupon-source"],
-    requiresCredentials: false,
-    fallbackAllowed: true,
-    canAffectBestPrice: false,
-    requiredEvidence: ["official retailer coupon page code, product scope, terms, and expiration"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "exact-rendered-print-link",
-    order: 3,
-    label: "Exact rendered Walgreens/CVS print link",
-    collectionMode: "retailer-public-coupon-page",
-    collectionMethod: "rendered-browser-read",
-    evidenceRole: "product-code-price-proof",
-    targetRoles: ["print-entrypoint"],
-    requiresCredentials: false,
-    fallbackAllowed: true,
-    canAffectBestPrice: false,
-    requiredEvidence: ["visible coupon text plus matching product, price, and SKU signals from the exact print link"],
-    noNetworkRuntime: true
-  },
-  {
-    id: "same-cart-provider-portal-proof",
-    order: 4,
-    label: "Same-cart provider portal proof",
-    collectionMode: "provider-portal-checkout",
-    collectionMethod: "provider-portal-cart-evidence",
-    evidenceRole: "best-price-discount-proof",
-    targetRoles: [],
-    requiresCredentials: false,
-    fallbackAllowed: false,
-    canAffectBestPrice: true,
-    requiredEvidence: [
-      "provider portal checkout subtotal after coupon application",
-      "same product, quantity, fulfillment mode, account state, and subtotal math",
-      "no payment or order submission"
-    ],
-    noNetworkRuntime: true
-  }
-];
-
-const couponCollectionContracts = {
-  walgreens: {
-    retailerCouponTargets: [
-      {
-        id: "walgreens-photo-official-deals",
-        label: "Walgreens Photo official deals page",
-        vendorIds: ["walgreens"],
-        mode: "retailer-public-coupon-page",
-        role: "coupon-source",
-        readiness: "ready-public-page",
-        url: "https://photo.walgreens.com/store/deals?tab=photo_downsplash_top",
-        collectionMethod: "server-fetch-html",
-        credentialEnvKeys: [],
-        sourceProvider: "retailer",
-        maxAgeHours: 24,
-        expectedOfferCodes: ["CRISPCARD"],
-        verificationSignals: ["CRISPCARD", "60% OFF All Photo Cards & Premium Stationery", "Offer expires at 11:59 p.m. CT"],
-        staticHtmlSignalAllowed: true,
-        browserRenderProofRequired: false,
-        legalReviewRequired: true,
-        noNetworkRuntime: true
-      }
-    ],
-    printEntrypointTargets: [
-      {
-        id: "walgreens-photo-card-design-entrypoint",
-        label: "Walgreens Photo 5x7 folded card design-detail print entrypoint",
-        vendorIds: ["walgreens"],
-        mode: "retailer-public-coupon-page",
-        role: "print-entrypoint",
-        readiness: "ready-public-page",
-        url: retailPrinterProductLinks.walgreens.productUrl,
-        collectionMethod: "rendered-browser-read",
-        credentialEnvKeys: [],
-        sourceProvider: "retailer",
-        maxAgeHours: 24,
-        expectedOfferCodes: ["CRISPCARD"],
-        verificationSignals: ["5x7 folded card", "3.49", "CommerceProduct_33272", "CRISPCARD"],
-        staticHtmlSignalAllowed: true,
-        browserRenderProofRequired: true,
-        legalReviewRequired: true,
-        noNetworkRuntime: true
-      }
-    ],
-    candidateOfferCodes: ["CRISPCARD"],
-    portalApplicationPackets: [
-      {
-        id: "walgreens-crispcard-cards-2026-06-13-portal-application-packet",
-        offerId: "walgreens-crispcard-cards-2026-06-13",
-        vendorId: "walgreens",
-        code: "CRISPCARD",
-        label: "60% off All Photo Cards and Premium Stationery",
-        status: "portal-evidence-required",
-        evidenceStatus: "source-listed",
-        discountPercent: 60,
-        requiresLoggedInAccount: true,
-        sourceTargetIds: ["walgreens-photo-official-deals", "walgreens-photo-card-design-entrypoint"],
-        providerPortalUrls: [
-          retailPrinterProductLinks.walgreens.productUrl,
-          "https://photo.walgreens.com/store/cards?tab=Photo_Deals2",
-          "https://photo.walgreens.com/store/cards?tab=PhotoNav%7CSameDayPickup%7CAllCards"
-        ],
-        applicationTargets: [
-          {
-            sourcePriceObservationId: "walgreens-5x7-folded-card",
-            vendorName: "Walgreens Photo",
-            productName: "5x7 folded cards, standard cardstock 85lb",
-            portalUrl: retailPrinterProductLinks.walgreens.productUrl,
-            subtotalBeforeCouponCents: 349,
-            expectedDiscountCents: 209,
-            expectedSubtotalAfterCouponCents: 140,
-            cartTerms: {
-              vendorId: "walgreens",
-              productKind: "folded-card",
-              size: "5x7",
-              pricedQuantity: 1,
-              fulfillmentMode: "pickup",
-              accountState: "logged-in"
-            },
-            sameCartTermsEvidenceRequired: true
-          }
-        ],
-        requiredEvidence: [
-          "retailer coupon page or coupon-provider feed capture",
-          "provider portal checkout subtotal after coupon application",
-          "same product, quantity, fulfillment mode, and account state",
-          "no payment or order submission"
-        ],
-        liveCheckoutAutomation: false,
-        noOrderPlacedRequired: true,
-        canAffectBestPrice: false
-      }
-    ]
-  },
-  cvs: {
-    retailerCouponTargets: [
-      {
-        id: "cvs-photo-official-coupons",
-        label: "CVS Photo official coupon page",
-        vendorIds: ["cvs"],
-        mode: "retailer-public-coupon-page",
-        role: "coupon-source",
-        readiness: "ready-public-page",
-        url: "https://www.cvs.com/photo/cvs-photo-coupons?cid=cvs-home-s5-shop-photo",
-        collectionMethod: "server-fetch-html",
-        credentialEnvKeys: [],
-        sourceProvider: "retailer",
-        maxAgeHours: 24,
-        expectedOfferCodes: ["JUNESW"],
-        verificationSignals: ["JUNESW", "50% off Sitewide", "Offer valid online and in the CVS Health app"],
-        staticHtmlSignalAllowed: true,
-        browserRenderProofRequired: false,
-        legalReviewRequired: true,
-        noNetworkRuntime: true
-      }
-    ],
-    printEntrypointTargets: [
-      {
-        id: "cvs-photo-card-design-entrypoint",
-        label: "CVS Photo 5x7 folded greeting card design-detail print entrypoint",
-        vendorIds: ["cvs"],
-        mode: "retailer-public-coupon-page",
-        role: "print-entrypoint",
-        readiness: "ready-public-page",
-        url: retailPrinterProductLinks.cvs.productUrl,
-        collectionMethod: "rendered-browser-read",
-        credentialEnvKeys: [],
-        sourceProvider: "retailer",
-        maxAgeHours: 24,
-        expectedOfferCodes: ["JUNESW"],
-        verificationSignals: ["Folded Greeting Card, 5x7", "8.98", "CommerceProduct_26126", "JUNESW"],
-        staticHtmlSignalAllowed: true,
-        browserRenderProofRequired: true,
-        legalReviewRequired: true,
-        noNetworkRuntime: true
-      }
-    ],
-    candidateOfferCodes: ["JUNESW"],
-    portalApplicationPackets: [
-      {
-        id: "cvs-junesw-sitewide-photo-2026-06-20-portal-application-packet",
-        offerId: "cvs-junesw-sitewide-photo-2026-06-20",
-        vendorId: "cvs",
-        code: "JUNESW",
-        label: "50% off Sitewide Photo",
-        status: "portal-evidence-required",
-        evidenceStatus: "source-listed",
-        discountPercent: 50,
-        requiresLoggedInAccount: false,
-        sourceTargetIds: ["cvs-photo-official-coupons", "cvs-photo-card-design-entrypoint"],
-        providerPortalUrls: [
-          retailPrinterProductLinks.cvs.productUrl,
-          "https://www.cvs.com/photo/prints",
-          "https://www.cvs.com/photo/cards",
-          "https://www.cvs.com/Photo/Cards"
-        ],
-        applicationTargets: [
-          {
-            sourcePriceObservationId: "cvs-5x7-double-sided-cardstock",
-            vendorName: "CVS Photo",
-            productName: "5x7 double-sided cardstock card",
-            portalUrl: "https://www.cvs.com/Photo/Cards",
-            subtotalBeforeCouponCents: 3980,
-            expectedDiscountCents: 1990,
-            expectedSubtotalAfterCouponCents: 1990,
-            cartTerms: {
-              vendorId: "cvs",
-              productKind: "flat-card",
-              size: "5x7",
-              pricedQuantity: 20,
-              fulfillmentMode: "pickup",
-              accountState: "guest-or-public"
-            },
-            sameCartTermsEvidenceRequired: true
-          },
-          {
-            sourcePriceObservationId: "cvs-5x7-photo-card",
-            vendorName: "CVS Photo",
-            productName: "5x7 photo card",
-            portalUrl: "https://www.cvs.com/Photo/Cards",
-            subtotalBeforeCouponCents: 2180,
-            expectedDiscountCents: 1090,
-            expectedSubtotalAfterCouponCents: 1090,
-            cartTerms: {
-              vendorId: "cvs",
-              productKind: "photo-card",
-              size: "5x7",
-              pricedQuantity: 20,
-              fulfillmentMode: "pickup",
-              accountState: "guest-or-public"
-            },
-            sameCartTermsEvidenceRequired: true
-          },
-          {
-            sourcePriceObservationId: "cvs-5x7-premium-card",
-            vendorName: "CVS Photo",
-            productName: "Same Day 5x7 Premium card",
-            portalUrl: "https://www.cvs.com/Photo/Cards",
-            subtotalBeforeCouponCents: 4980,
-            expectedDiscountCents: 2490,
-            expectedSubtotalAfterCouponCents: 2490,
-            cartTerms: {
-              vendorId: "cvs",
-              productKind: "premium-card",
-              size: "5x7",
-              pricedQuantity: 20,
-              fulfillmentMode: "pickup",
-              accountState: "guest-or-public"
-            },
-            sameCartTermsEvidenceRequired: true
-          },
-          {
-            sourcePriceObservationId: "cvs-5x7-folded-card",
-            vendorName: "CVS Photo",
-            productName: "Folded greeting card, 5x7",
-            portalUrl: retailPrinterProductLinks.cvs.productUrl,
-            subtotalBeforeCouponCents: 898,
-            expectedDiscountCents: 449,
-            expectedSubtotalAfterCouponCents: 449,
-            cartTerms: {
-              vendorId: "cvs",
-              productKind: "folded-card",
-              size: "5x7",
-              pricedQuantity: 1,
-              fulfillmentMode: "pickup",
-              accountState: "guest-or-public"
-            },
-            sameCartTermsEvidenceRequired: true
-          }
-        ],
-        requiredEvidence: [
-          "retailer coupon page or coupon-provider feed capture",
-          "provider portal checkout subtotal after coupon application",
-          "same product, quantity, fulfillment mode, and account state",
-          "no payment or order submission"
-        ],
-        liveCheckoutAutomation: false,
-        noOrderPlacedRequired: true,
-        canAffectBestPrice: false
-      }
-    ]
-  }
-};
 
 const operationShapes = {
   "fetch-price": {
@@ -529,8 +187,8 @@ export function validateRetailPrinterOperationStartPackets(packets = buildRetail
 function validateOperationStartCouponCollectionPlan(packet, productLink) {
   const errors = [];
   const plan = packet.couponCollectionPlan;
-  const couponContract = couponCollectionContracts[packet.vendorId];
-  const expectedProviderFeedTargetIds = couponContract ? couponProviderFeedTargets.map((target) => target.id) : [];
+  const couponContract = getPrinterCouponCollectionContract(packet.vendorId);
+  const expectedProviderFeedTargetIds = couponContract ? printerCouponProviderFeedTargets.map((target) => target.id) : [];
   const expectedRetailerCouponTargetIds = couponContract?.retailerCouponTargets.map((target) => target.id) ?? [];
   const expectedPrintEntrypointTargetIds = couponContract?.printEntrypointTargets.map((target) => target.id) ?? [];
   const expectedCandidateOfferCodes = productLink?.candidateOfferCodes ?? [];
@@ -542,7 +200,7 @@ function validateOperationStartCouponCollectionPlan(packet, productLink) {
     ...expectedPrintEntrypointTargetIds
   ];
 
-  if (!sameStringArray(plan.collectionPriority?.map((step) => step.id), couponCollectionPriority.map((step) => step.id))) {
+  if (!sameStringArray(plan.collectionPriority?.map((step) => step.id), printerCouponCollectionPriority.map((step) => step.id))) {
     errors.push(`Retail printer operation start packet ${packet.id} must expose the coupon collection priority contract.`);
   }
   if (plan.couponProviderFeedPreferred !== true || plan.retailerScrapeFallbackAllowed !== true || plan.printLinkRenderFallbackAllowed !== true) {
@@ -636,7 +294,9 @@ function buildRetailPrinterOperationStartPacket(vendorId, operation) {
   const productLink = retailPrinterProductLinks[vendorId] ?? retailPrinterProductLinks.walgreens;
   const operationShape = operationShapes[operation] ?? operationShapes["fetch-price"];
   const expectedInputFields = [...operationShape.requiredInputFields, ...operationShape.optionalInputFields];
-  const couponCollectionPlan = buildCouponCollectionPlan(productLink, operation);
+  const couponCollectionPlan = buildSharedPrinterCouponCollectionPlan(productLink, {
+    quantity: operation === "fetch-price" ? productLink.minimumQuantity : 1
+  });
 
   return {
     id: `${productLink.vendorId}-${operation}-operation-start`,
@@ -737,68 +397,6 @@ function buildOperationPolicy(productLink, operation) {
     requiredApprovalFields: ["customerApprovalId", "quoteEvidenceId", "paymentAuthorizationReference"],
     prohibitedUntilEvidence: ["vendorCertification", "physicalPrintQa", "realOrderKillSwitch", "customerFinalApproval"],
     recoveryEvidenceFields: ["cancellationRecoveryPlanId", "wrongStoreRecoveryPlanId"]
-  };
-}
-
-function buildCouponCollectionPlan(productLink, operation) {
-  const quantity = operation === "fetch-price" ? productLink.minimumQuantity : 1;
-  const couponContract = couponCollectionContracts[productLink.vendorId];
-  const providerFeedTargets = couponContract ? couponProviderFeedTargets : [];
-  const retailerCouponTargets = couponContract?.retailerCouponTargets ?? [];
-  const printEntrypointTargets = couponContract?.printEntrypointTargets ?? [];
-  const portalApplicationPackets = couponContract?.portalApplicationPackets ?? [];
-  const candidateOfferCodes = productLink.candidateOfferCodes;
-  const providerFeedTargetIds = providerFeedTargets.map((target) => target.id);
-  const retailerCouponTargetIds = retailerCouponTargets.map((target) => target.id);
-  const printEntrypointTargetIds = printEntrypointTargets.map((target) => target.id);
-  const portalApplicationPacketIds = productLink.portalApplicationPacketIds;
-
-  return {
-    vendorId: productLink.vendorId,
-    quantity,
-    collectionPriority: couponCollectionPriority,
-    collectionTargetIds: [...providerFeedTargetIds, ...retailerCouponTargetIds, ...printEntrypointTargetIds],
-    providerFeedTargetIds,
-    retailerCouponTargetIds,
-    printEntrypointTargetIds,
-    credentialEnvKeys: [...new Set(providerFeedTargets.flatMap((target) => target.credentialEnvKeys))],
-    candidateOfferCodes,
-    portalApplicationPacketIds,
-    providerFeedTargets,
-    retailerCouponTargets,
-    printEntrypointTargets,
-    portalApplicationPackets,
-    couponPolicy: {
-      providerPortalApplicationRequired: true,
-      couponsIncludedInDisplayedPrices: "only-after-provider-portal-application",
-      sameCartEvidenceRequired: true,
-      noBestPriceRankingWithoutPortalProof: true
-    },
-    couponProviderFeedPreferred: true,
-    retailerScrapeFallbackAllowed: true,
-    printLinkRenderFallbackAllowed: true,
-    providerPortalApplicationRequired: true,
-    bestPriceRequiresProviderPortalEvidence: true,
-    canAffectBestPriceBeforePortalEvidence: false,
-    noNetworkRuntime: true,
-    operatorSteps: [
-      providerFeedTargets.length > 0
-        ? `Run credentialed coupon provider feed targets first when approved server/operator credentials exist: ${providerFeedTargetIds.join(", ")}.`
-        : `No credentialed coupon provider feed target is registered for ${productLink.vendorId}; do not invent third-party coupon candidates.`,
-      [...retailerCouponTargetIds, ...printEntrypointTargetIds].length > 0
-        ? `Collect official retailer coupon-page evidence and rendered print-link evidence from: ${[
-            ...retailerCouponTargetIds,
-            ...printEntrypointTargetIds
-          ].join(", ")}.`
-        : `No official retailer coupon target is registered for ${productLink.vendorId}; record no source-listed coupon before ranking.`,
-      candidateOfferCodes.length > 0
-        ? `Apply candidate coupon code(s) ${candidateOfferCodes.join(", ")} in the same provider portal cart during pricing collection.`
-        : "Record that no active source-listed coupon code is available for this provider before ranking.",
-      portalApplicationPacketIds.length > 0
-        ? `Record same-cart provider portal evidence against packet(s): ${portalApplicationPacketIds.join(", ")}.`
-        : "Do not create ad hoc coupon portal evidence without a registered packet.",
-      "Do not apply a discount to best-price ranking until the provider portal shows the code accepted."
-    ]
   };
 }
 

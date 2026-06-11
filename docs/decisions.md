@@ -234,3 +234,47 @@ payload, summary function, and validator in one module, so adding or changing a
 Readiness Register no longer requires hand-editing every API caller. The deletion
 test: removing the manifest makes the domain list reappear in both
 `readinessSummary.ts` and `apiContracts.ts`.
+
+## D017: Share Retail Coupon Planning Across Pricing And Operation Start
+
+Decision: add `printerCouponPlanningData.mjs` as the runtime-readable coupon
+planning registry for collection priority, targets, provider feeds, and
+operation-start portal proof packets. `printerPricing.ts` imports the shared
+priority/target registry while `retailPrinterOperationStartData.mjs` builds
+operation packets through the shared plan builder.
+
+Reason: pricing comparison and retail operation-start packets were carrying
+parallel coupon target and priority data. A `.mjs` registry with a declaration
+file gives both the browser TypeScript code and Node API scripts one shared
+contract without making scripts import uncompiled TypeScript.
+
+Rejected: importing `printerPricing.ts` directly from the API `.mjs` data module.
+That would make Node scripts depend on the Vite/TypeScript runtime shape.
+
+## D018: Put Customer Chat Sending Behind The Customer Chat Domain
+
+Decision: add `sendCustomerChatMessage()` to `customerChat.ts` and re-export it
+through `customerWorkflow.ts`. The helper owns the same-origin route call,
+idempotency header wiring, displayed-message sanitization, and deterministic
+local fallback.
+
+Reason: the customer chat send path was a UI-shaped workflow even though its
+safety behavior belongs to the chat domain. A single helper makes the send and
+fallback behavior testable without rendering the app.
+
+Rejected: keeping fetch/error handling in React components. That repeats the
+same fallback and redaction decisions anywhere chat sending appears.
+
+## D019: Move Retail Printer Docs Rules Behind A Retail Provider Docs Seam
+
+Decision: add `retailPrinterProviderDocs.ts` as the retail-specific docs URL
+resolver and validator. `providerCatalog.ts` still displays canonical product
+URLs, but delegates retail product-link lookup and placeholder checks to that
+retail seam.
+
+Reason: the generic provider catalog should not know how retail product links are
+indexed. The new helper keeps canonical URL enforcement near retail contracts
+while preserving catalog integrity tests.
+
+Rejected: hard-coding retail docs URLs in the catalog. That would remove the
+adapter dependency but reintroduce URL drift.

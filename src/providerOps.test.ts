@@ -9,7 +9,7 @@ import { buildProviderOpsModel, validateProviderOpsModel } from "./providerOps";
 const cloudflareEnv = {
   CLOUDFLARE_ACCOUNT_ID: "acct_123",
   CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
-  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.2-3b-instruct",
+  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
   CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
   CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning"
 };

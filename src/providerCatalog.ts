@@ -1,4 +1,7 @@
-import { getRetailPrinterProductLinkByProvider } from "./retailPrinterAdapters";
+import {
+  retailPrinterProviderDocsUrl,
+  validateRetailPrinterProviderDocsUrls
+} from "./retailPrinterProviderDocs";
 
 export type ProviderCapability =
   | "auth"
@@ -112,12 +115,6 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
   payment: "Payment",
   observability: "Observability"
 };
-
-function retailPrinterDocsUrl(providerAdapterId: string): string {
-  const productLink = getRetailPrinterProductLinkByProvider(providerAdapterId);
-  if (!productLink) throw new Error(`Missing retail printer product link for provider adapter: ${providerAdapterId}`);
-  return productLink.productUrl;
-}
 
 export const providerCatalog: ProviderAdapter[] = [
   {
@@ -855,7 +852,7 @@ export const providerCatalog: ProviderAdapter[] = [
     lane: "Provider integration",
     status: "credential-gated",
     cost: "free-tier",
-    credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
+    credentials: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
     safetyGates: ["Calendar scope consent", "Metadata schema validation", "Revocation handling"],
     roleSurface: ["customer", "admin"],
     priority: 31,
@@ -1599,7 +1596,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 90,
     detail: "Models Walgreens Photo price fetch, image upload, and order placement, all blocked until partner certification and print QA exist.",
-    docsUrl: retailPrinterDocsUrl("walgreens-live-order")
+    docsUrl: retailPrinterProviderDocsUrl("walgreens-live-order")
   },
   {
     id: "cvs-live-order",
@@ -1614,7 +1611,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 91,
     detail: "Models CVS Photo price fetch, image upload, and order placement, all blocked until certified vendor-browser or API evidence exists.",
-    docsUrl: retailPrinterDocsUrl("cvs-live-order")
+    docsUrl: retailPrinterProviderDocsUrl("cvs-live-order")
   },
   {
     id: "fedex-live-print",
@@ -1629,7 +1626,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 92,
     detail: "Models FedEx Office price fetch, file upload, and order placement, all blocked until print QA and order recovery are verified.",
-    docsUrl: retailPrinterDocsUrl("fedex-live-print")
+    docsUrl: retailPrinterProviderDocsUrl("fedex-live-print")
   },
   {
     id: "walmart-live-print",
@@ -1644,7 +1641,7 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 93,
     detail: "Models Walmart Photo price fetch, image upload, and order placement, all blocked while pricing research remains manual and review-only.",
-    docsUrl: retailPrinterDocsUrl("walmart-live-print")
+    docsUrl: retailPrinterProviderDocsUrl("walmart-live-print")
   },
   {
     id: "staples-live-print",
@@ -2344,14 +2341,9 @@ export function validateProviderCatalog(adapters: ProviderAdapter[] = providerCa
     if (adapter.status === "credential-gated" && !adapter.docsUrl) {
       errors.push(`Credential-gated adapter ${adapter.id} must include an official docs URL.`);
     }
-    const retailPrinterProductLink = getRetailPrinterProductLinkByProvider(adapter.id);
-    if (retailPrinterProductLink && adapter.docsUrl !== retailPrinterProductLink.productUrl) {
-      errors.push(`Retail printer adapter ${adapter.id} must use its canonical product URL as docsUrl.`);
-    }
-    if (retailPrinterProductLink && adapter.docsUrl && isPlaceholderProviderDocsUrl(adapter.docsUrl)) {
-      errors.push(`Retail printer adapter ${adapter.id} docsUrl must not be placeholder, demo, localhost, or example content.`);
-    }
   }
+
+  errors.push(...validateRetailPrinterProviderDocsUrls(adapters));
 
   for (const capability of requiredCapabilities) {
     const capabilityAdapters = adapters.filter((adapter) => adapter.capability === capability);
@@ -2373,20 +2365,6 @@ export function validateProviderCatalog(adapters: ProviderAdapter[] = providerCa
   }
 
   return errors;
-}
-
-function isPlaceholderProviderDocsUrl(url: string): boolean {
-  const normalized = safeDecodeUrlText(url).toLowerCase();
-  if (/\b(example\.com|localhost|127\.0\.0\.1|placeholder|dummy|todo|mock)\b/.test(normalized)) return true;
-  return /(^|[/?#&=._-])demo($|[/?#&=._-])/.test(normalized);
-}
-
-function safeDecodeUrlText(url: string): string {
-  try {
-    return decodeURIComponent(url);
-  } catch {
-    return url;
-  }
 }
 
 export function providerStatusLabel(status: ProviderStatus): string {

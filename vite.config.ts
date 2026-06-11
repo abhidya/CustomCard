@@ -8,9 +8,10 @@ import {
   createAiCardGenerationService,
   loadLocalAiEnvFiles
 } from "./scripts/ai-card-generator.mjs";
+import { handleApiRequest } from "./scripts/api-server.mjs";
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), customCardAiApiPlugin(mode)],
+  plugins: [react(), customCardCalendarApiPlugin(), customCardAiApiPlugin(mode)],
   test: {
     coverage: {
       include: [
@@ -79,6 +80,22 @@ export default defineConfig(({ mode }) => ({
     globals: true
   }
 }));
+
+function customCardCalendarApiPlugin(): Plugin {
+  return {
+    name: "customcard-calendar-api",
+    configureServer(server) {
+      server.middlewares.use(async (request, response, next) => {
+        const url = new URL(request.url ?? "/", "http://localhost");
+        if (url.pathname !== "/api/calendar/connections/start") {
+          next();
+          return;
+        }
+        await handleApiRequest(request, response);
+      });
+    }
+  };
+}
 
 function customCardAiApiPlugin(mode: string): Plugin {
   const env = {
