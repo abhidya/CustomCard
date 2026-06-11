@@ -592,6 +592,324 @@ h3 {
   margin-bottom: 16px;
 }
 
+.adminPortalCard {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  background: #fcfdfb;
+}
+
+.adminPortalSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminPortalTabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.adminPortalTab {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #d7e0e2;
+  border-radius: 8px;
+  color: #28383e;
+  background: #ffffff;
+  font-weight: 840;
+  text-align: left;
+}
+
+.adminPortalTab.active {
+  border-color: #315b7d;
+  background: #eaf1f6;
+}
+
+.adminPortalTab.blocked {
+  border-left: 4px solid #c8553d;
+}
+
+.adminPortalTab.attention {
+  border-left: 4px solid #c88f25;
+}
+
+.adminPortalTab.ready {
+  border-left: 4px solid #258477;
+}
+
+.adminPortalTab span,
+.adminPortalTab em {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.adminPortalTab em {
+  justify-self: end;
+  color: #5d6d73;
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+.adminPortalToolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(160px, auto) minmax(80px, auto);
+  gap: 10px;
+  align-items: end;
+}
+
+.adminPortalAreaHeader {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.adminPortalAreaHeader h4 {
+  margin: 1px 0 0;
+  color: #1f2b30;
+  font-size: 1.02rem;
+}
+
+.adminPortalAreaHeader p {
+  min-width: 0;
+  margin: 0;
+  color: #5c6d73;
+  font-size: 0.84rem;
+  font-weight: 720;
+}
+
+.adminPortalControlStrip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminPortalControl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #dbe3e5;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
+.adminPortalControl input {
+  margin-top: 2px;
+  accent-color: #258477;
+}
+
+.adminPortalControl strong,
+.adminPortalControl small,
+.adminPortalControl em {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.adminPortalControl strong {
+  color: #24343a;
+  font-size: 0.78rem;
+}
+
+.adminPortalControl small {
+  margin-top: 2px;
+  color: #63737a;
+  font-size: 0.72rem;
+  font-weight: 720;
+}
+
+.adminPortalControl em {
+  justify-self: end;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #6f2b22;
+  background: #fff1ee;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 880;
+}
+
+.adminPortalRecordGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminPortalRecord {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d9e2e4;
+  border-left: 4px solid #c88f25;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.adminPortalRecord.ready {
+  border-left-color: #258477;
+}
+
+.adminPortalRecord.blocked {
+  border-left-color: #c8553d;
+}
+
+.adminPortalRecordHeader,
+.adminPortalMeta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.adminPortalRecordTitle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+.adminPortalRecordIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: #244656;
+  background: #eaf1f6;
+}
+
+.adminPortalRecordHeader span,
+.adminPortalRecordHeader strong,
+.adminPortalRecord p,
+.adminPortalAction span,
+.adminPortalEvidence span,
+.adminPortalMeta span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.adminPortalRecordHeader span {
+  display: block;
+  color: #68777d;
+  font-size: 0.72rem;
+  font-weight: 790;
+}
+
+.adminPortalRecordHeader strong {
+  display: block;
+  color: #203038;
+  font-size: 0.9rem;
+  font-weight: 880;
+}
+
+.adminPortalRecordHeader em {
+  justify-self: end;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #314b55;
+  background: #edf4f7;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 880;
+}
+
+.adminPortalRecord.attention .adminPortalRecordHeader em {
+  color: #6d4c12;
+  background: #fff5da;
+}
+
+.adminPortalRecord.blocked .adminPortalRecordHeader em {
+  color: #6f2b22;
+  background: #fff1ee;
+}
+
+.adminPortalRecord.ready .adminPortalRecordHeader em {
+  color: #20544d;
+  background: #e9f6f2;
+}
+
+.adminPortalRecord p {
+  margin: 0;
+  color: #5d6d73;
+  font-size: 0.8rem;
+  font-weight: 710;
+}
+
+.adminPortalAction {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f6f8fb;
+}
+
+.adminPortalAction strong {
+  color: #2c3d43;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.adminPortalAction span {
+  color: #43565d;
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.adminPortalEvidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adminPortalEvidence span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #173553;
+  background: #e1edf7;
+  font-size: 0.7rem;
+  font-weight: 820;
+}
+
+.adminPortalMeta {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.adminPortalMeta span {
+  color: #68777d;
+  font-size: 0.7rem;
+  font-weight: 760;
+}
+
+.adminPortalEmpty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 12px;
+  border: 1px dashed #cfdadc;
+  border-radius: 8px;
+  color: #586a71;
+  background: #f8fafb;
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
 .adminOperationsCard {
   background: #fbfdfc;
 }
@@ -2657,11 +2975,14 @@ h3 {
   }
 
   .adminOpsOverview,
-  .adminOpsLaneGrid {
+  .adminOpsLaneGrid,
+  .adminPortalSummaryGrid,
+  .adminPortalTabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .adminOpsTaskList {
+  .adminOpsTaskList,
+  .adminPortalRecordGrid {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -2747,6 +3068,13 @@ h3 {
   .formGrid,
   .metricStrip,
   .adminSummaryGrid,
+  .adminPortalSummaryGrid,
+  .adminPortalTabs,
+  .adminPortalToolbar,
+  .adminPortalAreaHeader,
+  .adminPortalControlStrip,
+  .adminPortalRecordGrid,
+  .adminPortalMeta,
   .adminOpsOverview,
   .adminOpsLaneGrid,
   .adminOpsTaskList,
@@ -2771,12 +3099,14 @@ h3 {
   }
 
   .adminOpsTaskHeader,
-  .adminOpsTaskEvidence {
+  .adminOpsTaskEvidence,
+  .adminPortalRecordHeader {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .adminOpsTask em,
-  .adminOpsTaskEvidence small {
+  .adminOpsTaskEvidence small,
+  .adminPortalRecordHeader em {
     justify-self: start;
     text-align: left;
   }

@@ -69,6 +69,15 @@ describe("OAuth provider contracts", () => {
     }
   });
 
+  it("uses canonical Google OAuth env names for Google providers", () => {
+    for (const provider of ["google-calendar", "google-gmail"] as const) {
+      expect(oauthProviderContracts.find((contract) => contract.provider === provider)?.requiredEnvVars).toEqual([
+        "GOOGLE_OAUTH_CLIENT_ID",
+        "GOOGLE_OAUTH_CLIENT_SECRET"
+      ]);
+    }
+  });
+
   it("lists blocked reasons for each provider", () => {
     for (const contract of oauthProviderContracts) {
       expect(contract.blockedReasons.length).toBeGreaterThan(0);

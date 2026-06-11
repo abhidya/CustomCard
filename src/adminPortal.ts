@@ -1,0 +1,563 @@
+import type { AdminOperationsWorkflow } from "./adminOperations";
+import type { AdminPanelModel } from "./providerCatalog";
+import type { ProviderGovernanceSummary } from "./providerGovernance";
+import type { RuntimeReadiness } from "./providerRuntime";
+import type { ProductionReadinessSummary } from "./productionReadiness";
+import type { ReadinessSummary } from "./readinessSummary";
+
+export type AdminPortalSectionId = "ops" | "users" | "assets" | "providers" | "launch";
+export type AdminPortalStatus = "ready" | "attention" | "blocked";
+export type AdminPortalRisk = "low" | "medium" | "high";
+
+export interface AdminPortalMetric {
+  label: string;
+  value: string;
+}
+
+export interface AdminPortalControl {
+  id: string;
+  label: string;
+  detail: string;
+  enabled: boolean;
+}
+
+export interface AdminPortalRecord {
+  id: string;
+  label: string;
+  domain: string;
+  owner: string;
+  source: string;
+  status: AdminPortalStatus;
+  risk: AdminPortalRisk;
+  detail: string;
+  action: string;
+  evidence: string[];
+  liveMutationEnabled: boolean;
+  rawContentExposed: boolean;
+}
+
+export interface AdminPortalArea {
+  id: AdminPortalSectionId;
+  label: string;
+  eyebrow: string;
+  summary: string;
+  metrics: AdminPortalMetric[];
+  controls: AdminPortalControl[];
+  records: AdminPortalRecord[];
+}
+
+export interface AdminPortalNavigationItem {
+  id: AdminPortalSectionId;
+  label: string;
+  count: number;
+  status: AdminPortalStatus;
+}
+
+export interface AdminPortalSummary {
+  sections: number;
+  opsSignals: number;
+  userQueues: number;
+  assetQueues: number;
+  providerQueues: number;
+  launchGates: number;
+  liveMutationsEnabled: number;
+  rawContentExposed: number;
+}
+
+export interface AdminPortalModel {
+  summary: AdminPortalSummary;
+  navigation: AdminPortalNavigationItem[];
+  areas: Record<AdminPortalSectionId, AdminPortalArea>;
+  blockers: string[];
+}
+
+export interface AdminPortalModelInput {
+  model: AdminPanelModel;
+  readiness: ReadinessSummary;
+  providerGovernance: ProviderGovernanceSummary;
+  productionReadiness: ProductionReadinessSummary;
+  runtimeReadiness: Map<string, RuntimeReadiness>;
+  adminOperationsWorkflow: AdminOperationsWorkflow;
+}
+
+export interface AdminPortalRecordFilter {
+  query?: string;
+  status?: AdminPortalStatus | "all";
+}
+
+export function buildAdminPortalModel(input: AdminPortalModelInput): AdminPortalModel {
+  const runtimeItems = Array.from(input.runtimeReadiness.values());
+  const runtimeBlocked = runtimeItems.filter((item) => item.mode === "blocked").length;
+  const runtimeReady = runtimeItems.filter((item) => item.mode === "local-result").length;
+  const ops = buildOpsArea(input, runtimeBlocked, runtimeReady);
+  const users = buildUsersArea(input);
+  const assets = buildAssetsArea(input);
+  const providers = buildProvidersArea(input, runtimeBlocked, runtimeReady);
+  const launch = buildLaunchArea(input);
+  const areas = { ops, users, assets, providers, launch };
+  const records = Object.values(areas).flatMap((area) => area.records);
+  const summary: AdminPortalSummary = {
+    sections: Object.keys(areas).length,
+    opsSignals: ops.records.length,
+    userQueues: users.records.length,
+    assetQueues: assets.records.length,
+    providerQueues: input.model.gatedProviders.length + input.model.blockedProviders.length,
+    launchGates: launch.records.length,
+    liveMutationsEnabled: records.filter((record) => record.liveMutationEnabled).length,
+    rawContentExposed: records.filter((record) => record.rawContentExposed).length
+  };
+  const navigation: AdminPortalNavigationItem[] = Object.values(areas).map((area) => ({
+    id: area.id,
+    label: area.label,
+    count: area.records.length,
+    status: summarizeAreaStatus(area.records)
+  }));
+  const model: AdminPortalModel = {
+    summary,
+    navigation,
+    areas,
+    blockers: []
+  };
+
+  return {
+    ...model,
+    blockers: validateAdminPortalModel(model)
+  };
+}
+
+export function filterAdminPortalRecords(records: AdminPortalRecord[], filter: AdminPortalRecordFilter = {}): AdminPortalRecord[] {
+  const query = filter.query?.trim().toLowerCase() ?? "";
+  const status = filter.status ?? "all";
+
+  return records.filter((record) => {
+    const statusMatch = status === "all" || record.status === status;
+    const queryMatch =
+      !query ||
+      [
+        record.label,
+        record.domain,
+        record.owner,
+        record.source,
+        record.detail,
+        record.action,
+        ...record.evidence
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    return statusMatch && queryMatch;
+  });
+}
+
+export function validateAdminPortalModel(portal: AdminPortalModel): string[] {
+  const issues: string[] = [];
+  const requiredSections: AdminPortalSectionId[] = ["ops", "users", "assets", "providers", "launch"];
+  const records = Object.values(portal.areas).flatMap((area) => area.records);
+
+  for (const section of requiredSections) {
+    const area = portal.areas[section];
+    if (!area) {
+      issues.push(`Missing admin portal section: ${section}.`);
+      continue;
+    }
+    if (area.records.length < 1) issues.push(`Admin portal section ${section} must include records.`);
+    if (area.metrics.length < 1) issues.push(`Admin portal section ${section} must include metrics.`);
+  }
+
+  for (const record of records) {
+    if (!record.action) issues.push(`Admin portal record ${record.id} must name an admin action.`);
+    if (record.evidence.length < 1) issues.push(`Admin portal record ${record.id} must list required evidence.`);
+    if (record.liveMutationEnabled) issues.push(`Admin portal record ${record.id} must not enable live mutations.`);
+    if (record.rawContentExposed) issues.push(`Admin portal record ${record.id} must not expose raw customer content.`);
+  }
+
+  if (portal.summary.liveMutationsEnabled !== records.filter((record) => record.liveMutationEnabled).length) {
+    issues.push("Admin portal live mutation summary is out of sync with records.");
+  }
+  if (portal.summary.rawContentExposed !== records.filter((record) => record.rawContentExposed).length) {
+    issues.push("Admin portal raw content summary is out of sync with records.");
+  }
+
+  return issues;
+}
+
+function buildOpsArea(input: AdminPortalModelInput, runtimeBlocked: number, runtimeReady: number): AdminPortalArea {
+  const { readiness, adminOperationsWorkflow } = input;
+
+  return {
+    id: "ops",
+    label: "Ops",
+    eyebrow: "Ops monitoring",
+    summary: "Incident, alerting, runtime, fulfillment, and payment signals for the operator desk.",
+    metrics: [
+      { label: "Owner lanes", value: `${adminOperationsWorkflow.summary.ownerCount}` },
+      { label: "P0 actions", value: `${adminOperationsWorkflow.summary.p0Tasks}` },
+      { label: "Blocked", value: `${adminOperationsWorkflow.summary.blocked}` },
+      { label: "Runtime blocked", value: `${runtimeBlocked}` },
+      { label: "Runtime ready", value: `${runtimeReady}` },
+      { label: "Live enabled", value: `${adminOperationsWorkflow.summary.liveEnabled}` }
+    ],
+    controls: [
+      offControl("ops-live-ingestion", "Live telemetry ingestion", "Requires provider token, redaction proof, and alert-route drill."),
+      offControl("ops-provider-calls", "Provider network calls", "Dry-run readiness only until credential and kill-switch gates pass."),
+      offControl("ops-real-orders", "Retail order execution", "Manual handoff remains the only order path.")
+    ],
+    records: [
+      record({
+        id: "ops-alert-routing",
+        label: "Alert route drill",
+        domain: "Monitoring",
+        owner: "Observability and audit",
+        source: "Observability readiness",
+        status: readiness.observability.summary.alertRoutesRequired > 0 ? "attention" : "ready",
+        risk: "high",
+        detail: `${readiness.observability.summary.alertRoutesRequired} alert routes require drill evidence.`,
+        action: "Attach alert routing transcript and on-call escalation owner.",
+        evidence: ["Alert routing drill", "Redaction proof", "On-call owner"]
+      }),
+      record({
+        id: "ops-incident-review",
+        label: "Incident review runbook",
+        domain: "Operations",
+        owner: "Observability and audit",
+        source: "Admin operations workflow",
+        status: adminOperationsWorkflow.tasks.some((task) => task.id === "incident-review-runbook") ? "attention" : "blocked",
+        risk: "medium",
+        detail: "Incident-review runbook is queued as an admin-owned readiness task.",
+        action: "Attach incident review dry run and response checklist.",
+        evidence: ["Incident review runbook", "Dry-run transcript"]
+      }),
+      record({
+        id: "ops-hosted-api",
+        label: "Hosted API health",
+        domain: "API",
+        owner: "Platform infrastructure",
+        source: "Hosted API readiness",
+        status: readiness.hostedApi.summary.publicRouteProofRequired > 0 ? "blocked" : "ready",
+        risk: "high",
+        detail: `${readiness.hostedApi.summary.routeContracts} route contracts exist; public DB-backed proof is still required.`,
+        action: "Run hosted route probe for admin and customer session tokens.",
+        evidence: ["Hosted API route probe", "Hosted database proof", "Account-token verification"]
+      }),
+      record({
+        id: "ops-payment-exceptions",
+        label: "Payment exception monitor",
+        domain: "Commerce",
+        owner: "Commerce and fulfillment",
+        source: "Payment readiness",
+        status: readiness.payment.summary.liveChargesEnabled > 0 ? "blocked" : "attention",
+        risk: "high",
+        detail: `${readiness.payment.summary.paymentProviderContracts} payment provider contracts remain no-charge.`,
+        action: "Attach refund, void, dispute, webhook, and reconciliation drills before live charges.",
+        evidence: ["Refund/void drill", "Webhook signature proof", "Settlement reconciliation"]
+      }),
+      record({
+        id: "ops-retail-fulfillment",
+        label: "Retail fulfillment monitor",
+        domain: "Fulfillment",
+        owner: "Commerce and fulfillment",
+        source: "Retail fulfillment readiness",
+        status: readiness.retailFulfillment.summary.directOrderEnabled > 0 ? "blocked" : "attention",
+        risk: "high",
+        detail: `${readiness.retailFulfillment.summary.liveVendorAdapterContracts} retail adapter contracts use manual fallbacks.`,
+        action: "Attach quote, pickup/cancel recovery, and physical print QA evidence.",
+        evidence: ["Vendor certification", "Recovery drill", "Physical print QA"]
+      })
+    ]
+  };
+}
+
+function buildUsersArea(input: AdminPortalModelInput): AdminPortalArea {
+  const { readiness, model } = input;
+
+  return {
+    id: "users",
+    label: "Users",
+    eyebrow: "User management",
+    summary: "Admin roles, customer sessions, support queues, consent, and data-request controls.",
+    metrics: [
+      { label: "Auth env vars", value: `${model.coverage.requiredEnv.filter((envVar) => /AUTH|CLERK|COGNITO|SESSION/.test(envVar)).length}` },
+      { label: "Token proofs", value: `${readiness.reviewerDbSeed.summary.hostedTokenProbeProofs}` },
+      { label: "Seed proofs", value: `${readiness.reviewerDbSeed.summary.hostedSeedProofs}` },
+      { label: "Opt-in gates", value: `${readiness.businessEngagement.summary.optInRequired}` },
+      { label: "Live sends", value: `${readiness.businessEngagement.summary.liveMessagesEnabled}` },
+      { label: "Mutations live", value: "0" }
+    ],
+    controls: [
+      offControl("user-impersonation", "Support impersonation", "Requires scoped audit trail and customer-visible support notice."),
+      offControl("user-bulk-export", "Bulk customer export", "Requires admin approval, suppression review, and metadata-only export."),
+      offControl("user-live-messaging", "Live lifecycle messaging", "Requires opt-in sample, campaign approval, and provider OAuth.")
+    ],
+    records: [
+      record({
+        id: "users-admin-roles",
+        label: "Admin roles and sessions",
+        domain: "Identity",
+        owner: "Identity and access",
+        source: "Hosted API readiness",
+        status: readiness.hostedApi.summary.hostedTokenVerificationProofs > 0 ? "ready" : "attention",
+        risk: "high",
+        detail: "Admin routes require admin-session auth; hosted token proof is not attached yet.",
+        action: "Attach admin token probe and role mapping for operator, support, auditor, and owner roles.",
+        evidence: ["Hosted admin token probe", "Role mapping", "Session expiry policy"]
+      }),
+      record({
+        id: "users-customer-accounts",
+        label: "Customer account lookup",
+        domain: "Accounts",
+        owner: "Identity and access",
+        source: "Reviewer DB seed readiness",
+        status: readiness.reviewerDbSeed.summary.hostedTokenProbeProofs > 0 ? "ready" : "attention",
+        risk: "medium",
+        detail: "Customer account lookup remains a contract until hosted seed and token probes are attached.",
+        action: "Wire account lookup to metadata-only customer profile rows with no raw invite or memory content.",
+        evidence: ["Hosted seed execution", "Customer token probe", "Metadata-only profile row"]
+      }),
+      record({
+        id: "users-support-review",
+        label: "Support review queue",
+        domain: "Support",
+        owner: "Observability and audit",
+        source: "Business engagement readiness",
+        status: "attention",
+        risk: "medium",
+        detail: "Support actions need audit, escalation, and no-contact safeguards before live operation.",
+        action: "Attach approval transcript, escalation owner, and customer-visible support reason codes.",
+        evidence: ["Approval transcript", "Escalation owner", "Support audit log"]
+      }),
+      record({
+        id: "users-consent-suppression",
+        label: "Consent and suppression lists",
+        domain: "Privacy",
+        owner: "Provider integrations",
+        source: "Business engagement readiness",
+        status: readiness.businessEngagement.summary.optInRequired > 0 ? "attention" : "ready",
+        risk: "high",
+        detail: `${readiness.businessEngagement.summary.optInRequired} opt-in gates remain before live lifecycle messaging.`,
+        action: "Attach suppression list review and marketing opt-in sample before any CRM writeback or send.",
+        evidence: ["Suppression list review", "Marketing opt-in sample", "No-contact rejection sample"]
+      }),
+      record({
+        id: "users-data-requests",
+        label: "Data request desk",
+        domain: "Privacy",
+        owner: "Observability and audit",
+        source: "API contract",
+        status: "attention",
+        risk: "high",
+        detail: "The API contract has data-request mutations, but admin fulfillment evidence is not attached.",
+        action: "Add admin review queue for export, delete, and memory-forget requests with idempotent handling.",
+        evidence: ["Data request mutation proof", "Idempotency audit", "Tombstone reuse policy"]
+      })
+    ]
+  };
+}
+
+function buildAssetsArea(input: AdminPortalModelInput): AdminPortalArea {
+  const { readiness } = input;
+
+  return {
+    id: "assets",
+    label: "Assets",
+    eyebrow: "Asset management",
+    summary: "Generated panels, print packages, cloud artifacts, seed fixtures, coupon evidence, and signed mobile assets.",
+    metrics: [
+      { label: "Cloud repo-ready", value: `${readiness.cloudArtifactProof.summary.repoLocalReady}` },
+      { label: "Cloud applied req.", value: `${readiness.cloudArtifactProof.summary.appliedCloudRequired}` },
+      { label: "Signed URLs", value: `${readiness.cloudArtifactProof.summary.signedUrlProbeProofs}` },
+      { label: "Seed proof", value: `${readiness.reviewerDbSeed.summary.hostedSeedProofs}` },
+      { label: "Mobile artifacts", value: `${readiness.mobileRender.summary.signedArtifacts}` },
+      { label: "Live writes", value: "0" }
+    ],
+    controls: [
+      offControl("asset-cloud-write", "Cloud artifact writes", "Requires applied bucket, IAM, signed URL, access log, and restore proof."),
+      offControl("asset-public-sharing", "Public artifact sharing", "Requires external-share approval and expiring signed URLs."),
+      offControl("asset-ai-rendering", "Live AI asset generation", "Requires provider allowlist, prompt audit, spend cap, and human review.")
+    ],
+    records: [
+      record({
+        id: "assets-card-panels",
+        label: "Generated card panels",
+        domain: "Render packets",
+        owner: "Commerce and fulfillment",
+        source: "Render/export contract",
+        status: "ready",
+        risk: "low",
+        detail: "Browser SVG panels and local print package export are repo-local ready.",
+        action: "Keep checksum manifest and panel validation attached to every render packet.",
+        evidence: ["SVG panel validation", "Checksum manifest"]
+      }),
+      record({
+        id: "assets-print-packages",
+        label: "Print export packages",
+        domain: "Print package",
+        owner: "Commerce and fulfillment",
+        source: "Print export contract",
+        status: "ready",
+        risk: "low",
+        detail: "Local SVG/PDF package export supports manual vendor handoff.",
+        action: "Keep manual handoff checklist paired with render artifact manifest.",
+        evidence: ["Manual vendor checklist", "Print export manifest"]
+      }),
+      record({
+        id: "assets-object-store",
+        label: "Object-store artifacts",
+        domain: "Cloud artifacts",
+        owner: "Platform infrastructure",
+        source: "Cloud artifact proof readiness",
+        status: readiness.cloudArtifactProof.summary.appliedCloudRequired > 0 ? "blocked" : "ready",
+        risk: "high",
+        detail: "Terraform and contract files exist; applied bucket/IAM/signed URL proof is still required.",
+        action: "Attach applied bucket ARN, IAM output, signed URL probe, access log, and restore-drill proof.",
+        evidence: ["Applied bucket ARN", "IAM policy output", "Signed URL probe", "Restore drill"]
+      }),
+      record({
+        id: "assets-reviewer-seeds",
+        label: "Reviewer seed fixtures",
+        domain: "Seed data",
+        owner: "Platform infrastructure",
+        source: "Reviewer DB seed readiness",
+        status: readiness.reviewerDbSeed.summary.hostedSeedProofs > 0 ? "ready" : "attention",
+        risk: "medium",
+        detail: "Reviewer seed plans are modeled, but hosted migration and token-probe proof are not attached.",
+        action: "Run hosted seed, rollback, and account-token probes before exposing seeded admin/customer data.",
+        evidence: ["Hosted seed execution", "Rollback proof", "Hosted token probe"]
+      }),
+      record({
+        id: "assets-coupon-evidence",
+        label: "Coupon portal evidence",
+        domain: "Pricing proof",
+        owner: "Commerce and fulfillment",
+        source: "Retail coupon evidence intake",
+        status: "attention",
+        risk: "medium",
+        detail: "Admin-only coupon proof can be accepted only as same-cart provider-portal evidence.",
+        action: "Review accepted/rejected evidence artifacts before allowing best-price discounting.",
+        evidence: ["Portal application packet", "Same-cart subtotal proof", "No-order evidence"]
+      }),
+      record({
+        id: "assets-mobile-artifacts",
+        label: "Signed mobile artifacts",
+        domain: "Mobile builds",
+        owner: "Platform infrastructure",
+        source: "Mobile render readiness",
+        status: readiness.mobileRender.summary.signedArtifacts > 0 ? "ready" : "blocked",
+        risk: "high",
+        detail: "Mobile screens and profiles are modeled; signed native artifact proof is missing.",
+        action: "Attach emulator render proof and signed iOS/Android artifacts before mobile release claims.",
+        evidence: ["Emulator render proof", "Signed native artifact"]
+      })
+    ]
+  };
+}
+
+function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number, runtimeReady: number): AdminPortalArea {
+  const { model, providerGovernance } = input;
+
+  return {
+    id: "providers",
+    label: "Providers",
+    eyebrow: "Provider governance",
+    summary: "Credential gates, blocked vendors, cost caps, rate limits, and dry-run provider readiness.",
+    metrics: [
+      { label: "Gated", value: `${model.gatedProviders.length}` },
+      { label: "Blocked", value: `${model.blockedProviders.length}` },
+      { label: "Ready local", value: `${model.readyLocalProviders.length}` },
+      { label: "Budget capped", value: `${providerGovernance.budgetCapped}` },
+      { label: "Rate limited", value: `${providerGovernance.rateLimited}` },
+      { label: "Runtime blocked", value: `${runtimeBlocked}` },
+      { label: "Runtime ready", value: `${runtimeReady}` }
+    ],
+    controls: [
+      offControl("provider-live-calls", "Live provider calls", "Requires credentials, network allowlist, spend cap, and fallback coverage."),
+      offControl("provider-paid-ai", "Paid AI requests", "Requires model allowlist, request budget, queue, and human review."),
+      offControl("provider-direct-orders", "Direct vendor orders", "Requires retail certification and kill-switch proof.")
+    ],
+    records: [
+      ...model.gatedProviders.slice(0, 5).map((adapter) =>
+        record({
+          id: `provider-gated-${adapter.id}`,
+          label: adapter.label,
+          domain: adapter.provider,
+          owner: "Provider integrations",
+          source: "Provider catalog",
+          status: "attention",
+          risk: "medium",
+          detail: adapter.detail,
+          action: `Attach credentials and safety gates for ${adapter.provider} before live use.`,
+          evidence: adapter.safetyGates.slice(0, 3)
+        })
+      ),
+      ...model.blockedProviders.slice(0, 4).map((adapter) =>
+        record({
+          id: `provider-blocked-${adapter.id}`,
+          label: adapter.label,
+          domain: adapter.provider,
+          owner: "Provider integrations",
+          source: "Provider catalog",
+          status: "blocked",
+          risk: "high",
+          detail: adapter.detail,
+          action: `Keep ${adapter.provider} blocked until certification and fallback evidence are attached.`,
+          evidence: adapter.safetyGates.slice(0, 3)
+        })
+      )
+    ]
+  };
+}
+
+function buildLaunchArea(input: AdminPortalModelInput): AdminPortalArea {
+  const { productionReadiness, adminOperationsWorkflow } = input;
+  const ownerLabels = new Map(adminOperationsWorkflow.ownerLanes.map((lane) => [lane.id, lane.label]));
+
+  return {
+    id: "launch",
+    label: "Launch",
+    eyebrow: "Launch gates",
+    summary: "Production evidence, external audits, E2E coverage, capacity, and release blockers.",
+    metrics: [
+      { label: "Tracked", value: `${productionReadiness.total}` },
+      { label: "Evidence missing", value: `${productionReadiness.evidenceMissing}` },
+      { label: "Blocked", value: `${productionReadiness.blocked}` },
+      { label: "Live enabled", value: `${productionReadiness.liveEnabled}` },
+      { label: "Priority actions", value: `${adminOperationsWorkflow.priorityTasks.length}` }
+    ],
+    controls: [
+      offControl("launch-production", "Production launch switch", "Requires all evidence gates, external audits, hosted proof, and rollback evidence."),
+      offControl("launch-public-claims", "Public production claims", "Requires external audit artifacts and signed release evidence."),
+      offControl("launch-real-commerce", "Real commerce", "Requires payment, fulfillment, refund, dispute, and certification proof.")
+    ],
+    records: adminOperationsWorkflow.priorityTasks.map((task) =>
+      record({
+        id: `launch-${task.id}`,
+        label: task.label,
+        domain: task.source,
+        owner: ownerLabels.get(task.ownerId) ?? task.ownerId,
+        source: "Admin operations workflow",
+        status: task.status === "repo-local-ready" ? "ready" : task.status === "evidence-required" ? "attention" : "blocked",
+        risk: task.priority === "p0" ? "high" : task.priority === "p1" ? "medium" : "low",
+        detail: task.blocker,
+        action: task.adminAction,
+        evidence: task.requiredEvidence.slice(0, 3)
+      })
+    )
+  };
+}
+
+function summarizeAreaStatus(records: AdminPortalRecord[]): AdminPortalStatus {
+  if (records.some((record) => record.status === "blocked")) return "blocked";
+  if (records.some((record) => record.status === "attention")) return "attention";
+  return "ready";
+}
+
+function offControl(id: string, label: string, detail: string): AdminPortalControl {
+  return { id, label, detail, enabled: false };
+}
+
+function record(input: Omit<AdminPortalRecord, "liveMutationEnabled" | "rawContentExposed">): AdminPortalRecord {
+  return {
+    ...input,
+    liveMutationEnabled: false,
+    rawContentExposed: false
+  };
+}

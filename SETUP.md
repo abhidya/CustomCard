@@ -260,11 +260,25 @@ Required: `ANTHROPIC_API_KEY` on the sidecar server only. It never touches the b
    - Calendar: `https://www.googleapis.com/auth/calendar.events.readonly`
    - Gmail: `https://www.googleapis.com/auth/gmail.metadata` (metadata only — no message bodies)
 4. Create OAuth 2.0 credentials → Web application
-5. Add authorized redirect URIs: `https://customcard-three.vercel.app/oauth/callback`
+5. Add authorized JavaScript origins:
+   - `http://localhost:5173`
+   - `http://127.0.0.1:5173`
+   - `https://customcard-three.vercel.app`
+6. Add authorized redirect URIs:
+   - `http://localhost:5173/oauth/callback`
+   - `http://127.0.0.1:5173/oauth/callback`
+   - `https://customcard-three.vercel.app/oauth/callback`
+
+Current Google OAuth client:
+
+- Client ID: `604984591268-dujee5ri2ff87sqe3iv3m58nj2e2mibc.apps.googleusercontent.com`
+- Created: June 11, 2026 at 2:41:55 AM GMT-4
+- Status: Enabled
+- Publishing state: limited to OAuth consent-screen test users until published
 
 ```bash
-vercel env add VITE_GOOGLE_CLIENT_ID production   # from Google Console
-vercel env add GOOGLE_CLIENT_SECRET production    # kept server-side only
+vercel env add GOOGLE_OAUTH_CLIENT_ID production      # from Google Console
+vercel env add GOOGLE_OAUTH_CLIENT_SECRET production  # kept server-side only
 ```
 
 Then update `oauthFlowContract.ts` — change `liveOAuthEnabled: false` to `true` in `oauthProviderContracts` for Google Calendar after security review. The `CalendarAdapterReadinessContract` in `onboardingCalendarTypes.ts` has `networkRequestFactory: "not-implemented"` — implement the token exchange handler before flipping.
@@ -424,8 +438,8 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `CARD_IMAGE_ENABLED` | Sidecar server only | No | `true` to enable image generation |
 | `CARD_TEXT_MODEL` | Sidecar server only | No | Defaults to `claude-sonnet-4-6` |
 | `CARD_IMAGE_MODEL` | Sidecar server only | No | Defaults to `dall-e-3` |
-| `VITE_GOOGLE_CLIENT_ID` | Vercel / `.env.local` | For OAuth | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Vercel (server only) | For OAuth | Google OAuth client secret |
+| `GOOGLE_OAUTH_CLIENT_ID` | Vercel / ignored env files | For OAuth | Google OAuth client ID |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Vercel / ignored env files | For OAuth | Google OAuth client secret |
 | `VITE_MICROSOFT_CLIENT_ID` | Vercel / `.env.local` | For Outlook OAuth | Microsoft Entra client ID |
 | `MICROSOFT_TENANT_ID` | Vercel (server only) | For Outlook OAuth | Microsoft tenant ID |
 

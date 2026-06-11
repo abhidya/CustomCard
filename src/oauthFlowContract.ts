@@ -165,7 +165,7 @@ export const oauthProviderContracts: OAuthProviderContract[] = [
     liveOAuthEnabled: false,
     storesProviderCredentials: false,
     rawContentAllowed: false,
-    requiredEnvVars: ["VITE_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    requiredEnvVars: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
     blockedReasons: [
       "Google OAuth app not registered — requires Google Cloud Console project.",
       "Scopes not reviewed for production — requires security sign-off.",
@@ -183,7 +183,7 @@ export const oauthProviderContracts: OAuthProviderContract[] = [
     liveOAuthEnabled: false,
     storesProviderCredentials: false,
     rawContentAllowed: false,
-    requiredEnvVars: ["VITE_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    requiredEnvVars: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"],
     blockedReasons: [
       "Gmail metadata scope requires Google OAuth app verification for production.",
       "Metadata-only posture (gmail.metadata scope) must be confirmed before any broader access.",

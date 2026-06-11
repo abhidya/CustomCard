@@ -118,6 +118,15 @@ import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./p
 import { getProviderRuntimeReadiness, type RuntimeReadiness } from "./providerRuntime";
 import { buildAdminOperationsWorkflow, type AdminOperationsWorkflow, type AdminOperationTask } from "./adminOperations";
 import {
+  buildAdminPortalModel,
+  filterAdminPortalRecords,
+  type AdminPortalArea,
+  type AdminPortalModel,
+  type AdminPortalRecord,
+  type AdminPortalSectionId,
+  type AdminPortalStatus
+} from "./adminPortal";
+import {
   productionLaunchGates,
   summarizeProductionReadiness,
   type ProductionLaunchGate,
@@ -139,6 +148,7 @@ import { buildPanelSvgExportFile, buildPrintExportPackage, type PrintExportFile,
 import { useAppState, initialViewFromLocation, type ViewId } from "./appStateOrchestrator";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
+type AdminPortalStatusFilter = AdminPortalStatus | "all";
 
 const retailOperationStartPackets = buildRetailPrinterOperationStartPackets();
 const retailOperationCopy = {
@@ -1863,6 +1873,9 @@ function AdminPanelView({
   productionReadiness: ProductionReadinessSummary;
   runtimeReadiness: Map<string, RuntimeReadiness>;
 }) {
+  const [activeAdminSection, setActiveAdminSection] = useState<AdminPortalSectionId>("ops");
+  const [adminPortalQuery, setAdminPortalQuery] = useState("");
+  const [adminPortalStatus, setAdminPortalStatus] = useState<AdminPortalStatusFilter>("all");
   const { aiProvider, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
   const aiProviderReadinessItems = aiProvider.items;
   const aiProviderReadinessSummary = aiProvider.summary;
@@ -1899,6 +1912,19 @@ function AdminPanelView({
     paymentReadinessItems,
     observabilityReadinessItems: observabilityItems,
     externalAuditReadinessItems: externalAuditItems
+  });
+  const adminPortal = buildAdminPortalModel({
+    model,
+    readiness,
+    providerGovernance,
+    productionReadiness,
+    runtimeReadiness,
+    adminOperationsWorkflow
+  });
+  const activePortalArea = adminPortal.areas[activeAdminSection];
+  const filteredPortalRecords = filterAdminPortalRecords(activePortalArea.records, {
+    query: adminPortalQuery,
+    status: adminPortalStatus
   });
 
   return (
@@ -1956,6 +1982,19 @@ function AdminPanelView({
           </div>
         </article>
       </div>
+
+      <AdminPortalCommandCenter
+        activeSection={activeAdminSection}
+        area={activePortalArea}
+        navigation={adminPortal.navigation}
+        onQuery={setAdminPortalQuery}
+        onSection={setActiveAdminSection}
+        onStatus={setAdminPortalStatus}
+        query={adminPortalQuery}
+        records={filteredPortalRecords}
+        status={adminPortalStatus}
+        summary={adminPortal.summary}
+      />
 
       <div className="adminGrid">
         <AdminOperationsWorkflowView workflow={adminOperationsWorkflow} />
@@ -2454,6 +2493,167 @@ function AdminPanelView({
         </article>
       </div>
     </section>
+  );
+}
+
+function AdminPortalCommandCenter({
+  activeSection,
+  area,
+  navigation,
+  onQuery,
+  onSection,
+  onStatus,
+  query,
+  records,
+  status,
+  summary
+}: {
+  activeSection: AdminPortalSectionId;
+  area: AdminPortalArea;
+  navigation: AdminPortalModel["navigation"];
+  onQuery: (query: string) => void;
+  onSection: (section: AdminPortalSectionId) => void;
+  onStatus: (status: AdminPortalStatusFilter) => void;
+  query: string;
+  records: AdminPortalRecord[];
+  status: AdminPortalStatusFilter;
+  summary: AdminPortalModel["summary"];
+}) {
+  return (
+    <article className="toolPanel adminWide adminPortalCard">
+      <div className="sectionHeader compact">
+        <div>
+          <p className="eyebrow">Command center</p>
+          <h3>Admin portal</h3>
+        </div>
+        <StatusChip icon={ShieldCheck} label="Live actions off" tone="green" />
+      </div>
+
+      <div className="adminPortalSummaryGrid" aria-label="Admin portal safety summary">
+        <Metric label="Areas" value={`${summary.sections}`} />
+        <Metric label="User queues" value={`${summary.userQueues}`} />
+        <Metric label="Asset queues" value={`${summary.assetQueues}`} />
+        <Metric label="Provider queues" value={`${summary.providerQueues}`} />
+        <Metric label="Live mutations" value={`${summary.liveMutationsEnabled}`} />
+        <Metric label="Raw content" value={`${summary.rawContentExposed}`} />
+      </div>
+
+      <div className="adminPortalTabs" role="tablist" aria-label="Admin portal sections">
+        {navigation.map((item) => (
+          <button
+            aria-selected={item.id === activeSection}
+            className={`adminPortalTab ${item.status}${item.id === activeSection ? " active" : ""}`}
+            key={item.id}
+            onClick={() => onSection(item.id)}
+            role="tab"
+            type="button"
+          >
+            {adminPortalIcon(item.id)}
+            <span>{item.label}</span>
+            <em>{item.count}</em>
+          </button>
+        ))}
+      </div>
+
+      <div className="adminPortalToolbar" aria-label="Admin portal filters">
+        <label className="searchField">
+          <Search size={16} />
+          <span>Search portal</span>
+          <input
+            value={query}
+            onChange={(event) => onQuery(event.target.value)}
+            placeholder="Owner, source, action"
+          />
+        </label>
+        <label>
+          <span>Status</span>
+          <select value={status} onChange={(event) => onStatus(event.target.value as AdminPortalStatusFilter)}>
+            <option value="all">All statuses</option>
+            <option value="ready">Ready</option>
+            <option value="attention">Attention</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </label>
+        <div className="adapterToolbarCount">
+          <strong>{records.length}</strong>
+          <span>shown</span>
+        </div>
+      </div>
+
+      <div className="adminPortalAreaHeader">
+        <div>
+          <p className="eyebrow">{area.eyebrow}</p>
+          <h4>{area.label}</h4>
+        </div>
+        <p>{area.summary}</p>
+      </div>
+
+      <div className="runtimeGrid compactMetrics" aria-label={`${area.label} metrics`}>
+        {area.metrics.map((metric) => (
+          <Metric key={`${area.id}-${metric.label}`} label={metric.label} value={metric.value} />
+        ))}
+      </div>
+
+      <div className="adminPortalControlStrip" aria-label={`${area.label} controls`}>
+        {area.controls.map((control) => (
+          <label className="adminPortalControl" key={control.id}>
+            <input aria-label={control.label} checked={control.enabled} readOnly type="checkbox" />
+            <span>
+              <strong>{control.label}</strong>
+              <small>{control.detail}</small>
+            </span>
+            <em>{control.enabled ? "On" : "Off"}</em>
+          </label>
+        ))}
+      </div>
+
+      <AdminPortalRecordGrid records={records} />
+    </article>
+  );
+}
+
+function AdminPortalRecordGrid({ records }: { records: AdminPortalRecord[] }) {
+  if (records.length === 0) {
+    return (
+      <div className="adminPortalEmpty">
+        <Info size={18} />
+        <span>No admin records match the current filters.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="adminPortalRecordGrid" aria-label="Admin portal records">
+      {records.map((record) => (
+        <article className={`adminPortalRecord ${record.status}`} key={record.id}>
+          <div className="adminPortalRecordHeader">
+            <div className="adminPortalRecordTitle">
+              <span className="adminPortalRecordIcon">{adminPortalRecordIcon(record)}</span>
+              <div>
+                <span>{record.domain}</span>
+                <strong>{record.label}</strong>
+              </div>
+            </div>
+            <em>{adminPortalStatusLabel(record.status)}</em>
+          </div>
+          <p>{record.detail}</p>
+          <div className="adminPortalAction">
+            <strong>Action</strong>
+            <span>{record.action}</span>
+          </div>
+          <div className="adminPortalEvidence">
+            {record.evidence.slice(0, 4).map((evidence) => (
+              <span key={`${record.id}-${evidence}`}>{evidence}</span>
+            ))}
+          </div>
+          <div className="adminPortalMeta">
+            <span>{record.owner}</span>
+            <span>{record.source}</span>
+            <span>{adminPortalRiskLabel(record.risk)}</span>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -2998,6 +3198,45 @@ function summarizeRuntimeReadiness(readinessMap: Map<string, RuntimeReadiness>) 
     missingCredentials: readiness.reduce((total, item) => total + item.missingCredentials.length, 0),
     preparedRequest: readiness.filter((item) => item.mode === "prepared-request").length
   };
+}
+
+function adminPortalIcon(section: AdminPortalSectionId): ReactNode {
+  const props = { size: 17 };
+  if (section === "ops") return <Cloud {...props} />;
+  if (section === "users") return <UserRound {...props} />;
+  if (section === "assets") return <Image {...props} />;
+  if (section === "providers") return <Settings {...props} />;
+  return <Lock {...props} />;
+}
+
+function adminPortalRecordIcon(record: AdminPortalRecord): ReactNode {
+  const label = `${record.domain} ${record.label}`.toLowerCase();
+  const props = { size: 17 };
+  if (label.includes("user") || label.includes("account") || label.includes("identity") || label.includes("support")) return <UserRound {...props} />;
+  if (label.includes("asset") || label.includes("panel") || label.includes("artifact") || label.includes("mobile")) return <Image {...props} />;
+  if (label.includes("payment") || label.includes("commerce")) return <CreditCard {...props} />;
+  if (label.includes("retail") || label.includes("fulfillment")) return <Store {...props} />;
+  if (label.includes("provider")) return <Settings {...props} />;
+  if (label.includes("launch") || label.includes("auth")) return <Lock {...props} />;
+  return <ShieldCheck {...props} />;
+}
+
+function adminPortalStatusLabel(status: AdminPortalStatus): string {
+  const labels: Record<AdminPortalStatus, string> = {
+    attention: "Attention",
+    blocked: "Blocked",
+    ready: "Ready"
+  };
+  return labels[status];
+}
+
+function adminPortalRiskLabel(risk: "low" | "medium" | "high"): string {
+  const labels: Record<typeof risk, string> = {
+    high: "High risk",
+    low: "Low risk",
+    medium: "Medium risk"
+  };
+  return labels[risk];
 }
 
 function adminOperationStatusLabel(status: AdminOperationTask["status"]): string {

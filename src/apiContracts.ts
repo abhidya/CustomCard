@@ -140,7 +140,8 @@ export interface ApiRouteContract {
   requestSchema: string[];
   responseSchema: string[];
   idempotencyKeyRequired: boolean;
-  externalNetworkCalls: false;
+  /** Only the Walgreens hosted-checkout proxy routes may set this to true. */
+  externalNetworkCalls: boolean;
   realOrdersEnabled: false;
   piiPolicy: string;
   backedBy: string[];
@@ -627,6 +628,53 @@ export const apiRouteContracts: ApiRouteContract[] = [
     realOrdersEnabled: false,
     piiPolicy: "Audited regional data-rights control.",
     backedBy: ["evaluateRegulatoryDecision", "audit_log"]
+  },
+  {
+    id: "walgreens-checkout-upload",
+    method: "POST",
+    path: "/api/walgreens/checkout/upload",
+    audience: "customer",
+    auth: "none",
+    runtimeMode: "local-contract",
+    requestSchema: ["imageBase64"],
+    responseSchema: ["ok", "imageUrl", "imageName", "expiresAtIso"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: true,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Card JPEG bytes are forwarded to Walgreens write-only photo storage; no customer identity fields are sent and nothing is persisted locally.",
+    backedBy: ["walgreensHostedCheckout service", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
+  },
+  {
+    id: "walgreens-checkout-session",
+    method: "POST",
+    path: "/api/walgreens/checkout/session",
+    audience: "customer",
+    auth: "none",
+    runtimeMode: "local-contract",
+    requestSchema: ["customer", "images", "lat", "lng"],
+    responseSchema: ["ok", "checkoutUrl", "window", "imageCount", "mode"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: true,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Customer name, email, and phone are validated, sanitized, and forwarded once to the Walgreens mweb5url checkout service to pre-fill their hosted checkout; nothing is persisted locally.",
+    backedBy: ["walgreensHostedCheckout service", "trusted image URL allowlist", "WALGREENS_VENDOR_MODE gate"]
+  },
+  {
+    id: "walgreens-checkout-callback",
+    method: "GET",
+    path: "/api/walgreens/checkout/callback",
+    audience: "public",
+    auth: "none",
+    runtimeMode: "local-contract",
+    requestSchema: [],
+    responseSchema: ["html"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy: "Static return page; query params are read client-side only and never stored.",
+    backedBy: ["buildWalgreensCallbackHtml"]
   }
 ];
 
@@ -797,6 +845,19 @@ export function resolveApiContractResponse(path: string) {
   return undefined;
 }
 
+/**
+ * Walgreens hosted-checkout proxy routes are the single sanctioned exception to
+ * the no-external-network and session-auth invariants: they forward a checkout
+ * to Walgreens' own hosted flow (which owns payment, T&C, and order placement),
+ * persist nothing locally, and stay behind the WALGREENS_VENDOR_MODE env gate
+ * plus a per-IP rate limit. See docs/walgreens-hosted-checkout-orr.md.
+ */
+export const hostedCheckoutExemptRouteIds = new Set([
+  "walgreens-checkout-upload",
+  "walgreens-checkout-session",
+  "walgreens-checkout-callback"
+]);
+
 export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContracts): string[] {
   const issues: string[] = [];
   const ids = new Set<string>();
@@ -809,20 +870,26 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     if (paths.has(pathKey)) issues.push(`Duplicate API route path: ${pathKey}`);
     paths.add(pathKey);
 
+    const hostedCheckoutExempt = hostedCheckoutExemptRouteIds.has(route.id);
     if (!route.path.startsWith("/api/")) issues.push(`Route ${route.id} must stay under /api.`);
     if (route.audience === "admin" && route.auth !== "admin-session") {
       issues.push(`Admin route ${route.id} must require admin-session auth.`);
     }
-    if (route.audience === "customer" && route.auth !== "customer-session") {
+    if (route.audience === "customer" && route.auth !== "customer-session" && !hostedCheckoutExempt) {
       issues.push(`Customer route ${route.id} must require customer-session auth.`);
     }
-    if (route.method === "POST" && !route.idempotencyKeyRequired) {
+    if (route.method === "POST" && !route.idempotencyKeyRequired && !hostedCheckoutExempt) {
       issues.push(`Mutation route ${route.id} must require an idempotency key.`);
     }
-    if (route.method === "POST" && !route.requestSchema.includes("X-Idempotency-Key")) {
+    if (route.method === "POST" && !route.requestSchema.includes("X-Idempotency-Key") && !hostedCheckoutExempt) {
       issues.push(`Mutation route ${route.id} must name X-Idempotency-Key in the request schema.`);
     }
-    if (route.externalNetworkCalls) issues.push(`Route ${route.id} must not make live external calls.`);
+    if (route.externalNetworkCalls && !hostedCheckoutExempt) {
+      issues.push(`Route ${route.id} must not make live external calls.`);
+    }
+    if (route.externalNetworkCalls && route.id === "walgreens-checkout-callback") {
+      issues.push("The Walgreens checkout callback page must stay network-free.");
+    }
     if (route.realOrdersEnabled) issues.push(`Route ${route.id} must keep real orders disabled.`);
     if (/\braw content (allowed|stored|returned)\b/i.test(route.piiPolicy)) {
       issues.push(`Route ${route.id} must not allow raw content policy language.`);

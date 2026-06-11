@@ -1,4 +1,4 @@
-import { CalendarDays, Inbox } from "lucide-react";
+import { CalendarCheck, CalendarDays, FileText, Inbox, LockKeyhole } from "lucide-react";
 import type { CardOpportunity, FreeImportSignal } from "../../src/freeMvp";
 import { sampleInviteText } from "../../src/freeMvp";
 
@@ -27,6 +27,10 @@ export function EventsView({
   const hasImport = inviteText.trim().length > 0;
   const urgency = urgencyLabels[opportunity.urgency];
 
+  function focusImportBox() {
+    document.querySelector<HTMLTextAreaElement>(".importcard textarea")?.focus();
+  }
+
   return (
     <>
       <header className="pagehead reveal">
@@ -34,8 +38,38 @@ export function EventsView({
         <p>Paste an invite, calendar event, or a quick note — we&rsquo;ll turn it into a card to send.</p>
       </header>
 
+      <section className="sourcechoices reveal reveal-1" aria-label="Calendar source choices">
+        <button className="sourcechoice sourcechoice-ready" onClick={focusImportBox} type="button">
+          <span className="sourceicon">
+            <FileText size={18} />
+          </span>
+          <span>
+            <strong>Paste invite or ICS</strong>
+            <small>Ready now. No account sign-in needed.</small>
+          </span>
+        </button>
+        <button className="sourcechoice" disabled type="button">
+          <span className="sourceicon">
+            <CalendarCheck size={18} />
+          </span>
+          <span>
+            <strong>Google Calendar</strong>
+            <small>Client created. Secure connect flow is the next release step.</small>
+          </span>
+        </button>
+        <button className="sourcechoice" onClick={focusImportBox} type="button">
+          <span className="sourceicon">
+            <LockKeyhole size={18} />
+          </span>
+          <span>
+            <strong>Apple Calendar export</strong>
+            <small>Export an ICS file, then paste the event here.</small>
+          </span>
+        </button>
+      </section>
+
       <div className="events">
-        <section className="panelcard importcard reveal reveal-1">
+        <section className="panelcard importcard reveal reveal-2">
           <h2>Add an occasion</h2>
           <textarea
             onChange={(event) => onInviteText(event.target.value)}
@@ -56,7 +90,7 @@ export function EventsView({
         </section>
 
         {hasImport ? (
-          <section className="panelcard oppcard reveal reveal-2">
+          <section className="panelcard oppcard reveal reveal-3">
             <div className="opp-tags">
               <span className={`tag tag-${urgency.tone}`}>{urgency.label}</span>
               {opportunity.status === "needs-more-detail" ? (
@@ -87,7 +121,7 @@ export function EventsView({
             </div>
           </section>
         ) : (
-          <section className="panelcard emptyopp reveal reveal-2">
+          <section className="panelcard emptyopp reveal reveal-3">
             <Inbox size={28} />
             <strong>Nothing here yet</strong>
             <span>Paste something on the left and the occasion appears here, ready to become a card.</span>

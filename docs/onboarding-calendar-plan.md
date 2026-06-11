@@ -55,6 +55,14 @@ in `src/onboardingCalendar.test.ts`.
 | `google-calendar-events` | Credential-gated | Requires `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `calendar.events.readonly` / `https://www.googleapis.com/auth/calendar.events.readonly`, metadata schema validation, revocation handling, and no raw content storage. | No live OAuth consent flow or provider callback exists in this repo state. |
 | `icloud-ics-fallback` | Contract-only | Uses customer-provided ICS export/paste through the existing untrusted-input import path. Apple supports exporting calendar events to `.ics` on Mac and downloading an iCloud.com calendar copy after temporary public sharing; CustomCard stores no Apple account credentials. | No fake iCloud OAuth, app-specific password storage, live CalDAV, or native Apple Calendar sync is implemented. |
 
+Google OAuth setup evidence:
+
+- Client ID `604984591268-dujee5ri2ff87sqe3iv3m58nj2e2mibc.apps.googleusercontent.com` exists in Google Auth Platform.
+- Authorized origins: `http://localhost:5173`, `http://127.0.0.1:5173`, and `https://customcard-three.vercel.app`.
+- Authorized redirect URIs: `http://localhost:5173/oauth/callback`, `http://127.0.0.1:5173/oauth/callback`, and `https://customcard-three.vercel.app/oauth/callback`.
+- The client secret belongs only in ignored local env files and Vercel secret storage.
+- Live sync remains blocked until the callback, token exchange, encrypted token storage, disconnect/revocation, and metadata fixture proof are implemented.
+
 Official source anchors:
 
 - Google Calendar API scope selection:

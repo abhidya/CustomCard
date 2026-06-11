@@ -24,6 +24,13 @@ import {
   retailPrinterCouponPortalEvidenceRoute
 } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
+import {
+  buildWalgreensCallbackHtml,
+  createWalgreensHostedCheckoutService,
+  walgreensCheckoutCallbackRoute,
+  walgreensCheckoutSessionRoute,
+  walgreensCheckoutUploadRoute
+} from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 
 const root = resolve("dist");
@@ -48,8 +55,33 @@ export const routes = [
   { id: "relationship-memories", method: "POST", path: "/api/memories/review", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
   { id: "render-packets", method: "POST", path: "/api/render-packets", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
   { id: "manual-vendor-handoff", method: "POST", path: "/api/vendor-handoff/manual", audience: "customer", auth: "customer-session", runtimeMode: "queue-backed" },
-  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" }
+  { id: "data-requests", method: "POST", path: "/api/data-requests", audience: "customer", auth: "customer-session", runtimeMode: "durable-api" },
+  { id: "walgreens-checkout-upload", method: "POST", path: walgreensCheckoutUploadRoute, audience: "customer", auth: "none", runtimeMode: "local-contract" },
+  { id: "walgreens-checkout-session", method: "POST", path: walgreensCheckoutSessionRoute, audience: "customer", auth: "none", runtimeMode: "local-contract" },
+  { id: "walgreens-checkout-callback", method: "GET", path: walgreensCheckoutCallbackRoute, audience: "public", auth: "none", runtimeMode: "local-contract" }
 ];
+
+const walgreensCheckout = createWalgreensHostedCheckoutService({
+  env: process.env,
+  fetchImpl: (...args) => globalThis.fetch(...args)
+});
+
+// Best-effort per-instance rate limit for the public Walgreens checkout routes.
+const walgreensRateBuckets = new Map();
+const WALGREENS_RATE_LIMIT = 30;
+const WALGREENS_RATE_WINDOW_MS = 60_000;
+
+function walgreensRateLimited(request) {
+  const key = String(request.headers?.["x-forwarded-for"] ?? request.socket?.remoteAddress ?? "unknown")
+    .split(",")[0]
+    .trim();
+  const now = Date.now();
+  const fresh = (walgreensRateBuckets.get(key) ?? []).filter((timestamp) => now - timestamp < WALGREENS_RATE_WINDOW_MS);
+  fresh.push(now);
+  if (walgreensRateBuckets.size > 10_000) walgreensRateBuckets.clear();
+  walgreensRateBuckets.set(key, fresh);
+  return fresh.length > WALGREENS_RATE_LIMIT;
+}
 
 const mobileBootstrap = {
   service: "customcard-api",
@@ -392,7 +424,9 @@ async function serveApi(request, response, path) {
     return;
   }
 
-  if (request.method !== route.method) {
+  // Walgreens navigates the customer back via GET or POST after checkout.
+  const callbackMethodOverride = route.id === "walgreens-checkout-callback" && request.method === "POST";
+  if (request.method !== route.method && !callbackMethodOverride) {
     sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path });
     return;
   }
@@ -520,6 +554,45 @@ async function serveApi(request, response, path) {
     return;
   }
 
+  if (path === walgreensCheckoutCallbackRoute) {
+    sendHtml(response, 200, buildWalgreensCallbackHtml(walgreensCheckout.config.appOrigin || "*"));
+    return;
+  }
+
+  if (path === walgreensCheckoutUploadRoute || path === walgreensCheckoutSessionRoute) {
+    if (walgreensRateLimited(request)) {
+      sendJson(response, 429, { service: "customcard-api", status: "rate-limited", path });
+      return;
+    }
+    let parsedBody;
+    try {
+      const rawBody = await readRequestBody(
+        request,
+        path === walgreensCheckoutUploadRoute ? 6_000_000 : 256_000
+      );
+      parsedBody = rawBody ? JSON.parse(rawBody) : {};
+    } catch {
+      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+      return;
+    }
+    try {
+      const result =
+        path === walgreensCheckoutUploadRoute
+          ? await walgreensCheckout.uploadCardImage(parsedBody.imageBase64)
+          : await walgreensCheckout.createCheckoutSession(parsedBody);
+      const { statusCode, ...payload } = result;
+      sendJson(response, statusCode, { service: "customcard-api", ...payload });
+    } catch (error) {
+      // Upstream Walgreens failures: return a stable error without leaking internals.
+      sendJson(response, 502, {
+        service: "customcard-api",
+        status: "walgreens-upstream-error",
+        detail: error instanceof Error ? error.message : "Walgreens request failed."
+      });
+    }
+    return;
+  }
+
   const bodyText = await readRequestBody(request);
   const persistedMutation = await apiRuntime.persistMutation({
     route,
@@ -555,6 +628,19 @@ function serveStatic(response, requestPath) {
   response.setHeader("Content-Type", contentTypes.get(extname(file)) ?? "application/octet-stream");
   applySecurityHeaders(response, file.endsWith("index.html") ? "no-store" : "public, max-age=31536000, immutable");
   createReadStream(file).pipe(response);
+}
+
+function sendHtml(response, statusCode, html) {
+  response.statusCode = statusCode;
+  response.setHeader("Content-Type", "text/html; charset=utf-8");
+  applySecurityHeaders(response, "no-store");
+  // The checkout callback page needs one small inline script to postMessage
+  // back to the opener window; everything else stays locked down.
+  response.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'none'"
+  );
+  response.end(html);
 }
 
 function sendJson(response, statusCode, payload) {
@@ -1489,13 +1575,13 @@ function safeDecision(value) {
   return ["pending", "generate", "reject", "snooze"].includes(decision) ? decision : "generate";
 }
 
-function readRequestBody(request) {
+function readRequestBody(request, limit = 256_000) {
   return new Promise((resolve, reject) => {
     let body = "";
     request.setEncoding("utf8");
     request.on("data", (chunk) => {
       body += chunk;
-      if (body.length > 256_000) {
+      if (body.length > limit) {
         request.destroy(new Error("Request body too large."));
       }
     });
