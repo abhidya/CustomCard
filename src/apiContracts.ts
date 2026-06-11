@@ -130,6 +130,8 @@ import {
   requiredApiRouteIds
 } from "./apiRouteContractsData.mjs";
 
+export { hostedCheckoutExemptRouteIds, requiredApiRouteIds };
+
 export type ApiMethod = "GET" | "POST";
 export type ApiAudience = "public" | "customer" | "admin";
 export type ApiAuth = "none" | "customer-session" | "admin-session";

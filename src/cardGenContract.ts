@@ -12,7 +12,15 @@
  *   ANTHROPIC_API_KEY=sk-... uv run uvicorn card_gen.app:app --reload --port 8001
  */
 
-export type CardPanelId = "front" | "inside-left" | "inside-right" | "back";
+import {
+  isRenderPacketPanelId,
+  renderPacketCopyLimits,
+  renderPacketPanelIds,
+  renderPacketTarget,
+  type RenderPacketPanelId
+} from "./renderPacketContract";
+
+export type CardPanelId = RenderPacketPanelId;
 export type CardGenMode = "ai-text-only" | "ai-text-and-image";
 
 /** POST /generate request body — mirrors CardDraftInput in domain.py */
@@ -84,7 +92,7 @@ export interface CardGenSidecarContract {
   blockedReasons: string[];
 }
 
-export const requiredCardPanelIds: CardPanelId[] = ["front", "inside-left", "inside-right", "back"];
+export const requiredCardPanelIds: CardPanelId[] = [...renderPacketPanelIds];
 
 /** Build the sidecar contract from env. baseUrl null = gate closed. */
 export function buildCardGenSidecarContract(env: {
@@ -146,14 +154,14 @@ export function validateCardGenResponse(response: CardGenResponse): string[] {
     if (!panel.headline?.trim()) {
       issues.push(`Panel ${panel.id} missing headline.`);
     }
-    if (panel.headline && panel.headline.length > 120) {
-      issues.push(`Panel ${panel.id} headline exceeds 120 characters.`);
+    if (panel.headline && panel.headline.length > renderPacketCopyLimits.headlineMaxCharacters) {
+      issues.push(`Panel ${panel.id} headline exceeds ${renderPacketCopyLimits.headlineMaxCharacters} characters.`);
     }
     if (!panel.body?.trim()) {
       issues.push(`Panel ${panel.id} missing body.`);
     }
-    if (panel.body && panel.body.length > 600) {
-      issues.push(`Panel ${panel.id} body exceeds 600 characters.`);
+    if (panel.body && panel.body.length > renderPacketCopyLimits.bodyMaxCharacters) {
+      issues.push(`Panel ${panel.id} body exceeds ${renderPacketCopyLimits.bodyMaxCharacters} characters.`);
     }
     if (!panel.artDirection?.trim()) {
       issues.push(`Panel ${panel.id} missing artDirection.`);
@@ -161,14 +169,16 @@ export function validateCardGenResponse(response: CardGenResponse): string[] {
   }
 
   for (const image of response.images) {
-    if (!requiredCardPanelIds.includes(image.panelId)) {
+    if (!isRenderPacketPanelId(image.panelId)) {
       issues.push(`Image result has unknown panelId: ${image.panelId}.`);
     }
     if (!image.imageUrl?.trim()) {
       issues.push(`Image result for panel ${image.panelId} missing imageUrl.`);
     }
-    if (image.width !== 1500 || image.height !== 2100) {
-      issues.push(`Image result for panel ${image.panelId} must be 1500×2100, got ${image.width}×${image.height}.`);
+    if (image.width !== renderPacketTarget.widthPixels || image.height !== renderPacketTarget.heightPixels) {
+      issues.push(
+        `Image result for panel ${image.panelId} must be ${renderPacketTarget.widthPixels}×${renderPacketTarget.heightPixels}, got ${image.width}×${image.height}.`
+      );
     }
   }
 

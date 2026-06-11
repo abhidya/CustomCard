@@ -15,6 +15,12 @@ import {
   type CardValidation,
   type VendorHandoff
 } from "./freeMvp";
+import {
+  hasOrderedRenderPacketPanels,
+  panelMatchesRenderPacketTarget,
+  renderPacketDimensionLabel,
+  renderPacketTarget
+} from "./renderPacketContract";
 
 export type PrintExportFileKind = "panel-svg" | "combined-pdf" | "manifest-json";
 
@@ -92,11 +98,11 @@ export function buildPrintExportPackage(
     generatedAtIso,
     target: {
       size: "5x7",
-      dpi: 300,
+      dpi: renderPacketTarget.dpi,
       widthInches: 5,
       heightInches: 7,
-      widthPixels: 1500,
-      heightPixels: 2100,
+      widthPixels: renderPacketTarget.widthPixels,
+      heightPixels: renderPacketTarget.heightPixels,
       pdfMediaBoxPoints: [0, 0, 360, 504]
     },
     panelOrder: draft.panels.map((panel) => panel.id),
@@ -198,13 +204,13 @@ function buildPrintPreflight(
   return [
     {
       label: "Four ordered panels",
-      passed: draft.panels.map((panel) => panel.id).join(",") === "front,inside-left,inside-right,back",
+      passed: hasOrderedRenderPacketPanels(draft.panels),
       detail: draft.panels.map((panel) => panel.id).join(" -> ")
     },
     {
       label: "5x7 300 DPI panels",
-      passed: draft.panels.every((panel) => panel.width === 1500 && panel.height === 2100 && panel.dpi === 300),
-      detail: "Expected 1500 x 2100 px at 300 DPI for every panel"
+      passed: draft.panels.every(panelMatchesRenderPacketTarget),
+      detail: `Expected ${renderPacketDimensionLabel()} for every panel`
     },
     {
       label: "Draft validation passed",

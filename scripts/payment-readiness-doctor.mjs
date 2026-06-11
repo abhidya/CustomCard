@@ -1,5 +1,17 @@
-import { readFileSync } from "node:fs";
 import { paymentReadinessItems, summarizePaymentReadiness, validatePaymentReadiness } from "../src/paymentReadinessData.mjs";
+import {
+  blockersFromFailedChecks,
+  checkArrayIncludes,
+  checkExact,
+  checkIncludes,
+  checkMinimum,
+  checkNoBlockers,
+  exitIfBlocked,
+  failedChecks,
+  printDoctorReport,
+  readTextFiles,
+  summarizeCheckLanes
+} from "./doctor-harness.mjs";
 
 const files = {
   paymentTest: "src/paymentReadiness.test.ts",
@@ -13,9 +25,7 @@ const files = {
   docs: "docs/platform-expansion-design.md"
 };
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readTextFiles(files);
 
 const summary = summarizePaymentReadiness(paymentReadinessItems);
 const validationBlockers = validatePaymentReadiness(paymentReadinessItems);
@@ -87,70 +97,29 @@ const checks = [
   ])
 ];
 
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
+const lanes = summarizeCheckLanes(checks);
+const failed = failedChecks(checks);
+
+printDoctorReport({
+  service: "customcard-payment-readiness-doctor",
+  status: failed.length === 0 ? "ready" : "blocked",
+  items: summary.total,
+  paymentProviderContracts: summary.paymentProviderContracts,
+  localFallbacks: summary.localFallbacks,
+  ledgerEvents: summary.ledgerEvents,
+  webhookSignatureRequired: summary.webhookSignatureRequired,
+  liveChargesEnabled: summary.liveChargesEnabled,
+  liveRefundsEnabled: summary.liveRefundsEnabled,
+  liveCaptureEnabled: summary.liveCaptureEnabled,
+  externalNetworkCalls: summary.externalNetworkCalls,
+  cardDataStored: summary.cardDataStored,
+  pciScopeApproved: summary.pciScopeApproved,
+  lanes,
+  checks,
+  blockers: blockersFromFailedChecks(checks)
 });
-const failed = checks.filter((check) => !check.passed);
 
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-payment-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      items: summary.total,
-      paymentProviderContracts: summary.paymentProviderContracts,
-      localFallbacks: summary.localFallbacks,
-      ledgerEvents: summary.ledgerEvents,
-      webhookSignatureRequired: summary.webhookSignatureRequired,
-      liveChargesEnabled: summary.liveChargesEnabled,
-      liveRefundsEnabled: summary.liveRefundsEnabled,
-      liveCaptureEnabled: summary.liveCaptureEnabled,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      cardDataStored: summary.cardDataStored,
-      pciScopeApproved: summary.pciScopeApproved,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkMinimum(lane, id, actual, minimum) {
-  return {
-    id,
-    lane,
-    passed: actual >= minimum,
-    detail: actual >= minimum ? `${actual} is at least ${minimum}.` : `${actual} is below required minimum ${minimum}.`
-  };
-}
-
-function checkExact(lane, id, actual, expected) {
-  return {
-    id,
-    lane,
-    passed: actual === expected,
-    detail: actual === expected ? `${actual} matched expected value.` : `${actual} did not match expected value ${expected}.`
-  };
-}
-
-function checkNoBlockers(lane, id, blockers) {
-  return {
-    id,
-    lane,
-    passed: blockers.length === 0,
-    detail: blockers.length === 0 ? "Executable payment readiness contract has no blockers." : blockers.join(" ")
-  };
-}
+exitIfBlocked(checks);
 
 function checkItemsShape(lane, id, items) {
   const requiredKeys = [
@@ -190,31 +159,5 @@ function checkItemsShape(lane, id, items) {
       missing.length === 0
         ? `Validated ${items.length} executable payment readiness item shapes.`
         : `Missing payment readiness fields: ${missing.join(", ")}`
-  };
-}
-
-function checkIncludes(lane, id, text, required) {
-  const missing = required.filter((needle) => !text.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required payment readiness signals.`
-        : `Missing payment readiness signals: ${missing.join(", ")}`
-  };
-}
-
-function checkArrayIncludes(lane, id, values, required) {
-  const missing = required.filter((needle) => !values.includes(needle));
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Found ${required.length} required payment readiness signals.`
-        : `Missing payment readiness signals: ${missing.join(", ")}`
   };
 }

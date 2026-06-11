@@ -1,4 +1,5 @@
 import { adapterBlocksRealOrders, runOperationalExtraction, walgreensAdapter, type OperationalRun } from "./domain";
+import { renderPacketSafeMargins, renderPacketTarget } from "./renderPacketContract";
 
 export type EnvironmentName = "dev" | "test" | "prod";
 export type DeploymentMode = "five-dollar-droplet" | "cloud-native-saas";
@@ -481,15 +482,10 @@ export function validatePrintLayout(panels: RenderPanelInput[]): LayoutValidatio
 
     return {
       panel: panel.panel,
-      width: 1500,
-      height: 2100,
-      dpi: 300,
-      safeMargins: {
-        top: 120,
-        right: 120,
-        bottom: 120,
-        left: 120
-      },
+      width: renderPacketTarget.widthPixels,
+      height: renderPacketTarget.heightPixels,
+      dpi: renderPacketTarget.dpi,
+      safeMargins: renderPacketSafeMargins,
       requiresRtlLayout,
       passed: failures.length === 0,
       failures
@@ -504,7 +500,7 @@ export function renderPrintPacket(panels: RenderPanelInput[]): ValidatedPrintPac
   if (blocked.length > 0) {
     return {
       kind: "blocked",
-      target: "5x7-double-sided-card",
+      target: renderPacketTarget.product,
       validations,
       assets: [],
       reason: blocked.map((validation) => `${validation.panel}:${validation.failures.join("+")}`).join(", ")
@@ -513,7 +509,7 @@ export function renderPrintPacket(panels: RenderPanelInput[]): ValidatedPrintPac
 
   return {
     kind: "validated_print_packet",
-    target: "5x7-double-sided-card",
+    target: renderPacketTarget.product,
     validations,
     assets: panels.map((panel, index) => {
       const validation = validations[index];
@@ -523,9 +519,9 @@ export function renderPrintPacket(panels: RenderPanelInput[]): ValidatedPrintPac
 
       return {
         panel: panel.panel,
-        width: 1500,
-        height: 2100,
-        dpi: 300,
+        width: renderPacketTarget.widthPixels,
+        height: renderPacketTarget.heightPixels,
+        dpi: renderPacketTarget.dpi,
         locale: panel.locale,
         direction,
         safeMargins: validation.safeMargins,
@@ -772,7 +768,7 @@ function renderPanelSvg(
   direction: "ltr" | "rtl"
 ): string {
   const anchor = direction === "rtl" ? "end" : "start";
-  const x = direction === "rtl" ? 1500 - validation.safeMargins.right : validation.safeMargins.left;
+  const x = direction === "rtl" ? renderPacketTarget.widthPixels - validation.safeMargins.right : validation.safeMargins.left;
   const y = validation.safeMargins.top + 120;
   const escapedLines = textLines
     .map((line, index) => {
@@ -782,8 +778,8 @@ function renderPanelSvg(
     .join("");
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">`,
-    `<rect width="1500" height="2100" fill="#fffaf4"/>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" viewBox="0 0 ${renderPacketTarget.widthPixels} ${renderPacketTarget.heightPixels}">`,
+    `<rect width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" fill="#fffaf4"/>`,
     `<rect x="${validation.safeMargins.left}" y="${validation.safeMargins.top}" width="1260" height="1860" fill="none" stroke="#d6b98d" stroke-width="4"/>`,
     `<text x="${x}" y="${y}" direction="${direction}" text-anchor="${anchor}" font-family="Georgia, serif" font-size="56" fill="#241b16">${escapedLines}</text>`,
     `<text x="${x}" y="1980" direction="${direction}" text-anchor="${anchor}" font-family="Arial, sans-serif" font-size="28" fill="#74685d">${escapeXml(panel.panel)}</text>`,

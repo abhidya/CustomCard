@@ -1,0 +1,21 @@
+{
+  "panelIds": ["front", "inside-left", "inside-right", "back"],
+  "target": {
+    "product": "5x7-double-sided-card",
+    "widthPixels": 1500,
+    "heightPixels": 2100,
+    "dpi": 300
+  },
+  "copyLimits": {
+    "headlineMaxCharacters": 120,
+    "bodyMaxCharacters": 600,
+    "artDirectionMinCharacters": 10,
+    "artDirectionMaxCharacters": 400
+  },
+  "safeMargins": {
+    "top": 120,
+    "right": 120,
+    "bottom": 120,
+    "left": 120
+  }
+}

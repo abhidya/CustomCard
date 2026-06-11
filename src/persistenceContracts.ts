@@ -1,4 +1,9 @@
-import { apiRouteContracts, type ApiAudience, type ApiRouteContract } from "./apiContracts";
+import {
+  apiRouteContracts,
+  hostedCheckoutExemptRouteIds,
+  type ApiAudience,
+  type ApiRouteContract
+} from "./apiContracts";
 import { accountAuthTableContracts } from "./accountAuth";
 
 export type PersistenceTableName =
@@ -212,7 +217,10 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("relationship-memories", "mutation", "customer", ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"], true, true, false),
   routePersistence("render-packets", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "provider_call_events", "api_jobs", "audit_log"], true, true, true),
   routePersistence("manual-vendor-handoff", "mutation", "customer", ["auth_sessions", "idempotency_keys", "render_packets", "orders", "order_events", "consent_records", "api_jobs", "audit_log"], true, true, true),
-  routePersistence("data-requests", "mutation", "customer", ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"], true, true, false)
+  routePersistence("data-requests", "mutation", "customer", ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"], true, true, false),
+  routePersistence("walgreens-checkout-upload", "none", "customer", [], false, false, false),
+  routePersistence("walgreens-checkout-session", "none", "customer", [], false, false, false),
+  routePersistence("walgreens-checkout-callback", "none", "public", [], false, false, false)
 ];
 
 export const migrationRequiredSignals = [
@@ -267,7 +275,7 @@ export function buildPersistenceReadinessSummary(
 ): PersistenceReadinessSummary {
   const blockers = validatePersistenceContracts(routes, tables, routeContracts);
   const schemaBackedRoutes = routeContracts.filter((contract) => contract.persistedTables.length > 0);
-  const mutations = routes.filter((route) => route.method === "POST");
+  const mutations = routes.filter((route) => route.method === "POST" && !hostedCheckoutExemptRouteIds.has(route.id));
 
   return {
     service: "customcard-persistence",
@@ -369,6 +377,7 @@ export function validatePersistenceContracts(
 
   for (const route of routes) {
     const contract = routeContractById.get(route.id);
+    const hostedCheckoutExempt = hostedCheckoutExemptRouteIds.has(route.id);
     if (!contract) {
       issues.push(`Missing API persistence contract: ${route.id}`);
       continue;
@@ -376,13 +385,13 @@ export function validatePersistenceContracts(
     if (contract.requiredRole !== route.audience) {
       issues.push(`Route ${route.id} persistence role must match API audience.`);
     }
-    if (route.audience !== "public" && !contract.sessionRequired) {
+    if (route.audience !== "public" && !contract.sessionRequired && !hostedCheckoutExempt) {
       issues.push(`Route ${route.id} must require durable auth session persistence.`);
     }
     for (const tableName of contract.persistedTables) {
       if (!tableNames.has(tableName)) issues.push(`Route ${route.id} references missing table ${tableName}.`);
     }
-    if (route.method === "POST") {
+    if (route.method === "POST" && !hostedCheckoutExempt) {
       if (contract.mode !== "mutation") issues.push(`Mutation route ${route.id} must be marked as persistence mutation.`);
       if (!contract.idempotencyReplayRequired) issues.push(`Mutation route ${route.id} must persist idempotency replay state.`);
       if (!contract.persistedTables.includes("idempotency_keys")) issues.push(`Mutation route ${route.id} must use idempotency_keys.`);

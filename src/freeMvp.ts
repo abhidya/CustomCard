@@ -1,3 +1,11 @@
+import {
+  hasOrderedRenderPacketPanels,
+  panelMatchesRenderPacketTarget,
+  renderPacketDimensionLabel,
+  renderPacketFileName,
+  renderPacketTarget
+} from "./renderPacketContract";
+
 export type FreeImportSource = "ics-paste" | "invite-paste" | "manual-note" | "empty";
 export type OpportunityStatus = "ready" | "needs-more-detail";
 export type Urgency = "same-day" | "this-week" | "planned" | "needs-date";
@@ -340,9 +348,9 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
       headline: `${titleCase(occasion)} for ${recipient}`,
       body: visual.frontLine,
       artDirection: visual.front,
-      width: 1500,
-      height: 2100,
-      dpi: 300,
+      width: renderPacketTarget.widthPixels,
+      height: renderPacketTarget.heightPixels,
+      dpi: renderPacketTarget.dpi,
       rtl
     },
     {
@@ -351,9 +359,9 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
       headline: "The part that feels like them",
       body: `${memoryLine} ${note}`,
       artDirection: visual.left,
-      width: 1500,
-      height: 2100,
-      dpi: 300,
+      width: renderPacketTarget.widthPixels,
+      height: renderPacketTarget.heightPixels,
+      dpi: renderPacketTarget.dpi,
       rtl
     },
     {
@@ -362,9 +370,9 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
       headline: "Message",
       body: `${voice} May this ${occasion} feel generous, grounded, and unmistakably yours.`,
       artDirection: visual.right,
-      width: 1500,
-      height: 2100,
-      dpi: 300,
+      width: renderPacketTarget.widthPixels,
+      height: renderPacketTarget.heightPixels,
+      dpi: renderPacketTarget.dpi,
       rtl
     },
     {
@@ -373,9 +381,9 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
       headline: `From ${sender}`,
       body: "Made with reviewed memories, local files, and final human approval.",
       artDirection: visual.back,
-      width: 1500,
-      height: 2100,
-      dpi: 300,
+      width: renderPacketTarget.widthPixels,
+      height: renderPacketTarget.heightPixels,
+      dpi: renderPacketTarget.dpi,
       rtl
     }
   ];
@@ -397,13 +405,13 @@ export function validateCardDraft(draft: CardDraft): CardValidation {
   const checks: ValidationCheck[] = [
     {
       label: "Four panels",
-      passed: draft.panels.length === 4,
+      passed: hasOrderedRenderPacketPanels(draft.panels),
       detail: `${draft.panels.length}/4 panels present`
     },
     {
       label: "5x7 print size",
-      passed: draft.panels.every((panel) => panel.width === 1500 && panel.height === 2100 && panel.dpi === 300),
-      detail: "1500 x 2100 px at 300 DPI"
+      passed: draft.panels.every(panelMatchesRenderPacketTarget),
+      detail: renderPacketDimensionLabel()
     },
     {
       label: "Text fit",
@@ -474,8 +482,8 @@ export function buildPanelSvg(panel: CardPanel): string {
   const bodyFill = panel.imageUrl ? "rgba(255,255,255,0.92)" : "#27343a";
   const artFill = panel.imageUrl ? "rgba(255,255,255,0.7)" : "#59656b";
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="${escapeXml(panel.label)} panel" direction="${direction}">
-  <rect width="1500" height="2100" fill="${background}"/>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" viewBox="0 0 ${renderPacketTarget.widthPixels} ${renderPacketTarget.heightPixels}" role="img" aria-label="${escapeXml(panel.label)} panel" direction="${direction}">
+  <rect width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" fill="${background}"/>
   <rect x="120" y="120" width="1260" height="1860" rx="42" fill="none" stroke="${accent}" stroke-width="12"/>
 ${decorativeLayer}
   <text x="${x}" y="470" fill="${textFill}" font-family="Georgia, serif" font-size="92" font-weight="700" text-anchor="${anchor}">
@@ -489,7 +497,7 @@ ${bodyLines.map((line, index) => `    <tspan x="${x}" dy="${index === 0 ? 0 : 74
 }
 
 export function exportFileName(panel: CardPanel, draftId: string): string {
-  return `${draftId}-${panel.id}-1500x2100.svg`;
+  return renderPacketFileName(draftId, panel.id);
 }
 
 export function addMemory(

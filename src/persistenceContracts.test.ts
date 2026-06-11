@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apiRouteContracts } from "./apiContracts";
+import { apiRouteContracts, hostedCheckoutExemptRouteIds } from "./apiContracts";
 import {
   apiPersistenceRouteContracts,
   buildPersistenceReadinessSummary,
@@ -18,13 +18,17 @@ describe("persistence contracts", () => {
       apiRouteContracts.map((route) => route.id)
     );
 
-    const nonPublicRoutes = apiPersistenceRouteContracts.filter((contract) => contract.requiredRole !== "public");
+    const nonPublicRoutes = apiPersistenceRouteContracts.filter(
+      (contract) => contract.requiredRole !== "public" && !hostedCheckoutExemptRouteIds.has(contract.routeId)
+    );
     expect(nonPublicRoutes.every((contract) => contract.sessionRequired)).toBe(true);
     expect(nonPublicRoutes.every((contract) => contract.persistedTables.includes("auth_sessions"))).toBe(true);
   });
 
   it("keeps mutation routes idempotent, audited, and queue-backed where required", () => {
-    const mutationRoutes = apiRouteContracts.filter((route) => route.method === "POST");
+    const mutationRoutes = apiRouteContracts.filter(
+      (route) => route.method === "POST" && !hostedCheckoutExemptRouteIds.has(route.id)
+    );
     const mutationContracts = apiPersistenceRouteContracts.filter((contract) => contract.mode === "mutation");
     const queueBackedRouteIds = apiRouteContracts.filter((route) => route.runtimeMode === "queue-backed").map((route) => route.id);
 
