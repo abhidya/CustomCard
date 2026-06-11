@@ -238,7 +238,7 @@ export function evaluateCardCopy({ cardCopy, request }) {
     if (panelId.startsWith("inside") && body.length < (panelId === "inside-left" ? 120 : 180)) {
       blockers.push(`${panelId}: body is terse (${body.length} chars).`);
     }
-    if (/\b(order|ordered|payment|paid|shipped|delivered|checkout completed)\b/i.test(`${headline} ${body}`)) {
+    if (containsOrderClaim(`${headline} ${body}`)) {
       blockers.push(`${panelId}: copy makes order/payment/shipping claims.`);
       safetyPoints -= 3;
     }
@@ -546,6 +546,16 @@ function containsForbiddenImageScene(prompt) {
     .replace(/\bno\s+tabletop(?:\s+scene)?\b/gi, "")
     .replace(/\bnot\s+(?:a\s+)?tabletop(?:\s+scene)?\b/gi, "");
   return /\b(?:mockup|tabletop|folded preview|four-panel collage|contact sheet)\b/i.test(withoutNegatedBans);
+}
+
+function containsOrderClaim(text) {
+  const withoutNegatedClaims = cleanText(text)
+    .replace(/\bwithout implying an order was placed\b/gi, "")
+    .replace(/\bwithout claiming an order was placed\b/gi, "")
+    .replace(/\bdo not (?:imply|claim) (?:an )?order was placed\b/gi, "")
+    .replace(/\bno order(?:s)? (?:was|were)? ?placed\b/gi, "");
+  return /\b(?:ordered|payment|paid|shipped|delivered|checkout completed)\b/i.test(withoutNegatedClaims) ||
+    /\border (?:was|is|has been|will be) placed\b/i.test(withoutNegatedClaims);
 }
 
 function countMatches(value, regex) {
