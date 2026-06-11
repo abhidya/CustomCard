@@ -44,6 +44,10 @@ export const WALGREENS_DEFAULT_LONGITUDE = "-87.623177";
 const DEFAULT_APP_VER = "1.0";
 const DEFAULT_DEV_INF = "web,1.0";
 const JPEG_MAGIC = [0xff, 0xd8, 0xff];
+const WALGREENS_ERROR_MESSAGES = {
+  "112": "AffiliateID is set up incorrectly for Walgreens hosted checkout.",
+  "659": "No Walgreens vendor match for this API key and AffiliateID. Confirm the PhotoPrints AffiliateID is enabled for this app."
+};
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -249,7 +253,8 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
       }
       const payload = await response.json();
       if (payload.err) {
-        throw new Error(`Walgreens ${path} error ${payload.err}: ${payload.errDesc ?? "see Walgreens error code tables"}.`);
+        const fallback = WALGREENS_ERROR_MESSAGES[String(payload.err)] ?? "see Walgreens error code tables";
+        throw new Error(`Walgreens ${path} error ${payload.err}: ${payload.errDesc || fallback}.`);
       }
       return payload;
     } finally {

@@ -394,6 +394,12 @@ when fetching upload credentials. Keep real API keys and AffiliateIDs only in
 `.env.local`, `infra/env/.env`, or Vercel environment variables; never commit
 them to `.env.example`.
 
+For PhotoPrints approval emails, Walgreens may list the AffiliateID as
+`photoapi`. If `/api/photo/creds/v3` returns Walgreens error `659`, the key is
+present but Walgreens has not matched that API key/AffiliateID pair to a
+PhotoPrints vendor configuration yet; ask Walgreens Developer Support to confirm
+PhotoPrints vendor setup for the app.
+
 Sandbox base URL: `https://services-qa.walgreens.com/api/photo`  
 Production base URL: `https://services.walgreens.com/api/photo`
 
