@@ -39,6 +39,7 @@ import {
 } from "./routePolicy";
 import { themes, useTheme } from "./theme";
 import { Toast } from "./ui";
+import { AdminView } from "./views/AdminView";
 import { BusinessLandingView } from "./views/BusinessLandingView";
 import { EventsView } from "./views/EventsView";
 import { HomeView } from "./views/HomeView";
@@ -401,17 +402,25 @@ export default function App() {
             access={adminAccess}
             activeView={activeView}
             adminPanel={
-              <AdminPanelView
+              <AdminView
                 aiFlowConfigs={aiFlowConfigs}
-                aiFlowSummary={aiFlowSummary}
                 aiGenerationJobs={aiGenerationJobs}
-                localizationSummary={localizationSummary}
-                model={adminPanelModel}
+                aiFlowSummary={aiFlowSummary}
                 onAiFlowConfigsChange={setAiFlowConfigs}
-                productionReadiness={productionReadiness}
-                providerGovernance={providerGovernance}
-                readiness={readiness}
-                runtimeReadiness={runtimeReadiness}
+                fullAudit={
+                  <AdminPanelView
+                    aiFlowConfigs={aiFlowConfigs}
+                    aiFlowSummary={aiFlowSummary}
+                    aiGenerationJobs={aiGenerationJobs}
+                    localizationSummary={localizationSummary}
+                    model={adminPanelModel}
+                    onAiFlowConfigsChange={setAiFlowConfigs}
+                    productionReadiness={productionReadiness}
+                    providerGovernance={providerGovernance}
+                    readiness={readiness}
+                    runtimeReadiness={runtimeReadiness}
+                  />
+                }
               />
             }
             adaptersPanel={<AdaptersView runtimeReadiness={runtimeReadiness} />}
@@ -490,6 +499,7 @@ export default function App() {
             onDelete={deleteNote}
             onForm={setMemoryForm}
             onResume={() => openView("studio")}
+            onStartCard={() => openView("customer")}
           />
         ) : null}
 

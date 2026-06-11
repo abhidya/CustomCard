@@ -73,7 +73,7 @@ export const aiFlowDefinitions = [
     flowId: "card-image",
     label: "Card image",
     capability: "image-generation",
-    defaultPrimaryAdapterId: "cloudflare-workers-ai-image",
+    defaultPrimaryAdapterId: "browser-svg-renderer",
     defaultFallbackAdapterId: "browser-svg-renderer",
     allowedAdapterIds: imageProviderAdapterIds,
     liveDefault: false,
@@ -426,6 +426,7 @@ function buildFallbackOverride(definition, env) {
 }
 
 function pickConfiguredAiAdapter(definition, env) {
+  if (isAiAdapterConfigured(definition.defaultPrimaryAdapterId, env)) return definition.defaultPrimaryAdapterId;
   return definition.allowedAdapterIds.find((adapterId) => {
     if (adapterId === definition.defaultFallbackAdapterId) return false;
     return isAiAdapterConfigured(adapterId, env);

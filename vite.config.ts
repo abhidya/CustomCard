@@ -90,6 +90,7 @@ export default defineConfig(({ mode }) => ({
 const coreApiDevRoutes = new Set([
   "/api/calendar/connections/start",
   "/oauth/callback",
+  "/api/oauth/callback",
   walgreensCheckoutUploadRoute,
   walgreensCheckoutSessionRoute,
   walgreensCheckoutCallbackRoute

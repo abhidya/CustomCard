@@ -193,6 +193,7 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
@@ -258,6 +259,7 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
@@ -315,6 +317,7 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
@@ -375,6 +378,55 @@ describe("AI card generator service", () => {
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/svg+xml;base64,"))).toBe(true);
     expect(Buffer.from(payload.images[0].image_url.split(",")[1], "base64").toString("utf8")).toContain("<svg");
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
+  });
+
+  it("keeps deterministic SVG artwork on the tool theme for plural tools and glue prompts", async () => {
+    const toolCopyResponse = {
+      ...cardCopyResponse,
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        image_prompt:
+          panel.id === "inside-right"
+            ? "A stylized illustration of a glue stick, surrounded by a few tools and blueprint accents."
+            : "A flat Father's Day pattern with tools, blueprints, wrenches, and fix-it workshop details.",
+        image_negative_prompt: "readable text, fake text, mockup, people, hands"
+      }))
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(toolCopyResponse) } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        recipient: "Dad",
+        occasion: "Father's Day",
+        style: "workshop blueprint tools"
+      },
+      { rateKey: "test-browser-svg-tools" }
+    );
+    const payload = result.payload as {
+      images: Array<{ image_url: string }>;
+    };
+    const svgs = payload.images.map((image) => Buffer.from(image.image_url.split(",")[1], "base64").toString("utf8"));
+
+    expect(payload.images).toHaveLength(4);
+    expect(svgs.every((svg) => svg.includes('fill="#0f6b5f"'))).toBe(true);
+    expect(svgs.join(" ")).not.toContain("<text");
   });
 
   it("uses the customer-chat flow for chat replies", async () => {

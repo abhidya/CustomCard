@@ -1,0 +1,134 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"CustomCard\",\n    \"recipient\": \"loyal customers\",\n    \"relationship\": \"small business to repeat customer\",\n    \"occasion\": \"thank-you for supporting a small business\",\n    \"tone\": \"warm, sincere, polished, grateful, not salesy\",\n    \"style\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.\",\n    \"memory_notes\": [\n      \"The customer chose an independent small business instead of a large marketplace.\",\n      \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n      \"CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.55,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "contentLength": null,
+      "byteLength": 4463,
+      "body": {
+        "id": "id-1781178413572",
+        "object": "chat.completion",
+        "created": 1781178413,
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [\n    \"The customer chose an independent small business instead of a large marketplace.\",\n    \"The owner wants the message to feel handmade, specific, and grateful rather than promotional.\",\n    \"CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n      \"body\": \"Thanks for choosing us over the big guys!\",\n      \"headline\": \"Thanks for being awesome!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A flat 2D illustration of a small, independent shop's storefront at dusk, with warm citrus and deep teal hues, a soft gold glow, and a handmade texture, with a subtle pattern of local shop logos in the background, and a few subtle, stylized shopping bags and flowers in the foreground, no people, no hands, full-bleed, 5x7 vertical print quality\"\n    },\n    {\n      \"art_direction\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n      \"body\": \"We're grateful for customers like you who support local businesses.\",\n      \"headline\": \"Thanks for being part of our community!\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A stylized, flat 2D illustration of a few shopping bags and flowers arranged in a bouquet, with a subtle pattern of local shop logos in the background, and a few subtle, stylized tea cups and saucers in the foreground, no people, no hands, full-bleed, 5x7 vertical print quality, warm citrus and deep teal hues, with a soft gold glow and a handmade texture\"\n    },\n    {\n      \"art_direction\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n      \"body\": \"We're committed to providing you with the best products and service possible.\",\n      \"headline\": \"Thanks for being an amazing customer!\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A stylized, flat 2D illustration of a few local shop products arranged in a display, with a subtle pattern of local shop logos in the background, and a few subtle, stylized tea cups and saucers in the foreground, no people, no hands, full-bleed, 5x7 vertical print quality, warm citrus and deep teal hues, with a soft gold glow and a handmade texture\"\n    },\n    {\n      \"art_direction\": \"premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture\",\n      \"body\": \"Thanks again for your support!\",\n      \"headline\": \"Best regards, [Your Name]\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A stylized, flat 2D illustration of a small, independent shop's storefront at dusk, with warm citrus and deep teal hues, a soft gold glow, and a handmade texture, with a subtle pattern of local shop logos in the background, and a few subtle, stylized shopping bags and flowers in the foreground, no people, no hands, full-bleed, 5x7 vertical print quality, with a simple, elegant font overlay with the headline and body text\"\n    }\n  ]\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": "<redacted>"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": "<redacted>",
+          "completion_tokens": "<redacted>",
+          "total_tokens": "<redacted>",
+          "prompt_tokens_details": "<redacted>"
+        }
+      }
+    },
+    "durationMs": 5468
+  }
+]

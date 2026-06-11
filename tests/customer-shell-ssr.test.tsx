@@ -207,9 +207,11 @@ describe("customer shell server render", () => {
       };
       const { text } = renderShell({ search: "?view=memory", storedWorkspace });
 
+      // Empty hub stays minimal: no form scaffolding until there's a card or a saved detail.
       expect(text).toContain("Your cards");
-      expect(text).toContain("Add a personal detail");
-      expect(text).toContain("Nothing saved yet");
+      expect(text).toContain("Start a card");
+      expect(text).toContain("Add a personal detail first");
+      expect(text).not.toContain("Save detail");
       expect(text).not.toContain("memory-sara");
     });
 
@@ -241,13 +243,13 @@ describe("customer shell server render", () => {
     it("renders the events view with import box and calendar sources", () => {
       const { text } = renderShell({ search: "?view=opportunities" });
 
+      // Google Calendar is the primary path; pasting is the manual fallback; Apple is a footnote.
       expect(text).toContain("Never miss a moment");
-      expect(text).toContain("Paste invite or ICS");
-      expect(text).toContain("Google Calendar");
-      expect(text).toContain("Apple Calendar export");
-      expect(text).toContain("Add an occasion");
+      expect(text).toContain("Connect Google Calendar");
+      expect(text).toContain("Or paste it in");
       expect(text).toContain("Try an example");
-      expect(text).toContain("Nothing here yet");
+      expect(text).toContain("Using Apple Calendar?");
+      expect(text).not.toContain("Nothing here yet");
     });
 
     it("renders the studio as a print-preview card stage", () => {

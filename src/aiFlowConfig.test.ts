@@ -31,7 +31,35 @@ describe("AI flow config", () => {
 
     expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
+    expect(cardImage?.primaryAdapterId).toBe("browser-svg-renderer");
     expect(cardImage?.liveProviderCallsEnabled).toBe(false);
+  });
+
+  it("keeps card-image on the deterministic print-safe adapter even when Cloudflare image credentials exist", () => {
+    const flow = resolveAiFlowConfig("card-image", {
+      ...cloudflareEnv,
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    });
+
+    expect(flow.primaryAdapterId).toBe("browser-svg-renderer");
+    expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(flow.liveProviderCallsEnabled).toBe(true);
+    expect(flow.readyForLiveCalls).toBe(true);
+    expect(flow.blockedReasons).toEqual([]);
+  });
+
+  it("routes card-image to Cloudflare only when explicitly configured", () => {
+    const flow = resolveAiFlowConfig("card-image", {
+      ...cloudflareEnv,
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    });
+
+    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
+    expect(flow.model).toBe("@cf/bytedance/stable-diffusion-xl-lightning");
+    expect(flow.liveProviderCallsEnabled).toBe(true);
+    expect(flow.readyForLiveCalls).toBe(true);
+    expect(flow.blockedReasons).toEqual([]);
   });
 
   it("honors admin provider, model, prompt, rate, budget, and fallback queue overrides", () => {

@@ -77,6 +77,8 @@ const checks = [
     '"buildCommand": "npm run build"',
     '"source": "/api/(.*)"',
     '"destination": "/api/$1"',
+    '"source": "/oauth/callback"',
+    '"destination": "/api/oauth/callback"',
     "handleApiRequest"
   ]),
   checkIncludes("hosted-env", "hosted-env-and-db-source-signals", `${contents.envExample}\n${contents.postgresHttpDoctor}\n${contents.accountDoctor}`, [
@@ -216,4 +218,3 @@ function checkItemsShape(lane, id, items) {
         : `Missing hosted API readiness fields: ${missing.join(", ")}`
   };
 }
-

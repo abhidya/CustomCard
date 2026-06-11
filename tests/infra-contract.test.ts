@@ -591,6 +591,8 @@ describe("production infrastructure contract", () => {
       rewrites: Array<{ source: string; destination: string }>;
     };
     const handler = read("api/[...path].js");
+    const calendarStartHandler = read("api/calendar/connections/start.js");
+    const oauthCallbackHandler = read("api/oauth/callback.js");
     const walgreensUploadHandler = read("api/walgreens/checkout/upload.js");
     const walgreensSessionHandler = read("api/walgreens/checkout/session.js");
     const walgreensCallbackHandler = read("api/walgreens/checkout/callback.js");
@@ -601,8 +603,13 @@ describe("production infrastructure contract", () => {
       buildCommand: "npm run build",
       outputDirectory: "dist"
     });
-    expect(vercel.rewrites).toEqual([{ source: "/((?!api/).*)", destination: "/index.html" }]);
+    expect(vercel.rewrites).toEqual([
+      { source: "/api/(.*)", destination: "/api/$1" },
+      { source: "/oauth/callback", destination: "/api/oauth/callback" },
+      { source: "/((?!api/).*)", destination: "/index.html" }
+    ]);
     expect(handler).toContain("handleApiRequest");
+    expect(`${calendarStartHandler}\n${oauthCallbackHandler}`).toContain("handleApiRequest");
     expect(`${walgreensUploadHandler}\n${walgreensSessionHandler}\n${walgreensCallbackHandler}`).toContain("handleApiRequest");
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");

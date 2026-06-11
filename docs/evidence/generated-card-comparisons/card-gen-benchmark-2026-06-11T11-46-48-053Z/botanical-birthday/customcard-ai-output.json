@@ -1,0 +1,110 @@
+{
+  "draft_id": "ai-mq9fnmkz-sara",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Wishing you a birthday as bright as your smile",
+        "body": "A card made with care.",
+        "art_direction": "Warm, grateful, relaxed, quietly joyful tone, botanical watercolor style with morning light and deep green accents.",
+        "image_prompt": "a lush, green fern in a delicate, cream-colored planter, with a few morning light rays peeking through the window, and a subtle, watercolor-style birthday banner in the background, with a few tiny, colorful flowers scattered around the planter",
+        "image_negative_prompt": "readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Happy Birthday, Sara",
+        "body": "Just like the fern in your kitchen window, you bring a touch of nature and beauty to my life.",
+        "art_direction": "Warm, grateful, relaxed, quietly joyful tone, botanical watercolor style with morning light and deep green accents.",
+        "image_prompt": "a delicate, watercolor-style illustration of a few tiny, colorful flowers from a morning hike, surrounded by a few sprigs of fern and a few morning light rays, with a subtle, cream-colored background",
+        "image_negative_prompt": "readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Wishing you a birthday as bright as your smile",
+        "body": "May your special day be filled with joy, love, and all your favorite things, just like the trail flowers you love so much.",
+        "art_direction": "Warm, grateful, relaxed, quietly joyful tone, botanical watercolor style with morning light and deep green accents.",
+        "image_prompt": "a beautiful, watercolor-style illustration of a lush, green fern in a delicate, cream-colored planter, surrounded by a few morning light rays and a few tiny, colorful flowers, with a subtle, birthday-themed background",
+        "image_negative_prompt": "readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      },
+      {
+        "id": "back",
+        "headline": "Happy Birthday, Sara",
+        "body": "With love and appreciation, Manny",
+        "art_direction": "Warm, grateful, relaxed, quietly joyful tone, botanical watercolor style with morning light and deep green accents.",
+        "image_prompt": "a simple, watercolor-style illustration of a few sprigs of fern and a few morning light rays, with a subtle, cream-colored background and a few tiny, colorful flowers scattered around the edges",
+        "image_negative_prompt": "readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      }
+    ],
+    "memory_citations": [
+      "She keeps a fern by the kitchen window.",
+      "She loves morning hikes and tiny trail flowers.",
+      "The birthday card should feel personal without feeling overly sentimental."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 30170 chars>",
+      "revised_prompt": "a lush, green fern in a delicate, cream-colored planter, with a few morning light rays peeking through the window, and a subtle, watercolor-style birthday banner in the background, with a few tiny, colorful flowers scattered around the planter 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 30190 chars>",
+      "revised_prompt": "a delicate, watercolor-style illustration of a few tiny, colorful flowers from a morning hike, surrounded by a few sprigs of fern and a few morning light rays, with a subtle, cream-colored background 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 30190 chars>",
+      "revised_prompt": "a beautiful, watercolor-style illustration of a lush, green fern in a delicate, cream-colored planter, surrounded by a few morning light rays and a few tiny, colorful flowers, with a subtle, birthday-themed background 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 30166 chars>",
+      "revised_prompt": "a simple, watercolor-style illustration of a few sprigs of fern and a few morning light rays, with a subtle, cream-colored background and a few tiny, colorful flowers scattered around the edges 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

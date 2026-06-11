@@ -413,7 +413,7 @@ function themeForPrompt(prompt) {
       motif: (index) => medicalMotif(index)
     };
   }
-  if (/\b(father|dad|wrench|tool|workshop|blueprint)\b/.test(text)) {
+  if (/\b(father|dad|fix(?:-it)?|repair|handy(?:man)?|wrench|tools?|toolbox|workshop|blueprints?|glue|hammer|measure|measuring)\b/.test(text)) {
     return {
       background: "#0f6b5f",
       accent: "#f5c542",

@@ -1,0 +1,110 @@
+{
+  "draft_id": "ai-mq9fng6h-dad",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Fixing the Little Things",
+        "body": "Happy Father's Day to the ultimate fixer-upper!",
+        "art_direction": "premium 5x7 vertical flat print panel artwork, clean printable workshop illustration, blueprint details, golden yellow and green accents",
+        "image_prompt": "A cheerful illustration of a hammer and screwdriver surrounded by golden yellow and green accents, with a subtle blueprint pattern in the background. The tools are positioned in a symmetrical composition, with a few loose screws scattered around to convey a sense of fixing and repair.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Love in Action",
+        "body": "Thanks for being a steady presence in my life.",
+        "art_direction": "premium 5x7 vertical flat print panel artwork, clean printable workshop illustration, blueprint details, golden yellow and green accents",
+        "image_prompt": "An illustration of a level tool with a green light shining, surrounded by a subtle blueprint pattern and golden yellow accents. The level is positioned in the center of the composition, with a few tools and gears scattered around to convey a sense of balance and stability.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Fixing Memories",
+        "body": "Here's to many more years of fixing things together!",
+        "art_direction": "premium 5x7 vertical flat print panel artwork, clean printable workshop illustration, blueprint details, golden yellow and green accents",
+        "image_prompt": "An illustration of a toolbox with a few tools and gadgets spilling out, surrounded by a subtle blueprint pattern and golden yellow accents. The toolbox is positioned in the center of the composition, with a few loose tools and screws scattered around to convey a sense of fixing and repair.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      },
+      {
+        "id": "back",
+        "headline": "Love from the Heart",
+        "body": "Thanks for being an amazing dad!",
+        "art_direction": "premium 5x7 vertical flat print panel artwork, clean printable workshop illustration, blueprint details, golden yellow and green accents",
+        "image_prompt": "An illustration of a heart-shaped wrench surrounded by a subtle blueprint pattern and golden yellow accents. The wrench is positioned in the center of the composition, with a few tools and gears scattered around to convey a sense of love and repair.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo"
+      }
+    ],
+    "memory_citations": [
+      "Dad shows love by fixing the small things before anyone asks.",
+      "The card should feel printable, cheerful, and original.",
+      "Use tools as symbols, not a cluttered hardware-store scene."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 29906 chars>",
+      "revised_prompt": "A cheerful illustration of a hammer and screwdriver surrounded by golden yellow and green accents, with a subtle blueprint pattern in the background. The tools are positioned in a symmetrical composition, with a few loose screws scattered around to convey a sense of fixing and repair. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 29910 chars>",
+      "revised_prompt": "An illustration of a level tool with a green light shining, surrounded by a subtle blueprint pattern and golden yellow accents. The level is positioned in the center of the composition, with a few tools and gears scattered around to convey a sense of balance and stability. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 29894 chars>",
+      "revised_prompt": "An illustration of a toolbox with a few tools and gadgets spilling out, surrounded by a subtle blueprint pattern and golden yellow accents. The toolbox is positioned in the center of the composition, with a few loose tools and screws scattered around to convey a sense of fixing and repair. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 29886 chars>",
+      "revised_prompt": "An illustration of a heart-shaped wrench surrounded by a subtle blueprint pattern and golden yellow accents. The wrench is positioned in the center of the composition, with a few tools and gears scattered around to convey a sense of love and repair. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

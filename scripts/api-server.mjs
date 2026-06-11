@@ -479,7 +479,7 @@ export async function handleApiRequest(request, response) {
 
 async function serveApi(request, response, requestUrl) {
   const path = requestUrl.pathname;
-  if (path === googleCalendarOAuthCallbackRoute) {
+  if (path === googleCalendarOAuthCallbackRoute || path === googleCalendarApiOAuthCallbackRoute) {
     await handleGoogleCalendarOAuthCallback(request, response, requestUrl);
     return;
   }
@@ -1487,6 +1487,7 @@ function buildMutationContractPayload(route, bodyText, options = {}) {
 
 const googleCalendarOAuthScopeUri = "https://www.googleapis.com/auth/calendar.events.readonly";
 const googleCalendarOAuthCallbackRoute = "/oauth/callback";
+const googleCalendarApiOAuthCallbackRoute = "/api/oauth/callback";
 const googleCalendarOAuthRequiredEnv = [
   "GOOGLE_OAUTH_CLIENT_ID",
   "GOOGLE_OAUTH_CLIENT_SECRET",

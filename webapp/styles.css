@@ -233,6 +233,86 @@ a { color: inherit; }
 .importExpanderChevron[data-open="true"] { transform: rotate(180deg); }
 .importExpanderBody { padding-top: 18px; animation: reveal 0.4s var(--ease) both; }
 
+/* ---------- Import flow (Google-first) ---------- */
+.importFlow { display: grid; gap: 16px; max-width: 660px; }
+.importPrimary { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.importPrimaryNote { font-size: 13px; color: var(--ink-faint); max-width: 320px; line-height: 1.4; }
+.oppInline {
+  border-top: 1px solid var(--line-soft);
+  margin-top: 6px; padding-top: 16px;
+  display: grid; gap: 12px;
+}
+.oppInline h3 {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking); font-size: 21px; margin: 0;
+}
+
+/* ---------- Empty "My cards" hub ---------- */
+.emptyhub { padding: 30px; display: grid; gap: 18px; max-width: 560px; }
+.emptyhub p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+
+/* ---------- Operations console ---------- */
+.opsGrid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
+}
+@media (max-width: 880px) { .opsGrid { grid-template-columns: 1fr; } }
+.opsCard { padding: 22px; display: grid; gap: 14px; align-content: start; }
+.opsCard-wide { grid-column: 1 / -1; }
+.opsCardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.opsCardHead h2 {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking); font-size: 21px; margin: 0;
+}
+.opsStatus {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 680; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 5px 11px; border-radius: 999px;
+  background: #b3742c1f; color: #8a5a1d;
+}
+.opsStatus[data-ok="true"] { background: var(--second-soft); color: var(--second); }
+.opsFacts { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.opsFacts li {
+  display: flex; justify-content: space-between; gap: 14px;
+  font-size: 14px; color: var(--ink-soft);
+  border-bottom: 1px solid var(--line-soft); padding-bottom: 9px;
+}
+.opsFacts strong { color: var(--ink); font-weight: 640; font-variant-numeric: tabular-nums; }
+.opsProbes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.opsProbes li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.opsProbeDot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--line); }
+.opsProbeDot[data-state="ok"] { background: var(--second); }
+.opsProbeDot[data-state="fail"] { background: var(--accent); }
+.opsProbeDot[data-state="wait"] { animation: probepulse 1s infinite alternate; }
+@keyframes probepulse { from { opacity: 0.4; } to { opacity: 1; } }
+.opsProbeName { flex: 1; font-weight: 560; }
+.opsProbeMs { color: var(--ink-faint); font-variant-numeric: tabular-nums; font-size: 13px; }
+.opsNote { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.opsNote code { font-size: 12.5px; background: var(--surface-alt); border: 1px solid var(--line-soft); border-radius: 5px; padding: 1px 5px; }
+.opsFoot { font-size: 12.5px; color: var(--ink-faint); }
+.opsCard .btn-ghost { justify-self: start; text-decoration: none; }
+.flowList { display: grid; gap: 14px; }
+.flowRow {
+  border: 1px solid var(--line-soft); border-radius: var(--radius-s);
+  background: var(--surface-alt); padding: 15px 16px; display: grid; gap: 12px;
+}
+.flowRowHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.flowRowHead strong { font-size: 15px; font-weight: 640; }
+.flowControls { display: grid; grid-template-columns: 1fr 1fr 130px; gap: 12px; }
+@media (max-width: 720px) { .flowControls { grid-template-columns: 1fr; } }
+.flowControls label {
+  display: grid; gap: 5px; font-size: 12.5px; font-weight: 620; color: var(--ink-soft);
+}
+.flowControls select, .flowControls input {
+  border: 1px solid var(--line); border-radius: var(--radius-s);
+  background: var(--surface); color: var(--ink);
+  padding: 9px 10px; font-size: 14px; outline: none; font-weight: 480;
+}
+.flowControls select:focus, .flowControls input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.flowBlocked { font-size: 12.5px; color: #8a5a1d; }
+.opsAudit { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+
 .homeActions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

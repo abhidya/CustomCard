@@ -1,0 +1,134 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate greeting card copy and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"constraints\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"headline <= 120 characters.\",\n    \"body <= 600 characters.\",\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Manny\",\n    \"recipient\": \"Dad\",\n    \"relationship\": \"child to father\",\n    \"occasion\": \"Father's Day\",\n    \"tone\": \"warm, funny, sincere, practical love\",\n    \"style\": \"clean printable workshop illustration, blueprint details, golden yellow and green accents\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.\",\n    \"memory_notes\": [\n      \"Dad shows love by fixing the small things before anyone asks.\",\n      \"The card should feel printable, cheerful, and original.\",\n      \"Use tools as symbols, not a cluttered hardware-store scene.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.55,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "contentLength": null,
+      "byteLength": 4121,
+      "body": {
+        "id": "id-1781178221231",
+        "object": "chat.completion",
+        "created": 1781178221,
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [\n    \"Dad shows love by fixing the small things before anyone asks.\",\n    \"The card should feel printable, cheerful, and original.\",\n    \"Use tools as symbols, not a cluttered hardware-store scene.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"clean printable workshop illustration, blueprint details, golden yellow and green accents\",\n      \"body\": \"Happy Father's Day to the handyman who keeps everything running smoothly!\",\n      \"headline\": \"Fixing Things, Fixing Hearts\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A golden wrench with a green handle, surrounded by blueprints, with a few yellow tools scattered around it, all on a clean white background. The wrench is the main focus, with the blueprints and tools providing a subtle background. The illustration style is a mix of clean lines and subtle textures, reminiscent of a blueprint. The color palette is primarily yellow and green, with accents of blue and white.\"\n    },\n    {\n      \"art_direction\": \"clean printable workshop illustration, blueprint details, golden yellow and green accents\",\n      \"body\": \"Dad, you're the MacGyver of our family. Thanks for fixing everything and making our lives easier!\",\n      \"headline\": \"The Fix-It Man\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A stylized illustration of a person (not a portrait) holding a wrench, surrounded by various tools and blueprints, all on a white background. The person is depicted in a simple, cartoonish style, with a few subtle textures to give it a sense of depth. The color palette is primarily yellow and green, with accents of blue and white.\"\n    },\n    {\n      \"art_direction\": \"clean printable workshop illustration, blueprint details, golden yellow and green accents\",\n      \"body\": \"Thanks for being a steady presence in our lives, Dad. You're the glue that holds us together!\",\n      \"headline\": \"The Glue That Holds Us Together\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A stylized illustration of a glue stick, surrounded by a few tools and blueprints, all on a white background. The glue stick is depicted in a simple, cartoonish style, with a few subtle textures to give it a sense of depth. The color palette is primarily yellow and green, with accents of blue and white.\"\n    },\n    {\n      \"art_direction\": \"clean printable workshop illustration, blueprint details, golden yellow and green accents\",\n      \"body\": \"Wishing you a Father's Day as handy as you are, Dad!\",\n      \"headline\": \"Happy Father's Day!\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A stylized illustration of a few tools and blueprints, all on a white background. The tools are depicted in a simple, cartoonish style, with a few subtle textures to give it a sense of depth. The color palette is primarily yellow and green, with accents of blue and white.\"\n    }\n  ]\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": "<redacted>"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": "<redacted>",
+          "completion_tokens": "<redacted>",
+          "total_tokens": "<redacted>",
+          "prompt_tokens_details": "<redacted>"
+        }
+      }
+    },
+    "durationMs": 5941
+  }
+]

@@ -122,6 +122,8 @@ const checks = [
     '"outputDirectory": "dist"',
     '"source": "/api/(.*)"',
     '"destination": "/api/$1"',
+    '"source": "/oauth/callback"',
+    '"destination": "/api/oauth/callback"',
     '"destination": "/index.html"'
   ]),
   checkIncludes("vercel", "vercel-serverless-api-handler", `${contents.vercelApiHandler}\n${contents.apiServer}\n${contents.apiRuntime}`, [
@@ -343,4 +345,3 @@ console.log(JSON.stringify(report, null, 2));
 if (failed.length > 0) {
   process.exit(1);
 }
-

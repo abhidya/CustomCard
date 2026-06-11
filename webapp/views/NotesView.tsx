@@ -1,4 +1,5 @@
 import { ArrowRight, Trash2 } from "lucide-react";
+import { useState } from "react";
 import type { CardDraft, MemoryItem } from "../../src/freeMvp";
 import { Field, PanelArt } from "../ui";
 
@@ -12,7 +13,8 @@ export function NotesView({
   onForm,
   onAdd,
   onDelete,
-  onResume
+  onResume,
+  onStartCard
 }: {
   draft: CardDraft;
   hasProgress: boolean;
@@ -23,8 +25,34 @@ export function NotesView({
   onAdd: () => void;
   onDelete: (memoryId: string) => void;
   onResume: () => void;
+  onStartCard: () => void;
 }) {
   const canAdd = form.recipient.trim().length > 0 && form.note.trim().length > 0;
+  const isEmpty = !hasProgress && memories.length === 0;
+  const [detailFormOpen, setDetailFormOpen] = useState(false);
+
+  /* Nothing here yet — keep it to one quiet card instead of empty scaffolding. */
+  if (isEmpty && !detailFormOpen) {
+    return (
+      <>
+        <header className="pagehead reveal">
+          <h1>Your cards</h1>
+        </header>
+        <section className="panelcard emptyhub reveal reveal-1">
+          <p>Nothing here yet — your cards and the little details that shape them will live on this page.</p>
+          <div className="opp-actions">
+            <button className="btn btn-primary" onClick={onStartCard} type="button">
+              Start a card
+              <ArrowRight size={15} />
+            </button>
+            <button className="textlink" onClick={() => setDetailFormOpen(true)} type="button">
+              Add a personal detail first
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
 
   return (
     <>
@@ -72,13 +100,9 @@ export function NotesView({
           </div>
         </section>
 
-        <div className="notelist reveal reveal-3">
-          {memories.length === 0 ? (
-            <div className="panelcard emptynotes">
-              Nothing saved yet. Nicknames, shared memories, and inside jokes you keep here shape every future card.
-            </div>
-          ) : (
-            memories.map((memory) => (
+        {memories.length > 0 ? (
+          <div className="notelist reveal reveal-3">
+            {memories.map((memory) => (
               <article className="panelcard notecard" key={memory.id}>
                 <div className="notecard-body">
                   <strong>{memory.recipient}</strong>
@@ -93,9 +117,9 @@ export function NotesView({
                   <Trash2 size={17} />
                 </button>
               </article>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </>
   );
