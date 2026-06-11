@@ -16,11 +16,10 @@ For the live benchmark harness, run:
 npm run card:benchmark -- --live
 ```
 
-Use `--image-adapter browser-svg-renderer` to capture deterministic flat SVG
-artwork instead of live provider images when the RCA focus is text-free,
-mockup-free panel composition. Use `--image-adapter cloudflare-workers-ai-image`
-only when validating Workers AI prompt adherence against the provider path; both
-adapter modes can validate R2 persistence.
+Use `--image-adapter cloudflare-workers-ai-image` for the preferred live
+Cloudflare image path. Use `--image-adapter browser-svg-renderer` when the RCA
+focus is deterministic flat SVG artwork, no-network debugging, or isolating R2
+persistence from provider-image behavior.
 
 Do not copy competitor images into generated outputs. Keep competitor references
 in `../competitor-card-examples/` and generate all CustomCard art, copy, layout,
