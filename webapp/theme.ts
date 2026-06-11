@@ -10,10 +10,18 @@ export const themes: Array<{ id: ThemeId; label: string }> = [
 
 const storageKey = "customcard-theme-v1";
 
+function isThemeId(value: string | null): value is ThemeId {
+  return value === "atelier" || value === "studio" || value === "gallery";
+}
+
 function readStoredTheme(): ThemeId {
+  if (typeof window !== "undefined") {
+    const fromUrl = new URLSearchParams(window.location.search).get("theme");
+    if (isThemeId(fromUrl)) return fromUrl;
+  }
   try {
     const raw = localStorage.getItem(storageKey);
-    if (raw === "atelier" || raw === "studio" || raw === "gallery") return raw;
+    if (isThemeId(raw)) return raw;
   } catch {
     /* storage unavailable */
   }

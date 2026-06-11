@@ -1,4 +1,5 @@
 import { ArrowRight, Download } from "lucide-react";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 import { useEffect, useRef, useState } from "react";
 import {
   addMemory,
@@ -201,14 +202,16 @@ export default function App() {
           icon: <ArrowRight size={16} />,
           disabled: false,
           meta: priceLabel ? `est. ${priceLabel} at ${handoff.vendorName} · same-day pickup` : "Compare print shops",
-          metaTitle: `Card for ${draftInput.recipient}`,
+          metaTitle: `Card for ${draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient}`,
           onClick: () => openView("handoff")
         }
       : {
           label: "Design your card",
           icon: <ArrowRight size={16} />,
           disabled: false,
-          meta: `${draftInput.occasion === "card" ? "Any occasion" : draftInput.occasion} · to ${draftInput.recipient}`,
+          meta: `${draftInput.occasion === "card" ? "Any occasion" : draftInput.occasion} · to ${
+            draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient
+          }`,
           metaTitle: "Card in progress",
           onClick: () => openView("studio")
         };
@@ -241,6 +244,7 @@ export default function App() {
           ))}
         </nav>
         <div className="topbar-side">
+          <ClerkAuthControls />
           <div className="themeswitch" role="group" aria-label="Theme">
             {themes.map((candidate) => (
               <button
@@ -334,6 +338,28 @@ export default function App() {
       </div>
 
       {toast ? <Toast message={toast} /> : null}
+    </div>
+  );
+}
+
+function ClerkAuthControls() {
+  return (
+    <div className="clerk-auth" aria-label="Account">
+      <Show when="signed-out">
+        <SignInButton>
+          <button className="btn btn-ghost btn-sm" type="button">
+            Sign in
+          </button>
+        </SignInButton>
+        <SignUpButton>
+          <button className="btn btn-ink btn-sm" type="button">
+            Sign up
+          </button>
+        </SignUpButton>
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
     </div>
   );
 }

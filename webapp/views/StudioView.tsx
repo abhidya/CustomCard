@@ -26,6 +26,18 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+/** Show defaults as empty fields so placeholders read naturally. */
+const placeholderDefaults = [
+  "Someone important",
+  "Local User",
+  "card",
+  "Mention their shared patience, humor, and the little rituals that made the year feel full."
+];
+
+function displayValue(value: string): string {
+  return placeholderDefaults.includes(value) ? "" : value;
+}
+
 export function StudioView({
   draft,
   draftInput,
@@ -84,7 +96,7 @@ export function StudioView({
         <div className="steps reveal reveal-2">
           <Step
             defaultOpen
-            meta={`To ${draftInput.recipient}`}
+            meta={displayValue(draftInput.recipient) ? `To ${draftInput.recipient}` : "Add names"}
             number={1}
             title="Who it's for"
           >
@@ -93,14 +105,14 @@ export function StudioView({
                 <input
                   onChange={(event) => onField("recipient", event.target.value)}
                   placeholder="Their name"
-                  value={draftInput.recipient}
+                  value={displayValue(draftInput.recipient)}
                 />
               </Field>
               <Field label="From">
                 <input
                   onChange={(event) => onField("sender", event.target.value)}
                   placeholder="Your name"
-                  value={draftInput.sender}
+                  value={displayValue(draftInput.sender)}
                 />
               </Field>
             </div>
@@ -116,7 +128,7 @@ export function StudioView({
                 <input
                   onChange={(event) => onField("occasion", event.target.value)}
                   placeholder="Birthday, anniversary…"
-                  value={draftInput.occasion}
+                  value={displayValue(draftInput.occasion)}
                 />
               </Field>
             </div>
@@ -144,12 +156,12 @@ export function StudioView({
             </Field>
           </Step>
 
-          <Step meta={draftInput.personalNote ? "Note added" : "Optional"} number={3} title="Make it personal">
+          <Step meta={displayValue(draftInput.personalNote) ? "Note added" : "Optional"} number={3} title="Make it personal">
             <Field label="A shared memory, an inside joke, or what you appreciate about them">
               <textarea
                 onChange={(event) => onField("personalNote", event.target.value)}
                 placeholder="The road trip playlist, the Sunday pancakes, that one inside joke…"
-                value={draftInput.personalNote}
+                value={displayValue(draftInput.personalNote)}
               />
             </Field>
             <div className="switchrow">

@@ -151,6 +151,8 @@ a { color: inherit; }
   opacity: 0.55; font-variant-numeric: tabular-nums;
 }
 .topbar-side { display: flex; align-items: center; gap: 12px; }
+.clerk-auth { display: flex; align-items: center; gap: 8px; }
+.clerk-auth .btn { min-height: 36px; }
 
 .themeswitch {
   display: flex; gap: 4px; padding: 4px;
@@ -554,6 +556,8 @@ a { color: inherit; }
   .shell { padding: 0 18px 170px; }
   .mainnav { order: 3; width: 100%; overflow-x: auto; }
   .topbar { flex-wrap: wrap; }
+  .topbar-side { order: 2; margin-left: auto; }
+  .clerk-auth { flex-wrap: wrap; justify-content: flex-end; }
   .hero { padding: 40px 0 10px; }
   .fieldrow { grid-template-columns: 1fr; }
   .ctadock { bottom: 14px; gap: 10px; padding-left: 16px; }
