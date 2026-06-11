@@ -13,7 +13,8 @@ export interface AdminAccessPolicy {
 
 export const customerNavItems: NavItem[] = [
   { id: "customer", label: "Create" },
-  { id: "memory", label: "My cards" }
+  { id: "memory", label: "My cards" },
+  { id: "settings", label: "Settings" }
 ];
 
 export const adminNavItems: NavItem[] = [

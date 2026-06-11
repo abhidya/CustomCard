@@ -51,6 +51,29 @@ export function mergeCheckoutCustomerDefaults(
   };
 }
 
+export interface CheckoutFieldIssue {
+  field: CheckoutCustomerField;
+  message: string;
+}
+
+/** Inline validation for the Walgreens checkout prefill fields. */
+export function validateCheckoutCustomer(customer: CheckoutCustomer): CheckoutFieldIssue[] {
+  const issues: CheckoutFieldIssue[] = [];
+  if (!customer.firstName.trim()) issues.push({ field: "firstName", message: "Add a first name" });
+  if (!customer.lastName.trim()) issues.push({ field: "lastName", message: "Add a last name" });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email.trim())) {
+    issues.push({ field: "email", message: "Add a valid email" });
+  }
+  if (customer.phone.replace(/\D/g, "").length !== 10) {
+    issues.push({ field: "phone", message: "Use a 10-digit US phone number" });
+  }
+  return issues;
+}
+
+export function isCheckoutCustomerComplete(customer: CheckoutCustomer): boolean {
+  return validateCheckoutCustomer(customer).length === 0;
+}
+
 export function updateCheckoutCustomerField(
   current: CheckoutCustomer,
   field: CheckoutCustomerField,

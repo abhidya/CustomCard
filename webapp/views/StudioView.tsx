@@ -28,8 +28,9 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function panelArtworkLabel(panel: CardPanel): string {
-  return panel.imageUrl ? "Artwork ready" : "Template";
+function panelArtworkLabel(panel: CardPanel, generating: boolean): string {
+  if (panel.imageUrl) return "Artwork ready";
+  return generating ? "Creating artwork…" : "Template";
 }
 
 export function StudioView({
@@ -100,7 +101,7 @@ export function StudioView({
               >
                 <PanelArt panel={candidate} />
                 <span>{candidate.label}</span>
-                <small>{panelArtworkLabel(candidate)}</small>
+                <small>{panelArtworkLabel(candidate, aiLoading)}</small>
               </button>
             ))}
           </div>

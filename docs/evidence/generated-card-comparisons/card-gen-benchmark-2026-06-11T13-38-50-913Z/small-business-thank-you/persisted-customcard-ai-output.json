@@ -1,0 +1,127 @@
+{
+  "draft_id": "ai-mq9jn7a3-loyal-customers",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Grateful Thanks",
+      "palette": [
+        "Warm citrus",
+        "Cream",
+        "Deep teal",
+        "Soft gold"
+      ],
+      "motifs": [
+        "Geometric patterns",
+        "Natural motifs",
+        "Subtle patterns"
+      ],
+      "border_style": "Decorative border or frame with a mix of natural motifs and subtle patterns.",
+      "front_back_pairing": "Warm citrus and cream color scheme, deep teal accent, soft gold foil stamp.",
+      "interior_pairing": "Natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs."
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "A Heartfelt Thank You",
+        "body": "Thank you for choosing to shop small.",
+        "art_direction": "Front panel: Warm citrus and cream color scheme, deep teal accent, soft gold foil stamp, premium stationery texture, and generous margins. Headline should be centered and slightly larger than the body. The body should be a short dedication and feel like a subtitle.",
+        "image_prompt": "A premium 5x7 vertical flat print panel artwork featuring a decorative border with a warm citrus and cream color scheme, deep teal accent, and soft gold foil stamp. The border should be a mix of geometric patterns and natural motifs, with generous margins and a quiet center reserved for the app-rendered headline and body.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thinking of you",
+        "body": "You're part of a community that believes in supporting local businesses and unique products. Your choice makes a difference in the lives of artisans and entrepreneurs.",
+        "art_direction": "Inside-left panel: Decorative border or frame with a calm blank/low-contrast center, reserved for app-rendered text. The border should be a mix of natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs. The palette should match the front panel.",
+        "image_prompt": "A premium 5x7 vertical flat print panel artwork featuring a decorative border or frame with a calm blank/low-contrast center, reserved for app-rendered text. The border should be a mix of natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs. The palette should match the front panel.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From the heart",
+        "body": "As a small business owner, I'm grateful for customers like you who understand the value of supporting local artisans and entrepreneurs. Thank you again for your loyalty and support.",
+        "art_direction": "Inside-right panel: Decorative border or frame with a calm blank/low-contrast center, reserved for app-rendered text. The border should be a mix of natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs. The palette should match the front panel. The center should be clean and text-safe, with generous margins.",
+        "image_prompt": "A premium 5x7 vertical flat print panel artwork featuring a decorative border or frame with a calm blank/low-contrast center, reserved for app-rendered text. The border should be a mix of natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs. The palette should match the front panel. The center should be clean and text-safe, with generous margins.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "back",
+        "headline": "Warm Wishes",
+        "body": "Wishing you joy and happiness in all your future endeavors.",
+        "art_direction": "Back panel: Visual match to the front panel, with a similar color scheme and design elements. The headline and body should be centered and slightly smaller than the front panel.",
+        "image_prompt": "A premium 5x7 vertical flat print panel artwork featuring a decorative border with a warm citrus and cream color scheme, deep teal accent, and soft gold foil stamp. The border should be a mix of geometric patterns and natural motifs, with generous margins and a quiet center reserved for the app-rendered headline and body.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      }
+    ],
+    "memory_citations": [
+      "The customer chose an independent small business instead of a large marketplace.",
+      "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+      "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 30178 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy. Warm small-business thank-you background: cream field with citrus slices, soft gold ribbon curves, deep teal leaves, subtle boutique awning silhouette, kraft paper texture, botanical sprigs, and handmade local-shop pattern details. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 24562 chars>",
+      "revised_prompt": "A premium 5x7 vertical flat print panel artwork featuring a decorative border or frame with a calm blank/low-contrast center, reserved for app-rendered text. The border should be a mix of natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs. The palette should match the front panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 24550 chars>",
+      "revised_prompt": "A premium 5x7 vertical flat print panel artwork featuring a decorative border or frame with a calm blank/low-contrast center, reserved for app-rendered text. The border should be a mix of natural motifs and subtle patterns, with a low-contrast interior and sparse edge/corner motifs. The palette should match the front panel. The center should be clean and text-safe, with generous margins. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 30194 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with subtle coordinating ornamentation near the lower area. Warm small-business thank-you background: cream field with citrus slices, soft gold ribbon curves, deep teal leaves, subtle boutique awning silhouette, kraft paper texture, botanical sprigs, and handmade local-shop pattern details. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

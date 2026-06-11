@@ -1,8 +1,43 @@
-import { ArrowRight, CalendarPlus, ChevronDown } from "lucide-react";
+import { ArrowRight, CalendarPlus, ChevronDown, Eye, HandHeart, ShieldCheck, Store, WandSparkles } from "lucide-react";
 import { useState } from "react";
 import type { CardDraft } from "../../src/freeMvp";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";
+
+const howItWorksSteps = [
+  {
+    icon: <CalendarPlus size={18} />,
+    title: "Pick a moment",
+    body: "Choose an occasion, paste an invite, or connect your calendar so birthdays and anniversaries find you."
+  },
+  {
+    icon: <HandHeart size={18} />,
+    title: "Add what makes them special",
+    body: "A shared memory or an inside joke is enough — messy notes are fine."
+  },
+  {
+    icon: <WandSparkles size={18} />,
+    title: "We draft, you decide",
+    body: "AI helps draft the words and artwork for a real 5 × 7 folded card. Every word stays editable."
+  },
+  {
+    icon: <Eye size={18} />,
+    title: "Review the proof",
+    body: "Check all four panels and approve the proof before anything is printed."
+  },
+  {
+    icon: <Store size={18} />,
+    title: "Print at Walgreens",
+    body: "Walgreens handles the store, the price, and the payment. Pick the card up the same day."
+  }
+];
+
+const trustPoints = [
+  "Free to create — you pay Walgreens only if you print.",
+  "You review and approve every word before checkout.",
+  "Calendar and email connections are optional and separate from your account.",
+  "Saved personal details are yours to edit or delete at any time."
+];
 
 const occasions: Array<{ label: string; value: string; color: string }> = [
   { label: "Birthday", value: "birthday", color: "#d9a514" },
@@ -81,6 +116,32 @@ export function HomeView({
             <ImportSection {...importProps} />
           </div>
         ) : null}
+      </section>
+
+      <section className="howitworks reveal reveal-3" aria-label="How CustomCard works">
+        <h2>How it works</h2>
+        <div className="howitworksGrid">
+          {howItWorksSteps.map((step, index) => (
+            <article className="howstep" key={step.title}>
+              <span className="howstepIcon">{step.icon}</span>
+              <span className="howstepNum">{index + 1}</span>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="trustnotes reveal reveal-3" aria-label="Pricing and privacy promises">
+        <div className="trustnotesHead">
+          <ShieldCheck size={18} />
+          <h2>Free to create. Private by default.</h2>
+        </div>
+        <ul>
+          {trustPoints.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
       </section>
     </>
   );

@@ -1,11 +1,19 @@
 import { ArrowRight, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { CardDraft, MemoryItem } from "../../src/freeMvp";
+import type { DraftProgressStatus } from "../draftProgress";
 import { Field, PanelArt } from "../ui";
+
+const draftStatusLabels: Record<DraftProgressStatus, string> = {
+  draft: "Draft",
+  "in-progress": "In progress",
+  "ready-for-review": "Ready to review"
+};
 
 /** "My cards" hub: card in progress, personal details (notes), and account-backed history. */
 export function NotesView({
   draft,
+  draftStatus,
   hasProgress,
   isSignedIn,
   memories,
@@ -17,12 +25,13 @@ export function NotesView({
   onStartCard
 }: {
   draft: CardDraft;
+  draftStatus: DraftProgressStatus;
   hasProgress: boolean;
   isSignedIn: boolean;
   memories: MemoryItem[];
   form: { recipient: string; note: string };
   onForm: (form: { recipient: string; note: string }) => void;
-  onAdd: () => void;
+  onAdd: (saveToAccount: boolean) => void;
   onDelete: (memoryId: string) => void;
   onResume: () => void;
   onStartCard: () => void;
@@ -30,6 +39,7 @@ export function NotesView({
   const canAdd = form.recipient.trim().length > 0 && form.note.trim().length > 0;
   const isEmpty = !hasProgress && memories.length === 0;
   const [detailFormOpen, setDetailFormOpen] = useState(false);
+  const [saveToAccount, setSaveToAccount] = useState(false);
 
   /* Nothing here yet — keep it to one quiet card instead of empty scaffolding. */
   if (isEmpty && !detailFormOpen) {
@@ -68,9 +78,9 @@ export function NotesView({
         <button className="resume reveal reveal-1" onClick={onResume} type="button">
           <PanelArt panel={draft.panels[0]} />
           <span>
-            <span className="resume-kicker">In progress</span>
+            <span className="resume-kicker">{draftStatusLabels[draftStatus]}</span>
             <strong>{draft.panels[0].headline}</strong>
-            <span>Keep designing</span>
+            <span>{draftStatus === "ready-for-review" ? "Review the proof" : "Keep designing"}</span>
           </span>
           <ArrowRight className="resume-arrow" size={20} />
         </button>
@@ -93,8 +103,27 @@ export function NotesView({
               value={form.note}
             />
           </Field>
+          <div className="switchrow">
+            <div>
+              <strong>Remember this for future cards</strong>
+              <small>
+                {isSignedIn
+                  ? saveToAccount
+                    ? "Saved to your account — delete it here whenever you like."
+                    : "Off means it shapes your next card only and is never saved to your account."
+                  : "Sign in to save details to your account. Until then, details stay on this device."}
+              </small>
+            </div>
+            <button
+              aria-label="Remember this detail for future cards"
+              className="switch"
+              data-on={saveToAccount}
+              onClick={() => setSaveToAccount((current) => !current)}
+              type="button"
+            />
+          </div>
           <div>
-            <button className="btn btn-primary" disabled={!canAdd} onClick={onAdd} type="button">
+            <button className="btn btn-primary" disabled={!canAdd} onClick={() => onAdd(saveToAccount)} type="button">
               Save detail
             </button>
           </div>

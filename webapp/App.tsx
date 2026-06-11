@@ -54,6 +54,7 @@ import { HomeView } from "./views/HomeView";
 import { LegalView } from "./views/LegalView";
 import { NotesView } from "./views/NotesView";
 import { PrintView } from "./views/PrintView";
+import { SettingsView } from "./views/SettingsView";
 import { StudioView } from "./views/StudioView";
 
 const configuredAdminEmails = new Set(
@@ -184,7 +185,7 @@ export default function App() {
     setWorkspace(next);
   }
 
-  function addNote() {
+  function addNote(saveToAccount: boolean) {
     const nextWorkspace = addApprovedRelationshipMemory(
       workspace,
       customerIdentity,
@@ -192,7 +193,7 @@ export default function App() {
       reviewerReferenceDate
     );
     saveWorkspace(nextWorkspace);
-    if (isSignedIn) {
+    if (isSignedIn && saveToAccount) {
       setExportStatus("Note saving");
       void postCustomerMutation(getToken, "/api/memories/review", {
           recipientName: memoryForm.recipient,
@@ -202,7 +203,7 @@ export default function App() {
         .then(() => setExportStatus("Note saved"))
         .catch(() => setExportStatus("Note saved locally; sync failed"));
     } else {
-      setExportStatus("Note saved");
+      setExportStatus(saveToAccount ? "Note saved" : "Saved for your next card only");
     }
     setMemoryForm({ recipient: memoryForm.recipient, note: "" });
   }
@@ -508,6 +509,7 @@ export default function App() {
         {!isAdminView && visibleCustomerView === "memory" ? (
           <NotesView
             draft={displayDraft}
+            draftStatus={draftProgress.status}
             form={memoryForm}
             hasProgress={hasProgress}
             isSignedIn={Boolean(isSignedIn)}
@@ -517,6 +519,15 @@ export default function App() {
             onForm={setMemoryForm}
             onResume={() => openView("studio")}
             onStartCard={() => openView("customer")}
+          />
+        ) : null}
+
+        {!isAdminView && visibleCustomerView === "settings" ? (
+          <SettingsView
+            getToken={getToken}
+            isSignedIn={Boolean(isSignedIn)}
+            userEmail={customerEmail}
+            userName={user?.fullName ?? ""}
           />
         ) : null}
 

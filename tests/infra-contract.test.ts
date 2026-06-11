@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 import { capacityProfiles, summarizeCapacityPlan, validateCapacityProfiles } from "../src/capacityPlan";
 
 function read(path: string): string {
@@ -600,6 +601,10 @@ describe("production infrastructure contract", () => {
     const walgreensCallbackHandler = read("api/walgreens/checkout/callback.js");
     const apiServer = read("scripts/api-server.mjs");
     const apiRuntime = read("scripts/api-runtime.mjs");
+    const nestedRouteHandlers = apiRouteContracts
+      .map((route) => route.path)
+      .filter((path) => path.split("/").length > 3)
+      .map((path) => `${path.slice(1)}.js`);
 
     expect(vercel).toMatchObject({
       buildCommand: "npm run build",
@@ -614,6 +619,9 @@ describe("production infrastructure contract", () => {
     expect(`${calendarStartHandler}\n${oauthCallbackHandler}`).toContain("handleApiRequest");
     expect(`${aiCardGenerateHandler}\n${aiChatRespondHandler}`).toContain("handleApiRequest");
     expect(`${walgreensUploadHandler}\n${walgreensSessionHandler}\n${walgreensCallbackHandler}`).toContain("handleApiRequest");
+    for (const routeHandler of nestedRouteHandlers) {
+      expect(read(routeHandler), routeHandler).toContain("handleApiRequest");
+    }
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
     expect(apiRuntime).toContain("DATABASE_URL");

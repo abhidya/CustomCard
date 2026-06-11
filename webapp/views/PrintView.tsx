@@ -1,4 +1,4 @@
-import { ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
+import { CheckCircle2, ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CardPanel } from "../../src/customerWorkflow";
 import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
@@ -7,9 +7,18 @@ import {
   buildCheckoutCustomer,
   mergeCheckoutCustomerDefaults,
   updateCheckoutCustomerField,
+  validateCheckoutCustomer,
   type CheckoutCustomerDefaults,
   type CheckoutCustomerField
 } from "../checkoutModel";
+import {
+  emptyProofChecklistState,
+  isProofApproved,
+  proofApprovalProgressLabel,
+  proofChecklistItems,
+  toggleProofChecklistItem,
+  type ProofChecklistState
+} from "../proofApproval";
 import { createWalgreensCheckoutSession } from "../walgreensCheckoutAdapter";
 
 const speedLabels: Record<string, string> = {
@@ -48,6 +57,10 @@ export function PrintView({
     checkoutUrl?: string;
   } | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [proofChecklist, setProofChecklist] = useState<ProofChecklistState>(emptyProofChecklistState);
+  const [showFieldIssues, setShowFieldIssues] = useState(false);
+  const proofApproved = isProofApproved(proofChecklist);
+  const fieldIssues = validateCheckoutCustomer(checkoutCustomer);
   const estimateByVendor = new Map<string, PrinterPriceEstimate>();
   for (const estimate of pricingComparison.rankedKnownPrices) {
     if (!estimateByVendor.has(estimate.observation.vendorId)) {
@@ -80,7 +93,11 @@ export function PrintView({
   }
 
   async function openWalgreensCheckout() {
-    if (!canUseWalgreensCheckout || checkoutLoading) return;
+    if (!canUseWalgreensCheckout || !proofApproved || checkoutLoading) return;
+    if (fieldIssues.length > 0) {
+      setShowFieldIssues(true);
+      return;
+    }
     setCheckoutLoading(true);
     setCheckoutStatus({
       tone: "warn",
@@ -208,6 +225,28 @@ export function PrintView({
         </div>
 
         <div className="printpane reveal reveal-2">
+          <section className="panelcard printsection proofapproval" aria-label="Proof approval checklist">
+            <h2>Approve your proof</h2>
+            <p>This page is the print proof — what you see in the panels is exactly what prints. Check every line before checkout.</p>
+            <div className="proofchecklist">
+              {proofChecklistItems.map((item) => (
+                <label className="proofcheck" key={item.id}>
+                  <input
+                    aria-label={item.label}
+                    checked={proofChecklist[item.id] === true}
+                    onChange={() => setProofChecklist((current) => toggleProofChecklistItem(current, item.id))}
+                    type="checkbox"
+                  />
+                  <span>{item.label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="proofprogress" data-approved={proofApproved} aria-live="polite">
+              <CheckCircle2 size={16} />
+              {proofApprovalProgressLabel(proofChecklist)}
+            </div>
+          </section>
+
           <section className="panelcard printsection">
             <h2>Hosted checkout</h2>
             <div className="checkoutbox">
@@ -251,15 +290,25 @@ export function PrintView({
                   />
                 </label>
               </div>
+              {showFieldIssues && fieldIssues.length > 0 ? (
+                <ul className="checkoutissues" aria-live="polite">
+                  {fieldIssues.map((issue) => (
+                    <li key={issue.field}>{issue.message}</li>
+                  ))}
+                </ul>
+              ) : null}
               <button
-                className="btn btn-ghost"
-                disabled={!canUseWalgreensCheckout || checkoutLoading}
+                className="btn btn-primary"
+                disabled={!canUseWalgreensCheckout || !proofApproved || checkoutLoading}
                 onClick={openWalgreensCheckout}
                 type="button"
               >
-                {checkoutLoading ? "Preparing..." : "Try hosted checkout"}
+                {checkoutLoading ? "Preparing..." : "Continue to Walgreens"}
                 <ExternalLink size={16} />
               </button>
+              {!proofApproved ? (
+                <span className="checkouthint">Finish the proof approval checklist to unlock Walgreens checkout.</span>
+              ) : null}
               {checkoutStatus ? (
                 <div className={`checkoutstatus checkoutstatus-${checkoutStatus.tone}`} aria-live="polite">
                   <strong>{checkoutStatus.title}</strong>

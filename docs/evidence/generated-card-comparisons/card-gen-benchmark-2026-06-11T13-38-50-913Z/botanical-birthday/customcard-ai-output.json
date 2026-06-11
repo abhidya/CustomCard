@@ -1,0 +1,126 @@
+{
+  "draft_id": "ai-mq9joe31-sara",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Blooming Wishes",
+      "palette": [
+        "warm colors",
+        "soft greens",
+        "cream paper"
+      ],
+      "motifs": [
+        "ferns",
+        "wildflowers",
+        "morning light"
+      ],
+      "border_style": "simple, decorative, deep green accent",
+      "front_back_pairing": "warm color palette, botanical watercolor style",
+      "interior_pairing": "deep green accent, decorative border style"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Wishing You a Blooming Year Ahead",
+        "body": "Happy Birthday, Sara",
+        "art_direction": "Front panel: use the botanical watercolor style with a warm color palette, and a simple border style. Reserve a clean text-safe area for the headline and body. The headline should be centered and slightly larger than the body.",
+        "image_prompt": "A 5x7 vertical flat print panel artwork featuring a delicate botanical watercolor illustration of ferns and tiny wildflowers in a soft, warm color palette, with a simple cream-colored border style, and a clean text-safe area reserved for the headline and body.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thinking of you",
+        "body": "As you celebrate another year of life, I hope your path is lined with the beauty of nature, just like the fern that brings you joy every morning.",
+        "art_direction": "Inside-left panel: use a decorative border style with a deep green accent, and a quiet center reserved for the body. The body should be a scene-setting message that feels like a gentle opening note.",
+        "image_prompt": "A 5x7 vertical flat print panel artwork featuring a decorative border style with a deep green accent, and a quiet center reserved for a gentle scene-setting message about the fern and the beauty of nature, with a clean text-safe area and generous margins.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From the heart",
+        "body": "Wishing you a year filled with love, laughter, and adventure, just as you fill my life with joy and warmth. With love and appreciation, Manny.",
+        "art_direction": "Inside-right panel: use a decorative border style with a deep green accent, and a quiet center reserved for the body. The body should be a personal message that feels like a natural sign-off.",
+        "image_prompt": "A 5x7 vertical flat print panel artwork featuring a decorative border style with a deep green accent, and a quiet center reserved for a personal message, with a clean text-safe area and generous margins.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "back",
+        "headline": "CustomCard",
+        "body": "May your day be as bright and beautiful as you are.",
+        "art_direction": "Back panel: use a simple border style and a quiet, polished design that feels like an optional finishing touch.",
+        "image_prompt": "A 5x7 vertical flat print panel artwork featuring a simple border style and a quiet, polished design with a clean text-safe area reserved for a short message, and a low-contrast interior with sparse edge/corner motifs.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      }
+    ],
+    "memory_citations": [
+      "She keeps a fern by the kitchen window.",
+      "She loves morning hikes and tiny trail flowers.",
+      "The birthday card should feel personal without feeling overly sentimental."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 30174 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy. Warm birthday background: botanical greenery, soft flowers, small candle shapes, cheerful confetti, morning-light palette, refined celebratory illustration pattern. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 30186 chars>",
+      "revised_prompt": "A 5x7 vertical flat print panel artwork featuring a decorative border style with a deep green accent, and a quiet center reserved for a gentle scene-setting message about the fern and the beauty of nature, with a clean text-safe area and generous margins. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 24554 chars>",
+      "revised_prompt": "A 5x7 vertical flat print panel artwork featuring a decorative border style with a deep green accent, and a quiet center reserved for a personal message, with a clean text-safe area and generous margins. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 24546 chars>",
+      "revised_prompt": "A 5x7 vertical flat print panel artwork featuring a simple border style and a quiet, polished design with a clean text-safe area reserved for a short message, and a low-contrast interior with sparse edge/corner motifs. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}
