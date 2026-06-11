@@ -7,19 +7,22 @@ import {
   removeApprovedRelationshipMemory,
   type CardDraftInput,
   type CardPanel,
-  type LocalWorkspace,
-  type OpportunityDecision,
-  type VendorId
+  type LocalWorkspace
 } from "../src/customerWorkflow";
-import { buildPanelSvgExportFile, type PrintExportFile } from "../src/printExport";
-import { generatedLegalDocumentLinks } from "../src/legalCompliance";
+import { buildPanelSvgExportFile } from "../src/printExport";
+import { legalDocumentLinks } from "../src/legalCompliance";
 import {
   initialViewFromLocation,
   reviewerReferenceDate,
   useAppState,
   type ViewId
 } from "../src/appStateOrchestrator";
-import type { SupportedLocaleCode } from "../src/localization";
+import {
+  copyHandoffChecklist,
+  downloadExportFiles,
+  postCustomerMutation,
+  useDraftAutosave
+} from "./customerShellCommands";
 import { buildDraftProgressState } from "./draftProgress";
 import {
   adminNavItems,
@@ -222,43 +225,19 @@ export default function App() {
   }
 
   /* ---------- downloads ---------- */
-  function downloadExportFile(file: PrintExportFile) {
-    const blob = new Blob([file.text], { type: file.mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = file.fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  }
-
   function downloadPrintPackage() {
-    printPackage.files.forEach((file, index) => {
-      window.setTimeout(() => downloadExportFile(file), index * 80);
-    });
+    downloadExportFiles(printPackage.files);
     setExportStatus("Print package downloading");
   }
 
   function downloadPanels() {
-    displayPanels.forEach((panel, index) => {
-      window.setTimeout(() => downloadExportFile(buildPanelSvgExportFile(panel, displayDraft.id)), index * 80);
-    });
+    downloadExportFiles(displayPanels.map((panel) => buildPanelSvgExportFile(panel, displayDraft.id)));
     setExportStatus("Card panels downloading");
   }
 
   async function copyChecklist() {
-    const text = [
-      `${handoff.vendorName} print checklist`,
-      ...handoff.checklist.map((item, index) => `${index + 1}. ${item}`)
-    ].join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      setExportStatus("Checklist copied");
-    } catch {
-      setExportStatus("Couldn't reach the clipboard");
-    }
+    const result = await copyHandoffChecklist(handoff);
+    setExportStatus(result === "copied" ? "Checklist copied" : "Couldn't reach the clipboard");
   }
 
   /* ---------- toast ---------- */
@@ -289,11 +268,17 @@ export default function App() {
         ? `Google Calendar connected${imported ? ` · ${imported} event${imported === "1" ? "" : "s"} imported` : ""}`
         : error || "Google Calendar connection failed"
     );
+    if (calendarConnection === "connected") {
+      setInviteText(buildCalendarImportReviewText(imported));
+      setOpportunityDecision("pending");
+      setActiveView("opportunities");
+      url.searchParams.set("view", "opportunities");
+    }
     url.searchParams.delete("calendarConnection");
     url.searchParams.delete("calendarImported");
     url.searchParams.delete("calendarError");
-    window.history.replaceState({ customCardView: initialViewFromLocation() }, "", url);
-  }, [setExportStatus]);
+    window.history.replaceState({ customCardView: calendarConnection === "connected" ? "opportunities" : initialViewFromLocation() }, "", url);
+  }, [setActiveView, setExportStatus, setInviteText, setOpportunityDecision]);
 
   /* ---------- live CTA ---------- */
   const estimate = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
@@ -345,7 +330,7 @@ export default function App() {
       </a>
       <header className="topbar">
         <button className="wordmark" onClick={() => openView("customer")} type="button">
-          <span className="wordmark-glyph">C</span>
+          <img alt="" aria-hidden="true" className="wordmark-glyph wordmark-logo" src="/icon-192.png" />
           <span className="wordmark-name">CustomCard</span>
         </button>
         {showTopNav ? (
@@ -542,95 +527,17 @@ export default function App() {
   );
 }
 
-interface DraftAutosaveInput {
-  draftInput: CardDraftInput;
-  enabled: boolean;
-  getToken: () => Promise<string | null>;
-  localeCode: SupportedLocaleCode;
-  opportunityDecision: OpportunityDecision;
-  opportunityId: string;
-  setDraftInput: (updater: ((current: CardDraftInput) => CardDraftInput) | CardDraftInput) => void;
-  setLocaleCode: (code: SupportedLocaleCode) => void;
-  setOpportunityDecision: (decision: OpportunityDecision) => void;
-  setVendorId: (vendorId: VendorId) => void;
-  validationPassed: boolean;
-  vendorId: VendorId;
-}
-
-interface SavedDraftState {
-  draftInput?: CardDraftInput;
-  localeCode?: SupportedLocaleCode;
-  opportunityDecision?: OpportunityDecision;
-  vendorId?: VendorId;
-}
-
-function useDraftAutosave({
-  draftInput,
-  enabled,
-  getToken,
-  localeCode,
-  opportunityDecision,
-  opportunityId,
-  setDraftInput,
-  setLocaleCode,
-  setOpportunityDecision,
-  setVendorId,
-  validationPassed,
-  vendorId
-}: DraftAutosaveInput) {
-  const hydrated = useRef(false);
-  const draftProgress = useMemo(
-    () => buildDraftProgressState(draftInput, validationPassed),
-    [draftInput, validationPassed]
-  );
-  const draftSnapshot = useMemo(
-    () =>
-      JSON.stringify({
-        draftInput,
-        localeCode,
-        opportunityDecision,
-        opportunityId,
-        status: draftProgress.status,
-        vendorId
-      }),
-    [draftInput, draftProgress.status, localeCode, opportunityDecision, opportunityId, vendorId]
-  );
-
-  useEffect(() => {
-    if (!enabled) {
-      hydrated.current = false;
-      return;
-    }
-
-    let cancelled = false;
-    getCustomerJson(getToken, "/api/customer/draft-state/current")
-      .then((payload) => {
-        if (cancelled) return;
-        const saved = payload?.draftState as SavedDraftState | undefined;
-        if (saved?.draftInput) setDraftInput((current) => ({ ...current, ...saved.draftInput }));
-        if (saved?.localeCode) setLocaleCode(saved.localeCode);
-        if (saved?.opportunityDecision) setOpportunityDecision(saved.opportunityDecision);
-        if (saved?.vendorId) setVendorId(saved.vendorId);
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (!cancelled) hydrated.current = true;
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [enabled, getToken, setDraftInput, setLocaleCode, setOpportunityDecision, setVendorId]);
-
-  useEffect(() => {
-    if (!enabled || !hydrated.current || !draftProgress.hasMeaningfulProgress) return;
-    const timer = window.setTimeout(() => {
-      const body = JSON.parse(draftSnapshot) as Record<string, unknown>;
-      void postCustomerMutation(getToken, "/api/customer/draft-state", body);
-    }, 700);
-
-    return () => window.clearTimeout(timer);
-  }, [draftProgress.hasMeaningfulProgress, draftSnapshot, enabled, getToken]);
+function buildCalendarImportReviewText(imported: string | null): string {
+  const count = Number(imported);
+  const eventLabel = Number.isFinite(count) && count > 0
+    ? `${count} Google Calendar event${count === 1 ? "" : "s"}`
+    : "Google Calendar events";
+  return [
+    "Google Calendar import review.",
+    `${eventLabel} imported as read-only event metadata.`,
+    "Titles and dates are ready for review before any card is created.",
+    "Pick the event and confirm the recipient before drafting."
+  ].join("\n");
 }
 
 function useViewportWidth(): number | undefined {
@@ -647,45 +554,6 @@ function useViewportWidth(): number | undefined {
   }, []);
 
   return viewportWidth;
-}
-
-async function getCustomerJson(getToken: () => Promise<string | null>, path: string): Promise<Record<string, unknown> | undefined> {
-  const headers = await buildCustomerHeaders(getToken);
-  const response = await fetch(path, { headers });
-  if (!response.ok) return undefined;
-  return response.json() as Promise<Record<string, unknown>>;
-}
-
-async function postCustomerMutation(
-  getToken: () => Promise<string | null>,
-  path: string,
-  body: Record<string, unknown>
-): Promise<void> {
-  const headers = await buildCustomerHeaders(getToken);
-  headers.set("Content-Type", "application/json");
-  headers.set("X-Idempotency-Key", buildBrowserIdempotencyKey(path));
-  await fetch(path, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body)
-  });
-}
-
-async function buildCustomerHeaders(getToken: () => Promise<string | null>): Promise<Headers> {
-  const headers = new Headers();
-  try {
-    const token = await getToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  } catch {
-    /* signed-in UI stays usable while the API session recovers */
-  }
-  return headers;
-}
-
-function buildBrowserIdempotencyKey(path: string): string {
-  const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "mutation";
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${routeSlug}-${crypto.randomUUID()}`;
-  return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 interface AdminAccess extends AdminAccessPolicy {
@@ -753,9 +621,9 @@ function AdminRoute({
 
 function AppFooter() {
   return (
-    <footer className="appFooter" aria-label="Generated legal documents">
-      <nav aria-label="Generated legal document links">
-        {generatedLegalDocumentLinks.map((link) => (
+    <footer className="appFooter" aria-label="Legal documents">
+      <nav aria-label="Legal document links">
+        {legalDocumentLinks.map((link) => (
           <a href={link.path} key={link.id}>
             {link.label}
           </a>

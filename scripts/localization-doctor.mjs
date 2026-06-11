@@ -8,6 +8,7 @@ const files = {
   webappStudio: "webapp/views/StudioView.tsx",
   apiContracts: "src/apiContracts.ts",
   apiServer: "scripts/api-server.mjs",
+  apiRouteFamilies: "scripts/api-route-families.mjs",
   mobileExperience: "apps/mobile/src/customerExperience.ts",
   mobileApp: "apps/mobile/src/App.tsx",
   mobileDoctor: "apps/mobile/scripts/doctor.mjs",
@@ -46,7 +47,7 @@ const checks = [
     "reports missing bundles",
     "Unsafe localization claim"
   ]),
-  checkIncludes("surfaces", "web-and-api-localization-surfaces", `${contents.app}\n${contents.webappStudio}\n${contents.apiContracts}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "web-and-api-localization-surfaces", `${contents.app}\n${contents.webappStudio}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.apiRouteFamilies}`, [
     "Card language",
     "Locale readiness",
     "summarizeLocalizationReadiness",
@@ -70,7 +71,7 @@ const checks = [
     "npm run localization:doctor",
     "src/localization.ts"
   ]),
-  checkAbsent("safety", "no-live-localization-provider", `${contents.localization}\n${contents.apiServer}\n${contents.mobileExperience}`, [
+  checkAbsent("safety", "no-live-localization-provider", `${contents.localization}\n${contents.apiServer}\n${contents.apiRouteFamilies}\n${contents.mobileExperience}`, [
     "liveTranslationProvider: true"
   ])
 ];

@@ -2,7 +2,7 @@ import { CheckCircle2, ExternalLink, FileText, Globe2, Scale, ShieldCheck } from
 import { useState, type ReactNode } from "react";
 import {
   freeLegalToolOptions,
-  generatedLegalDocumentLinks,
+  legalDocumentLinks,
   type LegalComplianceItem,
   type LegalComplianceRegion,
   type LegalComplianceSummary
@@ -47,8 +47,8 @@ export function LegalView({
         <p className="eyebrow">Legal readiness</p>
         <h1>EU and US requirements</h1>
         <p>
-          Generated policy drafts, free generators, and consent tools are linked here; CustomCard still keeps
-          public compliance claims blocked until the generated policies, consent setup, and review evidence are attached.
+          Policy drafts, free legal tools, and consent tools are linked here; CustomCard still keeps
+          public compliance claims blocked until policies, consent setup, and review evidence are attached.
         </p>
       </header>
 
@@ -56,7 +56,7 @@ export function LegalView({
         <LegalMetric label="EU items" value={`${summary.euRequirements}`} />
         <LegalMetric label="US items" value={`${summary.usRequirements}`} />
         <LegalMetric label="Free tools" value={`${summary.freeToolOptions}`} />
-        <LegalMetric label="Docs linked" value={`${generatedLegalDocumentLinks.length}`} />
+        <LegalMetric label="Docs linked" value={`${legalDocumentLinks.length}`} />
       </section>
 
       <section className="legalPanel legalPolicyPanel" aria-label="Policy links">
@@ -65,15 +65,15 @@ export function LegalView({
             <FileText size={18} />
           </span>
           <div>
-            <h2>Generated policy docs</h2>
-            <p>The public footer points to these generated drafts; source tools stay attached for refresh and review.</p>
+            <h2>Policy docs</h2>
+            <p>The public footer points to these policy drafts; source tools stay attached for refresh and review.</p>
           </div>
         </div>
         <div className="legalLinkGrid">
-          {generatedLegalDocumentLinks.map((link) => (
+          {legalDocumentLinks.map((link) => (
             <a className="legalLinkCard" href={link.path} key={link.id}>
               <span>{link.label}</span>
-              <strong>Generated draft</strong>
+              <strong>Policy draft</strong>
               <small>Source: {link.sourceToolLabel}</small>
               <ExternalLink size={15} />
             </a>

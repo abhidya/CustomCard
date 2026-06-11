@@ -69,6 +69,7 @@ import {
 } from "./productionReadiness";
 import { type AiFlowAdminConfig, type AiFlowConfigSummary } from "./aiFlowConfig";
 import { type AiGenerationJobEvidence } from "./aiGenerationJobs";
+import { AdminReadinessMiniList, readinessStatusClass } from "./adminReadinessRenderer";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
 type AdminPortalStatusFilter = AdminPortalStatus | "all";
@@ -683,7 +684,7 @@ export function AdminPanelView({
           </div>
           <LegalComplianceList items={legalComplianceItems} />
           <p className="panelNote">
-            These rows track EU/US legal requirements and free generator/CMP paths; they are not attorney-approved
+            These rows track EU/US legal requirements and free policy/CMP paths; they are not attorney-approved
             policies and they keep launch blocked until evidence is attached.
           </p>
         </article>
@@ -1428,173 +1429,172 @@ export function AdaptersView({ runtimeReadiness }: { runtimeReadiness: Map<strin
 
 function AdapterMiniList({ adapters }: { adapters: ProviderAdapter[] }) {
   return (
-    <div className="adapterMiniList">
-      {adapters.map((adapter) => (
-        <div className={`adapterMini ${adapter.status}`} key={adapter.id}>
-          <span>{capabilityLabels[adapter.capability]}</span>
-          <strong>{adapter.label}</strong>
-          <small>{providerStatusLabel(adapter.status)}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={adapters.map((adapter) => ({
+        id: adapter.id,
+        eyebrow: capabilityLabels[adapter.capability],
+        label: adapter.label,
+        detail: providerStatusLabel(adapter.status),
+        className: adapter.status
+      }))}
+    />
   );
 }
 
 function ProductionGateList({ gates }: { gates: ProductionLaunchGate[] }) {
   return (
-    <div className="adapterMiniList">
-      {gates.map((gate) => (
-        <div className={`adapterMini ${gate.status === "blocked" ? "blocked" : "credential-gated"}`} key={gate.id}>
-          <span>{gate.category}</span>
-          <strong>{gate.label}</strong>
-          <small>{gate.status === "blocked" ? "Blocked" : "Evidence missing"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={gates.map((gate) => ({
+        id: gate.id,
+        eyebrow: gate.category,
+        label: gate.label,
+        detail: gate.status === "blocked" ? "Blocked" : "Evidence missing",
+        className: gate.status === "blocked" ? "blocked" : "credential-gated"
+      }))}
+    />
   );
 }
 
 function ExternalAuditList({ items }: { items: ExternalAuditReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${item.status === "certification-blocked" ? "blocked" : "credential-gated"}`} key={item.id}>
-          <span>{item.category}</span>
-          <strong>{item.label}</strong>
-          <small>{externalAuditStatusLabel(item.status)}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.category,
+        label: item.label,
+        detail: externalAuditStatusLabel(item.status),
+        className: readinessStatusClass(item.status, { blocked: ["certification-blocked"] })
+      }))}
+    />
   );
 }
 
 function LegalComplianceList({ items }: { items: LegalComplianceItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${legalComplianceStatusClass(item.status)}`} key={item.id}>
-          <span>{item.region.toUpperCase()} · {item.category}</span>
-          <strong>{item.label}</strong>
-          <small>{item.status === "repo-local-ready" ? "Local contract" : "Evidence required"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: `${item.region.toUpperCase()} · ${item.category}`,
+        label: item.label,
+        detail: item.status === "repo-local-ready" ? "Local contract" : "Evidence required",
+        className: readinessStatusClass(item.status)
+      }))}
+    />
   );
 }
 
 function E2eCoverageList({ items }: { items: E2eCoverageItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className="adapterMini ready-local" key={item.id}>
-          <span>{item.surface}</span>
-          <strong>{item.label}</strong>
-          <small>{e2eAutomationLabel(item.automationType)}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.surface,
+        label: item.label,
+        detail: e2eAutomationLabel(item.automationType),
+        className: "ready-local"
+      }))}
+    />
   );
 }
 
 function ObservabilityReadinessList({ items }: { items: ObservabilityReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${item.status === "repo-local-ready" ? "ready-local" : "credential-gated"}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.liveIngestionEnabled ? "Live ingestion" : "Live ingestion off"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.liveIngestionEnabled ? "Live ingestion" : "Live ingestion off",
+        className: readinessStatusClass(item.status)
+      }))}
+    />
   );
 }
 
 function AiProviderReadinessList({ items }: { items: AiProviderReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${item.status === "repo-local-ready" ? "ready-local" : "credential-gated"}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.liveProviderCallsEnabled ? "Live AI" : "Live AI off"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.liveProviderCallsEnabled ? "Live AI" : "Live AI off",
+        className: readinessStatusClass(item.status)
+      }))}
+    />
   );
 }
 
 function RetailFulfillmentReadinessList({ items }: { items: RetailFulfillmentReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${retailFulfillmentStatusClass(item.status)}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.directOrderEnabled ? "Direct orders" : "Orders off"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.directOrderEnabled ? "Direct orders" : "Orders off",
+        className: readinessStatusClass(item.status, { blocked: ["certification-blocked"] })
+      }))}
+    />
   );
 }
 
 function PaymentReadinessList({ items }: { items: PaymentReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${paymentReadinessStatusClass(item.status)}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.liveChargesEnabled ? "Live charge" : "Charges off"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.liveChargesEnabled ? "Live charge" : "Charges off",
+        className: readinessStatusClass(item.status, { blocked: ["certification-blocked"] })
+      }))}
+    />
   );
 }
 
 function MobileRenderReadinessList({ items }: { items: MobileRenderReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${mobileRenderReadinessStatusClass(item.status)}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.emulatorRenderProofAttached || item.nativeArtifactSigned ? "Proof attached" : "Proof missing"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.emulatorRenderProofAttached || item.nativeArtifactSigned ? "Proof attached" : "Proof missing",
+        className: readinessStatusClass(item.status, { blocked: ["artifact-blocked"] })
+      }))}
+    />
   );
 }
 
 function HostedApiReadinessList({ items }: { items: HostedApiReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${hostedApiReadinessStatusClass(item.status)}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>
-            {item.publicRouteProofAttached || item.hostedDbConnected || item.hostedTokenVerificationAttached
-              ? "Proof attached"
-              : "Proof missing"}
-          </small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail:
+          item.publicRouteProofAttached || item.hostedDbConnected || item.hostedTokenVerificationAttached
+            ? "Proof attached"
+            : "Proof missing",
+        className: readinessStatusClass(item.status, { blocked: ["protection-blocked"] })
+      }))}
+    />
   );
 }
 
 function ReviewerDbSeedReadinessList({ items }: { items: ReviewerDbSeedReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${reviewerDbSeedReadinessStatusClass(item.status)}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.hostedSeedExecuted || item.hostedTokenProbeAttached ? "Proof attached" : "Proof missing"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.hostedSeedExecuted || item.hostedTokenProbeAttached ? "Proof attached" : "Proof missing",
+        className: readinessStatusClass(item.status)
+      }))}
+    />
   );
 }
 
@@ -1628,7 +1628,7 @@ function CloudArtifactProofRow({ item }: { item: CloudArtifactProofReadinessItem
   const stateLabel = item.status === "repo-local-ready" ? "Repo-local ready" : "Proof missing";
 
   return (
-    <div className={`cloudProofRow ${cloudArtifactProofReadinessStatusClass(item.status)}`}>
+    <div className={`cloudProofRow ${readinessStatusClass(item.status)}`}>
       <div>
         <span>{item.lane}</span>
         <strong>{item.label}</strong>
@@ -1640,61 +1640,16 @@ function CloudArtifactProofRow({ item }: { item: CloudArtifactProofReadinessItem
 
 function BusinessEngagementReadinessList({ items }: { items: BusinessEngagementReadinessItem[] }) {
   return (
-    <div className="adapterMiniList">
-      {items.map((item) => (
-        <div className={`adapterMini ${businessEngagementReadinessStatusClass(item.status)}`} key={item.id}>
-          <span>{item.lane}</span>
-          <strong>{item.label}</strong>
-          <small>{item.liveMessagesEnabled || item.crmWritesEnabled ? "Live enabled" : "Live off"}</small>
-        </div>
-      ))}
-    </div>
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: item.liveMessagesEnabled || item.crmWritesEnabled ? "Live enabled" : "Live off",
+        className: readinessStatusClass(item.status, { blocked: ["approval-blocked"] })
+      }))}
+    />
   );
-}
-
-function legalComplianceStatusClass(status: LegalComplianceItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  return "credential-gated";
-}
-
-function businessEngagementReadinessStatusClass(status: BusinessEngagementReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  if (status === "approval-blocked") return "blocked";
-  return "credential-gated";
-}
-
-function hostedApiReadinessStatusClass(status: HostedApiReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  if (status === "protection-blocked") return "blocked";
-  return "credential-gated";
-}
-
-function reviewerDbSeedReadinessStatusClass(status: ReviewerDbSeedReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  return "credential-gated";
-}
-
-function cloudArtifactProofReadinessStatusClass(status: CloudArtifactProofReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  return "credential-gated";
-}
-
-function mobileRenderReadinessStatusClass(status: MobileRenderReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  if (status === "artifact-blocked") return "blocked";
-  return "credential-gated";
-}
-
-function paymentReadinessStatusClass(status: PaymentReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  if (status === "certification-blocked") return "blocked";
-  return "credential-gated";
-}
-
-function retailFulfillmentStatusClass(status: RetailFulfillmentReadinessItem["status"]): ProviderStatus {
-  if (status === "repo-local-ready") return "ready-local";
-  if (status === "certification-blocked") return "blocked";
-  return "credential-gated";
 }
 
 function e2eAutomationLabel(type: E2eCoverageItem["automationType"]): string {

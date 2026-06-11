@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { buildPanelSvg, type CardPanel } from "../src/freeMvp";
+import { buildPanelSvg } from "../src/renderPacket";
+import type { CardPanel } from "../src/customerWorkflow";
 
 /** Render a real print panel as an image (same SVG the export produces). */
 export function PanelArt({ panel, className }: { panel: CardPanel; className?: string }) {

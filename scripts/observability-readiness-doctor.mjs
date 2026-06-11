@@ -1,10 +1,18 @@
-import { readFileSync } from "node:fs";
 import {
   observabilityReadinessItems,
   summarizeObservabilityReadiness,
   validateObservabilityReadiness
 } from "../src/observabilityReadinessData.mjs";
-import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlockers } from "./doctor-harness.mjs";
+import {
+  checkArrayIncludes,
+  checkExact,
+  checkIncludes,
+  checkItemsHaveKeys,
+  checkMinimum,
+  checkNoBlockers,
+  readTextFiles,
+  runDoctorReport
+} from "./doctor-harness.mjs";
 
 const files = {
   observabilityTest: "src/observabilityReadiness.test.ts",
@@ -17,9 +25,7 @@ const files = {
   docs: "docs/platform-expansion-design.md"
 };
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readTextFiles(files);
 
 const summary = summarizeObservabilityReadiness(observabilityReadinessItems);
 const validationBlockers = validateObservabilityReadiness(observabilityReadinessItems);
@@ -42,7 +48,27 @@ const checks = [
     "observability-provider-contracts",
     "incident-review-runbook"
   ]),
-  checkItemsShape("register", "observability-item-shape", observabilityReadinessItems),
+  checkItemsHaveKeys("register", "observability-item-shape", observabilityReadinessItems, [
+    "id",
+    "label",
+    "lane",
+    "status",
+    "providerAdapterIds",
+    "eventNames",
+    "piiRedacted",
+    "samplingPolicy",
+    "retentionDays",
+    "alertRouteRequired",
+    "liveIngestionEnabled",
+    "externalNetworkCalls",
+    "productionAlertEnabled",
+    "currentEvidence",
+    "requiredEvidence",
+    "blocker"
+  ], {
+    readyDetail: `Validated ${observabilityReadinessItems.length} executable observability item shapes.`,
+    missingPrefix: "Missing observability fields"
+  }),
   checkIncludes("tests", "observability-tests", contents.observabilityTest, [
     "tracks telemetry and alerting readiness without live ingestion claims",
     "covers provider contracts and critical alert events explicitly",
@@ -84,74 +110,12 @@ const checks = [
   ])
 ];
 
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
-});
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-observability-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      items: summary.total,
-      providerContracts: summary.providerContracts,
-      alertRoutesRequired: summary.alertRoutesRequired,
-      liveIngestionEnabled: summary.liveIngestionEnabled,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      productionAlertsEnabled: summary.productionAlertsEnabled,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
-    "id",
-    "label",
-    "lane",
-    "status",
-    "providerAdapterIds",
-    "eventNames",
-    "piiRedacted",
-    "samplingPolicy",
-    "retentionDays",
-    "alertRouteRequired",
-    "liveIngestionEnabled",
-    "externalNetworkCalls",
-    "productionAlertEnabled",
-    "currentEvidence",
-    "requiredEvidence",
-    "blocker"
-  ];
-  const missing = [];
-
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable observability item shapes.`
-        : `Missing observability fields: ${missing.join(", ")}`
-  };
-}
-
+runDoctorReport({
+  service: "customcard-observability-readiness-doctor",
+  items: summary.total,
+  providerContracts: summary.providerContracts,
+  alertRoutesRequired: summary.alertRoutesRequired,
+  liveIngestionEnabled: summary.liveIngestionEnabled,
+  externalNetworkCalls: summary.externalNetworkCalls,
+  productionAlertsEnabled: summary.productionAlertsEnabled
+}, checks);

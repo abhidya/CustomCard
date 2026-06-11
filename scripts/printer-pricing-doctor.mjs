@@ -7,6 +7,7 @@ const files = {
   app: "src/App.tsx",
   webappPrint: "webapp/views/PrintView.tsx",
   apiServer: "scripts/api-server.mjs",
+  apiRouteFamilies: "scripts/api-route-families.mjs",
   apiRuntime: "scripts/api-runtime.mjs",
   couponCollector: "scripts/printer-coupon-collector.mjs",
   couponProviderFeeds: "src/printerCouponProviderFeeds.ts",
@@ -70,7 +71,7 @@ const checks = [
     "https://services.walgreens.com/api/photo/order/coupon/v3"
   ]),
   checkMinimum("collection", "no-network-collection-rules", ruleCount, 8),
-  checkIncludes("collection", "blocked-live-quote-fields-and-coupon-sources", contents.pricing, [
+  checkIncludes("collection", "blocked-live-quote-fields-and-coupon-sources", `${contents.pricing}\n${contents.couponProviderFeeds}`, [
     '"tax"',
     '"coupon portal proof"',
     '"store stock"',
@@ -85,8 +86,8 @@ const checks = [
     "PrinterCouponCollectionPlan",
     "bestPriceRequiresProviderPortalEvidence",
     "canAffectBestPriceBeforePortalEvidence",
-    "fmtc-deal-feed",
-    "rakuten-coupon-feed",
+    "fmtcProviderFeed",
+    "rakutenCouponFeed",
     "walgreens-photo-card-design-entrypoint",
     "cvs-photo-card-design-entrypoint",
     "server-fetch-html",
@@ -114,7 +115,7 @@ const checks = [
     "expect(cvsOffer?.code).not.toBe(\"GRADUATION\")",
     "marks stale public printer pricing before showing it as current"
   ]),
-  checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.webappPrint}\n${contents.apiServer}`, [
+  checkIncludes("surfaces", "customer-pricing-surfaces", `${contents.app}\n${contents.webappPrint}\n${contents.apiServer}\n${contents.apiRouteFamilies}`, [
     "Estimated price",
     "Walgreens confirms the final total",
     "knownPriceCount: 12",
@@ -133,7 +134,7 @@ const checks = [
     "rankedKnownPrices",
     "liveQuote: false"
   ]),
-  checkIncludes("surfaces", "server-owned-coupon-portal-evidence-api", `${contents.apiServer}\n${contents.apiRuntime}\n${contents.apiContracts}\n${contents.couponPortalEvidenceData}\n${contents.retailOperationStartData}`, [
+  checkIncludes("surfaces", "server-owned-coupon-portal-evidence-api", `${contents.apiServer}\n${contents.apiRouteFamilies}\n${contents.apiRuntime}\n${contents.apiContracts}\n${contents.couponPortalEvidenceData}\n${contents.retailOperationStartData}`, [
     "retail-printer-coupon-portal-evidence",
     "/api/retail-printers/coupon-portal-evidence",
     "buildRetailPrinterCouponPortalEvidenceResponse",

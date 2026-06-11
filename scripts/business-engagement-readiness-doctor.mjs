@@ -1,10 +1,17 @@
-import { readFileSync } from "node:fs";
 import {
   businessEngagementReadinessItems,
   summarizeBusinessEngagementReadiness,
   validateBusinessEngagementReadiness
 } from "../src/businessEngagementReadinessData.mjs";
-import { checkArrayIncludes, checkExact, checkIncludes, checkNoBlockers } from "./doctor-harness.mjs";
+import {
+  checkArrayIncludes,
+  checkExact,
+  checkIncludes,
+  checkItemsHaveKeys,
+  checkNoBlockers,
+  readTextFiles,
+  runDoctorReport
+} from "./doctor-harness.mjs";
 
 const files = {
   readinessTest: "src/businessEngagementReadiness.test.ts",
@@ -22,9 +29,7 @@ const files = {
   verificationDocs: "docs/verification.md"
 };
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readTextFiles(files);
 
 const summary = summarizeBusinessEngagementReadiness(businessEngagementReadinessItems);
 const validationBlockers = validateBusinessEngagementReadiness(businessEngagementReadinessItems);
@@ -58,7 +63,31 @@ const checks = [
     "consent-suppression-privacy-gate",
     "campaign-analytics-feedback"
   ]),
-  checkItemsShape("register", "business-engagement-readiness-item-shape", businessEngagementReadinessItems),
+  checkItemsHaveKeys("register", "business-engagement-readiness-item-shape", businessEngagementReadinessItems, [
+    "id",
+    "label",
+    "lane",
+    "status",
+    "crmAdapterIds",
+    "workflowAdapterIds",
+    "notificationAdapterIds",
+    "lifecycleTriggers",
+    "requiresLiveOAuth",
+    "requiresCustomerOptIn",
+    "requiresSuppressionReview",
+    "requiresHumanReview",
+    "requiresLiveSendProof",
+    "liveMessagesEnabled",
+    "crmWritesEnabled",
+    "externalNetworkCalls",
+    "realOrdersEnabled",
+    "currentEvidence",
+    "requiredEvidence",
+    "blocker"
+  ], {
+    readyDetail: `Validated ${businessEngagementReadinessItems.length} executable business engagement readiness item shapes.`,
+    missingPrefix: "Missing business engagement readiness fields"
+  }),
   checkIncludes("tests", "business-engagement-readiness-tests", contents.readinessTest, [
     "tracks CRM lifecycle campaigns through customer outreach without claiming live sends",
     "covers popular CRM, workflow, notification, and lifecycle trigger contracts explicitly",
@@ -136,86 +165,23 @@ const checks = [
   ])
 ];
 
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
-});
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-business-engagement-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      items: summary.total,
-      repoLocalReady: summary.repoLocalReady,
-      evidenceMissing: summary.evidenceMissing,
-      approvalBlocked: summary.approvalBlocked,
-      crmAdapterContracts: summary.crmAdapterContracts,
-      workflowAdapterContracts: summary.workflowAdapterContracts,
-      notificationAdapterContracts: summary.notificationAdapterContracts,
-      lifecycleTriggerKinds: summary.lifecycleTriggerKinds,
-      liveOAuthRequired: summary.liveOAuthRequired,
-      optInRequired: summary.optInRequired,
-      suppressionReviewRequired: summary.suppressionReviewRequired,
-      humanReviewRequired: summary.humanReviewRequired,
-      liveSendProofRequired: summary.liveSendProofRequired,
-      liveMessagesEnabled: summary.liveMessagesEnabled,
-      crmWritesEnabled: summary.crmWritesEnabled,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      realOrdersEnabled: summary.realOrdersEnabled,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
-    "id",
-    "label",
-    "lane",
-    "status",
-    "crmAdapterIds",
-    "workflowAdapterIds",
-    "notificationAdapterIds",
-    "lifecycleTriggers",
-    "requiresLiveOAuth",
-    "requiresCustomerOptIn",
-    "requiresSuppressionReview",
-    "requiresHumanReview",
-    "requiresLiveSendProof",
-    "liveMessagesEnabled",
-    "crmWritesEnabled",
-    "externalNetworkCalls",
-    "realOrdersEnabled",
-    "currentEvidence",
-    "requiredEvidence",
-    "blocker"
-  ];
-  const missing = [];
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable business engagement readiness item shapes.`
-        : `Missing business engagement readiness fields: ${missing.join(", ")}`
-  };
-}
+runDoctorReport({
+  service: "customcard-business-engagement-readiness-doctor",
+  items: summary.total,
+  repoLocalReady: summary.repoLocalReady,
+  evidenceMissing: summary.evidenceMissing,
+  approvalBlocked: summary.approvalBlocked,
+  crmAdapterContracts: summary.crmAdapterContracts,
+  workflowAdapterContracts: summary.workflowAdapterContracts,
+  notificationAdapterContracts: summary.notificationAdapterContracts,
+  lifecycleTriggerKinds: summary.lifecycleTriggerKinds,
+  liveOAuthRequired: summary.liveOAuthRequired,
+  optInRequired: summary.optInRequired,
+  suppressionReviewRequired: summary.suppressionReviewRequired,
+  humanReviewRequired: summary.humanReviewRequired,
+  liveSendProofRequired: summary.liveSendProofRequired,
+  liveMessagesEnabled: summary.liveMessagesEnabled,
+  crmWritesEnabled: summary.crmWritesEnabled,
+  externalNetworkCalls: summary.externalNetworkCalls,
+  realOrdersEnabled: summary.realOrdersEnabled
+}, checks);

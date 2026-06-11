@@ -229,12 +229,44 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.eventText).toContain("Anniversary card for Sara and Ahmed");
-    expect(result.eventText).toContain("We check server readiness first");
+    expect(result.eventText).toContain("Reads event titles and dates only");
     expect(result.googleCalendarDisabled).toBe(false);
     expect(result.eventText).toContain("Brooklyn, NY");
     expect(result.heading).toBe("Your card, their story");
     expect(result.studioText).toContain("Sara and Ahmed");
     expect(result.adminRows).toBe(0);
+  }, 30000);
+
+  it("surfaces Google Calendar callback imports as reviewable evidence", async () => {
+    const sessionId = await createPage(1280, 900);
+    const loaded = waitEvent("Page.loadEventFired", sessionId, 10000).catch(() => undefined);
+    await send("Page.navigate", { url: new URL("?calendarConnection=connected&calendarImported=4", baseUrl).toString() }, sessionId);
+    await loaded;
+    const result = await evaluate(
+      sessionId,
+      `(async () => {
+        const raf = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          await raf();
+          if (document.body.textContent?.includes("Google Calendar import review")) break;
+        }
+        return {
+          h1: document.querySelector("h1")?.textContent,
+          text: document.body.textContent,
+          evidence: [...document.querySelectorAll(".oppEvidence li")].map((node) => node.textContent),
+          buttons: [...document.querySelectorAll("button")].map((node) => node.textContent?.trim()).filter(Boolean),
+          search: window.location.search
+        };
+      })()`
+    );
+
+    expect(result.h1).toBe("Never miss a moment");
+    expect(result.text).toContain("Google Calendar import review");
+    expect(result.text).toContain("4 Google Calendar events imported as read-only event metadata.");
+    expect(result.evidence.join(" ")).toContain("Manual import: Google Calendar import review");
+    expect(result.evidence.join(" ")).toContain("4 Google Calendar events imported as read-only event metadata");
+    expect(result.buttons.join(" ")).toContain("Start this card");
+    expect(result.search).toBe("?view=opportunities");
   }, 30000);
 
   it("keeps the customer shell labeled and mobile-width safe", async () => {
@@ -274,7 +306,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
-  it("moves legal readiness under admin and exposes generated docs in the footer", async () => {
+  it("moves legal readiness under admin and exposes policy docs in the footer", async () => {
     const sessionId = await createPage(390, 900, "?view=legal");
     const result = await evaluate(
       sessionId,
@@ -301,18 +333,18 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toBe("Legal docs");
     expect(result.text).toContain("Private operations");
     expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
-    expect(result.footerText).not.toContain("Generated legal docs");
+    expect(result.footerText).not.toMatch(/generated/i);
     expect(result.footerText).not.toContain("Drafted for CustomCard");
     expect(result.legalCards).toBe(0);
     expect(result.freeTools).toBe(0);
     expect(result.policyLinks).toBe(0);
     expect(result.footerLinks).toEqual([
-      { text: "Terms", href: "/legal/generated-docs.html#terms" },
-      { text: "Privacy", href: "/legal/generated-docs.html#privacy" },
-      { text: "Cookies", href: "/legal/generated-docs.html#cookies" },
-      { text: "Refunds", href: "/legal/generated-docs.html#refunds" },
-      { text: "AI disclosure", href: "/legal/generated-docs.html#ai-disclosure" },
-      { text: "Privacy choices", href: "/legal/generated-docs.html#privacy-choices" }
+      { text: "Terms", href: "/legal/docs.html#terms" },
+      { text: "Privacy", href: "/legal/docs.html#privacy" },
+      { text: "Cookies", href: "/legal/docs.html#cookies" },
+      { text: "Refunds", href: "/legal/docs.html#refunds" },
+      { text: "AI disclosure", href: "/legal/docs.html#ai-disclosure" },
+      { text: "Privacy choices", href: "/legal/docs.html#privacy-choices" }
     ]);
     expect(result.ctaDock).toBe(false);
     expect(result.activeNav).toEqual([]);

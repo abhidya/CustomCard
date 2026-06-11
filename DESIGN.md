@@ -42,7 +42,7 @@
 
 ## Components
 - Existing components to reuse: `StatusChip`, `Metric`, `SegmentedControl`, `AdapterMiniList`, panel previews, pricing option rows.
-- New/changed components: customer start/import module, customer event queue, customer fulfillment recommendation cards.
+- New/changed components: customer start/import module, customer event queue, customer fulfillment recommendation cards, Studio AI card generation control.
 - Variants and states: signed out/signed in, event ready/needs detail, public-price/confirmation-required, local fallback/live gated.
 - Token/component ownership: repo-local CSS in `src/styles.css`; no new design-system dependency.
 
@@ -59,16 +59,16 @@
 - Touch/hover differences: touch targets remain at least 40px high.
 
 ## Interaction states
-- Loading: current local MVP uses deterministic instant states; future live imports need loading rows.
+- Loading: AI card generation shows copy and artwork progress for the four 5x7 panels; future live imports need loading rows.
 - Empty: show import actions and sample/manual event path.
 - Error: show missing detail or confirmation-required copy instead of provider errors.
-- Success: show event ready, print-safe card, and recommended fulfillment option.
+- Success: show event ready, print-safe card, panel-level artwork readiness, and recommended fulfillment option.
 - Disabled: direct checkout/order buttons stay absent until live quote/payment/order gates exist.
 - Offline/slow network: local demo path remains usable without network.
 
 ## Content voice
 - Tone: plain, direct, and confidence-bounded.
-- Terminology: customer sees sign in, import, event, card, pickup, shipped, ETA, total; admin sees adapters, env, gates, runtime.
+- Terminology: customer sees sign in, import, event, card, AI card generation, artwork panels, pickup, shipped, ETA, total; admin sees adapters, env, gates, runtime.
 - Microcopy rules: avoid "vendor handoff" and adapter names in the customer home unless explaining a confirmation requirement.
 
 ## Implementation constraints

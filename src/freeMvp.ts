@@ -1,10 +1,12 @@
 import {
-  hasOrderedRenderPacketPanels,
-  panelMatchesRenderPacketTarget,
-  renderPacketDimensionLabel,
-  renderPacketFileName,
-  renderPacketTarget
-} from "./renderPacketContract";
+  generateCardDraft as generateCardDraftFromInput,
+  getDefaultDraftInput as getDefaultDraftInputFromOpportunity,
+  validateCardDraft as validateGeneratedCardDraft
+} from "./cardDraft";
+import {
+  buildPanelSvg as buildRenderPacketPanelSvg,
+  exportFileName as renderPacketExportFileName
+} from "./renderPacket";
 
 export type FreeImportSource = "ics-paste" | "invite-paste" | "manual-note" | "empty";
 export type OpportunityStatus = "ready" | "needs-more-detail";
@@ -315,127 +317,15 @@ export function getDefaultDraftInput(
   workspace: LocalWorkspace | undefined,
   opportunity: CardOpportunity
 ): CardDraftInput {
-  return {
-    sender: workspace?.name ?? "Local User",
-    recipient: opportunity.recipient,
-    relationship: "Friends",
-    occasion: opportunity.occasion,
-    tone: "warm",
-    style: "botanical",
-    language: "English",
-    personalNote: "",
-    useMemory: opportunity.memoryIds.length > 0
-  };
+  return getDefaultDraftInputFromOpportunity(workspace, opportunity);
 }
 
 export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[]): CardDraft {
-  const recipient = cleanText(input.recipient) || "Someone important";
-  const sender = cleanText(input.sender) || "Local User";
-  const occasion = cleanText(input.occasion) || "card";
-  const approvedMemories = input.useMemory
-    ? memories.filter((memory) => memory.approved && namesOverlap(memory.recipient, recipient))
-    : [];
-  const memoryLine = approvedMemories[0]?.note ?? "The best details are the small ones you both recognize.";
-  const rtl = isRtlLanguage(input.language);
-  const voice = toneLine(input.tone);
-  const visual = artDirection(input.style, input.tone);
-  const note = cleanText(input.personalNote) || "Keep it simple, specific, and sincere.";
-
-  const basePanels: Array<Omit<CardPanel, "overflowRisk">> = [
-    {
-      id: "front",
-      label: "Front",
-      headline: `${titleCase(occasion)} for ${recipient}`,
-      body: visual.frontLine,
-      artDirection: visual.front,
-      width: renderPacketTarget.widthPixels,
-      height: renderPacketTarget.heightPixels,
-      dpi: renderPacketTarget.dpi,
-      rtl
-    },
-    {
-      id: "inside-left",
-      label: "Inside left",
-      headline: "The part that feels like them",
-      body: `${memoryLine} ${note}`,
-      artDirection: visual.left,
-      width: renderPacketTarget.widthPixels,
-      height: renderPacketTarget.heightPixels,
-      dpi: renderPacketTarget.dpi,
-      rtl
-    },
-    {
-      id: "inside-right",
-      label: "Inside right",
-      headline: "Message",
-      body: `${voice} May this ${occasion} feel generous, grounded, and unmistakably yours.`,
-      artDirection: visual.right,
-      width: renderPacketTarget.widthPixels,
-      height: renderPacketTarget.heightPixels,
-      dpi: renderPacketTarget.dpi,
-      rtl
-    },
-    {
-      id: "back",
-      label: "Back",
-      headline: `From ${sender}`,
-      body: "Made with reviewed memories, local files, and final human approval.",
-      artDirection: visual.back,
-      width: renderPacketTarget.widthPixels,
-      height: renderPacketTarget.heightPixels,
-      dpi: renderPacketTarget.dpi,
-      rtl
-    }
-  ];
-  const panels: CardPanel[] = basePanels.map((panel) => ({
-    ...panel,
-    overflowRisk: panel.body.length > 360 || panel.headline.length > 90
-  }));
-
-  return {
-    id: `draft-${stableId(`${sender}:${recipient}:${occasion}:${input.tone}:${input.style}:${note}`)}`,
-    input,
-    panels,
-    memoryCitations: approvedMemories.map((memory) => memory.id),
-    generatedBy: "deterministic-free-template"
-  };
+  return generateCardDraftFromInput(input, memories);
 }
 
 export function validateCardDraft(draft: CardDraft): CardValidation {
-  const checks: ValidationCheck[] = [
-    {
-      label: "Four panels",
-      passed: hasOrderedRenderPacketPanels(draft.panels),
-      detail: `${draft.panels.length}/4 panels present`
-    },
-    {
-      label: "5x7 print size",
-      passed: draft.panels.every(panelMatchesRenderPacketTarget),
-      detail: renderPacketDimensionLabel()
-    },
-    {
-      label: "Text fit",
-      passed: draft.panels.every((panel) => !panel.overflowRisk),
-      detail: "Template copy stays inside conservative safe areas"
-    },
-    {
-      label: "Human gate",
-      passed: true,
-      detail: "User must approve before opening a printer upload page"
-    },
-    {
-      label: "No paid services",
-      passed: true,
-      detail: "No outside account, payment, or printer checkout is required in CustomCard"
-    }
-  ];
-  const errors = checks.filter((check) => !check.passed).map((check) => check.label);
-
-  return {
-    passed: errors.length === 0,
-    checks,
-    errors
-  };
+  return validateGeneratedCardDraft(draft);
 }
 
 export function buildVendorHandoff(vendorId: VendorId, validation: CardValidation): VendorHandoff {
@@ -466,38 +356,11 @@ export function buildVendorHandoff(vendorId: VendorId, validation: CardValidatio
 }
 
 export function buildPanelSvg(panel: CardPanel): string {
-  const background = panel.id === "front" ? "#f8f3e8" : panel.id === "back" ? "#eef4f0" : "#f7f8fa";
-  const accent = panel.id === "inside-right" ? "#c8553d" : panel.id === "inside-left" ? "#258477" : "#315b7d";
-  const bodyLines = wrapSvgText(panel.body, 34).slice(0, 8);
-  const headlineLines = wrapSvgText(panel.headline, 24).slice(0, 3);
-  const direction = panel.rtl ? "rtl" : "ltr";
-  const anchor = panel.rtl ? "end" : "start";
-  const x = panel.rtl ? 1240 : 260;
-
-  const decorativeLayer = panel.imageUrl
-    ? `  <image href="${escapeXml(panel.imageUrl)}" x="120" y="120" width="1260" height="1860" preserveAspectRatio="xMidYMid slice"/>`
-    : `  <circle cx="1210" cy="330" r="96" fill="${accent}" opacity="0.15"/>
-  <path d="M210 1710 C480 1580, 720 1890, 1260 1670" fill="none" stroke="${accent}" stroke-width="18" opacity="0.22"/>`;
-  const textFill = panel.imageUrl ? "#ffffff" : "#1d2429";
-  const bodyFill = panel.imageUrl ? "rgba(255,255,255,0.92)" : "#27343a";
-  const artFill = panel.imageUrl ? "rgba(255,255,255,0.7)" : "#59656b";
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" viewBox="0 0 ${renderPacketTarget.widthPixels} ${renderPacketTarget.heightPixels}" role="img" aria-label="${escapeXml(panel.label)} panel" direction="${direction}">
-  <rect width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" fill="${background}"/>
-  <rect x="120" y="120" width="1260" height="1860" rx="42" fill="none" stroke="${accent}" stroke-width="12"/>
-${decorativeLayer}
-  <text x="${x}" y="470" fill="${textFill}" font-family="Georgia, serif" font-size="92" font-weight="700" text-anchor="${anchor}">
-${headlineLines.map((line, index) => `    <tspan x="${x}" dy="${index === 0 ? 0 : 108}">${escapeXml(line)}</tspan>`).join("\n")}
-  </text>
-  <text x="${x}" y="880" fill="${bodyFill}" font-family="Arial, sans-serif" font-size="54" text-anchor="${anchor}">
-${bodyLines.map((line, index) => `    <tspan x="${x}" dy="${index === 0 ? 0 : 74}">${escapeXml(line)}</tspan>`).join("\n")}
-  </text>
-  <text x="${x}" y="1840" fill="${artFill}" font-family="Arial, sans-serif" font-size="34" text-anchor="${anchor}">${escapeXml(panel.artDirection)}</text>
-</svg>`;
+  return buildRenderPacketPanelSvg(panel);
 }
 
 export function exportFileName(panel: CardPanel, draftId: string): string {
-  return renderPacketFileName(draftId, panel.id);
+  return renderPacketExportFileName(panel, draftId);
 }
 
 export function addMemory(
@@ -727,55 +590,6 @@ function recommendedPathForUrgency(urgency: Urgency): string {
   return "Draft early and keep the final upload manual.";
 }
 
-function toneLine(tone: Tone): string {
-  const lines: Record<Tone, string> = {
-    warm: "You two make commitment look gentle and alive.",
-    playful: "Another year, another excellent excuse to celebrate your shared weird little traditions.",
-    elegant: "Your life together has the quiet grace of something tended with care.",
-    reverent: "May the love around you continue to be a source of steadiness and blessing."
-  };
-  return lines[tone];
-}
-
-function artDirection(style: VisualStyle, tone: Tone) {
-  const toneAccent = tone === "playful" ? "with a lively offset rhythm" : "with calm spacing";
-  const directions: Record<VisualStyle, { frontLine: string; front: string; left: string; right: string; back: string }> = {
-    botanical: {
-      frontLine: "Soft stems, small blooms, and a hand-lettered center.",
-      front: `Botanical border ${toneAccent}`,
-      left: "Pressed-flower margin with generous writing space",
-      right: "Single vine crossing the fold edge",
-      back: "Tiny leaf mark with sender attribution"
-    },
-    "bold-type": {
-      frontLine: "Confident type, warm color blocking, no clutter.",
-      front: `Large editorial type ${toneAccent}`,
-      left: "Two-column message grid",
-      right: "Wide headline and calm body copy",
-      back: "Small publisher-style footer"
-    },
-    "photo-note": {
-      frontLine: "Photo-safe frame, handwritten caption, clean border.",
-      front: `Photo note layout ${toneAccent}`,
-      left: "Caption strip and open note field",
-      right: "Soft frame for the main message",
-      back: "Simple archive label"
-    },
-    minimal: {
-      frontLine: "One line, one accent, plenty of breathing room.",
-      front: `Minimal field ${toneAccent}`,
-      left: "Fine rule and short note",
-      right: "Centered message composition",
-      back: "Small signature lockup"
-    }
-  };
-  return directions[style];
-}
-
-function isRtlLanguage(language: LanguageChoice): boolean {
-  return language === "Arabic" || language === "Urdu";
-}
-
 function namesOverlap(left: string, right: string): boolean {
   const leftTokens = nameTokens(left);
   const rightTokens = nameTokens(right);
@@ -803,33 +617,6 @@ function titleCase(value: string): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, Math.round(value)));
-}
-
-function wrapSvgText(value: string, maxChars: number): string[] {
-  const words = value.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length > maxChars && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = next;
-    }
-  }
-
-  if (current) lines.push(current);
-  return lines.length ? lines : [value];
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 function stableId(value: string): string {

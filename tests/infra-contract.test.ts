@@ -658,7 +658,7 @@ describe("production infrastructure contract", () => {
       service: "customcard-demo-reset",
       status: "ready",
       route: "/api/admin/demo-reset",
-      rows: 17,
+      rows: 18,
       signedArtifactUrls: true,
       realOrdersEnabled: false
     });
@@ -702,8 +702,8 @@ describe("production infrastructure contract", () => {
         postgresConfigured: true
       },
       persistence: {
-        idempotencyRecords: 6,
-        auditRecords: 6,
+        idempotencyRecords: 7,
+        auditRecords: 7,
         queuedJobs: 2,
         providerConnections: 1,
         importedEvents: 1,
@@ -1229,7 +1229,7 @@ describe("production infrastructure contract", () => {
       hostedSeedExecutionRequired: 3,
       hostedTokenProbeRequired: 4,
       vercelEnvSyncRequired: 5,
-      tableContracts: 14,
+      tableContracts: 15,
       routeContracts: 5,
       requiredEnvVars: 6,
       hostedSeedProofs: 0,
@@ -1639,7 +1639,7 @@ describe("production infrastructure contract", () => {
     expect(report.status).toBe("ready");
     expect(report.blockers).toEqual([]);
     expect(report.readiness.tables).toMatchObject({
-      total: 19,
+      total: 20,
       authSessions: true,
       accountIdentities: true,
       accountRecoveryChallenges: true,
@@ -1653,14 +1653,12 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 18, idempotentMutations: 12 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 21, idempotentMutations: 13 });
     expect(report.readiness.localBrowserState).toMatchObject({
-      auditItems: 5,
-      dbRequiredItems: 4,
-      objectStoreRequiredItems: 1,
-      browserOnlyItems: 1,
-      workspaceKey: "customcard-free-workspace-v1",
-      browserOnlyKeys: ["customcard-theme-v1"]
+      auditItems: 6,
+      dbRequiredItems: 0,
+      objectStoreRequiredItems: 0,
+      browserOnlyItems: 0
     });
     expect(report.readiness.safety).toMatchObject({
       rawContentStored: false,

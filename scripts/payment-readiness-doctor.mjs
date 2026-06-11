@@ -1,16 +1,13 @@
 import { paymentReadinessItems, summarizePaymentReadiness, validatePaymentReadiness } from "../src/paymentReadinessData.mjs";
 import {
-  blockersFromFailedChecks,
   checkArrayIncludes,
   checkExact,
   checkIncludes,
+  checkItemsHaveKeys,
   checkMinimum,
   checkNoBlockers,
-  exitIfBlocked,
-  failedChecks,
-  printDoctorReport,
   readTextFiles,
-  summarizeCheckLanes
+  runDoctorReport
 } from "./doctor-harness.mjs";
 
 const files = {
@@ -54,7 +51,30 @@ const checks = [
     "refund-void-dispute-drills",
     "settlement-reconciliation"
   ]),
-  checkItemsShape("register", "payment-readiness-item-shape", paymentReadinessItems),
+  checkItemsHaveKeys("register", "payment-readiness-item-shape", paymentReadinessItems, [
+    "id",
+    "label",
+    "lane",
+    "status",
+    "paymentAdapterIds",
+    "fallbackAdapterIds",
+    "ledgerEventNames",
+    "idempotencyRequired",
+    "webhookSignatureRequired",
+    "processorApprovalRequired",
+    "liveChargesEnabled",
+    "liveRefundsEnabled",
+    "liveCaptureEnabled",
+    "externalNetworkCalls",
+    "cardDataStored",
+    "pciScopeApproved",
+    "currentEvidence",
+    "requiredEvidence",
+    "blocker"
+  ], {
+    readyDetail: `Validated ${paymentReadinessItems.length} executable payment readiness item shapes.`,
+    missingPrefix: "Missing payment readiness fields"
+  }),
   checkIncludes("tests", "payment-readiness-tests", contents.paymentTest, [
     "tracks payment and refund readiness without live charge claims",
     "covers sandbox payment providers, fallback, and refund ledger events explicitly",
@@ -97,12 +117,8 @@ const checks = [
   ])
 ];
 
-const lanes = summarizeCheckLanes(checks);
-const failed = failedChecks(checks);
-
-printDoctorReport({
+runDoctorReport({
   service: "customcard-payment-readiness-doctor",
-  status: failed.length === 0 ? "ready" : "blocked",
   items: summary.total,
   paymentProviderContracts: summary.paymentProviderContracts,
   localFallbacks: summary.localFallbacks,
@@ -113,51 +129,5 @@ printDoctorReport({
   liveCaptureEnabled: summary.liveCaptureEnabled,
   externalNetworkCalls: summary.externalNetworkCalls,
   cardDataStored: summary.cardDataStored,
-  pciScopeApproved: summary.pciScopeApproved,
-  lanes,
-  checks,
-  blockers: blockersFromFailedChecks(checks)
-});
-
-exitIfBlocked(checks);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
-    "id",
-    "label",
-    "lane",
-    "status",
-    "paymentAdapterIds",
-    "fallbackAdapterIds",
-    "ledgerEventNames",
-    "idempotencyRequired",
-    "webhookSignatureRequired",
-    "processorApprovalRequired",
-    "liveChargesEnabled",
-    "liveRefundsEnabled",
-    "liveCaptureEnabled",
-    "externalNetworkCalls",
-    "cardDataStored",
-    "pciScopeApproved",
-    "currentEvidence",
-    "requiredEvidence",
-    "blocker"
-  ];
-  const missing = [];
-
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable payment readiness item shapes.`
-        : `Missing payment readiness fields: ${missing.join(", ")}`
-  };
-}
+  pciScopeApproved: summary.pciScopeApproved
+}, checks);

@@ -67,6 +67,25 @@ export function checkAbsent(lane, id, text, forbidden, noun = "signals") {
   };
 }
 
+export function checkItemsHaveKeys(lane, id, items, requiredKeys, options = {}) {
+  const missing = [];
+  for (const item of items) {
+    for (const key of requiredKeys) {
+      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
+    }
+  }
+
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? (options.readyDetail ?? `Validated ${items.length} item shapes.`)
+        : `${options.missingPrefix ?? "Missing item fields"}: ${missing.join(", ")}`
+  };
+}
+
 export function summarizeCheckLanes(checks) {
   return Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
     const laneChecks = checks.filter((check) => check.lane === lane);
@@ -93,4 +112,20 @@ export function printDoctorReport(report) {
 
 export function exitIfBlocked(checks) {
   if (failedChecks(checks).length > 0) process.exit(1);
+}
+
+export function buildDoctorReport(baseReport, checks) {
+  const failed = failedChecks(checks);
+  return {
+    ...baseReport,
+    status: failed.length === 0 ? "ready" : "blocked",
+    lanes: summarizeCheckLanes(checks),
+    checks,
+    blockers: blockersFromFailedChecks(checks)
+  };
+}
+
+export function runDoctorReport(baseReport, checks) {
+  printDoctorReport(buildDoctorReport(baseReport, checks));
+  exitIfBlocked(checks);
 }

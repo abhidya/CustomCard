@@ -67,7 +67,7 @@ export function getAdminTargetLabel(view: ViewId): string {
 }
 
 export function getAdminSurfaceHeading(view: ViewId): string {
-  if (view === "legal") return "Legal readiness and generated docs";
+  if (view === "legal") return "Legal readiness and policy docs";
   return view === "adapters" ? "Adapter readiness" : "Admin panel";
 }
 

@@ -1,9 +1,10 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   buildLegalPolicyLinks,
   freeLegalToolOptions,
-  generatedLegalDocumentLinks,
-  generatedLegalDocumentPath,
+  legalDocumentLinks,
+  legalDocumentPath,
   legalComplianceItems,
   summarizeLegalComplianceReadiness,
   validateLegalComplianceReadiness,
@@ -47,7 +48,7 @@ describe("legal compliance readiness", () => {
     );
   });
 
-  it("builds legal policy links from env vars and falls back to free generators", () => {
+  it("builds legal policy links from env vars and falls back to free tools", () => {
     const links = buildLegalPolicyLinks({
       VITE_LEGAL_TERMS_URL: "https://example.com/terms",
       VITE_LEGAL_PRIVACY_URL: ""
@@ -67,10 +68,11 @@ describe("legal compliance readiness", () => {
     expect(links.every((link) => link.url.startsWith("https://"))).toBe(true);
   });
 
-  it("defines generated legal documents for the public footer", () => {
-    expect(generatedLegalDocumentPath).toBe("/legal/generated-docs.html");
-    expect(generatedLegalDocumentLinks).toHaveLength(6);
-    expect(generatedLegalDocumentLinks.map((link) => link.id)).toEqual([
+  it("defines legal documents for the public footer", () => {
+    expect(legalDocumentPath).toBe("/legal/docs.html");
+    expect(legalDocumentPath).not.toMatch(/generated/i);
+    expect(legalDocumentLinks).toHaveLength(6);
+    expect(legalDocumentLinks.map((link) => link.id)).toEqual([
       "terms",
       "privacy",
       "cookies",
@@ -78,8 +80,17 @@ describe("legal compliance readiness", () => {
       "ai-disclosure",
       "privacy-choices"
     ]);
-    expect(generatedLegalDocumentLinks.every((link) => link.path.startsWith(`${generatedLegalDocumentPath}#`))).toBe(true);
-    expect(generatedLegalDocumentLinks.every((link) => link.reviewRequired)).toBe(true);
+    expect(legalDocumentLinks.every((link) => link.path.startsWith(`${legalDocumentPath}#`))).toBe(true);
+    expect(legalDocumentLinks.every((link) => !/generated/i.test(link.path))).toBe(true);
+    expect(legalDocumentLinks.every((link) => link.reviewRequired)).toBe(true);
+  });
+
+  it("keeps public legal docs free of generated route and UI copy", () => {
+    const html = readFileSync(new URL("../public/legal/docs.html", import.meta.url), "utf8");
+
+    expect(html).toContain("CustomCard legal docs");
+    expect(html).toContain('id="refunds"');
+    expect(html).not.toMatch(/generated/i);
   });
 
   it("flags unsafe legal-readiness claims before they reach the app", () => {

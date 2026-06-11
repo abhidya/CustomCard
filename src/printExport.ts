@@ -1,10 +1,8 @@
 import {
   buildOpportunity,
-  buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
   defaultMemories,
-  exportFileName,
   generateCardDraft,
   getDefaultDraftInput,
   parseFreeImport,
@@ -15,6 +13,7 @@ import {
   type CardValidation,
   type VendorHandoff
 } from "./customerWorkflow";
+import { buildPanelSvg, exportFileName } from "./renderPacket";
 import {
   hasOrderedRenderPacketPanels,
   panelMatchesRenderPacketTarget,

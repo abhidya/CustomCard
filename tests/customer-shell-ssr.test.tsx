@@ -154,7 +154,7 @@ describe("customer shell server render", () => {
     const studio = renderShell({ search: "?view=studio", signedIn: false });
     expect(studio.text).toContain("Your card, their story");
     expect(studio.text).toContain("Who it's for");
-    expect(studio.text).toContain("Sign in to use AI");
+    expect(studio.text).toContain("Sign in to generate AI card");
     expect(studio.text).toContain("Create and print without an account");
     expect(studio.text).toContain("Continue to print");
 
@@ -261,6 +261,9 @@ describe("customer shell server render", () => {
       expect(text).toContain("Style");
       expect(text).toContain("Card language");
       expect(text).toContain("Make it personal");
+      expect(text).toContain("Generate AI card");
+      expect(text).toContain("4 print panels");
+      expect(text).toContain("Creates editable copy and artwork for every panel.");
       expect(text).toContain("Continue to print");
       expect(html.split("pagetab").length - 1).toBeGreaterThanOrEqual(4);
     });

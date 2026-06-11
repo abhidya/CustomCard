@@ -274,7 +274,7 @@ export function useAppState(): AppState {
           }
     );
     setAiCardGenLoading(true);
-    setAiCardGenStatus("Writing your AI draft...");
+    setAiCardGenStatus("Generating copy and artwork...");
     fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
       method: "POST",
       headers: {
@@ -301,16 +301,21 @@ export function useAppState(): AppState {
             imageUrl: imageByPanel.get(panel.id)
           };
         });
+        const panelCount = basePanels.length;
         const hasImages = imageByPanel.size > 0;
         setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
-        setAiCardGenStatus(hasImages ? "AI draft applied with artwork." : "AI draft applied with generated copy.");
+        setAiCardGenStatus(
+          hasImages
+            ? `AI card applied with ${imageByPanel.size}/${panelCount} artwork panels.`
+            : "AI copy applied; artwork was not returned."
+        );
         setAiGenerationJobs((current) =>
           prependAiGenerationJob(current, buildAiGenerationJobEvidence({ result, draft }), 10)
         );
       })
       .catch((err: unknown) => {
         console.error("AI card gen failed:", err);
-        setAiCardGenStatus(err instanceof Error ? err.message : "AI writing failed. Try again in a moment.");
+        setAiCardGenStatus(err instanceof Error ? err.message : "AI card generation failed. Try again in a moment.");
       })
       .finally(() => { setAiCardGenLoading(false); });
   }, [aiCardGenLoading, aiFlowConfigs, approvedMemoryNotes, draft, draftInput]);
@@ -376,16 +381,16 @@ async function readAiGenerationResponse(response: Response): Promise<AiGeneratio
     throw new Error(formatAiGenerationHttpError(response.status, payload));
   }
   if (!payload || !Array.isArray((payload.card_copy as { panels?: unknown } | undefined)?.panels)) {
-    throw new Error("AI writing returned an unexpected response.");
+    throw new Error("AI card generation returned an unexpected response.");
   }
   return payload as AiGenerationApiResult;
 }
 
 function formatAiGenerationHttpError(status: number, payload: Record<string, unknown> | undefined): string {
   const detail = readAiGenerationErrorDetail(payload);
-  if (status === 404) return "AI writing route is unavailable. Redeploy the API and try again.";
-  if (status === 401 || status === 403) return "AI writing needs a signed-in session.";
-  return detail ? `AI writing failed: ${detail}` : `AI writing returned HTTP ${status}.`;
+  if (status === 404) return "AI card generation route is unavailable. Redeploy the API and try again.";
+  if (status === 401 || status === 403) return "AI card generation needs a signed-in session.";
+  return detail ? `AI card generation failed: ${detail}` : `AI card generation returned HTTP ${status}.`;
 }
 
 function readAiGenerationErrorDetail(payload: Record<string, unknown> | undefined): string {

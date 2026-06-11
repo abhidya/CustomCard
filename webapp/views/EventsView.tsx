@@ -116,6 +116,13 @@ export function ImportSection({
               {opportunity.dateLabel}
               {signal.location ? ` · ${signal.location}` : ""}
             </div>
+            {opportunity.evidence.length > 0 ? (
+              <ul className="oppEvidence" aria-label="Import evidence">
+                {opportunity.evidence.slice(0, 3).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
             <div className="opp-actions">
               <button className="btn btn-primary" onClick={onAccept} type="button">
                 Start this card

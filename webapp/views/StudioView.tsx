@@ -1,6 +1,5 @@
 import { SignInButton } from "@clerk/react";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
 import type {
   CardDraft,
   CardDraftInput,
@@ -16,6 +15,7 @@ import { Chips, Field, PanelArt, Step } from "../ui";
 const tones: Tone[] = ["warm", "playful", "elegant", "reverent"];
 const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"];
 const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
+const aiButtonLogoSrc = "/customcard-ai-button-logo.png";
 
 const styleLabels: Record<VisualStyle, string> = {
   botanical: "Botanical",
@@ -26,6 +26,10 @@ const styleLabels: Record<VisualStyle, string> = {
 
 function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function panelArtworkLabel(panel: CardPanel): string {
+  return panel.imageUrl ? "Artwork ready" : "Template";
 }
 
 export function StudioView({
@@ -56,6 +60,18 @@ export function StudioView({
   const [activePanel, setActivePanel] = useState<CardPanel["id"]>("front");
   const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
   const approvedForRecipient = memories.filter((memory) => memory.approved).length;
+  const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
+  const aiState = aiLoading ? "loading" : aiActive ? "ready" : "idle";
+  const aiPanelSummary = aiActive
+    ? `${artworkCount}/${draft.panels.length} artwork panels ready`
+    : `${draft.panels.length} print panels`;
+  const aiNote = aiRequiresSignIn
+    ? "Create and print without an account. AI card generation needs sign-in."
+    : aiStatus
+      ? aiStatus
+      : aiActive
+        ? "Copy + artwork applied to the four print panels."
+        : "Creates editable copy and artwork for every panel.";
 
   return (
     <>
@@ -69,6 +85,10 @@ export function StudioView({
           <div className="stage-frame">
             <PanelArt className="stage-card" panel={panel} />
           </div>
+          <div className="stage-ai-state" data-state={aiState}>
+            <span>{aiLoading ? "Generating AI card" : aiActive ? "AI card applied" : "AI card generator"}</span>
+            <strong>{aiLoading ? "Copy + artwork in progress" : aiPanelSummary}</strong>
+          </div>
           <div className="pagetabs">
             {draft.panels.map((candidate) => (
               <button
@@ -80,6 +100,7 @@ export function StudioView({
               >
                 <PanelArt panel={candidate} />
                 <span>{candidate.label}</span>
+                <small>{panelArtworkLabel(candidate)}</small>
               </button>
             ))}
           </div>
@@ -90,6 +111,28 @@ export function StudioView({
         </div>
 
         <div className="steps reveal reveal-2">
+          {aiRequiresSignIn || aiAvailable ? (
+            <section className="aiLaunch" data-state={aiState} aria-label="AI card generation">
+              <div className="aiLaunchText">
+                <strong>{aiLoading ? "Generating AI card" : aiActive ? "AI card ready" : "AI card generator"}</strong>
+                <span>{aiNote}</span>
+              </div>
+              {aiRequiresSignIn ? (
+                <SignInButton mode="modal">
+                  <button className="aibutton" type="button">
+                    <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
+                    Sign in to generate AI card
+                  </button>
+                </SignInButton>
+              ) : (
+                <button className="aibutton" disabled={aiLoading} onClick={onGenerateAi} type="button">
+                  <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
+                  {aiLoading ? "Generating…" : aiActive ? "Regenerate AI card" : "Generate AI card"}
+                </button>
+              )}
+            </section>
+          ) : null}
+
           <Step
             defaultOpen
             meta={displayDraftValue(draftInput.recipient) ? `To ${draftInput.recipient}` : "Add names"}
@@ -153,7 +196,7 @@ export function StudioView({
           </Step>
 
           <Step
-            defaultOpen={aiRequiresSignIn}
+            defaultOpen={aiRequiresSignIn || Boolean(displayDraftValue(draftInput.personalNote))}
             meta={displayDraftValue(draftInput.personalNote) ? "Note added" : "Optional"}
             number={3}
             title="Make it personal"
@@ -185,32 +228,6 @@ export function StudioView({
             <button className="textlink textlink-inline" onClick={onAddNote} type="button">
               Add or edit saved notes
             </button>
-            {aiRequiresSignIn || aiAvailable ? (
-              <div className="airow">
-                {aiRequiresSignIn ? (
-                  <SignInButton mode="modal">
-                    <button className="aibutton" type="button">
-                      <Sparkles size={16} />
-                      Sign in to use AI
-                    </button>
-                  </SignInButton>
-                ) : (
-                  <button className="aibutton" disabled={aiLoading} onClick={onGenerateAi} type="button">
-                    <Sparkles size={16} />
-                    {aiLoading ? "Writing…" : aiActive ? "Rewrite with AI" : "Write it with AI"}
-                  </button>
-                )}
-                <span className="ainote">
-                  {aiRequiresSignIn
-                    ? "Create and print without an account. AI writing needs sign-in."
-                    : aiStatus
-                      ? aiStatus
-                      : aiActive
-                      ? "AI draft applied — edit anything above to reset."
-                      : "Uses your details and notes."}
-                </span>
-              </div>
-            ) : null}
           </Step>
         </div>
       </div>

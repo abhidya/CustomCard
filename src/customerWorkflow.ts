@@ -1,12 +1,10 @@
 import {
   addMemory,
   buildOpportunity,
-  buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
   daysUntilLabel,
   defaultMemories,
-  exportFileName,
   freeAdapterLabels,
   generateCardDraft,
   getDefaultDraftInput,
@@ -22,6 +20,7 @@ import {
   type LocalWorkspace,
   type MemoryItem
 } from "./freeMvp";
+import { buildPanelSvg, exportFileName } from "./renderPacket";
 
 export {
   addMemory,

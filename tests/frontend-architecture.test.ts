@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
 import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCustomerField } from "../webapp/checkoutModel";
+import { buildBrowserIdempotencyKey } from "../webapp/customerShellCommands";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
 import { jpegDataUrlByteLength } from "../webapp/panelMediaAdapter";
 import {
@@ -70,7 +71,7 @@ describe("frontend architecture seams", () => {
     expect(getAdminTargetLabel("legal")).toBe("Legal docs");
     expect(getAdminTargetLabel("admin")).toBe("Admin panel");
     expect(getAdminSurfaceHeading("adapters")).toBe("Adapter readiness");
-    expect(getAdminSurfaceHeading("legal")).toBe("Legal readiness and generated docs");
+    expect(getAdminSurfaceHeading("legal")).toBe("Legal readiness and policy docs");
     expect(getAdminSurfaceHeading("admin")).toBe("Admin panel");
 
     expect(getAdminAccessStatus({ isLoaded: false, isSignedIn: false, isAdmin: false })).toBe("Checking account access");
@@ -93,6 +94,11 @@ describe("frontend architecture seams", () => {
       status: "in-progress"
     });
     expect(buildDraftProgressState(namedDraft, true).status).toBe("ready-for-review");
+  });
+
+  it("keeps customer API mutation command details outside App shell", () => {
+    const key = buildBrowserIdempotencyKey("/api/customer/draft-state");
+    expect(key).toMatch(/^api-customer-draft-state-/);
   });
 
   it("normalizes checkout customer defaults and edits outside PrintView", () => {

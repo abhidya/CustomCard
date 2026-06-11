@@ -48,7 +48,7 @@ const checks = [
   checkExact("register", "hosted-rollback-mode-count", summary.hostedRollbackModes, 3),
   checkExact("register", "no-rollback-probe-mode-count", summary.noRollbackProbeModes, 2),
   checkExact("register", "sql-preview-only-count", summary.sqlPreviewOnly, 8),
-  checkExact("register", "table-contract-count", summary.tableContracts, 14),
+  checkExact("register", "table-contract-count", summary.tableContracts, 15),
   checkExact("register", "route-contract-count", summary.routeContracts, 5),
   checkExact("register", "required-env-var-count", summary.requiredEnvVars, 6),
   checkExact("register", "no-hosted-seed-proof-claim", summary.hostedSeedProofs, 0),
@@ -79,7 +79,7 @@ const checks = [
     "buildDemoSeedPlan",
     "buildDemoSeedSqlPreview",
     "customcard-demo-seed",
-    "rows: 17",
+    "rows: 18",
     "execute only against an isolated reviewer database",
     "realOrdersEnabled: false"
   ]),

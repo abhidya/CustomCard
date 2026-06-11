@@ -58,7 +58,7 @@ export interface LegalPolicyLink extends LegalPolicyLinkDefinition {
   fallbackLabel: string;
 }
 
-export interface GeneratedLegalDocumentLink {
+export interface LegalDocumentLink {
   id: LegalPolicyLinkId;
   label: string;
   path: string;
@@ -95,7 +95,7 @@ export const freeLegalToolOptions: FreeLegalToolOption[] = [
     url: "https://termly.io/resources/articles/is-termly-free/",
     cost: "free-tier",
     covers: ["privacy", "terms", "cookie-consent", "cookie-policy"],
-    useBoundary: "Good MVP starter for one generated policy and cookie consent; legal review still required before launch."
+    useBoundary: "Good MVP starter for one policy and cookie consent; legal review still required before launch."
   },
   {
     id: "iubenda-free",
@@ -164,15 +164,15 @@ export const legalPolicyLinkDefinitions: LegalPolicyLinkDefinition[] = [
   { id: "privacy-choices", label: "Privacy choices", envVar: "VITE_LEGAL_PRIVACY_CHOICES_URL", fallbackToolId: "termly-basic" }
 ];
 
-export const generatedLegalDocumentPath = "/legal/generated-docs.html";
+export const legalDocumentPath = "/legal/docs.html";
 
-export const generatedLegalDocumentLinks: GeneratedLegalDocumentLink[] = legalPolicyLinkDefinitions.map((definition) => {
+export const legalDocumentLinks: LegalDocumentLink[] = legalPolicyLinkDefinitions.map((definition) => {
   const fallbackTool = freeLegalToolOptions.find((tool) => tool.id === definition.fallbackToolId);
   return {
     id: definition.id,
     label: definition.label,
-    path: `${generatedLegalDocumentPath}#${definition.id}`,
-    sourceToolLabel: fallbackTool?.label ?? "Free generator",
+    path: `${legalDocumentPath}#${definition.id}`,
+    sourceToolLabel: fallbackTool?.label ?? "Free policy tool",
     sourceToolUrl: fallbackTool?.url ?? "#",
     reviewRequired: true
   };
@@ -191,7 +191,7 @@ export const legalComplianceItems: LegalComplianceItem[] = [
     externalReviewRequired: true,
     publicClaimAllowed: false,
     blocksLaunch: true,
-    blocker: "EU launch needs a generated privacy notice mapped to CustomCard data flows and reviewed before public claims."
+    blocker: "EU launch needs a privacy notice mapped to CustomCard data flows and reviewed before public claims."
   },
   {
     id: "eu-cookie-consent-eprivacy",
@@ -229,7 +229,7 @@ export const legalComplianceItems: LegalComplianceItem[] = [
     status: "free-tool-required",
     freeToolIds: ["termsfeed-disclaimer", "termly-basic"],
     currentEvidence: ["AI provider readiness register", "Human proof-review workflow", "Live AI traffic disabled"],
-    requiredEvidence: ["AI disclosure page", "Generated-content label copy", "Unsafe-output review log"],
+    requiredEvidence: ["AI disclosure page", "AI-assisted content label copy", "Unsafe-output review log"],
     externalReviewRequired: true,
     publicClaimAllowed: false,
     blocksLaunch: true,
@@ -275,7 +275,7 @@ export const legalComplianceItems: LegalComplianceItem[] = [
     externalReviewRequired: true,
     publicClaimAllowed: false,
     blocksLaunch: true,
-    blocker: "US launch needs privacy promises generated from actual behavior and checked against implemented controls."
+    blocker: "US launch needs privacy promises based on actual behavior and checked against implemented controls."
   },
   {
     id: "us-state-privacy-ccpa-cpra",
@@ -422,7 +422,7 @@ export function buildLegalPolicyLinks(env: Record<string, unknown> = {}): LegalP
       ...definition,
       configured: /^https?:\/\//i.test(configuredUrl),
       url: /^https?:\/\//i.test(configuredUrl) ? configuredUrl : fallbackTool?.url ?? "#",
-      fallbackLabel: fallbackTool?.label ?? "Free generator"
+      fallbackLabel: fallbackTool?.label ?? "Free policy tool"
     };
   });
 }

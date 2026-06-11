@@ -35,6 +35,7 @@ import {
   walgreensCheckoutUploadRoute
 } from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
+import { createApiRouteFamilies } from "./api-route-families.mjs";
 import { apiRouteContracts, hostedCheckoutExemptRouteIds, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
 import {
   aiCardGenerateRoute,
@@ -432,6 +433,33 @@ export const readiness = {
   }
 };
 const apiRuntime = createApiRuntime({ env: process.env, routes });
+const apiRouteFamilies = createApiRouteFamilies({
+  aiCardGenerateRoute,
+  aiChatRespondRoute,
+  aiGenerationService,
+  apiRuntime,
+  buildMutationContractPayload,
+  buildRetailPrinterOperationStartPackets,
+  buildWalgreensCallbackHtml,
+  calendarConnectionStartPackets,
+  clientRateLimitKey,
+  decodeArtifactObjectKey,
+  formatWalgreensCheckoutUpstreamError,
+  mobileBootstrap,
+  readRequestBody,
+  readiness,
+  retailPrinterCouponPortalEvidenceRoute,
+  routes,
+  sendArtifact,
+  sendHtml,
+  sendJson,
+  walgreensCheckout,
+  walgreensCheckoutCallbackRoute,
+  walgreensCheckoutSessionRoute,
+  walgreensCheckoutUploadRoute,
+  walgreensRateLimited,
+  walgreensUploadBodyLimit: WALGREENS_UPLOAD_BODY_LIMIT
+});
 
 if (process.argv.includes("--doctor")) {
   const blockers = validateApiServerContract();
@@ -484,20 +512,7 @@ async function serveApi(request, response, requestUrl) {
     return;
   }
 
-  if (path.startsWith("/api/artifacts/")) {
-    if (request.method !== "GET") {
-      sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path });
-      return;
-    }
-    const objectKey = decodeArtifactObjectKey(path);
-    const artifact = await apiRuntime.readArtifact({ objectKey, query: requestUrl.searchParams });
-    if (artifact.body) {
-      sendArtifact(response, artifact);
-    } else {
-      sendJson(response, artifact.statusCode ?? 500, { service: "customcard-api", ...(artifact.payload ?? {}) });
-    }
-    return;
-  }
+  if (await apiRouteFamilies.handlePreAuthRoute({ path, request, requestUrl, response })) return;
 
   const route = routes.find((candidate) => candidate.path === path);
   if (!route) {
@@ -518,222 +533,7 @@ async function serveApi(request, response, requestUrl) {
     return;
   }
 
-  if (path === "/api/health") {
-    sendJson(response, 200, {
-      service: "customcard-api",
-      status: "ready",
-      realOrdersEnabled: false,
-      runtime: apiRuntime.describe()
-    });
-    return;
-  }
-
-  if (path === "/api/routes") {
-    sendJson(response, 200, routes);
-    return;
-  }
-
-  if (path === "/api/admin/readiness") {
-    sendJson(response, 200, {
-      ...readiness,
-      runtime: apiRuntime.describe()
-    });
-    return;
-  }
-
-  if (path === "/api/admin/provider-catalog") {
-    sendJson(response, 200, {
-      service: "customcard-api",
-      providers: readiness.providers,
-      providerGovernance: readiness.providerGovernance,
-      externalNetworkCalls: false,
-      runtime: apiRuntime.describe()
-    });
-    return;
-  }
-
-  if (path === "/api/admin/provider-governance") {
-    sendJson(response, 200, {
-      service: "customcard-api",
-      status: "ready",
-      providerGovernance: readiness.providerGovernance,
-      externalNetworkCalls: false,
-      realOrdersEnabled: false,
-      runtime: apiRuntime.describe()
-    });
-    return;
-  }
-
-  if (path === "/api/admin/persistence-readiness") {
-    sendJson(response, 200, {
-      service: "customcard-api",
-      status: "ready",
-      persistence: readiness.persistence,
-      runtime: apiRuntime.describe(),
-      safety: readiness.safety,
-      blockers: []
-    });
-    return;
-  }
-
-  if (path === "/api/admin/artifacts/bucket") {
-    const result = await apiRuntime.listArtifacts({ query: requestUrl.searchParams, authContext });
-    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload });
-    return;
-  }
-
-  if (path === "/api/mobile/bootstrap") {
-    sendJson(response, 200, {
-      ...mobileBootstrap,
-      localization: readiness.localization,
-      runtime: apiRuntime.describe()
-    });
-    return;
-  }
-
-  if (path === "/api/customer/bootstrap") {
-    sendJson(response, 200, {
-      service: "customcard-api",
-      primaryActions: ["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"],
-      readyFallbacks: ["ICS / invite paste", "Local customer chat", "Browser SVG renderer", "Manual print checklist"],
-      draftStateRoute: "/api/customer/draft-state/current",
-      localization: readiness.localization,
-      printerPricing: {
-        selectedVendorId: "walgreens",
-        liveQuote: false,
-        knownPriceCount: 12,
-        sourceCount: 8,
-        couponSourceCount: 4,
-        couponCollectionTargetCount: 6,
-        couponProviderTargetCount: 2,
-        retailerCouponCollectionTargetCount: 4,
-        couponOfferCount: 2,
-        activeCouponOfferCount: 2,
-        portalAppliedCouponOfferCount: 0,
-        couponPortalApplicationPacketCount: 2,
-        couponPortalApplicationTargetCount: 5,
-        couponsIncludedInShownPrices: "only-after-provider-portal-application",
-        liveCouponLookup: "operator-script-or-credential-gated-provider",
-        couponProviderFeedAllowed: true,
-        retailerCouponScrapeAllowed: true,
-        providerPortalApplicationRequired: true,
-        bestAvailablePriceRequiresCouponPortalEvidence: true,
-        couponPolicy: "apply-during-provider-portal-collection",
-        couponPortalEvidenceRoute: retailPrinterCouponPortalEvidenceRoute,
-        couponPortalEvidenceRouteAudience: "admin",
-        clientMaySubmitCouponEvidence: false,
-        maxAgeDays: 30,
-        freshnessPolicy: "Use src/printerPricing.ts refresh report before showing prices as current.",
-        externalNetworkCalls: false
-      },
-      calendarConnections: {
-        startRoute: "/api/calendar/connections/start",
-        startPackets: calendarConnectionStartPackets(),
-        blockers: []
-      },
-      retailOperations: {
-        startRoute: "/api/retail-printers/operations/start",
-        startPackets: buildRetailPrinterOperationStartPackets(),
-        blockers: []
-      },
-      realOrdersEnabled: false,
-      runtime: apiRuntime.describe()
-    });
-    return;
-  }
-
-  if (path === "/api/customer/draft-state/current") {
-    sendJson(response, 200, await apiRuntime.readDraftState({ authContext }));
-    return;
-  }
-
-  if (path === walgreensCheckoutCallbackRoute) {
-    sendHtml(response, 200, buildWalgreensCallbackHtml(walgreensCheckout.config.appOrigin || "*"));
-    return;
-  }
-
-  if (path === walgreensCheckoutUploadRoute || path === walgreensCheckoutSessionRoute) {
-    if (walgreensRateLimited(request)) {
-      sendJson(response, 429, {
-        service: "customcard-api",
-        status: "rate-limited",
-        path,
-        error: "Too many Walgreens checkout attempts. Wait a minute and try again."
-      });
-      return;
-    }
-    let parsedBody;
-    try {
-      const rawBody = await readRequestBody(
-        request,
-        path === walgreensCheckoutUploadRoute ? WALGREENS_UPLOAD_BODY_LIMIT : 256_000
-      );
-      parsedBody = rawBody ? JSON.parse(rawBody) : {};
-    } catch {
-      sendJson(response, 400, {
-        service: "customcard-api",
-        status: "invalid-json",
-        path,
-        error:
-          path === walgreensCheckoutUploadRoute
-            ? "Walgreens image upload request was malformed or exceeded the upload body limit."
-            : "Walgreens checkout request body must be valid JSON."
-      });
-      return;
-    }
-    try {
-      const result =
-        path === walgreensCheckoutUploadRoute
-          ? await walgreensCheckout.uploadCardImage(parsedBody.imageBase64)
-          : await walgreensCheckout.createCheckoutSession(parsedBody);
-      const { statusCode, ...payload } = result;
-      sendJson(response, statusCode, { service: "customcard-api", ...payload });
-    } catch (error) {
-      // Upstream Walgreens failures: return a stable error without leaking internals.
-      const upstream = formatWalgreensCheckoutUpstreamError(error);
-      sendJson(response, upstream.statusCode, {
-        service: "customcard-api",
-        ...upstream.payload
-      });
-    }
-    return;
-  }
-
-  if (path === aiCardGenerateRoute || path === aiChatRespondRoute) {
-    if (!request.headers?.["x-idempotency-key"]) {
-      sendJson(response, 400, {
-        service: "customcard-api",
-        status: "missing-idempotency-key",
-        path
-      });
-      return;
-    }
-    let parsedBody;
-    try {
-      const rawBody = await readRequestBody(request, 128_000);
-      parsedBody = rawBody ? JSON.parse(rawBody) : {};
-    } catch {
-      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
-      return;
-    }
-    const rateKey = clientRateLimitKey(request);
-    const result =
-      path === aiCardGenerateRoute
-        ? await aiGenerationService.generateCard(parsedBody, { rateKey })
-        : await aiGenerationService.respondChat(parsedBody, { rateKey });
-    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload });
-    return;
-  }
-
-  const bodyText = await readRequestBody(request);
-  const persistedMutation = await apiRuntime.persistMutation({
-    route,
-    request,
-    authContext,
-    bodyText,
-    responsePayload: buildMutationContractPayload(route, bodyText, { authContext, env: process.env, requestUrl })
-  });
-  sendJson(response, persistedMutation.statusCode, persistedMutation.payload);
+  await apiRouteFamilies.handlePostAuthRoute({ path, request, requestUrl, response, route, authContext });
 }
 
 function isCliEntrypoint() {

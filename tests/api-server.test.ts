@@ -530,7 +530,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-      expect(report.readiness.routes.total).toBe(25);
+      expect(report.readiness.routes.total).toBe(26);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,

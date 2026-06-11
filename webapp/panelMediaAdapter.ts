@@ -1,4 +1,5 @@
-import { buildPanelSvg, type CardPanel } from "../src/customerWorkflow";
+import { buildPanelSvg } from "../src/renderPacket";
+import type { CardPanel } from "../src/customerWorkflow";
 
 const walgreensMaxJpegBytes = 3_900_000;
 const walgreensJpegQualities = [0.9, 0.84, 0.78, 0.72, 0.66];
