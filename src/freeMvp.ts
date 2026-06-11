@@ -12,6 +12,30 @@ export interface LocalWorkspace {
   email: string;
   createdAtIso: string;
   memories: MemoryItem[];
+  // Optional for backward compatibility with workspaces stored before the event queue existed.
+  events?: SavedEvent[];
+  cardHistory?: CardHistoryEntry[];
+}
+
+export type SavedEventStatus = "saved" | "snoozed" | "dismissed";
+
+export interface SavedEvent {
+  id: string;
+  title: string;
+  recipient: string;
+  occasion: string;
+  dateLabel: string;
+  isoDate?: string;
+  status: SavedEventStatus;
+  savedAtIso: string;
+}
+
+export interface CardHistoryEntry {
+  id: string;
+  title: string;
+  recipient: string;
+  occasion: string;
+  exportedAtIso: string;
 }
 
 export interface MemoryItem {
@@ -120,6 +144,21 @@ LOCATION:Brooklyn, NY
 DESCRIPTION:Ten year anniversary. Sara loves botanical cards, Ahmed likes quiet humor, pickup is fine.
 END:VEVENT
 END:VCALENDAR`;
+
+export interface OccasionStarter {
+  occasion: string;
+  label: string;
+}
+
+// Occasions the import parser recognizes; chips and inference stay in sync.
+export const occasionStarters: OccasionStarter[] = [
+  { occasion: "birthday", label: "Birthday" },
+  { occasion: "anniversary", label: "Anniversary" },
+  { occasion: "wedding", label: "Wedding" },
+  { occasion: "thank-you", label: "Thank you" },
+  { occasion: "graduation", label: "Graduation" },
+  { occasion: "sympathy", label: "Sympathy" }
+];
 
 export const freeAdapterLabels = [
   "Local workspace",
@@ -482,6 +521,94 @@ export function removeMemory(workspace: LocalWorkspace, memoryId: string): Local
   return {
     ...workspace,
     memories: workspace.memories.filter((memory) => memory.id !== memoryId)
+  };
+}
+
+export function saveEventToWorkspace(
+  workspace: LocalWorkspace,
+  opportunity: CardOpportunity,
+  isoDate: string | undefined,
+  now = new Date()
+): LocalWorkspace {
+  const existing = workspace.events ?? [];
+  const savedEvent: SavedEvent = {
+    id: opportunity.id,
+    title: opportunity.title,
+    recipient: opportunity.recipient,
+    occasion: opportunity.occasion,
+    dateLabel: opportunity.dateLabel,
+    isoDate,
+    status: "saved",
+    savedAtIso: now.toISOString()
+  };
+  return {
+    ...workspace,
+    events: [savedEvent, ...existing.filter((event) => event.id !== opportunity.id)]
+  };
+}
+
+export function setSavedEventStatus(
+  workspace: LocalWorkspace,
+  eventId: string,
+  status: SavedEventStatus
+): LocalWorkspace {
+  return {
+    ...workspace,
+    events: (workspace.events ?? []).map((event) => (event.id === eventId ? { ...event, status } : event))
+  };
+}
+
+export function removeSavedEvent(workspace: LocalWorkspace, eventId: string): LocalWorkspace {
+  return {
+    ...workspace,
+    events: (workspace.events ?? []).filter((event) => event.id !== eventId)
+  };
+}
+
+export function upcomingSavedEvents(workspace: LocalWorkspace | undefined): SavedEvent[] {
+  const events = workspace?.events ?? [];
+  return events
+    .filter((event) => event.status !== "dismissed")
+    .slice()
+    .sort((a, b) => {
+      if (a.isoDate && b.isoDate) return a.isoDate.localeCompare(b.isoDate);
+      if (a.isoDate) return -1;
+      if (b.isoDate) return 1;
+      return b.savedAtIso.localeCompare(a.savedAtIso);
+    });
+}
+
+export function daysUntilLabel(isoDate: string | undefined, now = new Date()): string {
+  if (!isoDate) return "Date needed";
+  const target = new Date(`${isoDate}T12:00:00.000Z`).getTime();
+  const reference = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12);
+  const dayDiff = Math.round((target - reference) / dayInMs);
+  if (dayDiff < 0) return "Passed";
+  if (dayDiff === 0) return "Today";
+  if (dayDiff === 1) return "Tomorrow";
+  return `In ${dayDiff} days`;
+}
+
+const cardHistoryLimit = 12;
+
+export function recordCardExport(
+  workspace: LocalWorkspace,
+  draft: CardDraft,
+  now = new Date()
+): LocalWorkspace {
+  const recipient = cleanText(draft.input.recipient) || "Someone important";
+  const occasion = cleanText(draft.input.occasion) || "card";
+  const entry: CardHistoryEntry = {
+    id: draft.id,
+    title: occasion === "card" ? `Card for ${recipient}` : `${titleCase(occasion)} card for ${recipient}`,
+    recipient,
+    occasion,
+    exportedAtIso: now.toISOString()
+  };
+  const existing = (workspace.cardHistory ?? []).filter((item) => item.id !== draft.id);
+  return {
+    ...workspace,
+    cardHistory: [entry, ...existing].slice(0, cardHistoryLimit)
   };
 }
 

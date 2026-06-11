@@ -3233,3 +3233,188 @@ a:focus-visible {
   color: #8aaba4;
   line-height: 1.45;
 }
+
+/* ─── Occasion-first start card ─────────────────────────────────────────────── */
+
+.occasionStartCard,
+.recentCardsCard {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #d5dee0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(28, 47, 55, 0.08);
+}
+
+.occasionStartCard.wide,
+.recentCardsCard.wide {
+  grid-column: 1 / -1;
+}
+
+.occasionChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.occasionChip {
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid #cdd9d6;
+  border-radius: 999px;
+  background: #f4faf8;
+  color: #1d3b35;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.occasionChip:hover {
+  border-color: #258477;
+  background: #e3f3ec;
+}
+
+.occasionImportLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: #1f6f60;
+  font-size: 0.8rem;
+  font-weight: 820;
+  text-decoration: underline;
+}
+
+/* ─── Saved event queue ─────────────────────────────────────────────────────── */
+
+.savedEventList {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.savedEventRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #dbe4e6;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.savedEventRow > div:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.savedEventRow strong,
+.savedEventRow span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.savedEventRow span {
+  color: #5f7076;
+  font-size: 0.75rem;
+  font-weight: 780;
+}
+
+.savedEventActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── Recent card history ───────────────────────────────────────────────────── */
+
+.recentCardList {
+  display: grid;
+  gap: 6px;
+}
+
+.recentCardRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid #dbe4e6;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.recentCardRow strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.recentCardRow span {
+  color: #5f7076;
+  font-size: 0.75rem;
+  font-weight: 780;
+}
+
+/* ─── Mobile bottom tab bar ─────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .appRail {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    height: auto;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-right: 0;
+  }
+
+  .appRail .brandBlock,
+  .appRail .railStatus,
+  .appRail .navSectionDivider {
+    display: none;
+  }
+
+  .navList {
+    display: flex;
+    width: 100%;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .navButton {
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-width: 56px;
+    min-height: 48px;
+    padding: 5px 4px;
+    font-size: 0.62rem;
+    text-align: center;
+  }
+
+  .navButton span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .appMain {
+    padding-bottom: 96px;
+  }
+}

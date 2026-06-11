@@ -55,13 +55,20 @@ import {
   buildPanelSvg,
   buildVendorHandoff,
   createLocalWorkspace,
+  daysUntilLabel,
   freeAdapterLabels,
   generateCardDraft,
   getDefaultDraftInput,
+  occasionStarters,
   parseFreeImport,
+  recordCardExport,
   removeMemory,
+  saveEventToWorkspace,
+  setSavedEventStatus,
+  upcomingSavedEvents,
   validateCardDraft,
   type CardDraftInput,
+  type CardHistoryEntry,
   type CardOpportunity,
   type CardPanel,
   type CardValidation,
@@ -69,6 +76,7 @@ import {
   type LocalWorkspace,
   type MemoryItem,
   type OpportunityDecision,
+  type SavedEvent,
   type Tone,
   type VendorHandoff,
   type VendorId,
@@ -218,6 +226,8 @@ function App() {
   } = useAppState();
   const displayPanels = aiDraft?.panels ?? draft.panels;
   const opsView = isOpsUnlocked() && (activeView === "admin" || activeView === "adapters");
+  const savedEvents = upcomingSavedEvents(workspace);
+  const cardHistory = workspace?.cardHistory ?? [];
 
   function openView(view: ViewId) {
     setActiveView(view);
@@ -264,6 +274,37 @@ function App() {
     setOpportunityDecision("pending");
   }
 
+  function startOccasionCard(occasion: string) {
+    setDraftInput((current) => ({ ...current, occasion }));
+    openView("studio");
+  }
+
+  function saveCurrentEvent() {
+    const now = new Date();
+    const base = workspace ?? createLocalWorkspace(authForm.name, authForm.email, now);
+    saveWorkspace(saveEventToWorkspace(base, opportunity, signal.isoDate, now));
+    setScanStatus("Event saved to your list");
+  }
+
+  function makeCardFromSavedEvent(savedEvent: SavedEvent) {
+    setDraftInput((current) => ({
+      ...current,
+      occasion: savedEvent.occasion,
+      recipient: savedEvent.recipient
+    }));
+    openView("studio");
+  }
+
+  function snoozeSavedEvent(eventId: string) {
+    if (!workspace) return;
+    saveWorkspace(setSavedEventStatus(workspace, eventId, "snoozed"));
+  }
+
+  function dismissSavedEvent(eventId: string) {
+    if (!workspace) return;
+    saveWorkspace(setSavedEventStatus(workspace, eventId, "dismissed"));
+  }
+
   function updateDraft<K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) {
     setDraftInput((current) => ({ ...current, [field]: value }));
   }
@@ -302,6 +343,9 @@ function App() {
     printPackage.files.forEach((file, index) => {
       window.setTimeout(() => downloadExportFile(file), index * 80);
     });
+    if (workspace) {
+      saveWorkspace(recordCardExport(workspace, draft, new Date()));
+    }
     setExportStatus(`Print package queued: ${printPackage.files.length} files`);
   }
 
@@ -419,6 +463,7 @@ function App() {
         {activeView === "customer" && (
           <CustomerPanelView
             authForm={authForm}
+            cardHistory={cardHistory}
             chatInput={customerChatInput}
             chatSession={customerChatSession}
             calendarChoices={calendarConnectionStartPackets}
@@ -427,14 +472,19 @@ function App() {
             onAuthForm={setAuthForm}
             onChatInput={setCustomerChatInput}
             onChatSend={sendCustomerChat}
+            onDismissEvent={dismissSavedEvent}
             onLocale={chooseLocale}
+            onMakeCardFromEvent={makeCardFromSavedEvent}
             onNavigate={openView}
+            onSnoozeEvent={snoozeSavedEvent}
+            onStartOccasion={startOccasionCard}
             onStartWorkspace={startWorkspace}
             opportunity={opportunity}
             opportunityDecision={opportunityDecision}
             panelCount={draft.panels.length}
             fulfillmentRecommendationSet={fulfillmentRecommendationSet}
             productionReadiness={productionReadiness}
+            savedEvents={savedEvents}
             selectedLocale={selectedLocale}
             validation={validation}
             workspace={workspace}
@@ -484,9 +534,11 @@ function App() {
 
         {activeView === "opportunities" && (
           <OpportunitiesView
+            canSave={opportunity.evidence.length > 0}
             inviteText={inviteText}
             onDecision={setOpportunityDecision}
             onInviteText={setInviteText}
+            onSave={saveCurrentEvent}
             onScan={scanImport}
             onStartCard={() => {
               setOpportunityDecision("accepted");
@@ -724,6 +776,7 @@ function MobileMiniStat({ label, value }: { label: string; value: string }) {
 function CustomerPanelView({
   authForm,
   calendarChoices,
+  cardHistory,
   chatInput,
   chatSession,
   handoff,
@@ -731,20 +784,26 @@ function CustomerPanelView({
   onAuthForm,
   onChatInput,
   onChatSend,
+  onDismissEvent,
   onLocale,
+  onMakeCardFromEvent,
   onNavigate,
+  onSnoozeEvent,
+  onStartOccasion,
   onStartWorkspace,
   opportunity,
   opportunityDecision,
   panelCount,
   fulfillmentRecommendationSet,
   productionReadiness,
+  savedEvents,
   selectedLocale,
   validation,
   workspace
 }: {
   authForm: { name: string; email: string };
   calendarChoices: CalendarConnectionStartPacket[];
+  cardHistory: CardHistoryEntry[];
   chatInput: string;
   chatSession: CustomerChatSession;
   handoff: VendorHandoff;
@@ -752,14 +811,19 @@ function CustomerPanelView({
   onAuthForm: React.Dispatch<React.SetStateAction<{ name: string; email: string }>>;
   onChatInput: (value: string) => void;
   onChatSend: () => void;
+  onDismissEvent: (eventId: string) => void;
   onLocale: (locale: SupportedLocaleCode) => void;
+  onMakeCardFromEvent: (savedEvent: SavedEvent) => void;
   onNavigate: (view: ViewId) => void;
+  onSnoozeEvent: (eventId: string) => void;
+  onStartOccasion: (occasion: string) => void;
   onStartWorkspace: () => void;
   opportunity: CardOpportunity;
   opportunityDecision: OpportunityDecision;
   panelCount: number;
   fulfillmentRecommendationSet: FulfillmentRecommendationSet;
   productionReadiness: ProductionReadinessSummary;
+  savedEvents: SavedEvent[];
   selectedLocale: SupportedLocale;
   validation: CardValidation;
   workspace: LocalWorkspace | undefined;
@@ -805,6 +869,32 @@ function CustomerPanelView({
       </div>
 
       <div className="customerGrid">
+        <article className="occasionStartCard wide">
+          <div className="sectionHeader">
+            <div>
+              <p className="eyebrow">Start a card</p>
+              <h3>Who is the card for?</h3>
+            </div>
+            <StatusChip icon={WandSparkles} label="Pick an occasion" tone="blue" />
+          </div>
+          <div className="occasionChipRow" aria-label="Start a card by occasion">
+            {occasionStarters.map((starter) => (
+              <button
+                className="occasionChip"
+                key={starter.occasion}
+                onClick={() => onStartOccasion(starter.occasion)}
+                type="button"
+              >
+                {starter.label}
+              </button>
+            ))}
+          </div>
+          <button className="occasionImportLink" onClick={() => onNavigate("opportunities")} type="button">
+            <ClipboardCheck size={15} />
+            Or paste an invite, calendar export, or short note
+          </button>
+        </article>
+
         <article className="customerStartCard wide">
           <div className="sectionHeader">
             <div>
@@ -954,6 +1044,45 @@ function CustomerPanelView({
               </button>
             </div>
           )}
+          {savedEvents.length > 0 && (
+            <div className="savedEventList" aria-label="Your saved events">
+              {savedEvents.map((savedEvent) => (
+                <div className="savedEventRow" key={savedEvent.id}>
+                  <div>
+                    <strong>{savedEvent.title}</strong>
+                    <span>
+                      {savedEvent.dateLabel} · {daysUntilLabel(savedEvent.isoDate)}
+                      {savedEvent.status === "snoozed" ? " · Snoozed" : ""}
+                    </span>
+                  </div>
+                  <div className="savedEventActions">
+                    <button className="quietButton" onClick={() => onMakeCardFromEvent(savedEvent)} type="button">
+                      <WandSparkles size={15} />
+                      Make card
+                    </button>
+                    <button
+                      aria-label={`Snooze ${savedEvent.title}`}
+                      className="iconOnlyButton"
+                      onClick={() => onSnoozeEvent(savedEvent.id)}
+                      title="Snooze"
+                      type="button"
+                    >
+                      <Calendar size={16} />
+                    </button>
+                    <button
+                      aria-label={`Dismiss ${savedEvent.title}`}
+                      className="iconOnlyButton"
+                      onClick={() => onDismissEvent(savedEvent.id)}
+                      title="Dismiss"
+                      type="button"
+                    >
+                      <XCircle size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="eventLocaleRow">
             <p className="eyebrow">Language</p>
             <SegmentedControl
@@ -1007,6 +1136,26 @@ function CustomerPanelView({
             <span>{customerExperience.fulfillment.disclaimer}</span>
           </div>
         </article>
+
+        {cardHistory.length > 0 && (
+          <article className="recentCardsCard wide">
+            <div className="sectionHeader compact">
+              <div>
+                <p className="eyebrow">Finished</p>
+                <h3>Recent cards</h3>
+              </div>
+              <StatusChip icon={FileDown} label={`${cardHistory.length} exported`} tone="green" />
+            </div>
+            <div className="recentCardList">
+              {cardHistory.map((entry) => (
+                <div className="recentCardRow" key={entry.id}>
+                  <strong>{entry.title}</strong>
+                  <span>{entry.exportedAtIso.slice(0, 10)}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+        )}
 
         <article className="chatConsole wide">
           <div className="sectionHeader">
@@ -1103,9 +1252,11 @@ function calendarChoiceStatusLabel(choice: CalendarConnectionStartPacket): strin
 }
 
 function OpportunitiesView({
+  canSave,
   inviteText,
   onDecision,
   onInviteText,
+  onSave,
   onScan,
   onStartCard,
   opportunity,
@@ -1113,9 +1264,11 @@ function OpportunitiesView({
   scanStatus,
   warnings
 }: {
+  canSave: boolean;
   inviteText: string;
   onDecision: (decision: OpportunityDecision) => void;
   onInviteText: (value: string) => void;
+  onSave: () => void;
   onScan: () => void;
   onStartCard: () => void;
   opportunity: CardOpportunity;
@@ -1181,6 +1334,16 @@ function OpportunitiesView({
           <button className="primaryButton" type="button" onClick={onStartCard}>
             <WandSparkles size={16} />
             Generate card
+          </button>
+          <button
+            className="quietButton"
+            disabled={!canSave}
+            title={canSave ? "Keep this event on your list" : "Add event details first"}
+            type="button"
+            onClick={onSave}
+          >
+            <Plus size={16} />
+            Save for later
           </button>
           <button className="quietButton" type="button" onClick={() => onDecision("snoozed")}>
             <Calendar size={16} />

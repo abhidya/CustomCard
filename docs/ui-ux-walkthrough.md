@@ -101,14 +101,23 @@ tests enforce this; keep extending that pattern when new jargon appears.
   (type a name before "Create local workspace"; chat starts unseeded) — they require headless
   Chrome and run in CI.
 
-## Prioritized backlog (not in this pass)
+## Prioritized backlog
 
+Shipped 2026-06-11 (production build-out pass):
+- **Occasion-first hub** — "Who is the card for?" chips on the home view jump straight into the
+  Studio with the occasion prefilled; invite paste remains one tap away.
+- **Persisted event queue** — events can be saved from the Events view; the home queue shows
+  them sorted by date with days-until labels, snooze, dismiss, and "Make card".
+- **Card history** — exported print packages are recorded and listed under "Recent cards".
+- **Bottom tab bar** — customer nav becomes a fixed bottom bar under 640px.
+- **PWA installability** — manifest, icons, and an offline-capable service worker
+  (production builds only).
+
+Still open:
 1. **Onboarding moment after workspace creation** — route the customer straight to Events with
    a one-line "what happens next" banner instead of returning to the home grid.
-2. **Event queue with history** — today one signal = one opportunity; persist
-   reviewed/snoozed/dismissed events in the workspace so "Events" becomes a real queue.
-3. **Mobile-width nav** — the rail collapses, but a bottom tab bar would serve the
-   mobile-first persona better at 320–430px.
-4. **Price observation freshness** — show the observed-at date next to each estimate row.
-5. **Proof approval as an explicit action** — "proof approved" is currently inferred from
+2. **Price observation freshness** — show the observed-at date next to each estimate row.
+3. **Proof approval as an explicit action** — "proof approved" is currently inferred from
    validation passing; an explicit "Looks good" tap would make the fulfillment unlock feel earned.
+4. **Photo upload on cards** — see `docs/frontend-replatform-plan.md`.
+5. **Occasion/template gallery pages** — the SEO surface from the replatform plan.

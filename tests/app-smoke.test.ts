@@ -556,6 +556,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.initialCustomerText).toContain("Your cards");
+    expect(result.initialCustomerText).toContain("Who is the card for?");
+    expect(result.initialCustomerText).toContain("Birthday");
     expect(result.initialCustomerText).toContain("Create private workspace");
     expect(result.initialCustomerText).toContain("Create local workspace");
     expect(result.initialCustomerText).toContain("Import an invite");
