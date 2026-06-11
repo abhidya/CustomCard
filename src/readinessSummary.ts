@@ -21,6 +21,8 @@ export type {
   ExternalAuditReadinessSummary,
   HostedApiReadinessItem,
   HostedApiReadinessSummary,
+  LegalComplianceItem,
+  LegalComplianceSummary,
   MobileRenderReadinessItem,
   MobileRenderReadinessSummary,
   ObservabilityReadinessItem,

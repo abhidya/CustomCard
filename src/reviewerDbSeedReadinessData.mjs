@@ -17,6 +17,7 @@ const requiredReviewerSeedTables = [
   "provider_connections",
   "imported_events",
   "card_opportunities",
+  "draft_states",
   "relationship_memories",
   "card_projects",
   "render_packets",

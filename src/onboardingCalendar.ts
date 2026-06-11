@@ -57,10 +57,10 @@ export const onboardingStages: OnboardingStage[] = [
     id: "account-baseline",
     title: "Create a private card workspace",
     userGoal: "Start without committing to a live provider connection.",
-    requiredDecision: "Choose local workspace auth or production account path.",
+    requiredDecision: "Confirm account-session auth before calendar setup.",
     completionSignal: "A workspace exists with visible privacy and deletion expectations.",
     blockedUntil: ["Production auth provider is selected and verified for hosted accounts."],
-    productionNotes: ["The local workspace uses browser storage; production accounts require hosted auth and recovery."]
+    productionNotes: ["Customer workspace access requires hosted account auth and recovery."]
   },
   {
     id: "calendar-choice",

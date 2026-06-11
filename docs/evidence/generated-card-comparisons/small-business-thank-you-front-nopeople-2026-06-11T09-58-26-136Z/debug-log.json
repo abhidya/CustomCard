@@ -1,0 +1,212 @@
+{
+  "runId": "small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z",
+  "createdAtIso": "2026-06-11T09:58:26.136Z",
+  "benchmark": {
+    "category": "Small business thank-you AI card",
+    "competitor": "Adobe Express",
+    "competitorPrompt": "thanks for supporting our small business",
+    "competitorSource": "https://www.adobe.com/express/create/ai/card",
+    "competitorLocalFile": "docs/evidence/competitor-card-examples/adobe-express-small-business-thanks.png",
+    "competitorSha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+  },
+  "effectivePrompt": {
+    "uiUxIntent": "RCA follow-up run for the Adobe small-business thank-you benchmark using a concrete flat-stationery prompt that bans people/faces/portraits.",
+    "benchmarkScope": "front-panel-only image generation to control cost",
+    "reusedCopyFrom": "small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z",
+    "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+    "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+    "frontImagePrompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+    "frontNegativePrompt": "person, people, human, face, portrait, body, hands, fingers, eyes, mouth, skin, woman, man, child, model, folded card mockup, collage, multiple panels, tabletop scene, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+    "imageRequestBody": {
+      "prompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+      "negative_prompt": "person, people, human, face, portrait, body, hands, fingers, eyes, mouth, skin, woman, man, child, model, folded card mockup, collage, multiple panels, tabletop scene, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+      "width": 1464,
+      "height": 2048,
+      "guidance": 4.5,
+      "num_steps": 8,
+      "metadata": {
+        "customcard": {
+          "prompt_contract": "folded-card-four-panel-v1",
+          "generation_strategy": "front-panel-only-no-people-rca-run",
+          "panel_id": "front",
+          "target_width": 1500,
+          "target_height": 2100,
+          "target_dpi": 300
+        }
+      }
+    }
+  },
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "<redacted>",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+          "negative_prompt": "person, people, human, face, portrait, body, hands, fingers, eyes, mouth, skin, woman, man, child, model, folded card mockup, collage, multiple panels, tabletop scene, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 4.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "front-panel-only-no-people-rca-run",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "contentLength": "423683",
+        "byteLength": 423683
+      },
+      "durationMs": 17434
+    }
+  ],
+  "generation": {
+    "draft_id": "benchmark-small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z",
+    "card_copy": {
+      "panels": [
+        {
+          "id": "front",
+          "headline": "Grateful for You",
+          "body": "Thank you for choosing us over the big guys. Your support means the world to our small business.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        },
+        {
+          "id": "inside-left",
+          "headline": "A Heartfelt Thank You",
+          "body": "We're proud to be a part of our community, and we're honored that you're a part of it too.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        },
+        {
+          "id": "inside-right",
+          "headline": "Thanks for Being an Amazing Customer",
+          "body": "Your loyalty and trust mean everything to us. We're grateful for customers like you.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        },
+        {
+          "id": "back",
+          "headline": "Warm Wishes",
+          "body": "Wishing you all the best, and thank you again for your support.",
+          "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+        }
+      ],
+      "memory_citations": [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+        "CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts."
+      ]
+    },
+    "images": [
+      {
+        "panel_id": "front",
+        "image_url": "<data-url 564935 chars>",
+        "revised_prompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+        "width": 1500,
+        "height": 2100
+      }
+    ],
+    "generated_by": "ai-text-and-image-front-only-nopeople",
+    "ai_flow": {
+      "card_copy": {
+        "flow_id": "card-copy",
+        "adapter_id": "cloudflare-workers-ai-chat",
+        "primary_adapter_id": "cloudflare-workers-ai-chat",
+        "fallback_adapter_id": "deterministic-customer-chat",
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "rate_limit_per_minute": 10,
+        "monthly_budget_cents": 3000,
+        "per_request_budget_cents": 12,
+        "queue_enabled": false,
+        "fallback_queue_enabled": true,
+        "live_provider_calls_enabled": true,
+        "ready_for_live_calls": true,
+        "blocked_reasons": []
+      },
+      "card_image": {
+        "flow_id": "card-image",
+        "adapter_id": "cloudflare-workers-ai-image",
+        "primary_adapter_id": "cloudflare-workers-ai-image",
+        "fallback_adapter_id": "browser-svg-renderer",
+        "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+        "rate_limit_per_minute": 4,
+        "monthly_budget_cents": 3000,
+        "per_request_budget_cents": 75,
+        "queue_enabled": true,
+        "fallback_queue_enabled": true,
+        "live_provider_calls_enabled": true,
+        "ready_for_live_calls": true,
+        "blocked_reasons": [
+          "Live provider calls disabled for card-image."
+        ],
+        "provider_failure": "Live provider calls disabled for card-image.",
+        "benchmark_scope": "front-panel-only-no-people-prompt"
+      }
+    },
+    "live_provider_calls_enabled": true,
+    "fallback_queued": false,
+    "external_network_calls": true
+  },
+  "files": [
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/customcard-small-business-thanks-front.svg",
+      "sha256": "aa92e06072db7a81ca766aa610b2cc98d18f32647ab2bf774d7a54919c3397f2"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/customcard-small-business-thanks-front-preview.png",
+      "sha256": "ffad77bce99f5cbf202554aadf49851732c91df1367d66e9d4d69fb3a3fb583e"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/customcard-ai-output.json",
+      "sha256": "918117b6abf3212ac73855a560f03692630c39b951b5ff44996151ce69a57d1f"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/effective-prompt.json",
+      "sha256": "ab7a986c9541900cd98610e6a2a11a5343fd1dcfd7932a87b4325af7fb29c66f"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/comparison.md",
+      "sha256": "e84758d10a6f40f2291151018f8b20f7c423739e6391134835d1f4874de27219"
+    },
+    {
+      "path": "docs/evidence/generated-card-comparisons/small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/customcard-provider-front-art-nopeople.jpg",
+      "sha256": "48f1daca9a0d1b7a94511691e0dfd9bfcb14d495f2343220d5f7bcd38714b829"
+    }
+  ],
+  "persistence": {
+    "artifactPersistence": {
+      "status": "stored",
+      "storageProvider": "s3-compatible",
+      "provider": "cloudflare-r2",
+      "bucket": "customcard-prod",
+      "artifactCount": 3,
+      "verifiedWrites": 3,
+      "manifestStored": true,
+      "liveNetworkCalls": true,
+      "blockers": []
+    },
+    "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z/artifact-handoff-manifest.json",
+    "signedUrlExpiresAt": "2026-06-11T10:13:41.000Z"
+  },
+  "comparison": {
+    "previousFailureMode": "surreal human portrait despite small-business card intent",
+    "promptIntervention": "explicit no people/faces/portraits plus concrete stationery/shop objects",
+    "ourFrontHeadline": "Grateful for You",
+    "ourFrontBody": "Thank you for choosing us over the big guys. Your support means the world to our small business.",
+    "imageProvider": "cloudflare-workers-ai-image",
+    "persisted": "stored"
+  },
+  "errors": []
+}

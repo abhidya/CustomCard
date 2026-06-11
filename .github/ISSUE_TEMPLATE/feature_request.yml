@@ -1,0 +1,48 @@
+name: Feature request
+description: Propose a focused product, contract, docs, or verification improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user, reviewer, or operator problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful change.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Web app
+        - Mobile preview
+        - Expo shell
+        - API/runtime
+        - Persistence
+        - Provider catalog/runtime
+        - Retail/fulfillment
+        - Payments
+        - Docs
+        - CI/verification
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: gates
+    attributes:
+      label: Production boundary
+      options:
+        - label: This does not enable live provider calls, live ordering, live payments, telemetry sends, or public certification claims without matching evidence.
+          required: true
+        - label: I identified docs, tests, or doctors that would need to change.
+          required: false
+

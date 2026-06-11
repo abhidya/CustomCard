@@ -1,5 +1,5 @@
-import { createHash, randomBytes } from "node:crypto";
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createCipheriv, createHash, createHmac, randomBytes } from "node:crypto";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -33,7 +33,7 @@ import {
   walgreensCheckoutUploadRoute
 } from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
-import { apiRouteContracts, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
+import { apiRouteContracts, hostedCheckoutExemptRouteIds, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
 import {
   aiCardGenerateRoute,
   aiChatRespondRoute,
@@ -45,8 +45,6 @@ const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
 const host = process.env.HOST ?? "0.0.0.0";
 
-loadLocalAiEnvFiles();
-
 export const routes = apiRouteContracts;
 
 const walgreensCheckout = createWalgreensHostedCheckoutService({
@@ -57,6 +55,53 @@ const aiGenerationService = createAiCardGenerationService({
   env: process.env,
   fetchImpl: (...args) => globalThis.fetch(...args)
 });
+
+const localApiEnvKeys = new Set([
+  "WALGREENS_VENDOR_MODE",
+  "WALGREENS_API_KEY",
+  "WALGREENS_AFF_ID",
+  "WALGREENS_PUBLISHER_ID",
+  "PUBLIC_APP_ORIGIN",
+  "GOOGLE_OAUTH_CLIENT_ID",
+  "GOOGLE_OAUTH_CLIENT_SECRET",
+  "GOOGLE_OAUTH_REDIRECT_URI",
+  "GOOGLE_CALENDAR_REDIRECT_URI",
+  "GOOGLE_OAUTH_STATE_SECRET",
+  "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+  "GOOGLE_CALENDAR_ID",
+  "GOOGLE_CALENDAR_IMPORT_MAX_RESULTS"
+]);
+
+loadLocalApiEnvFiles();
+loadLocalAiEnvFiles();
+
+function loadLocalApiEnvFiles({ cwd = process.cwd(), target = process.env } = {}) {
+  for (const filePath of [".env.local", "infra/env/.env"]) {
+    const absolutePath = resolve(cwd, filePath);
+    if (!existsSync(absolutePath)) continue;
+    const parsed = parseLocalEnv(readFileSync(absolutePath, "utf8"));
+    for (const [key, value] of Object.entries(parsed)) {
+      if (!localApiEnvKeys.has(key)) continue;
+      if (!target[key]) target[key] = value;
+    }
+  }
+}
+
+function parseLocalEnv(text) {
+  const parsed = {};
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+    const index = trimmed.indexOf("=");
+    const key = trimmed.slice(0, index).trim();
+    let value = trimmed.slice(index + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (key) parsed[key] = value;
+  }
+  return parsed;
+}
 
 // Best-effort per-instance rate limit for the public Walgreens checkout routes.
 const walgreensRateBuckets = new Map();
@@ -408,7 +453,7 @@ if (process.argv.includes("--doctor")) {
   createServer((request, response) => {
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
-    if (requestUrl.pathname.startsWith("/api/")) {
+    if (requestUrl.pathname.startsWith("/api/") || requestUrl.pathname === googleCalendarOAuthCallbackRoute) {
       handleApiRequest(request, response).catch((error) => {
         sendJson(response, 500, {
           service: "customcard-api",
@@ -432,6 +477,11 @@ export async function handleApiRequest(request, response) {
 
 async function serveApi(request, response, requestUrl) {
   const path = requestUrl.pathname;
+  if (path === googleCalendarOAuthCallbackRoute) {
+    await handleGoogleCalendarOAuthCallback(request, response, requestUrl);
+    return;
+  }
+
   if (path.startsWith("/api/artifacts/")) {
     if (request.method !== "GET") {
       sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path });
@@ -660,7 +710,7 @@ async function serveApi(request, response, requestUrl) {
     request,
     authContext,
     bodyText,
-    responsePayload: buildMutationContractPayload(route, bodyText, { env: process.env, requestUrl })
+    responsePayload: buildMutationContractPayload(route, bodyText, { authContext, env: process.env, requestUrl })
   });
   sendJson(response, persistedMutation.statusCode, persistedMutation.payload);
 }
@@ -744,7 +794,8 @@ function validateApiServerContract() {
   }
   for (const route of routes) {
     if (route.audience === "admin" && route.auth !== "admin-session") blockers.push(`Admin route ${route.id} is not gated.`);
-    if (route.audience === "customer" && route.auth !== "customer-session") {
+    const anonymousHostedCheckout = hostedCheckoutExemptRouteIds.has(route.id) && route.auth === "none";
+    if (route.audience === "customer" && route.auth !== "customer-session" && !anonymousHostedCheckout) {
       blockers.push(`Customer route ${route.id} is not gated.`);
     }
   }
@@ -1257,6 +1308,7 @@ function buildMutationContractPayload(route, bodyText, options = {}) {
     const googleStart =
       requestedChoiceId === "google-calendar-events"
         ? buildGoogleCalendarConnectionStart(startPacket, {
+            authContext: options.authContext,
             env: options.env ?? process.env,
             requestBody,
             requestUrl: options.requestUrl
@@ -1419,13 +1471,17 @@ function buildMutationContractPayload(route, bodyText, options = {}) {
 }
 
 const googleCalendarOAuthScopeUri = "https://www.googleapis.com/auth/calendar.events.readonly";
+const googleCalendarOAuthCallbackRoute = "/oauth/callback";
 const googleCalendarOAuthRequiredEnv = [
   "GOOGLE_OAUTH_CLIENT_ID",
   "GOOGLE_OAUTH_CLIENT_SECRET",
   "GOOGLE_OAUTH_REDIRECT_URI"
 ];
 
-function buildGoogleCalendarConnectionStart(basePacket, { env = process.env, requestBody = {}, requestUrl } = {}) {
+function buildGoogleCalendarConnectionStart(
+  basePacket,
+  { authContext = { role: "customer", userId: "contract-customer", sessionId: "contract-session" }, env = process.env, requestBody = {}, requestUrl } = {}
+) {
   const requestOrigin = requestUrl instanceof URL ? requestUrl.origin : "http://localhost:5173";
   const redirectUri = usableEnvValue(env.GOOGLE_OAUTH_REDIRECT_URI) || usableEnvValue(env.GOOGLE_CALENDAR_REDIRECT_URI) || "";
   const config = {
@@ -1462,7 +1518,10 @@ function buildGoogleCalendarConnectionStart(basePacket, { env = process.env, req
   }
 
   const returnTo = safeReturnToUrl(requestBody.returnTo, requestOrigin);
-  const state = buildOAuthState("google-calendar-events", returnTo);
+  const state = buildOAuthState("google-calendar-events", returnTo, {
+    authContext,
+    env
+  });
   const providerRequestUrl = buildGoogleCalendarAuthorizationUrl({
     clientId: config.clientId,
     redirectUri: config.redirectUri,
@@ -1517,10 +1576,331 @@ function buildGoogleCalendarAuthorizationUrl({ clientId, redirectUri, state }) {
   return url.toString();
 }
 
-function buildOAuthState(choiceId, returnTo) {
-  const nonce = randomBytes(18).toString("base64url");
-  const digest = createHash("sha256").update(`${choiceId}:${returnTo}:${nonce}`).digest("base64url").slice(0, 18);
-  return `${digest}.${nonce}`;
+async function handleGoogleCalendarOAuthCallback(request, response, requestUrl) {
+  if (request.method !== "GET") {
+    sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path: googleCalendarOAuthCallbackRoute });
+    return;
+  }
+
+  const stateResult = verifyOAuthState(requestUrl.searchParams.get("state"), process.env);
+  if (!stateResult.ok) {
+    sendJson(response, 400, {
+      service: "customcard-api",
+      status: "invalid-oauth-state",
+      detail: stateResult.detail,
+      rawContentStored: false
+    });
+    return;
+  }
+
+  const returnTo = stateResult.payload.returnTo;
+  const providerError = requestUrl.searchParams.get("error");
+  if (providerError) {
+    sendCalendarCallbackResult(request, response, returnTo, 400, {
+      service: "customcard-api",
+      status: "google-calendar-oauth-error",
+      detail: safeContractText(providerError, "Google OAuth returned an error."),
+      rawContentStored: false
+    });
+    return;
+  }
+
+  const code = String(requestUrl.searchParams.get("code") ?? "").trim();
+  if (!code) {
+    sendCalendarCallbackResult(request, response, returnTo, 400, {
+      service: "customcard-api",
+      status: "missing-oauth-code",
+      detail: "Google OAuth callback did not include an authorization code.",
+      rawContentStored: false
+    });
+    return;
+  }
+
+  try {
+    const token = await exchangeGoogleOAuthCode(code, process.env);
+    const eventsPayload = await fetchGoogleCalendarEvents(token.accessToken, process.env);
+    const authContext = {
+      role: "customer",
+      userId: stateResult.payload.userId,
+      sessionId: stateResult.payload.sessionId
+    };
+    const record = buildGoogleCalendarImportRecord({
+      authContext,
+      encryptedRefreshToken: token.refreshToken ? encryptTokenSecret(token.refreshToken, process.env) : "",
+      eventsPayload,
+      grantedScopes: token.scope.split(/[ ,]+/).filter(Boolean)
+    });
+    const persistence = await apiRuntime.persistGoogleCalendarImport({ authContext, record });
+    sendCalendarCallbackResult(request, response, returnTo, 200, {
+      service: "customcard-api",
+      status: "google-calendar-connected",
+      importedEventCount: record.importedEvents.length,
+      opportunityCount: record.cardOpportunities.length,
+      credentialStorageEnabled: Boolean(record.providerConnection.encryptedRefreshToken),
+      rawContentStored: false,
+      ...persistence.payload
+    });
+  } catch (error) {
+    sendCalendarCallbackResult(request, response, returnTo, 502, {
+      service: "customcard-api",
+      status: "google-calendar-import-failed",
+      detail: error instanceof Error ? error.message : "Google Calendar import failed.",
+      rawContentStored: false
+    });
+  }
+}
+
+function sendCalendarCallbackResult(request, response, returnTo, statusCode, payload) {
+  if (wantsJson(request)) {
+    sendJson(response, statusCode, payload);
+    return;
+  }
+
+  const redirectUrl = new URL(returnTo);
+  redirectUrl.searchParams.set("calendarConnection", payload.status === "google-calendar-connected" ? "connected" : "error");
+  if (payload.importedEventCount !== undefined) redirectUrl.searchParams.set("calendarImported", String(payload.importedEventCount));
+  if (payload.status !== "google-calendar-connected") {
+    redirectUrl.searchParams.set("calendarError", safeContractText(payload.detail ?? payload.status, "Calendar connection failed."));
+  }
+  response.statusCode = 303;
+  response.setHeader("Location", redirectUrl.toString());
+  applySecurityHeaders(response, "no-store");
+  response.end();
+}
+
+function wantsJson(request) {
+  return String(request.headers?.accept ?? "").includes("application/json");
+}
+
+function buildOAuthState(choiceId, returnTo, { authContext, env, nowMs = Date.now() }) {
+  const payload = {
+    version: 1,
+    provider: "google-calendar",
+    choiceId,
+    userId: authContext.userId,
+    sessionId: authContext.sessionId,
+    returnTo,
+    issuedAtMs: nowMs,
+    expiresAtMs: nowMs + 15 * 60_000,
+    nonce: randomBytes(18).toString("base64url")
+  };
+  const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  return `${encoded}.${signOAuthState(encoded, env)}`;
+}
+
+function verifyOAuthState(value, env, nowMs = Date.now()) {
+  const text = String(value ?? "");
+  const [encoded, signature] = text.split(".");
+  if (!encoded || !signature) return { ok: false, detail: "OAuth state is missing or malformed." };
+  const expected = signOAuthState(encoded, env);
+  if (signature !== expected) return { ok: false, detail: "OAuth state signature did not match." };
+  try {
+    const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
+    if (payload.provider !== "google-calendar" || payload.choiceId !== "google-calendar-events") {
+      return { ok: false, detail: "OAuth state provider did not match Google Calendar." };
+    }
+    if (!payload.userId || !payload.returnTo || Number(payload.expiresAtMs) < nowMs) {
+      return { ok: false, detail: "OAuth state is expired or incomplete." };
+    }
+    return { ok: true, payload };
+  } catch {
+    return { ok: false, detail: "OAuth state payload could not be decoded." };
+  }
+}
+
+function signOAuthState(encodedPayload, env) {
+  return createHmac("sha256", oauthStateSecret(env)).update(encodedPayload).digest("base64url");
+}
+
+function oauthStateSecret(env) {
+  return usableEnvValue(env.GOOGLE_OAUTH_STATE_SECRET) ||
+    usableEnvValue(env.AUTH_SESSION_SECRET) ||
+    usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET) ||
+    "customcard-local-oauth-state-development-secret";
+}
+
+async function exchangeGoogleOAuthCode(code, env, fetchImpl = globalThis.fetch) {
+  const redirectUri = usableEnvValue(env.GOOGLE_OAUTH_REDIRECT_URI) || usableEnvValue(env.GOOGLE_CALENDAR_REDIRECT_URI);
+  const clientId = usableEnvValue(env.GOOGLE_OAUTH_CLIENT_ID);
+  const clientSecret = usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET);
+  const missingEnv = [];
+  if (!clientId) missingEnv.push("GOOGLE_OAUTH_CLIENT_ID");
+  if (!clientSecret) missingEnv.push("GOOGLE_OAUTH_CLIENT_SECRET");
+  if (!redirectUri) missingEnv.push("GOOGLE_OAUTH_REDIRECT_URI");
+  if (missingEnv.length > 0) throw new Error(`Missing Google OAuth env: ${missingEnv.join(", ")}.`);
+
+  const body = new URLSearchParams({
+    code,
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uri: redirectUri,
+    grant_type: "authorization_code"
+  });
+  const response = await fetchImpl(usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENDPOINT) || "https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(safeContractText(payload.error_description ?? payload.error, "Google token exchange failed."));
+  }
+  const accessToken = String(payload.access_token ?? "").trim();
+  if (!accessToken) throw new Error("Google token exchange did not return an access token.");
+  const scope = String(payload.scope ?? googleCalendarOAuthScopeUri);
+  if (!scope.split(/[ ,]+/).includes(googleCalendarOAuthScopeUri)) {
+    throw new Error("Google token response did not grant the Calendar events readonly scope.");
+  }
+  return {
+    accessToken,
+    refreshToken: String(payload.refresh_token ?? "").trim(),
+    expiresIn: Number(payload.expires_in ?? 0),
+    scope
+  };
+}
+
+async function fetchGoogleCalendarEvents(accessToken, env, fetchImpl = globalThis.fetch) {
+  const url = googleCalendarEventsUrl(env);
+  const response = await fetchImpl(url, {
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" }
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(safeContractText(payload.error?.message ?? payload.error_description ?? payload.error, "Google Calendar events import failed."));
+  }
+  return payload;
+}
+
+function googleCalendarEventsUrl(env, now = new Date()) {
+  const base = usableEnvValue(env.GOOGLE_CALENDAR_EVENTS_ENDPOINT) ||
+    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(usableEnvValue(env.GOOGLE_CALENDAR_ID) || "primary")}/events`;
+  const url = new URL(base);
+  const timeMin = now.toISOString();
+  const timeMax = new Date(now.getTime() + 366 * 24 * 60 * 60 * 1000).toISOString();
+  url.searchParams.set("singleEvents", "true");
+  url.searchParams.set("orderBy", "startTime");
+  url.searchParams.set("timeMin", timeMin);
+  url.searchParams.set("timeMax", timeMax);
+  url.searchParams.set("maxResults", String(safeCalendarMaxResults(env.GOOGLE_CALENDAR_IMPORT_MAX_RESULTS)));
+  return url.toString();
+}
+
+function safeCalendarMaxResults(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 10;
+  return Math.max(1, Math.min(25, Math.floor(number)));
+}
+
+function buildGoogleCalendarImportRecord({ authContext, encryptedRefreshToken, eventsPayload, grantedScopes }) {
+  const rawEvents = Array.isArray(eventsPayload.items) ? eventsPayload.items.slice(0, 25) : [];
+  const connectionId = `connection-${stableContractHash(`${authContext.userId}:google-calendar-events`).slice(0, 12)}`;
+  const importedEvents = [];
+  const cardOpportunities = [];
+
+  for (const [index, event] of rawEvents.entries()) {
+    const normalized = normalizeGoogleCalendarEvent(event, authContext.userId, index);
+    if (!normalized) continue;
+    importedEvents.push({
+      id: normalized.eventId,
+      title: normalized.title,
+      startsAt: normalized.startsAt,
+      timezone: normalized.timezone,
+      sourceEvidence: normalized.sourceEvidence,
+      recipientHint: normalized.recipientHint
+    });
+    cardOpportunities.push({
+      id: normalized.opportunityId,
+      eventId: normalized.eventId,
+      recipientName: normalized.recipientHint,
+      leadTimeHours: normalized.leadTimeHours,
+      confidence: normalized.confidence,
+      decision: "pending",
+      evidence: {
+        sourceKind: "google-calendar-events",
+        sourceEvidence: normalized.sourceEvidence,
+        googleEventHash: normalized.googleEventHash,
+        rawContentStored: false,
+        metadataOnly: true
+      }
+    });
+  }
+
+  return {
+    providerConnection: {
+      id: connectionId,
+      provider: "google_calendar",
+      status: "connected",
+      scopes: grantedScopes.length > 0 ? grantedScopes : [googleCalendarOAuthScopeUri],
+      adapterVersion: "google-calendar-events-v1",
+      encryptedRefreshToken,
+      metadataSchema: {
+        kind: "calendar_event_metadata",
+        rawContentStored: false,
+        metadataOnly: true,
+        importedFields: ["id_hash", "summary", "start", "timezone", "location_presence"]
+      }
+    },
+    importedEvents,
+    cardOpportunities
+  };
+}
+
+function normalizeGoogleCalendarEvent(event, userId, index) {
+  const title = safeContractText(event?.summary, "Calendar event");
+  const startsAt = googleEventStartIso(event?.start);
+  if (!startsAt) return undefined;
+  const timezone = safeContractText(event?.start?.timeZone ?? event?.end?.timeZone, "UTC");
+  const googleEventHash = stableContractHash(`${event?.id ?? event?.iCalUID ?? index}:${startsAt}`);
+  const eventId = `event-${stableContractHash(`${userId}:google-calendar:${googleEventHash}`).slice(0, 12)}`;
+  const recipientHint = inferCalendarRecipient(title);
+  return {
+    eventId,
+    opportunityId: `opportunity-${stableContractHash(`${eventId}:${recipientHint}`).slice(0, 12)}`,
+    title,
+    startsAt,
+    timezone,
+    recipientHint,
+    sourceEvidence: "Google Calendar metadata: title and start time.",
+    googleEventHash,
+    leadTimeHours: leadTimeHoursFromNow(startsAt),
+    confidence: safeConfidence(title === "Calendar event" ? 0.72 : 0.88, 0.82)
+  };
+}
+
+function googleEventStartIso(start) {
+  const value = start?.dateTime ?? start?.date;
+  if (!value) return "";
+  const isoValue = /^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T00:00:00.000Z` : value;
+  return safeTimestamp(isoValue, "");
+}
+
+function inferCalendarRecipient(title) {
+  const withoutOccasion = title
+    .replace(/\b(birthday|anniversary|wedding|graduation|dinner|party|celebration|brunch|lunch)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return safeContractText(withoutOccasion, "Someone important");
+}
+
+function leadTimeHoursFromNow(startsAt) {
+  const delta = new Date(startsAt).getTime() - Date.now();
+  if (!Number.isFinite(delta)) return 168;
+  return Math.max(0, Math.min(8760, Math.round(delta / (60 * 60 * 1000))));
+}
+
+function encryptTokenSecret(value, env) {
+  const text = String(value ?? "");
+  if (!text) return "";
+  const keyMaterial = usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY) ||
+    usableEnvValue(env.AUTH_SESSION_SECRET) ||
+    usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET) ||
+    "customcard-local-token-encryption-development-secret";
+  const key = createHash("sha256").update(keyMaterial).digest();
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", key, iv);
+  const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `aes-256-gcm:${iv.toString("base64url")}:${tag.toString("base64url")}:${encrypted.toString("base64url")}`;
 }
 
 function safeReturnToUrl(value, fallbackOrigin) {

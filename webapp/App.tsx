@@ -19,25 +19,31 @@ import {
   type ViewId
 } from "../src/appStateOrchestrator";
 import type { SupportedLocaleCode } from "../src/localization";
-import { themes, useTheme, type ThemeId } from "./theme";
+import { buildDraftProgressState } from "./draftProgress";
+import {
+  adminNavItems,
+  canEnterAdminSurface,
+  customerNavItems,
+  getAdminAccessStatus,
+  getAdminSurfaceHeading,
+  getAdminTargetLabel,
+  isAdminRoute,
+  isBusinessRoute,
+  isLegalRoute,
+  resolveActiveCustomerNavView,
+  resolveVisibleCustomerView,
+  shouldShowCustomerCta,
+  type AdminAccessPolicy
+} from "./routePolicy";
+import { themes, useTheme } from "./theme";
 import { Toast } from "./ui";
+import { BusinessLandingView } from "./views/BusinessLandingView";
 import { EventsView } from "./views/EventsView";
 import { HomeView } from "./views/HomeView";
+import { LegalView } from "./views/LegalView";
 import { NotesView } from "./views/NotesView";
 import { PrintView } from "./views/PrintView";
 import { StudioView } from "./views/StudioView";
-
-const navItems: Array<{ id: ViewId; label: string }> = [
-  { id: "customer", label: "Create" },
-  { id: "opportunities", label: "Occasions" },
-  { id: "memory", label: "Notes" },
-  { id: "handoff", label: "Print" }
-];
-
-const adminNavItems: Array<{ id: ViewId; label: string }> = [
-  { id: "admin", label: "Admin" },
-  { id: "adapters", label: "Adapters" }
-];
 
 const configuredAdminEmails = new Set(
   [
@@ -106,8 +112,11 @@ export default function App() {
     runtimeReadiness
   } = state;
 
-  const isAdminView = activeView === "admin" || activeView === "adapters";
-  const visibleCustomerView = isAdminView || activeView === "mobile" ? "customer" : activeView;
+  const isAdminView = isAdminRoute(activeView);
+  const isLegalView = isLegalRoute(activeView);
+  const isBusinessView = isBusinessRoute(activeView);
+  const visibleCustomerView = resolveVisibleCustomerView(activeView);
+  const visibleNavView = resolveActiveCustomerNavView(activeView);
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
   const customerEmail = user?.primaryEmailAddress?.emailAddress ?? "";
@@ -248,12 +257,12 @@ export default function App() {
 
   /* ---------- toast ---------- */
   const [toast, setToast] = useState<string | null>(null);
-  const firstStatus = useRef(true);
+  const previousStatus = useRef(exportStatus);
   useEffect(() => {
-    if (firstStatus.current) {
-      firstStatus.current = false;
+    if (previousStatus.current === exportStatus) {
       return;
     }
+    previousStatus.current = exportStatus;
     setToast(exportStatus);
     const timer = window.setTimeout(() => setToast(null), 2600);
     return () => window.clearTimeout(timer);
@@ -262,6 +271,23 @@ export default function App() {
   useEffect(() => {
     setVendorId("walgreens");
   }, [setVendorId]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const calendarConnection = url.searchParams.get("calendarConnection");
+    if (!calendarConnection) return;
+    const imported = url.searchParams.get("calendarImported");
+    const error = url.searchParams.get("calendarError");
+    setExportStatus(
+      calendarConnection === "connected"
+        ? `Google Calendar connected${imported ? ` · ${imported} event${imported === "1" ? "" : "s"} imported` : ""}`
+        : error || "Google Calendar connection failed"
+    );
+    url.searchParams.delete("calendarConnection");
+    url.searchParams.delete("calendarImported");
+    url.searchParams.delete("calendarError");
+    window.history.replaceState({ customCardView: initialViewFromLocation() }, "", url);
+  }, [setExportStatus]);
 
   /* ---------- live CTA ---------- */
   const estimate = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
@@ -298,17 +324,8 @@ export default function App() {
           onClick: () => openView("studio")
         };
 
-  const hasProgress = hasMeaningfulDraftProgress(draftInput) || inviteText.trim().length > 0;
-
-  if (!isLoaded || !isSignedIn) {
-    return (
-      <AccountGateShell
-        loading={!isLoaded}
-        onTheme={setTheme}
-        theme={theme}
-      />
-    );
-  }
+  const draftProgress = buildDraftProgressState(draftInput, validation.passed);
+  const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
 
   return (
     <div className="shell" data-admin-view={isAdminView ? "true" : undefined}>
@@ -321,10 +338,10 @@ export default function App() {
           <span className="wordmark-name">CustomCard</span>
         </button>
         <nav className="mainnav" aria-label="CustomCard navigation">
-          {navItems.map((item) => (
+          {customerNavItems.map((item) => (
             <button
               className="navlink"
-              data-active={item.id === visibleCustomerView}
+              data-active={item.id === visibleNavView}
               key={item.id}
               onClick={() => openView(item.id)}
               type="button"
@@ -389,13 +406,21 @@ export default function App() {
           />
         ) : null}
 
-        {!isAdminView && visibleCustomerView === "customer" ? (
+        {!isAdminView && !isLegalView && !isBusinessView && visibleCustomerView === "customer" ? (
           <HomeView
             draft={displayDraft}
             hasProgress={hasProgress}
             onImport={() => openView("opportunities")}
             onOccasion={startOccasion}
             onResume={() => openView("studio")}
+          />
+        ) : null}
+
+        {!isAdminView && isBusinessView ? (
+          <BusinessLandingView
+            draft={displayDraft}
+            onCreate={() => openView("studio")}
+            onReview={() => openView("opportunities")}
           />
         ) : null}
 
@@ -417,6 +442,7 @@ export default function App() {
             aiActive={aiDraft !== null}
             aiAvailable={cardGenAvailable}
             aiLoading={aiCardGenLoading}
+            aiRequiresSignIn={!isSignedIn}
             draft={displayDraft}
             draftInput={draftInput}
             memories={memories}
@@ -447,9 +473,16 @@ export default function App() {
             printPackage={printPackage}
           />
         ) : null}
+
+        {!isAdminView && isLegalView ? (
+          <LegalView
+            items={readiness.legalCompliance.items}
+            summary={readiness.legalCompliance.summary}
+          />
+        ) : null}
       </main>
 
-      {!isAdminView ? <div className="ctadock">
+      {shouldShowCustomerCta(activeView) ? <div className="ctadock">
         <span className="ctadock-progress" aria-hidden="true">
           <i data-done={true} data-now={!designing && !printing} />
           <i data-done={designing || printing} data-now={designing} />
@@ -507,7 +540,10 @@ function useDraftAutosave({
   vendorId
 }: DraftAutosaveInput) {
   const hydrated = useRef(false);
-  const draftHasProgress = hasMeaningfulDraftProgress(draftInput);
+  const draftProgress = useMemo(
+    () => buildDraftProgressState(draftInput, validationPassed),
+    [draftInput, validationPassed]
+  );
   const draftSnapshot = useMemo(
     () =>
       JSON.stringify({
@@ -515,10 +551,10 @@ function useDraftAutosave({
         localeCode,
         opportunityDecision,
         opportunityId,
-        status: validationPassed ? "ready-for-review" : draftHasProgress ? "in-progress" : "draft",
+        status: draftProgress.status,
         vendorId
       }),
-    [draftHasProgress, draftInput, localeCode, opportunityDecision, opportunityId, validationPassed, vendorId]
+    [draftInput, draftProgress.status, localeCode, opportunityDecision, opportunityId, vendorId]
   );
 
   useEffect(() => {
@@ -548,27 +584,14 @@ function useDraftAutosave({
   }, [enabled, getToken, setDraftInput, setLocaleCode, setOpportunityDecision, setVendorId]);
 
   useEffect(() => {
-    if (!enabled || !hydrated.current || !draftHasProgress) return;
+    if (!enabled || !hydrated.current || !draftProgress.hasMeaningfulProgress) return;
     const timer = window.setTimeout(() => {
       const body = JSON.parse(draftSnapshot) as Record<string, unknown>;
       void postCustomerMutation(getToken, "/api/customer/draft-state", body);
     }, 700);
 
     return () => window.clearTimeout(timer);
-  }, [draftHasProgress, draftSnapshot, enabled, getToken]);
-}
-
-function hasMeaningfulDraftProgress(input: CardDraftInput): boolean {
-  return (
-    input.recipient.trim() !== "Someone important" ||
-    input.sender.trim() !== "Local User" ||
-    input.relationship.trim() !== "Friends" ||
-    input.occasion.trim() !== "card" ||
-    input.tone !== "warm" ||
-    input.style !== "botanical" ||
-    input.language !== "English" ||
-    input.personalNote.trim().length > 0
-  );
+  }, [draftProgress.hasMeaningfulProgress, draftSnapshot, enabled, getToken]);
 }
 
 async function getCustomerJson(getToken: () => Promise<string | null>, path: string): Promise<Record<string, unknown> | undefined> {
@@ -610,69 +633,7 @@ function buildBrowserIdempotencyKey(path: string): string {
   return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
-function AccountGateShell({
-  loading,
-  onTheme,
-  theme
-}: {
-  loading: boolean;
-  onTheme: (theme: ThemeId) => void;
-  theme: ThemeId;
-}) {
-  return (
-    <div className="shell">
-      <header className="topbar">
-        <span className="wordmark">
-          <span className="wordmark-glyph">C</span>
-          <span className="wordmark-name">CustomCard</span>
-        </span>
-        <div className="topbar-side">
-          <ClerkAuthControls />
-          <div className="themeswitch" role="group" aria-label="Theme">
-            {themes.map((candidate) => (
-              <button
-                aria-label={candidate.label}
-                className={`themedot themedot-${candidate.id}`}
-                data-on={candidate.id === theme}
-                key={candidate.id}
-                onClick={() => onTheme(candidate.id)}
-                title={candidate.label}
-                type="button"
-              />
-            ))}
-          </div>
-        </div>
-      </header>
-      <main id="main-content">
-        <section className="adminGate panelcard reveal" aria-label="CustomCard sign-in gate">
-          <span className="adminGateIcon">
-            <LockKeyhole size={24} />
-          </span>
-          <div>
-            <p className="eyebrow">Private workspace</p>
-            <h1>Sign in to continue</h1>
-            <p>Your drafts, edits, notes, and print progress stay behind your account.</p>
-          </div>
-          <div className="adminGateActions">
-            <span>{loading ? "Checking account access" : "Account required"}</span>
-            <SignInButton>
-              <button className="btn btn-ink" type="button">
-                Sign in
-              </button>
-            </SignInButton>
-            <SignUpButton>
-              <button className="btn btn-primary" type="button">
-                Sign up
-              </button>
-            </SignUpButton>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-}
-
-interface AdminAccess {
+interface AdminAccess extends AdminAccessPolicy {
   isLoaded: boolean;
   isSignedIn: boolean;
   isAdmin: boolean;
@@ -709,9 +670,10 @@ function AdminRoute({
   adminPanel: ReactNode;
   adaptersPanel: ReactNode;
 }) {
-  if (!access.isAdmin) {
-    return <AdminGate access={access} target={activeView === "adapters" ? "Adapters" : "Admin panel"} />;
+  if (!canEnterAdminSurface(access)) {
+    return <AdminGate access={access} target={getAdminTargetLabel(activeView)} />;
   }
+  const heading = getAdminSurfaceHeading(activeView);
 
   return (
     <section className="adminSurface reveal">
@@ -721,7 +683,7 @@ function AdminRoute({
           Admin
         </span>
         <div>
-          <h1>{activeView === "adapters" ? "Adapter readiness" : "Admin panel"}</h1>
+          <h1>{heading}</h1>
           <p>Operational views are visible only to signed-in admin users.</p>
         </div>
       </div>
@@ -733,11 +695,7 @@ function AdminRoute({
 }
 
 function AdminGate({ access, target }: { access: AdminAccess; target: string }) {
-  const status = !access.isLoaded
-    ? "Checking account access"
-    : access.isSignedIn
-      ? "Admin access required"
-      : "Sign in required";
+  const status = getAdminAccessStatus(access);
 
   return (
     <section className="adminGate panelcard reveal" aria-label={`${target} access gate`}>

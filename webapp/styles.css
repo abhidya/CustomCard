@@ -665,6 +665,489 @@ a { color: inherit; }
 }
 .trustline svg { flex: none; color: var(--second); }
 
+/* ---------- Business landing ---------- */
+.businessLanding {
+  display: grid;
+  gap: 42px;
+  padding: 42px 0 70px;
+}
+
+.businessHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+  gap: 34px;
+  align-items: center;
+}
+
+.businessHeroCopy {
+  display: grid;
+  gap: 20px;
+  max-width: 690px;
+}
+
+.businessHeroCopy h1,
+.businessSectionHead h2,
+.businessFinalCta h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: 0;
+}
+
+.businessHeroCopy h1 {
+  max-width: 640px;
+  font-size: 58px;
+  line-height: 1.02;
+}
+
+.businessHeroCopy > p,
+.businessSectionHead > p,
+.businessFinalCta p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.businessHeroCopy > p {
+  max-width: 610px;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.businessHeroActions,
+.businessTrustStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.businessTrustStrip {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.businessTrustStrip span {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.businessTrustStrip svg {
+  color: var(--second);
+  flex: none;
+}
+
+.businessHeroVisual,
+.businessFinalCta {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.businessHeroVisual {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+}
+
+.businessPipeline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.businessPipeline span {
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.businessPreviewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 0.55fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.businessQueueCard {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.businessQueueCard span,
+.businessMomentCard span,
+.businessFeatureCard h3,
+.businessReadinessCard span,
+.businessMetric span {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.businessQueueCard strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.businessQueueCard small {
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.businessPanelPreview {
+  width: min(100%, 190px);
+  justify-self: center;
+  border-radius: 8px;
+  box-shadow: var(--shadow-pop);
+}
+
+.businessMetricGrid,
+.businessMomentGrid,
+.businessFeatureGrid,
+.businessReadinessList {
+  display: grid;
+  gap: 12px;
+}
+
+.businessMetricGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.businessMetric,
+.businessMomentCard,
+.businessFeatureCard,
+.businessReadinessCard {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.businessMetric {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+}
+
+.businessMetric strong {
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.businessSection {
+  display: grid;
+  gap: 18px;
+}
+
+.businessSectionHead {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+}
+
+.businessSectionHead h2,
+.businessFinalCta h2 {
+  font-size: 34px;
+  line-height: 1.08;
+}
+
+.businessMomentGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.businessMomentCard,
+.businessFeatureCard,
+.businessReadinessCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.businessMomentCard p,
+.businessFeatureCard p,
+.businessReadinessCard p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.businessFeatureGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.businessFeatureIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--second-soft);
+  color: var(--second);
+}
+
+.businessFeatureCard h3 {
+  color: var(--ink);
+}
+
+.businessReadinessList {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.businessReadinessCard {
+  border-left: 4px solid var(--second);
+}
+
+.businessReadinessCard[data-status="evidence-missing"] {
+  border-left-color: var(--accent);
+}
+
+.businessReadinessCard[data-status="approval-blocked"] {
+  border-left-color: #b3742c;
+}
+
+.businessReadinessCard strong {
+  color: var(--ink);
+}
+
+.businessFinalCta {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.businessFinalCta > div {
+  display: grid;
+  gap: 8px;
+  max-width: 680px;
+}
+
+/* ---------- Legal readiness ---------- */
+.legalView {
+  display: grid;
+  gap: 22px;
+  padding-bottom: 36px;
+}
+
+.legalHead { max-width: 760px; }
+
+.legalSummaryGrid,
+.legalRegionGrid,
+.legalLinkGrid,
+.freeToolGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.legalSummaryGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.legalRegionGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.legalLinkGrid,
+.freeToolGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.legalPanel,
+.legalMetric,
+.legalLinkCard,
+.freeToolCard,
+.requirementCard {
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.legalPanel {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: var(--radius-l);
+}
+
+.legalMetric,
+.legalLinkCard,
+.freeToolCard,
+.requirementCard {
+  border-radius: var(--radius);
+}
+
+.legalMetric {
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+  background: var(--surface-alt);
+}
+
+.legalMetric span,
+.legalLinkCard span,
+.legalLinkCard small,
+.freeToolCard span,
+.freeToolCard small,
+.requirementCard span,
+.requirementCard small,
+.consentRow small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.legalMetric span,
+.legalLinkCard span,
+.freeToolCard span,
+.requirementCard span {
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.legalMetric strong {
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.legalPanelHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.legalPanelHeader h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+}
+
+.legalPanelHeader p {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.legalIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--second);
+  background: var(--second-soft);
+}
+
+.legalLinkCard,
+.freeToolCard {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 15px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease), transform 0.16s var(--ease);
+}
+
+.legalLinkCard:hover,
+.freeToolCard:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-pop);
+  transform: translateY(-1px);
+}
+
+.legalLinkCard strong,
+.freeToolCard strong,
+.requirementCard strong,
+.consentRow strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 720;
+  overflow-wrap: anywhere;
+}
+
+.legalLinkCard small,
+.freeToolCard small,
+.requirementCard small,
+.consentRow small {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.legalLinkCard svg {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  color: var(--ink-faint);
+}
+
+.consentRows,
+.requirementList {
+  display: grid;
+  gap: 10px;
+}
+
+.consentRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  padding: 13px 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+
+.consentRow input {
+  width: auto;
+  margin-top: 3px;
+  accent-color: var(--second);
+}
+
+.consentRow span {
+  display: grid;
+  gap: 2px;
+}
+
+.requirementCard {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border-left: 4px solid var(--accent);
+}
+
+.requirement-us { border-left-color: var(--second); }
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-flex; align-items: center; gap: 9px;
@@ -839,6 +1322,31 @@ a { color: inherit; }
   .fieldrow { grid-template-columns: 1fr; }
   .ctadock { bottom: 14px; gap: 10px; padding-left: 16px; }
   .ctadock-meta small { max-width: 130px; }
+  .businessLanding { gap: 30px; padding: 28px 0 52px; }
+  .businessHero { grid-template-columns: 1fr; gap: 22px; }
+  .businessHeroCopy { gap: 16px; }
+  .businessHeroCopy h1 { font-size: 42px; line-height: 1.04; }
+  .businessHeroCopy > p { font-size: 16px; }
+  .businessHeroActions .btn { justify-content: center; width: 100%; }
+  .businessPreviewGrid,
+  .businessMetricGrid,
+  .businessMomentGrid,
+  .businessFeatureGrid,
+  .businessReadinessList {
+    grid-template-columns: 1fr;
+  }
+  .businessPipeline span {
+    min-height: 38px;
+    padding: 4px;
+    font-size: 10.5px;
+  }
+  .businessPanelPreview { width: min(62%, 180px); }
+  .businessSectionHead h2,
+  .businessFinalCta h2 { font-size: 28px; }
+  .businessFinalCta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
   .adminSurfaceHead,
   .adminGate,
   .adminGateActions {
@@ -847,5 +1355,11 @@ a { color: inherit; }
   }
   .adminGate {
     display: flex;
+  }
+  .legalSummaryGrid,
+  .legalRegionGrid,
+  .legalLinkGrid,
+  .freeToolGrid {
+    grid-template-columns: 1fr;
   }
 }

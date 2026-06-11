@@ -42,7 +42,7 @@ export const e2eCoverageItems = [
     status: "covered",
     ciGated: true,
     testCommands: ["npm run test -- --run tests/app-smoke.test.ts", "npm run check"],
-    evidence: ["Starts local workspace", "Scans free import", "Generates four-panel card", "Prepares print options"],
+    evidence: ["Signs in to workspace", "Scans free import", "Generates four-panel card", "Prepares print options"],
     liveProductionProof: false,
     realOrdersEnabled: false,
     externalNetworkCalls: false

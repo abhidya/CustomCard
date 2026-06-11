@@ -22,6 +22,7 @@ export type DemoSeedTable =
   | "provider_connections"
   | "imported_events"
   | "card_opportunities"
+  | "draft_states"
   | "relationship_memories"
   | "card_projects"
   | "render_packets"
@@ -89,6 +90,7 @@ const requiredDemoTables: DemoSeedTable[] = [
   "provider_connections",
   "imported_events",
   "card_opportunities",
+  "draft_states",
   "relationship_memories",
   "card_projects",
   "render_packets",
@@ -294,6 +296,18 @@ function buildDemoSeedRows({
       recipient_name: opportunity.recipient,
       decision: "generate",
       confidence: opportunity.confidence
+    }),
+    row("draft_states", "draft-state-demo-current", {
+      id: "draft-state-demo-current",
+      user_id: "user-demo",
+      status: "in-progress",
+      draft_input: draft.input,
+      opportunity_id: opportunityId,
+      opportunity_decision: "accepted",
+      vendor_id: "walgreens",
+      locale: "en-US",
+      raw_content_stored: false,
+      updated_at: generatedAtIso
     }),
     ...memories.map((memory) =>
       row("relationship_memories", memory.id, {

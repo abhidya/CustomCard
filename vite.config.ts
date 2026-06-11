@@ -9,9 +9,14 @@ import {
   loadLocalAiEnvFiles
 } from "./scripts/ai-card-generator.mjs";
 import { handleApiRequest } from "./scripts/api-server.mjs";
+import {
+  walgreensCheckoutCallbackRoute,
+  walgreensCheckoutSessionRoute,
+  walgreensCheckoutUploadRoute
+} from "./src/walgreensHostedCheckout.mjs";
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), customCardCalendarApiPlugin(), customCardAiApiPlugin(mode)],
+  plugins: [react(), customCardCoreApiPlugin(), customCardAiApiPlugin(mode)],
   test: {
     coverage: {
       include: [
@@ -38,6 +43,7 @@ export default defineConfig(({ mode }) => ({
         "src/mobileRenderReadinessData.mjs",
         "src/hostedApiReadiness.ts",
         "src/hostedApiReadinessData.mjs",
+        "src/legalCompliance.ts",
         "src/reviewerBootstrap.ts",
         "src/reviewerDbSeedReadiness.ts",
         "src/reviewerDbSeedReadinessData.mjs",
@@ -81,13 +87,21 @@ export default defineConfig(({ mode }) => ({
   }
 }));
 
-function customCardCalendarApiPlugin(): Plugin {
+const coreApiDevRoutes = new Set([
+  "/api/calendar/connections/start",
+  "/oauth/callback",
+  walgreensCheckoutUploadRoute,
+  walgreensCheckoutSessionRoute,
+  walgreensCheckoutCallbackRoute
+]);
+
+function customCardCoreApiPlugin(): Plugin {
   return {
-    name: "customcard-calendar-api",
+    name: "customcard-core-api",
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const url = new URL(request.url ?? "/", "http://localhost");
-        if (url.pathname !== "/api/calendar/connections/start") {
+        if (!coreApiDevRoutes.has(url.pathname)) {
           next();
           return;
         }

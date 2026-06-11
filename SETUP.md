@@ -288,9 +288,11 @@ Current Google OAuth client:
 vercel env add GOOGLE_OAUTH_CLIENT_ID production      # from Google Console
 vercel env add GOOGLE_OAUTH_CLIENT_SECRET production  # kept server-side only
 vercel env add GOOGLE_OAUTH_REDIRECT_URI production   # https://customcard-three.vercel.app/oauth/callback
+vercel env add GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY production
+vercel env add GOOGLE_OAUTH_STATE_SECRET production
 ```
 
-The calendar connection start route is env-gated. When `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` are present, `/api/calendar/connections/start` returns a server-generated Google consent URL. Token exchange, credential persistence, revocation, and event import remain separate gates; do not expose the client secret through any `VITE_` variable.
+The calendar connection flow is env-gated. When `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` are present, `/api/calendar/connections/start` returns a server-generated Google consent URL. The `/oauth/callback` route exchanges the code server-side, stores only an encrypted refresh token when Google returns one, imports metadata-only events from `calendar.events.readonly`, and redirects back with a connection status. Do not expose the client secret or token encryption key through any `VITE_` variable.
 
 For Outlook: register at [portal.azure.com](https://portal.azure.com/) → App registrations → add `Calendars.Read` delegated permission → set `VITE_MICROSOFT_CLIENT_ID` and `MICROSOFT_TENANT_ID`.
 
@@ -466,6 +468,9 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `GOOGLE_OAUTH_CLIENT_ID` | Vercel / ignored env files | For OAuth | Google OAuth client ID |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Vercel / ignored env files | For OAuth | Google OAuth client secret |
 | `GOOGLE_OAUTH_REDIRECT_URI` | Vercel / ignored env files | For Google Calendar OAuth | Authorized redirect URI, for example `https://customcard-three.vercel.app/oauth/callback` |
+| `GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY` | Vercel / ignored env files | For Google Calendar OAuth | Random server-side key for refresh-token encryption |
+| `GOOGLE_OAUTH_STATE_SECRET` | Vercel / ignored env files | For Google Calendar OAuth | Random server-side key for signed OAuth state |
+| `GOOGLE_CALENDAR_IMPORT_MAX_RESULTS` | Vercel / ignored env files | No | Max events imported on callback, defaults to `10` |
 | `EVENTBRITE_CLIENT_ID` / `EVENTBRITE_CLIENT_SECRET` | Vercel / ignored env files | For event import contract | Eventbrite OAuth app credentials; live import remains gated |
 | `LUMA_API_KEY` | Vercel / ignored env files | For event import contract | Luma calendar API key; live import remains gated |
 | `MEETUP_CLIENT_ID` / `MEETUP_CLIENT_SECRET` | Vercel / ignored env files | For event import contract | Meetup OAuth app credentials; live import remains gated |

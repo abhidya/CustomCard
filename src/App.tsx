@@ -28,6 +28,7 @@ import {
   type E2eCoverageItem,
   type ExternalAuditReadinessItem,
   type HostedApiReadinessItem,
+  type LegalComplianceItem,
   type MobileRenderReadinessItem,
   type ObservabilityReadinessItem,
   type PaymentReadinessItem,
@@ -95,7 +96,7 @@ export function AdminPanelView({
   const [activeAdminSection, setActiveAdminSection] = useState<AdminPortalSectionId>("ops");
   const [adminPortalQuery, setAdminPortalQuery] = useState("");
   const [adminPortalStatus, setAdminPortalStatus] = useState<AdminPortalStatusFilter>("all");
-  const { aiProvider, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
+  const { aiProvider, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, legalCompliance, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
   const aiProviderReadinessItems = aiProvider.items;
   const aiProviderReadinessSummary = aiProvider.summary;
   const capacityProfiles = capacity.profiles;
@@ -114,6 +115,8 @@ export function AdminPanelView({
   const mobileRenderReadinessSummary = mobileRender.summary;
   const hostedApiReadinessItems = hostedApi.items;
   const hostedApiReadinessSummary = hostedApi.summary;
+  const legalComplianceItems = legalCompliance.items;
+  const legalComplianceSummary = legalCompliance.summary;
   const reviewerDbSeedReadinessItems = reviewerDbSeed.items;
   const reviewerDbSeedReadinessSummary = reviewerDbSeed.summary;
   const cloudArtifactProofReadinessItems = cloudArtifactProof.items;
@@ -652,6 +655,31 @@ export function AdminPanelView({
           <ExternalAuditList items={externalAuditItems} />
           <p className="panelNote">
             Internal doctors are readiness inputs only; external audit reports, signed native artifacts, public hosted DB proof, retail certification, and physical print certification are not attached.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">Legal</p>
+              <h3>EU and US legal readiness</h3>
+            </div>
+            <StatusChip icon={Globe2} label="Free tools only" tone="amber" />
+          </div>
+          <div className="runtimeGrid" aria-label="EU and US legal compliance readiness">
+            <Metric label="Items" value={`${legalComplianceSummary.total}`} />
+            <Metric label="EU" value={`${legalComplianceSummary.euRequirements}`} />
+            <Metric label="US" value={`${legalComplianceSummary.usRequirements}`} />
+            <Metric label="Free tools" value={`${legalComplianceSummary.freeToolOptions}`} />
+            <Metric label="Open source" value={`${legalComplianceSummary.openSourceToolOptions}`} />
+            <Metric label="Review req." value={`${legalComplianceSummary.externalReviewRequired}`} />
+            <Metric label="Launch blocked" value={`${legalComplianceSummary.launchBlocked}`} />
+            <Metric label="Public claims" value={`${legalComplianceSummary.publicClaimsAllowed}`} />
+          </div>
+          <LegalComplianceList items={legalComplianceItems} />
+          <p className="panelNote">
+            These rows track EU/US legal requirements and free generator/CMP paths; they are not attorney-approved
+            policies and they keep launch blocked until evidence is attached.
           </p>
         </article>
 
@@ -1340,6 +1368,20 @@ function ExternalAuditList({ items }: { items: ExternalAuditReadinessItem[] }) {
   );
 }
 
+function LegalComplianceList({ items }: { items: LegalComplianceItem[] }) {
+  return (
+    <div className="adapterMiniList">
+      {items.map((item) => (
+        <div className={`adapterMini ${legalComplianceStatusClass(item.status)}`} key={item.id}>
+          <span>{item.region.toUpperCase()} · {item.category}</span>
+          <strong>{item.label}</strong>
+          <small>{item.status === "repo-local-ready" ? "Local contract" : "Evidence required"}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function E2eCoverageList({ items }: { items: E2eCoverageItem[] }) {
   return (
     <div className="adapterMiniList">
@@ -1508,6 +1550,11 @@ function BusinessEngagementReadinessList({ items }: { items: BusinessEngagementR
       ))}
     </div>
   );
+}
+
+function legalComplianceStatusClass(status: LegalComplianceItem["status"]): ProviderStatus {
+  if (status === "repo-local-ready") return "ready-local";
+  return "credential-gated";
 }
 
 function businessEngagementReadinessStatusClass(status: BusinessEngagementReadinessItem["status"]): ProviderStatus {

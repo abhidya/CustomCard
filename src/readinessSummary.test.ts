@@ -16,6 +16,7 @@ describe("readinessSummary", () => {
       "e2eCoverage",
       "externalAudit",
       "hostedApi",
+      "legalCompliance",
       "mobileRender",
       "observability",
       "payment",
@@ -26,7 +27,7 @@ describe("readinessSummary", () => {
     expect(validateReadinessDomains()).toEqual([]);
   });
 
-  it("builds a summary with all 12 readiness domains present", () => {
+  it("builds a summary with all 13 readiness domains present", () => {
     const summary = buildReadinessSummary();
 
     expect(summary.aiProvider.items.length).toBeGreaterThan(0);
@@ -49,6 +50,9 @@ describe("readinessSummary", () => {
 
     expect(summary.hostedApi.items.length).toBeGreaterThan(0);
     expect(summary.hostedApi.summary.total).toBeGreaterThan(0);
+
+    expect(summary.legalCompliance.items.length).toBeGreaterThan(0);
+    expect(summary.legalCompliance.summary.total).toBeGreaterThan(0);
 
     expect(summary.mobileRender.items.length).toBeGreaterThan(0);
     expect(summary.mobileRender.summary.total).toBeGreaterThan(0);
@@ -79,6 +83,7 @@ describe("readinessSummary", () => {
     expect(payment.summary.liveChargesEnabled).toBe(0);
     expect(hostedApi.summary.liveProviderCalls).toBe(0);
     expect(retailFulfillment.summary.directOrderEnabled).toBe(0);
+    expect(buildReadinessSummary().legalCompliance.summary.publicClaimsAllowed).toBe(0);
   });
 
   it("feeds API readiness and bootstrap from the same readiness seam", () => {

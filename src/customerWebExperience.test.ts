@@ -51,14 +51,14 @@ const requestedBlockedImplementationTerms = [
 ];
 
 describe("customer web experience contract", () => {
-  it("starts with one local setup primary action and customer-safe copy", () => {
+  it("starts with one account-gated setup primary action and customer-safe copy", () => {
     const experience = buildCustomerWebExperience(baseInput);
 
     expect(experience.stage).toBe("setup");
-    expect(experience.primaryAction).toMatchObject({ id: "create-workspace", label: "Create local workspace" });
+    expect(experience.primaryAction).toMatchObject({ id: "create-workspace", label: "Sign in to workspace" });
     expect(experience.supportingActions.map((action) => action.id)).toEqual(["paste-invite"]);
     expect(experience.actions.filter((action) => action.priority === "primary")).toEqual([
-      expect.objectContaining({ id: "create-workspace", label: "Create local workspace" })
+      expect.objectContaining({ id: "create-workspace", label: "Sign in to workspace" })
     ]);
     expect(experience.actions.map((action) => action.id)).toEqual(["create-workspace", "paste-invite"]);
     expect(experience.eyebrow).toBe("Your workspace");
@@ -69,7 +69,7 @@ describe("customer web experience contract", () => {
       "Price check": "Before print"
     });
     expect(validateCustomerWebExperience(experience)).toEqual([]);
-    expect(collectCustomerWebCopy(experience)).toEqual(expect.arrayContaining(["Create private workspace"]));
+    expect(collectCustomerWebCopy(experience)).toEqual(expect.arrayContaining(["Sign in to workspace"]));
   });
 
   it("routes an existing workspace through event review before drafting", () => {

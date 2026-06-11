@@ -119,17 +119,17 @@ export const capabilityLabels: Record<ProviderCapability, string> = {
 export const providerCatalog: ProviderAdapter[] = [
   {
     id: "local-workspace-auth",
-    label: "Local workspace auth",
-    provider: "Browser workspace",
+    label: "Account session auth",
+    provider: "CustomCard account",
     capability: "auth",
-    lane: "Free local",
+    lane: "Customer account",
     status: "ready-local",
     cost: "free-local",
     credentials: [],
-    safetyGates: ["No external session token", "LocalStorage only"],
+    safetyGates: ["Signed-in account", "No browser persistence"],
     roleSurface: ["customer", "admin"],
     priority: 1,
-    detail: "Creates a reviewer workspace without a hosted identity provider."
+    detail: "Gates the customer workspace behind a signed-in account session."
   },
   {
     id: "email-password-auth-contract",
@@ -1530,7 +1530,7 @@ export const providerCatalog: ProviderAdapter[] = [
   {
     id: "local-relationship-memory",
     label: "Relationship memory",
-    provider: "Browser workspace",
+    provider: "CustomCard account",
     capability: "memory",
     lane: "Free local",
     status: "ready-local",
@@ -1539,7 +1539,7 @@ export const providerCatalog: ProviderAdapter[] = [
     safetyGates: ["User approved", "Delete control", "No hidden personalization"],
     roleSurface: ["customer", "admin"],
     priority: 7,
-    detail: "Stores approved memory in the local workspace only."
+    detail: "Stores approved memory through the account-scoped repository."
   },
   {
     id: "postgres-memory-store",

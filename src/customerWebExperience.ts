@@ -152,31 +152,31 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
     eyebrow: "Your workspace",
     title:
       stage === "setup"
-        ? "Create private workspace"
+        ? "Sign in to workspace"
         : stage === "event-review"
           ? "Review event before drafting"
           : "Review card proof",
     statusLabel:
       stage === "setup"
-        ? "No account required"
+        ? "Account required"
         : stage === "event-review"
           ? "Private workspace"
           : "Proof ready",
     workspaceTitle:
       stage === "setup"
-        ? "Create private workspace"
+        ? "Sign in to workspace"
         : stage === "event-review"
           ? "Workspace ready"
           : "Draft in progress",
     workspaceStatusLabel:
       stage === "setup"
-        ? "Browser only"
+        ? "Account protected"
         : stage === "event-review"
-          ? "Saved locally"
+          ? "Autosaved"
           : "Needs approval",
     workspaceHelp:
       stage === "setup"
-        ? "Start with browser storage or paste an invite without connecting an account."
+        ? "Sign in to keep drafts, edits, notes, and print progress tied to your account."
         : stage === "event-review"
           ? input.evidenceCount === 0
             ? "Paste an invite or a short note to find your next occasion."
@@ -209,13 +209,13 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
     },
     panelNote:
       stage === "setup"
-        ? "No outside account sign-in is needed for the local path."
+        ? "Drafting starts after sign-in so work can resume safely."
         : stage === "event-review"
           ? "Drafting stays behind event review so the card starts from details you approve."
           : "Print files and comparison are available after proof review.",
     chatTitle: "Card assistant",
-    chatStatusLabel: "Private local replies",
-    chatSafetyBadges: ["Runs in this browser", "No outside transcript"],
+    chatStatusLabel: "Private account replies",
+    chatSafetyBadges: ["Account protected", "No outside transcript"],
     artworkMetrics: {
       Artwork: "Template",
       Images: "Off",
@@ -365,8 +365,8 @@ function buildActions(stage: CustomerWebStage, proofApproved = false): CustomerW
     return [
       {
         id: "create-workspace",
-        label: "Create local workspace",
-        detail: "Save drafts and approved memories in this browser.",
+        label: "Sign in to workspace",
+        detail: "Save drafts and approved memories to your account.",
         priority: "primary"
       },
       {
@@ -431,7 +431,7 @@ function buildActions(stage: CustomerWebStage, proofApproved = false): CustomerW
 function buildFlowSteps(stage: CustomerWebStage, proofApproved = false): CustomerWebStep[] {
   if (stage === "setup") {
     return [
-      { label: "Create workspace", detail: "Local browser storage", state: "current" },
+      { label: "Sign in", detail: "Account protected", state: "current" },
       { label: "Review event", detail: "Confirm what was imported", state: "next" },
       { label: "Proof card", detail: "Check copy and artwork", state: "next" },
       { label: "Print options", detail: "Compare manual print choices", state: "next" }
@@ -440,7 +440,7 @@ function buildFlowSteps(stage: CustomerWebStage, proofApproved = false): Custome
 
   if (stage === "event-review") {
     return [
-      { label: "Workspace", detail: "Ready in this browser", state: "complete" },
+      { label: "Workspace", detail: "Account ready", state: "complete" },
       { label: "Review event", detail: "Current step", state: "current" },
       { label: "Proof card", detail: "After event approval", state: "next" },
       { label: "Print options", detail: "After proof approval", state: "next" }
@@ -448,7 +448,7 @@ function buildFlowSteps(stage: CustomerWebStage, proofApproved = false): Custome
   }
 
   return [
-    { label: "Workspace", detail: "Ready in this browser", state: "complete" },
+    { label: "Workspace", detail: "Account ready", state: "complete" },
     { label: "Event", detail: "Approved for drafting", state: "complete" },
     { label: "Proof card", detail: proofApproved ? "Approved" : "Current step", state: proofApproved ? "complete" : "current" },
     { label: "Print options", detail: proofApproved ? "Current step" : "After proof review", state: proofApproved ? "current" : "next" }

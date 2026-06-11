@@ -16,8 +16,8 @@ describe("demo seed reset contract", () => {
     expect(summary).toMatchObject({
       service: "customcard-demo-seed",
       status: "ready",
-      tables: 14,
-      rows: 17,
+      tables: 15,
+      rows: 18,
       renderArtifacts: 6,
       signedArtifactUrls: true,
       idempotentReset: true,
@@ -42,6 +42,7 @@ describe("demo seed reset contract", () => {
         "provider_connections",
         "imported_events",
         "card_opportunities",
+        "draft_states",
         "relationship_memories",
         "card_projects",
         "render_packets",
@@ -63,6 +64,7 @@ describe("demo seed reset contract", () => {
     expect(preview.resetSql[0]).toContain("DELETE FROM audit_log");
     expect(sql).toContain("id IN ('mem-sara-ahmed-10-year-thread', 'mem-family-reverent-tone')");
     expect(sql).toContain("INSERT INTO users");
+    expect(sql).toContain("INSERT INTO draft_states");
     expect(sql).toContain("INSERT INTO render_packets");
     expect(sql).toContain("artifact_manifest");
     expect(sql).toContain("real_orders_enabled");

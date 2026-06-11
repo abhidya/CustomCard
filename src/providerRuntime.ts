@@ -460,7 +460,7 @@ export function buildAuthRuntime(
         adapterId: adapter.id,
         requestedRole: input.requestedRole,
         noNetwork: true,
-        sessionStorage: "browser-local-workspace",
+        sessionState: "account-session-api",
         returnToPath: input.returnToPath
       }
     };

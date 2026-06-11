@@ -67,7 +67,7 @@ export const aiFlowDefinitions = [
     maxTokens: 1200,
     temperature: 0.55,
     promptInstructions:
-      "Write print-safe folded greeting card copy. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and keep each panel concise enough for a 5x7 print layout."
+      "Write print-safe folded greeting card copy and exact per-panel image-generation prompts. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, keep copy concise for a 5x7 layout, and make each image_prompt a concrete visual composition rather than a restatement of form fields."
   },
   {
     flowId: "card-image",
@@ -86,7 +86,7 @@ export const aiFlowDefinitions = [
     maxTokens: 0,
     temperature: 0,
     promptInstructions:
-      "Create one portrait 5x7 print panel at a time. Do not make a collage or folded mockup. Leave safe margins and reserve exact typography for deterministic app overlays when the provider cannot guarantee spelling."
+      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for deterministic app overlays."
   }
 ];
 

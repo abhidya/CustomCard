@@ -4,7 +4,7 @@ import { initialViewFromLocation } from "./appStateOrchestrator";
 describe("initialViewFromLocation", () => {
   it("returns a valid ViewId (default is customer in jsdom with no params)", () => {
     const result = initialViewFromLocation();
-    const validIds = new Set(["customer", "mobile", "opportunities", "studio", "memory", "handoff", "admin", "adapters"]);
+    const validIds = new Set(["customer", "mobile", "opportunities", "studio", "memory", "handoff", "legal", "admin", "adapters"]);
     expect(validIds.has(result)).toBe(true);
   });
 

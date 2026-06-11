@@ -1,0 +1,85 @@
+{
+  "draft_id": "benchmark-small-business-thank-you-front-nopeople-2026-06-11T09-58-26-136Z",
+  "card_copy": {
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Grateful for You",
+        "body": "Thank you for choosing us over the big guys. Your support means the world to our small business.",
+        "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+      },
+      {
+        "id": "inside-left",
+        "headline": "A Heartfelt Thank You",
+        "body": "We're proud to be a part of our community, and we're honored that you're a part of it too.",
+        "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Thanks for Being an Amazing Customer",
+        "body": "Your loyalty and trust mean everything to us. We're grateful for customers like you.",
+        "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+      },
+      {
+        "id": "back",
+        "headline": "Warm Wishes",
+        "body": "Wishing you all the best, and thank you again for your support.",
+        "art_direction": "warm citrus, soft cream, deep charcoal, local shop texture, clean 5x7 portrait layout, generous safe margins"
+      }
+    ],
+    "memory_citations": [
+      "The customer chose an independent small business instead of a large marketplace.",
+      "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+      "CustomCard UX requires four editable panels, print-safe margins, human review before external sharing, and exportable/persisted render artifacts."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 564935 chars>",
+      "revised_prompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image-front-only-nopeople",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-image."
+      ],
+      "provider_failure": "Live provider calls disabled for card-image.",
+      "benchmark_scope": "front-panel-only-no-people-prompt"
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

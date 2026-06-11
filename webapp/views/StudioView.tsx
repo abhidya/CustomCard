@@ -1,3 +1,4 @@
+import { SignInButton } from "@clerk/react";
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import type {
@@ -9,6 +10,7 @@ import type {
   Tone,
   VisualStyle
 } from "../../src/freeMvp";
+import { displayDraftValue } from "../draftProgress";
 import { Chips, Field, PanelArt, Step } from "../ui";
 
 const tones: Tone[] = ["warm", "playful", "elegant", "reverent"];
@@ -26,18 +28,6 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-/** Show defaults as empty fields so placeholders read naturally. */
-const placeholderDefaults = [
-  "Someone important",
-  "Local User",
-  "card",
-  "Mention their shared patience, humor, and the little rituals that made the year feel full."
-];
-
-function displayValue(value: string): string {
-  return placeholderDefaults.includes(value) ? "" : value;
-}
-
 export function StudioView({
   draft,
   draftInput,
@@ -45,6 +35,7 @@ export function StudioView({
   aiAvailable,
   aiLoading,
   aiActive,
+  aiRequiresSignIn,
   onField,
   onGenerateAi
 }: {
@@ -54,6 +45,7 @@ export function StudioView({
   aiAvailable: boolean;
   aiLoading: boolean;
   aiActive: boolean;
+  aiRequiresSignIn: boolean;
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   onGenerateAi: () => void;
 }) {
@@ -96,7 +88,7 @@ export function StudioView({
         <div className="steps reveal reveal-2">
           <Step
             defaultOpen
-            meta={displayValue(draftInput.recipient) ? `To ${draftInput.recipient}` : "Add names"}
+            meta={displayDraftValue(draftInput.recipient) ? `To ${draftInput.recipient}` : "Add names"}
             number={1}
             title="Who it's for"
           >
@@ -105,14 +97,14 @@ export function StudioView({
                 <input
                   onChange={(event) => onField("recipient", event.target.value)}
                   placeholder="Their name"
-                  value={displayValue(draftInput.recipient)}
+                  value={displayDraftValue(draftInput.recipient)}
                 />
               </Field>
               <Field label="From">
                 <input
                   onChange={(event) => onField("sender", event.target.value)}
                   placeholder="Your name"
-                  value={displayValue(draftInput.sender)}
+                  value={displayDraftValue(draftInput.sender)}
                 />
               </Field>
             </div>
@@ -128,7 +120,7 @@ export function StudioView({
                 <input
                   onChange={(event) => onField("occasion", event.target.value)}
                   placeholder="Birthday, anniversary…"
-                  value={displayValue(draftInput.occasion)}
+                  value={displayDraftValue(draftInput.occasion)}
                 />
               </Field>
             </div>
@@ -156,12 +148,17 @@ export function StudioView({
             </Field>
           </Step>
 
-          <Step meta={displayValue(draftInput.personalNote) ? "Note added" : "Optional"} number={3} title="Make it personal">
+          <Step
+            defaultOpen={aiRequiresSignIn}
+            meta={displayDraftValue(draftInput.personalNote) ? "Note added" : "Optional"}
+            number={3}
+            title="Make it personal"
+          >
             <Field label="A shared memory, an inside joke, or what you appreciate about them">
               <textarea
                 onChange={(event) => onField("personalNote", event.target.value)}
                 placeholder="The road trip playlist, the Sunday pancakes, that one inside joke…"
-                value={displayValue(draftInput.personalNote)}
+                value={displayDraftValue(draftInput.personalNote)}
               />
             </Field>
             <div className="switchrow">
@@ -183,11 +180,26 @@ export function StudioView({
             </div>
             {aiAvailable ? (
               <div className="airow">
-                <button className="aibutton" disabled={aiLoading} onClick={onGenerateAi} type="button">
-                  <Sparkles size={16} />
-                  {aiLoading ? "Writing…" : aiActive ? "Rewrite with AI" : "Write it with AI"}
-                </button>
-                <span className="ainote">{aiActive ? "AI draft applied — edit anything above to reset." : "Uses your details and notes."}</span>
+                {aiRequiresSignIn ? (
+                  <SignInButton mode="modal">
+                    <button className="aibutton" type="button">
+                      <Sparkles size={16} />
+                      Sign in to use AI
+                    </button>
+                  </SignInButton>
+                ) : (
+                  <button className="aibutton" disabled={aiLoading} onClick={onGenerateAi} type="button">
+                    <Sparkles size={16} />
+                    {aiLoading ? "Writing…" : aiActive ? "Rewrite with AI" : "Write it with AI"}
+                  </button>
+                )}
+                <span className="ainote">
+                  {aiRequiresSignIn
+                    ? "Create and print without an account. AI writing needs sign-in."
+                    : aiActive
+                      ? "AI draft applied — edit anything above to reset."
+                      : "Uses your details and notes."}
+                </span>
               </div>
             ) : null}
           </Step>

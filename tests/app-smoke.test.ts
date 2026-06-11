@@ -274,6 +274,38 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
+  it("shows the free EU and US legal requirements without checkout chrome", async () => {
+    const sessionId = await createPage(390, 900, "?view=legal");
+    const result = await evaluate(
+      sessionId,
+      `(() => ({
+        h1: document.querySelector("h1")?.textContent,
+        text: document.body.textContent,
+        legalCards: document.querySelectorAll(".requirementCard").length,
+        freeTools: document.querySelectorAll(".freeToolCard").length,
+        policyLinks: document.querySelectorAll(".legalLinkCard").length,
+        ctaDock: !!document.querySelector(".ctadock"),
+        activeNav: [...document.querySelectorAll(".navlink")]
+          .filter((node) => node.getAttribute("data-active") === "true")
+          .map((node) => node.textContent),
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth
+      }))()`
+    );
+
+    expect(result.h1).toBe("EU and US requirements");
+    expect(result.text).toContain("Free generators and consent tools");
+    expect(result.text).toContain("GDPR privacy notice");
+    expect(result.text).toContain("FTC privacy and security");
+    expect(result.text).toContain("Termly Basic");
+    expect(result.legalCards).toBe(12);
+    expect(result.freeTools).toBeGreaterThanOrEqual(6);
+    expect(result.policyLinks).toBe(6);
+    expect(result.ctaDock).toBe(false);
+    expect(result.activeNav).toEqual(["Legal"]);
+    expect(result.scrollWidth).toBe(result.clientWidth);
+  }, 30000);
+
   it("gates the admin panel behind authenticated admin access", async () => {
     const sessionId = await createPage(1280, 900, "?view=admin");
     const result = await evaluate(

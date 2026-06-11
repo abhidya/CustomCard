@@ -1,0 +1,27 @@
+{
+  "uiUxIntent": "RCA follow-up run for the Adobe small-business thank-you benchmark using a concrete flat-stationery prompt that bans people/faces/portraits.",
+  "benchmarkScope": "front-panel-only image generation to control cost",
+  "reusedCopyFrom": "small-business-thank-you-front-jsonmode-2026-06-11T09-46-11-426Z",
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "frontImagePrompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+  "frontNegativePrompt": "person, people, human, face, portrait, body, hands, fingers, eyes, mouth, skin, woman, man, child, model, folded card mockup, collage, multiple panels, tabletop scene, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+  "imageRequestBody": {
+    "prompt": "Premium 5x7 portrait greeting card front design, flat stationery artwork only. No people, no faces, no bodies, no hands, no portraits. Warm cream paper background with citrus, soft gold, and deep teal accents. Elegant small-business thank-you card with a subtle illustrated boutique storefront awning, kraft shopping bag, tissue paper, ribbon, small blank gift tag, botanical sprig, and handmade local-shop texture. Leave a clean open safe area in the lower third for app-added typography. High-end print-ready stationery composition, minimal clutter, generous margins, soft natural light, refined editorial product-card style. No readable text, no logo, no watermark, no QR code, no folded-card mockup, no collage, no table scene, no crop marks.",
+    "negative_prompt": "person, people, human, face, portrait, body, hands, fingers, eyes, mouth, skin, woman, man, child, model, folded card mockup, collage, multiple panels, tabletop scene, watermark, logo, QR code, crop marks, misspelled text, tiny unreadable lettering",
+    "width": 1464,
+    "height": 2048,
+    "guidance": 4.5,
+    "num_steps": 8,
+    "metadata": {
+      "customcard": {
+        "prompt_contract": "folded-card-four-panel-v1",
+        "generation_strategy": "front-panel-only-no-people-rca-run",
+        "panel_id": "front",
+        "target_width": 1500,
+        "target_height": 2100,
+        "target_dpi": 300
+      }
+    }
+  }
+}

@@ -144,6 +144,12 @@ await runCheck("blocks non-import mutations with missing required fields", async
   const countsBefore = runtimePersistenceCounts(fakeDb);
   const cases = [
     {
+      routeId: "customer-draft-state-save",
+      idempotencyKey: "draft-state-postgres-missing-fields",
+      body: { status: "in-progress" },
+      expectedStatus: "invalid-customer-draft-state-save-payload"
+    },
+    {
       routeId: "render-packets",
       idempotencyKey: "render-packets-postgres-missing-project",
       body: {},
@@ -196,6 +202,50 @@ await runCheck("blocks non-import mutations with missing required fields", async
   }
 
   expectRuntimeCountsUnchanged(countsBefore, runtimePersistenceCounts(fakeDb), "rejected non-import mutations");
+});
+
+await runCheck("persists repository-backed draft state mutations", async () => {
+  const result = await runtime.persistMutation({
+    route: route("customer-draft-state-save"),
+    request: request({ token: customerToken, idempotencyKey: "draft-state-postgres-0001" }),
+    authContext: customerAuth,
+    bodyText: JSON.stringify({
+      draftStateId: "draft-state-postgres-contract",
+      status: "in-progress",
+      opportunityId: "opportunity-postgres-contract",
+      opportunityDecision: "accepted",
+      vendorId: "walgreens",
+      localeCode: "en-US",
+      draftInput: {
+        sender: "Maya",
+        recipient: "Sara",
+        relationship: "Friend",
+        occasion: "birthday",
+        tone: "warm",
+        style: "botanical",
+        language: "English",
+        personalNote: "Keep it gentle and specific.",
+        useMemory: false
+      }
+    }),
+    responsePayload: {
+      service: "customcard-api",
+      status: "accepted-contract-only",
+      route: "customer-draft-state-save",
+      realOrdersEnabled: false,
+      externalNetworkCalls: false
+    }
+  });
+
+  expect(result.statusCode === 202, "draft-state mutation should be accepted");
+  expect(result.payload.runtimeMode === "postgres", "draft-state mutation should report postgres runtime");
+  expect(result.payload.repositoryPersisted, "draft-state mutation should persist through repository path");
+  expect(result.payload.draftStateId === "draft-state-postgres-contract", "draft-state response should include persisted id");
+  expect(result.payload.repository.browserLocalState === false, "draft-state repository must not use browser storage");
+  expect(fakeDb.draftStates.length === 1, "draft_states row should be inserted");
+
+  const read = await runtime.readDraftState({ authContext: customerAuth });
+  expect(read.draftState?.draftStateId === "draft-state-postgres-contract", "draft-state read should return latest saved state");
 });
 
 await runCheck("persists repository-backed card project mutations", async () => {
@@ -333,7 +383,7 @@ await runCheck("replays matching idempotent mutations", async () => {
 
   expect(result.statusCode === 202, "replay should return accepted status");
   expect(result.payload.idempotencyReplayed, "replay should mark idempotencyReplayed");
-  expect(fakeDb.idempotencyRecords.size === 6, "replay must not insert another idempotency record");
+  expect(fakeDb.idempotencyRecords.size === 7, "replay must not insert another idempotency record");
   expect(fakeDb.providerCallEvents.length === 1, "replay must not duplicate provider call events");
 });
 
@@ -362,6 +412,7 @@ const report = {
     providerConnections: fakeDb.providerConnections.length,
     importedEvents: fakeDb.importedEvents.length,
     cardOpportunities: fakeDb.cardOpportunities.length,
+    draftStates: fakeDb.draftStates.length,
     relationshipMemories: fakeDb.relationshipMemories.length,
     cardProjects: fakeDb.cardProjects.length,
     renderPackets: fakeDb.renderPackets.length,
@@ -420,6 +471,7 @@ function runtimePersistenceCounts(state) {
     providerConnections: state.providerConnections.length,
     importedEvents: state.importedEvents.length,
     cardOpportunities: state.cardOpportunities.length,
+    draftStates: state.draftStates.length,
     relationshipMemories: state.relationshipMemories.length,
     cardProjects: state.cardProjects.length,
     renderPackets: state.renderPackets.length,
@@ -466,6 +518,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
     providerConnections: [],
     importedEvents: [],
     cardOpportunities: [],
+    draftStates: [],
     relationshipMemories: [],
     cardProjects: [],
     renderPackets: [],
@@ -483,6 +536,24 @@ function createFakePostgresState({ customerToken, adminToken }) {
       if (sql.includes("FROM auth_sessions")) {
         state.authSessionQueries += 1;
         return { rows: state.sessions.has(params[0]) ? [state.sessions.get(params[0])] : [] };
+      }
+      if (sql.includes("FROM draft_states")) {
+        const userDrafts = state.draftStates.filter((draft) => draft.userId === params[0]);
+        const latest = userDrafts[userDrafts.length - 1];
+        return {
+          rows: latest
+            ? [{
+                id: latest.id,
+                status: latest.status,
+                draft_input: latest.draftInput,
+                opportunity_id: latest.opportunityId,
+                opportunity_decision: latest.opportunityDecision,
+                vendor_id: latest.vendorId,
+                locale: latest.locale,
+                updated_at: latest.updatedAtIso
+              }]
+            : []
+        };
       }
       throw new Error(`Unexpected pool query: ${compactSql(sql)}`);
     },
@@ -561,6 +632,21 @@ function createFakeClient(state) {
           confidence: params[4],
           decision: params[5],
           evidence: JSON.parse(params[6])
+        });
+        return { rows: [], rowCount: 1 };
+      }
+
+      if (sql.includes("INSERT INTO draft_states")) {
+        state.draftStates.push({
+          id: params[0],
+          userId: params[1],
+          status: params[2],
+          draftInput: JSON.parse(params[3]),
+          opportunityId: params[4],
+          opportunityDecision: params[5],
+          vendorId: params[6],
+          locale: params[7],
+          updatedAtIso: params[8]
         });
         return { rows: [], rowCount: 1 };
       }

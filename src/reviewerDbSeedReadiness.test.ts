@@ -27,7 +27,7 @@ describe("reviewer DB seed readiness", () => {
       hostedRollbackModes: 3,
       noRollbackProbeModes: 2,
       sqlPreviewOnly: 8,
-      tableContracts: 14,
+      tableContracts: 15,
       routeContracts: 5,
       requiredEnvVars: 6,
       hostedSeedProofs: 0,
@@ -57,7 +57,7 @@ describe("reviewer DB seed readiness", () => {
     const seedPlan = reviewerDbSeedReadinessItems.find((item) => item.id === "reviewer-seed-plan-contract");
     const tokenContract = reviewerDbSeedReadinessItems.find((item) => item.id === "reviewer-session-token-contract");
 
-    expect(plan.rows).toHaveLength(17);
+    expect(plan.rows).toHaveLength(18);
     expect(new Set(plan.rows.map((row) => row.table)).size).toBe(summary.tableContracts);
     expect(seedPlan?.tableNames).toEqual(expect.arrayContaining(Array.from(new Set(plan.rows.map((row) => row.table)))));
     expect(tokenContract?.envVarNames).toEqual(

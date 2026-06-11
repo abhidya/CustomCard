@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible problem in the local MVP, contracts, docs, or verification.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What broke, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use dummy data only. Do not paste secrets or private card content.
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. Click ...
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Logs, screenshots, failing tests, or doctor output.
+    validations:
+      required: false
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Web app
+        - Mobile preview
+        - Expo shell
+        - API/runtime
+        - Persistence
+        - Provider catalog/runtime
+        - Retail/fulfillment
+        - Payments
+        - Docs
+        - CI/verification
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Safety boundary
+      options:
+        - label: I did not include secrets, private customer data, or private card content.
+          required: true
+        - label: This report does not require placing a real order or charging a real payment card.
+          required: true
+

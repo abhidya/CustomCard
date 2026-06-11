@@ -1,4 +1,5 @@
 import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { createServer, type Server } from "node:http";
 import { describe, expect, it } from "vitest";
 import { handleApiRequest } from "../scripts/api-server.mjs";
 
@@ -451,7 +452,7 @@ describe("api server wrapper", () => {
       hostedSeedExecutionRequired: 3,
       hostedTokenProbeRequired: 4,
       vercelEnvSyncRequired: 5,
-      tableContracts: 14,
+      tableContracts: 15,
       routeContracts: 5,
       requiredEnvVars: 6,
       hostedSeedProofs: 0,
@@ -540,8 +541,8 @@ describe("api server wrapper", () => {
       staticIndexCachePolicy: "no-store"
     });
     expect(report.readiness.persistence).toMatchObject({
-      tables: 19,
-      schemaBackedRoutes: 16,
+      tables: 20,
+      schemaBackedRoutes: 18,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
@@ -557,9 +558,9 @@ describe("api server wrapper", () => {
       signedArtifactUrls: true,
       localBrowserState: {
         audited: true,
-        dbRequiredItems: 4,
-        objectStoreRequiredItems: 1,
-        browserOnlyItems: 1
+        dbRequiredItems: 0,
+        objectStoreRequiredItems: 0,
+        browserOnlyItems: 0
       }
     });
     expect(report.readiness.runtime).toMatchObject({
@@ -873,8 +874,8 @@ describe("api server wrapper", () => {
 
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
-        tables: 19,
-        schemaBackedRoutes: 16,
+        tables: 20,
+        schemaBackedRoutes: 18,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -1483,6 +1484,7 @@ describe("api server wrapper", () => {
         CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "false",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "false",
         CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "false",
+        WALGREENS_VENDOR_MODE: "disabled_until_certified",
         AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
         CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
         CUSTOMCARD_ADMIN_SESSION_TOKEN: adminToken,
@@ -1546,6 +1548,36 @@ describe("api server wrapper", () => {
         bestAvailablePriceRequiresCouponPortalEvidence: true
       });
 
+      const anonymousWalgreensUpload = await postJson(
+        port,
+        "/api/walgreens/checkout/upload",
+        { imageBase64: "anonymous-checkout-reaches-walgreens-gate" }
+      );
+      expect(anonymousWalgreensUpload.status).toBe(503);
+      expect(await anonymousWalgreensUpload.json()).toMatchObject({
+        ok: false,
+        error: "Walgreens checkout is not enabled."
+      });
+
+      const anonymousWalgreensSession = await postJson(
+        port,
+        "/api/walgreens/checkout/session",
+        {
+          customer: {
+            firstName: "Maya",
+            lastName: "Patel",
+            email: "maya@example.com",
+            phone: "3125550199"
+          },
+          images: ["https://customcard.invalid/Image-demo.jpg"]
+        }
+      );
+      expect(anonymousWalgreensSession.status).toBe(503);
+      expect(await anonymousWalgreensSession.json()).toMatchObject({
+        ok: false,
+        error: "Walgreens checkout is not enabled."
+      });
+
       const unauthenticatedAiChat = await postJson(
         port,
         "/api/ai/chat/respond",
@@ -1554,6 +1586,27 @@ describe("api server wrapper", () => {
       );
       expect(unauthenticatedAiChat.status).toBe(401);
       expect(await unauthenticatedAiChat.json()).toMatchObject({
+        status: "auth-required",
+        requiredAuth: "customer-session"
+      });
+
+      const unauthenticatedAiCardGenerate = await postJson(
+        port,
+        "/api/ai/card/generate",
+        {
+          sender: "Maya",
+          recipient: "Sara",
+          relationship: "friends",
+          occasion: "birthday",
+          tone: "warm",
+          style: "botanical",
+          language: "English",
+          memory_notes: []
+        },
+        { "X-Idempotency-Key": "ai-card-missing-auth" }
+      );
+      expect(unauthenticatedAiCardGenerate.status).toBe(401);
+      expect(await unauthenticatedAiCardGenerate.json()).toMatchObject({
         status: "auth-required",
         requiredAuth: "customer-session"
       });
@@ -2125,6 +2178,98 @@ describe("api server wrapper", () => {
     }
   }, 30_000);
 
+  it("completes Google Calendar OAuth callback and imports metadata-only events", async () => {
+    const google = await startFakeGoogleCalendarServer();
+    const port = 6250 + Math.floor(Math.random() * 500);
+    const customerToken = "google-calendar-customer-token";
+    const server = spawn("node", ["scripts/api-server.mjs"], {
+      env: {
+        ...process.env,
+        HOST: "127.0.0.1",
+        PORT: String(port),
+        CUSTOMCARD_API_RUNTIME: "memory",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: customerToken,
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "google-calendar-admin-token",
+        GOOGLE_OAUTH_CLIENT_ID: "test-google-calendar-client.apps.googleusercontent.com",
+        GOOGLE_OAUTH_CLIENT_SECRET: "test-google-calendar-secret",
+        GOOGLE_OAUTH_REDIRECT_URI: `http://127.0.0.1:${port}/oauth/callback`,
+        GOOGLE_OAUTH_TOKEN_ENDPOINT: `http://127.0.0.1:${google.port}/token`,
+        GOOGLE_CALENDAR_EVENTS_ENDPOINT: `http://127.0.0.1:${google.port}/calendar/v3/calendars/primary/events`
+      },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    try {
+      await waitForApi(port, server);
+      const startResponse = await postJson(
+        port,
+        "/api/calendar/connections/start",
+        { calendarChoiceId: "google-calendar-events", returnTo: `http://127.0.0.1:${port}/?view=opportunities` },
+        {
+          ...bearer(customerToken),
+          "X-Idempotency-Key": "google-calendar-start-live"
+        }
+      );
+      expect(startResponse.status).toBe(202);
+      const startPayload = await startResponse.json();
+      const providerUrl = new URL(startPayload.providerRequestUrl);
+      expect(providerUrl.host).toBe("accounts.google.com");
+      expect(providerUrl.searchParams.get("redirect_uri")).toBe(`http://127.0.0.1:${port}/oauth/callback`);
+      expect(providerUrl.searchParams.get("scope")).toBe("https://www.googleapis.com/auth/calendar.events.readonly");
+
+      const callbackResponse = await fetch(
+        `http://127.0.0.1:${port}/oauth/callback?code=fake-auth-code&state=${encodeURIComponent(providerUrl.searchParams.get("state") ?? "")}`,
+        { headers: { Accept: "application/json" } }
+      );
+      expect(callbackResponse.status).toBe(200);
+      const callbackPayload = await callbackResponse.json();
+      expect(callbackPayload).toMatchObject({
+        status: "google-calendar-connected",
+        importedEventCount: 1,
+        opportunityCount: 1,
+        credentialStorageEnabled: true,
+        rawContentStored: false,
+        calendarConnection: expect.objectContaining({
+          provider: "google_calendar",
+          status: "connected",
+          credentialStorageEnabled: true,
+          rawContentStored: false
+        }),
+        importedEvents: [
+          expect.objectContaining({
+            title: "Nadia birthday dinner",
+            timezone: "America/New_York",
+            sourceEvidence: "Google Calendar metadata: title and start time."
+          })
+        ],
+        opportunities: [expect.objectContaining({ recipientName: "Nadia", decision: "pending" })],
+        repository: expect.objectContaining({
+          runtimeMode: "memory",
+          persisted: true,
+          rawContentStored: false,
+          providerCredentialsStored: true
+        })
+      });
+      const serialized = JSON.stringify(callbackPayload);
+      expect(serialized).not.toContain("This raw description must not be stored");
+      expect(serialized).not.toContain("fake-google-refresh-token");
+      expect(google.requests).toEqual(expect.arrayContaining(["POST /token", "GET /calendar/v3/calendars/primary/events"]));
+
+      const health = await getJson(port, "/api/health");
+      expect(health.runtime).toMatchObject({
+        mode: "memory",
+        providerConnectionRecords: 1,
+        importedEventRecords: 1,
+        cardOpportunityRecords: 1
+      });
+    } finally {
+      server.kill();
+      await waitForExit(server);
+      await closeServer(google.server);
+    }
+  }, 30_000);
+
   it("persists render artifacts to the configured object store and serves signed downloads", async () => {
     const port = 6300 + Math.floor(Math.random() * 1000);
     const customerToken = "test-customer-session-token";
@@ -2244,6 +2389,56 @@ function postJson(port: number, path: string, body: unknown, headers: Record<str
 
 function bearer(token: string): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
+}
+
+async function startFakeGoogleCalendarServer(): Promise<{ port: number; server: Server; requests: string[] }> {
+  const requests: string[] = [];
+  const server = createServer((request, response) => {
+    const url = new URL(request.url ?? "/", "http://127.0.0.1");
+    requests.push(`${request.method} ${url.pathname}`);
+    if (request.method === "POST" && url.pathname === "/token") {
+      response.setHeader("Content-Type", "application/json; charset=utf-8");
+      response.end(
+        JSON.stringify({
+          access_token: "fake-google-access-token",
+          refresh_token: "fake-google-refresh-token",
+          expires_in: 3600,
+          token_type: "Bearer",
+          scope: "https://www.googleapis.com/auth/calendar.events.readonly"
+        })
+      );
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/calendar/v3/calendars/primary/events") {
+      response.setHeader("Content-Type", "application/json; charset=utf-8");
+      response.end(
+        JSON.stringify({
+          items: [
+            {
+              id: "google-event-1",
+              summary: "Nadia birthday dinner",
+              start: {
+                dateTime: "2026-07-24T18:30:00-04:00",
+                timeZone: "America/New_York"
+              },
+              description: "This raw description must not be stored or returned."
+            }
+          ]
+        })
+      );
+      return;
+    }
+    response.statusCode = 404;
+    response.end("{}");
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  if (!address || typeof address === "string") throw new Error("Fake Google server did not expose a port.");
+  return { port: address.port, server, requests };
+}
+
+function closeServer(server: Server): Promise<void> {
+  return new Promise((resolve) => server.close(() => resolve()));
 }
 
 function expectSecurityHeaders(response: Response): void {

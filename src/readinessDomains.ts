@@ -5,6 +5,7 @@ import { cloudArtifactProofReadinessItems, summarizeCloudArtifactProofReadiness,
 import { e2eCoverageItems, summarizeE2eCoverage, validateE2eCoverage, type E2eCoverageItem, type E2eCoverageSummary } from "./e2eCoverage";
 import { externalAuditReadinessItems, summarizeExternalAuditReadiness, validateExternalAuditReadiness, type ExternalAuditReadinessItem, type ExternalAuditReadinessSummary } from "./externalAuditReadiness";
 import { hostedApiReadinessItems, summarizeHostedApiReadiness, validateHostedApiReadiness, type HostedApiReadinessItem, type HostedApiReadinessSummary } from "./hostedApiReadiness";
+import { legalComplianceItems, summarizeLegalComplianceReadiness, validateLegalComplianceReadiness, type LegalComplianceItem, type LegalComplianceSummary } from "./legalCompliance";
 import { mobileRenderReadinessItems, summarizeMobileRenderReadiness, validateMobileRenderReadiness, type MobileRenderReadinessItem, type MobileRenderReadinessSummary } from "./mobileRenderReadiness";
 import { observabilityReadinessItems, summarizeObservabilityReadiness, validateObservabilityReadiness, type ObservabilityReadinessItem, type ObservabilityReadinessSummary } from "./observabilityReadiness";
 import { paymentReadinessItems, summarizePaymentReadiness, validatePaymentReadiness, type PaymentReadinessItem, type PaymentReadinessSummary } from "./paymentReadiness";
@@ -18,6 +19,7 @@ export type { CloudArtifactProofReadinessItem, CloudArtifactProofReadinessSummar
 export type { E2eCoverageItem, E2eCoverageSummary } from "./e2eCoverage";
 export type { ExternalAuditReadinessItem, ExternalAuditReadinessSummary } from "./externalAuditReadiness";
 export type { HostedApiReadinessItem, HostedApiReadinessSummary } from "./hostedApiReadiness";
+export type { LegalComplianceItem, LegalComplianceSummary } from "./legalCompliance";
 export type { MobileRenderReadinessItem, MobileRenderReadinessSummary } from "./mobileRenderReadiness";
 export type { ObservabilityReadinessItem, ObservabilityReadinessSummary } from "./observabilityReadiness";
 export type { PaymentReadinessItem, PaymentReadinessSummary } from "./paymentReadiness";
@@ -44,6 +46,7 @@ export interface ReadinessSummary {
   e2eCoverage: ReadinessDomain<E2eCoverageItem, E2eCoverageSummary>;
   externalAudit: ReadinessDomain<ExternalAuditReadinessItem, ExternalAuditReadinessSummary>;
   hostedApi: ReadinessDomain<HostedApiReadinessItem, HostedApiReadinessSummary>;
+  legalCompliance: ReadinessDomain<LegalComplianceItem, LegalComplianceSummary>;
   mobileRender: ReadinessDomain<MobileRenderReadinessItem, MobileRenderReadinessSummary>;
   observability: ReadinessDomain<ObservabilityReadinessItem, ObservabilityReadinessSummary>;
   payment: ReadinessDomain<PaymentReadinessItem, PaymentReadinessSummary>;
@@ -122,6 +125,14 @@ export const readinessDomainDefinitions = [
     payload: hostedApiReadinessItems,
     summarize: () => summarizeHostedApiReadiness(),
     validate: () => validateHostedApiReadiness()
+  }),
+  defineReadinessDomain({
+    id: "legalCompliance",
+    label: "Legal compliance readiness",
+    payloadKey: "items",
+    payload: legalComplianceItems,
+    summarize: () => summarizeLegalComplianceReadiness(),
+    validate: () => validateLegalComplianceReadiness()
   }),
   defineReadinessDomain({
     id: "mobileRender",

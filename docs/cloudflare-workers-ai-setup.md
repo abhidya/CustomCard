@@ -58,14 +58,23 @@ inpainting workflow is explicitly needed.
 The live `/api/ai/card/generate` text path uses Cloudflare's OpenAI-compatible
 chat endpoint. For `card-copy`, the request includes `response_format:
 { type: "json_schema", json_schema: ... }` with exactly four required panel
-objects: `front`, `inside-left`, `inside-right`, and `back`.
+objects: `front`, `inside-left`, `inside-right`, and `back`. Each panel includes
+editable copy fields plus `image_prompt` and `image_negative_prompt`. The
+`image_prompt` is the literal prompt sent to the image model; it should read like
+an art director's visual request, for example "A premium 5x7 vertical greeting
+card front design..." with specific motifs, palette, composition, and
+print-quality constraints.
 
 The live image path generates one provider request per card panel. Each request
 targets a single portrait 5x7 panel, carries `folded-card-four-panel-v1`
-metadata, and avoids collage/folded mockup prompts. Cloudflare SDXL Lightning is
-asked for a 5:7-safe `1464 x 2048` image because Workers AI image dimensions cap
-at 2048 px on the long edge and SDXL dimensions must be divisible by 8; the
-renderer/export contract still treats the final panel as `1500 x 2100` at 300 DPI.
+metadata, and avoids runtime prompt boilerplate such as `Recipient:`,
+`Relationship:`, `Panel headline:`, or `Panel body:`. Exact typography is
+reserved for deterministic app overlays, so generated image prompts should avoid
+readable text, logos, and watermarks unless a future provider has reliable text
+rendering. Cloudflare SDXL Lightning is asked for a 5:7-safe `1464 x 2048` image
+because Workers AI image dimensions cap at 2048 px on the long edge and SDXL
+dimensions must be divisible by 8; the renderer/export contract still treats the
+final panel as `1500 x 2100` at 300 DPI.
 
 ## Deployment
 

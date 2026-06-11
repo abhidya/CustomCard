@@ -364,7 +364,8 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     if (route.audience === "admin" && route.auth !== "admin-session") {
       issues.push(`Admin route ${route.id} must require admin-session auth.`);
     }
-    if (route.audience === "customer" && route.auth !== "customer-session") {
+    const anonymousHostedCheckout = hostedCheckoutExempt && route.auth === "none";
+    if (route.audience === "customer" && route.auth !== "customer-session" && !anonymousHostedCheckout) {
       issues.push(`Customer route ${route.id} must require customer-session auth.`);
     }
     if (route.method === "POST" && !route.idempotencyKeyRequired && !hostedCheckoutExempt) {

@@ -42,7 +42,7 @@ export const customerAccessibilityEvidenceItems = [
     surface: "web-customer",
     sourceSignals: [
       "aria-label=\"Customer chat message\"",
-      "aria-label=\"Customer local workspace options\"",
+      "aria-label=\"Customer account workspace options\"",
       "aria-label=\"Calendar onboarding choices\"",
       "input[placeholder], textarea[placeholder]",
       "Customer chat message"

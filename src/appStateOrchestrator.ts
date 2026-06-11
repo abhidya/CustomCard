@@ -65,7 +65,7 @@ export const reviewerDraftOptions: {
   vendors: ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"]
 };
 
-export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "admin" | "adapters";
+export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "business" | "legal" | "admin" | "adapters";
 
 const legacyCardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
 const sameOriginCardGenPath = "/api/ai/card/generate";
@@ -131,8 +131,9 @@ export interface AppState {
 export function initialViewFromLocation(): ViewId {
   if (typeof window === "undefined") return "customer";
   const requestedView = new URLSearchParams(window.location.search).get("view");
-  const viewIds = new Set<ViewId>(["customer", "mobile", "opportunities", "studio", "memory", "handoff", "admin", "adapters"]);
+  const viewIds = new Set<ViewId>(["customer", "mobile", "opportunities", "studio", "memory", "handoff", "business", "legal", "admin", "adapters"]);
   if (requestedView && viewIds.has(requestedView as ViewId)) return requestedView as ViewId;
+  if (window.location.pathname.replace(/\/+$/, "") === "/business") return "business";
   const hashView = window.location.hash.replace(/^#\/?/, "");
   if (hashView && viewIds.has(hashView as ViewId)) return hashView as ViewId;
   return "customer";
@@ -144,21 +145,7 @@ function buildRuntimeReadinessMap(): Map<string, RuntimeReadiness> {
 
 export function useAppState(): AppState {
   const [activeView, setActiveView] = useState<ViewId>(() => initialViewFromLocation());
-  const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>(() => {
-    try {
-      const raw = localStorage.getItem(reviewerWorkspaceKey);
-      const stored = raw ? (JSON.parse(raw) as LocalWorkspace) : undefined;
-      // Workspaces created by the old prefilled reviewer identity are demo
-      // artifacts, not customer data, so clear them once on load.
-      if (stored && stored.name === "Abdul" && stored.email === "abdul@customcard.local") {
-        localStorage.removeItem(reviewerWorkspaceKey);
-        return undefined;
-      }
-      return stored;
-    } catch {
-      return undefined;
-    }
-  });
+  const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>();
   const [authForm, setAuthForm] = useState(reviewerInitialAuthForm);
   const [inviteText, setInviteText] = useState("");
   const [scanStatus, setScanStatus] = useState(reviewerInitialScanStatus);

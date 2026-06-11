@@ -23,25 +23,41 @@ const cardCopyResponse = {
       id: "front",
       headline: "Happy Birthday Sara",
       body: "Wishing you a day full of green trails and good coffee.",
-      art_direction: "Botanical watercolor cover."
+      art_direction: "Botanical watercolor cover.",
+      image_prompt:
+        "A premium 5x7 vertical greeting card front design for a warm botanical birthday. Soft fern fronds, morning sunlight, tiny trail wildflowers, warm cream paper texture, deep green accents, elegant open space for app-added typography, refined print-ready stationery composition, no readable text, no logos, no watermark.",
+      image_negative_prompt:
+        "readable text, misspelled text, logo, watermark, folded card mockup, tabletop scene, people, face, portrait"
     },
     {
       id: "inside-left",
       headline: "A little sunshine",
       body: "May the morning feel bright and unhurried.",
-      art_direction: "Soft fern border."
+      art_direction: "Soft fern border.",
+      image_prompt:
+        "A soft 5x7 vertical greeting card inside-left panel with a delicate fern border, pale cream background, subtle watercolor texture, wide blank center area for app-added note text, calm refined stationery design, no readable text, no logos, no watermark.",
+      image_negative_prompt:
+        "readable text, misspelled text, logo, watermark, folded card mockup, tabletop scene, people, face, portrait"
     },
     {
       id: "inside-right",
       headline: "From Manny",
       body: "I hope this year brings more hikes, more laughs, and more tiny wonders.",
-      art_direction: "Readable message panel."
+      art_direction: "Readable message panel.",
+      image_prompt:
+        "A clean 5x7 vertical greeting card inside-right message panel with warm ivory background, tiny fern sprigs in the corners, subtle trail-line ornament near the bottom, generous blank writing area for app-added message text, no readable text, no logos, no watermark.",
+      image_negative_prompt:
+        "readable text, misspelled text, logo, watermark, folded card mockup, tabletop scene, people, face, portrait"
     },
     {
       id: "back",
       headline: "CustomCard",
       body: "Made with CustomCard. Printed locally.",
-      art_direction: "Minimal back cover."
+      art_direction: "Minimal back cover.",
+      image_prompt:
+        "A minimal 5x7 vertical greeting card back cover design with a warm cream background, small fern sprig near the lower edge, mostly negative space, refined coordinating stationery style, no readable text, no logos, no watermark.",
+      image_negative_prompt:
+        "readable text, misspelled text, logo, watermark, folded card mockup, tabletop scene, people, face, portrait"
     }
   ],
   memory_citations: ["She keeps a fern by the kitchen window."]
@@ -78,14 +94,17 @@ describe("AI card generator service", () => {
     expect(requestBody.response_format).toMatchObject({
       type: "json_schema",
       json_schema: {
-        required: ["panels", "memory_citations"],
-        properties: {
-          panels: {
-            minItems: 4,
-            maxItems: 4
+            required: ["panels", "memory_citations"],
+            properties: {
+              panels: {
+                minItems: 4,
+                maxItems: 4,
+                items: {
+                  required: ["id", "headline", "body", "art_direction", "image_prompt", "image_negative_prompt"]
+                }
+              }
+            }
           }
-        }
-      }
     });
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
     expect(JSON.stringify(result.payload)).not.toContain("secret_text");
@@ -196,10 +215,20 @@ describe("AI card generator service", () => {
     expect(imageBodies.map((body) => body.metadata.customcard.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
     expect(imageBodies.every((body) => body.width === 1464 && body.height === 2048)).toBe(true);
     expect(imageBodies.every((body) => body.metadata.customcard.generation_strategy === "one-provider-request-per-panel")).toBe(true);
-    expect(imageBodies[0].prompt).toContain("FRONT COVER");
-    expect(imageBodies[1].prompt).toContain("INSIDE LEFT PANEL");
-    expect(imageBodies[2].prompt).toContain("INSIDE RIGHT PANEL");
-    expect(imageBodies[3].prompt).toContain("BACK COVER");
+    expect(imageBodies[0].prompt).toContain("A premium 5x7 vertical greeting card front design");
+    expect(imageBodies[1].prompt).toContain("inside-left panel");
+    expect(imageBodies[2].prompt).toContain("inside-right message panel");
+    expect(imageBodies[3].prompt).toContain("back cover design");
+    expect(imageBodies.every((body) => body.prompt.includes("no readable text"))).toBe(true);
+    expect(imageBodies.every((body) => body.prompt.includes("no logos"))).toBe(true);
+    expect(imageBodies.every((body) => body.prompt.includes("no watermark"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("folded card mockup"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("tabletop scene"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("people"))).toBe(true);
+    expect(imageBodies.every((body) => body.negative_prompt.includes("readable text"))).toBe(true);
+    expect(imageBodies.map((body) => body.prompt).join(" ")).not.toMatch(
+      /Recipient:|Relationship:|Panel headline|Panel body|Language context|Art direction:/
+    );
     expect(JSON.stringify(result.payload)).not.toContain("secret_image");
   });
 

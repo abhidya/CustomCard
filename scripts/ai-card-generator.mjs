@@ -21,12 +21,14 @@ const cardCopyJsonSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "headline", "body", "art_direction"],
+        required: ["id", "headline", "body", "art_direction", "image_prompt", "image_negative_prompt"],
         properties: {
           id: { type: "string", enum: requiredPanelIds },
           headline: { type: "string", maxLength: 120 },
           body: { type: "string", maxLength: 600 },
-          art_direction: { type: "string", maxLength: 500 }
+          art_direction: { type: "string", maxLength: 500 },
+          image_prompt: { type: "string", maxLength: 1200 },
+          image_negative_prompt: { type: "string", maxLength: 500 }
         }
       }
     },
@@ -41,22 +43,38 @@ const panelDefaults = {
   front: {
     headline: "For you",
     body: "A card made with care.",
-    art_direction: "Coordinated front cover artwork with safe margins."
+    art_direction: "Coordinated front cover artwork with safe margins.",
+    image_prompt:
+      "A premium 5x7 vertical greeting card front design with refined abstract celebration artwork, coordinated palette, generous open space for app-added typography, elegant print-ready composition, no readable text, no logos, no watermark.",
+    image_negative_prompt:
+      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
   "inside-left": {
     headline: "Thinking of you",
     body: "A note for this moment.",
-    art_direction: "Soft interior panel with room for a short message."
+    art_direction: "Soft interior panel with room for a short message.",
+    image_prompt:
+      "A soft 5x7 vertical greeting card interior-left panel with subtle coordinating illustration details around the edges, calm open writing space, refined print-ready stationery composition, no readable text, no logos, no watermark.",
+    image_negative_prompt:
+      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
   "inside-right": {
     headline: "From the heart",
     body: "With warm wishes.",
-    art_direction: "Main message panel with readable typography and generous margins."
+    art_direction: "Main message panel with readable typography and generous margins.",
+    image_prompt:
+      "A clean 5x7 vertical greeting card interior-right message panel with a warm pale background, subtle decorative border, generous blank center area for app-added message text, premium print-ready stationery design, no readable text, no logos, no watermark.",
+    image_negative_prompt:
+      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
   back: {
     headline: "CustomCard",
     body: "Made with CustomCard. Printed locally.",
-    art_direction: "Clean coordinating back panel with minimal ornamentation."
+    art_direction: "Clean coordinating back panel with minimal ornamentation.",
+    image_prompt:
+      "A minimal 5x7 vertical greeting card back cover design with a coordinating flat background, subtle ornament near the lower edge, mostly negative space, premium print-ready stationery style, no readable text, no logos, no watermark.",
+    image_negative_prompt:
+      "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   }
 };
 
@@ -441,9 +459,16 @@ function buildMessages(systemPrompt, userPrompt) {
 function buildCardCopyPrompt(input) {
   return JSON.stringify(
     {
-      task: "Generate greeting card copy JSON only.",
+      task: "Generate greeting card copy and literal image-generation prompts as JSON only.",
       required_schema: {
-        panels: requiredPanelIds.map((id) => ({ id, headline: "string", body: "string", art_direction: "string" })),
+        panels: requiredPanelIds.map((id) => ({
+          id,
+          headline: "string",
+          body: "string",
+          art_direction: "string",
+          image_prompt: "string",
+          image_negative_prompt: "string"
+        })),
         memory_citations: ["string"]
       },
       constraints: [
@@ -453,6 +478,13 @@ function buildCardCopyPrompt(input) {
         "No order/payment claims.",
         "headline <= 120 characters.",
         "body <= 600 characters.",
+        "image_prompt is the exact prompt the image model will receive for that panel.",
+        "image_prompt must be a concrete visual composition, not a restatement of form fields.",
+        "image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.",
+        "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
+        "Prefer symbolic objects, patterns, backgrounds, stationery illustration, and print design details over people or portraits unless a user explicitly asks for a portrait/photo.",
+        "For each image_prompt include: 5x7 vertical greeting card panel, the panel role, specific visual motifs, palette, style, composition, print-ready quality, and no logos/no watermark/no readable text.",
+        "image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel.",
         "Return JSON only, no markdown."
       ],
       input
@@ -493,58 +525,94 @@ function buildImagePromptPlan(input, cardCopy) {
     const panel = panelsById.get(panelId) ?? panelDefaults[panelId];
     return {
       panel_id: panelId,
-      prompt: buildPanelImagePrompt(input, panelId, panel),
-      negative_prompt: [
-        "folded card mockup",
-        "collage",
-        "multiple panels in one image",
-        "tabletop scene",
-        "hands",
-        "watermark",
-        "logo",
-        "QR code",
-        "crop marks",
-        "misspelled text",
-        "tiny unreadable lettering"
-      ].join(", ")
+      prompt: normalizeImagePrompt(panel.image_prompt || buildPanelImagePrompt(input, panelId, panel), panelId),
+      negative_prompt: normalizeImageNegativePrompt(panel.image_negative_prompt)
     };
   });
 }
 
 function buildPanelImagePrompt(input, panelId, panel) {
-  const role = {
-    front: "FRONT COVER",
-    "inside-left": "INSIDE LEFT PANEL",
-    "inside-right": "INSIDE RIGHT PANEL",
-    back: "BACK COVER"
-  }[panelId];
   const panelInstruction = {
     front:
-      "Create a premium front cover with the strongest decorative composition. Leave generous safe margins for deterministic headline/body text overlays.",
+      "A premium 5x7 vertical greeting card front design with the strongest decorative composition and a generous blank area for app-added headline typography.",
     "inside-left":
-      "Create a soft coordinating interior-left panel with decorative support artwork and open space for a short memory or note.",
+      "A soft 5x7 vertical greeting card inside-left panel with decorative support artwork around the edges and open space for a short app-added note.",
     "inside-right":
-      "Create a clean main-message interior-right panel with a calm writing area and subtle matching ornamentation.",
+      "A clean 5x7 vertical greeting card inside-right message panel with a calm blank writing area and subtle matching ornamentation.",
     back:
-      "Create a minimal coordinating back cover with mostly negative space and subtle brand-safe ornamentation near the lower area."
+      "A minimal 5x7 vertical greeting card back cover with mostly negative space and subtle coordinating ornamentation near the lower area."
   }[panelId];
+  const visualBrief = buildVisualBrief(input, panel);
 
   return [
-    `Generate only the ${role} artwork for a portrait 5x7 folded greeting card panel.`,
-    "This is one standalone print panel, not a folded-card preview and not a collage.",
-    "Target final composition is 1500 x 2100 px at 300 DPI; keep important content inside safe margins.",
-    `Recipient: ${input.recipient}.`,
-    `Relationship: ${input.relationship}.`,
-    `Occasion: ${input.occasion}.`,
-    `Tone: ${input.tone}.`,
-    `Style: ${input.style}.`,
-    `Language context: ${input.language}.`,
-    `Panel headline for app overlay: ${panel.headline}.`,
-    `Panel body for app overlay: ${panel.body}.`,
-    `Art direction: ${panel.art_direction}.`,
     panelInstruction,
-    "Use print-ready flat artwork. Do not render exact long text unless it is simple and perfectly legible; the app will overlay final typography."
+    visualBrief,
+    "Premium print-ready composition, clean luxury stationery design, minimal clutter, generous safe margins, no readable text, no logos, no watermark."
   ].join(" ");
+}
+
+function normalizeImagePrompt(prompt, panelId) {
+  const cleaned = cleanText(prompt)
+    .replace(/\b(?:Recipient|Relationship|Occasion|Tone|Style|Language context|Panel headline|Panel body|Art direction)\s*:[^.]+\.?/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const base = cleaned || panelDefaults[panelId].image_prompt;
+  const guardrails = [];
+  if (!/\b5x7\b/i.test(base)) guardrails.push("5x7 vertical greeting card panel.");
+  if (!/\bno readable text\b/i.test(base)) guardrails.push("No readable text.");
+  if (!/\bno logos?\b/i.test(base)) guardrails.push("No logos.");
+  if (!/\bno watermark\b/i.test(base)) guardrails.push("No watermark.");
+  return truncate([base, ...guardrails].join(" "), 1200);
+}
+
+function normalizeImageNegativePrompt(value) {
+  return Array.from(
+    new Set(
+      [
+        ...String(value || "").split(","),
+        "readable text",
+        "misspelled text",
+        "tiny unreadable lettering",
+        "logo",
+        "watermark",
+        "QR code",
+        "crop marks",
+        "folded card mockup",
+        "physical card mockup",
+        "tabletop scene",
+        "desk scene",
+        "hands",
+        "people",
+        "face",
+        "portrait"
+      ]
+        .map((item) => cleanText(item).toLowerCase())
+        .filter(Boolean)
+    )
+  ).join(", ");
+}
+
+function buildVisualBrief(input, panel) {
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction}`.toLowerCase();
+  if (/\b(med|medical|doctor|physician|md|white coat|stethoscope)\b/.test(source)) {
+    return "Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint anatomical sketch lines, and a quiet ECG heartbeat line.";
+  }
+  if (/\b(graduat|class year|diploma|school)\b/.test(source)) {
+    return "Elegant graduation theme: refined navy, ivory, and gold palette with a graduation cap, diploma ribbon, subtle starbursts, celebratory confetti, and clean milestone stationery details.";
+  }
+  if (/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    return "Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, subtle boutique storefront awning, kraft shopping bag, ribbon, blank gift tag, botanical sprig, and handmade local-shop texture.";
+  }
+  if (/\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source)) {
+    return "Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration.";
+  }
+  if (/\b(birthday|cake|candles|party)\b/.test(source)) {
+    return "Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style.";
+  }
+  if (/\b(thank|grateful|appreciat)\b/.test(source)) {
+    return "Elegant thank-you theme: ribbon, botanical sprigs, soft paper texture, warm accent shapes, quiet premium stationery composition, sincere and polished.";
+  }
+  return `Original ${truncate(input.occasion || "celebration", 80)} theme in a ${truncate(input.style || "refined", 120)} style with specific symbolic motifs, coordinated palette, and emotional tone: ${truncate(input.tone || "warm", 120)}.`;
 }
 
 function parseJsonFromText(text) {
@@ -604,7 +672,12 @@ function normalizeCardCopy(parsed, input) {
       id,
       headline: truncate(cleanText(raw.headline || defaults.headline), 120),
       body: truncate(cleanText(raw.body || defaults.body), 600),
-      art_direction: truncate(cleanText(raw.art_direction || raw.artDirection || defaults.art_direction), 500)
+      art_direction: truncate(cleanText(raw.art_direction || raw.artDirection || defaults.art_direction), 500),
+      image_prompt: truncate(cleanText(raw.image_prompt || raw.imagePrompt || defaults.image_prompt), 1200),
+      image_negative_prompt: truncate(
+        cleanText(raw.image_negative_prompt || raw.imageNegativePrompt || defaults.image_negative_prompt),
+        500
+      )
     };
   });
   const memoryCitations = Array.isArray(parsed?.memory_citations)
@@ -625,13 +698,23 @@ function buildFallbackCardCopy(input) {
         id: "front",
         headline: `For ${truncate(input.recipient, 80)}`,
         body: `A ${input.tone} ${input.occasion} card made with care.`,
-        art_direction: `${input.style} cover, print-safe margins, coordinated palette.`
+        art_direction: `${input.style} cover, print-safe margins, coordinated palette.`,
+        image_prompt: buildPanelImagePrompt(input, "front", {
+          ...panelDefaults.front,
+          art_direction: `${input.style} cover, print-safe margins, coordinated palette.`
+        }),
+        image_negative_prompt: panelDefaults.front.image_negative_prompt
       },
       {
         id: "inside-left",
         headline: "Thinking of you",
         body: input.personal_note || `A warm note for ${input.recipient} on this ${input.occasion}.`,
-        art_direction: `${input.style} interior, quiet decorative border.`
+        art_direction: `${input.style} interior, quiet decorative border.`,
+        image_prompt: buildPanelImagePrompt(input, "inside-left", {
+          ...panelDefaults["inside-left"],
+          art_direction: `${input.style} interior, quiet decorative border.`
+        }),
+        image_negative_prompt: panelDefaults["inside-left"].image_negative_prompt
       },
       {
         id: "inside-right",
@@ -639,13 +722,23 @@ function buildFallbackCardCopy(input) {
         body: input.memory_notes[0]
           ? `This made me think of you: ${truncate(input.memory_notes[0], 420)}`
           : `With appreciation for everything that makes this ${input.occasion} special.`,
-        art_direction: `${input.style} message panel, readable type area, matching inside-left.`
+        art_direction: `${input.style} message panel, readable type area, matching inside-left.`,
+        image_prompt: buildPanelImagePrompt(input, "inside-right", {
+          ...panelDefaults["inside-right"],
+          art_direction: `${input.style} message panel, readable type area, matching inside-left.`
+        }),
+        image_negative_prompt: panelDefaults["inside-right"].image_negative_prompt
       },
       {
         id: "back",
         headline: "CustomCard",
         body: "Made with CustomCard. Printed locally.",
-        art_direction: "Minimal back panel with small coordinating ornament."
+        art_direction: "Minimal back panel with small coordinating ornament.",
+        image_prompt: buildPanelImagePrompt(input, "back", {
+          ...panelDefaults.back,
+          art_direction: "Minimal back panel with small coordinating ornament."
+        }),
+        image_negative_prompt: panelDefaults.back.image_negative_prompt
       }
     ],
     memory_citations: input.memory_notes.slice(0, 2)

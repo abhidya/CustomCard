@@ -70,7 +70,7 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
         orderEventRecords: 0,
         consentRecords: 0,
         dataRequestRecords: 0,
-        statefulRoutes: routes.filter((route) => route.audience !== "public").length,
+        statefulRoutes: routes.filter((route) => route.auth !== "none").length,
         artifactStore: objectStoreRuntime.describe()
       };
     },
@@ -90,6 +90,7 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
           }
         };
       }
+      if (route.auth === "none") return anonymousAuthContext(route);
       return {
         ok: true,
         role: route.audience,
@@ -109,6 +110,12 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
           runtimeMode: "contract",
           idempotencyPersisted: false
         }
+      };
+    },
+    async persistGoogleCalendarImport({ record }) {
+      return {
+        persisted: false,
+        payload: buildGoogleCalendarImportRepositoryPayload(record, "contract", false)
       };
     },
     async readArtifact(input) {
@@ -186,7 +193,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         orderEventRecords: orderEvents.size,
         consentRecords: consentRecords.size,
         dataRequestRecords: dataRequests.size,
-        statefulRoutes: routes.filter((route) => route.audience !== "public").length,
+        statefulRoutes: routes.filter((route) => route.auth !== "none").length,
         artifactStore: objectStoreRuntime.describe()
       };
     },
@@ -262,6 +269,15 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
     },
+    async persistGoogleCalendarImport({ record }) {
+      providerConnections.set(record.providerConnection.id, record.providerConnection);
+      for (const importedEvent of record.importedEvents) importedEvents.set(importedEvent.id, importedEvent);
+      for (const cardOpportunity of record.cardOpportunities) cardOpportunities.set(cardOpportunity.id, cardOpportunity);
+      return {
+        persisted: true,
+        payload: buildGoogleCalendarImportRepositoryPayload(record, "memory", true)
+      };
+    },
     async readDraftState({ authContext }) {
       return buildDraftStateReadPayload(draftStates.get(authContext.userId), "memory", authContext);
     },
@@ -310,7 +326,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         orderEventRecords: null,
         consentRecords: null,
         dataRequestRecords: null,
-        statefulRoutes: routes.filter((route) => route.audience !== "public").length,
+        statefulRoutes: routes.filter((route) => route.auth !== "none").length,
         artifactStore: objectStoreRuntime.describe()
       };
     },
@@ -321,9 +337,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       return blockers;
     },
     async authorize(route, request) {
-      if (route.audience === "public") {
-        return { ok: true, role: "public", userId: "public", sessionId: "public" };
-      }
+      if (route.auth === "none") return anonymousAuthContext(route);
       const token = readBearerToken(request);
       if (!token) return authError(401, "auth-required", route);
 
@@ -341,7 +355,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       );
       const session = result.rows[0];
       if (!session) return authError(401, "invalid-session", route);
-      const requiredRole = route.audience === "admin" ? "admin" : "customer";
+      const requiredRole = requiredRoleForAuth(route.auth);
       if (session.role !== requiredRole) return authError(403, "wrong-role", route);
 
       return {
@@ -475,6 +489,37 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
     },
+    async persistGoogleCalendarImport({ authContext, record }) {
+      const pool = await getPool();
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        await persistGoogleCalendarImportPostgres(client, authContext, record);
+        await client.query(
+          `INSERT INTO audit_log (subject_type, subject_id, actor_id, action, metadata)
+           VALUES ('provider_connection', $1, $2, 'google_calendar.oauth.imported', $3::jsonb)`,
+          [
+            record.providerConnection.id,
+            authContext.userId,
+            JSON.stringify({
+              importedEventCount: record.importedEvents.length,
+              rawContentStored: false,
+              provider: "google-calendar"
+            })
+          ]
+        );
+        await client.query("COMMIT");
+        return {
+          persisted: true,
+          payload: buildGoogleCalendarImportRepositoryPayload(record, "postgres", true)
+        };
+      } catch (error) {
+        await client.query("ROLLBACK").catch(() => undefined);
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
     async readDraftState({ authContext }) {
       const pool = await getPool();
       const result = await pool.query(
@@ -520,16 +565,28 @@ function addSession(sessions, token, role, userId, sessionSecret) {
 }
 
 function authorizeFromSessions(route, request, sessions, sessionSecret) {
-  if (route.audience === "public") {
-    return { ok: true, role: "public", userId: "public", sessionId: "public" };
-  }
+  if (route.auth === "none") return anonymousAuthContext(route);
   const token = readBearerToken(request);
   if (!token) return authError(401, "auth-required", route);
   const session = sessions.get(hashSessionToken(token, sessionSecret));
   if (!session) return authError(401, "invalid-session", route);
-  const requiredRole = route.audience === "admin" ? "admin" : "customer";
+  const requiredRole = requiredRoleForAuth(route.auth);
   if (session.role !== requiredRole) return authError(403, "wrong-role", route);
   return { ok: true, ...session };
+}
+
+function anonymousAuthContext(route) {
+  const role = route.audience === "admin" ? "admin" : route.audience;
+  return {
+    ok: true,
+    role,
+    userId: role === "customer" ? "anonymous-customer" : "public",
+    sessionId: "anonymous"
+  };
+}
+
+function requiredRoleForAuth(auth) {
+  return auth === "admin-session" ? "admin" : "customer";
 }
 
 function prepareIdempotentMutation({ route, request, authContext, bodyText }) {
@@ -1136,6 +1193,79 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
   };
 }
 
+async function persistGoogleCalendarImportPostgres(client, authContext, record) {
+  await client.query(
+    `INSERT INTO provider_connections
+       (id, user_id, provider, scopes, status, adapter_version, metadata_schema, raw_content_stored, encrypted_refresh_token)
+     VALUES ($1, $2, $3, $4::text[], 'connected', $5, $6::jsonb, FALSE, $7)
+     ON CONFLICT (id) DO UPDATE SET
+       provider = EXCLUDED.provider,
+       scopes = EXCLUDED.scopes,
+       status = EXCLUDED.status,
+       adapter_version = EXCLUDED.adapter_version,
+       metadata_schema = EXCLUDED.metadata_schema,
+       raw_content_stored = FALSE,
+       encrypted_refresh_token = COALESCE(EXCLUDED.encrypted_refresh_token, provider_connections.encrypted_refresh_token)`,
+    [
+      record.providerConnection.id,
+      authContext.userId,
+      record.providerConnection.provider,
+      record.providerConnection.scopes,
+      record.providerConnection.adapterVersion,
+      JSON.stringify(record.providerConnection.metadataSchema),
+      record.providerConnection.encryptedRefreshToken || null
+    ]
+  );
+
+  for (const importedEvent of record.importedEvents) {
+    await client.query(
+      `INSERT INTO imported_events
+         (id, connection_id, title, starts_at, timezone, source_evidence, recipient_hint)
+       VALUES ($1, $2, $3, $4::timestamptz, $5, $6, $7)
+       ON CONFLICT (id) DO UPDATE SET
+         connection_id = EXCLUDED.connection_id,
+         title = EXCLUDED.title,
+         starts_at = EXCLUDED.starts_at,
+         timezone = EXCLUDED.timezone,
+         source_evidence = EXCLUDED.source_evidence,
+         recipient_hint = EXCLUDED.recipient_hint`,
+      [
+        importedEvent.id,
+        record.providerConnection.id,
+        importedEvent.title,
+        importedEvent.startsAt,
+        importedEvent.timezone,
+        importedEvent.sourceEvidence,
+        importedEvent.recipientHint
+      ]
+    );
+  }
+
+  for (const cardOpportunity of record.cardOpportunities) {
+    await client.query(
+      `INSERT INTO card_opportunities
+         (id, event_id, recipient_name, lead_time_hours, confidence, decision, evidence)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+       ON CONFLICT (id) DO UPDATE SET
+         event_id = EXCLUDED.event_id,
+         recipient_name = EXCLUDED.recipient_name,
+         lead_time_hours = EXCLUDED.lead_time_hours,
+         confidence = EXCLUDED.confidence,
+         decision = EXCLUDED.decision,
+         evidence = EXCLUDED.evidence`,
+      [
+        cardOpportunity.id,
+        cardOpportunity.eventId,
+        cardOpportunity.recipientName,
+        cardOpportunity.leadTimeHours,
+        cardOpportunity.confidence,
+        cardOpportunity.decision,
+        JSON.stringify(cardOpportunity.evidence)
+      ]
+    );
+  }
+}
+
 function buildImportPreviewRecord({ authContext, bodyText }) {
   const body = parseJsonBody(bodyText);
   const resolvedImport = resolveImportPreviewMetadata(body);
@@ -1218,6 +1348,48 @@ function buildImportPreviewRepositoryPayload(record, runtimeMode) {
       runtimeMode,
       persisted: true,
       rawContentStored: false
+    }
+  };
+}
+
+function buildGoogleCalendarImportRepositoryPayload(record, runtimeMode, persisted) {
+  return {
+    calendarConnection: {
+      id: record.providerConnection.id,
+      provider: record.providerConnection.provider,
+      status: record.providerConnection.status,
+      scopes: record.providerConnection.scopes,
+      adapterVersion: record.providerConnection.adapterVersion,
+      credentialStorageEnabled: Boolean(record.providerConnection.encryptedRefreshToken),
+      rawContentStored: false
+    },
+    importedEvents: record.importedEvents.map((event) => ({
+      id: event.id,
+      title: event.title,
+      startsAt: event.startsAt,
+      timezone: event.timezone,
+      sourceEvidence: event.sourceEvidence,
+      recipientHint: event.recipientHint
+    })),
+    opportunities: record.cardOpportunities.map((opportunity) => {
+      const importedEvent = record.importedEvents.find((event) => event.id === opportunity.eventId);
+      return {
+        opportunityId: opportunity.id,
+        eventId: opportunity.eventId,
+        recipientName: opportunity.recipientName,
+        title: importedEvent?.title ?? "Calendar event",
+        startsAt: importedEvent?.startsAt ?? "",
+        timezone: importedEvent?.timezone ?? "UTC",
+        confidence: opportunity.confidence,
+        decision: opportunity.decision
+      };
+    }),
+    repository: {
+      tables: ["provider_connections", "imported_events", "card_opportunities"],
+      runtimeMode,
+      persisted,
+      rawContentStored: false,
+      providerCredentialsStored: Boolean(record.providerConnection.encryptedRefreshToken)
     }
   };
 }

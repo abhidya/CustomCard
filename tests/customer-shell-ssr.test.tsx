@@ -7,13 +7,28 @@ import {
   customerVisibleImplementationTermPattern
 } from "../src/customerWebExperience";
 
+const clerkState = vi.hoisted(() => ({
+  isLoaded: true,
+  isSignedIn: true,
+  user: {
+    fullName: "Maya Patel",
+    firstName: "Maya",
+    lastName: "Patel",
+    primaryEmailAddress: { emailAddress: "maya@example.com" },
+    primaryPhoneNumber: null,
+    phoneNumbers: [],
+    publicMetadata: {}
+  }
+}));
+
 vi.mock("@clerk/react", () => ({
-  Show: ({ children, when }: { children: ReactNode; when: string }) => when === "signed-out" ? children : null,
+  Show: ({ children, when }: { children: ReactNode; when: string }) =>
+    when === (clerkState.isSignedIn ? "signed-in" : "signed-out") ? children : null,
   SignInButton: ({ children }: { children: ReactNode }) => children,
   SignUpButton: ({ children }: { children: ReactNode }) => children,
   UserButton: () => null,
-  useAuth: () => ({ getToken: async () => undefined }),
-  useUser: () => ({ isLoaded: true, isSignedIn: false, user: null })
+  useAuth: () => ({ getToken: async () => "test-customer-session-token" }),
+  useUser: () => ({ isLoaded: clerkState.isLoaded, isSignedIn: clerkState.isSignedIn, user: clerkState.user })
 }));
 
 /**
@@ -26,27 +41,43 @@ vi.mock("@clerk/react", () => ({
 
 interface ShellWindowOptions {
   search?: string;
+  signedIn?: boolean;
   storedWorkspace?: unknown;
 }
 
-function stubShellGlobals({ search = "", storedWorkspace }: ShellWindowOptions = {}) {
+function stubShellGlobals({ search = "", signedIn = true }: ShellWindowOptions = {}) {
+  clerkState.isLoaded = true;
+  clerkState.isSignedIn = signedIn;
+  clerkState.user = signedIn
+    ? {
+        fullName: "Maya Patel",
+        firstName: "Maya",
+        lastName: "Patel",
+        primaryEmailAddress: { emailAddress: "maya@example.com" },
+        primaryPhoneNumber: null,
+        phoneNumbers: [],
+        publicMetadata: {}
+      }
+    : null as never;
   const href = `http://127.0.0.1/${search}`;
   vi.stubGlobal("window", {
-    location: { href, search, hash: "" },
+    location: { href, pathname: "/", search, hash: "" },
     history: { pushState: () => undefined },
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
     setTimeout,
     clearTimeout
   });
-  const store = new Map<string, string>();
-  if (storedWorkspace !== undefined) {
-    store.set("customcard-free-workspace-v1", JSON.stringify(storedWorkspace));
-  }
   vi.stubGlobal("localStorage", {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => void store.set(key, value),
-    removeItem: (key: string) => void store.delete(key)
+    getItem: () => {
+      throw new Error("customer shell must not read browser localStorage");
+    },
+    setItem: () => {
+      throw new Error("customer shell must not write browser localStorage");
+    },
+    removeItem: () => {
+      throw new Error("customer shell must not mutate browser localStorage");
+    }
   });
 }
 
@@ -101,9 +132,39 @@ const sampleWorkspace = {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  clerkState.isLoaded = true;
+  clerkState.isSignedIn = true;
 });
 
 describe("customer shell server render", () => {
+  it("keeps the customer create flow visible when signed out", () => {
+    const { text } = renderShell({ signedIn: false });
+
+    expect(text).toContain("Make someone's");
+    expect(text).toContain("Pick the occasion");
+    expect(text).toContain("Sign in");
+    expect(text).toContain("Sign up");
+    expect(text).not.toContain("Sign in to continue");
+    expect(text).not.toContain("Admin panel");
+    expect(text).not.toContain("Adapter readiness");
+  });
+
+  it("lets signed-out customers create and print while gating AI actions", () => {
+    const studio = renderShell({ search: "?view=studio", signedIn: false });
+    expect(studio.text).toContain("Your card, their story");
+    expect(studio.text).toContain("Who it's for");
+    expect(studio.text).toContain("Sign in to use AI");
+    expect(studio.text).toContain("Create and print without an account");
+    expect(studio.text).toContain("Continue to print");
+
+    const print = renderShell({ search: "?view=handoff", signedIn: false });
+    expect(print.text).toContain("Checkout at Walgreens");
+    expect(print.text).toContain("Continue to Walgreens");
+    expect(print.text).toContain("Save print package");
+    expect(print.text).not.toContain("Sign in to continue");
+    expect(print.text).not.toContain("Account required");
+  });
+
   it("renders the first-run home around the occasion-first hero", () => {
     const { text } = renderShell();
 
@@ -115,8 +176,6 @@ describe("customer shell server render", () => {
       }
       expect(text).toContain("Cards that feel hand-made");
       expect(text).toContain("Or paste an invite or calendar event");
-      expect(text).toContain("Sign in");
-      expect(text).toContain("Sign up");
 
       // Console-era furniture must stay gone from the customer home.
       expect(text).not.toContain("Personal card workflow");
@@ -129,7 +188,7 @@ describe("customer shell server render", () => {
       expect(text).not.toContain("Adapter readiness");
     });
 
-    it("renders saved notes from a returning workspace", () => {
+    it("does not hydrate saved notes from browser storage", () => {
       const storedWorkspace = {
         ...sampleWorkspace,
         memories: [
@@ -146,9 +205,8 @@ describe("customer shell server render", () => {
 
       expect(text).toContain("Little things worth remembering");
       expect(text).toContain("Save a note");
-      expect(text).toContain("Sara");
-      expect(text).toContain("burnt birthday pancakes");
-      expect(text).not.toContain("No notes yet");
+      expect(text).toContain("No notes yet");
+      expect(text).not.toContain("burnt birthday pancakes");
     });
 
     it("keeps exactly one primary next action on the home view", () => {
@@ -157,6 +215,18 @@ describe("customer shell server render", () => {
         const primaryCount = html.split('class="btn btn-primary"').length - 1;
         expect(primaryCount).toBe(1);
       }
+    });
+
+    it("renders the business landing page only by direct route", () => {
+      const { html, text } = renderShell({ search: "?view=business" });
+
+      expect(text).toContain("For customer lifecycle teams");
+      expect(text).toContain("Send the right card on time");
+      expect(text).toContain("What this page needs");
+      expect(text).toContain("No live CRM writes");
+      expect(text).toContain("Human approval required");
+      expect(text).not.toContain("Make someone's");
+      expect(html).not.toContain(">Business<");
     });
 
     it("renders the events view with import box and calendar sources", () => {

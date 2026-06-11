@@ -176,7 +176,7 @@ Real external ordering stays disabled with `REAL_ORDER_KILL_SWITCH=disabled` unt
 `env/.env.example` names the credential-gated adapters represented in
 `src/providerCatalog.ts`:
 
-- Google OAuth: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`.
+- Google OAuth: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, `GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`, `GOOGLE_OAUTH_STATE_SECRET`.
 - Microsoft Graph: `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`,
   `MICROSOFT_TENANT_ID`.
 - Event platforms: `EVENTBRITE_CLIENT_ID`, `EVENTBRITE_CLIENT_SECRET`,

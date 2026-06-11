@@ -3,6 +3,13 @@ import { useEffect, useState } from "react";
 import { buildPanelSvg, type CardPanel } from "../../src/customerWorkflow";
 import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
 import type { PrintExportPackage } from "../../src/printExport";
+import {
+  buildCheckoutCustomer,
+  mergeCheckoutCustomerDefaults,
+  updateCheckoutCustomerField,
+  type CheckoutCustomerDefaults,
+  type CheckoutCustomerField
+} from "../checkoutModel";
 
 const speedLabels: Record<string, string> = {
   "same-day": "Same-day pickup",
@@ -22,7 +29,7 @@ export function PrintView({
   onCopyChecklist
 }: {
   panels: CardPanel[];
-  checkoutCustomerDefaults?: { name?: string; firstName?: string; lastName?: string; email?: string; phone?: string };
+  checkoutCustomerDefaults?: CheckoutCustomerDefaults;
   getCustomerApiToken?: () => Promise<string | undefined>;
   pricingComparison: PrinterPricingComparison;
   printPackage: PrintExportPackage;
@@ -55,13 +62,7 @@ export function PrintView({
   const canUseWalgreensCheckout = printPackage.manifest.passed;
 
   useEffect(() => {
-    const nextDefaults = buildCheckoutCustomer(checkoutCustomerDefaults);
-    setCheckoutCustomer((current) => ({
-      firstName: current.firstName || nextDefaults.firstName,
-      lastName: current.lastName || nextDefaults.lastName,
-      email: current.email || nextDefaults.email,
-      phone: current.phone || nextDefaults.phone
-    }));
+    setCheckoutCustomer((current) => mergeCheckoutCustomerDefaults(current, checkoutCustomerDefaults));
   }, [
     checkoutCustomerDefaults?.email,
     checkoutCustomerDefaults?.firstName,
@@ -70,11 +71,8 @@ export function PrintView({
     checkoutCustomerDefaults?.phone
   ]);
 
-  function updateCheckoutCustomer(field: keyof typeof checkoutCustomer, value: string) {
-    setCheckoutCustomer((current) => ({
-      ...current,
-      [field]: field === "phone" ? normalizePhone(value) : value
-    }));
+  function updateCheckoutCustomer(field: CheckoutCustomerField, value: string) {
+    setCheckoutCustomer((current) => updateCheckoutCustomerField(current, field, value));
   }
 
   async function openWalgreensCheckout() {
@@ -317,29 +315,6 @@ export function PrintView({
       </div>
     </>
   );
-}
-
-function splitName(name = "") {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  return {
-    firstName: parts[0] ?? "",
-    lastName: parts.slice(1).join(" ") || parts[0] || ""
-  };
-}
-
-function buildCheckoutCustomer(defaults?: { name?: string; firstName?: string; lastName?: string; email?: string; phone?: string }) {
-  const split = splitName(defaults?.name);
-  return {
-    firstName: defaults?.firstName || split.firstName,
-    lastName: defaults?.lastName || split.lastName,
-    email: defaults?.email ?? "",
-    phone: normalizePhone(defaults?.phone ?? "")
-  };
-}
-
-function normalizePhone(value: string): string {
-  const digits = value.replace(/\D/g, "");
-  return digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits.slice(0, 10);
 }
 
 async function panelToJpegBase64(panel: CardPanel): Promise<string> {

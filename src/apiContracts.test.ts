@@ -28,6 +28,8 @@ describe("api contracts", () => {
         "ai-chat-respond",
         "ai-card-generate",
         "customer-bootstrap",
+        "customer-draft-state",
+        "customer-draft-state-save",
         "mobile-bootstrap",
         "admin-readiness",
         "admin-provider-catalog",
@@ -61,6 +63,8 @@ describe("api contracts", () => {
     const retailPrinterOperationStart = apiRouteContracts.find((route) => route.id === "retail-printer-operation-start");
     const retailPrinterCouponPortalEvidence = apiRouteContracts.find((route) => route.id === "retail-printer-coupon-portal-evidence");
     const relationshipMemories = apiRouteContracts.find((route) => route.id === "relationship-memories");
+    const draftState = apiRouteContracts.find((route) => route.id === "customer-draft-state");
+    const draftStateSave = apiRouteContracts.find((route) => route.id === "customer-draft-state-save");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
     const walgreensCheckoutUpload = apiRouteContracts.find((route) => route.id === "walgreens-checkout-upload");
     const walgreensCheckoutSession = apiRouteContracts.find((route) => route.id === "walgreens-checkout-session");
@@ -174,11 +178,29 @@ describe("api contracts", () => {
     );
     expect(relationshipMemories?.path).toBe("/api/memories/review");
     expect(relationshipMemories?.responseSchema).toEqual(expect.arrayContaining(["memoryId", "memoryUseAllowed"]));
+    expect(draftState).toMatchObject({
+      method: "GET",
+      path: "/api/customer/draft-state/current",
+      audience: "customer",
+      auth: "customer-session",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: false
+    });
+    expect(draftStateSave).toMatchObject({
+      method: "POST",
+      path: "/api/customer/draft-state",
+      audience: "customer",
+      auth: "customer-session",
+      idempotencyKeyRequired: true,
+      externalNetworkCalls: false
+    });
+    expect(draftStateSave?.requestSchema).toEqual(expect.arrayContaining(["draftInput", "status"]));
+    expect(draftStateSave?.responseSchema).toEqual(expect.arrayContaining(["draftStateId", "updatedAtIso"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
     expect(walgreensCheckoutUpload).toMatchObject({
       method: "POST",
       audience: "customer",
-      auth: "customer-session",
+      auth: "none",
       idempotencyKeyRequired: false,
       externalNetworkCalls: true,
       realOrdersEnabled: false
@@ -186,7 +208,7 @@ describe("api contracts", () => {
     expect(walgreensCheckoutSession).toMatchObject({
       method: "POST",
       audience: "customer",
-      auth: "customer-session",
+      auth: "none",
       idempotencyKeyRequired: false,
       externalNetworkCalls: true,
       realOrdersEnabled: false
@@ -360,7 +382,7 @@ describe("api contracts", () => {
       hostedSeedExecutionRequired: 3,
       hostedTokenProbeRequired: 4,
       vercelEnvSyncRequired: 5,
-      tableContracts: 14,
+      tableContracts: 15,
       routeContracts: 5,
       requiredEnvVars: 6,
       hostedSeedProofs: 0,
@@ -667,7 +689,7 @@ describe("api contracts", () => {
     );
     expect(payload.reviewerDbSeedReadiness.summary).toMatchObject({
       total: 8,
-      tableContracts: 14,
+      tableContracts: 15,
       requiredEnvVars: 6,
       hostedSeedProofs: 0,
       hostedTokenProbeProofs: 0
@@ -932,8 +954,9 @@ describe("api contracts", () => {
         piiPolicy: "raw content stored"
       },
       {
-        ...apiRouteContracts.find((route) => route.id === "walgreens-checkout-upload")!,
-        id: "unsafe-checkout-upload",
+        ...apiRouteContracts.find((route) => route.id === "card-projects")!,
+        id: "unsafe-customer",
+        path: "/api/customer/unsafe",
         auth: "none"
       }
     ];
@@ -944,7 +967,7 @@ describe("api contracts", () => {
         "Mutation route unsafe-mutation must require an idempotency key.",
         "Mutation route unsafe-mutation must name X-Idempotency-Key in the request schema.",
         "Route unsafe-mutation must not allow raw content policy language.",
-        "Customer route unsafe-checkout-upload must require customer-session auth.",
+        "Customer route unsafe-customer must require customer-session auth.",
         "Missing API route contract: health"
       ])
     );
