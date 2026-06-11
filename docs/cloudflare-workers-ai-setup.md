@@ -35,23 +35,36 @@ Cloudflare JSON Mode-capable default in this repo's live path, and card-copy
 requests send a JSON Schema through `response_format` so panel copy is not
 prompt-only JSON.
 
-Use `@cf/bytedance/stable-diffusion-xl-lightning` as the default image model.
-It is the cheapest practical image default on Cloudflare Workers AI and is fast
-enough for iterative card drafts.
+Use `browser-svg-renderer` as the production-safe card-image adapter when the
+card needs print-perfect panels with deterministic app typography. The live RCA
+found that Cloudflare SDXL Lightning and Flux can still create physical card
+mockups, signage, or fake lettering even when the prompt asks for no text. The
+SVG adapter keeps image persistence unblocked, has no image-provider cost, and
+renders flat 1500 x 2100 artwork layers that the app can overlay with real text.
+
+Use `@cf/bytedance/stable-diffusion-xl-lightning` only for exploratory image
+provider drafts. It is the cheapest practical image default on Cloudflare
+Workers AI and is fast enough for iteration, but it has not passed the
+no-fake-text greeting-card benchmark.
 
 Use `@cf/black-forest-labs/flux-1-schnell` as the image quality fallback when
 prompt adherence matters more than the absolute lowest cost. Use
 `@cf/runwayml/stable-diffusion-v1-5-inpainting` only when an edit or mask-based
 inpainting workflow is explicitly needed.
 
+Set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer` for the verified
+print-safe path. Set it to `cloudflare-workers-ai-image` only when intentionally
+testing Workers AI image output.
+
 ## Fallback Order
 
 1. Cloudflare LLM JSON Mode default: `@cf/meta/llama-3.1-8b-instruct-fast`.
 2. Cloudflare LLM quality fallback: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
-3. Cloudflare image default: `@cf/bytedance/stable-diffusion-xl-lightning`.
-4. Cloudflare image quality fallback: `@cf/black-forest-labs/flux-1-schnell`.
-5. Hugging Face specialty image fallback for non-commercial typography/layout experiments, especially Ideogram 4.
-6. DeepAI `text2img` as a simple last-resort image API fallback.
+3. Production-safe image default: `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer`.
+4. Cloudflare image experiment: `@cf/bytedance/stable-diffusion-xl-lightning`.
+5. Cloudflare image quality experiment: `@cf/black-forest-labs/flux-1-schnell`.
+6. Hugging Face specialty image fallback for non-commercial typography/layout experiments, especially Ideogram 4.
+7. DeepAI `text2img` as a simple last-resort image API fallback.
 
 ## Prompt Contracts
 
@@ -65,19 +78,37 @@ an art director's visual request, for example "A premium 5x7 vertical greeting
 card front design..." with specific motifs, palette, composition, and
 print-quality constraints.
 
-The live image path generates one provider request per card panel. Each request
-targets a single portrait 5x7 panel, carries `folded-card-four-panel-v1`
-metadata, and avoids runtime prompt boilerplate such as `Recipient:`,
-`Relationship:`, `Panel headline:`, or `Panel body:`. Exact typography is
-reserved for deterministic app overlays, so generated image prompts should avoid
-readable text, logos, and watermarks unless a future provider has reliable text
-rendering. Cloudflare SDXL Lightning is asked for a 5:7-safe `1464 x 2048` image
-because Workers AI image dimensions cap at 2048 px on the long edge and SDXL
-dimensions must be divisible by 8; the renderer/export contract still treats the
-final panel as `1500 x 2100` at 300 DPI.
+The live image path generates one image per card panel. With
+`browser-svg-renderer`, those images are deterministic SVG artwork layers and no
+image-provider network call is made. With `cloudflare-workers-ai-image`, each
+request targets a single portrait 5x7 panel, carries
+`folded-card-four-panel-v1` metadata, and avoids runtime prompt boilerplate such
+as `Recipient:`, `Relationship:`, `Panel headline:`, or `Panel body:`. Exact
+typography is reserved for deterministic app overlays, so generated image
+prompts must avoid readable text, logos, and watermarks unless a future provider
+has reliable text rendering. Cloudflare SDXL Lightning is asked for a 5:7-safe
+`1464 x 2048` image because Workers AI image dimensions cap at 2048 px on the
+long edge and SDXL dimensions must be divisible by 8; the renderer/export
+contract still treats the final panel as `1500 x 2100` at 300 DPI.
+
+## Benchmarking
+
+Run the live comparison benchmark only when provider calls and R2 writes are
+intended:
+
+```bash
+npm run card:benchmark -- --live --image-adapter browser-svg-renderer --fixtures small-business-thank-you,medical-graduation,dad-fix-anything,botanical-birthday
+```
+
+Benchmark logs redact authorization headers, Cloudflare account IDs, object
+store credentials, signed URLs, and data URLs. Keep
+`src/cardGenerationBenchmarkRedaction.test.ts` passing before committing new
+evidence.
 
 ## Deployment
 
 Set the same Cloudflare env vars in Vercel for Production, Preview, and
-Development before promoting a live AI path. Do not commit `.env`, `.env.local`,
-or copied Cloudflare API tokens.
+Development before promoting a live AI path. For print-safe card images, also
+set `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID=browser-svg-renderer` and
+`CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED=true`. Do not commit `.env`,
+`.env.local`, or copied Cloudflare API tokens.

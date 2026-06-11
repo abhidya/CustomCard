@@ -121,6 +121,7 @@ async function main() {
   mkdirSync(runDir, { recursive: true });
   env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = "true";
   env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "true";
+  if (args["image-adapter"]) env.CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID = args["image-adapter"];
 
   const providerHttp = [];
   const fetchImpl = createLoggingFetch(providerHttp, env);
@@ -479,8 +480,7 @@ async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir
     return {
       artifactPersistence: {
         status: "blocked",
-        blockers: [error instanceof Error ? error.message : "Artifact persistence failed."],
-        debugStack: error instanceof Error ? sanitizeForLog(error.stack || "", {}) : undefined
+        blockers: [error instanceof Error ? error.message : "Artifact persistence failed."]
       }
     };
   }
@@ -572,7 +572,7 @@ function decodeDataUrl(value) {
   const mimeType = match[1];
   return {
     mimeType,
-    ext: mimeType.includes("jpeg") || mimeType.includes("jpg") ? ".jpg" : mimeType.includes("webp") ? ".webp" : ".png",
+    ext: mimeType.includes("svg") ? ".svg" : mimeType.includes("jpeg") || mimeType.includes("jpg") ? ".jpg" : mimeType.includes("webp") ? ".webp" : ".png",
     buffer: Buffer.from(match[2], "base64")
   };
 }
@@ -696,6 +696,7 @@ function mimeTypeFor(filePath) {
   if (ext === ".png") return "image/png";
   if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
   if (ext === ".webp") return "image/webp";
+  if (ext === ".svg") return "image/svg+xml";
   if (ext === ".json") return "application/json";
   return "application/octet-stream";
 }

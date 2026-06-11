@@ -68,6 +68,7 @@ import {
   type ProductionReadinessSummary
 } from "./productionReadiness";
 import { type AiFlowAdminConfig, type AiFlowConfigSummary } from "./aiFlowConfig";
+import { type AiGenerationJobEvidence } from "./aiGenerationJobs";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
 type AdminPortalStatusFilter = AdminPortalStatus | "all";
@@ -75,6 +76,7 @@ type AdminPortalStatusFilter = AdminPortalStatus | "all";
 export function AdminPanelView({
   aiFlowConfigs,
   aiFlowSummary,
+  aiGenerationJobs,
   readiness,
   localizationSummary,
   model,
@@ -85,6 +87,7 @@ export function AdminPanelView({
 }: {
   aiFlowConfigs: AiFlowAdminConfig[];
   aiFlowSummary: AiFlowConfigSummary;
+  aiGenerationJobs: AiGenerationJobEvidence[];
   readiness: ReadinessSummary;
   localizationSummary: LocalizationReadinessSummary;
   model: AdminPanelModel;
@@ -327,6 +330,8 @@ export function AdminPanelView({
           summary={aiFlowSummary}
           onChange={onAiFlowConfigsChange}
         />
+
+        <AiGenerationJobsPanel jobs={aiGenerationJobs} />
 
         <article className="toolPanel adminWide">
           <div className="sectionHeader compact">
@@ -1152,6 +1157,101 @@ function AiFlowConfigPanel({
       </div>
     </article>
   );
+}
+
+function AiGenerationJobsPanel({ jobs }: { jobs: AiGenerationJobEvidence[] }) {
+  const latestJobs = jobs.slice(0, 5);
+  const totalImages = jobs.reduce((total, job) => total + job.imageCount, 0);
+  const failedProviders = jobs.filter((job) => job.textProviderFailure || job.imageProviderFailure).length;
+
+  return (
+    <article className="toolPanel adminWide aiJobsPanel">
+      <div className="sectionHeader compact">
+        <div>
+          <p className="eyebrow">AI job evidence</p>
+          <h3>Generation jobs</h3>
+        </div>
+        <StatusChip icon={Image} label={`${jobs.length} recent`} tone={jobs.length > 0 ? "green" : "amber"} />
+      </div>
+
+      <div className="runtimeGrid compactMetrics" aria-label="AI generation job summary">
+        <Metric label="Jobs" value={`${jobs.length}`} />
+        <Metric label="Panels generated" value={`${totalImages}`} />
+        <Metric label="Provider issues" value={`${failedProviders}`} />
+        <Metric label="History cap" value="10" />
+      </div>
+
+      {latestJobs.length === 0 ? (
+        <div className="adminPortalEmpty">
+          <Info size={18} />
+          <span>Generate an AI card to capture per-panel prompts, providers, and generated artwork here.</span>
+        </div>
+      ) : (
+        <div className="aiJobList" aria-label="Recent AI generation jobs">
+          {latestJobs.map((job) => (
+            <section className={`aiJobRow ${job.status}`} key={job.id}>
+              <div className="aiJobHeader">
+                <div>
+                  <strong>{job.draftId}</strong>
+                  <span>{new Date(job.createdAtIso).toLocaleString()} - {job.generatedBy}</span>
+                </div>
+                <em>{aiGenerationJobStatusLabel(job.status)}</em>
+              </div>
+
+              <div className="aiJobMeta">
+                <span>Copy: {job.copyProvider} / {job.copyModel}</span>
+                <span>Image: {job.imageProvider} / {job.imageModel}</span>
+                <span>{job.imageCount}/{job.panelCount} panels</span>
+                {job.textProviderFailure ? <span>{job.textProviderFailure}</span> : null}
+                {job.imageProviderFailure ? <span>{job.imageProviderFailure}</span> : null}
+              </div>
+
+              <div className="aiJobPanelList">
+                {job.panels.map((panel) => (
+                  <div className={`aiJobPanel ${panel.status}`} key={`${job.id}-${panel.panelId}`}>
+                    {panel.imageUrl ? (
+                      <img alt={`${panel.label} generated panel`} src={panel.imageUrl} />
+                    ) : (
+                      <span className="aiJobImageMissing" aria-label={`${panel.label} image missing`}>
+                        <Image size={18} />
+                      </span>
+                    )}
+                    <div className="aiJobPanelBody">
+                      <div className="aiJobPanelTitle">
+                        <strong>{panel.label}</strong>
+                        <span>{panel.width} x {panel.height}</span>
+                      </div>
+                      <p>{panel.headline}</p>
+                      <small>{panel.body}</small>
+                      <details>
+                        <summary>Image prompt</summary>
+                        <pre>{panel.revisedPrompt || panel.imagePrompt || "No image prompt captured."}</pre>
+                      </details>
+                      {panel.negativePrompt ? (
+                        <details>
+                          <summary>Negative prompt</summary>
+                          <pre>{panel.negativePrompt}</pre>
+                        </details>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function aiGenerationJobStatusLabel(status: AiGenerationJobEvidence["status"]): string {
+  const labels: Record<AiGenerationJobEvidence["status"], string> = {
+    "copy-only": "Copy only",
+    partial: "Partial",
+    succeeded: "Generated"
+  };
+  return labels[status];
 }
 
 function AdminOperationsWorkflowView({ workflow }: { workflow: AdminOperationsWorkflow }) {

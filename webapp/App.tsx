@@ -96,6 +96,7 @@ export default function App() {
     aiFlowSummary,
     aiDraft,
     aiCardGenLoading,
+    aiGenerationJobs,
     triggerAiCardGen,
     cardGenAvailable,
     memories,
@@ -403,6 +404,7 @@ export default function App() {
               <AdminPanelView
                 aiFlowConfigs={aiFlowConfigs}
                 aiFlowSummary={aiFlowSummary}
+                aiGenerationJobs={aiGenerationJobs}
                 localizationSummary={localizationSummary}
                 model={adminPanelModel}
                 onAiFlowConfigsChange={setAiFlowConfigs}

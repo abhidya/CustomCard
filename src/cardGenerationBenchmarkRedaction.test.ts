@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { redactHeaders, redactUrl, sanitizeForLog } from "../scripts/card-generation-benchmark.mjs";
 
 const env = {
-  CLOUDFLARE_ACCOUNT_ID: "1234567890abcdef1234567890abcdef",
-  CLOUDFLARE_API_TOKEN: "cfat_fake_live_secret_token_value",
-  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "cfut_fake_image_secret_token_value",
-  OBJECT_STORE_ACCESS_KEY_ID: "fake_access_key_id_value",
-  OBJECT_STORE_SECRET_ACCESS_KEY: "fake_secret_access_key_value",
-  OBJECT_STORE_SIGNING_SECRET: "fake_signing_secret_value_long_enough"
+  CLOUDFLARE_ACCOUNT_ID: "test-cloudflare-account",
+  CLOUDFLARE_API_TOKEN: "test-cloudflare-api-token-value",
+  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test-cloudflare-image-token-value",
+  OBJECT_STORE_ACCESS_KEY_ID: "test-object-store-access-key",
+  OBJECT_STORE_SECRET_ACCESS_KEY: "test-object-store-secret-key",
+  OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret"
 };
 
 describe("card generation benchmark redaction", () => {

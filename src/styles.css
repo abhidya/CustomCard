@@ -1147,6 +1147,203 @@ h3 {
   gap: 14px;
 }
 
+.aiJobsPanel {
+  gap: 14px;
+}
+
+.aiJobList {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.aiJobRow {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d9e2e4;
+  border-left: 4px solid #258477;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.aiJobRow.partial {
+  border-left-color: #c88f25;
+}
+
+.aiJobRow.copy-only {
+  border-left-color: #315b7d;
+}
+
+.aiJobHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.aiJobHeader strong,
+.aiJobHeader span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.aiJobHeader strong {
+  color: #203038;
+  font-size: 0.92rem;
+  font-weight: 880;
+}
+
+.aiJobHeader span {
+  color: #68777d;
+  font-size: 0.74rem;
+  font-weight: 760;
+}
+
+.aiJobHeader em {
+  justify-self: end;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #20544d;
+  background: #e9f6f2;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 880;
+}
+
+.aiJobRow.partial .aiJobHeader em {
+  color: #6d4c12;
+  background: #fff5da;
+}
+
+.aiJobRow.copy-only .aiJobHeader em {
+  color: #244656;
+  background: #eaf1f6;
+}
+
+.aiJobMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.aiJobMeta span {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #425961;
+  background: #eef3f4;
+  font-size: 0.68rem;
+  font-weight: 820;
+  overflow-wrap: anywhere;
+}
+
+.aiJobPanelList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.aiJobPanel {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid #e0e7e9;
+}
+
+.aiJobPanel img,
+.aiJobImageMissing {
+  width: 72px;
+  aspect-ratio: 5 / 7;
+  border: 1px solid #d7e0e2;
+  border-radius: 6px;
+  background: #f6f8fb;
+}
+
+.aiJobPanel img {
+  display: block;
+  object-fit: cover;
+}
+
+.aiJobImageMissing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7980;
+}
+
+.aiJobPanelBody,
+.aiJobPanelTitle,
+.aiJobPanel details {
+  min-width: 0;
+}
+
+.aiJobPanelTitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.aiJobPanelTitle strong,
+.aiJobPanelTitle span,
+.aiJobPanel p,
+.aiJobPanel small,
+.aiJobPanel summary,
+.aiJobPanel pre {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.aiJobPanelTitle strong {
+  color: #203038;
+  font-size: 0.8rem;
+  font-weight: 880;
+}
+
+.aiJobPanelTitle span {
+  color: #68777d;
+  font-size: 0.68rem;
+  font-weight: 760;
+}
+
+.aiJobPanel p,
+.aiJobPanel small {
+  display: block;
+  margin: 3px 0 0;
+  color: #52636a;
+  font-size: 0.74rem;
+  font-weight: 720;
+}
+
+.aiJobPanel summary {
+  margin-top: 7px;
+  color: #244656;
+  font-size: 0.72rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.aiJobPanel pre {
+  margin: 6px 0 0;
+  max-height: 180px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 7px;
+  color: #24343a;
+  background: #f6f8fb;
+  font: 0.72rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+}
+
 .aiFlowRows {
   display: grid;
   gap: 12px;
@@ -3212,6 +3409,10 @@ h3 {
 
   .appMain {
     padding: 14px;
+  }
+
+  .aiJobPanelList {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .topBar,

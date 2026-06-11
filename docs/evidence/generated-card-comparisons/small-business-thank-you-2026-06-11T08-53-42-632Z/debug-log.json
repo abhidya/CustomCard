@@ -355,7 +355,7 @@
       "liveNetworkCalls": true,
       "blockers": []
     },
-    "artifactUri": "https://5def128db25828fb04363ccfa18a2bad.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/artifact-handoff-manifest.json",
+    "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-11T08-53-42-632Z/artifact-handoff-manifest.json",
     "signedUrlExpiresAt": "2026-06-11T09:08:48.000Z"
   },
   "comparison": {

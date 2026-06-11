@@ -469,6 +469,7 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN` | Server env only | No | Optional image-lane Workers AI token |
 | `CLOUDFLARE_WORKERS_AI_TEXT_MODEL` | Server env only | No | Defaults to `@cf/meta/llama-3.1-8b-instruct-fast` |
 | `CLOUDFLARE_WORKERS_AI_IMAGE_MODEL` | Server env only | No | Defaults to `@cf/bytedance/stable-diffusion-xl-lightning` |
+| `CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID` | Server env only | No | Defaults to `cloudflare-workers-ai-image`; use `browser-svg-renderer` for deterministic flat SVG artwork |
 | `CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED` | Server env only | No | Enables server-owned live card-copy calls when provider env and gates are ready |
 | `CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED` | Server env only | No | Enables server-owned live panel image calls when provider env and gates are ready |
 | `ANTHROPIC_API_KEY` | Sidecar server only | For AI gen | Text generation model — never in browser |

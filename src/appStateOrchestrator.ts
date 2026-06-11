@@ -38,6 +38,12 @@ import {
   type AiFlowAdminConfig,
   type AiFlowConfigSummary
 } from "./aiFlowConfig";
+import {
+  buildAiGenerationJobEvidence,
+  prependAiGenerationJob,
+  type AiGenerationApiResult,
+  type AiGenerationJobEvidence
+} from "./aiGenerationJobs";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
 
 export interface ReviewerAuthForm {
@@ -100,6 +106,7 @@ export interface AppState {
 
   aiDraft: CardDraft | null;
   aiCardGenLoading: boolean;
+  aiGenerationJobs: AiGenerationJobEvidence[];
   triggerAiCardGen: () => void;
   cardGenAvailable: boolean;
   aiFlowConfigs: AiFlowAdminConfig[];
@@ -166,6 +173,7 @@ export function useAppState(): AppState {
   );
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
   const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
+  const [aiGenerationJobs, setAiGenerationJobs] = useState<AiGenerationJobEvidence[]>([]);
   const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => loadBrowserAiFlowAdminConfigs());
 
   useEffect(() => {
@@ -273,7 +281,7 @@ export function useAppState(): AppState {
         if (!res.ok) throw new Error(`Card gen service returned ${res.status}`);
         return res.json();
       })
-      .then((result) => {
+      .then((result: AiGenerationApiResult) => {
         const imageByPanel = new Map<string, string>(
           (result.images as Array<{ panel_id: string; image_url: string }> | undefined ?? []).map((img) => [img.panel_id, img.image_url])
         );
@@ -292,6 +300,9 @@ export function useAppState(): AppState {
         });
         const hasImages = imageByPanel.size > 0;
         setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+        setAiGenerationJobs((current) =>
+          prependAiGenerationJob(current, buildAiGenerationJobEvidence({ result, draft }), 10)
+        );
       })
       .catch((err: unknown) => { console.error("AI card gen failed:", err); })
       .finally(() => { setAiCardGenLoading(false); });
@@ -313,6 +324,7 @@ export function useAppState(): AppState {
     draftInput, setDraftInput,
     aiDraft,
     aiCardGenLoading,
+    aiGenerationJobs,
     triggerAiCardGen,
     cardGenAvailable: true,
     aiFlowConfigs,

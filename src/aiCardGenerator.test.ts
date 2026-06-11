@@ -76,7 +76,7 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
       },
@@ -107,7 +107,7 @@ describe("AI card generator service", () => {
           }
     });
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
-    expect(JSON.stringify(result.payload)).not.toContain("secret_text");
+    expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 
   it("falls back to deterministic copy when configured provider credentials are missing", async () => {
@@ -127,7 +127,7 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG: "true"
       },
@@ -156,7 +156,7 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel
       },
       fetchImpl
@@ -190,9 +190,9 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "secret_image",
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
@@ -215,7 +215,7 @@ describe("AI card generator service", () => {
     expect(imageBodies.map((body) => body.metadata.customcard.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
     expect(imageBodies.every((body) => body.width === 1464 && body.height === 2048)).toBe(true);
     expect(imageBodies.every((body) => body.metadata.customcard.generation_strategy === "one-provider-request-per-panel")).toBe(true);
-    expect(imageBodies[0].prompt).toContain("Flat 2D full-bleed digital illustration");
+    expect(imageBodies[0].prompt).toContain("Full-bleed flat 2D artwork layer");
     expect(imageBodies[1].prompt).toContain("inside-left print panel");
     expect(imageBodies[2].prompt).toContain("inside-right print panel");
     expect(imageBodies[3].prompt).toContain("back print panel");
@@ -225,7 +225,7 @@ describe("AI card generator service", () => {
     expect(imageBodies.every((body) => body.prompt.includes("no watermark"))).toBe(true);
     expect(imageBodies.every((body) => body.prompt.includes("No people"))).toBe(true);
     expect(imageBodies.every((body) => body.prompt.includes("No hands"))).toBe(true);
-    expect(imageBodies.every((body) => body.prompt.includes("not a physical paper card"))).toBe(true);
+    expect(imageBodies.every((body) => /not a physical .*card/i.test(body.prompt))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("folded card mockup"))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("tabletop scene"))).toBe(true);
     expect(imageBodies.every((body) => body.negative_prompt.includes("people"))).toBe(true);
@@ -236,7 +236,51 @@ describe("AI card generator service", () => {
     expect(imageBodies.map((body) => body.prompt).join(" ")).not.toMatch(
       /Recipient:|Relationship:|Panel headline|Panel body|Language context|Art direction:/
     );
-    expect(JSON.stringify(result.payload)).not.toContain("secret_image");
+    expect(JSON.stringify(result.payload)).not.toContain("test_image_token");
+  });
+
+  it("uses the Flux image request shape and unwraps JSON base64 images", async () => {
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      if (String(url).includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response(JSON.stringify({ result: { image: "/9j/AAAA" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-card-flux-images" });
+    const imageBodies = (fetchImpl.mock.calls.slice(1) as unknown as [RequestInfo | URL, RequestInit?][])
+      .map((call) => JSON.parse(String(call[1]?.body)));
+    const payload = result.payload as {
+      images: Array<{ image_url: string; revised_prompt: string }>;
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(5);
+    expect(imageBodies.every((body) => body.steps === 8)).toBe(true);
+    expect(imageBodies.every((body) => typeof body.prompt === "string" && body.prompt.length > 0)).toBe(true);
+    expect(imageBodies.every((body) => !("negative_prompt" in body))).toBe(true);
+    expect(imageBodies.every((body) => !("width" in body) && !("height" in body))).toBe(true);
+    expect(payload.images).toHaveLength(4);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/jpeg;base64,"))).toBe(true);
+    expect(JSON.stringify(result.payload)).not.toContain("test_image_token");
   });
 
   it("repairs unsafe LLM image prompts before sending them to the image provider", async () => {
@@ -268,9 +312,9 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
-        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "secret_image",
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
         CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
         CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
@@ -289,12 +333,48 @@ describe("AI card generator service", () => {
     const frontImageCall = fetchImpl.mock.calls[1] as unknown as [RequestInfo | URL, RequestInit?];
     const frontBody = JSON.parse(String(frontImageCall[1]?.body));
 
-    expect(frontBody.prompt).toContain("small-business thank-you theme");
-    expect(frontBody.prompt).toContain("boutique storefront awning");
+    expect(frontBody.prompt).toContain("small-business thank-you background");
+    expect(frontBody.prompt).toContain("boutique awning silhouette");
     expect(frontBody.prompt).not.toMatch(/owner|customers|holding|['"]?thank you['"]?\s+sign|signage|shop['’]?s logo|creased|worn/i);
     expect(frontBody.prompt).toMatch(/no readable text/i);
     expect(frontBody.prompt).toMatch(/no people/i);
     expect(frontBody.prompt).toMatch(/no hands/i);
+  });
+
+  it("can route card images to deterministic browser SVG artwork when configured", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-browser-svg-images" });
+    const payload = result.payload as {
+      generated_by: string;
+      images: Array<{ panel_id: string; image_url: string; revised_prompt: string }>;
+      ai_flow: { card_image: { primary_adapter_id: string; adapter_id: string } };
+    };
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(payload.generated_by).toBe("ai-text-and-image");
+    expect(payload.ai_flow.card_image.primary_adapter_id).toBe("browser-svg-renderer");
+    expect(payload.ai_flow.card_image.adapter_id).toBe("browser-svg-renderer");
+    expect(payload.images.map((image) => image.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/svg+xml;base64,"))).toBe(true);
+    expect(Buffer.from(payload.images[0].image_url.split(",")[1], "base64").toString("utf8")).toContain("<svg");
+    expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 
   it("uses the customer-chat flow for chat replies", async () => {
@@ -309,7 +389,7 @@ describe("AI card generator service", () => {
     const service = createAiCardGenerationService({
       env: {
         CLOUDFLARE_ACCOUNT_ID: "acct_123",
-        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "secret_text",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CUSTOMCARD_AI_CUSTOMER_CHAT_LIVE_ENABLED: "true"
       },
@@ -330,6 +410,6 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(200);
     expect(JSON.stringify(result.payload)).toContain("warm birthday card");
-    expect(JSON.stringify(result.payload)).not.toContain("secret_text");
+    expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 });

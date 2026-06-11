@@ -45,7 +45,7 @@ const panelDefaults = {
     body: "A card made with care.",
     art_direction: "Coordinated front cover artwork with safe margins.",
     image_prompt:
-      "A premium 5x7 vertical greeting card front design with refined abstract celebration artwork, coordinated palette, generous open space for app-added typography, elegant print-ready composition, no readable text, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a premium 5x7 vertical front print panel, refined abstract celebration background, coordinated palette, balanced decorative pattern with a slightly calmer lower third, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
@@ -54,7 +54,7 @@ const panelDefaults = {
     body: "A note for this moment.",
     art_direction: "Soft interior panel with room for a short message.",
     image_prompt:
-      "A soft 5x7 vertical greeting card interior-left panel with subtle coordinating illustration details around the edges, calm open writing space, refined print-ready stationery composition, no readable text, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a soft 5x7 vertical inside-left print panel, subtle coordinating pattern, gentle low-contrast center, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
@@ -63,7 +63,7 @@ const panelDefaults = {
     body: "With warm wishes.",
     art_direction: "Main message panel with readable typography and generous margins.",
     image_prompt:
-      "A clean 5x7 vertical greeting card interior-right message panel with a warm pale background, subtle decorative border, generous blank center area for app-added message text, premium print-ready stationery design, no readable text, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a clean 5x7 vertical inside-right print panel, warm pale background, subtle coordinating pattern, generous calm low-contrast center, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   },
@@ -72,7 +72,7 @@ const panelDefaults = {
     body: "Made with CustomCard. Printed locally.",
     art_direction: "Clean coordinating back panel with minimal ornamentation.",
     image_prompt:
-      "A minimal 5x7 vertical greeting card back cover design with a coordinating flat background, subtle ornament near the lower edge, mostly negative space, premium print-ready stationery style, no readable text, no logos, no watermark.",
+      "Full-bleed flat 2D artwork layer for a minimal 5x7 vertical back print panel, coordinating flat background, subtle ornament near the lower edge, mostly negative space, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
       "readable text, misspelled text, logo, watermark, QR code, folded card mockup, tabletop scene, hands, people, face, portrait"
   }
@@ -340,9 +340,14 @@ async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPro
 }
 
 async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
+  if (flow.primaryAdapterId === "browser-svg-renderer") {
+    return buildDeterministicPanelSvgDataUrl({ panelId, prompt });
+  }
+
   if (flow.primaryAdapterId === "cloudflare-workers-ai-image") {
     const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
     const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
+    const requestBody = buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt });
     const response = await fetchImpl(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${flow.model}`,
       {
@@ -351,24 +356,7 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
           authorization: `Bearer ${token}`,
           "content-type": "application/json"
         },
-        body: JSON.stringify({
-          prompt,
-          negative_prompt: negativePrompt,
-          width: 1464,
-          height: 2048,
-          guidance: 3.5,
-          num_steps: 8,
-          metadata: {
-            customcard: {
-              prompt_contract: "folded-card-four-panel-v1",
-              generation_strategy: "one-provider-request-per-panel",
-              panel_id: panelId,
-              target_width: 1500,
-              target_height: 2100,
-              target_dpi: 300
-            }
-          }
-        })
+        body: JSON.stringify(requestBody)
       }
     );
     if (!response.ok) throw new Error(`Cloudflare image provider returned ${response.status}.`);
@@ -381,6 +369,178 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
   }
 
   throw new Error(`Image adapter ${flow.primaryAdapterId} is configured but not executable in this runtime yet.`);
+}
+
+function buildDeterministicPanelSvgDataUrl({ panelId, prompt }) {
+  const svg = buildDeterministicPanelSvg({ panelId, prompt });
+  return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
+}
+
+function buildDeterministicPanelSvg({ panelId, prompt }) {
+  const theme = themeForPrompt(prompt);
+  const seed = numericSeed(`${panelId}:${prompt}`);
+  const background = theme.background;
+  const motifs = Array.from({ length: theme.count }, (_, index) => {
+    const x = seededRange(seed, index, -120, 1500);
+    const y = seededRange(seed, index + 37, -120, 2100);
+    const scale = seededRange(seed, index + 71, 55, 150) / 100;
+    const rotation = seededRange(seed, index + 103, -35, 35);
+    return `<g transform="translate(${x} ${y}) rotate(${rotation}) scale(${scale})">${theme.motif(index)}</g>`;
+  }).join("\n");
+  const calmOverlay = panelId === "front"
+    ? '<rect x="0" y="1180" width="1500" height="520" fill="#fffaf0" opacity="0.18"/>'
+    : panelId === "back"
+      ? '<rect x="0" y="1450" width="1500" height="380" fill="#fffaf0" opacity="0.12"/>'
+      : '<rect x="240" y="430" width="1020" height="1240" rx="34" fill="#fffdf7" opacity="0.16"/>';
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer">',
+    `<rect width="1500" height="2100" fill="${background}"/>`,
+    motifs,
+    calmOverlay,
+    `<rect x="70" y="70" width="1360" height="1960" rx="28" fill="none" stroke="${theme.accent}" stroke-width="5" opacity="0.34"/>`,
+    "</svg>"
+  ].join("\n");
+}
+
+function themeForPrompt(prompt) {
+  const text = String(prompt).toLowerCase();
+  if (/\b(medical|doctor|stethoscope|white coat|ecg)\b/.test(text)) {
+    return {
+      background: "#101d3b",
+      accent: "#e8c66c",
+      count: 32,
+      motif: (index) => medicalMotif(index)
+    };
+  }
+  if (/\b(father|dad|wrench|tool|workshop|blueprint)\b/.test(text)) {
+    return {
+      background: "#0f6b5f",
+      accent: "#f5c542",
+      count: 42,
+      motif: (index) => toolMotif(index)
+    };
+  }
+  if (/\b(birthday|botanical|flower|fern|rose)\b/.test(text)) {
+    return {
+      background: "#fff7ed",
+      accent: "#2f6f52",
+      count: 42,
+      motif: (index) => botanicalMotif(index)
+    };
+  }
+  if (/\b(citrus|small-business|shop|thank)\b/.test(text)) {
+    return {
+      background: "#0f3d3f",
+      accent: "#f6b53f",
+      count: 46,
+      motif: (index) => citrusMotif(index)
+    };
+  }
+  return {
+    background: "#f8f1e7",
+    accent: "#3d6f67",
+    count: 34,
+    motif: (index) => botanicalMotif(index)
+  };
+}
+
+function citrusMotif(index) {
+  const fill = index % 3 === 0 ? "#f6b53f" : index % 3 === 1 ? "#fce7a3" : "#f7f2df";
+  const leaf = index % 2 === 0 ? "#1f7a68" : "#d6d7a3";
+  return `
+    <g opacity="0.92">
+      <circle cx="0" cy="0" r="58" fill="${fill}" stroke="#fff8dc" stroke-width="8"/>
+      ${Array.from({ length: 10 }, (_, ray) => `<line x1="0" y1="0" x2="${Math.cos((ray * Math.PI) / 5) * 52}" y2="${Math.sin((ray * Math.PI) / 5) * 52}" stroke="#fff8dc" stroke-width="5"/>`).join("")}
+      <ellipse cx="96" cy="-50" rx="24" ry="62" fill="${leaf}" transform="rotate(35 96 -50)"/>
+      <ellipse cx="-92" cy="54" rx="22" ry="58" fill="${leaf}" transform="rotate(-42 -92 54)"/>
+    </g>
+  `;
+}
+
+function botanicalMotif(index) {
+  const flower = index % 2 === 0 ? "#f4b7a1" : "#f3ce72";
+  const leaf = index % 3 === 0 ? "#2f6f52" : "#184d3d";
+  return `
+    <g opacity="0.9">
+      <path d="M0 0 C42 -80 96 -80 120 0 C92 72 36 78 0 0Z" fill="${flower}" opacity="0.85"/>
+      <path d="M0 0 C-42 -76 -94 -72 -118 4 C-86 70 -34 76 0 0Z" fill="${flower}" opacity="0.72"/>
+      <circle cx="0" cy="0" r="20" fill="#f9e6a1"/>
+      <ellipse cx="80" cy="92" rx="22" ry="70" fill="${leaf}" transform="rotate(32 80 92)"/>
+      <ellipse cx="-82" cy="-94" rx="20" ry="64" fill="${leaf}" transform="rotate(28 -82 -94)"/>
+    </g>
+  `;
+}
+
+function toolMotif(index) {
+  const yellow = index % 2 === 0 ? "#f5c542" : "#f8e6a1";
+  return `
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="${yellow}"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  `;
+}
+
+function medicalMotif(index) {
+  const gold = index % 2 === 0 ? "#e8c66c" : "#fff4d3";
+  return `
+    <g opacity="0.86">
+      <path d="M-120 0 C-60 -80 60 -80 120 0 C60 86 -60 86 -120 0Z" fill="none" stroke="${gold}" stroke-width="10"/>
+      <path d="M-115 92 L-70 92 L-52 40 L-18 144 L18 -18 L46 92 L112 92" fill="none" stroke="#f7f2df" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="-42" y="-130" width="84" height="54" rx="8" fill="#f7f2df" opacity="0.84"/>
+      <path d="M-78 -76 L78 -76 L42 -44 L-42 -44Z" fill="${gold}" opacity="0.78"/>
+    </g>
+  `;
+}
+
+function numericSeed(value) {
+  let seed = 2166136261;
+  for (const char of String(value)) {
+    seed ^= char.charCodeAt(0);
+    seed = Math.imul(seed, 16777619);
+  }
+  return seed >>> 0;
+}
+
+function seededRange(seed, index, min, max) {
+  const value = Math.sin(seed + index * 99991) * 10000;
+  const fraction = value - Math.floor(value);
+  return Math.round(min + fraction * (max - min));
+}
+
+function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
+  if (isCloudflareFluxModel(flow.model)) {
+    return {
+      prompt: truncate(prompt, 2048),
+      steps: 8
+    };
+  }
+  return {
+    prompt,
+    negative_prompt: negativePrompt,
+    width: 1464,
+    height: 2048,
+    guidance: 3.5,
+    num_steps: 8,
+    metadata: {
+      customcard: {
+        prompt_contract: "folded-card-four-panel-v1",
+        generation_strategy: "one-provider-request-per-panel",
+        panel_id: panelId,
+        target_width: 1500,
+        target_height: 2100,
+        target_dpi: 300
+      }
+    }
+  };
+}
+
+function isCloudflareFluxModel(model) {
+  return String(model || "").includes("/flux-1-schnell");
 }
 
 function openAiCompatibleAdapter(adapterId, env) {
@@ -537,20 +697,20 @@ function buildImagePromptPlan(input, cardCopy) {
 function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = {
     front:
-      "Flat 2D full-bleed digital illustration for the front panel of a premium vertical 5x7 print design, with the strongest decorative composition and one simple low-detail open area for app-added headline typography.",
+      "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy.",
     "inside-left":
-      "Flat 2D digital illustration/background for a vertical 5x7 inside-left print panel, with decorative support artwork around the edges and open low-detail space for a short app-added note.",
+      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; use a subtle low-contrast decorative pattern with gentle edge emphasis.",
     "inside-right":
-      "Flat 2D digital illustration/background for a vertical 5x7 inside-right print panel, with a calm low-detail message area and subtle matching ornamentation.",
+      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; use a subtle low-contrast decorative pattern with gentle corner emphasis.",
     back:
-      "Flat 2D digital illustration/background for a minimal vertical 5x7 back print panel, with mostly negative space and subtle coordinating ornamentation near the lower area."
+      "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with subtle coordinating ornamentation near the lower area."
   }[panelId];
   const visualBrief = buildVisualBrief(input, panel);
 
   return [
     panelInstruction,
     visualBrief,
-    "Premium print-ready flat artwork, full-bleed 2D composition, clean luxury editorial style, minimal clutter, generous safe margins, no readable text, no words, no letters, no handwriting, no calligraphy, no fake text, no logos, no watermark, not a photographed card, not a physical paper card, not a tabletop scene, not a mockup."
+    "Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
   ].join(" ");
 }
 
@@ -593,10 +753,17 @@ function normalizeImageNegativePrompt(value) {
         "gibberish text",
         "letters",
         "words",
+        "numbers",
+        "typography",
         "handwriting",
         "calligraphy",
+        "cursive script",
+        "faux script",
+        "text blocks",
         "signature",
         "label",
+        "signage",
+        "sign",
         "misspelled text",
         "tiny unreadable lettering",
         "logo",
@@ -607,9 +774,15 @@ function normalizeImageNegativePrompt(value) {
         "physical card mockup",
         "framed physical card",
         "paper card photo",
+        "paper sheet",
+        "card within a card",
+        "inner card rectangle",
+        "blank tag",
+        "text box",
         "product photo",
         "photorealistic mockup",
         "envelope",
+        "drop shadow",
         "tabletop scene",
         "desk scene",
         "hands",
@@ -626,22 +799,22 @@ function normalizeImageNegativePrompt(value) {
 function buildVisualBrief(input, panel) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction}`.toLowerCase();
   if (/\b(med|medical|doctor|physician|md|white coat|stethoscope)\b/.test(source)) {
-    return "Elegant medical-school graduation theme: deep navy background with soft gold accents, a white doctor's coat, graduation cap, stethoscope forming a subtle heart shape, faint unlabeled anatomical linework, and a quiet ECG heartbeat line.";
+    return "Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif.";
   }
   if (/\b(graduat|class year|diploma|school)\b/.test(source)) {
-    return "Elegant graduation theme: refined navy, ivory, and gold palette with a graduation cap, diploma ribbon, subtle starbursts, celebratory confetti, and clean milestone stationery details.";
+    return "Elegant graduation background: refined navy, ivory, and gold palette with graduation cap icon, ribbon-like curves, subtle starbursts, celebratory confetti, and clean milestone pattern details.";
   }
   if (/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
-    return "Warm small-business thank-you theme: cream background with citrus, soft gold, and deep teal accents, unlabeled boutique storefront awning, kraft shopping bag with no label, ribbon, botanical sprig, and handmade local-shop texture.";
+    return "Warm small-business thank-you background: cream field with citrus slices, soft gold ribbon curves, deep teal leaves, subtle boutique awning silhouette, kraft paper texture, botanical sprigs, and handmade local-shop pattern details.";
   }
   if (/\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source)) {
-    return "Warm Father's Day practical-love theme: clean blueprint-inspired background, simple toolbox, wrench, pencil, measuring tape, small hardware details, golden yellow and workshop green accents, polished friendly illustration.";
+    return "Warm Father's Day practical-love background: clean blueprint-inspired field, organized wrench and measuring-tape icons, pencil lines, small hardware details, golden yellow and workshop green accents, polished friendly illustration pattern.";
   }
   if (/\b(birthday|cake|candles|party)\b/.test(source)) {
-    return "Warm birthday theme: botanical greenery, soft flowers, small candle and cake details, cheerful confetti, morning-light palette, refined celebratory stationery style.";
+    return "Warm birthday background: botanical greenery, soft flowers, small candle shapes, cheerful confetti, morning-light palette, refined celebratory illustration pattern.";
   }
   if (/\b(thank|grateful|appreciat)\b/.test(source)) {
-    return "Elegant thank-you theme: ribbon, botanical sprigs, soft paper texture, warm accent shapes, quiet premium stationery composition, sincere and polished.";
+    return "Elegant thank-you background: ribbon curves, botanical sprigs, soft paper texture, warm accent shapes, quiet premium composition, sincere and polished.";
   }
   return `Original ${truncate(input.occasion || "celebration", 80)} theme in a ${truncate(input.style || "refined", 120)} style with specific symbolic motifs, coordinated palette, and emotional tone: ${truncate(input.tone || "warm", 120)}.`;
 }
@@ -867,7 +1040,16 @@ function extractImageUrl(data, contentType) {
     data?.image;
   if (!image) throw new Error("AI image provider response did not contain an image.");
   if (String(image).startsWith("http") || String(image).startsWith("data:")) return String(image);
-  return `data:${contentType || "image/png"};base64,${image}`;
+  return `data:${inferImageContentType(image, contentType)};base64,${image}`;
+}
+
+function inferImageContentType(image, contentType) {
+  if (contentType && contentType.startsWith("image/")) return contentType;
+  const text = String(image);
+  if (text.startsWith("/9j/")) return "image/jpeg";
+  if (text.startsWith("iVBOR")) return "image/png";
+  if (text.startsWith("UklGR")) return "image/webp";
+  return "image/png";
 }
 
 function requiredEnv(env, key) {
