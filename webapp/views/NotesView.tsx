@@ -1,5 +1,5 @@
 import { ArrowRight, Eye } from "lucide-react";
-import type { CardDraft, CardHistoryEntry } from "../../src/freeMvp";
+import type { CardDraft, CardHistoryEntry, CardLifecycleStatus } from "../../src/freeMvp";
 import type { DraftProgressStatus } from "../draftProgress";
 import { PanelArt } from "../ui";
 
@@ -7,6 +7,14 @@ const draftStatusLabels: Record<DraftProgressStatus, string> = {
   draft: "Draft",
   "in-progress": "In progress",
   "ready-for-review": "Ready to review"
+};
+
+const lifecycleStatusLabels: Record<CardLifecycleStatus, string> = {
+  draft: "Draft",
+  "ready-to-print": "Ready to print",
+  "walgreens-checkout-started": "Walgreens checkout started",
+  "returned-from-walgreens": "Back from Walgreens",
+  downloaded: "Downloaded"
 };
 
 /** "My cards" hub: the card in progress plus account-backed card history. */
@@ -100,8 +108,8 @@ export function NotesView({
               <span className="carditem-thumbfallback" aria-hidden="true" />
             )}
             <div className="carditem-body">
-              <span className="statusTag" data-status="downloaded">
-                Downloaded
+              <span className="statusTag" data-status={entry.status ?? "downloaded"}>
+                {lifecycleStatusLabels[entry.status ?? "downloaded"]}
               </span>
               <strong>{entry.title}</strong>
               <small>

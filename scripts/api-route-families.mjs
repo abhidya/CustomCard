@@ -7,6 +7,7 @@ export function createApiRouteFamilies(deps) {
     buildMutationContractPayload,
     buildRetailPrinterOperationStartPackets,
     buildWalgreensCallbackHtml,
+    calendarConnectionLifecycle,
     calendarConnectionStartPackets,
     clientRateLimitKey,
     decodeArtifactObjectKey,
@@ -46,7 +47,8 @@ export function createApiRouteFamilies(deps) {
 
     async handlePostAuthRoute({ authContext, path, request, requestUrl, response, route }) {
       if (handleStaticContractRoute({ path, response })) return true;
-      if (await handleAdminRoute({ authContext, path, requestUrl, response })) return true;
+      if (handlePublicGalleryRoute && (await handlePublicGalleryRoute({ path, request, response }))) return true;
+      if (await handleAdminRoute({ authContext, path, request, requestUrl, response })) return true;
       if (handleBootstrapRoute({ path, response })) return true;
       if (await handleCustomerStateRoute({ authContext, path, response })) return true;
       if (handleWalgreensCallbackRoute({ path, response })) return true;
@@ -54,6 +56,10 @@ export function createApiRouteFamilies(deps) {
       if (await handleAiRoute({ path, request, response })) return true;
 
       const bodyText = await readRequestBody(request);
+      if (route.id === "calendar-connection-start" && calendarConnectionLifecycle) {
+        const handled = await calendarConnectionLifecycle({ authContext, bodyText, response, requestUrl });
+        if (handled) return true;
+      }
       const persistedMutation = await apiRuntime.persistMutation({
         route,
         request,
@@ -69,6 +75,13 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
   };
+
+  async function handlePublicGalleryRoute({ path, request, response }) {
+    if (path !== "/api/public/featured-cards" || request.method !== "GET") return false;
+    const payload = await apiRuntime.readFeaturedCards();
+    sendJson(response, 200, payload);
+    return true;
+  }
 
   function handleStaticContractRoute({ path, response }) {
     if (path === "/api/health") {
@@ -91,7 +104,13 @@ export function createApiRouteFamilies(deps) {
     return false;
   }
 
-  async function handleAdminRoute({ authContext, path, requestUrl, response }) {
+  async function handleAdminRoute({ authContext, path, request, requestUrl, response }) {
+    if (path === "/api/admin/card-gallery" && request?.method === "GET") {
+      const payload = await apiRuntime.readCardGallery({ authContext });
+      sendJson(response, 200, payload);
+      return true;
+    }
+
     if (path === "/api/admin/readiness") {
       sendJson(response, 200, {
         ...readiness,
@@ -209,6 +228,10 @@ export function createApiRouteFamilies(deps) {
   }
 
   async function handleCustomerStateRoute({ authContext, path, response }) {
+    if (path === "/api/customer/connections") {
+      sendJson(response, 200, await apiRuntime.readCustomerConnections({ authContext }));
+      return true;
+    }
     if (path !== "/api/customer/draft-state/current") return false;
     sendJson(response, 200, await apiRuntime.readDraftState({ authContext }));
     return true;

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { providerCatalog } from "../../src/providerCatalog";
+import { AdminCardGalleryView } from "./AdminCardGalleryView";
 
 const adapterLabels = new Map(providerCatalog.map((adapter) => [adapter.id, adapter.label]));
 
@@ -220,6 +221,9 @@ export function AdminView({
           </ul>
           <small className="opsFoot">Measured from this browser{lastRunAt ? ` · last run ${lastRunAt}` : ""}.</small>
         </section>
+
+        {/* ---- Card gallery curation ---- */}
+        <AdminCardGalleryView getAdminApiToken={getAdminApiToken} />
 
         {/* ---- AI generation jobs ---- */}
         <section className="panelcard opsCard opsCard-wide opsJobsCard">

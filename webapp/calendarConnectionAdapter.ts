@@ -14,21 +14,86 @@ export interface CalendarConnectionStartPayload {
   nextApiRoute?: string | null;
   providerRequestUrl?: string | null;
   startPacket?: CalendarConnectionStartPacket;
+  alreadyConnected?: boolean;
+  scanned?: boolean;
+  needsReconnect?: boolean;
+  importedEventCount?: number;
+  opportunityCount?: number;
 }
 
 export interface CalendarConnectionResult {
   status: CalendarConnectionStatus;
   providerRequestUrl?: string;
+  alreadyConnected?: boolean;
+  scanned?: boolean;
+  needsReconnect?: boolean;
+}
+
+export type CustomerConnectionStatus = "connected" | "needs_reconnect" | "revoked" | "not_connected";
+
+export interface CustomerConnection {
+  provider: "google_calendar";
+  status: CustomerConnectionStatus;
+  scopes: string[];
+  connectedAtIso?: string;
+  lastImportedAtIso?: string;
+  importedEventCount?: number;
+  opportunityCount?: number;
+  credentialStorageEnabled: boolean;
+  rawContentStored: false;
+  canScanAgain: boolean;
+  reconnectReason?: string;
+}
+
+export interface ImportedOpportunity {
+  opportunityId: string;
+  eventId: string;
+  recipientName: string;
+  title: string;
+  startsAt: string;
+  timezone: string;
+  sourceEvidence?: string;
+  confidence: number;
+  decision: string;
+}
+
+export interface CustomerConnectionsPayload {
+  connections?: CustomerConnection[];
+  opportunities?: ImportedOpportunity[];
 }
 
 export interface StartGoogleCalendarConnectionInput {
   getCustomerApiToken?: () => Promise<string | undefined>;
   returnTo: string;
+  isSignedIn?: boolean;
+  mode?: "connect" | "scan" | "reconnect";
+}
+
+export async function fetchCustomerConnections(
+  getCustomerApiToken?: () => Promise<string | undefined>
+): Promise<{ connection?: CustomerConnection; opportunities: ImportedOpportunity[] } | undefined> {
+  try {
+    const token = await getCustomerApiToken?.();
+    if (!token) return undefined;
+    const response = await fetch("/api/customer/connections", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) return undefined;
+    const payload = await response.json() as CustomerConnectionsPayload;
+    return {
+      connection: payload.connections?.find((candidate) => candidate.provider === "google_calendar"),
+      opportunities: payload.opportunities ?? []
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 export async function startGoogleCalendarConnection({
   getCustomerApiToken,
-  returnTo
+  returnTo,
+  isSignedIn,
+  mode = "connect"
 }: StartGoogleCalendarConnectionInput): Promise<CalendarConnectionResult> {
   try {
     const token = await getCustomerApiToken?.();
@@ -41,11 +106,13 @@ export async function startGoogleCalendarConnection({
       },
       body: JSON.stringify({
         calendarChoiceId: "google-calendar-events",
-        returnTo
+        returnTo,
+        mode,
+        ...(mode === "reconnect" ? { forceReconnect: true } : {})
       })
     });
     const payload = await response.json().catch(() => undefined) as CalendarConnectionStartPayload | undefined;
-    return resolveCalendarConnectionResult(response.ok, response.status, payload);
+    return resolveCalendarConnectionResult(response.ok, response.status, payload, { isSignedIn });
   } catch {
     return {
       status: {
@@ -60,9 +127,23 @@ export async function startGoogleCalendarConnection({
 export function resolveCalendarConnectionResult(
   ok: boolean,
   statusCode: number,
-  payload: CalendarConnectionStartPayload | undefined
+  payload: CalendarConnectionStartPayload | undefined,
+  { isSignedIn }: { isSignedIn?: boolean } = {}
 ): CalendarConnectionResult {
   if (!ok) {
+    if (statusCode === 401 && isSignedIn) {
+      // The browser session is real but the API session is stale — this is not
+      // a sign-in problem, so never tell a signed-in person to sign in again.
+      return {
+        status: {
+          tone: "warn",
+          title: "Refresh your account session",
+          detail:
+            payload?.detail ??
+            "Your account session needs a quick refresh. Try again in a moment; if it keeps happening, sign out and back in once."
+        }
+      };
+    }
     return {
       status: {
         tone: "warn",
@@ -72,6 +153,43 @@ export function resolveCalendarConnectionResult(
           (statusCode === 401
             ? "Sign in before connecting Google Calendar."
             : "The calendar connection route is not ready yet.")
+      }
+    };
+  }
+
+  if (payload?.status === "google-calendar-already-connected" || payload?.alreadyConnected) {
+    return {
+      alreadyConnected: true,
+      status: {
+        tone: "ok",
+        title: "Google Calendar connected",
+        detail: "Your calendar is already connected — no need to connect again."
+      }
+    };
+  }
+
+  if (payload?.status === "google-calendar-scan-complete" || payload?.scanned) {
+    const imported = payload?.importedEventCount ?? 0;
+    return {
+      scanned: true,
+      status: {
+        tone: "ok",
+        title: "Calendar scanned",
+        detail:
+          imported > 0
+            ? `Found ${imported} upcoming event${imported === 1 ? "" : "s"} to review.`
+            : "No new card-worthy events found this time."
+      }
+    };
+  }
+
+  if (payload?.status === "google-calendar-needs-reconnect" || payload?.needsReconnect) {
+    return {
+      needsReconnect: true,
+      status: {
+        tone: "warn",
+        title: "Reconnect Google Calendar",
+        detail: "Your calendar connection needs to be refreshed before scanning again."
       }
     };
   }

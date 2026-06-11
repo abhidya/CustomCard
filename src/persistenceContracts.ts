@@ -26,6 +26,7 @@ export type PersistenceTableName =
   | "idempotency_keys"
   | "provider_call_events"
   | "api_jobs"
+  | "card_gallery_entries"
   | "audit_log";
 
 export type RoutePersistenceMode = "none" | "read-only" | "mutation";
@@ -96,6 +97,7 @@ export const requiredPersistenceTableNames: PersistenceTableName[] = [
   "idempotency_keys",
   "provider_call_events",
   "api_jobs",
+  "card_gallery_entries",
   "audit_log"
 ];
 
@@ -196,6 +198,12 @@ export const persistenceTableContracts: PersistenceTableContract[] = [
     ["idx_api_jobs_user_status", "idx_api_jobs_lease", "idx_api_jobs_locked"],
     true
   ),
+  table(
+    "card_gallery_entries",
+    ["id", "category", "title", "public_caption", "featured", "featured_rank", "public_approved", "redacted", "created_by"],
+    ["idx_card_gallery_category_featured"],
+    false
+  ),
   table("audit_log", ["id", "subject_type", "subject_id", "actor_id", "action", "metadata"], ["idx_audit_subject"], true, true)
 ];
 
@@ -205,6 +213,7 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("customer-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
   routePersistence("customer-draft-state", "read-only", "customer", ["auth_sessions", "draft_states", "audit_log"], true, false, false),
   routePersistence("customer-draft-state-save", "mutation", "customer", ["auth_sessions", "idempotency_keys", "draft_states", "audit_log"], true, true, false),
+  routePersistence("customer-connections", "read-only", "customer", ["auth_sessions", "provider_connections", "imported_events", "card_opportunities"], true, false, false),
   routePersistence("mobile-bootstrap", "read-only", "customer", ["users", "account_identities", "auth_sessions", "relationship_memories", "card_projects", "render_packets", "orders"], true, false, false),
   routePersistence(
     "ai-chat-respond",
@@ -267,6 +276,9 @@ export const apiPersistenceRouteContracts: ApiRoutePersistenceContract[] = [
   routePersistence("render-packets", "mutation", "customer", ["auth_sessions", "idempotency_keys", "card_projects", "render_packets", "provider_call_events", "api_jobs", "audit_log"], true, true, true),
   routePersistence("manual-vendor-handoff", "mutation", "customer", ["auth_sessions", "idempotency_keys", "render_packets", "orders", "order_events", "consent_records", "api_jobs", "audit_log"], true, true, true),
   routePersistence("data-requests", "mutation", "customer", ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"], true, true, false),
+  routePersistence("admin-card-gallery", "read-only", "admin", ["auth_sessions", "card_gallery_entries", "draft_states", "audit_log"], true, false, false),
+  routePersistence("admin-card-gallery-save", "mutation", "admin", ["auth_sessions", "idempotency_keys", "card_gallery_entries", "audit_log"], true, true, false),
+  routePersistence("public-featured-cards", "none", "public", ["card_gallery_entries"], false, false, false),
   routePersistence("walgreens-checkout-upload", "none", "customer", [], false, false, false),
   routePersistence("walgreens-checkout-session", "none", "customer", [], false, false, false),
   routePersistence("walgreens-checkout-callback", "none", "public", [], false, false, false)

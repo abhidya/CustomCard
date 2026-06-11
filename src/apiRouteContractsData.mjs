@@ -95,6 +95,22 @@ export const apiRouteContracts = [
     backedBy: ["draft_states", "customer-session auth", "idempotency_keys", "audit_log"]
   },
   {
+    id: "customer-connections",
+    method: "GET",
+    path: "/api/customer/connections",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["session"],
+    responseSchema: ["connections", "opportunities", "repository"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Returns only the signed-in customer's provider connection status and metadata-only imported moments; no OAuth tokens or raw provider content are returned.",
+    backedBy: ["provider_connections", "imported_events", "card_opportunities", "customer-session auth"]
+  },
+  {
     id: "mobile-bootstrap",
     method: "GET",
     path: "/api/mobile/bootstrap",
@@ -171,6 +187,7 @@ export const apiRouteContracts = [
       "tone",
       "style",
       "language",
+      "personal_note",
       "memory_notes"
     ],
     responseSchema: [
@@ -420,8 +437,8 @@ export const apiRouteContracts = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "durable-api",
-    requestSchema: ["X-Idempotency-Key", "opportunityId", "approvedMemoryIds", "locale"],
-    responseSchema: ["projectId", "renderStatus", "requiresRtlLayout"],
+    requestSchema: ["X-Idempotency-Key", "opportunityId", "recipientName", "approvedMemoryIds", "locale", "occasion"],
+    responseSchema: ["projectId", "renderStatus", "requiresRtlLayout", "category"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
@@ -465,7 +482,7 @@ export const apiRouteContracts = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "queue-backed",
-    requestSchema: ["X-Idempotency-Key", "renderPacketId", "vendorId", "externalShareApproval"],
+    requestSchema: ["X-Idempotency-Key", "projectId", "renderPacketId", "vendorId", "externalShareApproval"],
     responseSchema: ["handoffChecklist", "signedArtifactUrls", "realOrdersEnabled", "disabledReasons"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
@@ -480,13 +497,75 @@ export const apiRouteContracts = [
     audience: "customer",
     auth: "customer-session",
     runtimeMode: "durable-api",
-    requestSchema: ["X-Idempotency-Key", "action", "region"],
+    requestSchema: ["X-Idempotency-Key", "requestType", "region", "consentGranted"],
     responseSchema: ["allowed", "requiredControls", "auditRequired"],
     idempotencyKeyRequired: true,
     externalNetworkCalls: false,
     realOrdersEnabled: false,
     piiPolicy: "Audited regional data-rights control.",
     backedBy: ["evaluateRegulatoryDecision", "audit_log"]
+  },
+  {
+    id: "admin-card-gallery",
+    method: "GET",
+    path: "/api/admin/card-gallery",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["adminSession"],
+    responseSchema: ["categories", "entries", "candidates", "repository"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-only curation view; gallery entries are redacted public-safe copies and candidate drafts are visible to admins only.",
+    backedBy: ["card_gallery_entries", "draft_states", "admin-session auth"]
+  },
+  {
+    id: "admin-card-gallery-save",
+    method: "POST",
+    path: "/api/admin/card-gallery",
+    audience: "admin",
+    auth: "admin-session",
+    runtimeMode: "durable-api",
+    requestSchema: [
+      "X-Idempotency-Key",
+      "entryId",
+      "category",
+      "title",
+      "publicCaption",
+      "featured",
+      "featuredRank",
+      "publicApproved",
+      "frontSvg",
+      "sourceDraftId",
+      "projectId",
+      "renderPacketId",
+      "remove"
+    ],
+    responseSchema: ["entryId", "category", "featured", "featuredRank", "publicApproved", "repository"],
+    idempotencyKeyRequired: true,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Admin-curated public gallery entries only; private customer cards are never published without explicit admin approval, and stored copy must be public-safe.",
+    backedBy: ["card_gallery_entries", "admin-session auth", "idempotency_keys", "audit_log"]
+  },
+  {
+    id: "public-featured-cards",
+    method: "GET",
+    path: "/api/public/featured-cards",
+    audience: "public",
+    auth: "none",
+    runtimeMode: "durable-api",
+    requestSchema: [],
+    responseSchema: ["categories", "fallbackToBuiltInExamples"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Returns only admin-approved, featured, redacted gallery entries; recipient names and private notes are never exposed.",
+    backedBy: ["card_gallery_entries"]
   },
   {
     id: "walgreens-checkout-upload",
@@ -616,8 +695,13 @@ export const mutationBodyContractSpecs = Object.freeze({
     detail: "Relationship memory review requires explicit recipient, reviewed memory text, and approve/forget decision."
   },
   "manual-vendor-handoff": {
-    requiredFields: ["projectId", "renderPacketId", "storeId", "externalShareApproval"],
-    detail: "Manual vendor handoff requires explicit project, render packet, selected store, and external-share approval state."
+    requiredFields: ["projectId", "renderPacketId", "vendorId", "externalShareApproval"],
+    detail: "Manual vendor handoff requires explicit project, render packet, selected vendor, and external-share approval state."
+  },
+  "admin-card-gallery-save": {
+    requiredFields: ["category", "title", "publicCaption"],
+    detail:
+      "Card gallery curation requires an explicit category, public-safe title, and public-safe caption before an entry can be featured."
   },
   "data-requests": {
     requiredFields: ["requestType", "region", "consentGranted"],
@@ -678,7 +762,8 @@ export const persistedTablesByRouteId = Object.freeze({
     "provider_call_events",
     "audit_log"
   ],
-  "data-requests": ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"]
+  "data-requests": ["auth_sessions", "idempotency_keys", "data_requests", "consent_records", "audit_log"],
+  "admin-card-gallery-save": ["auth_sessions", "idempotency_keys", "card_gallery_entries", "audit_log"]
 });
 
 export function persistedTablesForRouteId(routeId) {

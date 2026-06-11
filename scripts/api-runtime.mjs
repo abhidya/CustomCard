@@ -1,5 +1,7 @@
 import { createHash, createHmac } from "node:crypto";
+import { looksLikeJwt, verifyClerkSessionToken } from "./clerk-session.mjs";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
+import { normalizeCardCategory, publicCardCategories } from "../src/cardCategoriesData.mjs";
 import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/apiRouteContractsData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
@@ -133,6 +135,18 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
     async readDraftState({ authContext }) {
       return buildDraftStateReadPayload(undefined, "contract", authContext);
     },
+    async readProviderConnection() {
+      return undefined;
+    },
+    async readCustomerConnections({ authContext }) {
+      return buildCustomerConnectionsPayload({ runtimeMode: "contract", authContext, connectionRecord: undefined, opportunities: [] });
+    },
+    async readFeaturedCards() {
+      return buildFeaturedCardsPayload([], "contract");
+    },
+    async readCardGallery({ authContext }) {
+      return buildCardGalleryReadPayload({ runtimeMode: "contract", authContext, entries: [], candidates: [] });
+    },
     async close() {
       return undefined;
     }
@@ -200,6 +214,7 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
   const orderEvents = new Map();
   const consentRecords = new Map();
   const dataRequests = new Map();
+  const cardGalleryEntries = new Map();
 
   addSession(sessions, env.CUSTOMCARD_CUSTOMER_SESSION_TOKEN, "customer", "user-demo", env.AUTH_SESSION_SECRET);
   addSession(sessions, env.CUSTOMCARD_ADMIN_SESSION_TOKEN, "admin", "admin-demo", env.AUTH_SESSION_SECRET);
@@ -240,6 +255,23 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       return blockers;
     },
     async authorize(route, request) {
+      const sessionResult = authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
+      if (sessionResult.ok || sessionResult.statusCode !== 401) return sessionResult;
+
+      // Clerk bridge: a signed-in browser sends the Clerk session JWT. Verify it
+      // offline and mint a runtime session so customer routes stop returning 401.
+      const token = readBearerToken(request);
+      if (!token || !looksLikeJwt(token)) return sessionResult;
+      const verification = verifyClerkSessionToken(token, env);
+      if (!verification.ok) return sessionResult;
+      const sessionId = stableRuntimeId("session", "clerk", verification.clerkUserId, verification.clerkSessionId);
+      sessions.set(hashSessionToken(token, env.AUTH_SESSION_SECRET), {
+        id: sessionId,
+        sessionId,
+        role: verification.role,
+        userId: stableRuntimeId("user", "clerk", verification.clerkUserId),
+        email: verification.email
+      });
       return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
     },
     async persistMutation({ route, request, authContext, bodyText, responsePayload }) {
@@ -262,7 +294,8 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
           orders,
           orderEvents,
           consentRecords,
-          dataRequests
+          dataRequests,
+          cardGalleryEntries
         },
         route,
         authContext,
@@ -307,9 +340,15 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     async listArtifacts(input) {
       return objectStoreRuntime.listBucketArtifacts(input);
     },
-    async persistGoogleCalendarImport({ record }) {
-      providerConnections.set(record.providerConnection.id, record.providerConnection);
-      for (const importedEvent of record.importedEvents) importedEvents.set(importedEvent.id, importedEvent);
+    async persistGoogleCalendarImport({ authContext, record }) {
+      providerConnections.set(record.providerConnection.id, {
+        ...record.providerConnection,
+        userId: authContext?.userId,
+        createdAtIso: new Date().toISOString()
+      });
+      for (const importedEvent of record.importedEvents) {
+        importedEvents.set(importedEvent.id, { ...importedEvent, connectionId: record.providerConnection.id });
+      }
       for (const cardOpportunity of record.cardOpportunities) cardOpportunities.set(cardOpportunity.id, cardOpportunity);
       return {
         persisted: true,
@@ -318,6 +357,51 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
     },
     async readDraftState({ authContext }) {
       return buildDraftStateReadPayload(draftStates.get(authContext.userId), "memory", authContext);
+    },
+    async readProviderConnection({ authContext, provider = "google_calendar" }) {
+      return [...providerConnections.values()].find(
+        (connection) => connection.provider === provider && (!connection.userId || connection.userId === authContext.userId)
+      );
+    },
+    async readCustomerConnections({ authContext }) {
+      const connectionRecord = [...providerConnections.values()].find(
+        (connection) => connection.provider === "google_calendar" && (!connection.userId || connection.userId === authContext.userId)
+      );
+      const events = connectionRecord
+        ? [...importedEvents.values()].filter((event) => event.connectionId === connectionRecord.id)
+        : [];
+      const eventById = new Map(events.map((event) => [event.id, event]));
+      const opportunities = [...cardOpportunities.values()]
+        .filter((opportunity) => eventById.has(opportunity.eventId))
+        .map((opportunity) => publicOpportunity(opportunity, eventById.get(opportunity.eventId)));
+      return buildCustomerConnectionsPayload({
+        runtimeMode: "memory",
+        authContext,
+        connectionRecord: connectionRecord
+          ? {
+              status: connectionRecord.status,
+              scopes: connectionRecord.scopes,
+              credentialStorageEnabled: Boolean(connectionRecord.encryptedRefreshToken),
+              connectedAtIso: connectionRecord.createdAtIso,
+              importedEventCount: events.length,
+              opportunityCount: opportunities.length,
+              lastImportedAtIso: connectionRecord.createdAtIso
+            }
+          : undefined,
+        opportunities
+      });
+    },
+    async readFeaturedCards() {
+      return buildFeaturedCardsPayload([...cardGalleryEntries.values()], "memory");
+    },
+    async readCardGallery({ authContext }) {
+      const candidates = [...draftStates.values()].map((record) => publicGalleryCandidate(record));
+      return buildCardGalleryReadPayload({
+        runtimeMode: "memory",
+        authContext,
+        entries: [...cardGalleryEntries.values()].map((entry) => publicGalleryEntry(entry)),
+        candidates
+      });
     },
     async close() {
       return undefined;
@@ -391,8 +475,22 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         [sessionHash]
       );
       const session = result.rows[0];
-      if (!session) return authError(401, "invalid-session", route);
       const requiredRole = requiredRoleForAuth(route.auth);
+      if (!session) {
+        // Clerk bridge: verify the Clerk session JWT offline and mint a durable
+        // auth_sessions row so signed-in browsers are never rejected with 401.
+        if (looksLikeJwt(token)) {
+          const verification = verifyClerkSessionToken(token, env);
+          if (verification.ok) {
+            const bridged = await postgresRuntime.withTransaction(async (client) =>
+              ensureClerkAuthSession(client, { verification, sessionHash })
+            );
+            if (bridged.role !== requiredRole) return authError(403, "wrong-role", route);
+            return { ok: true, role: bridged.role, userId: bridged.userId, sessionId: bridged.sessionId, email: bridged.email };
+          }
+        }
+        return authError(401, "invalid-session", route);
+      }
       if (session.role !== requiredRole) return authError(403, "wrong-role", route);
 
       return {
@@ -557,6 +655,162 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         authContext
       );
     },
+    async readProviderConnection({ authContext, provider = "google_calendar" }) {
+      const pool = await getPool();
+      const result = await pool.query(
+        `SELECT id, provider, scopes, status, encrypted_refresh_token, created_at
+         FROM provider_connections
+         WHERE user_id = $1 AND provider = $2
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [authContext.userId, provider]
+      );
+      const row = result.rows[0];
+      if (!row) return undefined;
+      return {
+        id: row.id,
+        provider: row.provider,
+        scopes: row.scopes ?? [],
+        status: row.status,
+        encryptedRefreshToken: row.encrypted_refresh_token ?? "",
+        createdAtIso: new Date(row.created_at).toISOString()
+      };
+    },
+    async readCustomerConnections({ authContext }) {
+      const pool = await getPool();
+      const connectionResult = await pool.query(
+        `SELECT id, scopes, status, encrypted_refresh_token, created_at
+         FROM provider_connections
+         WHERE user_id = $1 AND provider = 'google_calendar'
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [authContext.userId]
+      );
+      const row = connectionResult.rows[0];
+      let connectionRecord;
+      let opportunities = [];
+      if (row) {
+        const statsResult = await pool.query(
+          `SELECT COUNT(*)::int AS imported_count, MAX(created_at) AS last_imported_at
+           FROM imported_events
+           WHERE connection_id = $1`,
+          [row.id]
+        );
+        const opportunityResult = await pool.query(
+          `SELECT o.id, o.recipient_name, o.confidence, o.decision, o.evidence,
+                  e.id AS event_id, e.title, e.starts_at, e.timezone, e.source_evidence
+           FROM card_opportunities o
+           JOIN imported_events e ON e.id = o.event_id
+           WHERE e.connection_id = $1
+           ORDER BY e.starts_at ASC
+           LIMIT 25`,
+          [row.id]
+        );
+        opportunities = opportunityResult.rows.map((opportunityRow) =>
+          publicOpportunity(
+            {
+              id: opportunityRow.id,
+              eventId: opportunityRow.event_id,
+              recipientName: opportunityRow.recipient_name,
+              confidence: Number(opportunityRow.confidence),
+              decision: opportunityRow.decision,
+              evidence: normalizeJson(opportunityRow.evidence)
+            },
+            {
+              id: opportunityRow.event_id,
+              title: opportunityRow.title,
+              startsAt: new Date(opportunityRow.starts_at).toISOString(),
+              timezone: opportunityRow.timezone,
+              sourceEvidence: opportunityRow.source_evidence
+            }
+          )
+        );
+        const stats = statsResult.rows[0] ?? {};
+        connectionRecord = {
+          status: row.status,
+          scopes: row.scopes ?? [],
+          credentialStorageEnabled: Boolean(row.encrypted_refresh_token),
+          connectedAtIso: new Date(row.created_at).toISOString(),
+          importedEventCount: Number(stats.imported_count ?? 0),
+          opportunityCount: opportunities.length,
+          lastImportedAtIso: stats.last_imported_at ? new Date(stats.last_imported_at).toISOString() : undefined
+        };
+      }
+      return buildCustomerConnectionsPayload({ runtimeMode: "postgres", authContext, connectionRecord, opportunities });
+    },
+    async readFeaturedCards() {
+      const pool = await getPool();
+      const result = await pool.query(
+        `SELECT id, category, title, public_caption, featured, featured_rank, public_approved,
+                front_svg, thumbnail_artifact_uri, front_artifact_uri
+         FROM card_gallery_entries
+         WHERE featured = TRUE AND public_approved = TRUE
+         ORDER BY category ASC, featured_rank ASC, created_at ASC
+         LIMIT 60`
+      );
+      return buildFeaturedCardsPayload(
+        result.rows.map((row) => ({
+          id: row.id,
+          category: row.category,
+          title: row.title,
+          publicCaption: row.public_caption,
+          featured: row.featured,
+          featuredRank: Number(row.featured_rank),
+          publicApproved: row.public_approved,
+          frontSvg: row.front_svg ?? undefined,
+          thumbnailArtifactUri: row.thumbnail_artifact_uri ?? undefined,
+          frontArtifactUri: row.front_artifact_uri ?? undefined
+        })),
+        "postgres"
+      );
+    },
+    async readCardGallery({ authContext }) {
+      const pool = await getPool();
+      const entriesResult = await pool.query(
+        `SELECT id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
+                featured, featured_rank, public_approved, front_svg, created_at, updated_at
+         FROM card_gallery_entries
+         ORDER BY category ASC, featured_rank ASC, updated_at DESC
+         LIMIT 200`
+      );
+      const candidatesResult = await pool.query(
+        `SELECT id, user_id, status, draft_input, locale, updated_at
+         FROM draft_states
+         ORDER BY updated_at DESC
+         LIMIT 25`
+      );
+      return buildCardGalleryReadPayload({
+        runtimeMode: "postgres",
+        authContext,
+        entries: entriesResult.rows.map((row) =>
+          publicGalleryEntry({
+            id: row.id,
+            projectId: row.project_id,
+            renderPacketId: row.render_packet_id,
+            sourceDraftId: row.source_draft_id,
+            category: row.category,
+            title: row.title,
+            publicCaption: row.public_caption,
+            featured: row.featured,
+            featuredRank: Number(row.featured_rank),
+            publicApproved: row.public_approved,
+            frontSvg: row.front_svg ?? undefined,
+            createdAtIso: new Date(row.created_at).toISOString(),
+            updatedAtIso: new Date(row.updated_at).toISOString()
+          })
+        ),
+        candidates: candidatesResult.rows.map((row) =>
+          publicGalleryCandidate({
+            id: row.id,
+            userId: row.user_id,
+            status: row.status,
+            draftInput: normalizeJson(row.draft_input),
+            localeCode: row.locale,
+            updatedAtIso: new Date(row.updated_at).toISOString()
+          })
+        )
+      });
+    },
     async close() {
       await postgresRuntime.close();
     }
@@ -708,7 +962,7 @@ const mutationBodyContracts = {
       const missingFields = [];
       if (!hasRequiredText(body.projectId ?? body.cardProjectId)) missingFields.push("projectId");
       if (!hasRequiredText(body.renderPacketId)) missingFields.push("renderPacketId");
-      if (!hasRequiredText(body.storeId ?? body.vendorId ?? body.selectedVendorId)) missingFields.push("storeId");
+      if (!hasRequiredText(body.vendorId ?? body.storeId ?? body.selectedVendorId)) missingFields.push("vendorId");
       if (!hasExplicitBoolean(body.externalShareApproval ?? body.externalShareApproved ?? body.consentGranted)) {
         missingFields.push("externalShareApproval");
       }
@@ -722,6 +976,19 @@ const mutationBodyContracts = {
       if (!hasValidDataRequestType(body.requestType ?? body.type)) missingFields.push("requestType");
       if (!hasRequiredText(body.region)) missingFields.push("region");
       if (!hasExplicitBoolean(body.consentGranted ?? body.requestConfirmed)) missingFields.push("consentGranted");
+      return missingFields;
+    }
+  },
+  "admin-card-gallery-save": {
+    ...mutationBodyContractSpecs["admin-card-gallery-save"],
+    missingFields(body) {
+      if (safeBoolean(body.remove)) {
+        return hasRequiredText(body.entryId ?? body.id) ? [] : ["entryId"];
+      }
+      const missingFields = [];
+      if (!hasRequiredText(body.category ?? body.occasion)) missingFields.push("category");
+      if (!hasRequiredText(body.title)) missingFields.push("title");
+      if (!hasRequiredText(body.publicCaption ?? body.caption)) missingFields.push("publicCaption");
       return missingFields;
     }
   }
@@ -883,6 +1150,19 @@ async function persistMemoryRouteMutation({ repositories, route, authContext, bo
     return {
       persisted: true,
       payload: buildDataRequestRepositoryPayload(record, "memory")
+    };
+  }
+
+  if (route.id === "admin-card-gallery-save") {
+    const record = buildCardGalleryEntryRecord({ authContext, bodyText });
+    if (record.remove) {
+      repositories.cardGalleryEntries.delete(record.id);
+    } else {
+      repositories.cardGalleryEntries.set(record.id, { ...record, updatedAtIso: new Date().toISOString() });
+    }
+    return {
+      persisted: true,
+      payload: buildCardGalleryRepositoryPayload(record, "memory")
     };
   }
 
@@ -1174,6 +1454,61 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     };
   }
 
+  if (route.id === "admin-card-gallery-save") {
+    const record = buildCardGalleryEntryRecord({ authContext, bodyText });
+    if (record.remove) {
+      await client.query(`DELETE FROM card_gallery_entries WHERE id = $1`, [record.id]);
+      return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
+    }
+    // The curating admin must exist in users for the created_by FK.
+    await client.query(
+      `INSERT INTO users (id, email, locale, region, platform)
+       VALUES ($1, $2, 'en-US', 'us', 'web')
+       ON CONFLICT (id) DO NOTHING`,
+      [authContext.userId, authContext.email || `${authContext.userId}@customcard.invalid`]
+    );
+    const projectExists = record.projectId
+      ? (await client.query(`SELECT 1 FROM card_projects WHERE id = $1`, [record.projectId])).rowCount > 0
+      : false;
+    const renderPacketExists = record.renderPacketId
+      ? (await client.query(`SELECT 1 FROM render_packets WHERE id = $1`, [record.renderPacketId])).rowCount > 0
+      : false;
+    await client.query(
+      `INSERT INTO card_gallery_entries
+         (id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
+          featured, featured_rank, public_approved, front_svg, redacted, created_by, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, $12, NOW())
+       ON CONFLICT (id) DO UPDATE SET
+         project_id = EXCLUDED.project_id,
+         render_packet_id = EXCLUDED.render_packet_id,
+         source_draft_id = EXCLUDED.source_draft_id,
+         category = EXCLUDED.category,
+         title = EXCLUDED.title,
+         public_caption = EXCLUDED.public_caption,
+         featured = EXCLUDED.featured,
+         featured_rank = EXCLUDED.featured_rank,
+         public_approved = EXCLUDED.public_approved,
+         front_svg = COALESCE(EXCLUDED.front_svg, card_gallery_entries.front_svg),
+         redacted = TRUE,
+         updated_at = NOW()`,
+      [
+        record.id,
+        projectExists ? record.projectId : null,
+        renderPacketExists ? record.renderPacketId : null,
+        record.sourceDraftId || null,
+        record.category,
+        record.title,
+        record.publicCaption,
+        record.featured,
+        record.featuredRank,
+        record.publicApproved,
+        record.frontSvg || null,
+        authContext.userId
+      ]
+    );
+    return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
+  }
+
   if (route.id !== "card-projects") return undefined;
   const record = buildCardProjectRecord({ authContext, bodyText });
   await client.query(
@@ -1413,6 +1748,9 @@ function buildCardProjectRecord({ authContext, bodyText }) {
     projectId: safeId(body.projectId, stableRuntimeId("project", authContext.userId, opportunityId, approvedMemoryIds.join(","), locale)),
     opportunityId,
     recipientName: safeText(body.recipientName, ""),
+    // Every generated card project is tagged with a normalized category so the
+    // admin gallery can curate by occasion. Unknown occasions become "custom".
+    category: normalizeCardCategory(body.category ?? body.occasion),
     locale,
     requiresRtlLayout: Boolean(body.requiresRtlLayout) || /^(ar|he|fa|ur)(-|$)/i.test(locale),
     approvedMemoryIds
@@ -1423,6 +1761,7 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
   return {
     projectId: record.projectId,
     opportunityId: record.opportunityId,
+    category: record.category,
     renderStatus: "ready-for-render",
     requiresRtlLayout: record.requiresRtlLayout,
     approvedMemoryIds: record.approvedMemoryIds,
@@ -1430,6 +1769,256 @@ function buildCardProjectRepositoryPayload(record, runtimeMode) {
       table: "card_projects",
       runtimeMode,
       persisted: true
+    }
+  };
+}
+
+async function ensureClerkAuthSession(client, { verification, sessionHash }) {
+  const email = (verification.email || `${verification.clerkUserId}@clerk-user.customcard.invalid`).toLowerCase();
+  const identity = await client.query(
+    `SELECT user_id FROM account_identities WHERE provider = 'clerk' AND provider_subject = $1 LIMIT 1`,
+    [verification.clerkUserId]
+  );
+  let userId = identity.rows[0]?.user_id;
+  if (!userId) {
+    const existingUser = await client.query(`SELECT id FROM users WHERE email = $1 LIMIT 1`, [email]);
+    userId = existingUser.rows[0]?.id ?? stableRuntimeId("user", "clerk", verification.clerkUserId);
+    await client.query(
+      `INSERT INTO users (id, email, locale, region, platform)
+       VALUES ($1, $2, 'en-US', 'us', 'web')
+       ON CONFLICT (id) DO NOTHING`,
+      [userId, email]
+    );
+  }
+  await client.query(
+    `INSERT INTO account_identities
+       (id, user_id, provider, provider_subject, email, role, raw_profile_stored, claims_schema, verified_at, last_login_at)
+     VALUES ($1, $2, 'clerk', $3, $4, $5, FALSE, '{}'::jsonb, NOW(), NOW())
+     ON CONFLICT (provider, provider_subject) DO UPDATE SET
+       email = EXCLUDED.email,
+       role = EXCLUDED.role,
+       last_login_at = NOW()`,
+    [stableRuntimeId("identity", "clerk", verification.clerkUserId), userId, verification.clerkUserId, email, verification.role]
+  );
+  const sessionId = stableRuntimeId(
+    "session",
+    "clerk",
+    verification.clerkUserId,
+    verification.clerkSessionId,
+    sessionHash.slice(0, 16)
+  );
+  await client.query(
+    `INSERT INTO auth_sessions (id, user_id, session_hash, role, expires_at)
+     VALUES ($1, $2, $3, $4, to_timestamp($5))
+     ON CONFLICT DO NOTHING`,
+    [sessionId, userId, sessionHash, verification.role, verification.expiresAtSeconds]
+  );
+  await client.query(
+    `INSERT INTO audit_log (subject_type, subject_id, actor_id, action, metadata)
+     VALUES ('auth_session', $1, $2, 'auth.clerk_session.bridged', $3::jsonb)`,
+    [sessionId, userId, JSON.stringify({ provider: "clerk", role: verification.role })]
+  );
+  return { userId, role: verification.role, sessionId, email };
+}
+
+function publicOpportunity(opportunity, importedEvent) {
+  return {
+    opportunityId: opportunity.id,
+    eventId: opportunity.eventId,
+    recipientName: opportunity.recipientName,
+    title: importedEvent?.title ?? "Calendar event",
+    startsAt: importedEvent?.startsAt ?? "",
+    timezone: importedEvent?.timezone ?? "UTC",
+    sourceEvidence: importedEvent?.sourceEvidence ?? "metadata-only",
+    confidence: opportunity.confidence,
+    decision: opportunity.decision,
+    evidence: opportunity.evidence ?? { rawContentStored: false, metadataOnly: true }
+  };
+}
+
+function buildCustomerConnectionsPayload({ runtimeMode, authContext, connectionRecord, opportunities }) {
+  let status = "not_connected";
+  let reconnectReason;
+  if (connectionRecord) {
+    if (connectionRecord.status === "revoked") {
+      status = "revoked";
+    } else if (connectionRecord.status === "connected" && connectionRecord.credentialStorageEnabled) {
+      status = "connected";
+    } else if (connectionRecord.status === "connected") {
+      status = "needs_reconnect";
+      reconnectReason = "missing-refresh-token";
+    } else {
+      status = "needs_reconnect";
+      reconnectReason = `provider-status-${connectionRecord.status}`;
+    }
+  }
+  const connection = {
+    provider: "google_calendar",
+    status,
+    scopes: connectionRecord?.scopes ?? [],
+    connectedAtIso: connectionRecord?.connectedAtIso,
+    lastImportedAtIso: connectionRecord?.lastImportedAtIso,
+    importedEventCount: connectionRecord?.importedEventCount ?? 0,
+    opportunityCount: connectionRecord?.opportunityCount ?? 0,
+    credentialStorageEnabled: Boolean(connectionRecord?.credentialStorageEnabled),
+    rawContentStored: false,
+    canScanAgain: status === "connected",
+    ...(reconnectReason ? { reconnectReason } : {})
+  };
+  return {
+    service: "customcard-api",
+    status: "ready",
+    authenticatedUserId: authContext.userId,
+    connections: [connection],
+    opportunities: opportunities ?? [],
+    rawContentStored: false,
+    repository: {
+      tables: ["provider_connections", "imported_events", "card_opportunities"],
+      runtimeMode,
+      persisted: Boolean(connectionRecord),
+      rawContentStored: false
+    }
+  };
+}
+
+function buildFeaturedCardsPayload(entries, runtimeMode) {
+  const approved = entries.filter((entry) => entry.featured && entry.publicApproved);
+  const byCategory = new Map();
+  for (const entry of approved) {
+    const category = normalizeCardCategory(entry.category);
+    if (!byCategory.has(category)) byCategory.set(category, []);
+    byCategory.get(category).push({
+      id: entry.id,
+      title: entry.title,
+      caption: entry.publicCaption,
+      thumbnailUrl: entry.thumbnailArtifactUri,
+      frontSvg: entry.frontSvg,
+      frontImageUrl: entry.frontArtifactUri,
+      featuredRank: Number(entry.featuredRank ?? 100)
+    });
+  }
+  const categories = publicCardCategories
+    .filter((category) => byCategory.has(category))
+    .map((category) => ({
+      category,
+      label: cardCategoryLabel(category),
+      cards: byCategory.get(category).sort((a, b) => a.featuredRank - b.featuredRank)
+    }));
+  return {
+    service: "customcard-api",
+    status: "ready",
+    categories,
+    fallbackToBuiltInExamples: categories.length === 0,
+    rawContentStored: false,
+    repository: {
+      table: "card_gallery_entries",
+      runtimeMode,
+      persisted: categories.length > 0
+    }
+  };
+}
+
+function cardCategoryLabel(category) {
+  return category
+    .split("-")
+    .map((part, index) => (index === 0 ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join(" ");
+}
+
+function buildCardGalleryEntryRecord({ authContext, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const sourceDraftId = safeId(body.sourceDraftId ?? body.draftStateId, "");
+  const projectId = safeId(body.projectId, "");
+  const renderPacketId = safeId(body.renderPacketId, "");
+  const category = normalizeCardCategory(body.category ?? body.occasion);
+  const id = safeId(
+    body.entryId ?? body.id,
+    stableRuntimeId("gallery", sourceDraftId || projectId || String(body.title ?? ""), category)
+  );
+  const frontSvg = typeof body.frontSvg === "string" && body.frontSvg.trim().startsWith("<svg")
+    ? body.frontSvg.slice(0, 200_000)
+    : "";
+  return {
+    id,
+    projectId,
+    renderPacketId,
+    sourceDraftId,
+    category,
+    title: safeText(body.title, "Featured card").slice(0, 80),
+    publicCaption: safeText(body.publicCaption ?? body.caption, "Made with CustomCard").slice(0, 160),
+    featured: safeBoolean(body.featured),
+    featuredRank: safeInteger(body.featuredRank, 100, 0, 10_000),
+    publicApproved: safeBoolean(body.publicApproved),
+    frontSvg,
+    redacted: true,
+    createdBy: authContext.userId,
+    remove: safeBoolean(body.remove)
+  };
+}
+
+function buildCardGalleryRepositoryPayload(record, runtimeMode) {
+  return {
+    entryId: record.id,
+    category: record.category,
+    title: record.title,
+    publicCaption: record.publicCaption,
+    featured: record.featured,
+    featuredRank: record.featuredRank,
+    publicApproved: record.publicApproved,
+    removed: record.remove === true,
+    rawContentStored: false,
+    repository: {
+      table: "card_gallery_entries",
+      runtimeMode,
+      persisted: true,
+      rawContentStored: false
+    }
+  };
+}
+
+function publicGalleryEntry(entry) {
+  return {
+    entryId: entry.id,
+    projectId: entry.projectId || undefined,
+    renderPacketId: entry.renderPacketId || undefined,
+    sourceDraftId: entry.sourceDraftId || undefined,
+    category: entry.category,
+    title: entry.title,
+    publicCaption: entry.publicCaption,
+    featured: Boolean(entry.featured),
+    featuredRank: Number(entry.featuredRank ?? 100),
+    publicApproved: Boolean(entry.publicApproved),
+    frontSvg: entry.frontSvg || undefined,
+    createdAtIso: entry.createdAtIso,
+    updatedAtIso: entry.updatedAtIso
+  };
+}
+
+function publicGalleryCandidate(draftStateRecord) {
+  const draftInput = draftStateRecord.draftInput ?? {};
+  return {
+    sourceDraftId: draftStateRecord.id,
+    status: draftStateRecord.status,
+    draftInput,
+    derivedCategory: normalizeCardCategory(draftInput.occasion),
+    localeCode: draftStateRecord.localeCode,
+    updatedAtIso: draftStateRecord.updatedAtIso
+  };
+}
+
+function buildCardGalleryReadPayload({ runtimeMode, authContext, entries, candidates }) {
+  return {
+    service: "customcard-api",
+    status: "ready",
+    authenticatedUserId: authContext.userId,
+    categories: [...publicCardCategories],
+    entries,
+    candidates,
+    rawContentStored: false,
+    repository: {
+      tables: ["card_gallery_entries", "draft_states"],
+      runtimeMode,
+      persisted: entries.length > 0
     }
   };
 }

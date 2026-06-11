@@ -16,6 +16,7 @@ import {
   setSavedEventStatus,
   sampleInviteText,
   upcomingSavedEvents,
+  updateCardHistoryStatus,
   validateCardDraft,
   type LocalWorkspace,
   type MemoryItem
@@ -42,12 +43,14 @@ export {
   setSavedEventStatus,
   sampleInviteText,
   upcomingSavedEvents,
+  updateCardHistoryStatus,
   validateCardDraft
 };
 export type {
   CardDraft,
   CardDraftInput,
   CardHistoryEntry,
+  CardLifecycleStatus,
   CardOpportunity,
   FreeImportSignal,
   CardPanel,

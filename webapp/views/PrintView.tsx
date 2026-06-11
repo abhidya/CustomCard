@@ -34,6 +34,7 @@ export function PrintView({
   getCustomerApiToken,
   pricingComparison,
   printPackage,
+  onCardEvent,
   onDownloadPackage,
   onDownloadPanels,
   onCopyChecklist,
@@ -44,6 +45,7 @@ export function PrintView({
   getCustomerApiToken?: () => Promise<string | undefined>;
   pricingComparison: PrinterPricingComparison;
   printPackage: PrintExportPackage;
+  onCardEvent?: (status: "ready-to-print" | "walgreens-checkout-started" | "returned-from-walgreens") => void;
   onDownloadPackage: () => void | Promise<void>;
   onDownloadPanels: () => void | Promise<void>;
   onCopyChecklist: () => void;
@@ -69,6 +71,22 @@ export function PrintView({
   useEffect(() => {
     setProofChecklist(emptyProofChecklistState);
   }, [proofSignature]);
+  // Real lifecycle events: status history is driven by what actually happened.
+  useEffect(() => {
+    if (proofApproved) onCardEvent?.("ready-to-print");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proofApproved]);
+  useEffect(() => {
+    function onWalgreensReturn(event: MessageEvent) {
+      const source = (event.data as { source?: string } | undefined)?.source ?? "";
+      if (source === "customcard-walgreens-checkout") {
+        onCardEvent?.("returned-from-walgreens");
+      }
+    }
+    window.addEventListener("message", onWalgreensReturn);
+    return () => window.removeEventListener("message", onWalgreensReturn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const estimateByVendor = new Map<string, PrinterPriceEstimate>();
   for (const estimate of pricingComparison.rankedKnownPrices) {
     if (!estimateByVendor.has(estimate.observation.vendorId)) {
@@ -135,6 +153,7 @@ export function PrintView({
         detail: "Review store, price, crop, pickup, terms, and payment inside Walgreens before placing the order.",
         checkoutUrl: session.checkoutUrl
       });
+      onCardEvent?.("walgreens-checkout-started");
     } catch (error) {
       setCheckoutStatus({
         tone: "warn",

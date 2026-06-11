@@ -178,7 +178,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("Never miss the card-worthy moment.");
       expect(text).toContain("review and print through Walgreens");
       expect(text).toContain("Create a card");
-      expect(text).toContain("Find moments from email or calendar");
+      expect(text).toContain("Find moments from calendar or invite");
       expect(text).toContain("See examples");
       expect(text).toContain("Pick the occasion");
       for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
@@ -196,8 +196,9 @@ describe("customer shell server render", () => {
       expect(text).toContain("Free to create. Private by default.");
       expect(text).toContain("Free to create. Pay Walgreens only if you print.");
       expect(text).toContain("Walgreens handles payment and final checkout.");
-      expect(text).toContain("Account required for AI generation");
-      expect(text).toContain("Email and calendar connections are optional");
+      expect(text).toContain("AI generation, saved history, Google Calendar, and Walgreens checkout require an account.");
+      expect(text).toContain("Calendar connections are optional and separate from creating an account.");
+      expect(text).not.toContain("Email and calendar connections are optional");
       expect(text).toContain("You review every word before checkout.");
       // The invite import is a collapsed expander; personal details live under "My cards";
       // print is reached through the create flow, not a home tile.
@@ -268,7 +269,7 @@ describe("customer shell server render", () => {
 
       // Google Calendar is the primary path; pasting is the manual fallback; Apple is a footnote.
       expect(text).toContain("Never miss a moment");
-      expect(text).toContain("Connect Google Calendar");
+      expect(text).toContain("Checking your calendar connection");
       expect(text).toContain("Or paste it in");
       expect(text).toContain("Try an example");
       expect(text).toContain("Using Apple Calendar?");

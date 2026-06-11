@@ -3,16 +3,34 @@ import {
   CalendarPlus,
   CalendarSearch,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Eye,
   HandHeart,
   ShieldCheck,
   Store,
   WandSparkles
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { generateCardDraft, type CardDraft, type CardDraftInput } from "../../src/freeMvp";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";
+
+interface FeaturedCard {
+  id: string;
+  title: string;
+  caption: string;
+  thumbnailUrl?: string;
+  frontSvg?: string;
+  frontImageUrl?: string;
+  featuredRank: number;
+}
+
+interface FeaturedCategory {
+  category: string;
+  label: string;
+  cards: FeaturedCard[];
+}
 
 const occasions: Array<{ label: string; value: string; color: string }> = [
   { label: "Birthday", value: "birthday", color: "#d9a514" },
@@ -54,8 +72,9 @@ const howItWorksSteps = [
 const trustPoints = [
   "Free to create. Pay Walgreens only if you print.",
   "Walgreens handles payment and final checkout.",
-  "Account required for AI generation — designing and printing work without one.",
-  "Email and calendar connections are optional and separate from your account.",
+  "Designing and saving a manual print package can start without an account.",
+  "AI generation, saved history, Google Calendar, and Walgreens checkout require an account.",
+  "Calendar connections are optional and separate from creating an account.",
   "You review every word before checkout.",
   "Saved personal details are yours to edit or delete at any time."
 ];
@@ -108,6 +127,20 @@ export function HomeView({
       })),
     []
   );
+  // Admin-featured real cards replace the built-in examples when available.
+  const [featuredCategories, setFeaturedCategories] = useState<FeaturedCategory[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/public/featured-cards")
+      .then((response) => (response.ok ? response.json() : undefined))
+      .then((payload: { categories?: FeaturedCategory[] } | undefined) => {
+        if (!cancelled && payload?.categories?.length) setFeaturedCategories(payload.categories);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -128,7 +161,7 @@ export function HomeView({
             </button>
             <button className="btn btn-ghost" onClick={onFindMoments} type="button">
               <CalendarSearch size={16} />
-              Find moments from email or calendar
+              Find moments from calendar or invite
             </button>
             <a className="textlink" href="#examples">
               See examples
@@ -202,20 +235,37 @@ export function HomeView({
 
       <section className="examples reveal reveal-3" aria-label="Example cards" id="examples">
         <h2>Made for real moments</h2>
-        <p className="examplesLead">Every example below is a real print panel rendered by CustomCard.</p>
-        <div className="examplesGrid">
-          {exampleDrafts.map((example) => (
-            <button
-              className="examplecard"
-              key={example.label}
-              onClick={() => onOccasion(example.label.toLowerCase().replace(/\s+/g, "-"))}
-              type="button"
-            >
-              <PanelArt panel={example.draft.panels[0]} />
-              <span>{example.label}</span>
-            </button>
-          ))}
-        </div>
+        {featuredCategories.length > 0 ? (
+          <>
+            <p className="examplesLead">Real cards people made with CustomCard, shared with permission.</p>
+            <div className="examplesGrid">
+              {featuredCategories.map((category) => (
+                <FeaturedCategoryCard
+                  category={category}
+                  key={category.category}
+                  onOccasion={onOccasion}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="examplesLead">Every example below is a real print panel rendered by CustomCard.</p>
+            <div className="examplesGrid">
+              {exampleDrafts.map((example) => (
+                <button
+                  className="examplecard"
+                  key={example.label}
+                  onClick={() => onOccasion(example.label.toLowerCase().replace(/\s+/g, "-"))}
+                  type="button"
+                >
+                  <PanelArt panel={example.draft.panels[0]} />
+                  <span>{example.label}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </section>
 
       <section className="trustnotes reveal reveal-3" aria-label="Pricing and privacy promises">
@@ -238,5 +288,81 @@ export function HomeView({
         </button>
       </section>
     </>
+  );
+}
+
+function FeaturedCardFace({ card }: { card: FeaturedCard }) {
+  if (card.frontSvg) {
+    return (
+      <img
+        alt={`${card.title} card front`}
+        src={`data:image/svg+xml;utf8,${encodeURIComponent(card.frontSvg)}`}
+      />
+    );
+  }
+  const imageUrl = card.thumbnailUrl ?? card.frontImageUrl;
+  if (imageUrl) return <img alt={`${card.title} card front`} src={imageUrl} />;
+  return <span aria-hidden="true" className="carditem-thumbfallback" />;
+}
+
+/**
+ * One landing-gallery tile per category. A single featured card renders as a
+ * plain card; two or more render as an accessible, manually advanced carousel
+ * (labeled buttons, keyboard focusable, no auto-advance).
+ */
+function FeaturedCategoryCard({
+  category,
+  onOccasion
+}: {
+  category: FeaturedCategory;
+  onOccasion: (occasion: string) => void;
+}) {
+  const [index, setIndex] = useState(0);
+  const cards = category.cards;
+  const card = cards[Math.min(index, cards.length - 1)];
+  if (!card) return null;
+  const carousel = cards.length > 1;
+
+  return (
+    <div
+      aria-label={carousel ? `${category.label} featured cards carousel` : `${category.label} featured card`}
+      aria-roledescription={carousel ? "carousel" : undefined}
+      className="examplecard featuredcard"
+      role="group"
+    >
+      <button
+        aria-label={`Start a ${category.label} card`}
+        className="featuredcardFace"
+        onClick={() => onOccasion(category.category)}
+        type="button"
+      >
+        <FeaturedCardFace card={card} />
+        <span>{category.label}</span>
+        <small>{card.caption}</small>
+      </button>
+      {carousel ? (
+        <div className="featuredcardNav">
+          <button
+            aria-label={`Previous ${category.label} card`}
+            className="btn btn-ghost btn-sm"
+            onClick={() => setIndex((current) => (current - 1 + cards.length) % cards.length)}
+            type="button"
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <span aria-live="polite">
+            {Math.min(index, cards.length - 1) + 1} of {cards.length}
+          </span>
+          <button
+            aria-label={`Next ${category.label} card`}
+            className="btn btn-ghost btn-sm"
+            onClick={() => setIndex((current) => (current + 1) % cards.length)}
+            type="button"
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -530,7 +530,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-      expect(report.readiness.routes.total).toBe(26);
+      expect(report.readiness.routes.total).toBe(30);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 7,
@@ -541,8 +541,8 @@ describe("api server wrapper", () => {
       staticIndexCachePolicy: "no-store"
     });
     expect(report.readiness.persistence).toMatchObject({
-      tables: 20,
-      schemaBackedRoutes: 18,
+      tables: 21,
+      schemaBackedRoutes: 22,
       authSessionTable: true,
       accountIdentityTable: true,
       accountRecoveryTable: true,
@@ -742,7 +742,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 26, admin: 7, idempotentMutations: 15 });
+      expect(readiness.routes).toMatchObject({ total: 30, admin: 9, idempotentMutations: 16 });
       expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 124,
@@ -931,8 +931,8 @@ describe("api server wrapper", () => {
 
       const persistence = await getJson(port, "/api/admin/persistence-readiness");
       expect(persistence.persistence).toMatchObject({
-        tables: 20,
-        schemaBackedRoutes: 18,
+        tables: 21,
+        schemaBackedRoutes: 22,
         authSessionTable: true,
         accountIdentityTable: true,
         accountRecoveryTable: true,
@@ -1354,7 +1354,7 @@ describe("api server wrapper", () => {
       expect(await missingManualHandoffFields.json()).toMatchObject({
         status: "invalid-manual-vendor-handoff-payload",
         route: "manual-vendor-handoff",
-        requiredFields: expect.arrayContaining(["projectId", "renderPacketId", "storeId", "externalShareApproval"])
+        requiredFields: expect.arrayContaining(["projectId", "renderPacketId", "vendorId", "externalShareApproval"])
       });
 
       const missingDataRequestFields = await postJson(
@@ -1909,7 +1909,7 @@ describe("api server wrapper", () => {
       expect(await missingManualHandoffFields.json()).toMatchObject({
         status: "invalid-manual-vendor-handoff-payload",
         route: "manual-vendor-handoff",
-        requiredFields: expect.arrayContaining(["projectId", "renderPacketId", "storeId", "externalShareApproval"])
+        requiredFields: expect.arrayContaining(["projectId", "renderPacketId", "vendorId", "externalShareApproval"])
       });
 
       const missingMemoryReviewFields = await postJson(

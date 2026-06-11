@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
@@ -397,8 +397,8 @@ export const readiness = {
     staticIndexCachePolicy: "no-store"
   },
   persistence: {
-    tables: 20,
-    schemaBackedRoutes: 18,
+    tables: 21,
+    schemaBackedRoutes: 22,
     authSessionTable: true,
     accountIdentityTable: true,
     accountRecoveryTable: true,
@@ -437,6 +437,7 @@ const apiRouteFamilies = createApiRouteFamilies({
   buildMutationContractPayload,
   buildRetailPrinterOperationStartPackets,
   buildWalgreensCallbackHtml,
+  calendarConnectionLifecycle: handleCalendarConnectionLifecycle,
   calendarConnectionStartPackets,
   clientRateLimitKey,
   decodeArtifactObjectKey,
@@ -515,7 +516,10 @@ async function serveApi(request, response, requestUrl) {
 
   if (await apiRouteFamilies.handlePreAuthRoute({ path, request, requestUrl, response })) return;
 
-  const route = routes.find((candidate) => candidate.path === path);
+  // Some paths (e.g. /api/admin/card-gallery) expose both a GET view and a
+  // POST mutation, so the route lookup must respect the request method.
+  const pathRoutes = routes.filter((candidate) => candidate.path === path);
+  const route = pathRoutes.find((candidate) => candidate.method === request.method) ?? pathRoutes[0];
   if (!route) {
     sendJson(response, 404, { service: "customcard-api", status: "not-found", path });
     return;
@@ -1421,6 +1425,105 @@ function buildGoogleCalendarAuthorizationUrl({ clientId, redirectUri, state, cod
   return url.toString();
 }
 
+/**
+ * Connected-state lifecycle for Google Calendar. Returns true when the request
+ * was fully handled (already connected, scan-again, needs-reconnect) so the
+ * generic OAuth-redirect start flow only runs for first connections and
+ * explicit reconnects.
+ */
+async function handleCalendarConnectionLifecycle({ authContext, bodyText, response }) {
+  const body = parseJsonBodySafe(bodyText);
+  const requestedChoiceId = safeCalendarChoiceId(body.calendarChoiceId ?? body.choiceId ?? body.providerId);
+  if (requestedChoiceId !== "google-calendar-events") return false;
+  const mode = String(body.mode ?? "").trim().toLowerCase();
+  const forceReconnect = body.forceReconnect === true || mode === "reconnect";
+  if (forceReconnect) return false;
+
+  let connection;
+  try {
+    connection = await apiRuntime.readProviderConnection?.({ authContext, provider: "google_calendar" });
+  } catch {
+    connection = undefined;
+  }
+  if (!connection || connection.status !== "connected") return false;
+
+  const credentialStorageEnabled = Boolean(connection.encryptedRefreshToken);
+
+  if (mode === "scan") {
+    if (!credentialStorageEnabled) {
+      sendJson(response, 200, {
+        service: "customcard-api",
+        status: "google-calendar-needs-reconnect",
+        needsReconnect: true,
+        reconnectReason: "missing-refresh-token",
+        providerRequestUrl: null,
+        redirected: false,
+        rawContentStored: false
+      });
+      return true;
+    }
+    try {
+      const refreshToken = decryptTokenSecret(connection.encryptedRefreshToken, process.env);
+      const token = await refreshGoogleAccessToken(refreshToken, process.env);
+      const eventsPayload = await fetchGoogleCalendarEvents(token.accessToken, process.env);
+      const record = buildGoogleCalendarImportRecord({
+        authContext,
+        encryptedRefreshToken: connection.encryptedRefreshToken,
+        eventsPayload,
+        grantedScopes: connection.scopes ?? []
+      });
+      const persistence = await apiRuntime.persistGoogleCalendarImport({ authContext, record });
+      sendJson(response, 200, {
+        service: "customcard-api",
+        status: "google-calendar-scan-complete",
+        scanned: true,
+        importedEventCount: record.importedEvents.length,
+        opportunityCount: record.cardOpportunities.length,
+        providerRequestUrl: null,
+        redirected: false,
+        credentialStorageEnabled: true,
+        rawContentStored: false,
+        ...persistence.payload
+      });
+    } catch (error) {
+      sendJson(response, 200, {
+        service: "customcard-api",
+        status: "google-calendar-needs-reconnect",
+        needsReconnect: true,
+        reconnectReason: "refresh-token-rejected",
+        detail: error instanceof Error ? error.message : "Google Calendar scan failed.",
+        providerRequestUrl: null,
+        redirected: false,
+        rawContentStored: false
+      });
+    }
+    return true;
+  }
+
+  // Already connected and no reconnect requested: do not redirect to Google.
+  sendJson(response, 200, {
+    service: "customcard-api",
+    status: "google-calendar-already-connected",
+    alreadyConnected: true,
+    providerRequestUrl: null,
+    redirected: false,
+    credentialStorageEnabled,
+    canScanAgain: credentialStorageEnabled,
+    nextApiRoute: "/api/customer/connections",
+    rawContentStored: false
+  });
+  return true;
+}
+
+function parseJsonBodySafe(bodyText) {
+  if (!bodyText) return {};
+  try {
+    return JSON.parse(bodyText);
+  } catch {
+    return {};
+  }
+}
+
 async function handleGoogleCalendarOAuthCallback(request, response, requestUrl) {
   if (request.method !== "GET") {
     sendJson(response, 405, { service: "customcard-api", status: "method-not-allowed", path: googleCalendarOAuthCallbackRoute });
@@ -1758,16 +1861,56 @@ function leadTimeHoursFromNow(startsAt) {
 function encryptTokenSecret(value, env) {
   const text = String(value ?? "");
   if (!text) return "";
-  const keyMaterial = usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY) ||
-    usableEnvValue(env.AUTH_SESSION_SECRET) ||
-    usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET) ||
-    "customcard-local-token-encryption-development-secret";
-  const key = createHash("sha256").update(keyMaterial).digest();
+  const key = createHash("sha256").update(tokenEncryptionKeyMaterial(env)).digest();
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key, iv);
   const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
   return `aes-256-gcm:${iv.toString("base64url")}:${tag.toString("base64url")}:${encrypted.toString("base64url")}`;
+}
+
+function decryptTokenSecret(value, env) {
+  const [scheme, ivEncoded, tagEncoded, dataEncoded] = String(value ?? "").split(":");
+  if (scheme !== "aes-256-gcm" || !ivEncoded || !tagEncoded || !dataEncoded) return "";
+  try {
+    const key = createHash("sha256").update(tokenEncryptionKeyMaterial(env)).digest();
+    const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(ivEncoded, "base64url"));
+    decipher.setAuthTag(Buffer.from(tagEncoded, "base64url"));
+    return Buffer.concat([decipher.update(Buffer.from(dataEncoded, "base64url")), decipher.final()]).toString("utf8");
+  } catch {
+    return "";
+  }
+}
+
+function tokenEncryptionKeyMaterial(env) {
+  return usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY) ||
+    usableEnvValue(env.AUTH_SESSION_SECRET) ||
+    usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET) ||
+    "customcard-local-token-encryption-development-secret";
+}
+
+async function refreshGoogleAccessToken(refreshToken, env, fetchImpl = globalThis.fetch) {
+  if (!refreshToken) throw new Error("Google Calendar refresh token is unavailable.");
+  const clientId = usableEnvValue(env.GOOGLE_OAUTH_CLIENT_ID);
+  const clientSecret = usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET);
+  if (!clientId || !clientSecret) throw new Error("Missing Google OAuth env for token refresh.");
+  const response = await fetchImpl(usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENDPOINT) || "https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: clientId,
+      client_secret: clientSecret
+    })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(safeContractText(payload.error_description ?? payload.error, "Google token refresh failed."));
+  }
+  const accessToken = String(payload.access_token ?? "").trim();
+  if (!accessToken) throw new Error("Google token refresh did not return an access token.");
+  return { accessToken };
 }
 
 function safeReturnToUrl(value, fallbackOrigin) {

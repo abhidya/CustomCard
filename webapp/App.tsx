@@ -3,8 +3,15 @@ import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   addApprovedRelationshipMemory,
+  createLocalWorkspace,
+  recordCardExport,
   removeApprovedRelationshipMemory,
+  saveEventToWorkspace,
+  setSavedEventStatus,
+  updateCardHistoryStatus,
   type CardDraftInput,
+  type CardLifecycleStatus,
+  type CardOpportunity,
   type CardPanel,
   type LocalWorkspace
 } from "../src/customerWorkflow";
@@ -230,6 +237,51 @@ export default function App() {
     setInviteText("");
   }
 
+  function ensureWorkspace(): LocalWorkspace {
+    return workspace ?? createLocalWorkspace(customerIdentity.name, customerIdentity.email || "local@customcard.local");
+  }
+
+  /** Moments-inbox decisions from real imported calendar opportunities. */
+  function handleMomentDecision(
+    moment: { opportunityId: string; recipientName: string; title: string; startsAt: string },
+    decision: "make-card" | "snooze" | "dismiss" | "handled"
+  ) {
+    const savedOpportunity: CardOpportunity = {
+      ...opportunity,
+      id: moment.opportunityId,
+      title: moment.title,
+      recipient: moment.recipientName || opportunity.recipient,
+      dateLabel: moment.startsAt ? moment.startsAt.slice(0, 10) : "Date needed"
+    };
+    const base = saveEventToWorkspace(ensureWorkspace(), savedOpportunity, moment.startsAt ? moment.startsAt.slice(0, 10) : undefined);
+    if (decision === "make-card") {
+      saveWorkspace(base);
+      setDraftInput((current) => ({
+        ...current,
+        recipient: moment.recipientName || current.recipient,
+        occasion: moment.title || current.occasion
+      }));
+      openView("studio");
+      return;
+    }
+    const status = decision === "snooze" ? "snoozed" : "dismissed";
+    saveWorkspace(setSavedEventStatus(base, moment.opportunityId, status));
+    setExportStatus(
+      decision === "snooze" ? "Moment snoozed" : decision === "handled" ? "Marked as handled" : "Moment dismissed"
+    );
+  }
+
+  /** Real card lifecycle events: proof approval, Walgreens checkout, downloads. */
+  function handleCardEvent(status: CardLifecycleStatus) {
+    const base = ensureWorkspace();
+    const existing = (base.cardHistory ?? []).some((entry) => entry.id === displayDraft.id);
+    saveWorkspace(
+      existing
+        ? updateCardHistoryStatus(base, displayDraft.id, status)
+        : recordCardExport(base, displayDraft, new Date(), status)
+    );
+  }
+
   /* ---------- downloads ---------- */
   async function downloadPrintPackage() {
     setExportStatus("Preparing print package");
@@ -243,6 +295,7 @@ export default function App() {
       downloadPrintPackageArchive(printPackage, [checklistEntry]);
       setExportStatus("Print package saved; upload panels need browser rendering");
     }
+    handleCardEvent("downloaded");
   }
 
   async function downloadPanels() {
@@ -259,6 +312,7 @@ export default function App() {
       );
       setExportStatus("Source panels saved");
     }
+    handleCardEvent("downloaded");
   }
 
   async function copyChecklist() {
@@ -295,7 +349,8 @@ export default function App() {
         : error || "Google Calendar connection failed"
     );
     if (calendarConnection === "connected") {
-      setInviteText(buildCalendarImportReviewText(imported));
+      // The real imported events and opportunities are loaded from
+      // /api/customer/connections by the moments inbox — no synthetic text.
       setOpportunityDecision("pending");
       setActiveView("opportunities");
       url.searchParams.set("view", "opportunities");
@@ -304,7 +359,7 @@ export default function App() {
     url.searchParams.delete("calendarImported");
     url.searchParams.delete("calendarError");
     window.history.replaceState({ customCardView: calendarConnection === "connected" ? "opportunities" : initialViewFromLocation() }, "", url);
-  }, [setActiveView, setExportStatus, setInviteText, setOpportunityDecision]);
+  }, [setActiveView, setExportStatus, setOpportunityDecision]);
 
   /* ---------- live CTA ---------- */
   const estimate = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
@@ -464,6 +519,7 @@ export default function App() {
               onAccept: acceptOpportunity,
               onDismiss: dismissOpportunity,
               onInviteText: setInviteText,
+              onMomentDecision: handleMomentDecision,
               opportunity,
               signal
             }}
@@ -491,6 +547,7 @@ export default function App() {
             onAccept={acceptOpportunity}
             onDismiss={dismissOpportunity}
             onInviteText={setInviteText}
+            onMomentDecision={handleMomentDecision}
             opportunity={opportunity}
             signal={signal}
           />
@@ -561,6 +618,7 @@ export default function App() {
           <PrintView
             checkoutCustomerDefaults={checkoutProfile}
             getCustomerApiToken={getCustomerApiToken}
+            onCardEvent={handleCardEvent}
             onCopyChecklist={copyChecklist}
             onDownloadPackage={downloadPrintPackage}
             onDownloadPanels={downloadPanels}
@@ -612,19 +670,6 @@ function buildManualUploadChecklistEntry(draftId: string, checklistText: string)
     path: `${draftId}-manual-upload-steps.txt`,
     bytes: checklistText
   };
-}
-
-function buildCalendarImportReviewText(imported: string | null): string {
-  const count = Number(imported);
-  const eventLabel = Number.isFinite(count) && count > 0
-    ? `${count} Google Calendar event${count === 1 ? "" : "s"}`
-    : "Google Calendar events";
-  return [
-    "Google Calendar import review.",
-    `${eventLabel} imported as read-only event metadata.`,
-    "Titles and dates are ready for review before any card is created.",
-    "Pick the event and confirm the recipient before drafting."
-  ].join("\n");
 }
 
 function useViewportWidth(): number | undefined {

@@ -40,12 +40,21 @@ export interface SavedEvent {
   savedAtIso: string;
 }
 
+export type CardLifecycleStatus =
+  | "draft"
+  | "ready-to-print"
+  | "walgreens-checkout-started"
+  | "returned-from-walgreens"
+  | "downloaded";
+
 export interface CardHistoryEntry {
   id: string;
   title: string;
   recipient: string;
   occasion: string;
   exportedAtIso: string;
+  /** Latest lifecycle status driven by real events (proof, checkout, download). */
+  status?: CardLifecycleStatus;
   // Rendered front panel, stored so history can show the real card.
   frontSvg?: string;
 }
@@ -467,23 +476,40 @@ const cardHistoryLimit = 12;
 export function recordCardExport(
   workspace: LocalWorkspace,
   draft: CardDraft,
-  now = new Date()
+  now = new Date(),
+  status: CardLifecycleStatus = "downloaded"
 ): LocalWorkspace {
   const recipient = cleanText(draft.input.recipient) || "Someone important";
   const occasion = cleanText(draft.input.occasion) || "card";
   const frontPanel = draft.panels.find((panel) => panel.id === "front");
+  const existingEntry = (workspace.cardHistory ?? []).find((item) => item.id === draft.id);
   const entry: CardHistoryEntry = {
     id: draft.id,
     title: occasion === "card" ? `Card for ${recipient}` : `${titleCase(occasion)} card for ${recipient}`,
     recipient,
     occasion,
     exportedAtIso: now.toISOString(),
-    frontSvg: frontPanel ? buildPanelSvg(frontPanel) : undefined
+    status,
+    frontSvg: frontPanel ? buildPanelSvg(frontPanel) : existingEntry?.frontSvg
   };
   const existing = (workspace.cardHistory ?? []).filter((item) => item.id !== draft.id);
   return {
     ...workspace,
     cardHistory: [entry, ...existing].slice(0, cardHistoryLimit)
+  };
+}
+
+/** Update the lifecycle status of an existing history entry from a real event. */
+export function updateCardHistoryStatus(
+  workspace: LocalWorkspace,
+  cardId: string,
+  status: CardLifecycleStatus
+): LocalWorkspace {
+  const history = workspace.cardHistory ?? [];
+  if (!history.some((entry) => entry.id === cardId)) return workspace;
+  return {
+    ...workspace,
+    cardHistory: history.map((entry) => (entry.id === cardId ? { ...entry, status } : entry))
   };
 }
 
