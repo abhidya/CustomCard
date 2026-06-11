@@ -29,6 +29,7 @@ import {
   WALGREENS_CHECKOUT_MAX_IMAGE_BYTES,
   buildWalgreensCallbackHtml,
   createWalgreensHostedCheckoutService,
+  formatWalgreensCheckoutUpstreamError,
   walgreensCheckoutCallbackRoute,
   walgreensCheckoutSessionRoute,
   walgreensCheckoutUploadRoute
@@ -683,10 +684,10 @@ async function serveApi(request, response, requestUrl) {
       sendJson(response, statusCode, { service: "customcard-api", ...payload });
     } catch (error) {
       // Upstream Walgreens failures: return a stable error without leaking internals.
-      sendJson(response, 502, {
+      const upstream = formatWalgreensCheckoutUpstreamError(error);
+      sendJson(response, upstream.statusCode, {
         service: "customcard-api",
-        status: "walgreens-upstream-error",
-        detail: error instanceof Error ? error.message : "Walgreens request failed."
+        ...upstream.payload
       });
     }
     return;

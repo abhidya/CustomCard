@@ -93,5 +93,5 @@ function getWalgreensCheckoutError(
   statusCode?: number
 ): string {
   const status = payload?.status ? ` (${payload.status})` : statusCode ? ` (HTTP ${statusCode})` : "";
-  return payload?.detail ?? payload?.error ?? payload?.blockers?.join(" ") ?? `${fallback}${status}`;
+  return payload?.error ?? payload?.detail ?? payload?.blockers?.join(" ") ?? `${fallback}${status}`;
 }

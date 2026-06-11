@@ -144,7 +144,7 @@ describe("customer shell server render", () => {
     expect(text).toContain("Pick the occasion");
     expect(text).toContain("Sign in");
     expect(text).toContain("Sign up");
-    expect(text).toContain("Paste invite or calendar event");
+    expect(text).toContain("Start from an invite or calendar event");
     expect(text).not.toContain("Sign in to continue");
     expect(text).not.toContain("Admin panel");
     expect(text).not.toContain("Adapter readiness");
@@ -176,9 +176,10 @@ describe("customer shell server render", () => {
         expect(text).toContain(label);
       }
       expect(text).toContain("Cards that feel hand-made");
-      expect(text).toContain("Paste invite or calendar event");
-      expect(text).toContain("Add a personal detail");
-      expect(text).toContain("Print this card");
+      // The invite import is a collapsed expander; personal details live under "My cards";
+      // print is reached through the create flow, not a home tile.
+      expect(text).toContain("Start from an invite or calendar event");
+      expect(text).not.toContain("Print this card");
 
       // Console-era furniture must stay gone from the customer home.
       expect(text).not.toContain("Personal card workflow");
@@ -206,17 +207,17 @@ describe("customer shell server render", () => {
       };
       const { text } = renderShell({ search: "?view=memory", storedWorkspace });
 
-      expect(text).toContain("Little things worth remembering");
-      expect(text).toContain("Save a note");
-      expect(text).toContain("No notes yet");
-      expect(text).not.toContain("burnt birthday pancakes");
+      expect(text).toContain("Your cards");
+      expect(text).toContain("Add a personal detail");
+      expect(text).toContain("Nothing saved yet");
+      expect(text).not.toContain("memory-sara");
     });
 
     it("keeps bottom next actions scoped to active creation steps", () => {
       for (const storedWorkspace of [undefined, sampleWorkspace]) {
         const home = renderShell({ storedWorkspace });
         expect(home.html).not.toContain('class="ctadock"');
-        expect(home.html.split("homeAction").length - 1).toBeGreaterThanOrEqual(3);
+        expect(home.html).toContain("importExpanderToggle");
 
         const studio = renderShell({ search: "?view=studio", storedWorkspace });
         const dockCount = studio.html.split('class="ctadock"').length - 1;

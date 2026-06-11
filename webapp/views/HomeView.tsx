@@ -1,6 +1,8 @@
-import { ArrowRight, CalendarPlus, NotebookPen, Printer } from "lucide-react";
+import { ArrowRight, CalendarPlus, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import type { CardDraft } from "../../src/freeMvp";
 import { PanelArt } from "../ui";
+import { ImportSection, type ImportSectionProps } from "./EventsView";
 
 const occasions: Array<{ label: string; value: string; color: string }> = [
   { label: "Birthday", value: "birthday", color: "#d9a514" },
@@ -13,25 +15,20 @@ const occasions: Array<{ label: string; value: string; color: string }> = [
 
 export function HomeView({
   draft,
-  canPrint,
   hasProgress,
+  importProps,
   onOccasion,
-  onImport,
-  onNote,
-  onPrint,
-  onResume,
-  printPriceLabel
+  onResume
 }: {
   draft: CardDraft;
-  canPrint: boolean;
   hasProgress: boolean;
+  importProps: ImportSectionProps;
   onOccasion: (occasion: string) => void;
-  onImport: () => void;
-  onNote: () => void;
-  onPrint: () => void;
   onResume: () => void;
-  printPriceLabel?: string;
 }) {
+  // Auto-expand when an invite is already pasted (e.g. returning from a calendar redirect).
+  const [importOpen, setImportOpen] = useState(() => importProps.inviteText.trim().length > 0);
+
   return (
     <>
       <section className="hero reveal">
@@ -56,38 +53,8 @@ export function HomeView({
         ))}
       </div>
 
-      <section className="homeActions reveal reveal-2" aria-label="Card actions">
-        <button className="homeAction homeAction-primary" onClick={onImport} type="button">
-          <span className="homeActionIcon">
-            <CalendarPlus size={18} />
-          </span>
-          <span>
-            <strong>Paste invite or calendar event</strong>
-            <small>Use an email, ICS export, or quick note to start from real details.</small>
-          </span>
-        </button>
-        <button className="homeAction" onClick={onNote} type="button">
-          <span className="homeActionIcon">
-            <NotebookPen size={18} />
-          </span>
-          <span>
-            <strong>Add a personal detail</strong>
-            <small>Save a memory, inside joke, or preference for this card.</small>
-          </span>
-        </button>
-        <button className="homeAction" disabled={!canPrint} onClick={onPrint} type="button">
-          <span className="homeActionIcon">
-            <Printer size={18} />
-          </span>
-          <span>
-            <strong>Print this card</strong>
-            <small>{canPrint ? `${printPriceLabel ? `${printPriceLabel} estimate. ` : ""}Review files and pickup.` : "Available after you start the card."}</small>
-          </span>
-        </button>
-      </section>
-
       {hasProgress ? (
-        <button className="resume reveal reveal-3" onClick={onResume} type="button">
+        <button className="resume reveal reveal-2" onClick={onResume} type="button">
           <PanelArt panel={draft.panels[0]} />
           <span>
             <span className="resume-kicker">In progress</span>
@@ -97,6 +64,24 @@ export function HomeView({
           <ArrowRight className="resume-arrow" size={20} />
         </button>
       ) : null}
+
+      <section className="importExpander reveal reveal-3" aria-label="Start from an invite">
+        <button
+          aria-expanded={importOpen}
+          className="importExpanderToggle"
+          onClick={() => setImportOpen((open) => !open)}
+          type="button"
+        >
+          <CalendarPlus size={16} />
+          Start from an invite or calendar event
+          <ChevronDown className="importExpanderChevron" data-open={importOpen} size={16} />
+        </button>
+        {importOpen ? (
+          <div className="importExpanderBody">
+            <ImportSection {...importProps} />
+          </div>
+        ) : null}
+      </section>
     </>
   );
 }

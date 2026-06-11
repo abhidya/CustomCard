@@ -281,6 +281,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       `(() => ({
         h1: document.querySelector("h1")?.textContent,
         text: document.body.textContent,
+        footerText: document.querySelector(".appFooter")?.textContent,
         legalCards: document.querySelectorAll(".requirementCard").length,
         freeTools: document.querySelectorAll(".freeToolCard").length,
         policyLinks: document.querySelectorAll(".legalLinkCard").length,
@@ -300,7 +301,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toBe("Legal docs");
     expect(result.text).toContain("Private operations");
     expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
-    expect(result.text).toContain("Generated legal docs");
+    expect(result.footerText).not.toContain("Generated legal docs");
+    expect(result.footerText).not.toContain("Drafted for CustomCard");
     expect(result.legalCards).toBe(0);
     expect(result.freeTools).toBe(0);
     expect(result.policyLinks).toBe(0);

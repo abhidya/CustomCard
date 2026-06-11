@@ -131,7 +131,8 @@ export default function App() {
     [customerEmail, draftInput.sender, user?.fullName]
   );
   const checkoutProfile = {
-    name: customerIdentity.name,
+    // Blank when we only have the placeholder default, so the form shows real placeholders.
+    name: user?.fullName ?? (draftInput.sender === "Local User" ? "" : draftInput.sender),
     firstName: user?.firstName ?? undefined,
     lastName: user?.lastName ?? undefined,
     email: customerEmail,
@@ -329,7 +330,6 @@ export default function App() {
 
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
-  const canPrintFromHome = draftProgress.hasMeaningfulProgress && printPackage.manifest.passed;
   const showTopNav = shouldShowTopNav({
     hasCustomerNavItems: customerNavItems.length > 0,
     isAdmin: adminAccess.isAdmin,
@@ -426,15 +426,20 @@ export default function App() {
 
         {!isAdminView && !isBusinessView && visibleCustomerView === "customer" ? (
           <HomeView
-            canPrint={canPrintFromHome}
             draft={displayDraft}
             hasProgress={hasProgress}
-            onImport={() => openView("opportunities")}
-            onNote={() => openView("memory")}
+            importProps={{
+              calendarConnectionStartPackets: state.calendarConnectionStartPackets,
+              getCustomerApiToken,
+              inviteText,
+              onAccept: acceptOpportunity,
+              onDismiss: dismissOpportunity,
+              onInviteText: setInviteText,
+              opportunity,
+              signal
+            }}
             onOccasion={startOccasion}
-            onPrint={() => openView("handoff")}
             onResume={() => openView("studio")}
-            printPriceLabel={priceLabel}
           />
         ) : null}
 
@@ -476,11 +481,15 @@ export default function App() {
 
         {!isAdminView && visibleCustomerView === "memory" ? (
           <NotesView
+            draft={displayDraft}
             form={memoryForm}
+            hasProgress={hasProgress}
+            isSignedIn={Boolean(isSignedIn)}
             memories={memories}
             onAdd={addNote}
             onDelete={deleteNote}
             onForm={setMemoryForm}
+            onResume={() => openView("studio")}
           />
         ) : null}
 
@@ -733,10 +742,6 @@ function AdminRoute({
 function AppFooter() {
   return (
     <footer className="appFooter" aria-label="Generated legal documents">
-      <div>
-        <strong>Generated legal docs</strong>
-        <span>Drafted for CustomCard's current no-live-order, review-required posture.</span>
-      </div>
       <nav aria-label="Generated legal document links">
         {generatedLegalDocumentLinks.map((link) => (
           <a href={link.path} key={link.id}>

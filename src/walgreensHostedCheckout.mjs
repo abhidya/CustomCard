@@ -48,6 +48,34 @@ const WALGREENS_ERROR_MESSAGES = {
   "112": "AffiliateID is set up incorrectly for Walgreens hosted checkout.",
   "659": "No Walgreens vendor match for this API key and AffiliateID. Confirm the PhotoPrints AffiliateID is enabled for this app."
 };
+const WALGREENS_PROVIDER_CREDENTIAL_ERRORS = {
+  "112": {
+    status: "walgreens-provider-credential-blocked",
+    statusCode: 503,
+    retryable: false,
+    error:
+      "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now.",
+    detail:
+      "Walgreens says this AffiliateID is not enabled correctly for hosted checkout. Ask Walgreens Developer Support to confirm PhotoPrints is enabled for this API key and AffiliateID."
+  },
+  "659": {
+    status: "walgreens-provider-credential-blocked",
+    statusCode: 503,
+    retryable: false,
+    error:
+      "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now.",
+    detail:
+      "Walgreens returned error 659 from the upload credentials endpoint. Ask Walgreens Developer Support to confirm the PhotoPrints vendor setup for this API key and AffiliateID."
+  },
+  "2003": {
+    status: "walgreens-provider-credential-invalid",
+    statusCode: 503,
+    retryable: false,
+    error:
+      "Walgreens PhotoPrints checkout credentials are not accepted yet. Save the print package and upload it manually for now.",
+    detail: "Walgreens rejected the checkout credentials. Confirm the API key and PhotoPrints AffiliateID in Walgreens Developer Portal."
+  }
+};
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -83,6 +111,58 @@ export function resolveWalgreensCheckoutConfig(env) {
     callbackUrl: appOrigin ? `${appOrigin}${walgreensCheckoutCallbackRoute}` : "",
     blockers
   };
+}
+
+export class WalgreensCheckoutUpstreamError extends Error {
+  constructor({ path, upstreamCode, upstreamMessage, status, statusCode, publicError, publicDetail, retryable }) {
+    super(`Walgreens ${path} error ${upstreamCode}: ${trimTrailingPeriod(upstreamMessage)}.`);
+    this.name = "WalgreensCheckoutUpstreamError";
+    this.path = path;
+    this.upstreamCode = upstreamCode;
+    this.upstreamMessage = upstreamMessage;
+    this.status = status;
+    this.statusCode = statusCode;
+    this.publicError = publicError;
+    this.publicDetail = publicDetail;
+    this.retryable = retryable;
+  }
+}
+
+export function formatWalgreensCheckoutUpstreamError(error) {
+  if (error instanceof WalgreensCheckoutUpstreamError) {
+    return {
+      statusCode: error.statusCode,
+      payload: {
+        ok: false,
+        status: error.status,
+        error: error.publicError,
+        detail: error.publicDetail,
+        upstreamCode: error.upstreamCode,
+        retryable: error.retryable
+      }
+    };
+  }
+
+  return {
+    statusCode: 502,
+    payload: {
+      ok: false,
+      status: "walgreens-upstream-error",
+      error:
+        "Walgreens checkout is temporarily unavailable. Save the print package and upload it manually for now.",
+      detail: error instanceof Error ? error.message : "Walgreens request failed.",
+      retryable: true
+    }
+  };
+}
+
+function trimTrailingPeriod(value) {
+  return String(value ?? "").replace(/\.+$/, "");
+}
+
+function walgreensUpstreamResult(error) {
+  const formatted = formatWalgreensCheckoutUpstreamError(error);
+  return { statusCode: formatted.statusCode, ...formatted.payload };
 }
 
 // ── Input validation (appsec: every client field is validated server-side) ───
@@ -253,8 +333,24 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
       }
       const payload = await response.json();
       if (payload.err) {
-        const fallback = WALGREENS_ERROR_MESSAGES[String(payload.err)] ?? "see Walgreens error code tables";
-        throw new Error(`Walgreens ${path} error ${payload.err}: ${payload.errDesc || fallback}.`);
+        const upstreamCode = String(payload.err);
+        const fallback = WALGREENS_ERROR_MESSAGES[upstreamCode] ?? "see Walgreens error code tables";
+        const upstreamMessage = payload.errDesc || fallback;
+        const providerCredentialError = WALGREENS_PROVIDER_CREDENTIAL_ERRORS[upstreamCode];
+        throw new WalgreensCheckoutUpstreamError({
+          path,
+          upstreamCode,
+          upstreamMessage,
+          status: providerCredentialError?.status ?? "walgreens-upstream-error",
+          statusCode: providerCredentialError?.statusCode ?? 502,
+          publicError:
+            providerCredentialError?.error ??
+            "Walgreens checkout is temporarily unavailable. Save the print package and upload it manually for now.",
+          publicDetail:
+            providerCredentialError?.detail ??
+            `Walgreens returned error ${upstreamCode} from ${path}: ${trimTrailingPeriod(upstreamMessage)}.`,
+          retryable: providerCredentialError?.retryable ?? true
+        });
       }
       return payload;
     } finally {
@@ -288,7 +384,12 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
         return { ok: false, statusCode: 400, error: decoded.error };
       }
 
-      const credentials = await fetchUploadCredentials();
+      let credentials;
+      try {
+        credentials = await fetchUploadCredentials();
+      } catch (error) {
+        return walgreensUpstreamResult(error);
+      }
       const sasKeyToken = credentials.cloud?.[0]?.sasKeyToken;
       if (!sasKeyToken) {
         return { ok: false, statusCode: 502, error: "Walgreens did not return an upload token." };
@@ -348,24 +449,29 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
       const { lat, lng } = validateCheckoutCoordinates(body.lat, body.lng);
       const expiryTime = String(now() + WALGREENS_CHECKOUT_IMAGE_EXPIRY_HOURS * 3_600_000);
 
-      const payload = await postJson("/api/util/v3.0/mweb5url", {
-        apiKey: config.apiKey,
-        affId: config.affId,
-        ...(config.publisherId ? { publisherId: config.publisherId } : {}),
-        channelInfo: "web",
-        callBackLink: config.callbackUrl,
-        expiryTime,
-        images,
-        lat,
-        lng,
-        customer: customerResult.customer,
-        transaction: "photoCheckoutv2",
-        act: "mweb5UrlV2",
-        view: "mweb5UrlV2JSON",
-        devInf: DEFAULT_DEV_INF,
-        appVer: DEFAULT_APP_VER,
-        ...(typeof body.affNotes === "string" && body.affNotes ? { affNotes: cleanText(body.affNotes, 240) } : {})
-      });
+      let payload;
+      try {
+        payload = await postJson("/api/util/v3.0/mweb5url", {
+          apiKey: config.apiKey,
+          affId: config.affId,
+          ...(config.publisherId ? { publisherId: config.publisherId } : {}),
+          channelInfo: "web",
+          callBackLink: config.callbackUrl,
+          expiryTime,
+          images,
+          lat,
+          lng,
+          customer: customerResult.customer,
+          transaction: "photoCheckoutv2",
+          act: "mweb5UrlV2",
+          view: "mweb5UrlV2JSON",
+          devInf: DEFAULT_DEV_INF,
+          appVer: DEFAULT_APP_VER,
+          ...(typeof body.affNotes === "string" && body.affNotes ? { affNotes: cleanText(body.affNotes, 240) } : {})
+        });
+      } catch (error) {
+        return walgreensUpstreamResult(error);
+      }
 
       if (!payload.landingUrl || !payload.token) {
         return { ok: false, statusCode: 502, error: "Walgreens did not return a checkout landing URL." };

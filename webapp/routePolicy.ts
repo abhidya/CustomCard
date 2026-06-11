@@ -13,9 +13,7 @@ export interface AdminAccessPolicy {
 
 export const customerNavItems: NavItem[] = [
   { id: "customer", label: "Create" },
-  { id: "opportunities", label: "Occasions" },
-  { id: "memory", label: "Notes" },
-  { id: "handoff", label: "Print" }
+  { id: "memory", label: "My cards" }
 ];
 
 export const adminNavItems: NavItem[] = [
@@ -37,7 +35,10 @@ export function resolveVisibleCustomerView(view: ViewId): ViewId {
 }
 
 export function resolveActiveCustomerNavView(view: ViewId): ViewId {
-  return isAdminRoute(view) || view === "mobile" || isBusinessRoute(view) ? "customer" : view;
+  if (isAdminRoute(view) || view === "mobile" || isBusinessRoute(view)) return "customer";
+  // Studio, print, and invite import are stages of the create flow — highlight "Create".
+  if (view === "studio" || view === "handoff" || view === "opportunities") return "customer";
+  return view;
 }
 
 export function shouldShowCustomerCta(view: ViewId): boolean {

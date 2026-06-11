@@ -15,16 +15,7 @@ const urgencyLabels: Record<CardOpportunity["urgency"], { label: string; tone: "
   "needs-date": { label: "Date needed", tone: "warn" }
 };
 
-export function EventsView({
-  calendarConnectionStartPackets,
-  getCustomerApiToken,
-  inviteText,
-  signal,
-  opportunity,
-  onInviteText,
-  onAccept,
-  onDismiss
-}: {
+export interface ImportSectionProps {
   calendarConnectionStartPackets: CalendarConnectionStartPacket[];
   getCustomerApiToken?: () => Promise<string | undefined>;
   inviteText: string;
@@ -33,7 +24,19 @@ export function EventsView({
   onInviteText: (text: string) => void;
   onAccept: () => void;
   onDismiss: () => void;
-}) {
+}
+
+/** Invite/calendar import: source choices, paste box, and the parsed occasion. */
+export function ImportSection({
+  calendarConnectionStartPackets,
+  getCustomerApiToken,
+  inviteText,
+  signal,
+  opportunity,
+  onInviteText,
+  onAccept,
+  onDismiss
+}: ImportSectionProps) {
   const hasImport = inviteText.trim().length > 0;
   const urgency = urgencyLabels[opportunity.urgency];
   const googlePacket = calendarConnectionStartPackets.find((packet) => packet.id === "google-calendar-events");
@@ -57,11 +60,6 @@ export function EventsView({
 
   return (
     <>
-      <header className="pagehead reveal">
-        <h1>Never miss a moment</h1>
-        <p>Paste an invite, calendar event, or a quick note — we&rsquo;ll turn it into a card to send.</p>
-      </header>
-
       <section className="sourcechoices reveal reveal-1" aria-label="Calendar source choices">
         <button className="sourcechoice sourcechoice-ready" onClick={focusImportBox} type="button">
           <span className="sourceicon">
@@ -159,6 +157,19 @@ export function EventsView({
           </section>
         )}
       </div>
+    </>
+  );
+}
+
+/** Standalone route (?view=opportunities) — kept for deep links and calendar redirects. */
+export function EventsView(props: ImportSectionProps) {
+  return (
+    <>
+      <header className="pagehead reveal">
+        <h1>Never miss a moment</h1>
+        <p>Paste an invite, calendar event, or a quick note — we&rsquo;ll turn it into a card to send.</p>
+      </header>
+      <ImportSection {...props} />
     </>
   );
 }

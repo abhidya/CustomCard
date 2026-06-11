@@ -42,7 +42,11 @@ describe("frontend architecture seams", () => {
 
     expect(resolveActiveCustomerNavView("business")).toBe("customer");
     expect(resolveActiveCustomerNavView("legal")).toBe("customer");
-    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "Occasions", "Notes", "Print"]);
+    expect(resolveActiveCustomerNavView("studio")).toBe("customer");
+    expect(resolveActiveCustomerNavView("handoff")).toBe("customer");
+    expect(resolveActiveCustomerNavView("opportunities")).toBe("customer");
+    expect(resolveActiveCustomerNavView("memory")).toBe("memory");
+    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards"]);
     expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "Adapters", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
@@ -222,5 +226,43 @@ describe("frontend architecture seams", () => {
         renderPanel: async () => "jpeg-front"
       })
     ).rejects.toThrow("Walgreens image upload is not ready. (invalid-json)");
+  });
+
+  it("shows the friendly Walgreens provider block instead of raw upstream detail", async () => {
+    const panel = {
+      id: "front",
+      label: "Front",
+      headline: "Hello",
+      body: "Body",
+      artDirection: "Botanical",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      rtl: false,
+      overflowRisk: false
+    } satisfies CardPanel;
+    const fetchImpl = (async () => ({
+      ok: false,
+      status: 503,
+      json: async () => ({
+        ok: false,
+        status: "walgreens-provider-credential-blocked",
+        error:
+          "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now.",
+        detail: "Walgreens /api/photo/creds/v3 error 659: No Walgreens vendor match for this API key and AffiliateID."
+      })
+    })) as typeof fetch;
+
+    await expect(
+      createWalgreensCheckoutSession({
+        checkoutCustomer: { firstName: "Maya", lastName: "Patel", email: "maya@example.com", phone: "2125550199" },
+        fetchImpl,
+        panels: [panel],
+        printPackage: { draftId: "draft-maya" } as PrintExportPackage,
+        renderPanel: async () => "jpeg-front"
+      })
+    ).rejects.toThrow(
+      "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now."
+    );
   });
 });

@@ -38,8 +38,12 @@ export interface WalgreensCustomerValidation {
 export interface WalgreensUploadResult {
   ok: boolean;
   statusCode: number;
+  status?: string;
   error?: string;
+  detail?: string;
   blockers?: string[];
+  upstreamCode?: string;
+  retryable?: boolean;
   imageUrl?: string;
   imageName?: string;
   expiresAtIso?: string;
@@ -48,12 +52,25 @@ export interface WalgreensUploadResult {
 export interface WalgreensSessionResult {
   ok: boolean;
   statusCode: number;
+  status?: string;
   error?: string;
+  detail?: string;
   blockers?: string[];
+  upstreamCode?: string;
+  retryable?: boolean;
   checkoutUrl?: string;
   window?: { width: number; height: number };
   imageCount?: number;
   mode?: string;
+}
+
+export interface WalgreensCheckoutUpstreamPayload {
+  ok: false;
+  status: string;
+  error: string;
+  detail: string;
+  upstreamCode?: string;
+  retryable: boolean;
 }
 
 export interface WalgreensHostedCheckoutService {
@@ -69,6 +86,20 @@ export interface WalgreensHostedCheckoutService {
 }
 
 export declare function resolveWalgreensCheckoutConfig(env: Record<string, string | undefined>): WalgreensCheckoutConfig;
+export declare class WalgreensCheckoutUpstreamError extends Error {
+  path: string;
+  upstreamCode: string;
+  upstreamMessage: string;
+  status: string;
+  statusCode: number;
+  publicError: string;
+  publicDetail: string;
+  retryable: boolean;
+}
+export declare function formatWalgreensCheckoutUpstreamError(error: unknown): {
+  statusCode: number;
+  payload: WalgreensCheckoutUpstreamPayload;
+};
 export declare function validateCheckoutCustomer(input: unknown): WalgreensCustomerValidation;
 export declare function validateCheckoutCoordinates(lat: unknown, lng: unknown): { lat: string; lng: string };
 export declare function decodeJpegBase64(imageBase64: string): { ok: boolean; error?: string; bytes?: Uint8Array };
