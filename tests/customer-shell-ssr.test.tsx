@@ -140,7 +140,8 @@ describe("customer shell server render", () => {
   it("keeps the customer create flow visible when signed out", () => {
     const { text } = renderShell({ signedIn: false });
 
-    expect(text).toContain("Make someone's");
+    expect(text).toContain("Never miss the card-worthy moment.");
+    expect(text).toContain("Create a card");
     expect(text).toContain("Pick the occasion");
     expect(text).toContain("Sign in");
     expect(text).toContain("Sign up");
@@ -155,7 +156,8 @@ describe("customer shell server render", () => {
     expect(studio.text).toContain("Your card, their story");
     expect(studio.text).toContain("Who it's for");
     expect(studio.text).toContain("Sign in to generate AI card");
-    expect(studio.text).toContain("Create and print without an account");
+    expect(studio.text).toContain("Create a free account to generate your card");
+    expect(studio.text).toContain("Signing in does not connect your email or calendar.");
     expect(studio.text).toContain("Continue to print");
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
@@ -173,7 +175,11 @@ describe("customer shell server render", () => {
     const { text } = renderShell();
 
       expect(text).toContain("CustomCard");
-      expect(text).toContain("Make someone's");
+      expect(text).toContain("Never miss the card-worthy moment.");
+      expect(text).toContain("review and print through Walgreens");
+      expect(text).toContain("Create a card");
+      expect(text).toContain("Find moments from email or calendar");
+      expect(text).toContain("See examples");
       expect(text).toContain("Pick the occasion");
       for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
         expect(text).toContain(label);
@@ -182,11 +188,17 @@ describe("customer shell server render", () => {
       // Landing sections explain the product and the Walgreens boundary.
       expect(text).toContain("How it works");
       expect(text).toContain("Pick a moment");
-      expect(text).toContain("Review the proof");
-      expect(text).toContain("Print at Walgreens");
+      expect(text).toContain("Add relationship context");
+      expect(text).toContain("AI drafts");
+      expect(text).toContain("You review");
+      expect(text).toContain("Continue to Walgreens");
+      expect(text).toContain("Made for real moments");
       expect(text).toContain("Free to create. Private by default.");
-      expect(text).toContain("you pay Walgreens only if you print");
-      expect(text).toContain("You review and approve every word before checkout.");
+      expect(text).toContain("Free to create. Pay Walgreens only if you print.");
+      expect(text).toContain("Walgreens handles payment and final checkout.");
+      expect(text).toContain("Account required for AI generation");
+      expect(text).toContain("Email and calendar connections are optional");
+      expect(text).toContain("You review every word before checkout.");
       // The invite import is a collapsed expander; personal details live under "My cards";
       // print is reached through the create flow, not a home tile.
       expect(text).toContain("Start from an invite or calendar event");
@@ -218,10 +230,10 @@ describe("customer shell server render", () => {
       };
       const { text } = renderShell({ search: "?view=memory", storedWorkspace });
 
-      // Empty hub stays minimal: no form scaffolding until there's a card or a saved detail.
+      // My cards stays card-focused; personal details live on the People page.
       expect(text).toContain("Your cards");
       expect(text).toContain("Start a card");
-      expect(text).toContain("Add a personal detail first");
+      expect(text).toContain("No cards yet. Start with a card, an invite, or a saved person.");
       expect(text).not.toContain("Save detail");
       expect(text).not.toContain("memory-sara");
     });
@@ -247,7 +259,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("What this page needs");
       expect(text).toContain("No live CRM writes");
       expect(text).toContain("Human approval required");
-      expect(text).not.toContain("Make someone's");
+      expect(text).not.toContain("Never miss the card-worthy moment.");
       expect(html).not.toContain(">Business<");
     });
 
@@ -261,6 +273,10 @@ describe("customer shell server render", () => {
       expect(text).toContain("Try an example");
       expect(text).toContain("Using Apple Calendar?");
       expect(text).not.toContain("Nothing here yet");
+
+      const signedOut = renderShell({ search: "?view=opportunities", signedIn: false });
+      expect(signedOut.text).toContain("Sign in to connect Google Calendar");
+      expect(signedOut.text).toContain("Or paste it in");
     });
 
     it("renders the studio as a print-preview card stage", () => {
@@ -292,6 +308,17 @@ describe("customer shell server render", () => {
       expect(text).toContain("Walgreens confirms the final total");
     });
 
+  it("renders people with the detail form and use-once default", () => {
+    const { text } = renderShell({ search: "?view=people" });
+
+    expect(text).toContain("People");
+    expect(text).toContain("Save a personal detail");
+    expect(text).toContain("Save for future cards");
+    expect(text).toContain("use once");
+    expect(text).toContain("Save detail");
+    expect(text).toContain("No people saved yet.");
+  });
+
   it("renders settings with account, connections, privacy choices, and policies", () => {
     const signedIn = renderShell({ search: "?view=settings" });
     expect(signedIn.text).toContain("Settings and privacy");
@@ -313,7 +340,7 @@ describe("customer shell server render", () => {
   });
 
   it("keeps customer-visible views free of fixture and implementation terms", () => {
-    const views = ["", "?view=opportunities", "?view=studio", "?view=memory", "?view=settings", "?view=handoff"];
+    const views = ["", "?view=opportunities", "?view=studio", "?view=memory", "?view=people", "?view=settings", "?view=handoff"];
     for (const search of views) {
       for (const storedWorkspace of [undefined, sampleWorkspace]) {
         const { text } = renderShell({ search, storedWorkspace });

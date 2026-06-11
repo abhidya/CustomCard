@@ -59,8 +59,16 @@ export function PrintView({
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [proofChecklist, setProofChecklist] = useState<ProofChecklistState>(emptyProofChecklistState);
   const [showFieldIssues, setShowFieldIssues] = useState(false);
-  const proofApproved = isProofApproved(proofChecklist);
+  const overflowPanels = panels.filter((candidate) => candidate.overflowRisk);
+  const rtlReview = panels.some((candidate) => candidate.rtl);
+  const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
+  const proofApproved = isProofApproved(proofChecklist) && !approvalBlocked;
   const fieldIssues = validateCheckoutCustomer(checkoutCustomer);
+  // Any edit to the card after approval resets the approval.
+  const proofSignature = panels.map((candidate) => `${candidate.id}:${candidate.headline}|${candidate.body}`).join("~");
+  useEffect(() => {
+    setProofChecklist(emptyProofChecklistState);
+  }, [proofSignature]);
   const estimateByVendor = new Map<string, PrinterPriceEstimate>();
   for (const estimate of pricingComparison.rankedKnownPrices) {
     if (!estimateByVendor.has(estimate.observation.vendorId)) {
@@ -145,11 +153,11 @@ export function PrintView({
     <>
       <header className="pagehead reveal">
         <h1>Print at Walgreens</h1>
-        <p>Hosted checkout is waiting on Walgreens enablement. Save the print package and upload the numbered panels manually for now.</p>
+        <p>Approve your proof, then continue to Walgreens — they handle the store, the payment, and the pickup.</p>
       </header>
 
       <div className="print">
-        <div className="printpane reveal reveal-1">
+        <div className="printpane reveal reveal-2">
           <section className="panelcard printsection">
             <h2>Walgreens print details</h2>
             <div className="partnercheckout">
@@ -185,7 +193,8 @@ export function PrintView({
             <p>Walgreens confirms the final total, crop, pickup store, and payment before the order is placed.</p>
           </section>
 
-          <section className="panelcard printsection printsection-manual">
+          <details className="panelcard printsection printsection-manual moreoptions">
+            <summary>Having trouble? More options</summary>
             <h2>Manual Walgreens upload</h2>
             <p>Save one package with JPG upload panels, source SVGs, a PDF proof, the manifest, and these steps.</p>
             <div className="downloadrow">
@@ -221,13 +230,24 @@ export function PrintView({
             <span className="filemeta">
               {panels.length} upload panels + source files + combined PDF, sized for 5 × 7.
             </span>
-          </section>
+          </details>
         </div>
 
-        <div className="printpane reveal reveal-2">
+        <div className="printpane printpane-primary reveal reveal-1">
           <section className="panelcard printsection proofapproval" aria-label="Proof approval checklist">
             <h2>Approve your proof</h2>
             <p>This page is the print proof — what you see in the panels is exactly what prints. Check every line before checkout.</p>
+            {overflowPanels.length > 0 ? (
+              <div className="proofwarning" role="alert">
+                Text may not fit on: {overflowPanels.map((candidate) => candidate.label).join(", ")}. Shorten it in the
+                studio before approving.
+              </div>
+            ) : null}
+            {rtlReview ? (
+              <div className="proofwarning proofwarning-info" role="note">
+                This card uses right-to-left text. Review every panel carefully before approving.
+              </div>
+            ) : null}
             <div className="proofchecklist">
               {proofChecklistItems.map((item) => (
                 <label className="proofcheck" key={item.id}>
@@ -251,7 +271,8 @@ export function PrintView({
             <h2>Hosted checkout</h2>
             <div className="checkoutbox">
               <p>
-                Use this only after Walgreens PhotoPrints enablement is complete. The manual package above is the working path today.
+                Walgreens handles product selection, store pickup, terms, payment, and final order. CustomCard prepares
+                your approved print files.
               </p>
               <div className="checkoutgrid">
                 <label>

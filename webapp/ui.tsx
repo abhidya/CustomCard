@@ -83,3 +83,55 @@ export function Step({
 export function Toast({ message }: { message: string }) {
   return <div className="toast">{message}</div>;
 }
+
+type FoldedPreviewMode = "closed" | "open" | "back";
+
+/**
+ * CSS-3D folded card preview. Confidence layer only — the 2D proof stays the
+ * print source of truth, and the label below says so.
+ */
+export function FoldedCardPreview({ panels }: { panels: CardPanel[] }) {
+  const [mode, setMode] = useState<FoldedPreviewMode>("closed");
+  const byId = new Map(panels.map((panel) => [panel.id, panel]));
+  const front = byId.get("front") ?? panels[0];
+  const insideLeft = byId.get("inside-left") ?? panels[1];
+  const insideRight = byId.get("inside-right") ?? panels[2];
+  const back = byId.get("back") ?? panels[3];
+
+  return (
+    <div className="folded3d" aria-label="Folded card preview">
+      <div className="folded3d-stagewrap">
+        <div className="folded3d-stage" data-mode={mode}>
+          {mode === "open" ? (
+            <div className="folded3d-spread">
+              <div className="folded3d-panel folded3d-left">
+                <PanelArt panel={insideLeft} />
+              </div>
+              <div className="folded3d-panel folded3d-right">
+                <PanelArt panel={insideRight} />
+              </div>
+            </div>
+          ) : (
+            <div className="folded3d-panel folded3d-cover">
+              <PanelArt panel={mode === "back" ? back : front} />
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="folded3d-modes" role="group" aria-label="Folded preview angle">
+        {(["closed", "open", "back"] as const).map((candidate) => (
+          <button
+            className="folded3d-mode"
+            data-on={candidate === mode}
+            key={candidate}
+            onClick={() => setMode(candidate)}
+            type="button"
+          >
+            {candidate === "closed" ? "Front" : candidate === "open" ? "Open" : "Back"}
+          </button>
+        ))}
+      </div>
+      <p className="folded3d-note">Folded preview. Use the proof view for exact print review.</p>
+    </div>
+  );
+}

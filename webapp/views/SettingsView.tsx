@@ -116,6 +116,9 @@ export function SettingsView({
             AI helps draft your cards, and you review every word before printing. Personal details are saved only when
             you choose to save them.
           </p>
+          <p>
+            Walgreens handles payment and final checkout. CustomCard never sees or stores your payment details.
+          </p>
           <label className="settingconsent">
             <input
               aria-label="I confirm I want to send a data request for this account"

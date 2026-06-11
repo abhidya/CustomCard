@@ -3,18 +3,11 @@ import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { summarizeAiProviderReadiness } from "../src/aiProviderReadinessData.mjs";
-import { summarizeBusinessEngagementReadiness } from "../src/businessEngagementReadinessData.mjs";
-import { summarizeCapacityPlan } from "../src/capacityPlanData.mjs";
-import { summarizeE2eCoverage } from "../src/e2eCoverageData.mjs";
-import { summarizeExternalAuditReadiness } from "../src/externalAuditReadinessData.mjs";
-import { summarizeHostedApiReadiness } from "../src/hostedApiReadinessData.mjs";
-import { summarizeMobileRenderReadiness } from "../src/mobileRenderReadinessData.mjs";
-import { summarizeObservabilityReadiness } from "../src/observabilityReadinessData.mjs";
-import { summarizePaymentReadiness } from "../src/paymentReadinessData.mjs";
-import { summarizeReviewerDbSeedReadiness } from "../src/reviewerDbSeedReadinessData.mjs";
-import { summarizeCloudArtifactProofReadiness } from "../src/cloudArtifactProofReadinessData.mjs";
-import { summarizeRetailFulfillmentReadiness } from "../src/retailFulfillmentReadinessData.mjs";
+import {
+  buildReadinessSummary,
+  readinessDomainIds,
+  validateReadinessDomains
+} from "../src/readinessSummaryData.mjs";
 import {
   buildRetailPrinterOperationStartPackets,
   buildRetailPrinterOperationStartResponse
@@ -293,10 +286,13 @@ const securityHeaders = {
   "X-Frame-Options": "DENY"
 };
 
+const readinessSummary = buildReadinessSummary();
+
 export const readiness = {
   service: "customcard-api",
   status: "ready",
   realOrdersEnabled: false,
+  readinessDomains: readinessDomainIds,
   routes: {
     total: routes.length,
     public: routes.filter((route) => route.audience === "public").length,
@@ -375,18 +371,18 @@ export const readiness = {
       "No physical sample or retailer certification has been recorded."
     ]
   },
-  externalAudit: summarizeExternalAuditReadiness(),
-  e2eCoverage: summarizeE2eCoverage(),
-  aiProviderReadiness: summarizeAiProviderReadiness(),
-  capacity: summarizeCapacityPlan(),
-  observability: summarizeObservabilityReadiness(),
-  retailFulfillment: summarizeRetailFulfillmentReadiness(),
-  paymentReadiness: summarizePaymentReadiness(),
-  mobileRenderReadiness: summarizeMobileRenderReadiness(),
-  hostedApiReadiness: summarizeHostedApiReadiness(),
-  reviewerDbSeedReadiness: summarizeReviewerDbSeedReadiness(),
-  cloudArtifactProofReadiness: summarizeCloudArtifactProofReadiness(),
-  businessEngagementReadiness: summarizeBusinessEngagementReadiness(),
+  externalAudit: readinessSummary.externalAudit.summary,
+  e2eCoverage: readinessSummary.e2eCoverage.summary,
+  aiProviderReadiness: readinessSummary.aiProvider.summary,
+  capacity: readinessSummary.capacity.summary,
+  observability: readinessSummary.observability.summary,
+  retailFulfillment: readinessSummary.retailFulfillment.summary,
+  paymentReadiness: readinessSummary.payment.summary,
+  mobileRenderReadiness: readinessSummary.mobileRender.summary,
+  hostedApiReadiness: readinessSummary.hostedApi.summary,
+  reviewerDbSeedReadiness: readinessSummary.reviewerDbSeed.summary,
+  cloudArtifactProofReadiness: readinessSummary.cloudArtifactProof.summary,
+  businessEngagementReadiness: readinessSummary.businessEngagement.summary,
   safety: {
     externalNetworkCalls: false,
     liveVendorOrders: false,
@@ -650,6 +646,10 @@ function validateApiServerContract() {
   if (readiness.providerGovernance.blockers.length > 0) blockers.push("Provider governance summary has blockers.");
   if (readiness.providerGovernance.liveNetworkDefault) blockers.push("Provider governance cannot default to live network calls.");
   if (readiness.providerGovernance.realOrdersEnabled) blockers.push("Provider governance cannot enable real orders.");
+  if (readiness.readinessDomains.length !== readinessDomainIds.length) {
+    blockers.push("API readiness must expose every Node readiness domain.");
+  }
+  blockers.push(...validateReadinessDomains());
   if (readiness.production.liveEnabled !== 0) blockers.push("Production readiness cannot enable live components by default.");
   if (readiness.production.total < 13) blockers.push("Production readiness must track every launch gate.");
   if (readiness.externalAudit.total < 15) blockers.push("External audit readiness must track every external proof gap.");
@@ -2069,7 +2069,7 @@ function safeContractLongText(value, fallback) {
 
 function safeContractTone(value) {
   const tone = String(value ?? "warm").trim().toLowerCase();
-  return ["warm", "playful", "elegant", "reverent"].includes(tone) ? tone : "warm";
+  return ["warm", "playful", "elegant", "simple", "reverent", "sentimental"].includes(tone) ? tone : "warm";
 }
 
 function safeContractVisualStyle(value) {

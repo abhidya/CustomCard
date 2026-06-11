@@ -11,7 +11,7 @@ import {
 export type FreeImportSource = "ics-paste" | "invite-paste" | "manual-note" | "empty";
 export type OpportunityStatus = "ready" | "needs-more-detail";
 export type Urgency = "same-day" | "this-week" | "planned" | "needs-date";
-export type Tone = "warm" | "playful" | "elegant" | "reverent";
+export type Tone = "warm" | "playful" | "elegant" | "simple" | "reverent" | "sentimental";
 export type VisualStyle = "botanical" | "bold-type" | "photo-note" | "minimal";
 export type LanguageChoice = "English" | "Spanish" | "Urdu" | "Arabic";
 export type VendorId = "walgreens" | "cvs" | "fedex" | "walmart" | "staples" | "office-depot" | "local-print-shop";

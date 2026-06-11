@@ -1,4 +1,5 @@
 import { CalendarCheck, CalendarDays } from "lucide-react";
+import { SignInButton } from "@clerk/react";
 import { useState } from "react";
 import type { CardOpportunity, FreeImportSignal } from "../../src/freeMvp";
 import type { CalendarConnectionStartPacket } from "../../src/onboardingCalendar";
@@ -19,6 +20,7 @@ export interface ImportSectionProps {
   calendarConnectionStartPackets: CalendarConnectionStartPacket[];
   getCustomerApiToken?: () => Promise<string | undefined>;
   inviteText: string;
+  isSignedIn: boolean;
   signal: FreeImportSignal;
   opportunity: CardOpportunity;
   onInviteText: (text: string) => void;
@@ -33,6 +35,7 @@ export interface ImportSectionProps {
 export function ImportSection({
   getCustomerApiToken,
   inviteText,
+  isSignedIn,
   signal,
   opportunity,
   onInviteText,
@@ -59,10 +62,19 @@ export function ImportSection({
   return (
     <div className="importFlow">
       <div className="importPrimary reveal reveal-1">
-        <button className="btn btn-primary" onClick={startCalendarConnection} type="button">
-          <CalendarCheck size={16} />
-          Connect Google Calendar
-        </button>
+        {isSignedIn ? (
+          <button className="btn btn-primary" onClick={startCalendarConnection} type="button">
+            <CalendarCheck size={16} />
+            Connect Google Calendar
+          </button>
+        ) : (
+          <SignInButton>
+            <button className="btn btn-primary" type="button">
+              <CalendarCheck size={16} />
+              Sign in to connect Google Calendar
+            </button>
+          </SignInButton>
+        )}
         <span className="importPrimaryNote">
           Reads event titles and dates only — birthdays and anniversaries become card reminders.
         </span>

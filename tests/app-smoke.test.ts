@@ -162,7 +162,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       })()`
     );
 
-    expect(result.homeText).toContain("Make someone");
+    expect(result.homeText).toContain("Never miss the card-worthy moment.");
     expect(result.homeText).toContain("Pick the occasion");
     expect(result.homeText).not.toContain("Admin panel");
     expect(result.homeText).not.toContain("Adapter readiness");
@@ -301,7 +301,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       })()`
     );
 
-    expect(result.h1).toContain("Make someone");
+    expect(result.h1).toContain("Never miss the");
     expect(result.skipHref).toBe("#main-content");
     expect(result.skipTargetExists).toBe(true);
     expect(result.customerNavHidden).toBe(true);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { buildFulfillmentRecommendations, type FulfillmentRecommendationSet } from "./fulfillmentRecommendation";
 import {
   buildOpportunity,
@@ -24,13 +24,8 @@ import {
 } from "./customerWorkflow";
 import { getSupportedLocale, summarizeLocalizationReadiness, type LocalizationReadinessSummary, type SupportedLocale, type SupportedLocaleCode } from "./localization";
 import { buildCalendarConnectionStartPackets, type CalendarConnectionStartPacket } from "./onboardingCalendar";
-import { buildAdminPanelModel, providerCatalog, type AdminPanelModel } from "./providerCatalog";
-import { summarizeProviderGovernance, type ProviderGovernanceSummary } from "./providerGovernance";
-import { summarizeProductionReadiness, type ProductionReadinessSummary } from "./productionReadiness";
 import { buildPrinterPricingComparison } from "./printerPricing";
 import { buildPrintExportPackage, type PrintExportPackage } from "./printExport";
-import { getProviderRuntimeReadiness, type RuntimeReadiness } from "./providerRuntime";
-import { buildReadinessSummary, type ReadinessSummary } from "./readinessSummary";
 import {
   buildBrowserAiFlowSummary,
   loadBrowserAiFlowAdminConfigs,
@@ -65,16 +60,18 @@ export const reviewerDraftOptions: {
   languages: LanguageChoice[];
   vendors: VendorId[];
 } = {
-  tones: ["warm", "playful", "elegant", "reverent"],
+  tones: ["warm", "playful", "elegant", "simple", "reverent", "sentimental"],
   styles: ["botanical", "bold-type", "photo-note", "minimal"],
   languages: ["English", "Spanish", "Urdu", "Arabic"],
   vendors: ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"]
 };
 
-export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "handoff" | "settings" | "business" | "legal" | "admin" | "adapters";
+export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "people" | "handoff" | "settings" | "business" | "legal" | "admin" | "adapters";
 
 const legacyCardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
 const sameOriginCardGenPath = "/api/ai/card/generate";
+
+export type CustomerApiTokenProvider = () => Promise<string | null | undefined>;
 
 export interface AppState {
   activeView: ViewId;
@@ -105,6 +102,8 @@ export interface AppState {
   setDraftInput: (updater: ((current: CardDraftInput) => CardDraftInput) | CardDraftInput) => void;
 
   aiDraft: CardDraft | null;
+  aiStale: boolean;
+  keepAiArtwork: () => void;
   aiCardGenLoading: boolean;
   aiCardGenStatus: string;
   aiGenerationJobs: AiGenerationJobEvidence[];
@@ -123,23 +122,18 @@ export interface AppState {
   handoff: VendorHandoff;
   fulfillmentRecommendationSet: FulfillmentRecommendationSet;
   printPackage: PrintExportPackage;
-  adminPanelModel: AdminPanelModel;
   localizationSummary: LocalizationReadinessSummary;
   selectedLocale: SupportedLocale;
   approvedMemoryNotes: string[];
   fulfillmentContext: string;
-  providerGovernance: ProviderGovernanceSummary;
-  productionReadiness: ProductionReadinessSummary;
-  readiness: ReadinessSummary;
   calendarConnectionStartPackets: CalendarConnectionStartPacket[];
-  runtimeReadiness: Map<string, RuntimeReadiness>;
   customerChatSession: CustomerChatSession;
 }
 
 export function initialViewFromLocation(): ViewId {
   if (typeof window === "undefined") return "customer";
   const requestedView = new URLSearchParams(window.location.search).get("view");
-  const viewIds = new Set<ViewId>(["customer", "mobile", "opportunities", "studio", "memory", "handoff", "settings", "business", "legal", "admin", "adapters"]);
+  const viewIds = new Set<ViewId>(["customer", "mobile", "opportunities", "studio", "memory", "people", "handoff", "settings", "business", "legal", "admin", "adapters"]);
   if (requestedView && viewIds.has(requestedView as ViewId)) return requestedView as ViewId;
   if (window.location.pathname.replace(/\/+$/, "") === "/business") return "business";
   const hashView = window.location.hash.replace(/^#\/?/, "");
@@ -147,11 +141,7 @@ export function initialViewFromLocation(): ViewId {
   return "customer";
 }
 
-function buildRuntimeReadinessMap(): Map<string, RuntimeReadiness> {
-  return new Map(providerCatalog.map((adapter) => [adapter.id, getProviderRuntimeReadiness(adapter.id)]));
-}
-
-export function useAppState(): AppState {
+export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): AppState {
   const [activeView, setActiveView] = useState<ViewId>(() => initialViewFromLocation());
   const [workspace, setWorkspace] = useState<LocalWorkspace | undefined>();
   const [authForm, setAuthForm] = useState(reviewerInitialAuthForm);
@@ -173,6 +163,9 @@ export function useAppState(): AppState {
     getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], new Date()))
   );
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
+  const [aiStale, setAiStale] = useState(false);
+  const aiDraftPresent = useRef(false);
+  aiDraftPresent.current = aiDraft !== null;
   const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
   const [aiCardGenStatus, setAiCardGenStatus] = useState("");
   const [aiGenerationJobs, setAiGenerationJobs] = useState<AiGenerationJobEvidence[]>([]);
@@ -201,9 +194,11 @@ export function useAppState(): AppState {
     };
   }, []);
 
+  // Editing after generation never silently regenerates: the AI draft is kept
+  // and marked stale so the customer can choose to keep or refresh the artwork.
   useEffect(() => {
-    setAiDraft(null);
-    setAiCardGenStatus("");
+    if (aiDraftPresent.current) setAiStale(true);
+    else setAiCardGenStatus("");
   }, [draftInput]);
 
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
@@ -212,7 +207,6 @@ export function useAppState(): AppState {
   const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
   const fulfillmentRecommendationSet = useMemo(() => buildFulfillmentRecommendations(pricingComparison), [pricingComparison]);
   const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
-  const adminPanelModel = useMemo(() => buildAdminPanelModel(), []);
   const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
   const approvedMemoryNotes = useMemo(
@@ -226,11 +220,7 @@ export function useAppState(): AppState {
         .join("; "),
     [fulfillmentRecommendationSet]
   );
-  const providerGovernance = useMemo(() => summarizeProviderGovernance(), []);
-  const productionReadiness = useMemo(() => summarizeProductionReadiness(), []);
-  const readiness = useMemo(() => buildReadinessSummary(), []);
   const calendarConnectionStartPackets = useMemo(() => buildCalendarConnectionStartPackets(), []);
-  const runtimeReadiness = useMemo(() => buildRuntimeReadinessMap(), []);
   const aiFlowSummary = useMemo(() => buildBrowserAiFlowSummary(aiFlowConfigs), [aiFlowConfigs]);
   const setAiFlowConfigs = useCallback((configs: AiFlowAdminConfig[]) => {
     const normalized = normalizeAiFlowAdminConfigs(configs);
@@ -268,14 +258,14 @@ export function useAppState(): AppState {
     const body = JSON.stringify(baseBody);
     setAiCardGenLoading(true);
     setAiCardGenStatus("Generating copy and artwork...");
-    fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Idempotency-Key": buildIdempotencyKey("card-gen")
-      },
-      body
-    })
+    buildAiCardGenerationHeaders(getCustomerApiToken)
+      .then((headers) =>
+        fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
+          method: "POST",
+          headers,
+          body
+        })
+      )
       .then(readAiGenerationResponse)
       .then((result: AiGenerationApiResult) => {
         const imageByPanel = new Map<string, string>(
@@ -298,6 +288,7 @@ export function useAppState(): AppState {
         const hasImages = imageByPanel.size > 0;
         const artworkFailure = readArtworkFailure(result);
         setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+        setAiStale(false);
         setAiCardGenStatus(
           hasImages
             ? `AI card applied with ${imageByPanel.size}/${panelCount} artwork panels.`
@@ -314,7 +305,21 @@ export function useAppState(): AppState {
         setAiCardGenStatus(err instanceof Error ? err.message : "AI card generation failed. Try again in a moment.");
       })
       .finally(() => { setAiCardGenLoading(false); });
-  }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput]);
+  }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput, getCustomerApiToken]);
+
+  // Keep the generated artwork but apply the customer's latest words to the panels.
+  const keepAiArtwork = useCallback(() => {
+    setAiDraft((current) => {
+      if (!current) return current;
+      const imageByPanel = new Map(current.panels.map((panel) => [panel.id, panel.imageUrl]));
+      return {
+        ...draft,
+        panels: draft.panels.map((panel) => ({ ...panel, imageUrl: imageByPanel.get(panel.id) })),
+        generatedBy: current.generatedBy
+      };
+    });
+    setAiStale(false);
+  }, [draft]);
 
   return {
     activeView, setActiveView,
@@ -331,6 +336,8 @@ export function useAppState(): AppState {
     customerChatMessages, setCustomerChatMessages,
     draftInput, setDraftInput,
     aiDraft,
+    aiStale,
+    keepAiArtwork,
     aiCardGenLoading,
     aiCardGenStatus,
     aiGenerationJobs,
@@ -348,16 +355,11 @@ export function useAppState(): AppState {
     handoff,
     fulfillmentRecommendationSet,
     printPackage,
-    adminPanelModel,
     localizationSummary,
     selectedLocale,
     approvedMemoryNotes,
     fulfillmentContext,
-    providerGovernance,
-    productionReadiness,
-    readiness,
     calendarConnectionStartPackets,
-    runtimeReadiness,
     customerChatSession
   };
 }
@@ -365,6 +367,18 @@ export function useAppState(): AppState {
 function buildIdempotencyKey(prefix: string): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+export async function buildAiCardGenerationHeaders(
+  getCustomerApiToken?: CustomerApiTokenProvider
+): Promise<Headers> {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "X-Idempotency-Key": buildIdempotencyKey("card-gen")
+  });
+  const token = await getCustomerApiToken?.();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return headers;
 }
 
 async function readAiGenerationResponse(response: Response): Promise<AiGenerationApiResult> {

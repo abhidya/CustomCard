@@ -6,7 +6,7 @@ import {
 } from "./renderPacketContract";
 import type { CardOpportunity, LocalWorkspace, MemoryItem } from "./freeMvp";
 
-export type Tone = "warm" | "playful" | "elegant" | "reverent";
+export type Tone = "warm" | "playful" | "elegant" | "simple" | "reverent" | "sentimental";
 export type VisualStyle = "botanical" | "bold-type" | "photo-note" | "minimal";
 export type LanguageChoice = "English" | "Spanish" | "Urdu" | "Arabic";
 
@@ -188,7 +188,9 @@ function toneLine(tone: Tone): string {
     warm: "You two make commitment look gentle and alive.",
     playful: "Another year, another excellent excuse to celebrate your shared weird little traditions.",
     elegant: "Your life together has the quiet grace of something tended with care.",
-    reverent: "May the love around you continue to be a source of steadiness and blessing."
+    simple: "Thinking of you today, and glad you're in my life.",
+    reverent: "May the love around you continue to be a source of steadiness and blessing.",
+    sentimental: "Some people make ordinary days feel worth keeping \u2014 you're one of them."
   };
   return lines[tone];
 }

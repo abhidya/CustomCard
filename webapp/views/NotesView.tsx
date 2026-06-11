@@ -1,8 +1,7 @@
-import { ArrowRight, Trash2 } from "lucide-react";
-import { useState } from "react";
-import type { CardDraft, MemoryItem } from "../../src/freeMvp";
+import { ArrowRight, Eye } from "lucide-react";
+import type { CardDraft, CardHistoryEntry } from "../../src/freeMvp";
 import type { DraftProgressStatus } from "../draftProgress";
-import { Field, PanelArt } from "../ui";
+import { PanelArt } from "../ui";
 
 const draftStatusLabels: Record<DraftProgressStatus, string> = {
   draft: "Draft",
@@ -10,53 +9,42 @@ const draftStatusLabels: Record<DraftProgressStatus, string> = {
   "ready-for-review": "Ready to review"
 };
 
-/** "My cards" hub: card in progress, personal details (notes), and account-backed history. */
+/** "My cards" hub: the card in progress plus account-backed card history. */
 export function NotesView({
   draft,
   draftStatus,
   hasProgress,
+  history,
   isSignedIn,
-  memories,
-  form,
-  onForm,
-  onAdd,
-  onDelete,
+  onMakeAnother,
   onResume,
+  onReviewProof,
   onStartCard
 }: {
   draft: CardDraft;
   draftStatus: DraftProgressStatus;
   hasProgress: boolean;
+  history: CardHistoryEntry[];
   isSignedIn: boolean;
-  memories: MemoryItem[];
-  form: { recipient: string; note: string };
-  onForm: (form: { recipient: string; note: string }) => void;
-  onAdd: (saveToAccount: boolean) => void;
-  onDelete: (memoryId: string) => void;
+  onMakeAnother: (recipient: string) => void;
   onResume: () => void;
+  onReviewProof: () => void;
   onStartCard: () => void;
 }) {
-  const canAdd = form.recipient.trim().length > 0 && form.note.trim().length > 0;
-  const isEmpty = !hasProgress && memories.length === 0;
-  const [detailFormOpen, setDetailFormOpen] = useState(false);
-  const [saveToAccount, setSaveToAccount] = useState(false);
+  const isEmpty = !hasProgress && history.length === 0;
 
-  /* Nothing here yet — keep it to one quiet card instead of empty scaffolding. */
-  if (isEmpty && !detailFormOpen) {
+  if (isEmpty) {
     return (
       <>
         <header className="pagehead reveal">
           <h1>Your cards</h1>
         </header>
         <section className="panelcard emptyhub reveal reveal-1">
-          <p>Nothing here yet — your cards and the little details that shape them will live on this page.</p>
+          <p>No cards yet. Start with a card, an invite, or a saved person.</p>
           <div className="opp-actions">
             <button className="btn btn-primary" onClick={onStartCard} type="button">
               Start a card
               <ArrowRight size={15} />
-            </button>
-            <button className="textlink" onClick={() => setDetailFormOpen(true)} type="button">
-              Add a personal detail first
             </button>
           </div>
         </section>
@@ -69,86 +57,64 @@ export function NotesView({
       <header className="pagehead reveal">
         <h1>Your cards</h1>
         <p>
-          Cards in progress and the personal details that make them feel hand-written.
+          Cards in progress and cards you&rsquo;ve finished.
           {isSignedIn ? "" : " Everything stays on this device until you sign in."}
         </p>
       </header>
 
-      {hasProgress ? (
-        <button className="resume reveal reveal-1" onClick={onResume} type="button">
-          <PanelArt panel={draft.panels[0]} />
-          <span>
-            <span className="resume-kicker">{draftStatusLabels[draftStatus]}</span>
-            <strong>{draft.panels[0].headline}</strong>
-            <span>{draftStatus === "ready-for-review" ? "Review the proof" : "Keep designing"}</span>
-          </span>
-          <ArrowRight className="resume-arrow" size={20} />
-        </button>
-      ) : null}
-
-      <div className="notes" style={{ marginTop: hasProgress ? 26 : 0 }}>
-        <section className="panelcard noteform reveal reveal-2">
-          <h2>Add a personal detail</h2>
-          <Field label="Who it's about">
-            <input
-              onChange={(event) => onForm({ ...form, recipient: event.target.value })}
-              placeholder="Sara, Mom, the Khan family…"
-              value={form.recipient}
-            />
-          </Field>
-          <Field label="The detail">
-            <textarea
-              onChange={(event) => onForm({ ...form, note: event.target.value })}
-              placeholder="She still laughs about the burnt birthday pancakes."
-              value={form.note}
-            />
-          </Field>
-          <div className="switchrow">
-            <div>
-              <strong>Remember this for future cards</strong>
+      <div className="cardlist reveal reveal-1">
+        {hasProgress ? (
+          <article className="panelcard carditem">
+            <PanelArt panel={draft.panels[0]} />
+            <div className="carditem-body">
+              <span className="statusTag" data-status={draftStatus}>
+                {draftStatusLabels[draftStatus]}
+              </span>
+              <strong>{draft.panels[0].headline}</strong>
               <small>
-                {isSignedIn
-                  ? saveToAccount
-                    ? "Saved to your account — delete it here whenever you like."
-                    : "Off means it shapes your next card only and is never saved to your account."
-                  : "Sign in to save details to your account. Until then, details stay on this device."}
+                {draft.input.occasion === "card" ? "Any occasion" : draft.input.occasion}
+                {draft.input.recipient !== "Someone important" ? ` · for ${draft.input.recipient}` : ""}
               </small>
             </div>
-            <button
-              aria-label="Remember this detail for future cards"
-              className="switch"
-              data-on={saveToAccount}
-              onClick={() => setSaveToAccount((current) => !current)}
-              type="button"
-            />
-          </div>
-          <div>
-            <button className="btn btn-primary" disabled={!canAdd} onClick={() => onAdd(saveToAccount)} type="button">
-              Save detail
-            </button>
-          </div>
-        </section>
-
-        {memories.length > 0 ? (
-          <div className="notelist reveal reveal-3">
-            {memories.map((memory) => (
-              <article className="panelcard notecard" key={memory.id}>
-                <div className="notecard-body">
-                  <strong>{memory.recipient}</strong>
-                  <p>{memory.note}</p>
-                </div>
-                <button
-                  aria-label={`Delete detail about ${memory.recipient}`}
-                  className="notedelete"
-                  onClick={() => onDelete(memory.id)}
-                  type="button"
-                >
-                  <Trash2 size={17} />
+            <div className="carditem-actions">
+              {draftStatus === "ready-for-review" ? (
+                <button className="btn btn-primary btn-sm" onClick={onReviewProof} type="button">
+                  <Eye size={14} />
+                  Review proof
                 </button>
-              </article>
-            ))}
-          </div>
+              ) : (
+                <button className="btn btn-primary btn-sm" onClick={onResume} type="button">
+                  Continue
+                  <ArrowRight size={14} />
+                </button>
+              )}
+            </div>
+          </article>
         ) : null}
+
+        {history.map((entry) => (
+          <article className="panelcard carditem" key={entry.id}>
+            {entry.frontSvg ? (
+              <img alt={`${entry.title} front panel`} src={`data:image/svg+xml;utf8,${encodeURIComponent(entry.frontSvg)}`} />
+            ) : (
+              <span className="carditem-thumbfallback" aria-hidden="true" />
+            )}
+            <div className="carditem-body">
+              <span className="statusTag" data-status="downloaded">
+                Downloaded
+              </span>
+              <strong>{entry.title}</strong>
+              <small>
+                {entry.occasion} · for {entry.recipient} · saved {entry.exportedAtIso.slice(0, 10)}
+              </small>
+            </div>
+            <div className="carditem-actions">
+              <button className="btn btn-ghost btn-sm" onClick={() => onMakeAnother(entry.recipient)} type="button">
+                Make another for {entry.recipient}
+              </button>
+            </div>
+          </article>
+        ))}
       </div>
     </>
   );

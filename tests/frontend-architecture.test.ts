@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
 import {
   buildCheckoutCustomer,
@@ -22,6 +23,7 @@ import {
   postCustomerMutation
 } from "../webapp/customerShellCommands";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
+import { buildAiCardGenerationHeaders } from "../src/appStateOrchestrator";
 import { jpegDataUrlByteLength, jpegDataUrlToBytes } from "../webapp/panelMediaAdapter";
 import {
   adminNavItems,
@@ -53,6 +55,20 @@ const defaultDraftInput: CardDraftInput = {
 };
 
 describe("frontend architecture seams", () => {
+  it("keeps legacy admin views lazy-loaded outside the customer shell chunk", () => {
+    const appSource = readFileSync(new URL("../webapp/App.tsx", import.meta.url), "utf8");
+    const adminSource = readFileSync(new URL("../webapp/AdminOperationalView.tsx", import.meta.url), "utf8");
+    const appStateSource = readFileSync(new URL("../src/appStateOrchestrator.ts", import.meta.url), "utf8");
+
+    expect(appSource).toContain('lazy(() => import("./AdminOperationalView")');
+    expect(appSource).toContain("AdminLazyPanel");
+    expect(appSource).not.toContain("../src/App");
+    expect(appSource).not.toContain("providerCatalog");
+    expect(appStateSource).not.toContain("providerCatalog");
+    expect(adminSource).toContain('import { AdminPanelView, AdaptersView } from "../src/App"');
+    expect(adminSource).toContain("buildRuntimeReadinessMap");
+  });
+
   it("keeps route visibility policy out of the app shell render logic", () => {
     expect(resolveVisibleCustomerView("admin")).toBe("customer");
     expect(resolveVisibleCustomerView("adapters")).toBe("customer");
@@ -67,8 +83,10 @@ describe("frontend architecture seams", () => {
     expect(resolveActiveCustomerNavView("opportunities")).toBe("customer");
     expect(resolveActiveCustomerNavView("memory")).toBe("memory");
     expect(resolveActiveCustomerNavView("settings")).toBe("settings");
+    expect(resolveActiveCustomerNavView("people")).toBe("people");
     expect(resolveVisibleCustomerView("settings")).toBe("settings");
-    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards", "Settings"]);
+    expect(resolveVisibleCustomerView("people")).toBe("people");
+    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards", "People", "Settings"]);
     expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "Adapters", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
@@ -121,6 +139,14 @@ describe("frontend architecture seams", () => {
   it("keeps customer API mutation command details outside App shell", () => {
     const key = buildBrowserIdempotencyKey("/api/customer/draft-state");
     expect(key).toMatch(/^api-customer-draft-state-/);
+  });
+
+  it("sends the signed-in customer token with AI card generation requests", async () => {
+    const headers = await buildAiCardGenerationHeaders(async () => "customer-token-123");
+
+    expect(headers.get("Authorization")).toBe("Bearer customer-token-123");
+    expect(headers.get("Content-Type")).toBe("application/json");
+    expect(headers.get("X-Idempotency-Key")).toMatch(/^card-gen-/);
   });
 
   it("builds one archive for browser print downloads", async () => {

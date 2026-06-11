@@ -20,7 +20,7 @@ describe("reviewer bootstrap contract", () => {
   });
 
   it("exposes the same customer-selectable card and print options without demo naming", () => {
-    expect(reviewerDraftOptions.tones).toEqual(["warm", "playful", "elegant", "reverent"]);
+    expect(reviewerDraftOptions.tones).toEqual(["warm", "playful", "elegant", "simple", "reverent", "sentimental"]);
     expect(reviewerDraftOptions.styles).toEqual(["botanical", "bold-type", "photo-note", "minimal"]);
     expect(reviewerDraftOptions.languages).toEqual(["English", "Spanish", "Urdu", "Arabic"]);
     expect(reviewerDraftOptions.vendors).toEqual([

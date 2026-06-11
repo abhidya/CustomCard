@@ -1,7 +1,6 @@
 import { ArrowRight, Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
 import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/react";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { AdminPanelView, AdaptersView } from "../src/App";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   addApprovedRelationshipMemory,
   removeApprovedRelationshipMemory,
@@ -47,15 +46,16 @@ import {
 } from "./routePolicy";
 import { themes, useTheme } from "./theme";
 import { Toast } from "./ui";
-import { AdminView } from "./views/AdminView";
 import { BusinessLandingView } from "./views/BusinessLandingView";
 import { EventsView } from "./views/EventsView";
 import { HomeView } from "./views/HomeView";
-import { LegalView } from "./views/LegalView";
 import { NotesView } from "./views/NotesView";
+import { PeopleView } from "./views/PeopleView";
 import { PrintView } from "./views/PrintView";
 import { SettingsView } from "./views/SettingsView";
 import { StudioView } from "./views/StudioView";
+
+const AdminOperationalView = lazy(() => import("./AdminOperationalView"));
 
 const configuredAdminEmails = new Set(
   [
@@ -81,7 +81,7 @@ export default function App() {
   const adminAccess = useAdminAccess();
   const { getToken } = useAuth();
   const { isLoaded, isSignedIn, user } = useUser();
-  const state = useAppState();
+  const state = useAppState(getToken);
   const {
     activeView,
     setActiveView,
@@ -105,6 +105,8 @@ export default function App() {
     setAiFlowConfigs,
     aiFlowSummary,
     aiDraft,
+    aiStale,
+    keepAiArtwork,
     aiCardGenLoading,
     aiCardGenStatus,
     aiGenerationJobs,
@@ -117,13 +119,7 @@ export default function App() {
     draft,
     validation,
     handoff,
-    printPackage,
-    adminPanelModel,
-    localizationSummary,
-    providerGovernance,
-    productionReadiness,
-    readiness,
-    runtimeReadiness
+    printPackage
   } = state;
 
   const isAdminView = isAdminRoute(activeView);
@@ -418,34 +414,40 @@ export default function App() {
             access={adminAccess}
             activeView={activeView}
             adminPanel={
-              <AdminView
-                aiFlowConfigs={aiFlowConfigs}
-                aiGenerationJobs={aiGenerationJobs}
-                aiFlowSummary={aiFlowSummary}
-                getAdminApiToken={getCustomerApiToken}
-                onAiFlowConfigsChange={setAiFlowConfigs}
-                fullAudit={
-                  <AdminPanelView
-                    aiFlowConfigs={aiFlowConfigs}
-                    aiFlowSummary={aiFlowSummary}
-                    aiGenerationJobs={aiGenerationJobs}
-                    localizationSummary={localizationSummary}
-                    model={adminPanelModel}
-                    onAiFlowConfigsChange={setAiFlowConfigs}
-                    productionReadiness={productionReadiness}
-                    providerGovernance={providerGovernance}
-                    readiness={readiness}
-                    runtimeReadiness={runtimeReadiness}
-                  />
-                }
-              />
+              <AdminLazyPanel>
+                <AdminOperationalView
+                  activeView={activeView}
+                  aiFlowConfigs={aiFlowConfigs}
+                  aiGenerationJobs={aiGenerationJobs}
+                  aiFlowSummary={aiFlowSummary}
+                  getAdminApiToken={getCustomerApiToken}
+                  onAiFlowConfigsChange={setAiFlowConfigs}
+                />
+              </AdminLazyPanel>
             }
-            adaptersPanel={<AdaptersView runtimeReadiness={runtimeReadiness} />}
+            adaptersPanel={
+              <AdminLazyPanel>
+                <AdminOperationalView
+                  activeView={activeView}
+                  aiFlowConfigs={aiFlowConfigs}
+                  aiGenerationJobs={aiGenerationJobs}
+                  aiFlowSummary={aiFlowSummary}
+                  getAdminApiToken={getCustomerApiToken}
+                  onAiFlowConfigsChange={setAiFlowConfigs}
+                />
+              </AdminLazyPanel>
+            }
             legalPanel={
-              <LegalView
-                items={readiness.legalCompliance.items}
-                summary={readiness.legalCompliance.summary}
-              />
+              <AdminLazyPanel>
+                <AdminOperationalView
+                  activeView={activeView}
+                  aiFlowConfigs={aiFlowConfigs}
+                  aiGenerationJobs={aiGenerationJobs}
+                  aiFlowSummary={aiFlowSummary}
+                  getAdminApiToken={getCustomerApiToken}
+                  onAiFlowConfigsChange={setAiFlowConfigs}
+                />
+              </AdminLazyPanel>
             }
           />
         ) : null}
@@ -458,12 +460,15 @@ export default function App() {
               calendarConnectionStartPackets: state.calendarConnectionStartPackets,
               getCustomerApiToken,
               inviteText,
+              isSignedIn: Boolean(isSignedIn),
               onAccept: acceptOpportunity,
               onDismiss: dismissOpportunity,
               onInviteText: setInviteText,
               opportunity,
               signal
             }}
+            onCreate={() => openView("studio")}
+            onFindMoments={() => openView("opportunities")}
             onOccasion={startOccasion}
             onResume={() => openView("studio")}
           />
@@ -482,6 +487,7 @@ export default function App() {
             calendarConnectionStartPackets={state.calendarConnectionStartPackets}
             getCustomerApiToken={getCustomerApiToken}
             inviteText={inviteText}
+            isSignedIn={Boolean(isSignedIn)}
             onAccept={acceptOpportunity}
             onDismiss={dismissOpportunity}
             onInviteText={setInviteText}
@@ -495,14 +501,17 @@ export default function App() {
             aiActive={aiDraft !== null}
             aiAvailable={cardGenAvailable}
             aiLoading={aiCardGenLoading}
+            aiStale={aiStale}
             aiStatus={aiCardGenStatus}
             aiRequiresSignIn={!isSignedIn}
             draft={displayDraft}
             draftInput={draftInput}
             memories={memories}
-            onAddNote={() => openView("memory")}
+            onAddNote={() => openView("people")}
             onField={updateDraft}
             onGenerateAi={triggerAiCardGen}
+            onKeepArtwork={keepAiArtwork}
+            printFitPassed={validation.passed}
           />
         ) : null}
 
@@ -510,15 +519,32 @@ export default function App() {
           <NotesView
             draft={displayDraft}
             draftStatus={draftProgress.status}
+            hasProgress={draftProgress.hasMeaningfulProgress}
+            history={workspace?.cardHistory ?? []}
+            isSignedIn={Boolean(isSignedIn)}
+            onMakeAnother={(recipient) => {
+              updateDraft("recipient", recipient);
+              openView("studio");
+            }}
+            onResume={() => openView("studio")}
+            onReviewProof={() => openView("handoff")}
+            onStartCard={() => openView("customer")}
+          />
+        ) : null}
+
+        {!isAdminView && visibleCustomerView === "people" ? (
+          <PeopleView
             form={memoryForm}
-            hasProgress={hasProgress}
+            history={workspace?.cardHistory ?? []}
             isSignedIn={Boolean(isSignedIn)}
             memories={memories}
             onAdd={addNote}
             onDelete={deleteNote}
             onForm={setMemoryForm}
-            onResume={() => openView("studio")}
-            onStartCard={() => openView("customer")}
+            onMakeCard={(recipient) => {
+              updateDraft("recipient", recipient);
+              openView("studio");
+            }}
           />
         ) : null}
 
@@ -677,6 +703,14 @@ function AdminRoute({
         {activeView === "adapters" ? adaptersPanel : activeView === "legal" ? legalPanel : adminPanel}
       </div>
     </section>
+  );
+}
+
+function AdminLazyPanel({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<div className="panelcard">Loading admin view...</div>}>
+      {children}
+    </Suspense>
   );
 }
 
