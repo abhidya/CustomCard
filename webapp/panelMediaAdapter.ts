@@ -1,5 +1,8 @@
 import { buildPanelSvg, type CardPanel } from "../src/customerWorkflow";
 
+const walgreensMaxJpegBytes = 3_900_000;
+const walgreensJpegQualities = [0.9, 0.84, 0.78, 0.72, 0.66];
+
 export async function panelToJpegBase64(panel: CardPanel): Promise<string> {
   const svg = buildPanelSvg(panel);
   const svgBlob = new Blob([svg], { type: "image/svg+xml" });
@@ -14,10 +17,24 @@ export async function panelToJpegBase64(panel: CardPanel): Promise<string> {
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/jpeg", 0.92);
+    let smallest = "";
+    for (const quality of walgreensJpegQualities) {
+      const candidate = canvas.toDataURL("image/jpeg", quality);
+      if (!smallest || jpegDataUrlByteLength(candidate) < jpegDataUrlByteLength(smallest)) {
+        smallest = candidate;
+      }
+      if (jpegDataUrlByteLength(candidate) <= walgreensMaxJpegBytes) return candidate;
+    }
+    return smallest;
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+export function jpegDataUrlByteLength(dataUrl: string): number {
+  const base64 = dataUrl.includes(",") ? dataUrl.split(",").pop() ?? "" : dataUrl;
+  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {

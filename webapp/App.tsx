@@ -30,8 +30,11 @@ import {
   isAdminRoute,
   isBusinessRoute,
   isLegalRoute,
+  resolveActiveCustomerNavView,
   resolveVisibleCustomerView,
+  shouldRenderCustomerNav,
   shouldShowCustomerCta,
+  shouldShowTopNav,
   type AdminAccessPolicy
 } from "./routePolicy";
 import { themes, useTheme } from "./theme";
@@ -43,8 +46,6 @@ import { LegalView } from "./views/LegalView";
 import { NotesView } from "./views/NotesView";
 import { PrintView } from "./views/PrintView";
 import { StudioView } from "./views/StudioView";
-
-type AppThemeId = (typeof themes)[number]["id"];
 
 const configuredAdminEmails = new Set(
   [
@@ -117,6 +118,8 @@ export default function App() {
   const isLegalView = isLegalRoute(activeView);
   const isBusinessView = isBusinessRoute(activeView);
   const visibleCustomerView = resolveVisibleCustomerView(activeView);
+  const visibleNavView = resolveActiveCustomerNavView(activeView);
+  const renderCustomerNav = shouldRenderCustomerNav(useViewportWidth());
   const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
   const displayDraft = aiDraft ?? draft;
   const customerEmail = user?.primaryEmailAddress?.emailAddress ?? "";
@@ -327,7 +330,11 @@ export default function App() {
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
   const canPrintFromHome = draftProgress.hasMeaningfulProgress && printPackage.manifest.passed;
-  const showTopNav = customerNavItems.length > 0 || adminAccess.isAdmin;
+  const showTopNav = shouldShowTopNav({
+    hasCustomerNavItems: customerNavItems.length > 0,
+    isAdmin: adminAccess.isAdmin,
+    renderCustomerNav
+  });
 
   return (
     <div className="shell" data-admin-view={isAdminView ? "true" : undefined}>
@@ -344,7 +351,7 @@ export default function App() {
             {customerNavItems.map((item) => (
               <button
                 className="navlink"
-                data-active={item.id === activeView}
+                data-active={item.id === visibleNavView}
                 key={item.id}
                 onClick={() => openView(item.id)}
                 type="button"
@@ -603,6 +610,22 @@ function useDraftAutosave({
   }, [draftProgress.hasMeaningfulProgress, draftSnapshot, enabled, getToken]);
 }
 
+function useViewportWidth(): number | undefined {
+  const [viewportWidth, setViewportWidth] = useState<number | undefined>(() =>
+    typeof window === "undefined" ? undefined : window.innerWidth
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const syncViewportWidth = () => setViewportWidth(window.innerWidth);
+    syncViewportWidth();
+    window.addEventListener("resize", syncViewportWidth);
+    return () => window.removeEventListener("resize", syncViewportWidth);
+  }, []);
+
+  return viewportWidth;
+}
+
 async function getCustomerJson(getToken: () => Promise<string | null>, path: string): Promise<Record<string, unknown> | undefined> {
   const headers = await buildCustomerHeaders(getToken);
   const response = await fetch(path, { headers });
@@ -640,71 +663,6 @@ function buildBrowserIdempotencyKey(path: string): string {
   const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "mutation";
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${routeSlug}-${crypto.randomUUID()}`;
   return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
-
-function AccountGateShell({
-  loading,
-  onTheme,
-  theme
-}: {
-  loading: boolean;
-  onTheme: (theme: AppThemeId) => void;
-  theme: AppThemeId;
-}) {
-  return (
-    <div className="shell">
-      <a className="skipLink" href="#main-content">
-        Skip to main content
-      </a>
-      <header className="topbar">
-        <span className="wordmark">
-          <span className="wordmark-glyph">C</span>
-          <span className="wordmark-name">CustomCard</span>
-        </span>
-        <div className="topbar-side">
-          <ClerkAuthControls />
-          <div className="themeswitch" role="group" aria-label="Theme">
-            {themes.map((candidate) => (
-              <button
-                aria-label={candidate.label}
-                className={`themedot themedot-${candidate.id}`}
-                data-on={candidate.id === theme}
-                key={candidate.id}
-                onClick={() => onTheme(candidate.id)}
-                title={candidate.label}
-                type="button"
-              />
-            ))}
-          </div>
-        </div>
-      </header>
-      <main id="main-content">
-        <section className="adminGate panelcard reveal" aria-label="CustomCard sign-in gate">
-          <span className="adminGateIcon">
-            <LockKeyhole size={24} />
-          </span>
-          <div>
-            <p className="eyebrow">Private workspace</p>
-            <h1>Sign in to continue</h1>
-            <p>Your drafts, edits, notes, and print progress stay behind your account.</p>
-          </div>
-          <div className="adminGateActions">
-            <span>{loading ? "Checking account access" : "Account required"}</span>
-            <SignInButton>
-              <button className="btn btn-ink" type="button">
-                Sign in
-              </button>
-            </SignInButton>
-            <SignUpButton>
-              <button className="btn btn-primary" type="button">
-                Sign up
-              </button>
-            </SignUpButton>
-          </div>
-        </section>
-      </main>
-    </div>
-  );
 }
 
 interface AdminAccess extends AdminAccessPolicy {

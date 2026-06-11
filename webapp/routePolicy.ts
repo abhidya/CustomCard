@@ -48,6 +48,22 @@ export function shouldShowCustomerCta(view: ViewId): boolean {
   return view === "studio" || view === "handoff";
 }
 
+export function shouldRenderCustomerNav(viewportWidth: number | undefined): boolean {
+  return viewportWidth === undefined || viewportWidth >= 600;
+}
+
+export function shouldShowTopNav({
+  hasCustomerNavItems,
+  isAdmin,
+  renderCustomerNav
+}: {
+  hasCustomerNavItems: boolean;
+  isAdmin: boolean;
+  renderCustomerNav: boolean;
+}): boolean {
+  return renderCustomerNav && (hasCustomerNavItems || isAdmin);
+}
+
 export function getAdminTargetLabel(view: ViewId): string {
   return view === "adapters" ? "Adapters" : "Admin panel";
 }

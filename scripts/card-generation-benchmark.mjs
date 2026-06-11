@@ -143,7 +143,7 @@ async function main() {
   for (const fixtureId of selectedFixtureIds) {
     const fixture = fixtures[fixtureId];
     if (!fixture) throw new Error(`Unknown benchmark fixture: ${fixtureId}`);
-    const fixtureResult = await runFixture({ fixture, manifest, service, objectStoreRuntime, providerHttp, runDir, runStamp });
+    const fixtureResult = await runFixture({ fixture, manifest, service, objectStoreRuntime, providerHttp, runDir, runStamp, env });
     summary.fixtures.push(fixtureResult);
   }
 
@@ -153,7 +153,7 @@ async function main() {
   console.log(JSON.stringify({ runId, outputDir: relativePath(runDir), fixtures: summary.fixtures.map((fixture) => fixture.id) }, null, 2));
 }
 
-async function runFixture({ fixture, manifest, service, objectStoreRuntime, providerHttp, runDir, runStamp }) {
+async function runFixture({ fixture, manifest, service, objectStoreRuntime, providerHttp, runDir, runStamp, env }) {
   const fixtureDir = resolve(runDir, fixture.id);
   mkdirSync(fixtureDir, { recursive: true });
   const competitor = competitorForFixture(fixture, manifest);
@@ -213,7 +213,8 @@ async function runFixture({ fixture, manifest, service, objectStoreRuntime, prov
     fixtureDir,
     panelFiles,
     payload: sanitizedOutput,
-    effectivePrompts
+    effectivePrompts,
+    runStamp
   });
 
   return {
@@ -411,7 +412,7 @@ async function renderContactSheet({ fixtureDir, fixture, competitor, panelFiles 
   return output;
 }
 
-async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir, panelFiles, payload, effectivePrompts }) {
+async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir, panelFiles, payload, effectivePrompts, runStamp }) {
   const artifactFiles = [
     ...panelFiles.flatMap((file) => [resolve(repoRoot, file.providerFile), resolve(repoRoot, file.previewFile)]),
     writeJson(resolve(fixtureDir, "persisted-customcard-ai-output.json"), payload),

@@ -26,6 +26,7 @@ import {
 } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import {
+  WALGREENS_CHECKOUT_MAX_IMAGE_BYTES,
   buildWalgreensCallbackHtml,
   createWalgreensHostedCheckoutService,
   walgreensCheckoutCallbackRoute,
@@ -106,6 +107,7 @@ function parseLocalEnv(text) {
 const walgreensRateBuckets = new Map();
 const WALGREENS_RATE_LIMIT = 30;
 const WALGREENS_RATE_WINDOW_MS = 60_000;
+const WALGREENS_UPLOAD_BODY_LIMIT = Math.ceil((WALGREENS_CHECKOUT_MAX_IMAGE_BYTES * 4) / 3) + 2_000_000;
 
 function walgreensRateLimited(request) {
   const key = clientRateLimitKey(request);
@@ -645,18 +647,31 @@ async function serveApi(request, response, requestUrl) {
 
   if (path === walgreensCheckoutUploadRoute || path === walgreensCheckoutSessionRoute) {
     if (walgreensRateLimited(request)) {
-      sendJson(response, 429, { service: "customcard-api", status: "rate-limited", path });
+      sendJson(response, 429, {
+        service: "customcard-api",
+        status: "rate-limited",
+        path,
+        error: "Too many Walgreens checkout attempts. Wait a minute and try again."
+      });
       return;
     }
     let parsedBody;
     try {
       const rawBody = await readRequestBody(
         request,
-        path === walgreensCheckoutUploadRoute ? 6_000_000 : 256_000
+        path === walgreensCheckoutUploadRoute ? WALGREENS_UPLOAD_BODY_LIMIT : 256_000
       );
       parsedBody = rawBody ? JSON.parse(rawBody) : {};
     } catch {
-      sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
+      sendJson(response, 400, {
+        service: "customcard-api",
+        status: "invalid-json",
+        path,
+        error:
+          path === walgreensCheckoutUploadRoute
+            ? "Walgreens image upload request was malformed or exceeded the upload body limit."
+            : "Walgreens checkout request body must be valid JSON."
+      });
       return;
     }
     try {

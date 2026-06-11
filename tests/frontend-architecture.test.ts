@@ -2,13 +2,17 @@ import { describe, expect, it } from "vitest";
 import { resolveCalendarConnectionResult } from "../webapp/calendarConnectionAdapter";
 import { buildCheckoutCustomer, mergeCheckoutCustomerDefaults, updateCheckoutCustomerField } from "../webapp/checkoutModel";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
+import { jpegDataUrlByteLength } from "../webapp/panelMediaAdapter";
 import {
+  customerNavItems,
   getAdminAccessStatus,
   getAdminSurfaceHeading,
   getAdminTargetLabel,
   resolveActiveCustomerNavView,
   resolveVisibleCustomerView,
-  shouldShowCustomerCta
+  shouldRenderCustomerNav,
+  shouldShowCustomerCta,
+  shouldShowTopNav
 } from "../webapp/routePolicy";
 import { createWalgreensCheckoutSession } from "../webapp/walgreensCheckoutAdapter";
 import type { CardPanel } from "../src/customerWorkflow";
@@ -37,6 +41,7 @@ describe("frontend architecture seams", () => {
 
     expect(resolveActiveCustomerNavView("business")).toBe("customer");
     expect(resolveActiveCustomerNavView("legal")).toBe("legal");
+    expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "Occasions", "Notes", "Print", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
     expect(shouldShowCustomerCta("studio")).toBe(true);
@@ -44,6 +49,14 @@ describe("frontend architecture seams", () => {
     expect(shouldShowCustomerCta("legal")).toBe(false);
     expect(shouldShowCustomerCta("business")).toBe(false);
     expect(shouldShowCustomerCta("admin")).toBe(false);
+
+    expect(shouldRenderCustomerNav(undefined)).toBe(true);
+    expect(shouldRenderCustomerNav(1280)).toBe(true);
+    expect(shouldRenderCustomerNav(390)).toBe(false);
+
+    expect(shouldShowTopNav({ hasCustomerNavItems: true, isAdmin: false, renderCustomerNav: true })).toBe(true);
+    expect(shouldShowTopNav({ hasCustomerNavItems: false, isAdmin: true, renderCustomerNav: true })).toBe(true);
+    expect(shouldShowTopNav({ hasCustomerNavItems: true, isAdmin: true, renderCustomerNav: false })).toBe(false);
   });
 
   it("keeps admin gate labels and statuses behind one policy interface", () => {
@@ -96,6 +109,11 @@ describe("frontend architecture seams", () => {
 
     expect(updateCheckoutCustomerField({ firstName: "", lastName: "", email: "", phone: "" }, "phone", "1-212-555-0199"))
       .toMatchObject({ phone: "2125550199" });
+  });
+
+  it("measures JPEG data URLs before Walgreens upload", () => {
+    expect(jpegDataUrlByteLength("data:image/jpeg;base64,/9j/AA==")).toBe(4);
+    expect(jpegDataUrlByteLength("/9j/AA==")).toBe(4);
   });
 
   it("normalizes calendar connection outcomes outside EventsView", () => {
@@ -167,5 +185,38 @@ describe("frontend architecture seams", () => {
       affNotes: "CustomCard draft-maya",
       images: ["https://cdn.example/1.jpg", "https://cdn.example/2.jpg"]
     });
+  });
+
+  it("keeps media sizing and Walgreens upload fallback copy outside PrintView", async () => {
+    expect(jpegDataUrlByteLength("data:image/jpeg;base64,SGVsbG8=")).toBe(5);
+    expect(jpegDataUrlByteLength("AA==")).toBe(1);
+
+    const panel = {
+      id: "front",
+      label: "Front",
+      headline: "Hello",
+      body: "Body",
+      artDirection: "Botanical",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      rtl: false,
+      overflowRisk: false
+    } satisfies CardPanel;
+    const fetchImpl = (async () => ({
+      ok: false,
+      status: 400,
+      json: async () => ({ status: "invalid-json" })
+    })) as typeof fetch;
+
+    await expect(
+      createWalgreensCheckoutSession({
+        checkoutCustomer: { firstName: "Maya", lastName: "Patel", email: "maya@example.com", phone: "2125550199" },
+        fetchImpl,
+        panels: [panel],
+        printPackage: { draftId: "draft-maya" } as PrintExportPackage,
+        renderPanel: async () => "jpeg-front"
+      })
+    ).rejects.toThrow("Walgreens image upload is not ready. (invalid-json)");
   });
 });

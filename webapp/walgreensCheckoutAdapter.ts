@@ -21,6 +21,7 @@ interface UploadPayload {
   ok?: boolean;
   error?: string;
   detail?: string;
+  status?: string;
   blockers?: string[];
   imageUrl?: string;
 }
@@ -29,6 +30,7 @@ interface SessionPayload {
   ok?: boolean;
   error?: string;
   detail?: string;
+  status?: string;
   blockers?: string[];
   checkoutUrl?: string;
   window?: { width: number; height: number };
@@ -59,7 +61,7 @@ export async function createWalgreensCheckoutSession({
     const uploadPayload = await uploadResponse.json().catch(() => undefined) as UploadPayload | undefined;
 
     if (!uploadResponse.ok || !uploadPayload?.ok || !uploadPayload.imageUrl) {
-      throw new Error(getWalgreensCheckoutError(uploadPayload, "Walgreens image upload is not ready."));
+      throw new Error(getWalgreensCheckoutError(uploadPayload, "Walgreens image upload is not ready.", uploadResponse.status));
     }
     images.push(uploadPayload.imageUrl);
   }
@@ -76,7 +78,7 @@ export async function createWalgreensCheckoutSession({
   const sessionPayload = await sessionResponse.json().catch(() => undefined) as SessionPayload | undefined;
 
   if (!sessionResponse.ok || !sessionPayload?.ok || !sessionPayload.checkoutUrl) {
-    throw new Error(getWalgreensCheckoutError(sessionPayload, "Walgreens checkout is not ready."));
+    throw new Error(getWalgreensCheckoutError(sessionPayload, "Walgreens checkout is not ready.", sessionResponse.status));
   }
 
   return {
@@ -87,7 +89,9 @@ export async function createWalgreensCheckoutSession({
 
 function getWalgreensCheckoutError(
   payload: UploadPayload | SessionPayload | undefined,
-  fallback: string
+  fallback: string,
+  statusCode?: number
 ): string {
-  return payload?.detail ?? payload?.error ?? payload?.blockers?.join(" ") ?? fallback;
+  const status = payload?.status ? ` (${payload.status})` : statusCode ? ` (HTTP ${statusCode})` : "";
+  return payload?.detail ?? payload?.error ?? payload?.blockers?.join(" ") ?? `${fallback}${status}`;
 }
