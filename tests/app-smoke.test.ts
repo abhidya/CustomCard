@@ -252,18 +252,33 @@ describeWithChrome("CustomCard UI smoke", () => {
     const sessionId = await createPage(390, 900);
     const layout = await evaluate(
       sessionId,
-      `(() => ({
-        h1: document.querySelector("h1")?.textContent,
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-        bodyScrollWidth: document.body.scrollWidth
-      }))()`
+      `(() => {
+        const rail = document.querySelector(".appRail");
+        const railRect = rail ? rail.getBoundingClientRect() : undefined;
+        const center = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+        return {
+          h1: document.querySelector("h1")?.textContent,
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+          bodyScrollWidth: document.body.scrollWidth,
+          innerHeight: window.innerHeight,
+          railTop: railRect?.top,
+          railBottom: railRect?.bottom,
+          railHeight: railRect?.height,
+          centerInsideRail: Boolean(center && rail && rail.contains(center))
+        };
+      })()`
     );
 
     expect(layout.h1).toBe("CustomCard");
     expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
     expect(layout.scrollWidth).toBe(layout.clientWidth);
     expect(layout.bodyScrollWidth).toBe(layout.clientWidth);
+    // The mobile nav must be a bottom tab bar, never a full-screen overlay.
+    expect(layout.railHeight).toBeLessThan(150);
+    expect(Math.abs((layout.railBottom ?? 0) - layout.innerHeight)).toBeLessThanOrEqual(2);
+    expect(layout.railTop ?? 0).toBeGreaterThan(layout.innerHeight * 0.7);
+    expect(layout.centerInsideRail).toBe(false);
   }, 30000);
 
   it("keeps customer and mobile routes keyboard-labeled for repo-local accessibility evidence", async () => {

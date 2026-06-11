@@ -3369,6 +3369,9 @@ a:focus-visible {
 @media (max-width: 640px) {
   .appRail {
     position: fixed;
+    /* Base rail is sticky with top: 0 — without this reset, fixed + top + bottom
+       stretches the bar into a full-screen overlay. */
+    top: auto;
     bottom: 0;
     left: 0;
     right: 0;
@@ -3377,6 +3380,7 @@ a:focus-visible {
     align-items: center;
     gap: 8px;
     height: auto;
+    min-height: 0;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgba(255, 255, 255, 0.14);
     border-right: 0;
