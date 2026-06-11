@@ -223,11 +223,11 @@ The app has three deployment shapes:
 - **Cheap single-host mode**: Docker Compose, Postgres, worker, queue, and object-store posture.
 - **Cloud/serverless mode**: Vercel static build plus `/api/*` serverless route, hosted Postgres, and S3/R2-compatible artifact storage.
 
-`vercel.json` builds the Vite app into `dist` and routes `/api/*` to
-`api/[...path].mjs`, which reuses the same API handler as the local API/static
-server. Static hosting works without database credentials; DB-backed hosted API
-proof requires environment sync, deployment-protection handling, and hosted DB
-doctor evidence.
+`vercel.json` builds the Vite app into `dist` while leaving `/api/*` for the
+`api/[...path].mjs` serverless function; the SPA fallback explicitly excludes
+API paths. Static hosting works without database credentials; DB-backed hosted
+API proof requires environment sync, deployment-protection handling, and hosted
+DB doctor evidence.
 
 ## Project Map
 

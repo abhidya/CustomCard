@@ -598,12 +598,7 @@ describe("production infrastructure contract", () => {
       buildCommand: "npm run build",
       outputDirectory: "dist"
     });
-    expect(vercel.rewrites).toEqual(
-      expect.arrayContaining([
-        { source: "/api/(.*)", destination: "/api/$1" },
-        { source: "/(.*)", destination: "/index.html" }
-      ])
-    );
+    expect(vercel.rewrites).toEqual([{ source: "/((?!api/).*)", destination: "/index.html" }]);
     expect(handler).toContain("handleApiRequest");
     expect(apiServer).toContain("export async function handleApiRequest");
     expect(apiRuntime).toContain("CUSTOMCARD_API_RUNTIME");
