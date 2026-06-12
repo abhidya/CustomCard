@@ -147,9 +147,9 @@ describe("admin portal", () => {
     const usageRecord = portal.areas.providers.records.find((record) => record.id === "provider-usage-costs");
 
     expect(providerMetrics.get("Cost flows")).toBe("3");
-    expect(providerMetrics.get("Budget month")).toBe("$85.00");
+    expect(providerMetrics.get("Budget month")).toBe("$115.00");
     expect(providerMetrics.get("Spend est.")).toBe("$0.12");
-    expect(providerMetrics.get("Req capacity")).toBe("540");
+    expect(providerMetrics.get("Req capacity")).toBe("5250");
     expect(providerMetrics.get("Provider sources")).toBe("2");
     expect(providerMetrics.get("Ledger-only")).toBe("0");
     expect(usageRecord).toMatchObject({
@@ -157,7 +157,7 @@ describe("admin portal", () => {
       status: "attention",
       evidence: expect.arrayContaining(["provider_call_events", "Cloudflare Workers AI", "monthlyBudgetCents"])
     });
-    expect(usageRecord?.detail).toContain("$85.00 configured monthly budget");
+    expect(usageRecord?.detail).toContain("$115.00 configured monthly budget");
     expect(usageRecord?.detail).toContain("2 provider-sourced metric adapters");
     expect(JSON.stringify(portal)).not.toContain("token_text");
   });

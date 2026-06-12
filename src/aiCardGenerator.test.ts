@@ -166,7 +166,8 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
-        CUSTOMCARD_AI_CARD_COPY_MONTHLY_BUDGET_CENTS: "12"
+        CUSTOMCARD_AI_CARD_COPY_MONTHLY_BUDGET_CENTS: "12",
+        CUSTOMCARD_AI_CARD_COPY_PER_REQUEST_BUDGET_CENTS: "12"
       },
       fetchImpl
     });
@@ -791,6 +792,51 @@ describe("AI card generator service", () => {
     expect(payload.images).toHaveLength(4);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/jpeg;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_image_token");
+  });
+
+  it("backs off and retries transient Cloudflare Flux image failures", async () => {
+    let imageCallCount = 0;
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      if (String(url).includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      imageCallCount += 1;
+      if (imageCallCount === 1) {
+        return new Response(JSON.stringify({ errors: [{ message: "busy" }] }), {
+          status: 429,
+          headers: { "content-type": "application/json", "retry-after": "0" }
+        });
+      }
+      return new Response(JSON.stringify({ result: { image: "/9j/AAAA" } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
+        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-card-flux-backoff" });
+    const payload = result.payload as { images: Array<{ image_url: string }> };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(6);
+    expect(imageCallCount).toBe(5);
+    expect(payload.images).toHaveLength(4);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/jpeg;base64,"))).toBe(true);
   });
 
   it("uses DeepAI HD image generation when configured", async () => {

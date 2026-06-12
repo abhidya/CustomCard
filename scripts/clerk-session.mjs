@@ -58,8 +58,29 @@ export function verifyClerkSessionToken(token, env = process.env, { nowMs = Date
 
   const authorizedParties = parseList(env.CLERK_AUTHORIZED_PARTIES);
   const azp = String(payload.azp ?? "").trim();
-  if (authorizedParties.length > 0 && azp && !authorizedParties.includes(azp)) {
+  if (authorizedParties.length > 0 && !azp) {
+    return failure("missing-authorized-party", "Clerk session token azp is required when CLERK_AUTHORIZED_PARTIES is configured.");
+  }
+  if (authorizedParties.length > 0 && !authorizedParties.includes(azp)) {
     return failure("unauthorized-party", "Clerk session token azp is not an authorized party.");
+  }
+
+  const issuers = parseList(env.CLERK_ISSUER || env.CLERK_ISSUERS);
+  const issuer = String(payload.iss ?? "").trim();
+  if (issuers.length > 0 && !issuer) {
+    return failure("missing-issuer", "Clerk session token issuer is required when CLERK_ISSUER is configured.");
+  }
+  if (issuers.length > 0 && !issuers.includes(issuer)) {
+    return failure("unauthorized-issuer", "Clerk session token issuer is not trusted.");
+  }
+
+  const audiences = parseList(env.CLERK_AUDIENCE || env.CLERK_AUDIENCES);
+  const tokenAudiences = readAudienceClaim(payload);
+  if (audiences.length > 0 && tokenAudiences.length === 0) {
+    return failure("missing-audience", "Clerk session token audience is required when CLERK_AUDIENCE is configured.");
+  }
+  if (audiences.length > 0 && !tokenAudiences.some((audience) => audiences.includes(audience))) {
+    return failure("unauthorized-audience", "Clerk session token audience is not trusted.");
   }
 
   const clerkUserId = String(payload.sub ?? "").trim();
@@ -102,6 +123,15 @@ function readEmailClaim(payload) {
     if (value.includes("@")) return value;
   }
   return "";
+}
+
+function readAudienceClaim(payload) {
+  const audience = payload.aud;
+  if (Array.isArray(audience)) {
+    return audience.map((value) => String(value ?? "").trim()).filter(Boolean);
+  }
+  const text = String(audience ?? "").trim();
+  return text ? [text] : [];
 }
 
 function decodeJwtJson(segment) {

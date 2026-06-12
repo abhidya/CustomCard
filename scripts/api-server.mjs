@@ -303,22 +303,22 @@ export const readiness = {
     idempotentMutations: routes.filter((route) => route.method === "POST").length
   },
   providers: {
-    total: 124,
+    total: 131,
     readyLocal: 18,
-    credentialGated: 91,
-    contractOnly: 9,
+    credentialGated: 97,
+    contractOnly: 10,
     blocked: 6
   },
   providerGovernance: {
-    total: 124,
-    zeroPlatformSpend: 20,
-    budgetCapped: 98,
+    total: 131,
+    zeroPlatformSpend: 21,
+    budgetCapped: 104,
     blockedZeroSpend: 6,
-    monthlyBudgetCents: 141700,
-    maxPerRequestBudgetCents: 75,
-    rateLimited: 118,
-    queueRequired: 89,
-    fallbackCovered: 124,
+    monthlyBudgetCents: 202600,
+    maxPerRequestBudgetCents: 5,
+    rateLimited: 125,
+    queueRequired: 91,
+    fallbackCovered: 131,
     liveNetworkDefault: false,
     realOrdersEnabled: false,
     blockers: []
@@ -1317,7 +1317,9 @@ const googleCalendarApiOAuthCallbackRoute = "/api/oauth/callback";
 const googleCalendarOAuthRequiredEnv = [
   "GOOGLE_OAUTH_CLIENT_ID",
   "GOOGLE_OAUTH_CLIENT_SECRET",
-  "GOOGLE_OAUTH_REDIRECT_URI"
+  "GOOGLE_OAUTH_REDIRECT_URI",
+  "GOOGLE_OAUTH_STATE_SECRET",
+  "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY"
 ];
 
 function buildGoogleCalendarConnectionStart(
@@ -1329,12 +1331,16 @@ function buildGoogleCalendarConnectionStart(
   const config = {
     clientId: usableEnvValue(env.GOOGLE_OAUTH_CLIENT_ID),
     clientSecret: usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET),
-    redirectUri
+    redirectUri,
+    stateSecret: strongSecretValue(env.GOOGLE_OAUTH_STATE_SECRET),
+    tokenEncryptionKey: strongSecretValue(env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY)
   };
   const missingEnv = googleCalendarOAuthRequiredEnv.filter((name) => {
     if (name === "GOOGLE_OAUTH_CLIENT_ID") return !config.clientId;
     if (name === "GOOGLE_OAUTH_CLIENT_SECRET") return !config.clientSecret;
     if (name === "GOOGLE_OAUTH_REDIRECT_URI") return !config.redirectUri;
+    if (name === "GOOGLE_OAUTH_STATE_SECRET") return !config.stateSecret;
+    if (name === "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY") return !config.tokenEncryptionKey;
     return true;
   });
 
@@ -1646,7 +1652,15 @@ function verifyOAuthState(value, env, nowMs = Date.now()) {
   const text = String(value ?? "");
   const [encoded, signature] = text.split(".");
   if (!encoded || !signature) return { ok: false, detail: "OAuth state is missing or malformed." };
-  const expected = signOAuthState(encoded, env);
+  let expected;
+  try {
+    expected = signOAuthState(encoded, env);
+  } catch (error) {
+    return {
+      ok: false,
+      detail: error instanceof Error ? error.message : "OAuth state cannot be verified."
+    };
+  }
   if (!safeEqualText(signature, expected)) return { ok: false, detail: "OAuth state signature did not match." };
   try {
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
@@ -1683,10 +1697,9 @@ function safeEqualText(actual, expected) {
 }
 
 function oauthStateSecret(env) {
-  return usableEnvValue(env.GOOGLE_OAUTH_STATE_SECRET) ||
-    usableEnvValue(env.AUTH_SESSION_SECRET) ||
-    usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET) ||
-    "customcard-local-oauth-state-development-secret";
+  const secret = strongSecretValue(env.GOOGLE_OAUTH_STATE_SECRET);
+  if (!secret) throw new Error("GOOGLE_OAUTH_STATE_SECRET must be at least 32 characters.");
+  return secret;
 }
 
 async function exchangeGoogleOAuthCode(code, env, { codeVerifier, fetchImpl = globalThis.fetch } = {}) {
@@ -1884,10 +1897,14 @@ function decryptTokenSecret(value, env) {
 }
 
 function tokenEncryptionKeyMaterial(env) {
-  return usableEnvValue(env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY) ||
-    usableEnvValue(env.AUTH_SESSION_SECRET) ||
-    usableEnvValue(env.GOOGLE_OAUTH_CLIENT_SECRET) ||
-    "customcard-local-token-encryption-development-secret";
+  const secret = strongSecretValue(env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY);
+  if (!secret) throw new Error("GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY must be at least 32 characters.");
+  return secret;
+}
+
+function strongSecretValue(value) {
+  const text = usableEnvValue(value);
+  return text && text.length >= 32 ? text : "";
 }
 
 async function refreshGoogleAccessToken(refreshToken, env, fetchImpl = globalThis.fetch) {

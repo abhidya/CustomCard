@@ -6,27 +6,40 @@ import {
 import {
   checkArrayIncludes,
   checkExact,
-  checkIncludes,
   checkItemsHaveKeys,
   checkMinimum,
   checkNoBlockers,
-  readTextFiles,
   runDoctorReport
 } from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  observabilityTest: "src/observabilityReadiness.test.ts",
-  app: "src/App.tsx",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  providerRuntime: "src/providerRuntime.ts",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  docs: "docs/platform-expansion-design.md"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "observability",
+  service: "customcard-observability-readiness-doctor",
+  npmScript: "observability:doctor",
+  scriptPath: "scripts/observability-readiness-doctor.mjs",
+  workflowLabel: "Validate observability readiness",
+  docsTitle: "Observability readiness",
+  readinessModule: "src/observabilityReadiness.ts",
+  files: {
+    observabilityTest: "src/observabilityReadiness.test.ts",
+    app: "src/App.tsx",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    providerRuntime: "src/providerRuntime.ts",
+    docs: "docs/platform-expansion-design.md"
+  },
+  docsKeys: ["docs"]
+});
 
-const contents = readTextFiles(files);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizeObservabilityReadiness(observabilityReadinessItems);
 const validationBlockers = validateObservabilityReadiness(observabilityReadinessItems);
@@ -70,38 +83,44 @@ const checks = [
     readyDetail: `Validated ${observabilityReadinessItems.length} executable observability item shapes.`,
     missingPrefix: "Missing observability fields"
   }),
-  checkIncludes("tests", "observability-tests", contents.observabilityTest, [
-    "tracks telemetry and alerting readiness without live ingestion claims",
-    "covers provider contracts and critical alert events explicitly",
-    "flags unsafe telemetry claims"
-  ]),
-  checkIncludes("surfaces", "admin-api-observability-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
-    "Observability readiness",
-    "summarizeObservabilityReadiness",
-    "observability:",
-    "liveIngestionEnabled",
-    "productionAlertsEnabled"
-  ]),
-  checkIncludes("provider-runtime", "observability-provider-runtime-contracts", contents.providerRuntime, [
-    "sentry-error-observability",
-    "posthog-product-observability",
-    "opentelemetry-otlp-observability",
-    "grafana-cloud-otlp-observability",
-    "datadog-logs-observability",
-    "betterstack-logs-observability",
-    "live_telemetry: \"disabled\""
-  ]),
-  checkIncludes("docs", "observability-docs", contents.docs, [
-    "Observability readiness",
-    "`src/observabilityReadiness.ts`",
-    "`npm run observability:doctor`",
-    "not live telemetry ingestion"
-  ]),
-  checkIncludes("ci", "observability-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"observability:doctor": "node scripts/observability-readiness-doctor.mjs"',
-    "Validate observability readiness",
-    "npm run observability:doctor"
-  ]),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "observability-tests",
+    sourceKeys: ["observabilityTest"],
+    signals: [
+      "tracks telemetry and alerting readiness without live ingestion claims",
+      "covers provider contracts and critical alert events explicitly",
+      "flags unsafe telemetry claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-observability-surfaces",
+    sourceKeys: ["app", "apiContracts", "apiServer", "readinessSummaryData"],
+    signals: [
+      "Observability readiness",
+      "summarizeObservabilityReadiness",
+      "observability:",
+      "liveIngestionEnabled",
+      "productionAlertsEnabled"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "provider-runtime",
+    id: "observability-provider-runtime-contracts",
+    sourceKeys: ["providerRuntime"],
+    signals: [
+      "sentry-error-observability",
+      "posthog-product-observability",
+      "opentelemetry-otlp-observability",
+      "grafana-cloud-otlp-observability",
+      "datadog-logs-observability",
+      "betterstack-logs-observability",
+      "live_telemetry: \"disabled\""
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, ["not live telemetry ingestion"], { id: "observability-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "observability-doctor-scripted-and-gated" }),
   checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
     "Telemetry endpoint proof",
     "PII redaction sample",
@@ -112,7 +131,7 @@ const checks = [
 ];
 
 runDoctorReport({
-  service: "customcard-observability-readiness-doctor",
+  service: doctorManifest.service,
   items: summary.total,
   providerContracts: summary.providerContracts,
   alertRoutesRequired: summary.alertRoutesRequired,

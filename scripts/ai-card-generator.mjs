@@ -409,6 +409,7 @@ function mergeAiFlowAdminConfigs(...groups) {
       byFlowId.set(config.flowId, config);
     }
   }
+  if (byFlowId.size === 0) return [];
   return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
 }
 
@@ -526,7 +527,8 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
     const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
     const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
     const requestBody = buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt });
-    const response = await fetchImpl(
+    const response = await fetchWithProviderBackoff(
+      fetchImpl,
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${flow.model}`,
       {
         method: "POST",
@@ -535,7 +537,8 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
           "content-type": "application/json"
         },
         body: JSON.stringify(requestBody)
-      }
+      },
+      { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
     );
     if (!response.ok) throw new Error(`Cloudflare image provider returned ${response.status}.`);
     const contentType = response.headers?.get?.("content-type") ?? "";
@@ -585,11 +588,16 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
     body.set("width", "832");
     body.set("height", "1216");
     body.set("image_generator_version", normalizeDeepAiImageVersion(flow.model));
-    const response = await fetchImpl("https://api.deepai.org/api/text2img", {
-      method: "POST",
-      headers: { "api-key": requiredEnv(env, "DEEPAI_API_KEY") },
-      body
-    });
+    const response = await fetchWithProviderBackoff(
+      fetchImpl,
+      "https://api.deepai.org/api/text2img",
+      {
+        method: "POST",
+        headers: { "api-key": requiredEnv(env, "DEEPAI_API_KEY") },
+        body
+      },
+      { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
+    );
     const contentType = response.headers?.get?.("content-type") ?? "";
     const data = await response.json().catch(() => undefined);
     if (!response.ok) {
@@ -1044,6 +1052,34 @@ async function postJson(fetchImpl, url, { headers = {}, body }) {
     throw new Error(data?.errors?.[0]?.message || "AI provider rejected the request.");
   }
   return data;
+}
+
+async function fetchWithProviderBackoff(fetchImpl, url, options, { retries = 0, baseDelayMs = 1000, maxDelayMs = 5000 } = {}) {
+  const retryCount = Math.max(0, Number(retries) || 0);
+  let response;
+  for (let attempt = 0; attempt <= retryCount; attempt += 1) {
+    response = await fetchImpl(url, options);
+    if (!isRetryableProviderStatus(response.status) || attempt >= retryCount) return response;
+    await sleep(providerBackoffDelayMs(response, attempt, baseDelayMs, maxDelayMs));
+  }
+  return response;
+}
+
+function isRetryableProviderStatus(status) {
+  return status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+function providerBackoffDelayMs(response, attempt, baseDelayMs, maxDelayMs) {
+  const retryAfter = response.headers?.get?.("retry-after");
+  const retryAfterSeconds = retryAfter === undefined || retryAfter === null ? NaN : Number(retryAfter);
+  const retryAfterMs =
+    Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0 ? retryAfterSeconds * 1000 : undefined;
+  const fallbackMs = Math.max(0, Number(baseDelayMs) || 0) * 2 ** Math.max(0, attempt);
+  return Math.min(Math.max(0, Number(maxDelayMs) || 0), retryAfterMs ?? fallbackMs);
+}
+
+function sleep(ms) {
+  return new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
 }
 
 function buildMessages(systemPrompt, userPrompt) {

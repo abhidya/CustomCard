@@ -6,31 +6,44 @@ import {
 import {
   checkArrayIncludes,
   checkExact,
-  checkIncludes,
   checkItemsHaveKeys,
   checkNoBlockers,
-  readTextFiles,
   runDoctorReport
 } from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  readinessTest: "src/businessEngagementReadiness.test.ts",
-  providerCatalog: "src/providerCatalog.ts",
-  providerRuntime: "src/providerRuntime.ts",
-  providerRuntimeTest: "src/providerRuntime.test.ts",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  adminApp: "src/App.tsx",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  e2eCoverage: "src/e2eCoverageData.mjs",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  readme: "README.md",
-  platformDocs: "docs/platform-expansion-design.md",
-  verificationDocs: "docs/verification.md"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "business-engagement",
+  service: "customcard-business-engagement-readiness-doctor",
+  npmScript: "business:engagement:doctor",
+  scriptPath: "scripts/business-engagement-readiness-doctor.mjs",
+  workflowLabel: "Validate business engagement readiness",
+  docsTitle: "Business engagement readiness",
+  readinessModule: "src/businessEngagementReadiness.ts",
+  files: {
+    readinessTest: "src/businessEngagementReadiness.test.ts",
+    providerCatalog: "src/providerCatalog.ts",
+    providerRuntime: "src/providerRuntime.ts",
+    providerRuntimeTest: "src/providerRuntime.test.ts",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    adminApp: "src/App.tsx",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    e2eCoverage: "src/e2eCoverageData.mjs",
+    readme: "README.md",
+    platformDocs: "docs/platform-expansion-design.md",
+    verificationDocs: "docs/verification.md"
+  },
+  docsKeys: ["readme", "platformDocs", "verificationDocs"]
+});
 
-const contents = readTextFiles(files);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizeBusinessEngagementReadiness(businessEngagementReadinessItems);
 const validationBlockers = validateBusinessEngagementReadiness(businessEngagementReadinessItems);
@@ -89,75 +102,93 @@ const checks = [
     readyDetail: `Validated ${businessEngagementReadinessItems.length} executable business engagement readiness item shapes.`,
     missingPrefix: "Missing business engagement readiness fields"
   }),
-  checkIncludes("tests", "business-engagement-readiness-tests", contents.readinessTest, [
-    "tracks CRM lifecycle campaigns through customer outreach without claiming live sends",
-    "covers popular CRM, workflow, notification, and lifecycle trigger contracts explicitly",
-    "flags unsafe business engagement claims"
-  ]),
-  checkIncludes("provider-catalog", "crm-workflow-notification-adapters", contents.providerCatalog, [
-    "Business CRM CSV lifecycle import",
-    "Salesforce CRM lifecycle sync",
-    "HubSpot CRM lifecycle sync",
-    "Shopify customer lifecycle sync",
-    "Klaviyo profile lifecycle sync",
-    "Mailchimp audience lifecycle sync",
-    "ActiveCampaign contact lifecycle sync",
-    "BigCommerce customer lifecycle sync",
-    "WooCommerce customer lifecycle sync",
-    "Square customer lifecycle sync",
-    "Intercom contact lifecycle sync",
-    "Zapier webhook workflow",
-    "Google Sheets lifecycle sync",
-    "n8n webhook workflow",
-    "Workato webhook workflow",
-    "Pipedream workflow trigger",
-    "Resend email notification",
-    "Twilio SMS notification",
-    "WhatsApp Cloud notification",
-    "Firebase Cloud Messaging",
-    "Customer.io transactional notification",
-    "Braze Canvas notification",
-    "OneSignal message notification",
-    "Courier send notification",
-    "Knock workflow notification",
-    "Novu trigger notification"
-  ]),
-  checkIncludes("provider-runtime", "no-network-runtime-contracts", `${contents.providerRuntime}\n${contents.providerRuntimeTest}`, [
-    "buildCrmRuntime",
-    "buildWorkflowIntegrationRuntime",
-    "buildNotificationRuntime",
-    "parseCrmLifecycleImport",
-    "requires explicit source text for local import and workflow export adapters",
-    "Missing required source text for local import/export.",
-    "lifecycleTriggers",
-    "live_workflow_send",
-    "blocks CRM lifecycle sync when opt-in and review gates are absent",
-    "builds redacted live-network notification request contracts"
-  ]),
-  checkIncludes("surfaces", "admin-api-business-engagement-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
-    "Business engagement readiness",
-    "summarizeBusinessEngagementReadiness",
-    "businessEngagementReadiness",
-    "liveMessagesEnabled",
-    "crmWritesEnabled"
-  ]),
-  checkIncludes("e2e", "business-engagement-e2e-matrix", contents.e2eCoverage, [
-    "business-engagement-readiness",
-    "CRM lifecycle engagement readiness",
-    "npm run business:engagement:doctor",
-    "Live customer sends disabled"
-  ]),
-  checkIncludes("docs", "business-engagement-docs", `${contents.readme}\n${contents.platformDocs}\n${contents.verificationDocs}`, [
-    "Business engagement readiness",
-    "`src/businessEngagementReadiness.ts`",
-    "`npm run business:engagement:doctor`",
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "business-engagement-readiness-tests",
+    sourceKeys: ["readinessTest"],
+    signals: [
+      "tracks CRM lifecycle campaigns through customer outreach without claiming live sends",
+      "covers popular CRM, workflow, notification, and lifecycle trigger contracts explicitly",
+      "flags unsafe business engagement claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "provider-catalog",
+    id: "crm-workflow-notification-adapters",
+    sourceKeys: ["providerCatalog"],
+    signals: [
+      "Business CRM CSV lifecycle import",
+      "Salesforce CRM lifecycle sync",
+      "HubSpot CRM lifecycle sync",
+      "Shopify customer lifecycle sync",
+      "Klaviyo profile lifecycle sync",
+      "Mailchimp audience lifecycle sync",
+      "ActiveCampaign contact lifecycle sync",
+      "BigCommerce customer lifecycle sync",
+      "WooCommerce customer lifecycle sync",
+      "Square customer lifecycle sync",
+      "Intercom contact lifecycle sync",
+      "Zapier webhook workflow",
+      "Google Sheets lifecycle sync",
+      "n8n webhook workflow",
+      "Workato webhook workflow",
+      "Pipedream workflow trigger",
+      "Resend email notification",
+      "Twilio SMS notification",
+      "WhatsApp Cloud notification",
+      "Firebase Cloud Messaging",
+      "Customer.io transactional notification",
+      "Braze Canvas notification",
+      "OneSignal message notification",
+      "Courier send notification",
+      "Knock workflow notification",
+      "Novu trigger notification"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "provider-runtime",
+    id: "no-network-runtime-contracts",
+    sourceKeys: ["providerRuntime", "providerRuntimeTest"],
+    signals: [
+      "buildCrmRuntime",
+      "buildWorkflowIntegrationRuntime",
+      "buildNotificationRuntime",
+      "parseCrmLifecycleImport",
+      "requires explicit source text for local import and workflow export adapters",
+      "Missing required source text for local import/export.",
+      "lifecycleTriggers",
+      "live_workflow_send",
+      "blocks CRM lifecycle sync when opt-in and review gates are absent",
+      "builds redacted live-network notification request contracts"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-business-engagement-surfaces",
+    sourceKeys: ["adminApp", "apiContracts", "apiServer", "readinessSummaryData"],
+    signals: [
+      "Business engagement readiness",
+      "summarizeBusinessEngagementReadiness",
+      "businessEngagementReadiness",
+      "liveMessagesEnabled",
+      "crmWritesEnabled"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "e2e",
+    id: "business-engagement-e2e-matrix",
+    sourceKeys: ["e2eCoverage"],
+    signals: [
+      "business-engagement-readiness",
+      "CRM lifecycle engagement readiness",
+      "npm run business:engagement:doctor",
+      "Live customer sends disabled"
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, [
     "not live CRM OAuth, customer messaging, CRM writeback, or production campaign analytics proof"
-  ]),
-  checkIncludes("ci", "business-engagement-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"business:engagement:doctor": "node scripts/business-engagement-readiness-doctor.mjs"',
-    "Validate business engagement readiness",
-    "npm run business:engagement:doctor"
-  ]),
+  ], { id: "business-engagement-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "business-engagement-doctor-scripted-and-gated" }),
   checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
     "Provider OAuth approval",
     "Marketing opt-in sample",
@@ -167,7 +198,7 @@ const checks = [
 ];
 
 runDoctorReport({
-  service: "customcard-business-engagement-readiness-doctor",
+  service: doctorManifest.service,
   items: summary.total,
   repoLocalReady: summary.repoLocalReady,
   evidenceMissing: summary.evidenceMissing,

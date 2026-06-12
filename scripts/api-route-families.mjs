@@ -239,7 +239,7 @@ export function createApiRouteFamilies(deps) {
 
   function handleWalgreensCallbackRoute({ path, response }) {
     if (path !== walgreensCheckoutCallbackRoute) return false;
-    sendHtml(response, 200, buildWalgreensCallbackHtml(walgreensCheckout.config.appOrigin || "*"));
+    sendHtml(response, 200, buildWalgreensCallbackHtml(walgreensCheckout.config.appOrigin));
     return true;
   }
 

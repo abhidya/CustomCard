@@ -642,8 +642,16 @@ describe("provider runtime contracts", () => {
       "https://bedrock-runtime.{AWS_REGION}.amazonaws.com/model/{BEDROCK_IMAGE_MODEL_ID}/invoke"
     );
     expect(buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, readyEnv, openGates).request).toMatchObject({
-      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
+      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
       headers: expect.objectContaining({ authorization: "Bearer {CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN}" })
+    });
+    expect(
+      buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, {
+        ...readyEnv,
+        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: undefined
+      }, openGates).request
+    ).toMatchObject({
+      url: "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell"
     });
     expect(
       buildImageGenerationRuntime("cloudflare-workers-ai-image", imageInput, {

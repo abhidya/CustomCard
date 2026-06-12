@@ -195,6 +195,24 @@ async def enforce_generate_body_size(request: Request, call_next):
                     return JSONResponse(status_code=413, content={"detail": "Card generation request body too large"})
             except ValueError:
                 return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
+        chunks: list[bytes] = []
+        total_bytes = 0
+        async for chunk in request.stream():
+            total_bytes += len(chunk)
+            if total_bytes > max_body_bytes:
+                return JSONResponse(status_code=413, content={"detail": "Card generation request body too large"})
+            chunks.append(chunk)
+        body = b"".join(chunks)
+
+        consumed = False
+        async def receive():
+            nonlocal consumed
+            if consumed:
+                return {"type": "http.request", "body": b"", "more_body": False}
+            consumed = True
+            return {"type": "http.request", "body": body, "more_body": False}
+
+        request = Request(request.scope, receive)
     return await call_next(request)
 
 

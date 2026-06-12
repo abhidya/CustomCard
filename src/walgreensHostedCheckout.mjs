@@ -270,8 +270,11 @@ export function buildCheckoutUrl(landingUrl, token) {
 
 // ── Callback page (Walgreens navigates here on Done / Cancel / Back) ─────────
 
-export function buildWalgreensCallbackHtml(appOrigin) {
-  const safeOrigin = JSON.stringify(appOrigin);
+export function buildWalgreensCallbackHtml(appOrigin = "") {
+  const safeOrigin = safePostMessageOrigin(appOrigin);
+  const postMessageScript = safeOrigin
+    ? `if (window.opener) window.opener.postMessage(payload, ${JSON.stringify(safeOrigin)});`
+    : "";
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -294,13 +297,25 @@ export function buildWalgreensCallbackHtml(appOrigin) {
         try {
           var params = new URLSearchParams(window.location.search);
           var payload = { source: "customcard-walgreens-checkout", status: params.get("status") || "returned" };
-          if (window.opener) window.opener.postMessage(payload, ${safeOrigin});
+          ${postMessageScript}
         } catch (error) { /* non-fatal */ }
         setTimeout(function () { window.close(); }, 1200);
       })();
     </script>
   </body>
 </html>`;
+}
+
+function safePostMessageOrigin(appOrigin) {
+  const text = String(appOrigin ?? "").trim().replace(/\/+$/, "");
+  if (!text || text === "*") return "";
+  try {
+    const url = new URL(text);
+    if (!["http:", "https:"].includes(url.protocol)) return "";
+    return url.origin;
+  } catch {
+    return "";
+  }
 }
 
 // ── Service ──────────────────────────────────────────────────────────────────

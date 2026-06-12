@@ -249,7 +249,6 @@ describe("provider catalog", () => {
     expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_ACCOUNT_ID");
     expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_API_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_WORKERS_AI_TEXT_MODEL");
-    expect(admin.coverage.requiredEnv).toContain("CLOUDFLARE_WORKERS_AI_IMAGE_MODEL");
     expect(admin.coverage.requiredEnv).toContain("STABILITY_API_KEY");
     expect(admin.coverage.requiredEnv).toContain("HUGGINGFACE_API_TOKEN");
     expect(admin.coverage.requiredEnv).toContain("DEEPAI_API_KEY");

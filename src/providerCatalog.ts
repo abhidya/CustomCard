@@ -1298,11 +1298,11 @@ export const providerCatalog: ProviderAdapter[] = [
     lane: "AI provider",
     status: "credential-gated",
     cost: "usage-based",
-    credentials: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+    credentials: ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"],
     safetyGates: ["Provider/model allowlist", "Spend limit", "Human approval before print", "Network allowlist"],
     roleSurface: ["admin"],
     priority: 51.5,
-    detail: "Optional Cloudflare-hosted text-to-image path through Workers AI REST model execution. Uses CLOUDFLARE_API_TOKEN by default, with CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN as an optional lane-specific override.",
+    detail: "Optional Cloudflare-hosted text-to-image path through Workers AI REST model execution. Defaults to FLUX.1 Schnell unless a Cloudflare image model override is configured. Uses CLOUDFLARE_API_TOKEN by default, with CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN as an optional lane-specific override.",
     docsUrl: "https://developers.cloudflare.com/workers-ai/get-started/rest-api/"
   },
   {

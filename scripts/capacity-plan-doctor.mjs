@@ -6,32 +6,42 @@ import {
   validateCapacityProfiles
 } from "../src/capacityPlanData.mjs";
 import {
-  blockersFromFailedChecks,
   checkArrayIncludes,
   checkExact,
-  checkIncludes,
+  checkItemsHaveKeys,
   checkMinimum,
   checkNoBlockers,
-  exitIfBlocked,
-  failedChecks,
-  printDoctorReport,
-  readTextFiles,
-  summarizeCheckLanes
+  runDoctorReport
 } from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  capacityTest: "src/capacityPlan.test.ts",
-  capacityData: "src/capacityPlanData.mjs",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  app: "src/App.tsx",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  docs: "docs/platform-expansion-design.md"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "capacity",
+  service: "customcard-capacity-plan-doctor",
+  npmScript: "capacity:doctor",
+  scriptPath: "scripts/capacity-plan-doctor.mjs",
+  workflowLabel: "Validate capacity plan readiness",
+  docsTitle: "Capacity profiles",
+  readinessModule: "src/capacityPlan.ts",
+  files: {
+    capacityTest: "src/capacityPlan.test.ts",
+    capacityData: "src/capacityPlanData.mjs",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    app: "src/App.tsx",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    docs: "docs/platform-expansion-design.md"
+  },
+  docsKeys: ["docs"]
+});
 
-const contents = readTextFiles(files);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizeCapacityPlan(capacityProfiles);
 const validationBlockers = validateCapacityProfiles(capacityProfiles);
@@ -50,59 +60,7 @@ const checks = [
   checkExact("evidence", "artifact-thresholds", summary.artifactThresholds, 1),
   checkExact("evidence", "provider-spend-thresholds", summary.providerSpendThresholds, 1),
   checkNoBlockers("evidence", "measurable-slo-thresholds", thresholdBlockers),
-  checkProfilesShape("profiles", "profile-contract-shape", capacityProfiles),
-  checkThresholdsShape("evidence", "threshold-contract-shape", capacityEvidenceThresholds),
-  checkIncludes("tests", "capacity-tests", contents.capacityTest, [
-    "defines finite cheap-to-scale profiles",
-    "keeps droplet, cloud, and SaaS shapes honest",
-    "flags capacity plans that hide live traffic",
-    "defines measurable SLO thresholds"
-  ]),
-  checkIncludes("surfaces", "admin-api-capacity-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.capacityData}\n${contents.readinessSummaryData}`, [
-    "Capacity profiles",
-    "capacityPlanData.mjs",
-    "capacity:",
-    "maxDailyCards",
-    "liveProviderCalls",
-    "sloThresholds"
-  ]),
-  checkIncludes("docs", "capacity-docs", contents.docs, [
-    "Capacity profiles",
-    "`src/capacityPlan.ts`",
-    "`npm run capacity:doctor`",
-    "not measured production benchmarks"
-  ]),
-  checkIncludes("ci", "capacity-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"capacity:doctor": "node scripts/capacity-plan-doctor.mjs"',
-    "Validate capacity plan readiness",
-    "npm run capacity:doctor"
-  ]),
-  checkExact("safety", "no-live-provider-calls", summary.liveProviderCalls, 0),
-  checkExact("safety", "no-real-orders", summary.realOrdersEnabled, 0)
-];
-
-const lanes = summarizeCheckLanes(checks);
-const failed = failedChecks(checks);
-
-printDoctorReport({
-  service: "customcard-capacity-plan-doctor",
-  status: failed.length === 0 ? "ready" : "blocked",
-  profiles: summary.total,
-  maxDailyCards: summary.maxDailyCards,
-  maxDailyImageGenerations: summary.maxDailyImageGenerations,
-  sloThresholds: summary.sloThresholds,
-  measuredEvidenceRequired: summary.measuredEvidenceRequired,
-  liveProviderCalls: summary.liveProviderCalls > 0,
-  realOrdersEnabled: summary.realOrdersEnabled > 0,
-  lanes,
-  checks,
-  blockers: blockersFromFailedChecks(checks)
-});
-
-exitIfBlocked(checks);
-
-function checkProfilesShape(lane, id, profiles) {
-  const requiredKeys = [
+  checkItemsHaveKeys("profiles", "profile-contract-shape", capacityProfiles, [
     "id",
     "label",
     "lane",
@@ -116,43 +74,60 @@ function checkProfilesShape(lane, id, profiles) {
     "requiredEvidence",
     "scalingSignals",
     "tradeoffs"
-  ];
-  const missing = [];
+  ], {
+    readyDetail: `Validated ${capacityProfiles.length} executable capacity profile shapes.`,
+    missingPrefix: "Missing capacity profile fields"
+  }),
+  checkItemsHaveKeys("evidence", "threshold-contract-shape", capacityEvidenceThresholds, [
+    "id",
+    "label",
+    "metric",
+    "profiles",
+    "measuredBy",
+    "warnAt",
+    "blockAt",
+    "requiredEvidence"
+  ], {
+    readyDetail: `Validated ${capacityEvidenceThresholds.length} measurable capacity threshold shapes.`,
+    missingPrefix: "Missing capacity threshold fields"
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "capacity-tests",
+    sourceKeys: ["capacityTest"],
+    signals: [
+      "defines finite cheap-to-scale profiles",
+      "keeps droplet, cloud, and SaaS shapes honest",
+      "flags capacity plans that hide live traffic",
+      "defines measurable SLO thresholds"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-capacity-surfaces",
+    sourceKeys: ["app", "apiContracts", "apiServer", "capacityData", "readinessSummaryData"],
+    signals: [
+      "Capacity profiles",
+      "capacityPlanData.mjs",
+      "capacity:",
+      "maxDailyCards",
+      "liveProviderCalls",
+      "sloThresholds"
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, ["not measured production benchmarks"], { id: "capacity-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "capacity-doctor-scripted-and-gated" }),
+  checkExact("safety", "no-live-provider-calls", summary.liveProviderCalls, 0),
+  checkExact("safety", "no-real-orders", summary.realOrdersEnabled, 0)
+];
 
-  for (const profile of profiles) {
-    for (const key of requiredKeys) {
-      if (!(key in profile)) missing.push(`${profile.id ?? "unknown"}.${key}`);
-    }
-  }
-
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${profiles.length} executable capacity profile shapes.`
-        : `Missing capacity profile fields: ${missing.join(", ")}`
-  };
-}
-
-function checkThresholdsShape(lane, id, thresholds) {
-  const requiredKeys = ["id", "label", "metric", "profiles", "measuredBy", "warnAt", "blockAt", "requiredEvidence"];
-  const missing = [];
-
-  for (const threshold of thresholds) {
-    for (const key of requiredKeys) {
-      if (!(key in threshold)) missing.push(`${threshold.id ?? "unknown"}.${key}`);
-    }
-  }
-
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${thresholds.length} measurable capacity threshold shapes.`
-        : `Missing capacity threshold fields: ${missing.join(", ")}`
-  };
-}
+runDoctorReport({
+  service: doctorManifest.service,
+  profiles: summary.total,
+  maxDailyCards: summary.maxDailyCards,
+  maxDailyImageGenerations: summary.maxDailyImageGenerations,
+  sloThresholds: summary.sloThresholds,
+  measuredEvidenceRequired: summary.measuredEvidenceRequired,
+  liveProviderCalls: summary.liveProviderCalls > 0,
+  realOrdersEnabled: summary.realOrdersEnabled > 0
+}, checks);

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -129,6 +131,23 @@ def test_generate_rejects_oversized_payload(monkeypatch: pytest.MonkeyPatch) -> 
             "/generate",
             headers={"Authorization": f"Bearer {TOKEN}"},
             json=_payload(personal_note="x" * 2_000),
+        )
+
+    assert response.status_code == 413
+
+
+def test_generate_rejects_oversized_payload_without_content_length(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CARD_GEN_API_TOKEN", TOKEN)
+    monkeypatch.setenv("CARD_GEN_MAX_BODY_BYTES", "1024")
+    body = json.dumps(_payload(personal_note="x" * 2_000)).encode()
+
+    with TestClient(app_module.app) as client:
+        app_module._service = FakeCardGenService()
+        response = client.request(
+            "POST",
+            "/generate",
+            headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"},
+            content=iter([body]),
         )
 
     assert response.status_code == 413

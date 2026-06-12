@@ -324,10 +324,10 @@ describe("api server wrapper", () => {
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(124);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 124,
-      budgetCapped: 98,
+      total: 131,
+      budgetCapped: 104,
       blockedZeroSpend: 6,
-      fallbackCovered: 124,
+      fallbackCovered: 131,
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
@@ -722,7 +722,9 @@ describe("api server wrapper", () => {
         PORT: String(port),
         GOOGLE_OAUTH_CLIENT_ID: "test-google-calendar-client.apps.googleusercontent.com",
         GOOGLE_OAUTH_CLIENT_SECRET: "test-google-calendar-secret",
-        GOOGLE_OAUTH_REDIRECT_URI: `http://localhost:${port}/oauth/callback`
+        GOOGLE_OAUTH_REDIRECT_URI: `http://localhost:${port}/oauth/callback`,
+        GOOGLE_OAUTH_STATE_SECRET: "test-google-oauth-state-secret-32-chars",
+        GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY: "test-google-oauth-token-key-32-chars"
       },
       stdio: ["ignore", "pipe", "pipe"]
     });
@@ -743,11 +745,11 @@ describe("api server wrapper", () => {
 
       const readiness = await getJson(port, "/api/admin/readiness");
       expect(readiness.routes).toMatchObject({ total: 30, admin: 9, idempotentMutations: 16 });
-      expect(readiness.providers).toMatchObject({ total: 124, readyLocal: 18, credentialGated: 91, blocked: 6 });
+      expect(readiness.providers).toMatchObject({ total: 131, readyLocal: 18, credentialGated: 97, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 124,
-        fallbackCovered: 124,
-        budgetCapped: 98,
+        total: 131,
+        fallbackCovered: 131,
+        budgetCapped: 104,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -951,12 +953,12 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 124,
-        monthlyBudgetCents: 141700,
-        maxPerRequestBudgetCents: 75,
-        rateLimited: 118,
-        queueRequired: 89,
-        fallbackCovered: 124,
+        total: 131,
+        monthlyBudgetCents: 202600,
+        maxPerRequestBudgetCents: 5,
+        rateLimited: 125,
+        queueRequired: 91,
+        fallbackCovered: 131,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -1145,7 +1147,13 @@ describe("api server wrapper", () => {
           serverOwned: true,
           clientMayPrepareProviderRequest: false,
           providerRequestUrl: expect.stringContaining("client_id=test-google-calendar-client.apps.googleusercontent.com"),
-          requiredEnv: ["GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET", "GOOGLE_OAUTH_REDIRECT_URI"],
+          requiredEnv: [
+            "GOOGLE_OAUTH_CLIENT_ID",
+            "GOOGLE_OAUTH_CLIENT_SECRET",
+            "GOOGLE_OAUTH_REDIRECT_URI",
+            "GOOGLE_OAUTH_STATE_SECRET",
+            "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY"
+          ],
           requiredScopes: ["calendar.events.readonly"],
           officialScopeUris: ["https://www.googleapis.com/auth/calendar.events.readonly"]
         }),
@@ -2285,6 +2293,8 @@ describe("api server wrapper", () => {
         GOOGLE_OAUTH_CLIENT_ID: "test-google-calendar-client.apps.googleusercontent.com",
         GOOGLE_OAUTH_CLIENT_SECRET: "test-google-calendar-secret",
         GOOGLE_OAUTH_REDIRECT_URI: `http://127.0.0.1:${port}/oauth/callback`,
+        GOOGLE_OAUTH_STATE_SECRET: "test-google-oauth-state-secret-32-chars",
+        GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY: "test-google-oauth-token-key-32-chars",
         GOOGLE_OAUTH_TOKEN_ENDPOINT: `http://127.0.0.1:${google.port}/token`,
         GOOGLE_CALENDAR_EVENTS_ENDPOINT: `http://127.0.0.1:${google.port}/calendar/v3/calendars/primary/events`
       },

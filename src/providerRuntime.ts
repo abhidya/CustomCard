@@ -1058,6 +1058,7 @@ function defaultTextModel(adapterId: string): string {
 
 function defaultImageModel(adapterId: string): string {
   const defaults: Record<string, string> = {
+    "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
     "openai-images": "gpt-image-2",
     "google-gemini-image": "gemini-3.1-flash-image",
     "deepai-text2img-image": "hd",
@@ -1591,8 +1592,8 @@ function buildSinglePanelImageRequest(
     return request(
       adapter,
       "POST",
-      "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CLOUDFLARE_WORKERS_AI_IMAGE_MODEL}",
-      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef, "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"],
+      `https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/${model}`,
+      ["CLOUDFLARE_ACCOUNT_ID", apiTokenRef],
       {
         model,
         prompt,

@@ -1,31 +1,50 @@
-import { readFileSync } from "node:fs";
 import {
   mobileRenderReadinessItems,
   summarizeMobileRenderReadiness,
   validateMobileRenderReadiness
 } from "../src/mobileRenderReadinessData.mjs";
-import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlockers } from "./doctor-harness.mjs";
+import {
+  checkArrayIncludes,
+  checkExact,
+  checkItemsHaveKeys,
+  checkMinimum,
+  checkNoBlockers,
+  runDoctorReport
+} from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  readinessTest: "src/mobileRenderReadiness.test.ts",
-  mobileApp: "apps/mobile/src/App.tsx",
-  mobileExperience: "apps/mobile/src/customerExperience.ts",
-  mobileDoctor: "apps/mobile/scripts/doctor.mjs",
-  mobileReleaseDoctor: "apps/mobile/scripts/release-doctor.mjs",
-  appConfig: "apps/mobile/app.config.js",
-  eas: "apps/mobile/eas.json",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  adminApp: "src/App.tsx",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  docs: "docs/platform-expansion-design.md"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "mobile-render",
+  service: "customcard-mobile-render-readiness-doctor",
+  npmScript: "mobile:render:doctor",
+  scriptPath: "scripts/mobile-render-readiness-doctor.mjs",
+  workflowLabel: "Validate mobile render readiness",
+  docsTitle: "Mobile render readiness",
+  readinessModule: "src/mobileRenderReadiness.ts",
+  files: {
+    readinessTest: "src/mobileRenderReadiness.test.ts",
+    mobileApp: "apps/mobile/src/App.tsx",
+    mobileExperience: "apps/mobile/src/customerExperience.ts",
+    mobileDoctor: "apps/mobile/scripts/doctor.mjs",
+    mobileReleaseDoctor: "apps/mobile/scripts/release-doctor.mjs",
+    appConfig: "apps/mobile/app.config.js",
+    eas: "apps/mobile/eas.json",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    adminApp: "src/App.tsx",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    docs: "docs/platform-expansion-design.md"
+  },
+  docsKeys: ["docs"]
+});
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizeMobileRenderReadiness(mobileRenderReadinessItems);
 const validationBlockers = validateMobileRenderReadiness(mobileRenderReadinessItems);
@@ -56,121 +75,7 @@ const checks = [
     "native-emulator-render-proof",
     "signed-native-artifact-proof"
   ]),
-  checkItemsShape("register", "mobile-render-readiness-item-shape", mobileRenderReadinessItems),
-  checkIncludes("tests", "mobile-render-readiness-tests", contents.readinessTest, [
-    "tracks mobile render readiness without claiming emulator or signed artifact proof",
-    "covers customer mobile sections, viewports, and native build profiles explicitly",
-    "flags unsafe native render proof claims"
-  ]),
-  checkIncludes("mobile-source", "native-mobile-render-source-signals", `${contents.mobileApp}\n${contents.mobileExperience}`, [
-    "SafeAreaView",
-    "ScrollView",
-    "Pressable",
-    "accessibilityRole",
-    "Start with an event",
-    "Today's card",
-    "Cards to review",
-    "Card actions",
-    "Card assistant",
-    "Preview the card",
-    "Printing options",
-    "Print file checks",
-    "Saved offline",
-    "mobileRenderSnapshot",
-    "buildMobileRenderSnapshot",
-    "validateMobileRenderSnapshot",
-    "summarizeMobileRenderSnapshot",
-    "MobileRenderSection",
-    "MobileRenderRow",
-    "MobileRenderAction",
-    "ActionSurface",
-    "secondaryActions",
-    "presentation",
-    "disabled",
-    "mobileFulfillmentRecommendations",
-    "mobilePrintProofChecks",
-    "mobileLocaleOptions"
-  ]),
-  checkIncludes("native-profiles", "expo-native-render-profile-signals", `${contents.appConfig}\n${contents.eas}\n${contents.mobileReleaseDoctor}`, [
-    'platforms: ["ios", "android"]',
-    'scheme: "customcard"',
-    'bundleIdentifier: "com.customcard.app"',
-    'package: "com.customcard.app"',
-    '"preview"',
-    '"simulator": true',
-    '"buildType": "apk"',
-    "signedArtifactBuilt: false"
-  ]),
-  checkIncludes("surfaces", "admin-api-mobile-render-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
-    "Mobile render readiness",
-    "summarizeMobileRenderReadiness",
-    "mobileRenderReadiness",
-    "emulatorRenderProofs",
-    "signedArtifacts"
-  ]),
-  checkIncludes("docs", "mobile-render-readiness-docs", contents.docs, [
-    "Mobile render readiness",
-    "`src/mobileRenderReadiness.ts`",
-    "`npm run mobile:render:doctor`",
-    "not an emulator render proof"
-  ]),
-  checkIncludes("ci", "mobile-render-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"mobile:render:doctor": "node scripts/mobile-render-readiness-doctor.mjs"',
-    "Validate mobile render readiness",
-    "npm run mobile:render:doctor"
-  ]),
-  checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
-    "React Native render test output",
-    "Emulator screenshot",
-    "RTL native screenshot",
-    "Signed iOS artifact",
-    "Signed Android artifact"
-  ])
-];
-
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
-});
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-mobile-render-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      items: summary.total,
-      repoLocalReady: summary.repoLocalReady,
-      evidenceMissing: summary.evidenceMissing,
-      artifactBlocked: summary.artifactBlocked,
-      screenSections: summary.screenSections,
-      viewportProfiles: summary.viewportProfiles,
-      nativeBuildProfiles: summary.nativeBuildProfiles,
-      emulatorRequired: summary.emulatorRequired,
-      signedArtifactRequired: summary.signedArtifactRequired,
-      emulatorRenderProofs: summary.emulatorRenderProofs,
-      signedArtifacts: summary.signedArtifacts,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      realOrdersEnabled: summary.realOrdersEnabled,
-      liveProviderCalls: summary.liveProviderCalls,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
+  checkItemsHaveKeys("register", "mobile-render-readiness-item-shape", mobileRenderReadinessItems, [
     "id",
     "label",
     "lane",
@@ -190,22 +95,106 @@ function checkItemsShape(lane, id, items) {
     "currentEvidence",
     "requiredEvidence",
     "blocker"
-  ];
-  const missing = [];
+  ], {
+    readyDetail: `Validated ${mobileRenderReadinessItems.length} executable mobile render readiness item shapes.`,
+    missingPrefix: "Missing mobile render readiness fields"
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "mobile-render-readiness-tests",
+    sourceKeys: ["readinessTest"],
+    signals: [
+      "tracks mobile render readiness without claiming emulator or signed artifact proof",
+      "covers customer mobile sections, viewports, and native build profiles explicitly",
+      "flags unsafe native render proof claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "mobile-source",
+    id: "native-mobile-render-source-signals",
+    sourceKeys: ["mobileApp", "mobileExperience"],
+    signals: [
+      "SafeAreaView",
+      "ScrollView",
+      "Pressable",
+      "accessibilityRole",
+      "Start with an event",
+      "Today's card",
+      "Cards to review",
+      "Card actions",
+      "Card assistant",
+      "Preview the card",
+      "Printing options",
+      "Print file checks",
+      "Saved offline",
+      "mobileRenderSnapshot",
+      "buildMobileRenderSnapshot",
+      "validateMobileRenderSnapshot",
+      "summarizeMobileRenderSnapshot",
+      "MobileRenderSection",
+      "MobileRenderRow",
+      "MobileRenderAction",
+      "ActionSurface",
+      "secondaryActions",
+      "presentation",
+      "disabled",
+      "mobileFulfillmentRecommendations",
+      "mobilePrintProofChecks",
+      "mobileLocaleOptions"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "native-profiles",
+    id: "expo-native-render-profile-signals",
+    sourceKeys: ["appConfig", "eas", "mobileReleaseDoctor"],
+    signals: [
+      'platforms: ["ios", "android"]',
+      'scheme: "customcard"',
+      'bundleIdentifier: "com.customcard.app"',
+      'package: "com.customcard.app"',
+      '"preview"',
+      '"simulator": true',
+      '"buildType": "apk"',
+      "signedArtifactBuilt: false"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-mobile-render-surfaces",
+    sourceKeys: ["adminApp", "apiContracts", "apiServer", "readinessSummaryData"],
+    signals: [
+      "Mobile render readiness",
+      "summarizeMobileRenderReadiness",
+      "mobileRenderReadiness",
+      "emulatorRenderProofs",
+      "signedArtifacts"
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, ["not an emulator render proof"], { id: "mobile-render-readiness-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "mobile-render-doctor-scripted-and-gated" }),
+  checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
+    "React Native render test output",
+    "Emulator screenshot",
+    "RTL native screenshot",
+    "Signed iOS artifact",
+    "Signed Android artifact"
+  ])
+];
 
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable mobile render readiness item shapes.`
-        : `Missing mobile render readiness fields: ${missing.join(", ")}`
-  };
-}
+runDoctorReport({
+  service: doctorManifest.service,
+  items: summary.total,
+  repoLocalReady: summary.repoLocalReady,
+  evidenceMissing: summary.evidenceMissing,
+  artifactBlocked: summary.artifactBlocked,
+  screenSections: summary.screenSections,
+  viewportProfiles: summary.viewportProfiles,
+  nativeBuildProfiles: summary.nativeBuildProfiles,
+  emulatorRequired: summary.emulatorRequired,
+  signedArtifactRequired: summary.signedArtifactRequired,
+  emulatorRenderProofs: summary.emulatorRenderProofs,
+  signedArtifacts: summary.signedArtifacts,
+  externalNetworkCalls: summary.externalNetworkCalls,
+  realOrdersEnabled: summary.realOrdersEnabled,
+  liveProviderCalls: summary.liveProviderCalls
+}, checks);

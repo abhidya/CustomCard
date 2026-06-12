@@ -1,5 +1,5 @@
 import { CheckCircle2, ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CardPanel } from "../../src/customerWorkflow";
 import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
 import type { PrintExportPackage } from "../../src/printExport";
@@ -61,6 +61,7 @@ export function PrintView({
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [proofChecklist, setProofChecklist] = useState<ProofChecklistState>(emptyProofChecklistState);
   const [showFieldIssues, setShowFieldIssues] = useState(false);
+  const onCardEventRef = useRef(onCardEvent);
   const overflowPanels = panels.filter((candidate) => candidate.overflowRisk);
   const rtlReview = panels.some((candidate) => candidate.rtl);
   const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
@@ -69,23 +70,24 @@ export function PrintView({
   // Any edit to the card after approval resets the approval.
   const proofSignature = panels.map((candidate) => `${candidate.id}:${candidate.headline}|${candidate.body}`).join("~");
   useEffect(() => {
+    onCardEventRef.current = onCardEvent;
+  }, [onCardEvent]);
+  useEffect(() => {
     setProofChecklist(emptyProofChecklistState);
   }, [proofSignature]);
   // Real lifecycle events: status history is driven by what actually happened.
   useEffect(() => {
-    if (proofApproved) onCardEvent?.("ready-to-print");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (proofApproved) onCardEventRef.current?.("ready-to-print");
   }, [proofApproved]);
   useEffect(() => {
     function onWalgreensReturn(event: MessageEvent) {
       const source = (event.data as { source?: string } | undefined)?.source ?? "";
       if (source === "customcard-walgreens-checkout") {
-        onCardEvent?.("returned-from-walgreens");
+        onCardEventRef.current?.("returned-from-walgreens");
       }
     }
     window.addEventListener("message", onWalgreensReturn);
     return () => window.removeEventListener("message", onWalgreensReturn);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const estimateByVendor = new Map<string, PrinterPriceEstimate>();
   for (const estimate of pricingComparison.rankedKnownPrices) {

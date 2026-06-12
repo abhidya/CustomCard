@@ -1,27 +1,46 @@
-import { readFileSync } from "node:fs";
 import {
   aiProviderReadinessItems,
   summarizeAiProviderReadiness,
   validateAiProviderReadiness
 } from "../src/aiProviderReadinessData.mjs";
-import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlockers } from "./doctor-harness.mjs";
+import {
+  checkArrayIncludes,
+  checkExact,
+  checkItemsHaveKeys,
+  checkMinimum,
+  checkNoBlockers,
+  runDoctorReport
+} from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  aiTest: "src/aiProviderReadiness.test.ts",
-  app: "src/App.tsx",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  providerCatalog: "src/providerCatalog.ts",
-  providerRuntime: "src/providerRuntime.ts",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  docs: "docs/platform-expansion-design.md"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "ai",
+  service: "customcard-ai-provider-readiness-doctor",
+  npmScript: "ai:doctor",
+  scriptPath: "scripts/ai-provider-readiness-doctor.mjs",
+  workflowLabel: "Validate AI provider readiness",
+  docsTitle: "AI provider readiness",
+  readinessModule: "src/aiProviderReadiness.ts",
+  files: {
+    aiTest: "src/aiProviderReadiness.test.ts",
+    app: "src/App.tsx",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    providerCatalog: "src/providerCatalog.ts",
+    providerRuntime: "src/providerRuntime.ts",
+    docs: "docs/platform-expansion-design.md"
+  },
+  docsKeys: ["docs"]
+});
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizeAiProviderReadiness(aiProviderReadinessItems);
 const validationBlockers = validateAiProviderReadiness(aiProviderReadinessItems);
@@ -48,101 +67,7 @@ const checks = [
     "evaluation-fixtures",
     "release-operations"
   ]),
-  checkItemsShape("register", "ai-readiness-item-shape", aiProviderReadinessItems),
-  checkIncludes("tests", "ai-readiness-tests", contents.aiTest, [
-    "tracks text and image provider readiness without live model calls",
-    "covers all existing AI text, image, and local fallback adapters explicitly",
-    "flags unsafe AI launch claims"
-  ]),
-  checkIncludes("surfaces", "admin-api-ai-readiness-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
-    "AI provider readiness",
-    "summarizeAiProviderReadiness",
-    "aiProviderReadiness",
-    "liveProviderCallsEnabled",
-    "productionTrafficEnabled"
-  ]),
-  checkIncludes("provider-contracts", "provider-catalog-runtime-ai-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}`, [
-    "deterministic-customer-chat",
-    "browser-svg-renderer",
-    "openai-responses-chat",
-    "anthropic-messages-chat",
-    "google-gemini-chat",
-    "cloudflare-workers-ai-chat",
-    "openai-images",
-    "cloudflare-workers-ai-image",
-    "stability-stable-image",
-    "deepai-text2img-image",
-    "bfl-flux-image",
-    "adobe-firefly-image",
-    "recraft-image",
-    "luma-image",
-    "folded-card-four-panel-v1",
-    "one-provider-request-per-panel",
-    "panelRequests",
-    "front-cover",
-    "inside-left-panel",
-    "inside-right-panel",
-    "modelAllowlisted",
-    "modelQualityReviewed"
-  ]),
-  checkIncludes("docs", "ai-readiness-docs", contents.docs, [
-    "AI provider readiness",
-    "`src/aiProviderReadiness.ts`",
-    "`npm run ai:doctor`",
-    "not live AI generation"
-  ]),
-  checkIncludes("ci", "ai-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"ai:doctor": "node scripts/ai-provider-readiness-doctor.mjs"',
-    "Validate AI provider readiness",
-    "npm run ai:doctor"
-  ]),
-  checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
-    "Approved model allowlist",
-    "Prompt audit report",
-    "Generated image sample set",
-    "Provider spend alert export",
-    "Rollback runbook"
-  ])
-];
-
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
-});
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-ai-provider-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      items: summary.total,
-      textProviderContracts: summary.textProviderContracts,
-      imageProviderContracts: summary.imageProviderContracts,
-      localFallbacks: summary.localFallbacks,
-      promptAuditRequired: summary.promptAuditRequired,
-      humanReviewRequired: summary.humanReviewRequired,
-      liveProviderCallsEnabled: summary.liveProviderCallsEnabled,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      productionTrafficEnabled: summary.productionTrafficEnabled,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
+  checkItemsHaveKeys("register", "ai-readiness-item-shape", aiProviderReadinessItems, [
     "id",
     "label",
     "lane",
@@ -159,22 +84,81 @@ function checkItemsShape(lane, id, items) {
     "currentEvidence",
     "requiredEvidence",
     "blocker"
-  ];
-  const missing = [];
+  ], {
+    readyDetail: `Validated ${aiProviderReadinessItems.length} executable AI provider readiness item shapes.`,
+    missingPrefix: "Missing AI provider readiness fields"
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "ai-readiness-tests",
+    sourceKeys: ["aiTest"],
+    signals: [
+      "tracks text and image provider readiness without live model calls",
+      "covers all existing AI text, image, and local fallback adapters explicitly",
+      "flags unsafe AI launch claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-ai-readiness-surfaces",
+    sourceKeys: ["app", "apiContracts", "apiServer", "readinessSummaryData"],
+    signals: [
+      "AI provider readiness",
+      "summarizeAiProviderReadiness",
+      "aiProviderReadiness",
+      "liveProviderCallsEnabled",
+      "productionTrafficEnabled"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "provider-contracts",
+    id: "provider-catalog-runtime-ai-contracts",
+    sourceKeys: ["providerCatalog", "providerRuntime"],
+    signals: [
+      "deterministic-customer-chat",
+      "browser-svg-renderer",
+      "openai-responses-chat",
+      "anthropic-messages-chat",
+      "google-gemini-chat",
+      "cloudflare-workers-ai-chat",
+      "openai-images",
+      "cloudflare-workers-ai-image",
+      "stability-stable-image",
+      "deepai-text2img-image",
+      "bfl-flux-image",
+      "adobe-firefly-image",
+      "recraft-image",
+      "luma-image",
+      "folded-card-four-panel-v1",
+      "one-provider-request-per-panel",
+      "panelRequests",
+      "front-cover",
+      "inside-left-panel",
+      "inside-right-panel",
+      "modelAllowlisted",
+      "modelQualityReviewed"
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, ["not live AI generation"], { id: "ai-readiness-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "ai-doctor-scripted-and-gated" }),
+  checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
+    "Approved model allowlist",
+    "Prompt audit report",
+    "Generated image sample set",
+    "Provider spend alert export",
+    "Rollback runbook"
+  ])
+];
 
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable AI provider readiness item shapes.`
-        : `Missing AI provider readiness fields: ${missing.join(", ")}`
-  };
-}
+runDoctorReport({
+  service: doctorManifest.service,
+  items: summary.total,
+  textProviderContracts: summary.textProviderContracts,
+  imageProviderContracts: summary.imageProviderContracts,
+  localFallbacks: summary.localFallbacks,
+  promptAuditRequired: summary.promptAuditRequired,
+  humanReviewRequired: summary.humanReviewRequired,
+  liveProviderCallsEnabled: summary.liveProviderCallsEnabled,
+  externalNetworkCalls: summary.externalNetworkCalls,
+  productionTrafficEnabled: summary.productionTrafficEnabled
+}, checks);

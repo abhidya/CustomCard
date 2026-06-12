@@ -1,11 +1,11 @@
 export const aiFlowAdminConfigStorageKey = "customcard-ai-flow-admin-config-v1";
 
 const textProviderAdapterIds = [
+  "huggingface-chat",
   "cloudflare-workers-ai-chat",
   "openai-responses-chat",
   "anthropic-messages-chat",
   "google-gemini-chat",
-  "huggingface-chat",
   "groq-chat",
   "together-chat",
   "mistral-chat",
@@ -18,10 +18,10 @@ const textProviderAdapterIds = [
 ];
 
 const imageProviderAdapterIds = [
+  "deepai-text2img-image",
   "cloudflare-workers-ai-image",
   "openai-images",
   "google-gemini-image",
-  "deepai-text2img-image",
   "huggingface-image",
   "stability-stable-image",
   "replicate-image",
@@ -55,15 +55,15 @@ export const aiFlowDefinitions = [
     flowId: "card-copy",
     label: "Card copy",
     capability: "text-chat",
-    defaultPrimaryAdapterId: "cloudflare-workers-ai-chat",
+    defaultPrimaryAdapterId: "huggingface-chat",
     defaultFallbackAdapterId: "deterministic-customer-chat",
     allowedAdapterIds: textProviderAdapterIds,
     liveDefault: "auto",
     queueDefault: false,
     fallbackQueueDefault: true,
-    rateLimitPerMinute: 10,
-    monthlyBudgetCents: 3000,
-    perRequestBudgetCents: 12,
+    rateLimitPerMinute: 4,
+    monthlyBudgetCents: 5000,
+    perRequestBudgetCents: 5,
     maxRetries: 1,
     maxTokens: 2200,
     temperature: 0.62,
@@ -74,16 +74,16 @@ export const aiFlowDefinitions = [
     flowId: "card-image",
     label: "Card image",
     capability: "image-generation",
-    defaultPrimaryAdapterId: "cloudflare-workers-ai-image",
+    defaultPrimaryAdapterId: "deepai-text2img-image",
     defaultFallbackAdapterId: "browser-svg-renderer",
     allowedAdapterIds: imageProviderAdapterIds,
     liveDefault: false,
     queueDefault: true,
     fallbackQueueDefault: true,
     rateLimitPerMinute: 4,
-    monthlyBudgetCents: 3000,
-    perRequestBudgetCents: 75,
-    maxRetries: 0,
+    monthlyBudgetCents: 4000,
+    perRequestBudgetCents: 1,
+    maxRetries: 1,
     maxTokens: 0,
     temperature: 0,
     promptInstructions:
@@ -118,8 +118,7 @@ export const aiProviderEnvRequirements = {
   ],
   "cloudflare-workers-ai-image": [
     ["CLOUDFLARE_ACCOUNT_ID"],
-    ["CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN", "CLOUDFLARE_API_TOKEN"],
-    ["CLOUDFLARE_WORKERS_AI_IMAGE_MODEL"]
+    ["CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN", "CLOUDFLARE_API_TOKEN"]
   ],
   "openai-responses-chat": [["OPENAI_API_KEY"]],
   "openai-images": [["OPENAI_API_KEY"]],
@@ -171,13 +170,14 @@ const aiProviderModelEnvKeys = {
 };
 
 const defaultModelsByAdapter = {
+  "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
   "openai-responses-chat": "gpt-4o-mini",
   "openai-images": "gpt-image-2",
   "anthropic-messages-chat": "claude-3-5-haiku-latest",
   "google-gemini-chat": "gemini-1.5-flash",
   "google-gemini-image": "gemini-3.1-flash-image",
   "deepai-text2img-image": "hd",
-  "huggingface-chat": "meta-llama/Llama-3.2-3B-Instruct",
+  "huggingface-chat": "Qwen/Qwen3-235B-A22B-Instruct-2507",
   "huggingface-image": "black-forest-labs/FLUX.1-schnell",
   "mistral-chat": "mistral-small-latest",
   "groq-chat": "llama-3.1-8b-instant",

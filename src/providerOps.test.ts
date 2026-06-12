@@ -90,14 +90,14 @@ describe("provider ops", () => {
     expect(cloudflareChatOps?.blockedReasons.join(" ")).toContain("model allowlist");
     expect(providerOps.summary.readyForLiveCalls).toBe(2);
     expect(providerOps.summary.liveReadyProviders).toBe(0);
-    expect(providerOps.limits.maxPerRequestBudgetCents).toBeGreaterThanOrEqual(75);
+    expect(providerOps.limits.maxPerRequestBudgetCents).toBe(5);
     expect(providerOps.usage).toMatchObject({
       configuredProviders: 2,
       configuredFlows: 3,
       liveEnabledConfiguredFlows: 2,
-      monthlyBudgetCents: 8500,
-      maxPerRequestBudgetCents: 75,
-      estimatedMonthlyRequestsAtBudget: 540,
+      monthlyBudgetCents: 11500,
+      maxPerRequestBudgetCents: 10,
+      estimatedMonthlyRequestsAtBudget: 5250,
       reservedOrSpentCents: 12,
       actualSpendCents: 9,
       ledgerEvents: 1,

@@ -181,15 +181,21 @@ export type ReadinessDomainId = (typeof readinessDomainDefinitions)[number]["id"
 export const readinessDomainIds: ReadinessDomainId[] = readinessDomainDefinitions.map((domain) => domain.id);
 
 export function buildReadinessSummary(): ReadinessSummary {
-  return Object.fromEntries(
-    readinessDomainDefinitions.map((domain) => [
-      domain.id,
-      {
-        [domain.payloadKey]: domain.payload,
-        summary: domain.summarize()
-      }
-    ])
-  ) as unknown as ReadinessSummary;
+  return {
+    aiProvider: { items: aiProviderReadinessItems, summary: summarizeAiProviderReadiness() },
+    businessEngagement: { items: businessEngagementReadinessItems, summary: summarizeBusinessEngagementReadiness() },
+    capacity: { profiles: capacityProfiles, summary: summarizeCapacityPlan() },
+    cloudArtifactProof: { items: cloudArtifactProofReadinessItems, summary: summarizeCloudArtifactProofReadiness() },
+    e2eCoverage: { items: e2eCoverageItems, summary: summarizeE2eCoverage() },
+    externalAudit: { items: externalAuditReadinessItems, summary: summarizeExternalAuditReadiness() },
+    hostedApi: { items: hostedApiReadinessItems, summary: summarizeHostedApiReadiness() },
+    legalCompliance: { items: legalComplianceItems, summary: summarizeLegalComplianceReadiness() },
+    mobileRender: { items: mobileRenderReadinessItems, summary: summarizeMobileRenderReadiness() },
+    observability: { items: observabilityReadinessItems, summary: summarizeObservabilityReadiness() },
+    payment: { items: paymentReadinessItems, summary: summarizePaymentReadiness() },
+    retailFulfillment: { items: retailFulfillmentReadinessItems, summary: summarizeRetailFulfillmentReadiness() },
+    reviewerDbSeed: { items: reviewerDbSeedReadinessItems, summary: summarizeReviewerDbSeedReadiness() }
+  };
 }
 
 export function validateReadinessDomains(): string[] {

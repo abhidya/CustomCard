@@ -69,6 +69,31 @@ describe("api runtime safety", () => {
     });
   });
 
+  it("fails closed when Postgres runtime lacks a strong auth session secret", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        DATABASE_URL: "postgres://example/customcard",
+        AUTH_SESSION_SECRET: "too-short"
+      },
+      routes: apiRouteContracts
+    });
+
+    expect(runtime.mode).toBe("invalid");
+    expect(runtime.validate()).toEqual([
+      "Postgres API runtime requires AUTH_SESSION_SECRET to be at least 32 characters."
+    ]);
+
+    await expect(runtime.authorize(renderPacketsRoute, { headers: { authorization: "Bearer customer-token" } })).resolves.toMatchObject({
+      ok: false,
+      statusCode: 503,
+      payload: {
+        status: "api-runtime-invalid",
+        route: "render-packets"
+      }
+    });
+  });
+
   it("bounds Postgres pool settings for serverless-safe defaults", () => {
     expect(postgresPoolConfig({ DATABASE_URL: "postgres://example/customcard" })).toMatchObject({
       connectionString: "postgres://example/customcard",

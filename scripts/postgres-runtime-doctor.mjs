@@ -3,11 +3,13 @@ import { apiRouteContracts as routes } from "../src/apiRouteContractsData.mjs";
 
 const customerToken = "postgres-customer-session-token";
 const adminToken = "postgres-admin-session-token";
-const fakeDb = createFakePostgresState({ customerToken, adminToken });
+const authSessionSecret = "postgres-contract-auth-session-secret";
+const fakeDb = createFakePostgresState({ customerToken, adminToken, authSessionSecret });
 const runtime = createApiRuntime({
   env: {
     CUSTOMCARD_API_RUNTIME: "postgres",
-    DATABASE_URL: "postgres://contract-only/customcard"
+    DATABASE_URL: "postgres://contract-only/customcard",
+    AUTH_SESSION_SECRET: authSessionSecret
   },
   routes,
   postgresPoolFactory: () => fakeDb.pool
@@ -489,10 +491,10 @@ function expectRuntimeCountsUnchanged(before, after, label) {
   }
 }
 
-function createFakePostgresState({ customerToken, adminToken }) {
+function createFakePostgresState({ customerToken, adminToken, authSessionSecret }) {
   const sessions = new Map([
     [
-      hashSessionToken(customerToken),
+      hashSessionToken(customerToken, authSessionSecret),
       {
         session_id: "session-user-demo",
         user_id: "user-demo",
@@ -501,7 +503,7 @@ function createFakePostgresState({ customerToken, adminToken }) {
       }
     ],
     [
-      hashSessionToken(adminToken),
+      hashSessionToken(adminToken, authSessionSecret),
       {
         session_id: "session-admin-demo",
         user_id: "admin-demo",

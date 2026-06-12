@@ -18,8 +18,8 @@ describe("provider governance", () => {
     expect(providerGovernanceSeams.find((seam) => seam.capability === "text-chat")).toMatchObject({
       fallbackAdapterId: "deterministic-customer-chat",
       controls: expect.objectContaining({
-        monthlyBudgetCents: 2500,
-        perRequestBudgetCents: 10,
+        monthlyBudgetCents: 5000,
+        perRequestBudgetCents: 5,
         queueRequired: false
       })
     });
@@ -40,7 +40,7 @@ describe("provider governance", () => {
     expect(summary.zeroPlatformSpend).toBeGreaterThanOrEqual(16);
     expect(summary.blockedZeroSpend).toBe(6);
     expect(summary.monthlyBudgetCents).toBeGreaterThan(0);
-    expect(summary.maxPerRequestBudgetCents).toBe(75);
+    expect(summary.maxPerRequestBudgetCents).toBe(5);
     expect(summary.rateLimited).toBe(summary.total - summary.blockedZeroSpend);
     expect(summary.fallbackCovered).toBe(summary.total);
     expect(summary.liveNetworkDefault).toBe(false);
@@ -48,18 +48,18 @@ describe("provider governance", () => {
 
     expect(summary.policies.find((policy) => policy.adapterId === "openai-responses-chat")).toMatchObject({
       spendTier: "budget-capped",
-      monthlyBudgetCents: 2500,
-      perRequestBudgetCents: 10,
-      rateLimitPerMinute: 12,
+      monthlyBudgetCents: 5000,
+      perRequestBudgetCents: 5,
+      rateLimitPerMinute: 4,
       fallbackAdapterId: "deterministic-customer-chat",
       queueRequired: true,
       liveNetworkDefault: false
     });
     expect(summary.policies.find((policy) => policy.adapterId === "openai-images")).toMatchObject({
       spendTier: "budget-capped",
-      monthlyBudgetCents: 3000,
-      perRequestBudgetCents: 75,
-      rateLimitPerMinute: 6,
+      monthlyBudgetCents: 4000,
+      perRequestBudgetCents: 1,
+      rateLimitPerMinute: 4,
       fallbackAdapterId: "browser-svg-renderer",
       humanApprovalRequired: true
     });

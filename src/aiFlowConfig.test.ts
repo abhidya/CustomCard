@@ -15,6 +15,11 @@ const cloudflareEnv = {
   CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning"
 };
 
+const recommendedCardGenerationEnv = {
+  HUGGINGFACE_API_TOKEN: "hf-token",
+  DEEPAI_API_KEY: "deepai-token"
+};
+
 describe("AI flow config", () => {
   it("resolves configured Cloudflare text flows as live-ready from env", () => {
     const flow = resolveAiFlowConfig("card-copy", cloudflareEnv);
@@ -26,16 +31,40 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("keeps Cloudflare as the preferred image adapter while live calls stay disabled by default", () => {
+  it("defaults card generation to Qwen copy and DeepAI HD while image live calls stay disabled", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
 
-    expect(cardCopy?.primaryAdapterId).toBe("cloudflare-workers-ai-chat");
+    expect(cardCopy?.primaryAdapterId).toBe("huggingface-chat");
+    expect(cardCopy?.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
+    expect(cardCopy?.rateLimitPerMinute).toBe(4);
+    expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
-    expect(cardImage?.primaryAdapterId).toBe("cloudflare-workers-ai-image");
+    expect(cardImage?.primaryAdapterId).toBe("deepai-text2img-image");
+    expect(cardImage?.model).toBe("hd");
     expect(cardImage?.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(cardImage?.rateLimitPerMinute).toBe(4);
+    expect(cardImage?.perRequestBudgetCents).toBe(1);
     expect(cardImage?.liveProviderCallsEnabled).toBe(false);
+  });
+
+  it("uses the benchmark-winning Qwen plus DeepAI HD combo when those credentials exist", () => {
+    const cardCopy = resolveAiFlowConfig("card-copy", recommendedCardGenerationEnv);
+    const cardImage = resolveAiFlowConfig("card-image", {
+      ...recommendedCardGenerationEnv,
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    });
+
+    expect(cardCopy.primaryAdapterId).toBe("huggingface-chat");
+    expect(cardCopy.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
+    expect(cardCopy.rateLimitPerMinute).toBe(4);
+    expect(cardCopy.readyForLiveCalls).toBe(true);
+    expect(cardImage.primaryAdapterId).toBe("deepai-text2img-image");
+    expect(cardImage.model).toBe("hd");
+    expect(cardImage.rateLimitPerMinute).toBe(4);
+    expect(cardImage.perRequestBudgetCents).toBe(1);
+    expect(cardImage.readyForLiveCalls).toBe(true);
   });
 
   it("routes card-image to Cloudflare when image credentials and live calls are enabled", () => {
@@ -50,6 +79,19 @@ describe("AI flow config", () => {
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);
+  });
+
+  it("uses Cloudflare Flux as the image-model default when Cloudflare image is selected without a model env", () => {
+    const flow = resolveAiFlowConfig("card-image", {
+      CLOUDFLARE_ACCOUNT_ID: "acct_123",
+      CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    });
+
+    expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
+    expect(flow.model).toBe("@cf/black-forest-labs/flux-1-schnell");
+    expect(flow.readyForLiveCalls).toBe(true);
   });
 
   it("allows DeepAI HD as an executable card-image override", () => {

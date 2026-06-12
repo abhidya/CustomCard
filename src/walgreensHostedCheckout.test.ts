@@ -1,7 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { createWalgreensCheckoutDummyFetch, createWalgreensHostedCheckoutService } from "./walgreensHostedCheckout.mjs";
+import {
+  buildWalgreensCallbackHtml,
+  createWalgreensCheckoutDummyFetch,
+  createWalgreensHostedCheckoutService
+} from "./walgreensHostedCheckout.mjs";
 
 describe("Walgreens hosted checkout", () => {
+  it("does not emit wildcard postMessage targets in callback HTML", () => {
+    const html = buildWalgreensCallbackHtml("*");
+    expect(html).not.toContain("postMessage(payload, \"*\")");
+    expect(html).not.toContain("window.opener.postMessage");
+  });
+
+  it("posts Walgreens callback status only to a configured app origin", () => {
+    const html = buildWalgreensCallbackHtml("http://127.0.0.1:5173/");
+    expect(html).toContain('window.opener.postMessage(payload, "http://127.0.0.1:5173")');
+  });
+
   it("explains PhotoPrints vendor-match credential errors", async () => {
     const fetchImpl = (async () =>
       new Response(JSON.stringify({ err: "659", errDesc: "" }), {

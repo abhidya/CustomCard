@@ -11,6 +11,7 @@ export { postgresPoolConfig } from "./postgres-runtime.mjs";
 
 const runtimeModes = new Set(["contract", "memory", "postgres"]);
 const productionEnvNames = new Set(["prod", "production"]);
+const authSessionSecretMessage = "Postgres API runtime requires AUTH_SESSION_SECRET to be at least 32 characters.";
 
 function isProductionRuntimeEnv(env) {
   const customCardEnv = String(env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
@@ -33,9 +34,21 @@ export function createApiRuntime({ env = process.env, routes = [], postgresPoolF
     });
   }
   const mode = requestedMode;
+  if (mode === "postgres" && !hasStrongAuthSessionSecret(env)) {
+    return createInvalidApiRuntime({
+      requestedMode: mode,
+      routes,
+      objectStoreRuntime,
+      validationMessage: authSessionSecretMessage
+    });
+  }
   if (mode === "memory") return createMemoryApiRuntime({ env, routes, objectStoreRuntime });
   if (mode === "postgres") return createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime });
   return createContractApiRuntime({ routes, objectStoreRuntime });
+}
+
+function hasStrongAuthSessionSecret(env) {
+  return String(env.AUTH_SESSION_SECRET ?? "").length >= 32;
 }
 
 export function hashSessionToken(token, sessionSecret = "") {
@@ -520,6 +533,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     validate() {
       const blockers = [];
       if (!env.DATABASE_URL) blockers.push("Postgres API runtime requires DATABASE_URL.");
+      if (!hasStrongAuthSessionSecret(env)) blockers.push(authSessionSecretMessage);
       blockers.push(...objectStoreRuntime.validate());
       return blockers;
     },

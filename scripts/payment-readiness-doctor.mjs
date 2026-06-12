@@ -2,28 +2,41 @@ import { paymentReadinessItems, summarizePaymentReadiness, validatePaymentReadin
 import {
   checkArrayIncludes,
   checkExact,
-  checkIncludes,
   checkItemsHaveKeys,
   checkMinimum,
   checkNoBlockers,
-  readTextFiles,
   runDoctorReport
 } from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  paymentTest: "src/paymentReadiness.test.ts",
-  app: "src/App.tsx",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  providerCatalog: "src/providerCatalog.ts",
-  providerRuntime: "src/providerRuntime.ts",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  docs: "docs/platform-expansion-design.md"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "payment",
+  service: "customcard-payment-readiness-doctor",
+  npmScript: "payment:doctor",
+  scriptPath: "scripts/payment-readiness-doctor.mjs",
+  workflowLabel: "Validate payment readiness",
+  docsTitle: "Payment readiness",
+  readinessModule: "src/paymentReadiness.ts",
+  files: {
+    paymentTest: "src/paymentReadiness.test.ts",
+    app: "src/App.tsx",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    providerCatalog: "src/providerCatalog.ts",
+    providerRuntime: "src/providerRuntime.ts",
+    docs: "docs/platform-expansion-design.md"
+  },
+  docsKeys: ["docs"]
+});
 
-const contents = readTextFiles(files);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizePaymentReadiness(paymentReadinessItems);
 const validationBlockers = validatePaymentReadiness(paymentReadinessItems);
@@ -76,39 +89,45 @@ const checks = [
     readyDetail: `Validated ${paymentReadinessItems.length} executable payment readiness item shapes.`,
     missingPrefix: "Missing payment readiness fields"
   }),
-  checkIncludes("tests", "payment-readiness-tests", contents.paymentTest, [
-    "tracks payment and refund readiness without live charge claims",
-    "covers sandbox payment providers, fallback, and refund ledger events explicitly",
-    "flags unsafe payment launch claims"
-  ]),
-  checkIncludes("surfaces", "admin-api-payment-surfaces", `${contents.app}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
-    "Payment readiness",
-    "summarizePaymentReadiness",
-    "paymentReadiness",
-    "liveChargesEnabled",
-    "pciScopeApproved"
-  ]),
-  checkIncludes("provider-contracts", "payment-provider-contracts", `${contents.providerCatalog}\n${contents.providerRuntime}`, [
-    "no-payment-checkout-gate",
-    "stripe-checkout-payment",
-    "paypal-orders-payment",
-    "square-payments-sandbox",
-    "adyen-checkout-payment",
-    "real_charges_enabled",
-    "refundPathDocumented",
-    "webhookSignatureVerified"
-  ]),
-  checkIncludes("docs", "payment-readiness-docs", contents.docs, [
-    "Payment readiness",
-    "`src/paymentReadiness.ts`",
-    "`npm run payment:doctor`",
-    "not live payment processing"
-  ]),
-  checkIncludes("ci", "payment-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"payment:doctor": "node scripts/payment-readiness-doctor.mjs"',
-    "Validate payment readiness",
-    "npm run payment:doctor"
-  ]),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "payment-readiness-tests",
+    sourceKeys: ["paymentTest"],
+    signals: [
+      "tracks payment and refund readiness without live charge claims",
+      "covers sandbox payment providers, fallback, and refund ledger events explicitly",
+      "flags unsafe payment launch claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-payment-surfaces",
+    sourceKeys: ["app", "apiContracts", "apiServer", "readinessSummaryData"],
+    signals: [
+      "Payment readiness",
+      "summarizePaymentReadiness",
+      "paymentReadiness",
+      "liveChargesEnabled",
+      "pciScopeApproved"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "provider-contracts",
+    id: "payment-provider-contracts",
+    sourceKeys: ["providerCatalog", "providerRuntime"],
+    signals: [
+      "no-payment-checkout-gate",
+      "stripe-checkout-payment",
+      "paypal-orders-payment",
+      "square-payments-sandbox",
+      "adyen-checkout-payment",
+      "real_charges_enabled",
+      "refundPathDocumented",
+      "webhookSignatureVerified"
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, ["not live payment processing"], { id: "payment-readiness-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "payment-doctor-scripted-and-gated" }),
   checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
     "Processor live-mode approval",
     "Refund drill output",
@@ -119,7 +138,7 @@ const checks = [
 ];
 
 runDoctorReport({
-  service: "customcard-payment-readiness-doctor",
+  service: doctorManifest.service,
   items: summary.total,
   paymentProviderContracts: summary.paymentProviderContracts,
   localFallbacks: summary.localFallbacks,

@@ -9,6 +9,8 @@ describe("Vite API middleware", () => {
   let previousGoogleClientId: string | undefined;
   let previousGoogleClientSecret: string | undefined;
   let previousGoogleRedirectUri: string | undefined;
+  let previousGoogleStateSecret: string | undefined;
+  let previousGoogleTokenEncryptionKey: string | undefined;
   let previousWalgreensMode: string | undefined;
   let previousAiCardCopyLive: string | undefined;
   let previousAiCardImageLive: string | undefined;
@@ -18,6 +20,8 @@ describe("Vite API middleware", () => {
     previousGoogleClientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
     previousGoogleClientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
     previousGoogleRedirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
+    previousGoogleStateSecret = process.env.GOOGLE_OAUTH_STATE_SECRET;
+    previousGoogleTokenEncryptionKey = process.env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY;
     previousWalgreensMode = process.env.WALGREENS_VENDOR_MODE;
     previousAiCardCopyLive = process.env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED;
     previousAiCardImageLive = process.env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED;
@@ -25,6 +29,8 @@ describe("Vite API middleware", () => {
     process.env.GOOGLE_OAUTH_CLIENT_ID = "test-google-calendar-client.apps.googleusercontent.com";
     process.env.GOOGLE_OAUTH_CLIENT_SECRET = "test-google-calendar-secret";
     process.env.GOOGLE_OAUTH_REDIRECT_URI = "http://127.0.0.1:5173/oauth/callback";
+    process.env.GOOGLE_OAUTH_STATE_SECRET = "test-google-oauth-state-secret-32-chars";
+    process.env.GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY = "test-google-oauth-token-key-32-chars";
     process.env.WALGREENS_VENDOR_MODE = "disabled_until_certified";
     process.env.CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED = "false";
     process.env.CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED = "false";
@@ -50,6 +56,8 @@ describe("Vite API middleware", () => {
     restoreEnv("GOOGLE_OAUTH_CLIENT_ID", previousGoogleClientId);
     restoreEnv("GOOGLE_OAUTH_CLIENT_SECRET", previousGoogleClientSecret);
     restoreEnv("GOOGLE_OAUTH_REDIRECT_URI", previousGoogleRedirectUri);
+    restoreEnv("GOOGLE_OAUTH_STATE_SECRET", previousGoogleStateSecret);
+    restoreEnv("GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY", previousGoogleTokenEncryptionKey);
     restoreEnv("WALGREENS_VENDOR_MODE", previousWalgreensMode);
     restoreEnv("CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED", previousAiCardCopyLive);
     restoreEnv("CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED", previousAiCardImageLive);

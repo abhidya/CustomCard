@@ -110,7 +110,7 @@ export declare function buildWalgreensUploadTarget(
   uuid: string
 ): { uploadUrl: string; imageName: string };
 export declare function buildCheckoutUrl(landingUrl: string, token: string): string;
-export declare function buildWalgreensCallbackHtml(appOrigin: string): string;
+export declare function buildWalgreensCallbackHtml(appOrigin?: string): string;
 export declare function createWalgreensHostedCheckoutService(options: {
   env: Record<string, string | undefined>;
   fetchImpl: (url: string, init?: RequestInit) => Promise<Response>;

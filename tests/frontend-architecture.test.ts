@@ -70,6 +70,15 @@ describe("frontend architecture seams", () => {
     expect(adminSource).toContain("buildRuntimeReadinessMap");
   });
 
+  it("keeps PrintView lifecycle events lint-clean without hook dependency bypasses", () => {
+    const printViewSource = readFileSync(new URL("../webapp/views/PrintView.tsx", import.meta.url), "utf8");
+
+    expect(printViewSource).not.toContain("eslint-disable-next-line react-hooks/exhaustive-deps");
+    expect(printViewSource).toContain("const onCardEventRef = useRef(onCardEvent)");
+    expect(printViewSource).toContain('onCardEventRef.current?.("ready-to-print")');
+    expect(printViewSource).toContain('onCardEventRef.current?.("returned-from-walgreens")');
+  });
+
   it("keeps route visibility policy out of the app shell render logic", () => {
     expect(resolveVisibleCustomerView("admin")).toBe("customer");
     expect(resolveVisibleCustomerView("adapters")).toBe("customer");

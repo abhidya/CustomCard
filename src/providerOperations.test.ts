@@ -91,15 +91,15 @@ describe("provider operations", () => {
     expect(plan.attempts[0]).toMatchObject({
       adapterId: "openai-images",
       status: "ready",
-      monthlyBudgetCents: 3000,
-      projectedMonthlySpendCents: 300
+      monthlyBudgetCents: 4000,
+      projectedMonthlySpendCents: 4
     });
     expect(plan.ledgerEvents).toEqual([
       expect.objectContaining({
         adapterId: "openai-images",
         status: "reserved",
         requestUnits: 4,
-        estimatedCostCents: 300,
+        estimatedCostCents: 4,
         monthBucket: "2026-06",
         piiFree: true,
         liveNetworkCall: false,
@@ -117,9 +117,9 @@ describe("provider operations", () => {
       routeId: "render-packets",
       status: "succeeded",
       nowIso: "2026-06-10T11:00:00.000Z",
-      requestUnits: 39,
-      estimatedCostCents: 2925,
-      actualCostCents: 2925
+      requestUnits: 3997,
+      estimatedCostCents: 3997,
+      actualCostCents: 3997
     });
 
     const plan = buildProviderFailoverPlan({
@@ -140,8 +140,8 @@ describe("provider operations", () => {
       adapterId: "openai-images",
       status: "blocked",
       reason: "monthly-budget-exceeded",
-      monthlySpentCents: 2925,
-      projectedMonthlySpendCents: 3225
+      monthlySpentCents: 3997,
+      projectedMonthlySpendCents: 4001
     });
     expect(plan.ledgerEvents.map((event) => event.status)).toEqual(["blocked", "reserved"]);
     expect(plan.ledgerEvents[0]).toMatchObject({
@@ -149,12 +149,12 @@ describe("provider operations", () => {
       status: "blocked",
       fallbackReason: "monthly-budget-exceeded",
       requestUnits: 4,
-      estimatedCostCents: 300
+      estimatedCostCents: 4
     });
     expect(plan.ledgerEvents[1]).toMatchObject({
       adapterId: "google-gemini-image",
       status: "reserved",
-      estimatedCostCents: 300
+      estimatedCostCents: 4
     });
   });
 

@@ -28,6 +28,7 @@ function clerkClaims(overrides: Record<string, unknown> = {}): Record<string, un
     sub: "user_2clerk123",
     sid: "sess_2clerk456",
     iss: "https://clerk.customcard.example",
+    aud: "customcard-api",
     azp: "https://customcard-three.vercel.app",
     exp: nowSeconds + 300,
     nbf: nowSeconds - 30,
@@ -46,6 +47,8 @@ const runtimeEnv = {
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
   CLERK_JWT_KEY: clerkPem,
   CLERK_AUTHORIZED_PARTIES: "https://customcard-three.vercel.app",
+  CLERK_ISSUER: "https://clerk.customcard.example",
+  CLERK_AUDIENCE: "customcard-api",
   CUSTOMCARD_ADMIN_EMAILS: "owner@customcard.example"
 };
 
@@ -73,6 +76,24 @@ describe("clerk session verification", () => {
 
     const wrongParty = signClerkJwt(clerkClaims({ azp: "https://evil.example" }));
     expect(verifyClerkSessionToken(wrongParty, runtimeEnv)).toMatchObject({ ok: false, status: "unauthorized-party" });
+
+    const missingParty = signClerkJwt(clerkClaims({ azp: undefined }));
+    expect(verifyClerkSessionToken(missingParty, runtimeEnv)).toMatchObject({
+      ok: false,
+      status: "missing-authorized-party"
+    });
+
+    const wrongIssuer = signClerkJwt(clerkClaims({ iss: "https://evil-clerk.example" }));
+    expect(verifyClerkSessionToken(wrongIssuer, runtimeEnv)).toMatchObject({
+      ok: false,
+      status: "unauthorized-issuer"
+    });
+
+    const wrongAudience = signClerkJwt(clerkClaims({ aud: "other-api" }));
+    expect(verifyClerkSessionToken(wrongAudience, runtimeEnv)).toMatchObject({
+      ok: false,
+      status: "unauthorized-audience"
+    });
 
     const valid = signClerkJwt(clerkClaims());
     const tampered = `${valid.slice(0, valid.lastIndexOf(".") + 1)}${"A".repeat(40)}`;
