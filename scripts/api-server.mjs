@@ -123,7 +123,16 @@ function walgreensRateLimited(request) {
 
 function clientRateLimitKey(request) {
   const remoteAddress = String(request.socket?.remoteAddress ?? "unknown").trim() || "unknown";
-  if (process.env.CUSTOMCARD_TRUST_PROXY_HEADERS !== "true") return remoteAddress;
+  const behindTrustedProxy = process.env.CUSTOMCARD_TRUST_PROXY_HEADERS === "true" || Boolean(process.env.VERCEL);
+  if (!behindTrustedProxy) return remoteAddress;
+
+  // Behind Vercel the socket address is the proxy, so every client would share
+  // one bucket. Prefer the platform-set client-IP headers over x-forwarded-for,
+  // which the client can prepend to.
+  const platformClientIp =
+    String(request.headers?.["x-vercel-forwarded-for"] ?? "").split(",")[0].trim() ||
+    String(request.headers?.["x-real-ip"] ?? "").trim();
+  if (platformClientIp) return platformClientIp;
 
   const forwardedFor = String(request.headers?.["x-forwarded-for"] ?? "")
     .split(",")[0]
@@ -866,13 +875,16 @@ function buildMutationContractPayload(route, bodyText, options = {}) {
   if (route.id === "data-requests") {
     const requestType = safeDataRequestType(requestBody.requestType ?? requestBody.type);
     const dataRequestId = safeContractId(requestBody.requestId, `data-request-${stableContractHash(`${requestType}:contract`).slice(0, 8)}`);
-    const dueAt = safeTimestamp(requestBody.dueAt, "2030-01-31T00:00:00.000Z");
+    // Status and due date are server policy: a requester must never be able to
+    // mark their own privacy request completed or move its deadline.
+    const dueAtDays = requestType === "revoke_consent" ? 7 : 30;
+    const dueAt = new Date(Date.now() + dueAtDays * 24 * 60 * 60 * 1000).toISOString();
     const region = safeContractText(requestBody.region, "").slice(0, 12);
     return {
       ...basePayload,
       dataRequestId,
       requestType,
-      requestStatus: safeDataRequestStatus(requestBody.status),
+      requestStatus: "pending_verification",
       dueAt,
       consentRecordId: `consent-${stableContractHash(`${dataRequestId}:data-request`).slice(0, 8)}`,
       consentGranted: safeBoolean(requestBody.consentGranted ?? requestBody.requestConfirmed),
@@ -1386,6 +1398,8 @@ function googleCalendarEventsUrl(env, now = new Date()) {
   url.searchParams.set("timeMin", timeMin);
   url.searchParams.set("timeMax", timeMax);
   url.searchParams.set("maxResults", String(safeCalendarMaxResults(env.GOOGLE_CALENDAR_IMPORT_MAX_RESULTS)));
+  // Data minimization: only the fields the import record stores ever leave Google.
+  url.searchParams.set("fields", "items(id,iCalUID,summary,start,end(timeZone)),nextPageToken");
   return url.toString();
 }
 
@@ -1816,11 +1830,6 @@ function safeBoolean(value) {
 function safeDataRequestType(value) {
   const requestType = String(value ?? "export").trim().toLowerCase().replace(/[^a-z_:-]/g, "_");
   return ["export", "delete", "correct", "revoke_consent", "access"].includes(requestType) ? requestType : "export";
-}
-
-function safeDataRequestStatus(value) {
-  const status = String(value ?? "pending_verification").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
-  return ["pending_verification", "received", "processing", "completed", "rejected"].includes(status) ? status : "pending_verification";
 }
 
 function safeMemoryDecision(value) {

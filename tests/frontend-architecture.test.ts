@@ -422,8 +422,9 @@ describe("frontend architecture seams", () => {
         status: { tone: "ok", title: "Opening Google Calendar" }
       });
 
+    // Setup failures must never leak env vars or internals to the customer.
     expect(resolveCalendarConnectionResult(true, 200, { missingEnv: ["GOOGLE_CLIENT_ID"] }).status.detail)
-      .toBe("Missing env: GOOGLE_CLIENT_ID.");
+      .toBe("Calendar connection isn't available right now. Paste an invite instead — it works the same way.");
   });
 
   it("creates Walgreens checkout sessions outside PrintView", async () => {

@@ -42,8 +42,10 @@ describe("customer chat contract", () => {
     expect(session.messages.at(-2)?.text).not.toContain("4111 1111 1111 1111");
     expect(session.messages.at(-1)).toMatchObject({
       role: "assistant",
-      text: expect.stringContaining("This reply stayed local")
+      text: expect.stringContaining("head to print options")
     });
+    // Customer-facing replies must not end with audit-log disclaimers.
+    expect(session.messages.at(-1)?.text).not.toContain("stayed local");
     expect(session.messages.at(-1)?.text).toContain("generated images wait until you choose and review them");
     expect(session.blockedProviderReasons.join(" ")).toContain("OPENAI_API_KEY");
   });
@@ -101,7 +103,7 @@ describe("customer chat contract", () => {
     expect(result.usedFallback).toBe(true);
     expect(result.errorMessage).toContain("503");
     expect(validateCustomerChatSession(result.session)).toEqual([]);
-    expect(result.messages.at(-1)?.text).toContain("This reply stayed local");
+    expect(result.messages.at(-1)?.text).toContain("head to print options");
     expect(result.messages.at(-2)?.text).not.toContain("sara@example.com");
   });
 

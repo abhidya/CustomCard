@@ -67,7 +67,7 @@ const howItWorksSteps = [
   {
     icon: <Store size={18} />,
     title: "Continue to Walgreens",
-    body: "Walgreens handles the store, the price, and the payment. Pick the card up the same day."
+    body: "Walgreens handles the store, the price, and the payment. Pickup is often same-day — Walgreens confirms the time at checkout."
   }
 ];
 
@@ -82,13 +82,13 @@ const trustPoints = [
 ];
 
 const cardImageByCategory: Record<string, string> = {
-  birthday: "/generated/card-birthday.png",
-  graduation: "/generated/card-graduation.png",
-  wedding: "/generated/card-wedding-anniversary.png",
-  anniversary: "/generated/card-photo-milestone.png",
-  "thank-you": "/generated/card-thank-you.png",
-  sympathy: "/generated/card-sympathy.png",
-  custom: "/generated/card-default-botanical.png"
+  birthday: "/generated/card-birthday.webp",
+  graduation: "/generated/card-graduation.webp",
+  wedding: "/generated/card-wedding-anniversary.webp",
+  anniversary: "/generated/card-photo-milestone.webp",
+  "thank-you": "/generated/card-thank-you.webp",
+  sympathy: "/generated/card-sympathy.webp",
+  custom: "/generated/card-default-botanical.webp"
 };
 
 const exampleCards = [
@@ -168,7 +168,7 @@ export function HomeView({
             alt="Premium folded greeting card and envelope"
             className="landingHeroCard landingHeroProductImage"
             decoding="async"
-            src="/generated/landing-hero-product.png"
+            src="/generated/landing-hero-product.webp"
           />
           <span className="landingHeroCaption">5 × 7 folded card · print-ready at 300 DPI</span>
         </div>

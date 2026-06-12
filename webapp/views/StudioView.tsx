@@ -250,7 +250,7 @@ export function StudioView({
           <div>
             <strong>Drafting from {sourceMoment.title}</strong>
             <span>
-              {sourceMoment.dateLabel} · {sourceMoment.sourceLabel} · {sourceMoment.confidenceLabel}
+              {sourceMoment.dateLabel} · {sourceMoment.sourceLabel}
             </span>
           </div>
         </div>
@@ -515,10 +515,12 @@ export function StudioView({
                 </small>
               </div>
               <button
+                aria-checked={draftInput.useMemory}
                 aria-label="Use saved notes"
                 className="switch"
                 data-on={draftInput.useMemory}
                 onClick={() => onField("useMemory", !draftInput.useMemory)}
+                role="switch"
                 type="button"
               />
             </div>

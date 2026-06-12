@@ -634,7 +634,7 @@ export function AdminCardGalleryView({
                 className="adminGalleryEmptyImage"
                 decoding="async"
                 loading="lazy"
-                src="/generated/admin-gallery-empty.png"
+                src="/generated/admin-gallery-empty.webp"
               />
               <GalleryHorizontalEnd size={18} />
               <strong>Select a card to curate.</strong>

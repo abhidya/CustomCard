@@ -118,7 +118,7 @@ export function BusinessLandingView({
             alt="Lifecycle workflow and card proof preview"
             className="businessLifecycleWorkflowImage"
             decoding="async"
-            src="/generated/b2b-lifecycle-workflow.png"
+            src="/generated/b2b-lifecycle-workflow.webp"
           />
           <div className="businessPipeline">
             <span>CRM date</span>

@@ -183,11 +183,11 @@ export function SettingsView({
             </li>
             <li>
               <span>Card drafts</span>
-              <strong>{isSignedIn ? "Saved to account" : "This browser only"}</strong>
+              <strong>{isSignedIn ? "Saved to account" : "This tab only — sign in to save"}</strong>
             </li>
             <li>
               <span>Payments</span>
-              <strong>Handled by printer</strong>
+              <strong>Handled by Walgreens</strong>
             </li>
           </ul>
         </aside>

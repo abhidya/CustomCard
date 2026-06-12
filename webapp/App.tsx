@@ -18,13 +18,11 @@ import { buildPanelSvgExportFile } from "../src/printExport";
 import { legalDocumentLinks } from "../src/legalCompliance";
 import {
   initialViewFromLocation,
-  reviewerReferenceDate,
   syncDraftInputWithOpportunity,
   useAppState,
   type ViewId
 } from "../src/appStateOrchestrator";
 import {
-  browserAdminEmailEnvNames,
   configuredAdminEmailsFromEnv,
   resolveBrowserAdminAccess,
   type BrowserAdminAccessPolicy
@@ -199,12 +197,7 @@ export default function App() {
   }
 
   function addNote(saveToAccount: boolean) {
-    const nextWorkspace = addApprovedRelationshipMemory(
-      workspace,
-      customerIdentity,
-      memoryForm,
-      reviewerReferenceDate
-    );
+    const nextWorkspace = addApprovedRelationshipMemory(workspace, customerIdentity, memoryForm);
     saveWorkspace(nextWorkspace);
     if (isSignedIn && saveToAccount) {
       setExportStatus("Note saving");
@@ -306,7 +299,7 @@ export default function App() {
       setExportStatus("Print package saved");
     } catch {
       downloadPrintPackageArchive(printPackage, [checklistEntry]);
-      setExportStatus("Print package saved; upload panels need browser rendering");
+      setExportStatus("Print package saved — images may look simplified in this browser");
     }
     handleCardEvent("downloaded");
   }
@@ -364,11 +357,8 @@ export default function App() {
     if (calendarConnection === "connected") {
       const importedCount = imported ? Number(imported) : 0;
       if (importedCount > 0) {
-        setInviteText(
-          [
-            "Google Calendar import review",
-            `${importedCount} Google Calendar event${importedCount === 1 ? "" : "s"} imported as read-only event metadata.`
-          ].join("\n")
+        setExportStatus(
+          `${importedCount} event${importedCount === 1 ? "" : "s"} imported from Google Calendar — review them below.`
         );
       }
       setOpportunityDecision("pending");
@@ -482,6 +472,7 @@ export default function App() {
             {themes.map((candidate) => (
               <button
                 aria-label={candidate.label}
+                aria-pressed={candidate.id === theme}
                 className={`themedot themedot-${candidate.id}`}
                 data-on={candidate.id === theme}
                 key={candidate.id}
@@ -827,17 +818,11 @@ function AdminGate({ access, target }: { access: AdminAccess; target: string }) 
         <h1>{target}</h1>
         <p>
           {checkingAccess
-            ? "Checking your account before showing private operations."
+            ? "Checking your account."
             : access.isSignedIn
-            ? "This account is signed in, but it is not marked as a CustomCard admin."
-            : "Sign in with a CustomCard admin account to view operational readiness and adapter controls."}
+            ? "This area is for CustomCard staff. Your account doesn't have access."
+            : "This area is for CustomCard staff. Sign in with a staff account to continue."}
         </p>
-        {!checkingAccess && !access.hasConfiguredEmails ? (
-          <small>
-            Admin access can be granted with Clerk public metadata role <code>admin</code> or a
-            comma-separated <code>{browserAdminEmailEnvNames[0]}</code> allowlist.
-          </small>
-        ) : null}
       </div>
       <div className="adminGateActions">
         <span>{status}</span>

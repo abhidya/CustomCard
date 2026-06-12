@@ -65,6 +65,7 @@ export function Chips<T extends string>({
     <div className="chips">
       {options.map((option) => (
         <button
+          aria-pressed={option === value}
           className="chip"
           data-on={option === value}
           key={option}
@@ -109,7 +110,7 @@ export function Step({
   const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="step" data-open={open}>
-      <button className="step-head" onClick={() => setOpen((current) => !current)} type="button">
+      <button aria-expanded={open} className="step-head" onClick={() => setOpen((current) => !current)} type="button">
         <span className="step-num">{number}</span>
         <span className="step-title">{title}</span>
         {meta && !open ? <span className="step-meta">{meta}</span> : null}
@@ -120,7 +121,11 @@ export function Step({
 }
 
 export function Toast({ message }: { message: string }) {
-  return <div className="toast">{message}</div>;
+  return (
+    <div aria-live="polite" className="toast" role="status">
+      {message}
+    </div>
+  );
 }
 
 type FoldedPreviewMode = "closed" | "open" | "back";
@@ -160,6 +165,7 @@ export function FoldedCardPreview({ panels }: { panels: CardPanel[] }) {
       <div className="folded3d-modes" role="group" aria-label="Folded preview angle">
         {(["closed", "open", "back"] as const).map((candidate) => (
           <button
+            aria-pressed={candidate === mode}
             className="folded3d-mode"
             data-on={candidate === mode}
             key={candidate}

@@ -3,7 +3,9 @@ import { SignInButton } from "@clerk/react";
 import { useCallback, useEffect, useState } from "react";
 import type { CardOpportunity, FreeImportSignal } from "../../src/freeMvp";
 import type { CalendarConnectionStartPacket } from "../../src/onboardingCalendar";
-import { sampleInviteText } from "../../src/freeMvp";
+// The example mirrors what a real person would paste — never raw calendar wire format.
+const exampleInviteText =
+  "Sara and Ahmed's 10-year anniversary dinner on July 12, 2026 in Brooklyn. Sara loves botanical cards.";
 import {
   fetchCustomerConnections,
   startGoogleCalendarConnection,
@@ -15,7 +17,7 @@ import { buildCalendarMomentDraftContext } from "../calendarMomentDraft";
 import { requestServerImportPreview, type ServerImportPreview } from "../importPreviewAdapter";
 
 const urgencyLabels: Record<CardOpportunity["urgency"], { label: string; tone: "warn" | "ok" | "soft" }> = {
-  "same-day": { label: "Needs same-day printing", tone: "warn" },
+  "same-day": { label: "Print in the next day or two", tone: "warn" },
   "this-week": { label: "Coming up this week", tone: "ok" },
   planned: { label: "Plenty of time", tone: "soft" },
   "needs-date": { label: "Date needed", tone: "warn" }
@@ -181,7 +183,7 @@ export function ImportSection({
           value={inviteText}
         />
         <div className="importactions">
-          <button className="textlink" onClick={() => onInviteText(sampleInviteText)} type="button">
+          <button className="textlink" onClick={() => onInviteText(exampleInviteText)} type="button">
             Try an example
           </button>
           {hasImport ? (
@@ -208,7 +210,7 @@ export function ImportSection({
               {serverPreview?.parsedFromRawText ? <span className="tag tag-ok">Checked by CustomCard</span> : null}
             </div>
             <h3>
-              {lowConfidence ? "I found a possible card moment, but need one detail." : "I found a card moment."}
+              {lowConfidence ? "Looks like a card moment — we just need one more detail." : "We found a card moment."}
             </h3>
             <p className="oppTitleLine">{opportunity.title}</p>
             <div className="opp-date">
@@ -378,7 +380,7 @@ export function ImportSection({
                     <small>
                       {context.recipient ? `For ${context.recipient} · ` : "Recipient needed · "}
                       {context.dateLabel}
-                      {` · From ${context.sourceLabel} · ${context.confidenceLabel}`}
+                      {` · From ${context.sourceLabel}`}
                     </small>
                     {!context.recipient ? <small className="momentWarn">Confirm who this card is for.</small> : null}
                     {!moment.startsAt ? <small className="momentWarn">Add the date before printing.</small> : null}

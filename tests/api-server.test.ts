@@ -1540,13 +1540,16 @@ describe("api server wrapper", () => {
         }
       );
       expect(dataRequest.status).toBe(202);
-      expect(await dataRequest.json()).toMatchObject({
+      const dataRequestPayload = await dataRequest.json();
+      // The server sets the deadline; the client-supplied dueAt must be ignored.
+      expect(dataRequestPayload.dueAt).not.toBe("2030-01-31T00:00:00.000Z");
+      expect(new Date(dataRequestPayload.dueAt).getTime()).toBeGreaterThan(Date.now());
+      expect(dataRequestPayload).toMatchObject({
         status: "accepted-contract-only",
         route: "data-requests",
         dataRequestId: "data-request-contract-api",
         requestType: "delete",
         requestStatus: "pending_verification",
-        dueAt: "2030-01-31T00:00:00.000Z",
         consentGranted: true,
         privacyControls: {
           region: "US",
@@ -2255,14 +2258,17 @@ describe("api server wrapper", () => {
         dataRequestHeaders
       );
       expect(dataRequest.status).toBe(202);
-      expect(await dataRequest.json()).toMatchObject({
+      const dataRequestPayload = await dataRequest.json();
+      // The server sets the deadline; the client-supplied dueAt must be ignored.
+      expect(dataRequestPayload.dueAt).not.toBe("2030-01-31T00:00:00.000Z");
+      expect(new Date(dataRequestPayload.dueAt).getTime()).toBeGreaterThan(Date.now());
+      expect(dataRequestPayload).toMatchObject({
         runtimeMode: "memory",
         authenticatedUserId: "user-demo",
         repositoryPersisted: true,
         dataRequestId: "data-request-memory-api",
         requestType: "delete",
         requestStatus: "pending_verification",
-        dueAt: "2030-01-31T00:00:00.000Z",
         consentGranted: true,
         privacyControls: {
           region: "US",

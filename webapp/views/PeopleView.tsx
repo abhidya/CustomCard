@@ -65,7 +65,7 @@ export function PeopleView({
         <h1>People</h1>
         <p>
           The people you make cards for, and the details that make those cards feel hand-written.
-          {isSignedIn ? "" : " Everything stays on this device until you sign in."}
+          {isSignedIn ? "" : " As a guest, your work lasts until you close or refresh this tab — sign in to keep it."}
         </p>
       </header>
 
@@ -94,14 +94,16 @@ export function PeopleView({
                   ? saveToAccount
                     ? "Saved to your account — delete it here whenever you like."
                     : "Off means use once: it shapes your next card only and is never saved to your account."
-                  : "Sign in to save details to your account. Until then, details stay on this device."}
+                  : "Sign in to save details to your account. Until then, details last only for this visit."}
               </small>
             </div>
             <button
+              aria-checked={saveToAccount}
               aria-label="Save this detail for future cards"
               className="switch"
               data-on={saveToAccount}
               onClick={() => setSaveToAccount((current) => !current)}
+              role="switch"
               type="button"
             />
           </div>

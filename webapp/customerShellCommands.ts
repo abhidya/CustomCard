@@ -329,7 +329,7 @@ function safeZipPath(path: string): string {
 }
 
 function zipTimestamp(): { date: number; time: number } {
-  const date = new Date("2026-06-03T12:00:00.000Z");
+  const date = new Date();
   const dosTime = (date.getUTCHours() << 11) | (date.getUTCMinutes() << 5) | Math.floor(date.getUTCSeconds() / 2);
   const dosDate = ((date.getUTCFullYear() - 1980) << 9) | ((date.getUTCMonth() + 1) << 5) | date.getUTCDate();
   return { date: dosDate, time: dosTime };

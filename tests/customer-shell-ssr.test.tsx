@@ -471,7 +471,7 @@ describe("customer shell server render", () => {
     const loading = renderShell({ search: "?view=admin", loaded: false, signedIn: false });
 
     expect(loading.text).toContain("Admin panel");
-    expect(loading.text).toContain("Checking your account before showing private operations.");
+    expect(loading.text).toContain("Checking your account.");
     expect(loading.text).toContain("Checking account access");
     expect(loading.text).not.toContain("Admin access can be granted");
     expect(loading.html).not.toContain('class="adminGateActions"><span>Checking account access</span><button');

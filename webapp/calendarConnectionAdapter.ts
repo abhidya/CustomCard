@@ -152,7 +152,7 @@ export function resolveCalendarConnectionResult(
           payload?.detail ??
           (statusCode === 401
             ? "Sign in before connecting Google Calendar."
-            : "The calendar connection route is not ready yet.")
+            : "Calendar connection isn't available right now. Paste an invite instead — it works the same way.")
       }
     };
   }
@@ -210,7 +210,7 @@ export function resolveCalendarConnectionResult(
       status: {
         tone: "ok",
         title: "Ready to import",
-        detail: `The next server route is ${payload.nextApiRoute}.`
+        detail: "Scan your calendar to bring in upcoming events."
       }
     };
   }
@@ -218,12 +218,8 @@ export function resolveCalendarConnectionResult(
   return {
     status: {
       tone: "warn",
-      title: "Google Calendar needs setup",
-      detail:
-        (payload?.missingEnv?.length ? `Missing env: ${payload.missingEnv.join(", ")}.` : undefined) ??
-        payload?.startPacket?.blockedReason ??
-        payload?.blockers?.join(", ") ??
-        "OAuth scope review, redirect URI, token storage, and revocation proof are required before live connection."
+      title: "Calendar connection unavailable",
+      detail: "Calendar connection isn't available right now. Paste an invite instead — it works the same way."
     }
   };
 }

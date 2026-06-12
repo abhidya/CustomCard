@@ -171,7 +171,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.printHeading).toBe("Print at Walgreens");
     expect(result.printText).toContain("Walgreens print details");
     expect(result.printText).toContain("Manual Walgreens upload");
-    expect(result.printText).toContain("Hosted checkout");
+    expect(result.printText).toContain("Send to Walgreens");
     expect(result.printText).toContain("Approve your proof");
     expect(result.printText).toContain("I approve this proof for printing");
     expect(result.printText).toContain("Continue to Walgreens");
@@ -252,7 +252,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         const raf = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         for (let attempt = 0; attempt < 20; attempt += 1) {
           await raf();
-          if (document.body.textContent?.includes("Google Calendar import review")) break;
+          if (document.body.textContent?.includes("imported from Google Calendar")) break;
         }
         return {
           h1: document.querySelector("h1")?.textContent,
@@ -265,11 +265,10 @@ describeWithChrome("CustomCard UI smoke", () => {
     );
 
     expect(result.h1).toBe("Never miss a moment");
-    expect(result.text).toContain("Google Calendar import review");
-    expect(result.text).toContain("4 Google Calendar events imported as read-only event metadata.");
-    expect(result.evidence.join(" ")).toContain("Manual import: Google Calendar import review");
-    expect(result.evidence.join(" ")).toContain("4 Google Calendar events imported as read-only event metadata");
-    expect(result.buttons.join(" ")).toContain("Make this card");
+    // Success is announced as a status message; the paste box is never overwritten
+    // with system text, and no dev vocabulary ("read-only event metadata") leaks.
+    expect(result.text).toContain("4 events imported from Google Calendar — review them below.");
+    expect(result.text).not.toContain("read-only event metadata");
     expect(result.search).toBe("?view=opportunities");
   }, 30000);
 
@@ -373,9 +372,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toBe("Admin panel");
     expect(result.text).toContain("Private operations");
     expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
-    expect(result.text).toMatch(
-      /Checking your account before showing private operations|Sign in with a CustomCard admin account/
-    );
+    expect(result.text).toMatch(/Checking your account|This area is for CustomCard staff/);
     expect(result.text).not.toContain("Integration owner workflow");
     expect(result.text).not.toContain("Required env");
     expect(result.adminCards).toBe(0);

@@ -66,7 +66,7 @@ export function NotesView({
         <h1>Your cards</h1>
         <p>
           Cards in progress and cards you&rsquo;ve finished.
-          {isSignedIn ? "" : " Everything stays on this device until you sign in."}
+          {isSignedIn ? "" : " As a guest, your work lasts until you close or refresh this tab — sign in to keep it."}
         </p>
       </header>
 

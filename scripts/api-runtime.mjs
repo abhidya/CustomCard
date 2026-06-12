@@ -1804,7 +1804,7 @@ function buildImportPreviewRecord({ authContext, bodyText }) {
     providerConnection: {
       id: connectionId,
       provider: sourceKind,
-      scopes: ["calendar.metadata"],
+      scopes: ["event-metadata"],
       adapterVersion: `${sourceKind}-v1`,
       metadataSchema: {
         sourceKind,
@@ -2600,8 +2600,10 @@ function buildDataRequestRecord({ authContext, bodyText }) {
   const requestType = safeDataRequestType(body.requestType ?? body.type);
   const requestId = safeId(body.requestId, stableRuntimeId("data-request", authContext.userId, requestType));
   const region = safeText(body.region, "").slice(0, 12);
-  const dueAt = safeTimestamp(body.dueAt ?? defaultDataRequestDueAt(requestType), defaultDataRequestDueAt(requestType));
-  const status = safeDataRequestStatus(body.status);
+  // Status and due date are server policy: a requester must never be able to
+  // mark their own privacy request completed or move its deadline.
+  const dueAt = defaultDataRequestDueAt(requestType);
+  const status = "pending_verification";
   const granted = safeBoolean(body.consentGranted ?? body.requestConfirmed);
   const controls = {
     requestId,
@@ -2846,11 +2848,6 @@ function safeBoolean(value) {
 function safeDataRequestType(value) {
   const requestType = String(value ?? "export").trim().toLowerCase().replace(/[^a-z_:-]/g, "_");
   return ["export", "delete", "correct", "revoke_consent", "access"].includes(requestType) ? requestType : "export";
-}
-
-function safeDataRequestStatus(value) {
-  const status = String(value ?? "pending_verification").trim().toLowerCase().replace(/[^a-z_-]/g, "_");
-  return ["pending_verification", "received", "processing", "completed", "rejected"].includes(status) ? status : "pending_verification";
 }
 
 function defaultDataRequestDueAt(requestType) {

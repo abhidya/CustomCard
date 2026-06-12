@@ -112,9 +112,9 @@
     <main>
       <header>
         <p class="notice">
-          Policy draft set for CustomCard. These documents reflect the current reviewer-mode product posture:
-          no live retail orders, no live payment capture, no optional analytics by default, and review required before
-          production claims. They are not legal advice and require counsel review before public launch.
+          Policy draft set for CustomCard. CustomCard does not capture payment itself; print orders and payment are
+          completed directly with Walgreens through its hosted checkout, and no optional analytics run by default.
+          These documents are not legal advice and require counsel review before public launch.
         </p>
         <h1>CustomCard legal docs</h1>
         <nav aria-label="Legal documents">
@@ -131,10 +131,11 @@
       <section id="terms">
         <h2>Terms</h2>
         <p>
-          CustomCard provides a card-drafting, review, and manual print-handoff workflow. Customers are responsible
-          for reviewing names, dates, artwork, message text, and vendor handoff details before downloading or sharing
-          print files. Live ordering, payment capture, and automated vendor submission remain disabled until the
-          required approval evidence is attached.
+          CustomCard provides a card-drafting, review, and print-handoff workflow. Customers are responsible
+          for reviewing names, dates, artwork, message text, and order details before downloading print files or
+          continuing to a printer. When you choose "Print at Walgreens," CustomCard uploads your approved card
+          images to Walgreens and opens Walgreens hosted checkout; Walgreens is the merchant for the print order,
+          sets the price, and collects payment. CustomCard never captures or stores payment card details.
         </p>
         <ul>
           <li>Do not use CustomCard to create unlawful, harmful, infringing, deceptive, or harassing content.</li>
@@ -149,7 +150,13 @@
           CustomCard is designed to minimize relationship data collection. The current app can run locally in the
           browser, keeps optional tracking off by default, and treats relationship memories as reviewable customer
           inputs. Account-backed features may use authentication, draft state, memory review, and support data needed
-          to provide the service.
+          to provide the service. If you connect Google Calendar, CustomCard reads upcoming event titles and dates
+          with a read-only scope, stores only the event title, date, and timezone, and encrypts your refresh
+          credential; CustomCard does not use Google Calendar data for advertising and does not transfer it to third
+          parties except as needed to provide the card workflow you requested. Card details you enter (names, notes,
+          occasion) are shared with the service providers needed to run the product — for example our hosting,
+          authentication, and database providers, the AI providers that draft card text and artwork when you use AI
+          drafting, and Walgreens when you start a print order.
         </p>
         <ul>
           <li>Relationship notes should be entered only with appropriate permission and reviewed before use.</li>
@@ -175,12 +182,13 @@
       <section id="refunds">
         <h2>Refunds</h2>
         <p>
-          CustomCard currently produces downloadable draft and print-handoff files; it does not capture payment or
-          place live retail print orders. Any refund, cancellation, pickup, shipping, or print-quality issue for an
-          externally submitted order is governed by the customer-selected printer or payment provider.
+          CustomCard does not capture payment. Print orders placed through Walgreens hosted checkout — and any
+          manually uploaded print files — are transactions between you and Walgreens. Any refund, cancellation,
+          pickup, shipping, or print-quality issue for a print order is governed by Walgreens (or the printer you
+          chose) and its policies.
         </p>
         <ul>
-          <li>No live CustomCard charge is made in the current reviewer-mode product.</li>
+          <li>CustomCard itself never charges you; payment happens at Walgreens checkout.</li>
           <li>Manual handoff files should be proofread before upload to a printer.</li>
           <li>Future paid checkout requires payment, refund, dispute, and vendor-policy review evidence.</li>
         </ul>

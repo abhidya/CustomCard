@@ -133,7 +133,7 @@ export function PrintView({
     setCheckoutStatus({
       tone: "warn",
       title: "Preparing Walgreens checkout",
-      detail: "Converting your approved panels and asking CustomCard API for a hosted Walgreens checkout."
+      detail: "Getting your card ready for Walgreens…"
     });
 
     try {
@@ -162,11 +162,9 @@ export function PrintView({
     } catch (error) {
       setCheckoutStatus({
         tone: "warn",
-        title: "Hosted checkout unavailable",
+        title: "Walgreens checkout didn't open",
         detail:
-          error instanceof Error
-            ? error.message
-            : "Walgreens checkout is not ready inside CustomCard yet. Your card files are ready — download the package and upload them manually."
+          "We couldn't open Walgreens checkout. Your card is safe — try again, or download the print package below and upload it at walgreens.com."
       });
     } finally {
       setCheckoutLoading(false);
@@ -189,11 +187,11 @@ export function PrintView({
               className="printHandoffFulfillmentImage"
               decoding="async"
               loading="lazy"
-              src="/generated/print-handoff-fulfillment.png"
+              src="/generated/print-handoff-fulfillment.webp"
             />
             <div className="partnercheckout">
               <div>
-                <span>Partner</span>
+                <span>Printed by</span>
                 <strong>Walgreens</strong>
               </div>
               <div>
@@ -227,7 +225,7 @@ export function PrintView({
           <details className="panelcard printsection printsection-manual moreoptions">
             <summary>Having trouble? More options</summary>
             <h2>Manual Walgreens upload</h2>
-            <p>Save one package with JPG upload panels, source SVGs, a PDF proof, the manifest, and these steps.</p>
+            <p>Save one package with ready-to-upload images, a PDF proof, and step-by-step upload instructions.</p>
             <div className="downloadrow">
               <button
                 className="btn btn-primary"
@@ -259,7 +257,7 @@ export function PrintView({
               ))}
             </ol>
             <span className="filemeta">
-              {panels.length} upload panels + source files + combined PDF, sized for 5 × 7.
+              {panels.length} ready-to-upload images + a combined PDF, sized for 5 × 7.
             </span>
           </details>
         </div>
@@ -336,7 +334,7 @@ export function PrintView({
           </section>
 
           <section className="panelcard printsection">
-            <h2>Hosted checkout</h2>
+            <h2>Send to Walgreens</h2>
             <div className="checkoutbox">
               <p>
                 Walgreens handles product selection, store pickup, terms, payment, and final order. CustomCard prepares
