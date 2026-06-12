@@ -249,7 +249,7 @@ export function createWalgreensPhotoAdapter(config: WalgreensAdapterConfig): Wal
     fetchCredentials() {
       return post<WalgreensCredentialResponse>("/creds/v3", {
         ...common,
-        platform: "web",
+        platform: "ios",
         transaction: "photocheckoutv2"
       });
     },

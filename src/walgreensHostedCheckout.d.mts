@@ -3,6 +3,7 @@ export declare const WALGREENS_PRODUCTION_HOST: string;
 export declare const walgreensCheckoutUploadRoute: string;
 export declare const walgreensCheckoutSessionRoute: string;
 export declare const walgreensCheckoutCallbackRoute: string;
+export declare const walgreensCheckoutStatusRoute: string;
 export declare const WALGREENS_CHECKOUT_MAX_IMAGES: number;
 export declare const WALGREENS_CHECKOUT_MAX_IMAGE_BYTES: number;
 export declare const WALGREENS_CHECKOUT_IMAGE_EXPIRY_HOURS: number;
@@ -64,6 +65,21 @@ export interface WalgreensSessionResult {
   mode?: string;
 }
 
+export interface WalgreensReadinessResult {
+  ok: boolean;
+  statusCode: number;
+  status: string;
+  enabled: boolean;
+  mode: string;
+  error?: string;
+  detail?: string;
+  blockers?: string[];
+  upstreamCode?: string;
+  retryable?: boolean;
+  uploadLimit?: number;
+  expiresAtIso?: string;
+}
+
 export interface WalgreensCheckoutUpstreamPayload {
   ok: false;
   status: string;
@@ -75,6 +91,7 @@ export interface WalgreensCheckoutUpstreamPayload {
 
 export interface WalgreensHostedCheckoutService {
   config: WalgreensCheckoutConfig;
+  checkReadiness(): Promise<WalgreensReadinessResult>;
   uploadCardImage(imageBase64: string): Promise<WalgreensUploadResult>;
   createCheckoutSession(input: {
     customer: Partial<WalgreensCheckoutCustomer>;

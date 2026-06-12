@@ -34,6 +34,8 @@ export interface CardPanel {
   rtl: boolean;
   overflowRisk: boolean;
   imageUrl?: string;
+  /** Visual style the renderer uses for layout/decoration. Older panels omit it; renderer defaults to botanical. */
+  styleId?: VisualStyle;
 }
 
 export interface CardDraft {
@@ -134,7 +136,8 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
   ];
   const panels: CardPanel[] = basePanels.map((panel) => ({
     ...panel,
-    overflowRisk: panel.body.length > 360 || panel.headline.length > 90
+    styleId: input.style,
+    overflowRisk: panelOverflowRisk(panel.headline, panel.body)
   }));
 
   return {
@@ -144,6 +147,11 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
     memoryCitations: approvedMemories.map((memory) => memory.id),
     generatedBy: "deterministic-free-template"
   };
+}
+
+/** Shared overflow rule so panel edits and template generation agree on print fit. */
+export function panelOverflowRisk(headline: string, body: string): boolean {
+  return body.length > 360 || headline.length > 90;
 }
 
 export function validateCardDraft(draft: CardDraft): CardValidation {

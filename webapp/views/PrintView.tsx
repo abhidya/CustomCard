@@ -1,6 +1,7 @@
 import { CheckCircle2, ClipboardList, Download, ExternalLink, FileDown, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CardPanel } from "../../src/customerWorkflow";
+import { PanelArt } from "../ui";
 import type { PrinterPriceEstimate, PrinterPricingComparison } from "../../src/printerPricing";
 import type { PrintExportPackage } from "../../src/printExport";
 import {
@@ -30,6 +31,7 @@ const speedLabels: Record<string, string> = {
 
 export function PrintView({
   panels,
+  proofSignature,
   checkoutCustomerDefaults,
   getCustomerApiToken,
   pricingComparison,
@@ -41,6 +43,8 @@ export function PrintView({
   manualUploadSteps
 }: {
   panels: CardPanel[];
+  /** Signature of everything that would print (text, art, layout, image, fit); any change resets approval. */
+  proofSignature: string;
   checkoutCustomerDefaults?: CheckoutCustomerDefaults;
   getCustomerApiToken?: () => Promise<string | undefined>;
   pricingComparison: PrinterPricingComparison;
@@ -61,14 +65,13 @@ export function PrintView({
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [proofChecklist, setProofChecklist] = useState<ProofChecklistState>(emptyProofChecklistState);
   const [showFieldIssues, setShowFieldIssues] = useState(false);
+  const [showTrimGuides, setShowTrimGuides] = useState(false);
   const onCardEventRef = useRef(onCardEvent);
   const overflowPanels = panels.filter((candidate) => candidate.overflowRisk);
   const rtlReview = panels.some((candidate) => candidate.rtl);
   const approvalBlocked = overflowPanels.length > 0 || panels.length < 4;
   const proofApproved = isProofApproved(proofChecklist) && !approvalBlocked;
   const fieldIssues = validateCheckoutCustomer(checkoutCustomer);
-  // Any edit to the card after approval resets the approval.
-  const proofSignature = panels.map((candidate) => `${candidate.id}:${candidate.headline}|${candidate.body}`).join("~");
   useEffect(() => {
     onCardEventRef.current = onCardEvent;
   }, [onCardEvent]);
@@ -163,7 +166,7 @@ export function PrintView({
         detail:
           error instanceof Error
             ? error.message
-            : "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now."
+            : "Walgreens checkout is not ready inside CustomCard yet. Your card files are ready — download the package and upload them manually."
       });
     } finally {
       setCheckoutLoading(false);
@@ -262,6 +265,43 @@ export function PrintView({
         </div>
 
         <div className="printpane printpane-primary reveal reveal-1">
+          <section className="panelcard printsection proofgrid" aria-label="Print proof panels">
+            <div className="proofgridHead">
+              <h2>Your print proof</h2>
+              <button
+                aria-pressed={showTrimGuides}
+                className="btn btn-ghost btn-sm"
+                onClick={() => setShowTrimGuides((current) => !current)}
+                type="button"
+              >
+                Show trim / safe area
+              </button>
+            </div>
+            <p>All four panels of your 5 × 7 folded card, exactly as they print.</p>
+            <div className="proofpanels" data-trim={showTrimGuides}>
+              {panels.map((panel) => (
+                <figure className="proofpanel" data-overflow={panel.overflowRisk} key={panel.id}>
+                  <div className="proofpanelFrame">
+                    <PanelArt panel={panel} />
+                    {showTrimGuides ? (
+                      <span aria-hidden="true" className="proofTrimOverlay">
+                        <i className="proofTrimLine" />
+                        <i className="proofSafeLine" />
+                      </span>
+                    ) : null}
+                  </div>
+                  <figcaption>
+                    <strong>{panel.label}</strong>
+                    {panel.overflowRisk ? <small className="proofpanelWarn">Too much text</small> : null}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+            {showTrimGuides ? (
+              <small className="filemeta">Guides are preview-only — they never appear in the printed card or the saved files.</small>
+            ) : null}
+          </section>
+
           <section className="panelcard printsection proofapproval" aria-label="Proof approval checklist">
             <h2>Approve your proof</h2>
             <p>This page is the print proof — what you see in the panels is exactly what prints. Check every line before checkout.</p>

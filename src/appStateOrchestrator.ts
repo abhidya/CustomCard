@@ -43,6 +43,14 @@ import {
   type AiGenerationApiResult,
   type AiGenerationJobEvidence
 } from "./aiGenerationJobs";
+import {
+  applyPanelOverrides,
+  clearPanelOverride,
+  emptyPanelOverrides,
+  setPanelOverride,
+  type PanelOverride,
+  type PanelOverrides
+} from "./panelEdits";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
 
 export interface ReviewerAuthForm {
@@ -124,7 +132,19 @@ export interface AppState {
   signal: ReturnType<typeof parseFreeImport>;
   pricingComparison: ReturnType<typeof buildPrinterPricingComparison>;
   opportunity: CardOpportunity;
+  /** Deterministic template draft — the base the AI request and "revert" use. */
   draft: ReturnType<typeof generateCardDraft>;
+  templateDraft: CardDraft;
+  /**
+   * The one draft every downstream artifact is built from: AI draft when
+   * present, template otherwise, with the customer's exact panel edits applied.
+   */
+  activeDraft: CardDraft;
+  activePanels: CardPanel[];
+  panelOverrides: PanelOverrides;
+  updatePanelOverride: (panelId: CardPanel["id"], patch: PanelOverride) => void;
+  revertPanelOverride: (panelId: CardPanel["id"]) => void;
+  /** Validation/handoff/print package are built from activeDraft — what you see is what exports. */
   validation: CardValidation;
   handoff: VendorHandoff;
   fulfillmentRecommendationSet: FulfillmentRecommendationSet;
@@ -170,6 +190,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], new Date()))
   );
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
+  const [panelOverrides, setPanelOverrides] = useState<PanelOverrides>(emptyPanelOverrides);
   const [aiStale, setAiStale] = useState(false);
   const aiDraftPresent = useRef(false);
   aiDraftPresent.current = aiDraft !== null;
@@ -213,11 +234,20 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   }, [draftInput]);
 
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
-  const validation = useMemo(() => validateCardDraft(draft), [draft]);
+  // One active draft drives everything the customer sees, approves, and exports:
+  // AI draft when present, template otherwise, with exact panel edits applied.
+  const activeDraft = useMemo(() => applyPanelOverrides(aiDraft ?? draft, panelOverrides), [aiDraft, draft, panelOverrides]);
+  const validation = useMemo(() => validateCardDraft(activeDraft), [activeDraft]);
   const handoff = useMemo(() => buildVendorHandoff(vendorId, validation), [vendorId, validation]);
   const pricingComparison = useMemo(() => buildPrinterPricingComparison(vendorId), [vendorId]);
   const fulfillmentRecommendationSet = useMemo(() => buildFulfillmentRecommendations(pricingComparison), [pricingComparison]);
-  const printPackage = useMemo(() => buildPrintExportPackage(draft, validation, handoff), [draft, validation, handoff]);
+  const printPackage = useMemo(() => buildPrintExportPackage(activeDraft, validation, handoff), [activeDraft, validation, handoff]);
+  const updatePanelOverride = useCallback((panelId: CardPanel["id"], patch: PanelOverride) => {
+    setPanelOverrides((current) => setPanelOverride(current, panelId, patch));
+  }, []);
+  const revertPanelOverride = useCallback((panelId: CardPanel["id"]) => {
+    setPanelOverrides((current) => clearPanelOverride(current, panelId));
+  }, []);
   const localizationSummary = useMemo(() => summarizeLocalizationReadiness(), []);
   const selectedLocale = useMemo(() => getSupportedLocale(localeCode), [localeCode]);
   const approvedMemoryNotes = useMemo(
@@ -311,6 +341,8 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         const hasImages = imageByPanel.size > 0;
         const artworkFailure = readArtworkFailure(result);
         setAiDraft({ ...requestDraft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+        // A fresh whole-card draft replaces earlier exact panel edits on purpose.
+        setPanelOverrides(emptyPanelOverrides);
         setAiStale(false);
         setAiPanelGenerationProgress(buildAiPanelGenerationProgress(requestPanels, copyByPanel, imageByPanel));
         setAiGenerationJobs((current) =>
@@ -319,7 +351,9 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         if (!hasImages) {
           setAiCardGenStatus(
             artworkFailure
-              ? `Copy is ready. Artwork is blocked by settings: ${artworkFailure}`
+              ? artworkFailure === imageGenerationDisabledFailure
+                ? "Copy is ready. Artwork is using the printable template because image generation is not enabled."
+                : `Copy is ready. Artwork is blocked by settings: ${artworkFailure}`
               : "Copy is ready. No artwork was returned, so template panels stay editable."
           );
           return;
@@ -354,8 +388,8 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         );
         setAiCardGenStatus(
           loadedPanelCount === panelCount
-            ? "AI card ready. Review each panel before printing."
-            : `AI card ready with ${loadedPanelCount}/${panelCount} artwork panels. Review the copy before printing.`
+            ? "AI draft ready. Review each panel before printing."
+            : `AI draft ready with ${loadedPanelCount}/${panelCount} artwork panels. Review the copy before printing.`
         );
       })
       .catch((err: unknown) => {
@@ -411,6 +445,12 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     pricingComparison,
     opportunity,
     draft,
+    templateDraft: draft,
+    activeDraft,
+    activePanels: activeDraft.panels,
+    panelOverrides,
+    updatePanelOverride,
+    revertPanelOverride,
     validation,
     handoff,
     fulfillmentRecommendationSet,
@@ -461,7 +501,7 @@ export async function readAiGenerationResponse(response: Response): Promise<AiGe
 
 function formatAiGenerationHttpError(status: number, payload: Record<string, unknown> | undefined): string {
   const detail = readAiGenerationErrorDetail(payload);
-  if (status === 404) return "AI card generation route is unavailable. Redeploy the API and try again.";
+  if (status === 404) return "AI drafting is temporarily unavailable. You can keep editing the template card or save a print package.";
   if (status === 401 || status === 403) {
     return detail
       ? `AI card generation could not verify your signed-in session: ${detail}.`
@@ -478,11 +518,13 @@ function readAiGenerationErrorDetail(payload: Record<string, unknown> | undefine
   return "";
 }
 
+const imageGenerationDisabledFailure = "image generation is disabled in server settings.";
+
 function readArtworkFailure(result: AiGenerationApiResult): string {
   const failure = result.ai_flow?.card_image?.provider_failure;
   if (typeof failure !== "string" || !failure.trim()) return "";
   if (/Live provider calls disabled for card-image/i.test(failure)) {
-    return "image generation is disabled in server settings.";
+    return imageGenerationDisabledFailure;
   }
   return failure.trim();
 }

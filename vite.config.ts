@@ -9,6 +9,7 @@ import { handleApiRequest } from "./scripts/api-server.mjs";
 import {
   walgreensCheckoutCallbackRoute,
   walgreensCheckoutSessionRoute,
+  walgreensCheckoutStatusRoute,
   walgreensCheckoutUploadRoute
 } from "./src/walgreensHostedCheckout.mjs";
 
@@ -88,6 +89,7 @@ const coreApiDevRoutes = new Set([
   "/api/calendar/connections/start",
   "/oauth/callback",
   "/api/oauth/callback",
+  walgreensCheckoutStatusRoute,
   walgreensCheckoutUploadRoute,
   walgreensCheckoutSessionRoute,
   walgreensCheckoutCallbackRoute,

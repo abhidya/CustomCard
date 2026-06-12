@@ -107,7 +107,7 @@ export function PeopleView({
           </div>
           <div>
             <button className="btn btn-primary" disabled={!canAdd} onClick={() => onAdd(saveToAccount)} type="button">
-              Save detail
+              Remember this for next time
             </button>
           </div>
         </section>

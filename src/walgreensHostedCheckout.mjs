@@ -26,6 +26,7 @@ export const WALGREENS_PRODUCTION_HOST = "https://services.walgreens.com";
 export const walgreensCheckoutUploadRoute = "/api/walgreens/checkout/upload";
 export const walgreensCheckoutSessionRoute = "/api/walgreens/checkout/session";
 export const walgreensCheckoutCallbackRoute = "/api/walgreens/checkout/callback";
+export const walgreensCheckoutStatusRoute = "/api/walgreens/checkout/status";
 
 export const WALGREENS_CHECKOUT_MAX_IMAGES = 20;
 export const WALGREENS_CHECKOUT_MAX_IMAGE_BYTES = 4_000_000;
@@ -377,9 +378,10 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
     return postJson("/api/photo/creds/v3", {
       apiKey: config.apiKey,
       affId: config.affId,
-      // creds/v3 only documents "ios" | "android"; the web integration is
-      // signalled later via channelInfo:"web" on the mweb5url call.
-      platform: "android",
+      // creds/v3 only documents "ios" | "android"; use the documented
+      // example value. The web integration is signalled later via
+      // channelInfo:"web" on the mweb5url call.
+      platform: "ios",
       transaction: "photocheckoutv2",
       appVer: DEFAULT_APP_VER,
       devInf: DEFAULT_DEV_INF
@@ -388,6 +390,46 @@ export function createWalgreensHostedCheckoutService({ env, fetchImpl, now = () 
 
   return {
     config,
+
+    /**
+     * Production preflight: prove credentials can obtain Walgreens upload
+     * credentials before the browser renders panels and attempts uploads.
+     */
+    async checkReadiness() {
+      if (!config.enabled) {
+        return {
+          ok: false,
+          statusCode: 503,
+          status: "walgreens-checkout-not-configured",
+          enabled: false,
+          mode: config.mode,
+          error: "Walgreens checkout is not enabled.",
+          blockers: config.blockers,
+          retryable: false
+        };
+      }
+
+      let credentials;
+      try {
+        credentials = await fetchUploadCredentials();
+      } catch (error) {
+        return {
+          ...walgreensUpstreamResult(error),
+          enabled: true,
+          mode: config.mode
+        };
+      }
+
+      return {
+        ok: true,
+        statusCode: 200,
+        status: "walgreens-checkout-ready",
+        enabled: true,
+        mode: config.mode,
+        uploadLimit: credentials.uploadLimit,
+        expiresAtIso: new Date(now() + WALGREENS_CHECKOUT_IMAGE_EXPIRY_HOURS * 3_600_000).toISOString()
+      };
+    },
 
     /** Step 1+2: fetch SAS credentials and push one JPEG into Walgreens storage. */
     async uploadCardImage(imageBase64) {

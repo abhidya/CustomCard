@@ -35,6 +35,7 @@ import {
 } from "./customerShellCommands";
 import { buildDraftProgressState } from "./draftProgress";
 import { jpegDataUrlToBytes, panelToJpegBase64 } from "./panelMediaAdapter";
+import { buildProofSignature } from "./proofApproval";
 import {
   adminNavItems,
   canEnterAdminSurface,
@@ -124,6 +125,10 @@ export default function App() {
     pricingComparison,
     opportunity,
     draft,
+    activeDraft,
+    panelOverrides,
+    updatePanelOverride,
+    revertPanelOverride,
     validation,
     handoff,
     printPackage
@@ -134,8 +139,9 @@ export default function App() {
   const visibleCustomerView = resolveVisibleCustomerView(activeView);
   const visibleNavView = resolveActiveCustomerNavView(activeView);
   const renderCustomerNav = shouldRenderCustomerNav(useViewportWidth());
-  const displayPanels: CardPanel[] = aiDraft?.panels ?? draft.panels;
-  const displayDraft = aiDraft ?? draft;
+  const displayPanels: CardPanel[] = activeDraft.panels;
+  const displayDraft = activeDraft;
+  const proofSignature = useMemo(() => buildProofSignature(displayDraft), [displayDraft]);
   const customerEmail = user?.primaryEmailAddress?.emailAddress ?? "";
   const customerIdentity = useMemo(
     () => ({
@@ -376,7 +382,7 @@ export default function App() {
 
   const cta = printing
     ? {
-        label: "Save card files",
+        label: "Save print package",
         icon: <Download size={16} />,
         disabled: !printPackage.manifest.passed,
         meta: priceLabel ? `est. ${priceLabel} at Walgreens` : "Walgreens confirms price at checkout",
@@ -385,7 +391,7 @@ export default function App() {
       }
     : designing
       ? {
-          label: "Continue to print",
+          label: "Review print proof",
           icon: <ArrowRight size={16} />,
           disabled: false,
           meta: priceLabel ? `est. ${priceLabel} at Walgreens · same-day pickup` : "Print at Walgreens",
@@ -411,8 +417,14 @@ export default function App() {
     renderCustomerNav
   });
 
+  const showBottomNav = !renderCustomerNav && !isAdminView;
+
   return (
-    <div className="shell" data-admin-view={isAdminView ? "true" : undefined}>
+    <div
+      className="shell"
+      data-admin-view={isAdminView ? "true" : undefined}
+      data-bottomnav={showBottomNav ? "true" : undefined}
+    >
       <a className="skipLink" href="#main-content">
         Skip to main content
       </a>
@@ -576,6 +588,9 @@ export default function App() {
             onField={updateDraft}
             onGenerateAi={triggerAiCardGen}
             onKeepArtwork={keepAiArtwork}
+            onPanelEdit={updatePanelOverride}
+            onPanelRevert={revertPanelOverride}
+            panelOverrides={panelOverrides}
             printFitPassed={validation.passed}
           />
         ) : null}
@@ -634,6 +649,7 @@ export default function App() {
             panels={displayPanels}
             pricingComparison={pricingComparison}
             printPackage={printPackage}
+            proofSignature={proofSignature}
           />
         ) : null}
       </main>
@@ -655,6 +671,22 @@ export default function App() {
           {cta.icon}
         </button>
       </div> : null}
+
+      {showBottomNav ? (
+        <nav aria-label="CustomCard quick navigation" className="bottomnav">
+          {customerNavItems.map((item) => (
+            <button
+              className="bottomnav-link"
+              data-active={item.id === visibleNavView}
+              key={item.id}
+              onClick={() => openView(item.id)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      ) : null}
 
       {toast ? <Toast message={toast} /> : null}
     </div>
@@ -745,7 +777,7 @@ function AdminRoute({
       <div className="adminSurfaceHead">
         <span className="adminBadge">
           {activeView === "adapters" ? <Settings size={16} /> : <ShieldCheck size={16} />}
-          Admin
+          Staff/Admin preview
         </span>
         <div>
           <h1>{heading}</h1>

@@ -23,6 +23,7 @@ export function createApiRouteFamilies(deps) {
     walgreensCheckout,
     walgreensCheckoutCallbackRoute,
     walgreensCheckoutSessionRoute,
+    walgreensCheckoutStatusRoute,
     walgreensCheckoutUploadRoute,
     walgreensRateLimited,
     walgreensUploadBodyLimit
@@ -244,7 +245,13 @@ export function createApiRouteFamilies(deps) {
   }
 
   async function handleWalgreensHostedCheckoutRoute({ path, request, response }) {
-    if (path !== walgreensCheckoutUploadRoute && path !== walgreensCheckoutSessionRoute) return false;
+    if (
+      path !== walgreensCheckoutStatusRoute &&
+      path !== walgreensCheckoutUploadRoute &&
+      path !== walgreensCheckoutSessionRoute
+    ) {
+      return false;
+    }
     if (walgreensRateLimited(request)) {
       sendJson(response, 429, {
         service: "customcard-api",
@@ -252,6 +259,13 @@ export function createApiRouteFamilies(deps) {
         path,
         error: "Too many Walgreens checkout attempts. Wait a minute and try again."
       });
+      return true;
+    }
+
+    if (path === walgreensCheckoutStatusRoute) {
+      const result = await walgreensCheckout.checkReadiness();
+      const { statusCode, ...payload } = result;
+      sendJson(response, statusCode, { service: "customcard-api", ...payload });
       return true;
     }
 

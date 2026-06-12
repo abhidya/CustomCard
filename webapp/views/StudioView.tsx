@@ -1,6 +1,6 @@
 import { SignInButton } from "@clerk/react";
-import { HeartHandshake, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { HeartHandshake, RefreshCw, Undo2 } from "lucide-react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type {
   CardDraft,
   CardDraftInput,
@@ -11,6 +11,14 @@ import type {
   VisualStyle
 } from "../../src/freeMvp";
 import type { AiPanelGenerationProgress, AiPanelGenerationStatus } from "../../src/appStateOrchestrator";
+import {
+  hasPanelOverride,
+  panelTransformLabels,
+  transformPanelBody,
+  type PanelOverride,
+  type PanelOverrides,
+  type PanelTransformId
+} from "../../src/panelEdits";
 import { displayDraftValue } from "../draftProgress";
 import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
@@ -108,11 +116,14 @@ export function StudioView({
   aiStatus,
   aiPanelProgress,
   aiRequiresSignIn,
+  panelOverrides = {},
   printFitPassed,
   onAddNote,
   onField,
   onGenerateAi,
-  onKeepArtwork
+  onKeepArtwork,
+  onPanelEdit = () => undefined,
+  onPanelRevert = () => undefined
 }: {
   draft: CardDraft;
   draftInput: CardDraftInput;
@@ -124,14 +135,18 @@ export function StudioView({
   aiStatus?: string;
   aiPanelProgress: AiPanelGenerationProgress;
   aiRequiresSignIn: boolean;
+  panelOverrides: PanelOverrides;
   printFitPassed: boolean;
   onAddNote: () => void;
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   onGenerateAi: () => void;
   onKeepArtwork: () => void;
+  onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
+  onPanelRevert: (panelId: CardPanel["id"]) => void;
 }) {
   const [activePanel, setActivePanel] = useState<CardPanel["id"]>("front");
   const [previewMode, setPreviewMode] = useState<"proof" | "folded">("proof");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
   const approvedForRecipient = memories.filter((memory) => memory.approved).length;
   const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
@@ -161,13 +176,43 @@ export function StudioView({
       ? `${artworkCount}/${totalPanels} panels ready`
       : "Ready panels will appear here"
     : aiPanelSummary;
+  // AI drafting needs the minimum relationship context to write something personal.
+  const contextChecklist = [
+    { label: "Recipient", done: displayDraftValue(draftInput.recipient).trim() !== "" },
+    { label: "Occasion", done: displayDraftValue(draftInput.occasion).trim() !== "" },
+    {
+      label: "Relationship or one personal detail",
+      done: draftInput.relationship.trim() !== "" || displayDraftValue(draftInput.personalNote).trim() !== ""
+    }
+  ];
+  const minContextReady = contextChecklist.every((item) => item.done);
   const aiNote = aiRequiresSignIn
-    ? "Create and print without an account. AI card generation needs sign-in."
+    ? "AI drafting needs sign-in so your draft can be generated and saved. You can still make, edit, preview, and save a print package without AI."
     : aiStatus
       ? aiStatus
       : aiActive
         ? "Review the copy, artwork, and print fit before continuing."
-        : "Drafts editable copy first, then loads artwork panel by panel.";
+        : minContextReady
+          ? "We’ll write editable copy first, then load artwork panel by panel."
+          : "Add who it’s for, the occasion, and one real detail so the draft isn’t generic.";
+  function handleTabKeys(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const lastIndex = draft.panels.length - 1;
+    const nextIndexByKey: Partial<Record<string, number>> = {
+      ArrowRight: index === lastIndex ? 0 : index + 1,
+      ArrowDown: index === lastIndex ? 0 : index + 1,
+      ArrowLeft: index === 0 ? lastIndex : index - 1,
+      ArrowUp: index === 0 ? lastIndex : index - 1,
+      Home: 0,
+      End: lastIndex
+    };
+    const nextIndex = nextIndexByKey[event.key];
+    if (nextIndex === undefined) return;
+    const nextPanel = draft.panels[nextIndex];
+    if (!nextPanel) return;
+    event.preventDefault();
+    setActivePanel(nextPanel.id);
+    tabRefs.current[nextIndex]?.focus();
+  }
 
   return (
     <>
@@ -207,25 +252,45 @@ export function StudioView({
                 <span>{aiLoading ? "Building AI card" : aiActive ? "Ready to review" : "AI card generator"}</span>
                 <strong>{stagePanelSummary}</strong>
               </div>
-              <div className="pagetabs">
-                {draft.panels.map((candidate) => {
+              <div aria-label="Card panels" className="pagetabs" role="tablist">
+                {draft.panels.map((candidate, index) => {
                   const candidateStatus = aiPanelProgress[candidate.id];
                   return (
                     <button
+                      aria-controls="panel-editor"
+                      aria-selected={candidate.id === activePanel}
                       className="pagetab"
                       data-on={candidate.id === activePanel}
                       data-status={candidateStatus ?? "idle"}
+                      id={`panel-tab-${candidate.id}`}
                       key={candidate.id}
                       onClick={() => setActivePanel(candidate.id)}
+                      onKeyDown={(event) => handleTabKeys(event, index)}
+                      ref={(node) => {
+                        tabRefs.current[index] = node;
+                      }}
+                      role="tab"
+                      tabIndex={candidate.id === activePanel ? 0 : -1}
                       type="button"
                     >
                       <PanelArt panel={candidate} />
                       <span>{candidate.label}</span>
-                      <small>{panelArtworkLabel(candidate, aiStale, candidateStatus)}</small>
+                      <small data-warn={candidate.overflowRisk || undefined}>
+                        {candidate.overflowRisk ? "Too much text" : panelArtworkLabel(candidate, aiStale, candidateStatus)}
+                      </small>
                     </button>
                   );
                 })}
               </div>
+              <PanelEditor
+                aiActive={aiActive}
+                edited={hasPanelOverride(panelOverrides, panel.id)}
+                onPanelEdit={onPanelEdit}
+                onPanelRevert={onPanelRevert}
+                panel={panel}
+                panelStatus={activePanelStatus}
+                sensitive={sensitive}
+              />
             </>
           )}
           <div className="stage-caption">
@@ -237,7 +302,7 @@ export function StudioView({
         <div className="steps reveal reveal-2">
           {aiStale && !aiLoading ? (
             <section className="stalebanner" aria-label="Artwork out of date">
-              <strong>You changed the message after artwork was generated.</strong>
+              <strong>You changed the message after AI artwork was generated.</strong>
               <div className="stalebanner-actions">
                 <button className="btn btn-ghost btn-sm" onClick={onKeepArtwork} type="button">
                   Keep current artwork
@@ -255,8 +320,8 @@ export function StudioView({
               <div className="aiLaunchText">
                 <strong>Create a free account to generate your card</strong>
                 <span>
-                  We&rsquo;ll save your progress, generate your draft, and keep your card history for next time. Your
-                  draft stays right here while you sign in.
+                  AI drafting needs sign-in so your draft can be generated and saved. You can still make, edit,
+                  preview, and save a print package without AI. Your draft stays right here while you sign in.
                 </span>
                 <small className="accountgate-privacy">
                   Signing in does not connect your email or calendar. You choose that separately.
@@ -270,14 +335,34 @@ export function StudioView({
               </SignInButton>
             </section>
           ) : aiAvailable ? (
-            <section className="aiLaunch" data-state={aiState} aria-label="AI card generation">
+            <section className="aiLaunch" data-state={aiState} aria-label="AI card drafting">
               <div className="aiLaunchText">
-                <strong>{aiLoading ? "Building your AI card" : aiActive ? "Ready to review" : "Generate an AI card"}</strong>
-                <span>{aiNote}</span>
+                <strong>{aiLoading ? "Building your AI card" : aiActive ? "Ready to review" : "Draft your card with AI"}</strong>
+                <span aria-live="polite">{aiNote}</span>
+                {!aiActive && !aiLoading ? (
+                  <ul aria-label="Details that shape the draft" className="aiContextChecklist">
+                    {contextChecklist.map((item) => (
+                      <li data-done={item.done} key={item.label}>
+                        {item.label}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
-              <button className="aibutton" disabled={aiLoading} onClick={onGenerateAi} type="button">
+              <button
+                className="aibutton"
+                disabled={aiLoading || !minContextReady}
+                onClick={onGenerateAi}
+                type="button"
+              >
                 <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
-                {aiLoading ? "Generating card..." : aiActive ? "Regenerate AI card" : "Generate AI card"}
+                {aiLoading
+                  ? "Drafting card..."
+                  : !minContextReady
+                    ? "Add one detail to draft a better card"
+                    : aiActive
+                      ? "Improve whole card"
+                      : "Draft my card"}
               </button>
             </section>
           ) : null}
@@ -396,5 +481,106 @@ export function StudioView({
         </div>
       </div>
     </>
+  );
+}
+
+function PanelEditor({
+  panel,
+  panelStatus,
+  aiActive,
+  edited,
+  sensitive,
+  onPanelEdit,
+  onPanelRevert
+}: {
+  panel: CardPanel;
+  panelStatus: AiPanelGenerationStatus | undefined;
+  aiActive: boolean;
+  edited: boolean;
+  sensitive: boolean;
+  onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
+  onPanelRevert: (panelId: CardPanel["id"]) => void;
+}) {
+  const transforms: PanelTransformId[] = sensitive
+    ? ["shorten", "warmer", "simpler", "less-generic"]
+    : ["improve", "shorten", "warmer", "simpler", "less-generic"];
+  const status = panelStatus ?? (aiActive ? "copy-ready" : "idle");
+
+  return (
+    <section
+      aria-labelledby="panel-editor-heading"
+      className="paneleditor"
+      id="panel-editor"
+      role="tabpanel"
+    >
+      <div className="paneleditor-head">
+        <div>
+          <h2 id="panel-editor-heading">Editing: {panel.label}</h2>
+          <span data-status={status}>{panelArtworkLabel(panel, false, panelStatus)}</span>
+        </div>
+        <button
+          className="btn btn-ghost btn-sm"
+          disabled={!edited}
+          onClick={() => onPanelRevert(panel.id)}
+          type="button"
+        >
+          <Undo2 size={14} />
+          Revert panel
+        </button>
+      </div>
+      <p className="paneleditor-note">These are the exact words that print on this panel.</p>
+      <label className="paneltext-field">
+        <span>Headline</span>
+        <input value={panel.headline} onChange={(event) => onPanelEdit(panel.id, { headline: event.target.value })} />
+      </label>
+      <label className="paneltext-field">
+        <span>Body</span>
+        <textarea value={panel.body} onChange={(event) => onPanelEdit(panel.id, { body: event.target.value })} />
+      </label>
+      {panel.overflowRisk ? (
+        <p className="paneleditor-warn" role="alert">
+          Too much text for this panel — use “Shorten to fit” or trim the body so nothing gets cut off in print.
+        </p>
+      ) : null}
+      <div className="paneltools" aria-label="Panel text tools">
+        {transforms.map((transform) => (
+          <button
+            className="btn btn-ghost btn-sm"
+            key={transform}
+            onClick={() => onPanelEdit(panel.id, { body: transformPanelBody(transform, panel.body) })}
+            type="button"
+          >
+            {panelTransformLabels[transform]}
+          </button>
+        ))}
+        <button
+          className="btn btn-ghost btn-sm"
+          disabled
+          title="Selected-panel AI improvements are not connected yet."
+          type="button"
+        >
+          Regenerate artwork for this panel
+        </button>
+      </div>
+      <small className="paneleditor-aiNote">
+        Selected-panel AI improvements are not connected yet. You can edit this panel directly or improve the whole
+        card.
+      </small>
+      {aiActive && panelStatus === "artwork-missing" && !panel.imageUrl ? (
+        <p className="paneleditor-warn" role="status">
+          We couldn’t load artwork for this panel. The copy is safe; template artwork will print.
+        </p>
+      ) : null}
+      <details className="paneleditor-advanced">
+        <summary>Advanced: art direction</summary>
+        <label className="paneltext-field">
+          <span>Art direction (design notes — never printed on the card)</span>
+          <input
+            value={panel.artDirection}
+            onChange={(event) => onPanelEdit(panel.id, { artDirection: event.target.value })}
+          />
+        </label>
+      </details>
+    </section>
   );
 }

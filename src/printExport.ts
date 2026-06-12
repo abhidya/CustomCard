@@ -288,7 +288,7 @@ function buildPdfPageContent(panel: CardPanel): string {
     "50 88 m 120 120 175 64 312 104 c S",
     ...pdfTextLines(headlineLines, "F2", 22, 58, 384, 25),
     ...pdfTextLines(bodyLines, "F1", 13, 58, 288, 18),
-    ...pdfTextLines(wrapText(panel.artDirection, 54).slice(0, 2), "F1", 9, 58, 58, 12),
+    // Art direction is design metadata, never recipient-visible text.
     ...pdfTextLines([`${panel.label} panel / 5x7 / 300 DPI source SVG included`], "F1", 8, 58, 42, 10),
     "Q"
   ].join("\n");

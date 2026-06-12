@@ -161,12 +161,12 @@ describe("customer shell server render", () => {
   it("keeps the customer create flow visible when signed out", () => {
     const { text } = renderShell({ signedIn: false });
 
-    expect(text).toContain("Never miss the card-worthy moment.");
-    expect(text).toContain("Create a card");
+    expect(text).toContain("Make the card you meant to send.");
+    expect(text).toContain("Make my card now");
     expect(text).toContain("Pick the occasion");
     expect(text).toContain("Sign in");
     expect(text).toContain("Sign up");
-    expect(text).toContain("Start from an invite or calendar event");
+    expect(text).toContain("Start from invite or calendar");
     expect(text).not.toContain("Sign in to continue");
     expect(text).not.toContain("Admin panel");
     expect(text).not.toContain("Adapter readiness");
@@ -179,7 +179,7 @@ describe("customer shell server render", () => {
     expect(studio.html).toContain('aria-label="Sign in to generate AI card"');
     expect(studio.text).toContain("Create a free account to generate your card");
     expect(studio.text).toContain("Signing in does not connect your email or calendar.");
-    expect(studio.text).toContain("Continue to print");
+    expect(studio.text).toContain("Review print proof");
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
     expect(print.text).toContain("Print at Walgreens");
@@ -196,16 +196,16 @@ describe("customer shell server render", () => {
     const { text } = renderShell();
 
       expect(text).toContain("CustomCard");
-      expect(text).toContain("Never miss the card-worthy moment.");
-      expect(text).toContain("review and print through Walgreens");
-      expect(text).toContain("Create a card");
-      expect(text).toContain("Find moments from calendar or invite");
-      expect(text).toContain("See examples");
+      expect(text).toContain("Make the card you meant to send.");
+      expect(text).toContain("edit, review, and print through Walgreens");
+      expect(text).toContain("Make my card now");
+      expect(text).toContain("Start from invite or calendar");
+      expect(text).toContain("See example cards");
       expect(text).toContain("Pick the occasion");
       for (const label of ["Birthday", "Anniversary", "Wedding", "Thank you", "Graduation", "Sympathy"]) {
         expect(text).toContain(label);
       }
-      expect(text).toContain("Cards that feel hand-made");
+      expect(text).toContain("Made for real moments");
       // Landing sections explain the product and the Walgreens boundary.
       expect(text).toContain("How it works");
       expect(text).toContain("Pick a moment");
@@ -223,7 +223,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("You review every word before checkout.");
       // The invite import is a collapsed expander; personal details live under "My cards";
       // print is reached through the create flow, not a home tile.
-      expect(text).toContain("Start from an invite or calendar event");
+      expect(text).toContain("Start from invite or calendar");
       expect(text).not.toContain("Print this card");
 
       // Console-era furniture must stay gone from the customer home.
@@ -269,7 +269,7 @@ describe("customer shell server render", () => {
         const studio = renderShell({ search: "?view=studio", storedWorkspace });
         const dockCount = studio.html.split('class="ctadock"').length - 1;
         expect(dockCount).toBe(1);
-        expect(studio.text).toContain("Continue to print");
+        expect(studio.text).toContain("Review print proof");
       }
     });
 
@@ -295,14 +295,14 @@ describe("customer shell server render", () => {
       // Google Calendar is the primary path; pasting is the manual fallback; Apple is a footnote.
       expect(text).toContain("Never miss a moment");
       expect(text).toContain("Checking your calendar connection");
-      expect(text).toContain("Or paste it in");
+      expect(text).toContain("Already have the details somewhere?");
       expect(text).toContain("Try an example");
       expect(text).toContain("Using Apple Calendar?");
       expect(text).not.toContain("Nothing here yet");
 
       const signedOut = renderShell({ search: "?view=opportunities", signedIn: false });
       expect(signedOut.text).toContain("Sign in to connect Google Calendar");
-      expect(signedOut.text).toContain("Or paste it in");
+      expect(signedOut.text).toContain("Already have the details somewhere?");
     });
 
     it("renders the studio as a print-preview card stage", () => {
@@ -314,10 +314,10 @@ describe("customer shell server render", () => {
       expect(text).toContain("Style");
       expect(text).toContain("Card language");
       expect(text).toContain("Make it personal");
-      expect(text).toContain("Generate AI card");
+      expect(text).toContain("Draft your card with AI");
       expect(text).toContain("4 print panels");
-      expect(text).toContain("Drafts editable copy first, then loads artwork panel by panel.");
-      expect(text).toContain("Continue to print");
+      expect(text).toContain("Add who it's for, the occasion, and one real detail");
+      expect(text).toContain("Review print proof");
       expect(html.split("pagetab").length - 1).toBeGreaterThanOrEqual(4);
     });
 
@@ -392,6 +392,39 @@ describe("customer shell server render", () => {
       expect(text).toContain("Walgreens confirms the final total");
     });
 
+    it("renders the exact-panel editor with tabs, fields, and local text tools", () => {
+      const { html, text } = renderShell({ search: "?view=studio", storedWorkspace: sampleWorkspace });
+
+      expect(text).toContain("Editing: Front");
+      expect(text).toContain("These are the exact words that print on this panel.");
+      expect(text).toContain("Shorten to fit");
+      expect(text).toContain("Make warmer");
+      expect(text).toContain("Make simpler");
+      expect(text).toContain("Make less generic");
+      expect(text).toContain("Revert panel");
+      expect(text).toContain("Regenerate artwork for this panel");
+      expect(text).toContain("Selected-panel AI improvements are not connected yet.");
+      expect(text).toContain("Advanced: art direction");
+      // WAI-ARIA tabs pattern for the panel switcher.
+      expect(html).toContain('role="tablist"');
+      expect(html).toContain('role="tab"');
+      expect(html).toContain('role="tabpanel"');
+      expect(html).toContain('aria-selected="true"');
+    });
+
+    it("renders the four-panel print proof with per-panel review checks and trim toggle", () => {
+      const { html, text } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
+
+      expect(text).toContain("Your print proof");
+      expect(text).toContain("Show trim / safe area");
+      expect(html.split('class="proofpanel"').length - 1).toBe(4);
+      for (const label of ["Front reviewed", "Inside left reviewed", "Inside right reviewed", "Back reviewed"]) {
+        expect(text).toContain(label);
+      }
+      expect(text).toContain("Names, spelling, and tone are approved");
+      expect(text).toContain("I approve this proof for printing");
+    });
+
   it("renders people with the detail form and use-once default", () => {
     const { text } = renderShell({ search: "?view=people" });
 
@@ -399,7 +432,7 @@ describe("customer shell server render", () => {
     expect(text).toContain("Save a personal detail");
     expect(text).toContain("Save for future cards");
     expect(text).toContain("use once");
-    expect(text).toContain("Save detail");
+    expect(text).toContain("Remember this for next time");
     expect(text).toContain("No people saved yet.");
   });
 

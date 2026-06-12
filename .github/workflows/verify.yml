@@ -29,7 +29,6 @@ jobs:
       CUSTOMCARD_API_RUNTIME: contract
       DATABASE_URL: postgres://customcard:customcard@127.0.0.1:5432/customcard_ci
       QUEUE_URL: redis://x
-      OBJECT_STORE_URL: file:///tmp/customcard-objects
       OBJECT_STORE_SIGNING_SECRET: test-object-store-signing-secret-32
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
       AUTH_SESSION_SECRET: test-auth-session-secret-32-chars

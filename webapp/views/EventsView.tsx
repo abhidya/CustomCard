@@ -55,9 +55,9 @@ function resolveConnectionViewState(
 }
 
 /**
- * Occasion import. Google Calendar is the primary path with a durable
- * connected state; pasting an invite is the manual fallback; Apple/iCloud is a
- * footnote with export instructions.
+ * Occasion import. Pasting an invite/note is the lead path — it works for
+ * everyone with no permissions. Google Calendar is the optional follow-up for
+ * catching future moments; Apple/iCloud stays a footnote with export steps.
  */
 export function ImportSection({
   getCustomerApiToken,
@@ -157,9 +157,103 @@ export function ImportSection({
     return decision !== "dismiss" && decision !== "handled";
   });
 
+  const missingDetails = [
+    !opportunity.recipient || opportunity.recipient === "Someone important" ? "Recipient" : "",
+    opportunity.dateLabel === "Date needed" ? "Date" : "",
+    !opportunity.occasion || opportunity.occasion === "card" ? "Occasion" : "",
+    "Relationship"
+  ].filter(Boolean);
+  const lowConfidence = opportunity.status === "needs-more-detail";
+
   return (
     <div className="importFlow">
-      <div className="importPrimary reveal reveal-1">
+      <section className="panelcard importcard reveal reveal-1">
+        <h2>Already have the details somewhere?</h2>
+        <p className="importLead">
+          Paste an invite, calendar event, or messy note. CustomCard will look for the occasion, date, recipient, and
+          what kind of card this might be.
+        </p>
+        <textarea
+          onChange={(event) => onInviteText(event.target.value)}
+          placeholder={'An invite email, a calendar event — or just "Mom\'s birthday dinner on July 24".'}
+          value={inviteText}
+        />
+        <div className="importactions">
+          <button className="textlink" onClick={() => onInviteText(sampleInviteText)} type="button">
+            Try an example
+          </button>
+          {hasImport ? (
+            <button className="textlink" onClick={() => onInviteText("")} type="button">
+              Clear
+            </button>
+          ) : null}
+          <button className="textlink" onClick={() => setAppleHelpOpen((open) => !open)} type="button">
+            Using Apple Calendar?
+          </button>
+        </div>
+        {appleHelpOpen ? (
+          <p className="importhint">
+            In Apple Calendar, choose File → Export → Export…, open the saved .ics file in a text editor, and paste its
+            contents above. iCloud.com works the same way via the event share menu.
+          </p>
+        ) : null}
+
+        {hasImport ? (
+          <div className="oppInline reveal">
+            <div className="opp-tags">
+              <span className={`tag tag-${urgency.tone}`}>{urgency.label}</span>
+              {lowConfidence ? <span className="tag tag-soft">A few details missing</span> : null}
+              {serverPreview?.parsedFromRawText ? <span className="tag tag-ok">Checked by CustomCard</span> : null}
+            </div>
+            <h3>
+              {lowConfidence ? "I found a possible card moment, but need one detail." : "I found a card moment."}
+            </h3>
+            <p className="oppTitleLine">{opportunity.title}</p>
+            <div className="opp-date">
+              <CalendarDays size={17} />
+              {opportunity.dateLabel}
+              {signal.location ? ` · ${signal.location}` : ""}
+            </div>
+            {lowConfidence && missingDetails.length > 0 ? (
+              <ul className="oppEvidence" aria-label="Details still needed">
+                {missingDetails.map((detail) => (
+                  <li key={detail}>{detail} needed</li>
+                ))}
+              </ul>
+            ) : null}
+            {serverPreview?.warnings.length ? (
+              <ul className="oppEvidence" aria-label="Import warnings">
+                {serverPreview.warnings.slice(0, 3).map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            ) : null}
+            {opportunity.evidence.length > 0 ? (
+              <ul className="oppEvidence" aria-label="Import evidence">
+                {opportunity.evidence.slice(0, 3).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
+            <div className="opp-actions">
+              <button className="btn btn-primary" onClick={onAccept} type="button">
+                {lowConfidence ? "Add missing details" : "Make this card"}
+              </button>
+              {lowConfidence ? (
+                <button className="btn btn-ghost" onClick={onAccept} type="button">
+                  Make this card
+                </button>
+              ) : null}
+              <button className="btn btn-ghost" onClick={onDismiss} type="button">
+                Not now
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      <h2 className="importCalendarHeading reveal reveal-2">Want future moments to find you?</h2>
+      <div className="importPrimary reveal reveal-2">
         {viewState.kind === "signed-out" ? (
           <SignInButton>
             <button className="btn btn-primary" type="button">
@@ -317,73 +411,6 @@ export function ImportSection({
         </section>
       ) : null}
 
-      <section className="panelcard importcard reveal reveal-2">
-        <h2>Or paste it in</h2>
-        <textarea
-          onChange={(event) => onInviteText(event.target.value)}
-          placeholder={'An invite email, a calendar event — or just "Mom\'s birthday dinner on July 24".'}
-          value={inviteText}
-        />
-        <div className="importactions">
-          <button className="textlink" onClick={() => onInviteText(sampleInviteText)} type="button">
-            Try an example
-          </button>
-          {hasImport ? (
-            <button className="textlink" onClick={() => onInviteText("")} type="button">
-              Clear
-            </button>
-          ) : null}
-          <button className="textlink" onClick={() => setAppleHelpOpen((open) => !open)} type="button">
-            Using Apple Calendar?
-          </button>
-        </div>
-        {appleHelpOpen ? (
-          <p className="importhint">
-            In Apple Calendar, choose File → Export → Export…, open the saved .ics file in a text editor, and paste its
-            contents above. iCloud.com works the same way via the event share menu.
-          </p>
-        ) : null}
-
-        {hasImport ? (
-          <div className="oppInline reveal">
-            <div className="opp-tags">
-              <span className={`tag tag-${urgency.tone}`}>{urgency.label}</span>
-              {opportunity.status === "needs-more-detail" ? (
-                <span className="tag tag-soft">A few details missing</span>
-              ) : null}
-              {serverPreview?.parsedFromRawText ? <span className="tag tag-ok">Checked by CustomCard</span> : null}
-            </div>
-            <h3>{opportunity.title}</h3>
-            <div className="opp-date">
-              <CalendarDays size={17} />
-              {opportunity.dateLabel}
-              {signal.location ? ` · ${signal.location}` : ""}
-            </div>
-            {serverPreview?.warnings.length ? (
-              <ul className="oppEvidence" aria-label="Import warnings">
-                {serverPreview.warnings.slice(0, 3).map((warning) => (
-                  <li key={warning}>{warning}</li>
-                ))}
-              </ul>
-            ) : null}
-            {opportunity.evidence.length > 0 ? (
-              <ul className="oppEvidence" aria-label="Import evidence">
-                {opportunity.evidence.slice(0, 3).map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            ) : null}
-            <div className="opp-actions">
-              <button className="btn btn-primary" onClick={onAccept} type="button">
-                Start this card
-              </button>
-              <button className="btn btn-ghost" onClick={onDismiss} type="button">
-                Not now
-              </button>
-            </div>
-          </div>
-        ) : null}
-      </section>
     </div>
   );
 }

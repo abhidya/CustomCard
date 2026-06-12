@@ -144,7 +144,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         setValue(sender, "Abdul");
         await raf();
         const panelCount = document.querySelectorAll(".pagetab img").length;
-        await clickByText("Continue to print");
+        await clickByText("Review print proof");
 
         return {
           homeText,
@@ -162,7 +162,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       })()`
     );
 
-    expect(result.homeText).toContain("Never miss the card-worthy moment.");
+    expect(result.homeText).toContain("Make the card you meant to send.");
     expect(result.homeText).toContain("Pick the occasion");
     expect(result.homeText).not.toContain("Admin panel");
     expect(result.homeText).not.toContain("Adapter readiness");
@@ -221,7 +221,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         await raf();
         const eventText = document.body.textContent;
         const googleCalendar = [...document.querySelectorAll("button")].find((node) => node.textContent?.includes("Google Calendar"));
-        await clickByText("Start this card");
+        await clickByText("Make this card");
         return {
           eventText,
           googleCalendarDisabled: googleCalendar?.disabled,
@@ -269,7 +269,7 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.text).toContain("4 Google Calendar events imported as read-only event metadata.");
     expect(result.evidence.join(" ")).toContain("Manual import: Google Calendar import review");
     expect(result.evidence.join(" ")).toContain("4 Google Calendar events imported as read-only event metadata");
-    expect(result.buttons.join(" ")).toContain("Start this card");
+    expect(result.buttons.join(" ")).toContain("Make this card");
     expect(result.search).toBe("?view=opportunities");
   }, 30000);
 
@@ -301,7 +301,7 @@ describeWithChrome("CustomCard UI smoke", () => {
       })()`
     );
 
-    expect(result.h1).toContain("Never miss the");
+    expect(result.h1).toContain("Make the card");
     expect(result.skipHref).toBe("#main-content");
     expect(result.skipTargetExists).toBe(true);
     expect(result.customerNavHidden).toBe(true);

@@ -34,11 +34,13 @@ interface FeaturedCategory {
 
 const occasions: Array<{ label: string; value: string; color: string }> = [
   { label: "Birthday", value: "birthday", color: "#d9a514" },
-  { label: "Anniversary", value: "anniversary", color: "#c2484f" },
-  { label: "Wedding", value: "wedding", color: "#8a63b8" },
-  { label: "Thank you", value: "thank-you", color: "#33685a" },
   { label: "Graduation", value: "graduation", color: "#3e5fc4" },
-  { label: "Sympathy", value: "sympathy", color: "#6b7280" }
+  { label: "Wedding", value: "wedding", color: "#8a63b8" },
+  { label: "Anniversary", value: "anniversary", color: "#c2484f" },
+  { label: "Thank you", value: "thank-you", color: "#33685a" },
+  { label: "Sympathy", value: "sympathy", color: "#6b7280" },
+  { label: "I’m late", value: "belated card", color: "#b4654a" },
+  { label: "Not sure what to say", value: "", color: "#7d7a72" }
 ];
 
 const howItWorksSteps = [
@@ -136,27 +138,30 @@ export function HomeView({
     <>
       <section className="hero landingHero reveal">
         <div className="landingHeroCopy">
-          <span className="eyebrow">Cards that feel hand-made</span>
+          <span className="eyebrow">Thoughtful cards, without the blank page.</span>
           <h1>
-            Never miss the <em>card-worthy</em> moment.
+            Make the card you <em>meant</em> to send.
           </h1>
           <p>
-            CustomCard turns birthdays, graduations, weddings, sympathy moments, thank-yous, and real relationship
-            context into personal 5 × 7 cards you can review and print through Walgreens.
+            Start with a name, occasion, messy note, invite, or calendar event. CustomCard helps turn it into a
+            personal 5 × 7 card you can edit, review, and print through Walgreens.
           </p>
           <div className="landingHeroActions">
             <button className="btn btn-primary" onClick={onCreate} type="button">
-              Create a card
+              Make my card now
               <ArrowRight size={16} />
             </button>
             <button className="btn btn-ghost" onClick={onFindMoments} type="button">
               <CalendarSearch size={16} />
-              Find moments from calendar or invite
+              Start from invite or calendar
             </button>
             <a className="textlink" href="#examples">
-              See examples
+              See example cards
             </a>
           </div>
+          <p className="landingHeroTrust">
+            No auto-sending. No surprise checkout. You approve every word before printing.
+          </p>
         </div>
         <div className="landingHeroVisual" aria-label="Example 5 by 7 card preview">
           <img
@@ -169,13 +174,41 @@ export function HomeView({
         </div>
       </section>
 
-      <p className="occasionsLead reveal reveal-1">Pick the occasion — we&rsquo;ll start the card, you make it theirs.</p>
+      <section className="pathchooser reveal reveal-1" aria-label="What do you need today?">
+        <h2>What do you need today?</h2>
+        <div className="pathchooserGrid">
+          <article className="pathcard">
+            <h3>I need a card now</h3>
+            <p>Make a birthday, graduation, wedding, sympathy, thank-you, or anniversary card in minutes.</p>
+            <button className="btn btn-primary" onClick={onCreate} type="button">
+              Start a card
+            </button>
+            <small>No account needed to begin.</small>
+          </article>
+          <article className="pathcard">
+            <h3>Help me catch future cards</h3>
+            <p>
+              Paste an invite or connect Google Calendar so birthdays, dinners, graduations, and anniversaries become
+              reviewable card moments.
+            </p>
+            <button className="btn btn-ghost" onClick={onFindMoments} type="button">
+              Find moments
+            </button>
+            <small>Calendar is optional. Event titles and dates only.</small>
+          </article>
+        </div>
+      </section>
+
+      <p className="occasionsLead reveal reveal-1">
+        Pick the occasion — we&rsquo;ll start the card, you make it theirs. You can change the tone, message,
+        language, and design later.
+      </p>
       <div className="occasions reveal reveal-1">
         {occasions.map((occasion) => (
           <button
             className="occasion"
-            key={occasion.value}
-            onClick={() => onOccasion(occasion.value)}
+            key={occasion.label}
+            onClick={() => (occasion.value ? onOccasion(occasion.value) : onCreate())}
             type="button"
           >
             <span className="occasion-dot" style={{ background: occasion.color }} />
@@ -204,7 +237,7 @@ export function HomeView({
           type="button"
         >
           <CalendarPlus size={16} />
-          Start from an invite or calendar event
+          Paste an invite, event, or messy note
           <ChevronDown className="importExpanderChevron" data-open={importOpen} size={16} />
         </button>
         {importOpen ? (
@@ -276,11 +309,16 @@ export function HomeView({
       </section>
 
       <section className="finalcta reveal reveal-3" aria-label="Start a card">
-        <h2>Someone's moment is coming up.</h2>
+        <h2>Someone is worth the extra minute.</h2>
+        <p>
+          Start with a name, an occasion, an invite, or a messy note. CustomCard will help you turn it into a card
+          they can actually keep.
+        </p>
         <button className="btn btn-primary" onClick={onCreate} type="button">
-          Create a card
+          Make my card now
           <ArrowRight size={16} />
         </button>
+        <small>You can edit everything before printing.</small>
       </section>
     </>
   );

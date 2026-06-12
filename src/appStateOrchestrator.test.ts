@@ -5,6 +5,17 @@ import {
   progressForPanels
 } from "./appStateOrchestrator";
 import type { CardPanel } from "./customerWorkflow";
+import {
+  buildOpportunity,
+  buildVendorHandoff,
+  generateCardDraft,
+  getDefaultDraftInput,
+  parseFreeImport,
+  sampleInviteText,
+  validateCardDraft
+} from "./freeMvp";
+import { applyPanelOverrides, emptyPanelOverrides, setPanelOverride } from "./panelEdits";
+import { buildPrintExportPackage } from "./printExport";
 
 const panels: CardPanel[] = [
   buildPanel("front", "Front"),
@@ -58,6 +69,47 @@ describe("AI panel generation progress", () => {
       "inside-right": "artwork-loading",
       back: "artwork-missing"
     });
+  });
+});
+
+describe("active draft pipeline", () => {
+  // Mirrors the orchestrator's memo chain: activeDraft = overrides(aiDraft ?? draft),
+  // then validation -> handoff -> print package are all built from activeDraft.
+  it("drives validation, handoff, and the print package from AI copy plus panel edits", () => {
+    const opportunity = buildOpportunity(parseFreeImport(sampleInviteText), [], new Date("2026-06-03T12:00:00.000Z"));
+    const templateDraft = generateCardDraft(getDefaultDraftInput(undefined, opportunity), []);
+    const aiDraft = {
+      ...templateDraft,
+      generatedBy: "ai-text-only" as const,
+      panels: templateDraft.panels.map((panel) =>
+        panel.id === "inside-right" ? { ...panel, body: "AI wrote this exact message." } : panel
+      )
+    };
+
+    const activeDraft = applyPanelOverrides(
+      aiDraft,
+      setPanelOverride(emptyPanelOverrides, "front", { headline: "Edited front headline" })
+    );
+    const validation = validateCardDraft(activeDraft);
+    const handoff = buildVendorHandoff("walgreens", validation);
+    const printPackage = buildPrintExportPackage(activeDraft, validation, handoff);
+
+    const frontSvg = printPackage.files.find((file) => file.panelId === "front");
+    const insideRightSvg = printPackage.files.find((file) => file.panelId === "inside-right");
+    expect(frontSvg?.text).toContain("Edited front headline");
+    expect(insideRightSvg?.text).toContain("AI wrote this exact message.");
+    expect(printPackage.manifest.draftId).toBe(activeDraft.id);
+  });
+
+  it("recomputes overflow validation when an edit makes a panel too long", () => {
+    const opportunity = buildOpportunity(parseFreeImport(sampleInviteText), [], new Date("2026-06-03T12:00:00.000Z"));
+    const templateDraft = generateCardDraft(getDefaultDraftInput(undefined, opportunity), []);
+    const activeDraft = applyPanelOverrides(
+      templateDraft,
+      setPanelOverride(emptyPanelOverrides, "inside-right", { body: "Far too much text. ".repeat(40) })
+    );
+
+    expect(validateCardDraft(activeDraft).passed).toBe(false);
   });
 });
 

@@ -25,6 +25,7 @@ import {
   formatWalgreensCheckoutUpstreamError,
   walgreensCheckoutCallbackRoute,
   walgreensCheckoutSessionRoute,
+  walgreensCheckoutStatusRoute,
   walgreensCheckoutUploadRoute
 } from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
@@ -454,6 +455,7 @@ const apiRouteFamilies = createApiRouteFamilies({
   walgreensCheckout,
   walgreensCheckoutCallbackRoute,
   walgreensCheckoutSessionRoute,
+  walgreensCheckoutStatusRoute,
   walgreensCheckoutUploadRoute,
   walgreensRateLimited,
   walgreensUploadBodyLimit: WALGREENS_UPLOAD_BODY_LIMIT

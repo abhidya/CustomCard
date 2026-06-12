@@ -9,6 +9,7 @@ import {
   validateCheckoutCustomer
 } from "../webapp/checkoutModel";
 import {
+  buildProofSignature,
   emptyProofChecklistState,
   isProofApproved,
   proofApprovalProgressLabel,
@@ -299,6 +300,46 @@ describe("frontend architecture seams", () => {
     expect(isProofApproved(revoked)).toBe(false);
   });
 
+  it("requires a reviewed check for every printed panel", () => {
+    const ids = proofChecklistItems.map((item) => item.id);
+    expect(ids).toEqual(
+      expect.arrayContaining(["panel-front", "panel-inside-left", "panel-inside-right", "panel-back", "approve"])
+    );
+  });
+
+  it("resets proof approval when any printed aspect of the draft changes", () => {
+    const panel: CardPanel = {
+      id: "front",
+      label: "Front",
+      headline: "Hello",
+      body: "Body",
+      artDirection: "Botanical",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      rtl: false,
+      overflowRisk: false
+    };
+    const draft = {
+      generatedBy: "deterministic-free-template" as const,
+      input: { style: "botanical" },
+      panels: [panel]
+    };
+    const base = buildProofSignature(draft);
+
+    // Every printed aspect — text, design notes, artwork, layout, direction, fit, generator — busts the signature.
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, headline: "Hi" }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, body: "Other" }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, artDirection: "Minimal" }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, imageUrl: "data:image/png;base64,AA" }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, styleId: "minimal" }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, rtl: true }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, overflowRisk: true }] })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, input: { style: "minimal" } })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, generatedBy: "ai-text-and-image" })).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [panel] })).toBe(base);
+  });
+
   it("measures JPEG data URLs before Walgreens upload", () => {
     expect(jpegDataUrlByteLength("data:image/jpeg;base64,/9j/AA==")).toBe(4);
     expect(jpegDataUrlByteLength("/9j/AA==")).toBe(4);
@@ -342,6 +383,9 @@ describe("frontend architecture seams", () => {
         body,
         authorization: init?.headers && "Authorization" in init.headers ? String(init.headers.Authorization) : undefined
       });
+      if (String(url).endsWith("/status")) {
+        return { ok: true, json: async () => ({ ok: true, status: "walgreens-checkout-ready" }) };
+      }
       if (String(url).endsWith("/upload")) {
         return { ok: true, json: async () => ({ ok: true, imageUrl: `https://cdn.example/${calls.length}.jpg` }) };
       }
@@ -365,14 +409,15 @@ describe("frontend architecture seams", () => {
       window: { width: 600, height: 700 }
     });
     expect(calls.map((call) => call.url)).toEqual([
+      "/api/walgreens/checkout/status",
       "/api/walgreens/checkout/upload",
       "/api/walgreens/checkout/upload",
       "/api/walgreens/checkout/session"
     ]);
     expect(calls[0].authorization).toBe("Bearer token-123");
-    expect(calls[2].body).toMatchObject({
+    expect(calls[3].body).toMatchObject({
       affNotes: "CustomCard draft-maya",
-      images: ["https://cdn.example/1.jpg", "https://cdn.example/2.jpg"]
+      images: ["https://cdn.example/2.jpg", "https://cdn.example/3.jpg"]
     });
   });
 
@@ -392,11 +437,16 @@ describe("frontend architecture seams", () => {
       rtl: false,
       overflowRisk: false
     } satisfies CardPanel;
-    const fetchImpl = (async () => ({
-      ok: false,
-      status: 400,
-      json: async () => ({ status: "invalid-json" })
-    })) as typeof fetch;
+    const fetchImpl = (async (url: string | URL | Request) => {
+      if (String(url).endsWith("/status")) {
+        return { ok: true, json: async () => ({ ok: true, status: "walgreens-checkout-ready" }) };
+      }
+      return {
+        ok: false,
+        status: 400,
+        json: async () => ({ status: "invalid-json" })
+      };
+    }) as typeof fetch;
 
     await expect(
       createWalgreensCheckoutSession({
@@ -430,7 +480,7 @@ describe("frontend architecture seams", () => {
         status: "walgreens-provider-credential-blocked",
         error:
           "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now.",
-        detail: "Walgreens /api/photo/creds/v3 error 659: No Walgreens vendor match for this API key and AffiliateID."
+        detail: "Walgreens /api/photo/creds/v3 error 112: AffiliateID is set up incorrectly for Walgreens hosted checkout."
       })
     })) as typeof fetch;
 

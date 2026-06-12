@@ -68,6 +68,7 @@ describe("api contracts", () => {
     const draftState = apiRouteContracts.find((route) => route.id === "customer-draft-state");
     const draftStateSave = apiRouteContracts.find((route) => route.id === "customer-draft-state-save");
     const manualHandoff = apiRouteContracts.find((route) => route.id === "manual-vendor-handoff");
+    const walgreensCheckoutStatus = apiRouteContracts.find((route) => route.id === "walgreens-checkout-status");
     const walgreensCheckoutUpload = apiRouteContracts.find((route) => route.id === "walgreens-checkout-upload");
     const walgreensCheckoutSession = apiRouteContracts.find((route) => route.id === "walgreens-checkout-session");
     const aiChatRespond = apiRouteContracts.find((route) => route.id === "ai-chat-respond");
@@ -210,6 +211,15 @@ describe("api contracts", () => {
     expect(draftStateSave?.requestSchema).toEqual(expect.arrayContaining(["draftInput", "status"]));
     expect(draftStateSave?.responseSchema).toEqual(expect.arrayContaining(["draftStateId", "updatedAtIso"]));
     expect(manualHandoff?.responseSchema).toContain("signedArtifactUrls");
+    expect(walgreensCheckoutStatus).toMatchObject({
+      method: "GET",
+      path: "/api/walgreens/checkout/status",
+      audience: "customer",
+      auth: "customer-session",
+      idempotencyKeyRequired: false,
+      externalNetworkCalls: true,
+      realOrdersEnabled: false
+    });
     expect(walgreensCheckoutUpload).toMatchObject({
       method: "POST",
       audience: "customer",

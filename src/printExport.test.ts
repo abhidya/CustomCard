@@ -11,6 +11,7 @@ import {
   validateCardDraft,
   type CardValidation
 } from "./freeMvp";
+import { applyPanelOverrides, emptyPanelOverrides, setPanelOverride } from "./panelEdits";
 import {
   buildCombinedPdfExportFile,
   buildPrintExportPackage,
@@ -140,5 +141,44 @@ describe("print export package", () => {
     expect(validatePrintExportPackage(printPackage)).toEqual(
       expect.arrayContaining([`Print export manifest does not list ${printPackage.files[0].fileName}.`])
     );
+  });
+
+  it("exports panel-edited copy in the SVGs, PDF, and manifest hashes", () => {
+    const { draft, handoff, validation } = buildDraftFixture();
+    const basePackage = buildPrintExportPackage(draft, validation, handoff);
+    const editedDraft = applyPanelOverrides(
+      draft,
+      setPanelOverride(emptyPanelOverrides, "inside-right", {
+        headline: "Edited proof headline",
+        body: "These exact edited words must print."
+      })
+    );
+    const editedPackage = buildPrintExportPackage(editedDraft, validateCardDraft(editedDraft), handoff);
+
+    const editedSvg = editedPackage.files.find((file) => file.panelId === "inside-right");
+    const editedSvgText = editedSvg?.text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+    expect(editedSvg?.text).toContain("Edited proof headline");
+    expect(editedSvgText).toContain("These exact edited words must print.");
+    const pdf = editedPackage.files.find((file) => file.kind === "combined-pdf");
+    expect(pdf?.text).toContain("Edited proof headline");
+
+    const baseHash = basePackage.manifest.files.find((file) => file.panelId === "inside-right")?.contentHash;
+    const editedHash = editedPackage.manifest.files.find((file) => file.panelId === "inside-right")?.contentHash;
+    expect(baseHash).toBeTruthy();
+    expect(editedHash).not.toBe(baseHash);
+    expect(validatePrintExportPackage(editedPackage)).toEqual([]);
+  });
+
+  it("never prints art direction or design notes in recipient-facing output", () => {
+    const { draft, handoff, validation } = buildDraftFixture();
+    const markedDraft = {
+      ...draft,
+      panels: draft.panels.map((panel) => ({ ...panel, artDirection: "SECRET-DESIGN-NOTE-DO-NOT-PRINT" }))
+    };
+    const printPackage = buildPrintExportPackage(markedDraft, validation, handoff);
+
+    for (const file of printPackage.files.filter((candidate) => candidate.kind !== "manifest-json")) {
+      expect(file.text).not.toContain("SECRET-DESIGN-NOTE-DO-NOT-PRINT");
+    }
   });
 });

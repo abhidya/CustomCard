@@ -44,6 +44,64 @@ describe("Walgreens hosted checkout", () => {
     });
   });
 
+  it("preflights Walgreens hosted checkout readiness before image uploads", async () => {
+    const fetchImpl = createWalgreensCheckoutDummyFetch();
+    const service = createWalgreensHostedCheckoutService({
+      env: {
+        WALGREENS_VENDOR_MODE: "production",
+        WALGREENS_API_KEY: "test-api-key",
+        WALGREENS_AFF_ID: "photoapi",
+        PUBLIC_APP_ORIGIN: "https://customcard.example"
+      },
+      fetchImpl,
+      now: () => Date.parse("2026-06-12T12:00:00.000Z")
+    });
+
+    await expect(service.checkReadiness()).resolves.toMatchObject({
+      ok: true,
+      statusCode: 200,
+      status: "walgreens-checkout-ready",
+      enabled: true,
+      mode: "production",
+      uploadLimit: 200,
+      expiresAtIso: "2026-06-14T00:00:00.000Z"
+    });
+    expect(JSON.parse(String(fetchImpl.calls[0].init.body))).toMatchObject({
+      apiKey: "test-api-key",
+      affId: "photoapi",
+      platform: "ios",
+      transaction: "photocheckoutv2"
+    });
+  });
+
+  it("preflights provider enablement errors without uploading images", async () => {
+    const fetchImpl = (async () =>
+      new Response(JSON.stringify({ err: "112", errDesc: "" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      })) as typeof fetch;
+    const service = createWalgreensHostedCheckoutService({
+      env: {
+        WALGREENS_VENDOR_MODE: "production",
+        WALGREENS_API_KEY: "test-api-key",
+        WALGREENS_AFF_ID: "photoapi",
+        PUBLIC_APP_ORIGIN: "https://customcard.example"
+      },
+      fetchImpl
+    });
+
+    await expect(service.checkReadiness()).resolves.toMatchObject({
+      ok: false,
+      status: "walgreens-provider-credential-blocked",
+      statusCode: 503,
+      upstreamCode: "112",
+      enabled: true,
+      mode: "production",
+      retryable: false,
+      error: "Walgreens PhotoPrints checkout is waiting on Walgreens enablement. Save the print package and upload it manually for now."
+    });
+  });
+
   it("sends the PhotoPrints AffiliateID to the upload credential request", async () => {
     const fetchImpl = createWalgreensCheckoutDummyFetch();
     const service = createWalgreensHostedCheckoutService({
@@ -62,7 +120,7 @@ describe("Walgreens hosted checkout", () => {
     expect(JSON.parse(String(fetchImpl.calls[0].init.body))).toMatchObject({
       apiKey: "test-api-key",
       affId: "photoapi",
-      platform: "android",
+      platform: "ios",
       transaction: "photocheckoutv2"
     });
   });

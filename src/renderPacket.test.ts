@@ -28,6 +28,32 @@ describe("buildPanelSvg", () => {
 
     expect(svg).toContain('<image href="data:image/png;base64,iVBORw0KGgo="');
   });
+
+  it("never renders art direction as recipient-visible text", () => {
+    const svg = buildPanelSvg({ ...panel, artDirection: "SECRET-DESIGN-NOTE" });
+    expect(svg).not.toContain("SECRET-DESIGN-NOTE");
+  });
+
+  it("renders each visual style with distinct structural markers", () => {
+    const botanical = buildPanelSvg({ ...panel, styleId: "botanical" });
+    const boldType = buildPanelSvg({ ...panel, styleId: "bold-type" });
+    const photoNote = buildPanelSvg({ ...panel, styleId: "photo-note" });
+    const minimal = buildPanelSvg({ ...panel, styleId: "minimal" });
+
+    expect(botanical).toContain('data-customcard-style="botanical"');
+    expect(botanical).toContain('data-style-marker="botanical-florals"');
+    expect(boldType).toContain('data-style-marker="bold-type-block"');
+    expect(photoNote).toContain('data-style-marker="photo-note-slot"');
+    expect(minimal).toContain('data-style-marker="minimal-rule"');
+    // No two styles share the same decoration structure.
+    expect(new Set([botanical, boldType, photoNote, minimal]).size).toBe(4);
+    expect(boldType).not.toContain("botanical-florals");
+    expect(minimal).not.toContain("photo-note-slot");
+  });
+
+  it("defaults legacy panels without a style to the botanical layout", () => {
+    expect(buildPanelSvg(panel)).toContain('data-customcard-style="botanical"');
+  });
 });
 
 const panel: CardPanel = {

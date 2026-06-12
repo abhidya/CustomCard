@@ -26,6 +26,14 @@ interface UploadPayload {
   imageUrl?: string;
 }
 
+interface StatusPayload {
+  ok?: boolean;
+  error?: string;
+  detail?: string;
+  status?: string;
+  blockers?: string[];
+}
+
 interface SessionPayload {
   ok?: boolean;
   error?: string;
@@ -50,6 +58,15 @@ export async function createWalgreensCheckoutSession({
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
   const images: string[] = [];
+  const statusResponse = await fetchImpl("/api/walgreens/checkout/status", {
+    method: "GET",
+    headers
+  });
+  const statusPayload = await statusResponse.json().catch(() => undefined) as StatusPayload | undefined;
+
+  if (!statusResponse.ok || !statusPayload?.ok) {
+    throw new Error(getWalgreensCheckoutError(statusPayload, "Walgreens checkout is not ready.", statusResponse.status));
+  }
 
   for (const panel of panels) {
     const imageBase64 = await renderPanel(panel);
@@ -88,7 +105,7 @@ export async function createWalgreensCheckoutSession({
 }
 
 function getWalgreensCheckoutError(
-  payload: UploadPayload | SessionPayload | undefined,
+  payload: StatusPayload | UploadPayload | SessionPayload | undefined,
   fallback: string,
   statusCode?: number
 ): string {

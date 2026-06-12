@@ -537,7 +537,7 @@ describe("customer copy safety", () => {
 
   it("does not promise email sync or accountless Walgreens checkout", () => {
     expect(homeView).not.toContain("email or calendar");
-    expect(homeView).toContain("Find moments from calendar or invite");
+    expect(homeView).toContain("Start from invite or calendar");
     expect(homeView).not.toContain("designing and printing work without one");
     expect(homeView).toContain("AI generation, saved history, Google Calendar, and Walgreens checkout require an account.");
   });

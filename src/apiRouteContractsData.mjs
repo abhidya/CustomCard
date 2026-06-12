@@ -574,6 +574,22 @@ export const apiRouteContracts = [
     backedBy: ["card_gallery_entries"]
   },
   {
+    id: "walgreens-checkout-status",
+    method: "GET",
+    path: "/api/walgreens/checkout/status",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "local-contract",
+    requestSchema: ["session"],
+    responseSchema: ["ok", "status", "enabled", "mode", "uploadLimit", "expiresAtIso", "blockers", "upstreamCode"],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: true,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Checks Walgreens PhotoPrints credential readiness after customer-session auth; no card images, customer identity, payment fields, or order data are sent or stored.",
+    backedBy: ["walgreensHostedCheckout service", "customer-session boundary", "WALGREENS_VENDOR_MODE gate", "per-IP rate limit"]
+  },
+  {
     id: "walgreens-checkout-upload",
     method: "POST",
     path: "/api/walgreens/checkout/upload",
@@ -623,6 +639,7 @@ export const apiRouteContracts = [
 ];
 
 export const hostedCheckoutExemptRouteIds = new Set([
+  "walgreens-checkout-status",
   "walgreens-checkout-upload",
   "walgreens-checkout-session",
   "walgreens-checkout-callback"

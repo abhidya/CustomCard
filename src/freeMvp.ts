@@ -123,6 +123,7 @@ export interface CardPanel {
   rtl: boolean;
   overflowRisk: boolean;
   imageUrl?: string;
+  styleId?: VisualStyle;
 }
 
 export interface CardDraft {

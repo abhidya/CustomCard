@@ -530,7 +530,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-      expect(report.readiness.routes.total).toBe(30);
+    expect(report.readiness.routes.total).toBe(31);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 8,
@@ -744,7 +744,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 30, admin: 9, idempotentMutations: 16 });
+      expect(readiness.routes).toMatchObject({ total: 31, admin: 9, idempotentMutations: 16 });
       expect(readiness.providers).toMatchObject({ total: 131, readyLocal: 18, credentialGated: 97, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 131,
@@ -1613,6 +1613,23 @@ describe("api server wrapper", () => {
         liveCouponLookup: "operator-script-or-credential-gated-provider",
         providerPortalApplicationRequired: true,
         bestAvailablePriceRequiresCouponPortalEvidence: true
+      });
+
+      const unauthenticatedWalgreensStatus = await fetch(`http://127.0.0.1:${port}/api/walgreens/checkout/status`);
+      expect(unauthenticatedWalgreensStatus.status).toBe(401);
+      expect(await unauthenticatedWalgreensStatus.json()).toMatchObject({
+        status: "auth-required",
+        requiredAuth: "customer-session"
+      });
+
+      const authenticatedWalgreensStatus = await fetch(`http://127.0.0.1:${port}/api/walgreens/checkout/status`, {
+        headers: bearer(customerToken)
+      });
+      expect(authenticatedWalgreensStatus.status).toBe(503);
+      expect(await authenticatedWalgreensStatus.json()).toMatchObject({
+        ok: false,
+        status: "walgreens-checkout-not-configured",
+        error: "Walgreens checkout is not enabled."
       });
 
       const unauthenticatedWalgreensUpload = await postJson(
