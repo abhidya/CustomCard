@@ -31,11 +31,19 @@ describe("runtime env contract", () => {
       validateDurableRuntimeEnv({
         ...durableEnv,
         DATABASE_URL: "replace-me",
-        QUEUE_URL: ""
+        OBJECT_STORE_URL: ""
       })
     ).toMatchObject({
-      missing: ["QUEUE_URL"],
+      missing: ["OBJECT_STORE_URL"],
       placeholders: ["DATABASE_URL"]
+    });
+  });
+
+  it("does not require worker-only queue env for the serverless API runtime", () => {
+    expect(validateDurableRuntimeEnv({ ...durableEnv, QUEUE_URL: "" })).toMatchObject({
+      missing: [],
+      placeholders: [],
+      blockers: []
     });
   });
 
@@ -65,6 +73,9 @@ describe("runtime env contract", () => {
     );
     expect(validateWorkerRuntimeEnv({ ...durableEnv, REAL_ORDER_KILL_SWITCH: "enabled" })).toEqual(
       expect.arrayContaining(["CustomCard worker requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded."])
+    );
+    expect(validateWorkerRuntimeEnv({ ...durableEnv, QUEUE_URL: "" })).toEqual(
+      expect.arrayContaining(["CustomCard worker missing env: QUEUE_URL"])
     );
     expect(validateMobileRuntimeEnv({})).toEqual(["Mobile shell missing env: CUSTOMCARD_API_BASE_URL"]);
     expect(validateMobileRuntimeEnv({ CUSTOMCARD_API_BASE_URL: "replace-me" })).toEqual([

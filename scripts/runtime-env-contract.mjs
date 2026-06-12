@@ -5,14 +5,13 @@ export const durableRuntimeRequiredEnv = Object.freeze([
   "CUSTOMCARD_ENV",
   "CUSTOMCARD_API_RUNTIME",
   "DATABASE_URL",
-  "QUEUE_URL",
   "OBJECT_STORE_URL",
   "OBJECT_STORE_SIGNING_SECRET",
   "AUTH_SESSION_SECRET",
   "REAL_ORDER_KILL_SWITCH"
 ]);
 
-export const workerRequiredEnv = durableRuntimeRequiredEnv;
+export const workerRequiredEnv = Object.freeze([...durableRuntimeRequiredEnv, "QUEUE_URL"]);
 
 export const mobileRequiredEnv = Object.freeze(["CUSTOMCARD_API_BASE_URL"]);
 
