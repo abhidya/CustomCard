@@ -1,0 +1,815 @@
+{
+  "runId": "card-gen-benchmark-2026-06-12T02-04-16-468Z",
+  "createdAtIso": "2026-06-12T02:04:16.470Z",
+  "fixtureIds": [
+    "medical-graduation"
+  ],
+  "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T02-04-16-468Z",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ARTIFACT_SIGNED_URL_TTL_MINUTES",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "CUSTOMCARD_ARTIFACT_PERSISTENCE",
+      "OBJECT_STORE_ACCESS_KEY_ID",
+      "OBJECT_STORE_BUCKET",
+      "OBJECT_STORE_PUBLIC_BASE_URL",
+      "OBJECT_STORE_READ_ACCESS_KEY_ID",
+      "OBJECT_STORE_READ_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_REGION",
+      "OBJECT_STORE_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_SIGNING_SECRET",
+      "OBJECT_STORE_URL"
+    ],
+    "secretsRedacted": true
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "browser-svg-renderer",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-image",
+        "browser-svg-renderer"
+      ],
+      "blockedReasons": []
+    }
+  ],
+  "objectStore": {
+    "configured": true,
+    "provider": "cloudflare-r2",
+    "endpoint": "https://{account_id}.r2.cloudflarestorage.com",
+    "bucket": "customcard-prod",
+    "publicBaseUrl": "http://127.0.0.1:4173/api/artifacts",
+    "signedUrlTtlMinutes": 15,
+    "writeConcurrency": 4,
+    "liveNetworkCalls": true,
+    "credentialMode": "write-read-split",
+    "blockers": []
+  },
+  "fixtures": [
+    {
+      "id": "medical-graduation",
+      "category": "Medical school graduation folded card",
+      "competitor": {
+        "competitor": "Shutterfly",
+        "category": "Photo-card print product",
+        "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+        "localFile": "shutterfly-grad-card-preview.webp",
+        "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T02-04-16-468Z/medical-graduation",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T02-04-16-468Z/medical-graduation/contact-sheet.png",
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+        },
+        {
+          "panelId": "back",
+          "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-12T02:19:26.000Z"
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding: every panel must reuse its palette, motifs, and border_style.\",\n    \"art_direction must name the panel's layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be decorative border or frame designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only c...<truncated 7498 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theme_guide",
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "theme_guide": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "theme_title",
+                    "palette",
+                    "motifs",
+                    "border_style",
+                    "front_back_pairing",
+                    "interior_pairing"
+                  ],
+                  "properties": {
+                    "theme_title": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "palette": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 6,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "motifs": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 8,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "border_style": {
+                      "type": "string",
+                      "maxLength": 180
+                    },
+                    "front_back_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    },
+                    "interior_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    }
+                  }
+                },
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 4806,
+        "body": {
+          "id": "id-1781229862229",
+          "object": "chat.completion",
+          "created": 1781229862,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"Front panel art direction: deep navy (90%) background, white (10%) text, soft gold accents, elegant graduation stationery layout, generous margins, centered headline and body.\",\n      \"body\": \"Congratulations on achieving your dream!\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork.\"\n    },\n    {\n      \"art_direction\": \"Inside-left panel art direction: decorative border, quiet center, clean text-safe area, low-contrast interior, sparse edge/corner motifs, deep navy (90%) background, white (10%) text, soft gold accents, generous margins.\",\n      \"body\": \"You pushed through years of exams, late nights, long shifts, and sacrifices. Your family is proud of your discipline, patience, heart, and dedication.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork.\"\n    },\n    {\n      \"art_direction\": \"Inside-right panel art direction: decorative border, quiet center, clean text-safe area, low-contrast interior, sparse edge/corner motifs, deep navy (90%) background, white (10%) text, soft gold accents, generous margins.\",\n      \"body\": \"As you begin this new chapter, we celebrate your hard work and commitment to becoming a doctor. May your dreams continue to flourish and your heart remain full of compassion and kindness.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork.\"\n    },\n    {\n      \"art_direction\": \"Back panel art direction: deep navy (90%) background, white (10%) text, soft gold accents, elegant graduation stationery layout, generous margins, centered headline and body.\",\n      \"body\": \"With love and pride, Manny\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork.\"\n    }\n  ],\n  \"theme_guide\": {\n    \"border_style\": \"soft gold accents, decorative border\",\n    \"front_back_pairing\": \"deep navy (90%) background, white (10%) text, soft gold accents\",\n    \"interior_pairing\": \"deep navy (90%) background, white (10%) text, soft gold accents\",\n    \"motifs\": [\n      \"anatomy sketch lines\",\n      \"ECG line\",\n      \"graduation cap\",\n      \"stethoscope\",\n      \"white coat\"\n    ],\n    \"palette\": [\n      \"deep navy (90%)\",\n      \"white (10%)\",\n      \"soft gold\"\n    ],\n    \"theme_title\": \"From Dream to Doctor\"\n  }\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 5780
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-inside-left.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "c3a3308c30a067a30daccfd7857bcdb366c1b23d08082c3f6f1e0daf29af10a7",
+          "x-amz-date": "20260612T020426Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-filename": "provider-inside-left.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-c3a3308c30a067a30daccfd7857bcdb366c1b23d08082c3f6f1e0daf29af10a7",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 519
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-inside-right.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "85989419958aec4785c7dba59654bc5266e7eceed5d12afb02b21145816a5922",
+          "x-amz-date": "20260612T020426Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-filename": "provider-inside-right.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-85989419958aec4785c7dba59654bc5266e7eceed5d12afb02b21145816a5922",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 540
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-front.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "ae4c3bd3eafbbce238ed1644f7f881e6f1be2ffc10d8b75165a4b891608bd936",
+          "x-amz-date": "20260612T020426Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-filename": "provider-front.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-ae4c3bd3eafbbce238ed1644f7f881e6f1be2ffc10d8b75165a4b891608bd936",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 578
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-back.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "804a8ab5a1efeaedcac81163c3f6bda72871b6fa866de97f0b4e48e653a6159d",
+          "x-amz-date": "20260612T020426Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-filename": "provider-back.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-804a8ab5a1efeaedcac81163c3f6bda72871b6fa866de97f0b4e48e653a6159d",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 648
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-inside-right.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T020427Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 18266
+      },
+      "durationMs": 151
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-front.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T020427Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 18369
+      },
+      "durationMs": 128
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-back.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T020427Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 18251
+      },
+      "durationMs": 124
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/provider-inside-left.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T020427Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 18394
+      },
+      "durationMs": 348
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "852768f59389276b7ba444b13c78259f679fe03173c49865296de4c4d7c79116",
+          "x-amz-date": "20260612T020427Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-852768f59389276b7ba444b13c78259f679fe03173c49865296de4c4d7c79116",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 203
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "3fc4f92614f9a0f4d7913a4c6cfe76b951895954e20119066a1c15d7e9acefd2",
+          "x-amz-date": "20260612T020427Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-3fc4f92614f9a0f4d7913a4c6cfe76b951895954e20119066a1c15d7e9acefd2",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 302
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T020427Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 10100,
+        "body": {
+          "draft_id": "ai-mqaa9px3-my-brother",
+          "card_copy": {
+            "theme_guide": {
+              "theme_title": "From Dream to Doctor",
+              "palette": [
+                "deep navy (90%)",
+                "white (10%)",
+                "soft gold"
+              ],
+              "motifs": [
+                "anatomy sketch lines",
+                "ECG line",
+                "graduation cap",
+                "stethoscope",
+                "white coat"
+              ],
+              "border_style": "soft gold accents, decorative border",
+              "front_back_pairing": "deep navy (90%) background, white (10%) text, soft gold accents",
+              "interior_pairing": "deep navy (90%) background, white (10%) text, soft gold accents"
+            },
+            "panels": [
+              {
+                "id": "front",
+                "headline": "From Dream to Doctor",
+                "body": "Congratulations on achieving your dream!",
+                "art_direction": "Front panel art direction: deep navy (90%) background, white (10%) text, soft gold accents, elegant graduation stationery layout, generous margins, centered headline and body.",
+                "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Thinking of you",
+                "body": "You pushed through years of exams, late nights, long shifts, and sacrifices. Your family is proud of your discipline, patience, heart, and dedication.",
+                "art_direction": "Inside-left panel art direction: decorative border, quiet center, clean text-safe area, low-contrast interior, sparse edge/corner motifs, deep navy (90%) background, white (10%) text, soft gold accents, generous margins.",
+                "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+              },
+              {
+                "id": "inside-right",
+                "headline": "From the heart",
+                "body": "As you begin this new chapter, we celebrate your hard work and commitment to becoming a doctor. May your dreams continue to flourish and your heart remain full of compassion and kindness.",
+                "art_direction": "Inside-right panel art direction: decorative border, quiet center, clean text-safe area, low-contrast interior, sparse edge/corner motifs, deep navy (90%) background, white (10%) text, soft gold accents, generous margins.",
+                "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+              },
+              {
+                "id": "back",
+                "headline": "From Dream to Doctor",
+                "body": "With pride, love, and deep respect for the doctor you worked so hard to become.",
+                "art_direction": "Back panel art direction: deep navy (90%) background, white (10%) text, soft gold accents, elegant graduation stationery layout, generous margins, centered headline and body.",
+                "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+              }
+            ],
+            "memory_citations": []
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 24518 chars>",
+              "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 24554 chars>",
+              "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 24382 chars>",
+              "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 24362 chars>",
+              "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "browser-svg-renderer",
+              "primary_adapter_id": "browser-svg-renderer",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 127
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T020427Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3922,
+        "body": {
+          "fixture": "medical-graduation",
+          "category": "Medical school graduation folded card",
+          "competitor": {
+            "competitor": "Shutterfly",
+            "category": "Photo-card print product",
+            "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+            "localFile": "shutterfly-grad-card-preview.webp",
+            "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "my brother",
+            "relationship": "brother",
+            "occasion": "medical school graduation",
+            "tone": "proud, emotional, premium, warm family pride, not cheesy",
+            "style": "deep navy, white, soft gold, elegant medical graduation stationery",
+            "language": "English",
+            "personal_note": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+            "memory_notes": [
+              "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+              "The family is proud of his discipline, patience, heart, and dedication.",
+              "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+            },
+            {
+              "panelId": "back",
+              "prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph."
+            }
+          ]
+        }
+      },
+      "durationMs": 102
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T02-04-16-468Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "34c92b4e5f4c97731a2bcecba7eec7257bde863c13bdc80e5f2a60fe8f702dae",
+          "x-amz-date": "20260612T020427Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T02-04-16-468Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 305
+    }
+  ]
+}

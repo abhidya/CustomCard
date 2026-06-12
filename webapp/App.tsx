@@ -558,6 +558,7 @@ export default function App() {
             aiActive={aiDraft !== null}
             aiAvailable={cardGenAvailable}
             aiLoading={aiCardGenLoading}
+            aiPanelProgress={state.aiPanelGenerationProgress}
             aiStale={aiStale}
             aiStatus={aiCardGenStatus}
             aiRequiresSignIn={!isSignedIn}

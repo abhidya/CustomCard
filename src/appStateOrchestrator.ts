@@ -11,6 +11,7 @@ import {
   type CardDraft,
   type CardDraftInput,
   type CardOpportunity,
+  type CardPanel,
   type CardValidation,
   type LanguageChoice,
   type LocalWorkspace,
@@ -36,6 +37,8 @@ import {
 import {
   buildAiGenerationJobEvidence,
   prependAiGenerationJob,
+  type AiGenerationApiImage,
+  type AiGenerationApiPanel,
   type AiGenerationApiResult,
   type AiGenerationJobEvidence
 } from "./aiGenerationJobs";
@@ -72,6 +75,8 @@ const legacyCardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string
 const sameOriginCardGenPath = "/api/ai/card/generate";
 
 export type CustomerApiTokenProvider = () => Promise<string | null | undefined>;
+export type AiPanelGenerationStatus = "queued" | "copy-ready" | "artwork-loading" | "artwork-ready" | "artwork-missing";
+export type AiPanelGenerationProgress = Partial<Record<CardPanel["id"], AiPanelGenerationStatus>>;
 
 export interface AppState {
   activeView: ViewId;
@@ -106,6 +111,7 @@ export interface AppState {
   keepAiArtwork: () => void;
   aiCardGenLoading: boolean;
   aiCardGenStatus: string;
+  aiPanelGenerationProgress: AiPanelGenerationProgress;
   aiGenerationJobs: AiGenerationJobEvidence[];
   triggerAiCardGen: () => void;
   cardGenAvailable: boolean;
@@ -168,6 +174,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   aiDraftPresent.current = aiDraft !== null;
   const [aiCardGenLoading, setAiCardGenLoading] = useState(false);
   const [aiCardGenStatus, setAiCardGenStatus] = useState("");
+  const [aiPanelGenerationProgress, setAiPanelGenerationProgress] = useState<AiPanelGenerationProgress>({});
   const [aiGenerationJobs, setAiGenerationJobs] = useState<AiGenerationJobEvidence[]>([]);
   const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => loadBrowserAiFlowAdminConfigs());
 
@@ -198,7 +205,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   // and marked stale so the customer can choose to keep or refresh the artwork.
   useEffect(() => {
     if (aiDraftPresent.current) setAiStale(true);
-    else setAiCardGenStatus("");
+    else {
+      setAiCardGenStatus("");
+      setAiPanelGenerationProgress({});
+    }
   }, [draftInput]);
 
   const draft = useMemo(() => generateCardDraft(draftInput, memories), [draftInput, memories]);
@@ -244,6 +254,8 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
 
   const triggerAiCardGen = useCallback(() => {
     if (aiCardGenLoading) return;
+    const requestDraft = draft;
+    const requestPanels = requestDraft.panels;
     const baseBody = {
       sender: draftInput.sender,
       recipient: draftInput.recipient,
@@ -257,7 +269,9 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     };
     const body = JSON.stringify(baseBody);
     setAiCardGenLoading(true);
-    setAiCardGenStatus("Generating copy and artwork...");
+    setAiStale(false);
+    setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
+    setAiCardGenStatus("Starting your AI card. Panels will appear as each one is ready.");
     buildAiCardGenerationHeaders(getCustomerApiToken)
       .then((headers) =>
         fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
@@ -267,42 +281,85 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         })
       )
       .then(readAiGenerationResponse)
-      .then((result: AiGenerationApiResult) => {
-        const imageByPanel = new Map<string, string>(
-          (result.images as Array<{ panel_id: string; image_url: string }> | undefined ?? []).map((img) => [img.panel_id, img.image_url])
+      .then(async (result: AiGenerationApiResult) => {
+        const imageByPanel = new Map<string, AiGenerationApiImage>(
+          (result.images ?? [])
+            .filter((image): image is AiGenerationApiImage & { panel_id: string; image_url: string } =>
+              typeof image.panel_id === "string" && typeof image.image_url === "string" && image.image_url.length > 0
+            )
+            .map((image) => [image.panel_id, image])
         );
-        const basePanels = draft.panels;
-        const aiPanels = basePanels.map((panel) => {
-          const copy = (result.card_copy?.panels as Array<{ id: string; headline: string; body: string; art_direction: string }> | undefined ?? [])
-            .find((p) => p.id === panel.id);
+        const copyByPanel = new Map<string, AiGenerationApiPanel>(
+          (result.card_copy?.panels ?? [])
+            .filter((copy): copy is AiGenerationApiPanel & { id: string } => typeof copy.id === "string" && copy.id.length > 0)
+            .map((copy) => [copy.id, copy])
+        );
+        const aiPanels = requestPanels.map((panel) => {
+          const copy = copyByPanel.get(panel.id);
           if (!copy) return panel;
           return {
             ...panel,
-            headline: copy.headline,
-            body: copy.body,
-            artDirection: copy.art_direction,
-            imageUrl: imageByPanel.get(panel.id)
+            headline: copy.headline || panel.headline,
+            body: copy.body || panel.body,
+            artDirection: copy.art_direction || panel.artDirection,
+            imageUrl: undefined
           };
         });
-        const panelCount = basePanels.length;
+        const panelCount = requestPanels.length;
         const hasImages = imageByPanel.size > 0;
         const artworkFailure = readArtworkFailure(result);
-        setAiDraft({ ...draft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+        setAiDraft({ ...requestDraft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
         setAiStale(false);
-        setAiCardGenStatus(
-          hasImages
-            ? `AI card applied with ${imageByPanel.size}/${panelCount} artwork panels.`
-            : artworkFailure
-              ? `AI copy applied; artwork blocked: ${artworkFailure}`
-              : "AI copy applied; artwork was not returned."
-        );
+        setAiPanelGenerationProgress(buildAiPanelGenerationProgress(requestPanels, copyByPanel, imageByPanel));
         setAiGenerationJobs((current) =>
-          prependAiGenerationJob(current, buildAiGenerationJobEvidence({ result, draft }), 10)
+          prependAiGenerationJob(current, buildAiGenerationJobEvidence({ result, draft: requestDraft }), 10)
+        );
+        if (!hasImages) {
+          setAiCardGenStatus(
+            artworkFailure
+              ? `Copy is ready. Artwork is blocked by settings: ${artworkFailure}`
+              : "Copy is ready. No artwork was returned, so template panels stay editable."
+          );
+          return;
+        }
+
+        setAiCardGenStatus(`Copy is ready. Loading ${imageByPanel.size}/${panelCount} artwork panels as they finish.`);
+        let loadedPanelCount = 0;
+        await Promise.allSettled(
+          requestPanels.map(async (panel) => {
+            const image = imageByPanel.get(panel.id);
+            const imageUrl = image?.image_url;
+            if (!imageUrl) return;
+            try {
+              await preloadGeneratedPanelImage(imageUrl);
+              loadedPanelCount += 1;
+              setAiDraft((current) => {
+                if (!current) return current;
+                return {
+                  ...current,
+                  generatedBy: "ai-text-and-image",
+                  panels: current.panels.map((candidate) =>
+                    candidate.id === panel.id ? { ...candidate, imageUrl: imageUrl } : candidate
+                  )
+                };
+              });
+              setAiPanelGenerationProgress((current) => ({ ...current, [panel.id]: "artwork-ready" }));
+              setAiCardGenStatus(`Loaded ${loadedPanelCount}/${panelCount} artwork panels. Ready panels are available to review.`);
+            } catch {
+              setAiPanelGenerationProgress((current) => ({ ...current, [panel.id]: "artwork-missing" }));
+            }
+          })
+        );
+        setAiCardGenStatus(
+          loadedPanelCount === panelCount
+            ? "AI card ready. Review each panel before printing."
+            : `AI card ready with ${loadedPanelCount}/${panelCount} artwork panels. Review the copy before printing.`
         );
       })
       .catch((err: unknown) => {
         console.error("AI card gen failed:", err);
         setAiCardGenStatus(err instanceof Error ? err.message : "AI card generation failed. Try again in a moment.");
+        setAiPanelGenerationProgress(progressForPanels(requestPanels, "artwork-missing"));
       })
       .finally(() => { setAiCardGenLoading(false); });
   }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput, getCustomerApiToken]);
@@ -340,6 +397,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     keepAiArtwork,
     aiCardGenLoading,
     aiCardGenStatus,
+    aiPanelGenerationProgress,
     aiGenerationJobs,
     triggerAiCardGen,
     cardGenAvailable: true,
@@ -418,4 +476,47 @@ function readArtworkFailure(result: AiGenerationApiResult): string {
     return "image generation is disabled in server settings.";
   }
   return failure.trim();
+}
+
+export function progressForPanels(
+  panels: CardPanel[],
+  status: AiPanelGenerationStatus
+): AiPanelGenerationProgress {
+  return panels.reduce<AiPanelGenerationProgress>((progress, panel) => {
+    progress[panel.id] = status;
+    return progress;
+  }, {});
+}
+
+export function buildAiPanelGenerationProgress(
+  panels: CardPanel[],
+  copyByPanel: ReadonlyMap<string, AiGenerationApiPanel>,
+  imageByPanel: ReadonlyMap<string, AiGenerationApiImage>
+): AiPanelGenerationProgress {
+  return panels.reduce<AiPanelGenerationProgress>((progress, panel) => {
+    if (imageByPanel.has(panel.id)) {
+      progress[panel.id] = "artwork-loading";
+    } else if (copyByPanel.has(panel.id)) {
+      progress[panel.id] = "copy-ready";
+    } else {
+      progress[panel.id] = "artwork-missing";
+    }
+    return progress;
+  }, {});
+}
+
+function preloadGeneratedPanelImage(imageUrl: string): Promise<void> {
+  if (typeof Image === "undefined") return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      if (typeof image.decode === "function") {
+        void image.decode().then(resolve).catch(() => resolve());
+        return;
+      }
+      resolve();
+    };
+    image.onerror = () => reject(new Error("Generated panel image did not load."));
+    image.src = imageUrl;
+  });
 }

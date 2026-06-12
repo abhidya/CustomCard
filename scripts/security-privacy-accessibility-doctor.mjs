@@ -40,6 +40,7 @@ const checks = [
     "Cross-Origin-Resource-Policy",
     "Permissions-Policy",
     "Referrer-Policy",
+    "Strict-Transport-Security",
     "X-Content-Type-Options",
     "X-Frame-Options",
     "Cache-Control"

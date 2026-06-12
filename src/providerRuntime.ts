@@ -1057,8 +1057,8 @@ function defaultTextModel(adapterId: string): string {
 
 function defaultImageModel(adapterId: string): string {
   const defaults: Record<string, string> = {
-    "openai-images": "gpt-image-1",
-    "google-gemini-image": "gemini-2.0-flash-preview-image-generation",
+    "openai-images": "gpt-image-2",
+    "google-gemini-image": "gemini-3.1-flash-image",
     "huggingface-image": "black-forest-labs/FLUX.1-schnell",
     "stability-stable-image": "stable-image-core",
     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
@@ -1571,10 +1571,13 @@ function buildSinglePanelImageRequest(
   }
 
   if (adapter.id === "google-gemini-image") {
-    return request(adapter, "POST", "https://generativelanguage.googleapis.com/v1beta/models/{image-model}:generateContent", ["GOOGLE_GENERATIVE_AI_API_KEY"], {
+    return request(adapter, "POST", "https://generativelanguage.googleapis.com/v1/models/{image-model}:generateContent", ["GOOGLE_GENERATIVE_AI_API_KEY"], {
       model,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { responseModalities: ["IMAGE"] },
+      generationConfig: {
+        responseModalities: ["Image"],
+        responseFormat: { image: { aspectRatio: "3:4", imageSize: "2K" } }
+      },
       metadata
     }, [], {
       "x-goog-api-key": "{GOOGLE_GENERATIVE_AI_API_KEY}"

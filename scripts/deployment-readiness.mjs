@@ -15,6 +15,7 @@ const files = {
   cloudArtifactMain: "infra/aws/artifact-store/main.tf",
   cloudArtifactVariables: "infra/aws/artifact-store/variables.tf",
   cloudArtifactOutputs: "infra/aws/artifact-store/outputs.tf",
+  caddyfile: "infra/Caddyfile",
   k8s: "infra/k8s/app.yaml",
   migration: "infra/migrations/001_initial_schema.sql"
 };
@@ -46,7 +47,17 @@ const checks = [
   checkIncludes("cheap-droplet", "droplet-runtime-target", contents.dropletCompose, [
     "target: runtime",
     'restart: unless-stopped',
-    "80:4173"
+    "expose:",
+    '"4173"'
+  ]),
+  checkIncludes("cheap-droplet", "droplet-tls-reverse-proxy", `${contents.dropletCompose}\n${contents.caddyfile}`, [
+    "reverse-proxy:",
+    "caddy:2-alpine",
+    "80:80",
+    "443:443",
+    "CADDY_DOMAIN",
+    "reverse_proxy app:4173",
+    "Strict-Transport-Security"
   ]),
   checkIncludes("cheap-droplet", "droplet-managed-secrets", contents.dropletCompose, [
     "SECRET_PROVIDER: managed_secret_store",
@@ -65,14 +76,19 @@ const checks = [
     "redis-server --appendonly yes",
     "customcard-postgres:",
     "customcard-redis:",
-    "customcard-objects:"
+    "customcard-caddy-data:",
+    "customcard-caddy-config:"
   ]),
-  checkIncludes("cheap-droplet", "droplet-object-store-mounted-by-app-and-worker", contents.dropletCompose, [
+  checkIncludes("cheap-droplet", "droplet-object-store-https-by-app-and-worker", contents.dropletCompose, [
     "app:",
     "worker:",
-    "OBJECT_STORE_URL: file:///data/objects",
+    "OBJECT_STORE_URL: https://${OBJECT_STORE_HOST:?set OBJECT_STORE_HOST}",
+    "OBJECT_STORE_BUCKET:",
+    "OBJECT_STORE_ACCESS_KEY_ID:",
+    "OBJECT_STORE_SECRET_ACCESS_KEY:",
+    "OBJECT_STORE_PUBLIC_BASE_URL: https://${CADDY_DOMAIN:?set CADDY_DOMAIN}/api/artifacts",
     "OBJECT_STORE_SIGNING_SECRET:",
-    "customcard-objects:/data/objects"
+    "OBJECT_STORE_REGION:"
   ]),
   checkIncludes("cloud-native", "k8s-secret-manager-boundary", contents.k8s, [
     "kind: Secret",
@@ -175,7 +191,10 @@ const checks = [
   checkIncludes("runtime", "runtime-env-example", contents.envExample, [
     "DATABASE_URL=",
     "QUEUE_URL=",
+    "CADDY_DOMAIN=",
+    "CADDY_ACME_EMAIL=",
     "OBJECT_STORE_URL=",
+    "OBJECT_STORE_HOST=",
     "OBJECT_STORE_BUCKET=",
     "OBJECT_STORE_ACCESS_KEY_ID=",
     "OBJECT_STORE_SECRET_ACCESS_KEY=",

@@ -1,0 +1,128 @@
+{
+  "draft_id": "ai-mqaacxx7-my-brother",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "From Dream to Doctor",
+      "palette": [
+        "Deep Navy",
+        "White",
+        "Soft Gold"
+      ],
+      "motifs": [
+        "White Coat",
+        "Stethoscope",
+        "Anatomy Sketch Lines",
+        "ECG Line",
+        "Graduation Cap"
+      ],
+      "border_style": "Deep Navy",
+      "front_back_pairing": "Soft Gold",
+      "interior_pairing": "Deep Navy"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "From Dream to Doctor",
+        "body": "For every late night, long shift, and quiet sacrifice that brought you here.",
+        "art_direction": "Front cover design: a premium, elegant, white-coat-wearing figure stands proudly in front of a soft-gold-embossed medical-school background with a stethoscope draped over their shoulder. The white coat and stethoscope are in deep navy. The panel headline and body fit within a clean text-safe area at the top and bottom of the panel. The deep navy, white, and soft gold colors are used throughout the design.",
+        "image_prompt": "A premium, elegant, white-coat-wearing figure stands proudly in front of a soft-gold-embossed medical-school background with a stethoscope draped over their shoulder. The white coat and stethoscope are in deep navy. Clean text-safe area at the top and bottom for headline and body. Deep navy, white, and soft gold colors used throughout.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Years In The Making",
+        "body": "You kept going through exams, late nights, long shifts, and the sacrifices most people never saw. Today honors the discipline behind the white coat as much as the degree itself.",
+        "art_direction": "Inside-left panel design: a delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. The interior is a quiet, low-contrast, clean text-safe area reserved for the app-rendered text. Generous margins and sparse edge/corner motifs complete the design.",
+        "image_prompt": "Delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. Quiet, low-contrast clean text-safe area reserved for app-rendered text in the center. Generous margins and sparse edge/corner motifs.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "With So Much Pride",
+        "body": "The family is proud of his discipline, patience, heart, and dedication. Congratulations on your medical school graduation, brother! You are now a Doctor.",
+        "art_direction": "Inside-right panel design: a matching delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. The interior is a quiet, low-contrast, clean text-safe area reserved for the app-rendered text. Generous margins and sparse edge/corner motifs complete the design. The main personal message is written in the clean text-safe area.",
+        "image_prompt": "Matching delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. Quiet, low-contrast clean text-safe area reserved for app-rendered text in the center. Generous margins and sparse edge/corner motifs. Main personal message written in the clean text-safe area.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "back",
+        "headline": "From Dream to Doctor",
+        "body": "Wishing you a lifetime of healing and service.",
+        "art_direction": "Back panel design: a soft-gold-embossed medical-school background with a stethoscope draped over a white-coat-wearing figure. The white coat and stethoscope are in deep navy. The panel headline and body fit within a clean text-safe area at the top and bottom of the panel. The deep navy, white, and soft gold colors are used throughout the design.",
+        "image_prompt": "Soft-gold-embossed medical-school background with a stethoscope draped over a white-coat-wearing figure. The white coat and stethoscope are in deep navy. Clean text-safe area at the top and bottom for headline and body. Deep navy, white, and soft gold colors used throughout.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      }
+    ],
+    "memory_citations": [
+      "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+      "The family is proud of his discipline, patience, heart, and dedication.",
+      "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 24354 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 24546 chars>",
+      "revised_prompt": "Delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. Quiet, low-contrast clean text-safe area reserved for app-rendered text in the center. Generous margins and sparse edge/corner motifs. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 24366 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching decorative border/frame design, sparse edge and corner motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 24366 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with subtle coordinating ornamentation near the lower area. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

@@ -27,10 +27,13 @@ This directory is the deployable service skeleton for the production path.
   local-dev, cheap-droplet, cloud-native, and SaaS-scale capacity profiles used
   by `npm run capacity:doctor`.
 
-For the droplet deployment, provide `POSTGRES_PASSWORD` from a real secret source
-or local deployment `.env` that is never committed. The compose file uses
-`${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}` so the service fails closed instead
-of starting with an empty database password.
+For the droplet deployment, provide `POSTGRES_PASSWORD`, `CADDY_DOMAIN`,
+`CADDY_ACME_EMAIL`, and `OBJECT_STORE_*` values from a real secret/config source
+or local deployment `.env` that is never committed. The compose file exposes the
+app only behind Caddy on ports 80/443; Caddy obtains TLS, redirects HTTP to
+HTTPS, and sends `Strict-Transport-Security`. `OBJECT_STORE_URL` must be an
+HTTPS S3-compatible endpoint in production so signed storage requests do not
+cross the network in plaintext.
 
 For Kubernetes, apply the `customcard-migrate` Job successfully before rolling
 the web and worker Deployments. The deployment manifest keeps the live-order kill

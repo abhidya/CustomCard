@@ -1,0 +1,46 @@
+{
+  "fixture": "small-business-thank-you",
+  "category": "Small business thank-you AI card",
+  "competitor": {
+    "competitor": "Adobe Express",
+    "category": "Small business thank-you AI card",
+    "sourcePage": "https://www.adobe.com/express/create/ai/card",
+    "localFile": "adobe-express-small-business-thanks.png",
+    "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+  },
+  "requestBody": {
+    "sender": "CustomCard",
+    "recipient": "loyal customers",
+    "relationship": "small business to repeat customer",
+    "occasion": "thank-you for supporting a small business",
+    "tone": "warm, sincere, polished, grateful, not salesy",
+    "style": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+    "language": "English",
+    "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+    "memory_notes": [
+      "The customer chose an independent small business instead of a large marketplace.",
+      "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+      "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field with a controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, and editorial negative space; use border and corner hierarchy, not a busy repeated fruit pattern. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field with a controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, and editorial negative space; use border and corner hierarchy, not a busy repeated fruit pattern. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field with a controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, and editorial negative space; use border and corner hierarchy, not a busy repeated fruit pattern. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    },
+    {
+      "panelId": "back",
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm small-business thank-you stationery: cream or deep teal field with a controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, and editorial negative space; use border and corner hierarchy, not a busy repeated fruit pattern. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    }
+  ]
+}

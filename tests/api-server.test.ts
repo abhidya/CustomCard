@@ -10,7 +10,7 @@ const runtimeDoctorEnv = {
   CUSTOMCARD_API_RUNTIME: "postgres",
   DATABASE_URL: "postgres://customcard:customcard@127.0.0.1:5432/customcard_ci",
   QUEUE_URL: "redis://runtime-doctor",
-  OBJECT_STORE_URL: "file:///tmp/customcard-runtime-doctor",
+  OBJECT_STORE_URL: "https://object-store.customcard.test",
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
   AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
   REAL_ORDER_KILL_SWITCH: "disabled"
@@ -533,7 +533,7 @@ describe("api server wrapper", () => {
       expect(report.readiness.routes.total).toBe(30);
     expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
     expect(report.readiness.security).toMatchObject({
-      headers: 7,
+      headers: 8,
       cspFrameAncestors: true,
       cspObjectBlocked: true,
       cspUnsafeEvalBlocked: true,

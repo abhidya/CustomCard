@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="medical">
+<rect width="1500" height="2100" fill="#fffdf7"/>
+
+    <g data-customcard-texture="medical-paper" opacity="0.16">
+      <path d="M260 560 C360 520 410 620 520 574 C640 524 710 592 830 548 C950 506 1040 560 1240 506" fill="none" stroke="#d7c38b" stroke-width="3"/>
+      <path d="M300 1470 C430 1420 540 1508 660 1458 C780 1408 880 1486 1010 1432 C1110 1392 1190 1428 1260 1390" fill="none" stroke="#d7c38b" stroke-width="3"/>
+      <circle cx="318" cy="360" r="4" fill="#caa75b"/>
+      <circle cx="1182" cy="1740" r="4" fill="#caa75b"/>
+    </g>
+  
+
+      <g data-customcard-hero="medical-interior">
+        <path d="M170 1682 L360 1682 L390 1608 L435 1742 L485 1526 L535 1682 L1030 1682 L1070 1628 L1122 1728 L1182 1588 L1222 1682 L1332 1682" fill="none" stroke="#c49b42" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+        <path d="M1114 1556 C1080 1608 1086 1664 1130 1690 C1178 1718 1242 1688 1258 1634" fill="none" stroke="#253454" stroke-width="12" stroke-linecap="round" opacity="0.75"/>
+        <circle cx="1102" cy="1550" r="22" fill="none" stroke="#c49b42" stroke-width="9" opacity="0.82"/>
+        <circle cx="1270" cy="1628" r="34" fill="none" stroke="#c49b42" stroke-width="9" opacity="0.82"/>
+      </g>
+    
+
+<rect x="190" y="300" width="1120" height="1500" rx="26" fill="#fffefa" opacity="0.82"/>
+
+    <rect x="70" y="70" width="1360" height="1960" rx="18" fill="none" stroke="#c49b42" stroke-width="5" opacity="0.62"/>
+    <rect x="102" y="102" width="1296" height="1896" rx="10" fill="none" stroke="#c49b42" stroke-width="2" opacity="0.44639999999999996"/>
+  
+</svg>

@@ -1,17 +1,40 @@
 services:
+  reverse-proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      CADDY_DOMAIN: ${CADDY_DOMAIN:?set CADDY_DOMAIN}
+      CADDY_ACME_EMAIL: ${CADDY_ACME_EMAIL:?set CADDY_ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - customcard-caddy-data:/data
+      - customcard-caddy-config:/config
+
   app:
     build:
       context: ..
       target: runtime
     restart: unless-stopped
-    ports:
-      - "80:4173"
+    expose:
+      - "4173"
     environment:
       CUSTOMCARD_ENV: prod
       CUSTOMCARD_API_RUNTIME: postgres
       DATABASE_URL: postgres://customcard:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/customcard_prod
       QUEUE_URL: redis://redis:6379/0
-      OBJECT_STORE_URL: file:///data/objects
+      OBJECT_STORE_URL: https://${OBJECT_STORE_HOST:?set OBJECT_STORE_HOST}
+      OBJECT_STORE_BUCKET: ${OBJECT_STORE_BUCKET:?set OBJECT_STORE_BUCKET}
+      OBJECT_STORE_ACCESS_KEY_ID: ${OBJECT_STORE_ACCESS_KEY_ID:?set OBJECT_STORE_ACCESS_KEY_ID}
+      OBJECT_STORE_SECRET_ACCESS_KEY: ${OBJECT_STORE_SECRET_ACCESS_KEY:?set OBJECT_STORE_SECRET_ACCESS_KEY}
+      OBJECT_STORE_READ_ACCESS_KEY_ID: ${OBJECT_STORE_READ_ACCESS_KEY_ID:-}
+      OBJECT_STORE_READ_SECRET_ACCESS_KEY: ${OBJECT_STORE_READ_SECRET_ACCESS_KEY:-}
+      OBJECT_STORE_REGION: ${OBJECT_STORE_REGION:-us-east-1}
+      OBJECT_STORE_PUBLIC_BASE_URL: https://${CADDY_DOMAIN:?set CADDY_DOMAIN}/api/artifacts
       OBJECT_STORE_SIGNING_SECRET: ${OBJECT_STORE_SIGNING_SECRET:?set OBJECT_STORE_SIGNING_SECRET}
       AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
@@ -23,8 +46,6 @@ services:
       WALMART_VENDOR_MODE: disabled_until_certified
       STAPLES_VENDOR_MODE: disabled_until_certified
       OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
-    volumes:
-      - customcard-objects:/data/objects
     depends_on:
       - postgres
       - redis
@@ -40,7 +61,14 @@ services:
       CUSTOMCARD_API_RUNTIME: postgres
       DATABASE_URL: postgres://customcard:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/customcard_prod
       QUEUE_URL: redis://redis:6379/0
-      OBJECT_STORE_URL: file:///data/objects
+      OBJECT_STORE_URL: https://${OBJECT_STORE_HOST:?set OBJECT_STORE_HOST}
+      OBJECT_STORE_BUCKET: ${OBJECT_STORE_BUCKET:?set OBJECT_STORE_BUCKET}
+      OBJECT_STORE_ACCESS_KEY_ID: ${OBJECT_STORE_ACCESS_KEY_ID:?set OBJECT_STORE_ACCESS_KEY_ID}
+      OBJECT_STORE_SECRET_ACCESS_KEY: ${OBJECT_STORE_SECRET_ACCESS_KEY:?set OBJECT_STORE_SECRET_ACCESS_KEY}
+      OBJECT_STORE_READ_ACCESS_KEY_ID: ${OBJECT_STORE_READ_ACCESS_KEY_ID:-}
+      OBJECT_STORE_READ_SECRET_ACCESS_KEY: ${OBJECT_STORE_READ_SECRET_ACCESS_KEY:-}
+      OBJECT_STORE_REGION: ${OBJECT_STORE_REGION:-us-east-1}
+      OBJECT_STORE_PUBLIC_BASE_URL: https://${CADDY_DOMAIN:?set CADDY_DOMAIN}/api/artifacts
       OBJECT_STORE_SIGNING_SECRET: ${OBJECT_STORE_SIGNING_SECRET:?set OBJECT_STORE_SIGNING_SECRET}
       AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET:?set AUTH_SESSION_SECRET}
       ARTIFACT_SIGNED_URL_TTL_MINUTES: 15
@@ -52,8 +80,6 @@ services:
       WALMART_VENDOR_MODE: disabled_until_certified
       STAPLES_VENDOR_MODE: disabled_until_certified
       OFFICE_DEPOT_VENDOR_MODE: disabled_until_certified
-    volumes:
-      - customcard-objects:/data/objects
     depends_on:
       - postgres
       - redis
@@ -79,4 +105,5 @@ services:
 volumes:
   customcard-postgres:
   customcard-redis:
-  customcard-objects:
+  customcard-caddy-data:
+  customcard-caddy-config:

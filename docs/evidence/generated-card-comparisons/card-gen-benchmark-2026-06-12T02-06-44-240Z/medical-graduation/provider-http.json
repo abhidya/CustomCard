@@ -1,0 +1,183 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding: every panel must reuse its palette, motifs, and border_style.\",\n    \"art_direction must name the panel's layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be decorative border or frame designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only c...<truncated 7498 chars>"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.62,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "theme_guide",
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "theme_guide": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "theme_title",
+                  "palette",
+                  "motifs",
+                  "border_style",
+                  "front_back_pairing",
+                  "interior_pairing"
+                ],
+                "properties": {
+                  "theme_title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "palette": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 6,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "motifs": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 8,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "border_style": {
+                    "type": "string",
+                    "maxLength": 180
+                  },
+                  "front_back_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  },
+                  "interior_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  }
+                }
+              },
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "contentLength": null,
+      "byteLength": 5476,
+      "body": {
+        "id": "id-1781230012569",
+        "object": "chat.completion",
+        "created": 1781230012,
+        "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [\n    \"He pushed through years of exams, late nights, long shifts, and sacrifices.\",\n    \"The family is proud of his discipline, patience, heart, and dedication.\",\n    \"Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"Front cover design: a premium, elegant, white-coat-wearing figure stands proudly in front of a soft-gold-embossed medical-school background with a stethoscope draped over their shoulder. The white coat and stethoscope are in deep navy. The panel headline and body fit within a clean text-safe area at the top and bottom of the panel. The deep navy, white, and soft gold colors are used throughout the design.\",\n      \"body\": \"\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A premium, elegant, white-coat-wearing figure stands proudly in front of a soft-gold-embossed medical-school background with a stethoscope draped over their shoulder. The white coat and stethoscope are in deep navy. Clean text-safe area at the top and bottom for headline and body. Deep navy, white, and soft gold colors used throughout.\"\n    },\n    {\n      \"art_direction\": \"Inside-left panel design: a delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. The interior is a quiet, low-contrast, clean text-safe area reserved for the app-rendered text. Generous margins and sparse edge/corner motifs complete the design.\",\n      \"body\": \"He pushed through years of exams, late nights, long shifts, and sacrifices.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. Quiet, low-contrast clean text-safe area reserved for app-rendered text in the center. Generous margins and sparse edge/corner motifs.\"\n    },\n    {\n      \"art_direction\": \"Inside-right panel design: a matching delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. The interior is a quiet, low-contrast, clean text-safe area reserved for the app-rendered text. Generous margins and sparse edge/corner motifs complete the design. The main personal message is written in the clean text-safe area.\",\n      \"body\": \"The family is proud of his discipline, patience, heart, and dedication. Congratulations on your medical school graduation, brother! You are now a Doctor.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Matching delicate white-coat pattern with deep navy and soft gold accents adorns the edges of the panel. Quiet, low-contrast clean text-safe area reserved for app-rendered text in the center. Generous margins and sparse edge/corner motifs. Main personal message written in the clean text-safe area.\"\n    },\n    {\n      \"art_direction\": \"Back panel design: a soft-gold-embossed medical-school background with a stethoscope draped over a white-coat-wearing figure. The white coat and stethoscope are in deep navy. The panel headline and body fit within a clean text-safe area at the top and bottom of the panel. The deep navy, white, and soft gold colors are used throughout the design.\",\n      \"body\": \"Wishing you a lifetime of healing and service.\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"Soft-gold-embossed medical-school background with a stethoscope draped over a white-coat-wearing figure. The white coat and stethoscope are in deep navy. Clean text-safe area at the top and bottom for headline and body. Deep navy, white, and soft gold colors used throughout.\"\n    }\n  ],\n  \"theme_guide\": {\n    \"border_style\": \"Deep Navy\",\n    \"front_back_pairing\": \"Soft Gold\",\n    \"interior_pairing\": \"Deep Navy\",\n    \"motifs\": [\n      \"White Coat\",\n      \"Stethoscope\",\n      \"Anatomy Sketch Lines\",\n      \"ECG Line\",\n      \"Graduation Cap\"\n    ],\n    \"palette\": [\n      \"Deep Navy\",\n      \"White\",\n      \"Soft Gold\"\n    ],\n    \"theme_title\": \"From Dream to Doctor\"\n  }\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": "<redacted>"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": "<redacted>",
+          "completion_tokens": "<redacted>",
+          "total_tokens": "<redacted>",
+          "prompt_tokens_details": "<redacted>"
+        }
+      }
+    },
+    "durationMs": 8347
+  }
+]

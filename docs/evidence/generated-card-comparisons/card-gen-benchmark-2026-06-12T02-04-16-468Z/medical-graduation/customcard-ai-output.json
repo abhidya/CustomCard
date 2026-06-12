@@ -1,0 +1,124 @@
+{
+  "draft_id": "ai-mqaa9px3-my-brother",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "From Dream to Doctor",
+      "palette": [
+        "deep navy (90%)",
+        "white (10%)",
+        "soft gold"
+      ],
+      "motifs": [
+        "anatomy sketch lines",
+        "ECG line",
+        "graduation cap",
+        "stethoscope",
+        "white coat"
+      ],
+      "border_style": "soft gold accents, decorative border",
+      "front_back_pairing": "deep navy (90%) background, white (10%) text, soft gold accents",
+      "interior_pairing": "deep navy (90%) background, white (10%) text, soft gold accents"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "From Dream to Doctor",
+        "body": "Congratulations on achieving your dream!",
+        "art_direction": "Front panel art direction: deep navy (90%) background, white (10%) text, soft gold accents, elegant graduation stationery layout, generous margins, centered headline and body.",
+        "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Thinking of you",
+        "body": "You pushed through years of exams, late nights, long shifts, and sacrifices. Your family is proud of your discipline, patience, heart, and dedication.",
+        "art_direction": "Inside-left panel art direction: decorative border, quiet center, clean text-safe area, low-contrast interior, sparse edge/corner motifs, deep navy (90%) background, white (10%) text, soft gold accents, generous margins.",
+        "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From the heart",
+        "body": "As you begin this new chapter, we celebrate your hard work and commitment to becoming a doctor. May your dreams continue to flourish and your heart remain full of compassion and kindness.",
+        "art_direction": "Inside-right panel art direction: decorative border, quiet center, clean text-safe area, low-contrast interior, sparse edge/corner motifs, deep navy (90%) background, white (10%) text, soft gold accents, generous margins.",
+        "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "back",
+        "headline": "From Dream to Doctor",
+        "body": "With pride, love, and deep respect for the doctor you worked so hard to become.",
+        "art_direction": "Back panel art direction: deep navy (90%) background, white (10%) text, soft gold accents, elegant graduation stationery layout, generous margins, centered headline and body.",
+        "image_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 24518 chars>",
+      "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white graduation cap with soft gold tassel, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 24554 chars>",
+      "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, anatomy sketch lines in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 24382 chars>",
+      "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, decorative border with white and soft gold motifs, quiet center with generous margins, low-contrast interior, sparse edge/corner motifs, stethoscope and white coat in the background, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 24362 chars>",
+      "revised_prompt": "Deep navy (90%) background, white (10%) text, soft gold accents, centered white stethoscope with soft gold accents, anatomy sketch lines in the background, generous margins, elegant graduation stationery style, premium 5x7 flat print panel artwork. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

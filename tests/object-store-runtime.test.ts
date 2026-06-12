@@ -16,6 +16,39 @@ const objectStoreEnv = {
 };
 
 describe("object store runtime", () => {
+  it("blocks non-HTTPS object store endpoints in production", () => {
+    const runtime = createObjectStoreRuntime({
+      env: {
+        ...objectStoreEnv,
+        CUSTOMCARD_ENV: "prod",
+        OBJECT_STORE_URL: "http://minio:9000"
+      }
+    });
+
+    expect(runtime.describe()).toMatchObject({
+      configured: false,
+      liveNetworkCalls: true
+    });
+    expect(runtime.validate()).toContain("Object store persistence: OBJECT_STORE_URL must be https:// in production.");
+  });
+
+  it("allows local dev MinIO over HTTP outside production", () => {
+    const runtime = createObjectStoreRuntime({
+      env: {
+        ...objectStoreEnv,
+        CUSTOMCARD_ENV: "dev",
+        OBJECT_STORE_URL: "http://127.0.0.1:9000"
+      }
+    });
+
+    expect(runtime.validate()).toEqual([]);
+    expect(runtime.describe()).toMatchObject({
+      configured: true,
+      provider: "s3-compatible",
+      liveNetworkCalls: true
+    });
+  });
+
   it("stores render artifacts and serves them through the HMAC signed URL contract", async () => {
     const runtime = createObjectStoreRuntime({
       env: objectStoreEnv,

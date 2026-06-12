@@ -1,0 +1,126 @@
+{
+  "draft_id": "ai-mqaafe66-my-brother",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "From Dream to Doctor",
+      "palette": [
+        "deep navy",
+        "white",
+        "soft gold"
+      ],
+      "motifs": [
+        "white coat",
+        "stethoscope",
+        "anatomy sketch lines",
+        "ECG line",
+        "graduation cap"
+      ],
+      "border_style": "decorative border/frame",
+      "front_back_pairing": "From Dream to Doctor",
+      "interior_pairing": "From Dream to Doctor"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "From Dream to Doctor",
+        "body": "For every late night, long shift, and quiet sacrifice that brought you here.",
+        "art_direction": "Front panel features the From Dream to Doctor theme in deep navy, white, and soft gold, with a prominent white coat and stethoscope at the center, surrounded by elegant medical graduation stationery motifs and generous safe-margin plan for the headline and body.",
+        "image_prompt": "A white coat and stethoscope in the center of a 5x7 panel, surrounded by deep navy and white graduation stationery motifs, with soft gold accents and a clean text-safe area for the headline and body, with generous margins and a low-contrast background, with sparse edge/corner motifs and a decorative border/frame",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Years In The Making",
+        "body": "He pushed through years of exams, late nights, long shifts, and sacrifices, with the heart of a doctor and the spirit of a dreamer.",
+        "art_direction": "Inside-left panel features a decorative border/frame with a quiet center, clean text-safe area for the app-rendered text, generous margins, low-contrast interior, and sparse edge/corner motifs in deep navy and white, with a background texture that echoes the From Dream to Doctor theme.",
+        "image_prompt": "A decorative border/frame with a quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs in deep navy and white, with a background texture that echoes the From Dream to Doctor theme, with a stethoscope and anatomy sketch lines subtly integrated into the design",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "With So Much Pride",
+        "body": "We are proud not only of the doctor you are becoming, but of the patience, heart, and dedication that brought you here. This moment belongs to every hard choice you made and every day you kept going. With love, Manny.",
+        "art_direction": "Inside-right panel features a decorative border/frame with a quiet center, clean text-safe area for the app-rendered text, generous margins, low-contrast interior, and sparse edge/corner motifs in deep navy and white, with a background texture that echoes the From Dream to Doctor theme.",
+        "image_prompt": "A decorative border/frame with a quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs in deep navy and white, with a background texture that echoes the From Dream to Doctor theme, with a graduation cap and ECG line subtly integrated into the design",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      },
+      {
+        "id": "back",
+        "headline": "From Dream to Doctor",
+        "body": "Wishing you a lifetime of healing, teaching, and making a difference.",
+        "art_direction": "Back panel features the From Dream to Doctor theme in deep navy, white, and soft gold, with a prominent white coat and stethoscope at the center, surrounded by elegant medical graduation stationery motifs and generous safe-margin plan for the headline and body.",
+        "image_prompt": "A white coat and stethoscope in the center of a 5x7 panel, surrounded by deep navy and white graduation stationery motifs, with soft gold accents and a clean text-safe area for the headline and body, with generous margins and a low-contrast background, with sparse edge/corner motifs and a decorative border/frame",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, photo"
+      }
+    ],
+    "memory_citations": [
+      "From Dream to Doctor"
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 24354 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; fill the canvas edge to edge with decorative background artwork and keep the lower third slightly less busy. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 24386 chars>",
+      "revised_prompt": "A decorative border/frame with a quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs in deep navy and white, with a background texture that echoes the From Dream to Doctor theme, with a stethoscope and anatomy sketch lines subtly integrated into the design 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 24386 chars>",
+      "revised_prompt": "A decorative border/frame with a quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs in deep navy and white, with a background texture that echoes the From Dream to Doctor theme, with a graduation cap and ECG line subtly integrated into the design 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 24366 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with subtle coordinating ornamentation near the lower area. Elegant medical-school graduation background: deep navy field with soft gold accents, simple white coat silhouette, graduation cap icon, stethoscope line forming a subtle heart, faint unlabeled anatomical linework texture, and quiet ECG heartbeat motif. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

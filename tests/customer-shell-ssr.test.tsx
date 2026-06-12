@@ -2,6 +2,8 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderToString } from "react-dom/server";
 import { createElement, type ReactNode } from "react";
 import App from "../webapp/App";
+import { StudioView } from "../webapp/views/StudioView";
+import { buildOpportunity, generateCardDraft, getDefaultDraftInput, parseFreeImport } from "../src/customerWorkflow";
 import {
   customerVisibleFixtureTermPattern,
   customerVisibleImplementationTermPattern
@@ -156,7 +158,7 @@ describe("customer shell server render", () => {
     const studio = renderShell({ search: "?view=studio", signedIn: false });
     expect(studio.text).toContain("Your card, their story");
     expect(studio.text).toContain("Who it's for");
-    expect(studio.text).toContain("Sign in to generate AI card");
+    expect(studio.html).toContain('aria-label="Sign in to generate AI card"');
     expect(studio.text).toContain("Create a free account to generate your card");
     expect(studio.text).toContain("Signing in does not connect your email or calendar.");
     expect(studio.text).toContain("Continue to print");
@@ -296,9 +298,66 @@ describe("customer shell server render", () => {
       expect(text).toContain("Make it personal");
       expect(text).toContain("Generate AI card");
       expect(text).toContain("4 print panels");
-      expect(text).toContain("Creates editable copy and artwork for every panel.");
+      expect(text).toContain("Drafts editable copy first, then loads artwork panel by panel.");
       expect(text).toContain("Continue to print");
       expect(html.split("pagetab").length - 1).toBeGreaterThanOrEqual(4);
+    });
+
+    it("renders progressive AI generation panel states", () => {
+      const opportunity = buildOpportunity(
+        parseFreeImport("Sara birthday dinner on 2026-07-12"),
+        [],
+        new Date("2026-06-11T12:00:00.000Z")
+      );
+      const draftInput = {
+        ...getDefaultDraftInput(undefined, opportunity),
+        recipient: "Sara",
+        sender: "Maya"
+      };
+      const baseDraft = generateCardDraft(draftInput, []);
+      const aiDraft = {
+        ...baseDraft,
+        generatedBy: "ai-text-and-image" as const,
+        panels: baseDraft.panels.map((panel) =>
+          panel.id === "front" ? { ...panel, imageUrl: "data:image/png;base64,AAAA" } : panel
+        )
+      };
+
+      const html = renderToString(
+        createElement(StudioView, {
+          aiActive: true,
+          aiAvailable: true,
+          aiLoading: true,
+          aiPanelProgress: {
+            front: "artwork-ready",
+            "inside-left": "artwork-loading",
+            "inside-right": "copy-ready",
+            back: "queued"
+          },
+          aiRequiresSignIn: false,
+          aiStale: false,
+          aiStatus: "Loaded 1/4 artwork panels. Ready panels are available to review.",
+          draft: aiDraft,
+          draftInput,
+          memories: [],
+          onAddNote: () => undefined,
+          onField: () => undefined,
+          onGenerateAi: () => undefined,
+          onKeepArtwork: () => undefined,
+          printFitPassed: true
+        })
+      );
+      const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
+
+      expect(text).toContain("Building your AI card");
+      expect(text).toContain("1/4 panels ready");
+      expect(text).toContain("Loaded 1/4 artwork panels");
+      expect(text).toContain("Artwork ready");
+      expect(text).toContain("Loading art");
+      expect(text).toContain("Copy ready");
+      expect(text).toContain("Queued");
+      expect(html).toContain('data-status="artwork-ready"');
+      expect(html).toContain('data-status="artwork-loading"');
     });
 
     it("renders print options with downloads and the outside-checkout boundary", () => {

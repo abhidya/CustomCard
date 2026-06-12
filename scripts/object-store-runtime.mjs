@@ -285,6 +285,7 @@ function resolveObjectStoreConfig(env) {
   const publicBaseUrl = resolvePublicBaseUrl(env);
   const writeConcurrency = safeIntegerEnv(env.CUSTOMCARD_ARTIFACT_WRITE_CONCURRENCY, 4, 1, 8);
   const required = env.CUSTOMCARD_ARTIFACT_PERSISTENCE === "enabled" || Boolean(endpoint || bucket || accessKeyId || secretAccessKey);
+  const productionRuntime = isProductionRuntime(env);
   const blockers = [];
 
   if (required && !endpoint) blockers.push("OBJECT_STORE_URL is required.");
@@ -294,7 +295,13 @@ function resolveObjectStoreConfig(env) {
   if (required && !secretAccessKey) blockers.push("OBJECT_STORE_SECRET_ACCESS_KEY is required.");
   if (required && signingSecret.length < 32) blockers.push("OBJECT_STORE_SIGNING_SECRET must be at least 32 characters.");
   if (required && !isSafePublicBaseUrl(publicBaseUrl)) blockers.push("OBJECT_STORE_PUBLIC_BASE_URL must be https or localhost/127.0.0.1 http.");
-  if (required && !isSupportedEndpoint(endpoint)) blockers.push("OBJECT_STORE_URL must be memory://, http://, or https://.");
+  if (required && !isSupportedEndpoint(endpoint, { productionRuntime })) {
+    blockers.push(
+      productionRuntime
+        ? "OBJECT_STORE_URL must be https:// in production."
+        : "OBJECT_STORE_URL must be memory://, https://, or local/dev-Minio http://."
+    );
+  }
 
   return {
     configured: required && blockers.length === 0,
@@ -863,8 +870,27 @@ function redactEndpoint(endpoint) {
   return endpoint.replace(/(https?:\/\/)[^./]+(\.r2\.cloudflarestorage\.com)/, "$1{account_id}$2");
 }
 
-function isSupportedEndpoint(value) {
-  return value.startsWith("memory://") || value.startsWith("https://") || value.startsWith("http://");
+function isProductionRuntime(env) {
+  const customCardEnv = String(env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
+  const nodeEnv = String(env.NODE_ENV ?? "").trim().toLowerCase();
+  return customCardEnv === "prod" || customCardEnv === "production" || nodeEnv === "production";
+}
+
+function isSupportedEndpoint(value, { productionRuntime = false } = {}) {
+  if (value.startsWith("https://")) return true;
+  if (productionRuntime) return false;
+  if (value.startsWith("memory://")) return true;
+  if (!value.startsWith("http://")) return false;
+  return isLocalOrDevMinioHttpEndpoint(value);
+}
+
+function isLocalOrDevMinioHttpEndpoint(value) {
+  try {
+    const parsed = new URL(value);
+    return ["localhost", "127.0.0.1", "0.0.0.0", "::1", "minio"].includes(parsed.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function isSafeBucketName(value) {

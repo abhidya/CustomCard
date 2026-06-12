@@ -169,10 +169,10 @@ const aiProviderModelEnvKeys = {
 
 const defaultModelsByAdapter = {
   "openai-responses-chat": "gpt-4o-mini",
-  "openai-images": "gpt-image-1",
+  "openai-images": "gpt-image-2",
   "anthropic-messages-chat": "claude-3-5-haiku-latest",
   "google-gemini-chat": "gemini-1.5-flash",
-  "google-gemini-image": "gemini-2.0-flash-preview-image-generation",
+  "google-gemini-image": "gemini-3.1-flash-image",
   "huggingface-chat": "meta-llama/Llama-3.2-3B-Instruct",
   "huggingface-image": "black-forest-labs/FLUX.1-schnell",
   "mistral-chat": "mistral-small-latest",

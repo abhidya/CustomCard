@@ -10,6 +10,7 @@ import type {
   Tone,
   VisualStyle
 } from "../../src/freeMvp";
+import type { AiPanelGenerationProgress, AiPanelGenerationStatus } from "../../src/appStateOrchestrator";
 import { displayDraftValue } from "../draftProgress";
 import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
@@ -43,28 +44,52 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function panelArtworkLabel(panel: CardPanel, generating: boolean, stale: boolean): string {
-  if (generating && !panel.imageUrl) return "Creating artwork…";
+function panelArtworkLabel(panel: CardPanel, stale: boolean, status: AiPanelGenerationStatus | undefined): string {
   if (stale) return "Needs review";
+  if (status === "queued") return "Queued";
+  if (status === "copy-ready") return "Copy ready";
+  if (status === "artwork-loading") return "Loading art";
+  if (status === "artwork-ready") return "Artwork ready";
+  if (status === "artwork-missing") return panel.imageUrl ? "Artwork ready" : "Copy ready";
   if (panel.imageUrl) return "Artwork ready";
   return "Template";
 }
 
 type GenerationStageState = "done" | "active" | "pending";
 
-function generationStages(aiLoading: boolean, aiActive: boolean, printFitPassed: boolean): Array<{ label: string; state: GenerationStageState }> {
+function generationStages({
+  aiLoading,
+  aiActive,
+  panelProgress,
+  printFitPassed,
+  readyArtworkCount,
+  totalPanels
+}: {
+  aiLoading: boolean;
+  aiActive: boolean;
+  panelProgress: AiPanelGenerationProgress;
+  printFitPassed: boolean;
+  readyArtworkCount: number;
+  totalPanels: number;
+}): Array<{ label: string; state: GenerationStageState }> {
+  const statuses = Object.values(panelProgress);
+  const copyReady = statuses.some((status) => status !== "queued");
+  const artworkExpected = statuses.some((status) => status === "artwork-loading" || status === "artwork-ready");
+  const artworkDone = artworkExpected ? readyArtworkCount === totalPanels && totalPanels > 0 : aiActive;
+  const artworkLabel = artworkExpected ? `Loading artwork (${readyArtworkCount}/${totalPanels})` : "Applying panel copy";
+
   if (aiLoading) {
     return [
-      { label: "Drafting message", state: "active" },
-      { label: "Preparing panels", state: "active" },
-      { label: "Checking print fit", state: "pending" },
+      { label: "Writing editable copy", state: copyReady ? "done" : "active" },
+      { label: artworkLabel, state: copyReady ? (artworkDone ? "done" : "active") : "pending" },
+      { label: "Checking print fit", state: artworkDone ? "active" : "pending" },
       { label: "Ready for review", state: "pending" }
     ];
   }
   if (aiActive) {
     return [
-      { label: "Drafting message", state: "done" },
-      { label: "Preparing panels", state: "done" },
+      { label: "Writing editable copy", state: "done" },
+      { label: artworkLabel, state: artworkDone ? "done" : "active" },
       { label: "Checking print fit", state: printFitPassed ? "done" : "active" },
       { label: "Ready for review", state: printFitPassed ? "done" : "pending" }
     ];
@@ -81,6 +106,7 @@ export function StudioView({
   aiActive,
   aiStale,
   aiStatus,
+  aiPanelProgress,
   aiRequiresSignIn,
   printFitPassed,
   onAddNote,
@@ -96,6 +122,7 @@ export function StudioView({
   aiActive: boolean;
   aiStale: boolean;
   aiStatus?: string;
+  aiPanelProgress: AiPanelGenerationProgress;
   aiRequiresSignIn: boolean;
   printFitPassed: boolean;
   onAddNote: () => void;
@@ -108,6 +135,8 @@ export function StudioView({
   const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
   const approvedForRecipient = memories.filter((memory) => memory.approved).length;
   const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
+  const totalPanels = draft.panels.length;
+  const activePanelStatus = aiPanelProgress[panel.id];
   const sensitive = isSensitiveOccasion(draftInput.occasion);
   const tones = sensitive ? allTones.filter((tone) => tone !== "playful") : allTones;
 
@@ -116,17 +145,29 @@ export function StudioView({
     if (sensitive && draftInput.tone === "playful") onField("tone", "simple");
   }, [draftInput.tone, onField, sensitive]);
   const aiState = aiLoading ? "loading" : aiActive ? "ready" : "idle";
-  const stages = generationStages(aiLoading, aiActive, printFitPassed);
+  const stages = generationStages({
+    aiLoading,
+    aiActive,
+    panelProgress: aiPanelProgress,
+    printFitPassed,
+    readyArtworkCount: artworkCount,
+    totalPanels
+  });
   const aiPanelSummary = aiActive
-    ? `${artworkCount}/${draft.panels.length} artwork panels ready`
-    : `${draft.panels.length} print panels`;
+    ? `${artworkCount}/${totalPanels} artwork panels ready`
+    : `${totalPanels} print panels`;
+  const stagePanelSummary = aiLoading
+    ? artworkCount > 0
+      ? `${artworkCount}/${totalPanels} panels ready`
+      : "Ready panels will appear here"
+    : aiPanelSummary;
   const aiNote = aiRequiresSignIn
     ? "Create and print without an account. AI card generation needs sign-in."
     : aiStatus
       ? aiStatus
       : aiActive
-        ? "Copy + artwork applied to the four print panels."
-        : "Creates editable copy and artwork for every panel.";
+        ? "Review the copy, artwork, and print fit before continuing."
+        : "Drafts editable copy first, then loads artwork panel by panel.";
 
   return (
     <>
@@ -158,27 +199,32 @@ export function StudioView({
             <FoldedCardPreview panels={draft.panels} />
           ) : (
             <>
-              <div className="stage-frame">
+              <div className="stage-frame" data-panel-status={activePanelStatus ?? "idle"}>
                 <PanelArt className="stage-card" panel={panel} />
+                <span className="stage-panel-badge">{panelArtworkLabel(panel, aiStale, activePanelStatus)}</span>
               </div>
               <div className="stage-ai-state" data-state={aiState}>
-                <span>{aiLoading ? "Generating AI card" : aiActive ? "AI card applied" : "AI card generator"}</span>
-                <strong>{aiLoading ? "Copy + artwork in progress" : aiPanelSummary}</strong>
+                <span>{aiLoading ? "Building AI card" : aiActive ? "Ready to review" : "AI card generator"}</span>
+                <strong>{stagePanelSummary}</strong>
               </div>
               <div className="pagetabs">
-                {draft.panels.map((candidate) => (
-                  <button
-                    className="pagetab"
-                    data-on={candidate.id === activePanel}
-                    key={candidate.id}
-                    onClick={() => setActivePanel(candidate.id)}
-                    type="button"
-                  >
-                    <PanelArt panel={candidate} />
-                    <span>{candidate.label}</span>
-                    <small>{panelArtworkLabel(candidate, aiLoading, aiStale)}</small>
-                  </button>
-                ))}
+                {draft.panels.map((candidate) => {
+                  const candidateStatus = aiPanelProgress[candidate.id];
+                  return (
+                    <button
+                      className="pagetab"
+                      data-on={candidate.id === activePanel}
+                      data-status={candidateStatus ?? "idle"}
+                      key={candidate.id}
+                      onClick={() => setActivePanel(candidate.id)}
+                      type="button"
+                    >
+                      <PanelArt panel={candidate} />
+                      <span>{candidate.label}</span>
+                      <small>{panelArtworkLabel(candidate, aiStale, candidateStatus)}</small>
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
@@ -217,21 +263,21 @@ export function StudioView({
                 </small>
               </div>
               <SignInButton mode="modal">
-                <button className="aibutton" type="button">
+                <button aria-label="Sign in to generate AI card" className="aibutton" type="button">
                   <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
-                  Sign in to generate AI card
+                  Sign in
                 </button>
               </SignInButton>
             </section>
           ) : aiAvailable ? (
             <section className="aiLaunch" data-state={aiState} aria-label="AI card generation">
               <div className="aiLaunchText">
-                <strong>{aiLoading ? "Generating AI card" : aiActive ? "AI card ready" : "AI card generator"}</strong>
+                <strong>{aiLoading ? "Building your AI card" : aiActive ? "Ready to review" : "Generate an AI card"}</strong>
                 <span>{aiNote}</span>
               </div>
               <button className="aibutton" disabled={aiLoading} onClick={onGenerateAi} type="button">
                 <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
-                {aiLoading ? "Generating…" : aiActive ? "Regenerate AI card" : "Generate AI card"}
+                {aiLoading ? "Generating card..." : aiActive ? "Regenerate AI card" : "Generate AI card"}
               </button>
             </section>
           ) : null}

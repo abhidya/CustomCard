@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="tools">
+<rect width="1500" height="2100" fill="#0f6b5f"/>
+<g data-customcard-texture="blueprint"><line x1="180" y1="0" x2="180" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="410" y1="0" x2="410" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="640" y1="0" x2="640" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="870" y1="0" x2="870" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="1100" y1="0" x2="1100" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="1330" y1="0" x2="1330" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="160" x2="1500" y2="160" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="405" x2="1500" y2="405" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="650" x2="1500" y2="650" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="895" x2="1500" y2="895" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="1140" x2="1500" y2="1140" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="1385" x2="1500" y2="1385" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="1630" x2="1500" y2="1630" stroke="#d9fff5" stroke-width="2" opacity="0.11"/><line x1="0" y1="1875" x2="1500" y2="1875" stroke="#d9fff5" stroke-width="2" opacity="0.11"/></g>
+
+    <g data-customcard-hero="tools" opacity="0.56">
+      <path d="M1040 945 L1290 695" stroke="#f8e6a1" stroke-width="30" stroke-linecap="round"/>
+      <circle cx="1308" cy="677" r="48" fill="none" stroke="#f5c542" stroke-width="20"/>
+      <rect x="936" y="841" width="330" height="36" rx="18" fill="#f5c542" transform="rotate(-9 1100 859)"/>
+      <path d="M930 1025 C1030 977 1140 977 1258 1027" fill="none" stroke="#d9fff5" stroke-width="8" stroke-linecap="round"/>
+    </g>
+  
+<g transform="translate(-81 2191) rotate(24) scale(1.16)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(-88 367) rotate(10) scale(1.02)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(442 84) rotate(12) scale(0.71)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(1603 1114) rotate(-15) scale(0.94)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(419 1999) rotate(10) scale(0.87)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(458 1982) rotate(-4) scale(0.78)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(-81 1070) rotate(23) scale(0.81)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(1583 1644) rotate(16) scale(0.9)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(1589 1757) rotate(-13) scale(1)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(1103 418) rotate(12) scale(0.53)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(-114 1620) rotate(1) scale(0.91)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(17 2166) rotate(-2) scale(0.72)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(1113 2057) rotate(-1) scale(0.7)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f5c542"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<g transform="translate(235 2048) rotate(16) scale(0.68)">
+    <g opacity="0.9">
+      <rect x="-95" y="-14" width="190" height="28" rx="14" fill="#f8e6a1"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+    </g>
+  </g>
+<rect x="0" y="1180" width="1500" height="520" fill="#fffaf0" opacity="0.18"/>
+<rect x="70" y="70" width="1360" height="1960" rx="28" fill="none" stroke="#f5c542" stroke-width="5" opacity="0.34"/>
+</svg>
