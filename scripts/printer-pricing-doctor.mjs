@@ -281,7 +281,7 @@ const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) 
     lane,
     passed: laneChecks.filter((check) => check.passed).length,
     total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
+    status: laneChecks.every((check) => check.passed) ? "repo-consistent" : "contract-drift"
   };
 });
 const failed = checks.filter((check) => !check.passed);
@@ -290,7 +290,8 @@ console.log(
   JSON.stringify(
     {
       service: "customcard-printer-pricing-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
+      status: failed.length === 0 ? "repo-consistent" : "contract-drift",
+      scope: "repo-local",
       observationCount,
       officialSourceCount,
       collectionRuleCount: ruleCount,
@@ -299,7 +300,7 @@ console.log(
       liveOrdersEnabled: false,
       lanes,
       checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
+      registerIssues: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
     },
     null,
     2

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  blockersFromFailedChecks,
+  registerIssuesFromFailedChecks,
   buildDoctorReport,
   checkAbsent,
   checkArrayIncludes,
@@ -26,22 +26,24 @@ describe("doctor harness", () => {
     ];
 
     expect(failedChecks(checks).map((check) => check.id)).toEqual(["minimum", "array", "absent", "shape"]);
-    expect(blockersFromFailedChecks(checks)).toEqual([
+    expect(registerIssuesFromFailedChecks(checks)).toEqual([
       { id: "minimum", lane: "register", detail: "3 is below required minimum 4." },
       { id: "array", lane: "docs", detail: "Missing signals: b" },
       { id: "absent", lane: "docs", detail: "Forbidden signals present: world" },
       { id: "shape", lane: "shape", detail: "Missing item fields: one.status" }
     ]);
+    // Repo-local doctors never say "ready": passing only proves the repo agrees with itself.
     expect(summarizeCheckLanes(checks)).toEqual([
-      { lane: "register", passed: 1, total: 2, status: "blocked" },
-      { lane: "docs", passed: 1, total: 3, status: "blocked" },
-      { lane: "shape", passed: 0, total: 1, status: "blocked" },
-      { lane: "runtime", passed: 1, total: 1, status: "ready" }
+      { lane: "register", passed: 1, total: 2, status: "contract-drift" },
+      { lane: "docs", passed: 1, total: 3, status: "contract-drift" },
+      { lane: "shape", passed: 0, total: 1, status: "contract-drift" },
+      { lane: "runtime", passed: 1, total: 1, status: "repo-consistent" }
     ]);
     expect(buildDoctorReport({ service: "unit" }, checks)).toMatchObject({
       service: "unit",
-      status: "blocked",
-      blockers: [
+      status: "contract-drift",
+      scope: "repo-local",
+      registerIssues: [
         { id: "minimum", lane: "register", detail: "3 is below required minimum 4." },
         { id: "array", lane: "docs", detail: "Missing signals: b" },
         { id: "absent", lane: "docs", detail: "Forbidden signals present: world" },

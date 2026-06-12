@@ -1,5 +1,17 @@
 import { readFileSync } from "node:fs";
 
+/**
+ * Status vocabulary for repo-local doctors.
+ *
+ * Every doctor built on this harness validates the repository against itself
+ * (registers, contracts, docs, CI wiring). Passing means the repo is
+ * internally consistent — it is NOT evidence that a live capability works.
+ * "ready" is reserved for env-gated live doctors that exercise real
+ * deployments, providers, or databases.
+ */
+export const repoConsistentStatus = "repo-consistent";
+export const contractDriftStatus = "contract-drift";
+
 export function readTextFiles(files) {
   return Object.fromEntries(Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")]));
 }
@@ -93,7 +105,7 @@ export function summarizeCheckLanes(checks) {
       lane,
       passed: laneChecks.filter((check) => check.passed).length,
       total: laneChecks.length,
-      status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
+      status: laneChecks.every((check) => check.passed) ? repoConsistentStatus : contractDriftStatus
     };
   });
 }
@@ -102,7 +114,7 @@ export function failedChecks(checks) {
   return checks.filter((check) => !check.passed);
 }
 
-export function blockersFromFailedChecks(checks) {
+export function registerIssuesFromFailedChecks(checks) {
   return failedChecks(checks).map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }));
 }
 
@@ -118,10 +130,11 @@ export function buildDoctorReport(baseReport, checks) {
   const failed = failedChecks(checks);
   return {
     ...baseReport,
-    status: failed.length === 0 ? "ready" : "blocked",
+    status: failed.length === 0 ? repoConsistentStatus : contractDriftStatus,
+    scope: "repo-local",
     lanes: summarizeCheckLanes(checks),
     checks,
-    blockers: blockersFromFailedChecks(checks)
+    registerIssues: registerIssuesFromFailedChecks(checks)
   };
 }
 

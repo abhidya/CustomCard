@@ -57,12 +57,32 @@ export function defineReadinessRegister(config) {
   }
 
   function summarize(items = defaultItems) {
+    const registerIssues = validate(items);
     return {
       total: items.length,
       ...summarizeExtra(items),
-      blockers: validate(items)
+      registerIssues,
+      // Deprecated alias: domain registers historically exposed validation
+      // output as `blockers`, which overstates what a repo-local validator can
+      // know. Consumers should read `registerIssues`; domain summaries may
+      // still derive real blockers from per-item `blocker` strings.
+      blockers: registerIssues
     };
   }
 
   return { items: defaultItems, validate, summarize };
+}
+
+/**
+ * Evidence artifact convention (docs/evidence/README.md): proof recorded by a
+ * doctor run or external reviewer lives under docs/evidence/<domain>/ with a
+ * date-stamped, slug-named file. Registers may only upgrade an item's status
+ * when its evidenceArtifactRefs follow this convention; Node doctors
+ * additionally verify the referenced files exist.
+ */
+export const evidenceArtifactRefPattern =
+  /^docs\/evidence\/[a-z0-9][a-z0-9-]*\/\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9.-]*\.(?:json|md|txt|pdf|png|jpg)$/;
+
+export function invalidEvidenceArtifactRefs(refs) {
+  return (refs ?? []).filter((ref) => typeof ref !== "string" || !evidenceArtifactRefPattern.test(ref));
 }
