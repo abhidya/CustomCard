@@ -44,13 +44,14 @@ vi.mock("@clerk/react", () => ({
 
 interface ShellWindowOptions {
   admin?: boolean;
+  loaded?: boolean;
   search?: string;
   signedIn?: boolean;
   storedWorkspace?: unknown;
 }
 
-function stubShellGlobals({ admin = false, search = "", signedIn = true }: ShellWindowOptions = {}) {
-  clerkState.isLoaded = true;
+function stubShellGlobals({ admin = false, loaded = true, search = "", signedIn = true }: ShellWindowOptions = {}) {
+  clerkState.isLoaded = loaded;
   clerkState.isSignedIn = signedIn;
   clerkState.user = signedIn
     ? {
@@ -464,6 +465,16 @@ describe("customer shell server render", () => {
     const signedOut = renderShell({ search: "?view=settings", signedIn: false });
     expect(signedOut.text).toContain("Sign in to send a privacy request.");
     expect(signedOut.text).toContain("You're browsing without an account.");
+  });
+
+  it("keeps the admin access gate calm while account status is loading", () => {
+    const loading = renderShell({ search: "?view=admin", loaded: false, signedIn: false });
+
+    expect(loading.text).toContain("Admin panel");
+    expect(loading.text).toContain("Checking your account before showing private operations.");
+    expect(loading.text).toContain("Checking account access");
+    expect(loading.text).not.toContain("Admin access can be granted");
+    expect(loading.html).not.toContain('class="adminGateActions"><span>Checking account access</span><button');
   });
 
   it("keeps customer-visible views free of fixture and implementation terms", () => {

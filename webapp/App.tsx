@@ -815,6 +815,7 @@ function AppFooter() {
 
 function AdminGate({ access, target }: { access: AdminAccess; target: string }) {
   const status = getAdminAccessStatus(access);
+  const checkingAccess = !access.isLoaded;
 
   return (
     <section className="adminGate panelcard reveal" aria-label={`${target} access gate`}>
@@ -825,11 +826,13 @@ function AdminGate({ access, target }: { access: AdminAccess; target: string }) 
         <p className="eyebrow">Private operations</p>
         <h1>{target}</h1>
         <p>
-          {access.isSignedIn
+          {checkingAccess
+            ? "Checking your account before showing private operations."
+            : access.isSignedIn
             ? "This account is signed in, but it is not marked as a CustomCard admin."
             : "Sign in with a CustomCard admin account to view operational readiness and adapter controls."}
         </p>
-        {!access.hasConfiguredEmails ? (
+        {!checkingAccess && !access.hasConfiguredEmails ? (
           <small>
             Admin access can be granted with Clerk public metadata role <code>admin</code> or a
             comma-separated <code>{browserAdminEmailEnvNames[0]}</code> allowlist.
@@ -838,7 +841,7 @@ function AdminGate({ access, target }: { access: AdminAccess; target: string }) 
       </div>
       <div className="adminGateActions">
         <span>{status}</span>
-        {access.isSignedIn ? (
+        {checkingAccess ? null : access.isSignedIn ? (
           <UserButton />
         ) : (
           <SignInButton>

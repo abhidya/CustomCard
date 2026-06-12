@@ -373,12 +373,18 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.h1).toBe("Admin panel");
     expect(result.text).toContain("Private operations");
     expect(result.text).toMatch(/Sign in required|Checking account access|Admin access required/);
-    expect(result.text).toContain("Sign in with a CustomCard admin account");
+    expect(result.text).toMatch(
+      /Checking your account before showing private operations|Sign in with a CustomCard admin account/
+    );
     expect(result.text).not.toContain("Integration owner workflow");
     expect(result.text).not.toContain("Required env");
     expect(result.adminCards).toBe(0);
     expect(result.adapterRows).toBe(0);
-    expect(result.signInButtons).toBeGreaterThanOrEqual(1);
+    if (result.text.includes("Checking account access")) {
+      expect(result.signInButtons).toBe(0);
+    } else {
+      expect(result.signInButtons).toBeGreaterThanOrEqual(1);
+    }
     expect(result.scrollWidth).toBe(result.clientWidth);
   }, 30000);
 
