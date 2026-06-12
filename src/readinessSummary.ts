@@ -2,7 +2,8 @@ export {
   buildReadinessSummary,
   readinessDomainDefinitions,
   readinessDomainIds,
-  validateReadinessDomains
+  validateReadinessDomains,
+  validateReadinessSummary
 } from "./readinessDomains";
 
 export type {

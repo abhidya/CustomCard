@@ -6,7 +6,8 @@ import { pathToFileURL } from "node:url";
 import {
   buildReadinessSummary,
   readinessDomainIds,
-  validateReadinessDomains
+  validateReadinessDomains,
+  validateReadinessSummary
 } from "../src/readinessSummaryData.mjs";
 import {
   buildRetailPrinterOperationStartPackets,
@@ -29,6 +30,10 @@ import {
   walgreensCheckoutUploadRoute
 } from "../src/walgreensHostedCheckout.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
+import {
+  googleCalendarApiOAuthCallbackRoute,
+  googleCalendarOAuthCallbackRoute
+} from "./api-route-adapter-contract.mjs";
 import { createApiRouteFamilies } from "./api-route-families.mjs";
 import { apiRouteContracts, hostedCheckoutExemptRouteIds, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
 import {
@@ -382,6 +387,7 @@ export const readiness = {
   paymentReadiness: readinessSummary.payment.summary,
   mobileRenderReadiness: readinessSummary.mobileRender.summary,
   hostedApiReadiness: readinessSummary.hostedApi.summary,
+  legalCompliance: readinessSummary.legalCompliance.summary,
   reviewerDbSeedReadiness: readinessSummary.reviewerDbSeed.summary,
   cloudArtifactProofReadiness: readinessSummary.cloudArtifactProof.summary,
   businessEngagementReadiness: readinessSummary.businessEngagement.summary,
@@ -657,272 +663,9 @@ function validateApiServerContract() {
     blockers.push("API readiness must expose every Node readiness domain.");
   }
   blockers.push(...validateReadinessDomains());
+  blockers.push(...validateReadinessSummary(readinessSummary));
   if (readiness.production.liveEnabled !== 0) blockers.push("Production readiness cannot enable live components by default.");
   if (readiness.production.total < 13) blockers.push("Production readiness must track every launch gate.");
-  if (readiness.externalAudit.total < 15) blockers.push("External audit readiness must track every external proof gap.");
-  if (readiness.externalAudit.productionBlocked !== readiness.externalAudit.total) {
-    blockers.push("Every external audit readiness item must block production until evidence is attached.");
-  }
-  if (readiness.externalAudit.publicClaimsAllowed !== 0) blockers.push("External audit readiness cannot allow public production claims.");
-  if (readiness.externalAudit.externalArtifactsAttached !== 0) {
-    blockers.push("External audit readiness cannot claim attached artifacts in the free local MVP.");
-  }
-  if (readiness.externalAudit.blockers.length < readiness.externalAudit.total) {
-    blockers.push("External audit readiness must expose blockers for every evidence item.");
-  }
-  if (readiness.e2eCoverage.repoLocalCoveragePercent !== 100) {
-    blockers.push("E2E coverage must cover every repo-local reviewer workflow.");
-  }
-  if (readiness.e2eCoverage.ciGated !== readiness.e2eCoverage.total) {
-    blockers.push("Every E2E coverage item must be CI-gated.");
-  }
-  if (readiness.e2eCoverage.liveProductionProofs !== 0) blockers.push("E2E coverage cannot claim live production proof.");
-  if (readiness.e2eCoverage.realOrdersEnabled !== 0) blockers.push("E2E coverage cannot enable real orders.");
-  if (readiness.e2eCoverage.externalNetworkCalls !== 0) blockers.push("E2E coverage cannot require live external network calls.");
-  if (readiness.e2eCoverage.blockers.length > 0) blockers.push("E2E coverage summary has blockers.");
-  if (readiness.aiProviderReadiness.total < 8) blockers.push("AI provider readiness must track text/image launch evidence.");
-  if (readiness.aiProviderReadiness.textProviderContracts < 16) {
-    blockers.push("AI provider readiness must cover every text provider contract.");
-  }
-  if (readiness.aiProviderReadiness.imageProviderContracts < 17) {
-    blockers.push("AI provider readiness must cover every image provider contract.");
-  }
-  if (readiness.aiProviderReadiness.localFallbacks < 2) blockers.push("AI provider readiness must keep local fallbacks.");
-  if (readiness.aiProviderReadiness.promptAuditRequired < 6) blockers.push("AI provider readiness must require prompt audits.");
-  if (readiness.aiProviderReadiness.liveProviderCallsEnabled !== 0) {
-    blockers.push("AI provider readiness cannot enable live provider calls.");
-  }
-  if (readiness.aiProviderReadiness.externalNetworkCalls !== 0) {
-    blockers.push("AI provider readiness cannot require live external network calls.");
-  }
-  if (readiness.aiProviderReadiness.productionTrafficEnabled !== 0) {
-    blockers.push("AI provider readiness cannot enable production AI traffic.");
-  }
-  if (readiness.aiProviderReadiness.blockers.length > 0) blockers.push("AI provider readiness summary has blockers.");
-  if (readiness.observability.total < 7) blockers.push("Observability readiness must track telemetry and alerting evidence.");
-  if (readiness.observability.providerContracts < 6) {
-    blockers.push("Observability readiness must cover all observability provider contracts.");
-  }
-  if (readiness.observability.alertRoutesRequired < 4) blockers.push("Observability readiness must track alert route drills.");
-  if (readiness.observability.liveIngestionEnabled !== 0) blockers.push("Observability readiness cannot enable live ingestion.");
-  if (readiness.observability.externalNetworkCalls !== 0) {
-    blockers.push("Observability readiness cannot require live external network calls.");
-  }
-  if (readiness.observability.productionAlertsEnabled !== 0) {
-    blockers.push("Observability readiness cannot enable production alerts.");
-  }
-  if (readiness.observability.blockers.length > 0) blockers.push("Observability readiness summary has blockers.");
-  if (readiness.retailFulfillment.total < 8) {
-    blockers.push("Retail fulfillment readiness must track direct ordering launch evidence.");
-  }
-  if (readiness.retailFulfillment.liveVendorAdapterContracts < 6) {
-    blockers.push("Retail fulfillment readiness must cover every blocked live vendor adapter.");
-  }
-  if (readiness.retailFulfillment.manualFallbacks < 2) {
-    blockers.push("Retail fulfillment readiness must keep manual print and pricing fallbacks.");
-  }
-  if (readiness.retailFulfillment.recoveryDrillEvents < 12) {
-    blockers.push("Retail fulfillment readiness must track pickup, cancellation, refund, and print QA drills.");
-  }
-  if (readiness.retailFulfillment.liveQuoteEnabled !== 0) {
-    blockers.push("Retail fulfillment readiness cannot enable live quotes.");
-  }
-  if (readiness.retailFulfillment.directOrderEnabled !== 0) {
-    blockers.push("Retail fulfillment readiness cannot enable direct retail orders.");
-  }
-  if (readiness.retailFulfillment.externalNetworkCalls !== 0) {
-    blockers.push("Retail fulfillment readiness cannot require live external network calls.");
-  }
-  if (readiness.retailFulfillment.realPaymentsEnabled !== 0) {
-    blockers.push("Retail fulfillment readiness cannot enable real payment/refund traffic.");
-  }
-  if (readiness.retailFulfillment.physicalCertificationAttached !== 0) {
-    blockers.push("Retail fulfillment readiness cannot claim physical print certification.");
-  }
-  if (readiness.retailFulfillment.blockers.length > 0) blockers.push("Retail fulfillment readiness summary has blockers.");
-  if (readiness.paymentReadiness.total < 8) blockers.push("Payment readiness must track live charge and refund launch evidence.");
-  if (readiness.paymentReadiness.paymentProviderContracts < 4) {
-    blockers.push("Payment readiness must cover every sandbox payment provider contract.");
-  }
-  if (readiness.paymentReadiness.localFallbacks < 1) blockers.push("Payment readiness must keep the no-payment fallback.");
-  if (readiness.paymentReadiness.ledgerEvents < 20) blockers.push("Payment readiness must track ledger, refund, webhook, and settlement events.");
-  if (readiness.paymentReadiness.liveChargesEnabled !== 0) blockers.push("Payment readiness cannot enable live charges.");
-  if (readiness.paymentReadiness.liveRefundsEnabled !== 0) blockers.push("Payment readiness cannot enable live refunds.");
-  if (readiness.paymentReadiness.liveCaptureEnabled !== 0) blockers.push("Payment readiness cannot enable live captures.");
-  if (readiness.paymentReadiness.externalNetworkCalls !== 0) {
-    blockers.push("Payment readiness cannot require live external network calls.");
-  }
-  if (readiness.paymentReadiness.cardDataStored !== 0) blockers.push("Payment readiness cannot store card data.");
-  if (readiness.paymentReadiness.pciScopeApproved !== 0) blockers.push("Payment readiness cannot claim PCI approval.");
-  if (readiness.paymentReadiness.blockers.length > 0) blockers.push("Payment readiness summary has blockers.");
-  if (readiness.mobileRenderReadiness.total < 8) blockers.push("Mobile render readiness must track native render proof evidence.");
-  if (readiness.mobileRenderReadiness.repoLocalReady < 5) blockers.push("Mobile render readiness must keep source-render contracts ready.");
-  if (readiness.mobileRenderReadiness.viewportProfiles < 4) blockers.push("Mobile render readiness must cover small, standard, large, and tablet portrait viewports.");
-  if (readiness.mobileRenderReadiness.nativeBuildProfiles < 3) blockers.push("Mobile render readiness must cover development, preview, and production native profiles.");
-  if (readiness.mobileRenderReadiness.emulatorRenderProofs !== 0) blockers.push("Mobile render readiness cannot claim emulator render proof.");
-  if (readiness.mobileRenderReadiness.signedArtifacts !== 0) blockers.push("Mobile render readiness cannot claim signed native artifacts.");
-  if (readiness.mobileRenderReadiness.externalNetworkCalls !== 0) blockers.push("Mobile render readiness cannot require live external network calls.");
-  if (readiness.mobileRenderReadiness.realOrdersEnabled !== 0) blockers.push("Mobile render readiness cannot enable real orders.");
-  if (readiness.mobileRenderReadiness.liveProviderCalls !== 0) blockers.push("Mobile render readiness cannot enable live provider calls.");
-  if (readiness.mobileRenderReadiness.blockers.length > 0) blockers.push("Mobile render readiness summary has blockers.");
-  if (readiness.hostedApiReadiness.total < 8) blockers.push("Hosted API readiness must track Vercel and hosted DB proof evidence.");
-  if (readiness.hostedApiReadiness.repoLocalReady < 2) blockers.push("Hosted API readiness must keep deployment and serverless contracts ready.");
-  if (readiness.hostedApiReadiness.hostedDbRequired < 5) blockers.push("Hosted API readiness must identify hosted DB proof requirements.");
-  if (readiness.hostedApiReadiness.publicRouteProofRequired < 3) {
-    blockers.push("Hosted API readiness must identify public hosted route proof requirements.");
-  }
-  if (readiness.hostedApiReadiness.requiredEnvVars < 6) blockers.push("Hosted API readiness must track required hosted env vars.");
-  if (readiness.hostedApiReadiness.envSyncProofs !== 0) blockers.push("Hosted API readiness cannot claim hosted env sync proof.");
-  if (readiness.hostedApiReadiness.hostedDbProofs !== 0) blockers.push("Hosted API readiness cannot claim hosted DB connectivity.");
-  if (readiness.hostedApiReadiness.publicRouteProofs !== 0) blockers.push("Hosted API readiness cannot claim public DB-backed route proof.");
-  if (readiness.hostedApiReadiness.hostedTokenVerificationProofs !== 0) {
-    blockers.push("Hosted API readiness cannot claim hosted token verification proof.");
-  }
-  if (readiness.hostedApiReadiness.backupPolicies !== 0) blockers.push("Hosted API readiness cannot claim hosted backup policy.");
-  if (readiness.hostedApiReadiness.deploymentProtectionBypasses !== 0) {
-    blockers.push("Hosted API readiness cannot claim deployment protection bypass proof.");
-  }
-  if (readiness.hostedApiReadiness.externalNetworkCalls !== 0) {
-    blockers.push("Hosted API readiness cannot require live external network calls.");
-  }
-  if (readiness.hostedApiReadiness.realOrdersEnabled !== 0) blockers.push("Hosted API readiness cannot enable real orders.");
-  if (readiness.hostedApiReadiness.liveProviderCalls !== 0) blockers.push("Hosted API readiness cannot enable live provider calls.");
-  if (readiness.hostedApiReadiness.blockers.length > 0) blockers.push("Hosted API readiness summary has blockers.");
-  if (readiness.reviewerDbSeedReadiness.total < 8) {
-    blockers.push("Reviewer DB seed readiness must track hosted reviewer seed proof evidence.");
-  }
-  if (readiness.reviewerDbSeedReadiness.repoLocalReady < 3) {
-    blockers.push("Reviewer DB seed readiness must keep seed plan, token, and SQL preview contracts ready.");
-  }
-  if (readiness.reviewerDbSeedReadiness.tableContracts < 14) {
-    blockers.push("Reviewer DB seed readiness must cover all reviewer seed tables.");
-  }
-  if (readiness.reviewerDbSeedReadiness.requiredEnvVars < 6) {
-    blockers.push("Reviewer DB seed readiness must track required hosted env vars.");
-  }
-  if (readiness.reviewerDbSeedReadiness.hostedDatabaseRequired < 5) {
-    blockers.push("Reviewer DB seed readiness must identify hosted database proof requirements.");
-  }
-  if (readiness.reviewerDbSeedReadiness.hostedSeedExecutionRequired < 3) {
-    blockers.push("Reviewer DB seed readiness must identify hosted seed execution proof requirements.");
-  }
-  if (readiness.reviewerDbSeedReadiness.hostedTokenProbeRequired < 4) {
-    blockers.push("Reviewer DB seed readiness must identify hosted token probe requirements.");
-  }
-  if (readiness.reviewerDbSeedReadiness.hostedSeedProofs !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot claim hosted seed execution proof.");
-  }
-  if (readiness.reviewerDbSeedReadiness.hostedTokenProbeProofs !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot claim hosted token probe proof.");
-  }
-  if (readiness.reviewerDbSeedReadiness.vercelEnvSyncProofs !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot claim Vercel env sync proof.");
-  }
-  if (readiness.reviewerDbSeedReadiness.destructiveLiveMutations !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot enable destructive live mutations.");
-  }
-  if (readiness.reviewerDbSeedReadiness.externalNetworkCalls !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot require live external network calls.");
-  }
-  if (readiness.reviewerDbSeedReadiness.liveProviderCalls !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot enable live provider calls.");
-  }
-  if (readiness.reviewerDbSeedReadiness.realOrdersEnabled !== 0) {
-    blockers.push("Reviewer DB seed readiness cannot enable real orders.");
-  }
-  if (readiness.reviewerDbSeedReadiness.blockers.length > 0) {
-    blockers.push("Reviewer DB seed readiness summary has blockers.");
-  }
-  if (readiness.cloudArtifactProofReadiness.total < 8) {
-    blockers.push("Cloud artifact proof readiness must track applied bucket and IAM proof evidence.");
-  }
-  if (readiness.cloudArtifactProofReadiness.repoLocalReady < 2) {
-    blockers.push("Cloud artifact proof readiness must keep static IaC and plan-review contracts ready.");
-  }
-  if (readiness.cloudArtifactProofReadiness.appliedCloudRequired < 6) {
-    blockers.push("Cloud artifact proof readiness must identify applied cloud proof requirements.");
-  }
-  if (readiness.cloudArtifactProofReadiness.terraformFileContracts < 3) {
-    blockers.push("Cloud artifact proof readiness must cover artifact-store Terraform files.");
-  }
-  if (readiness.cloudArtifactProofReadiness.envOutputContracts < 6) {
-    blockers.push("Cloud artifact proof readiness must track runtime object-store env outputs.");
-  }
-  if (readiness.cloudArtifactProofReadiness.terraformApplyExecutions !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim Terraform apply execution.");
-  }
-  if (readiness.cloudArtifactProofReadiness.appliedBucketArnProofs !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim applied bucket ARN proof.");
-  }
-  if (readiness.cloudArtifactProofReadiness.iamPolicyOutputProofs !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim IAM policy output proof.");
-  }
-  if (readiness.cloudArtifactProofReadiness.signedUrlProbeProofs !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim signed URL cloud probe proof.");
-  }
-  if (readiness.cloudArtifactProofReadiness.accessLogProofs !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim cloud access log proof.");
-  }
-  if (readiness.cloudArtifactProofReadiness.secretSyncProofs !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim secret manager sync proof.");
-  }
-  if (readiness.cloudArtifactProofReadiness.restoreDrillProofs !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot claim retention restore drill proof.");
-  }
-  if (readiness.cloudArtifactProofReadiness.externalNetworkCalls !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot require live external network calls.");
-  }
-  if (readiness.cloudArtifactProofReadiness.liveProviderCalls !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot enable live provider calls.");
-  }
-  if (readiness.cloudArtifactProofReadiness.realOrdersEnabled !== 0) {
-    blockers.push("Cloud artifact proof readiness cannot enable real orders.");
-  }
-  if (readiness.cloudArtifactProofReadiness.blockers.length > 0) {
-    blockers.push("Cloud artifact proof readiness summary has blockers.");
-  }
-  if (readiness.businessEngagementReadiness.total < 8) {
-    blockers.push("Business engagement readiness must track CRM lifecycle campaign evidence.");
-  }
-  if (readiness.businessEngagementReadiness.crmAdapterContracts < 14) {
-    blockers.push("Business engagement readiness must cover CSV plus popular CRM lifecycle adapters.");
-  }
-  if (readiness.businessEngagementReadiness.workflowAdapterContracts < 11) {
-    blockers.push("Business engagement readiness must cover workflow payload adapters.");
-  }
-  if (readiness.businessEngagementReadiness.notificationAdapterContracts < 16) {
-    blockers.push("Business engagement readiness must cover customer message channel adapters.");
-  }
-  if (readiness.businessEngagementReadiness.lifecycleTriggerKinds !== 3) {
-    blockers.push("Business engagement readiness must cover birthday, purchase-anniversary, and warranty-anniversary triggers.");
-  }
-  if (readiness.businessEngagementReadiness.liveMessagesEnabled !== 0) {
-    blockers.push("Business engagement readiness cannot enable live customer messages.");
-  }
-  if (readiness.businessEngagementReadiness.crmWritesEnabled !== 0) {
-    blockers.push("Business engagement readiness cannot enable CRM writes.");
-  }
-  if (readiness.businessEngagementReadiness.externalNetworkCalls !== 0) {
-    blockers.push("Business engagement readiness cannot require live external network calls.");
-  }
-  if (readiness.businessEngagementReadiness.realOrdersEnabled !== 0) {
-    blockers.push("Business engagement readiness cannot enable real orders.");
-  }
-  if (readiness.businessEngagementReadiness.blockers.length > 0) {
-    blockers.push("Business engagement readiness summary has blockers.");
-  }
-  if (readiness.capacity.total < 4) blockers.push("Capacity readiness must cover local, droplet, cloud-native, and SaaS profiles.");
-  if (readiness.capacity.localProfiles !== 1) blockers.push("Capacity readiness must keep exactly one local profile.");
-  if (readiness.capacity.cloudProfiles < 3) blockers.push("Capacity readiness must include cheap droplet, cloud-native, and SaaS profiles.");
-  if (readiness.capacity.queueBackedProfiles !== readiness.capacity.total) {
-    blockers.push("Every capacity profile must be queue-backed.");
-  }
-  if (readiness.capacity.objectStoreBackedProfiles !== readiness.capacity.total) {
-    blockers.push("Every capacity profile must be object-store backed.");
-  }
-  if (readiness.capacity.realOrdersEnabled !== 0) blockers.push("Capacity readiness cannot enable real orders.");
-  if (readiness.capacity.liveProviderCalls !== 0) blockers.push("Capacity readiness cannot enable live provider calls.");
-  if (readiness.capacity.blockers.length > 0) blockers.push("Capacity readiness summary has blockers.");
   if (readiness.localization.defaultLocale !== "en-US") blockers.push("Localization default locale must stay en-US.");
   if (readiness.localization.supportedLocales < 4) blockers.push("Localization must cover at least four launch locales.");
   if (readiness.localization.completeBundles !== readiness.localization.supportedLocales) {
@@ -1314,8 +1057,6 @@ function buildMutationContractPayload(route, bodyText, options = {}) {
 }
 
 const googleCalendarOAuthScopeUri = "https://www.googleapis.com/auth/calendar.events.readonly";
-const googleCalendarOAuthCallbackRoute = "/oauth/callback";
-const googleCalendarApiOAuthCallbackRoute = "/api/oauth/callback";
 const googleCalendarOAuthRequiredEnv = [
   "GOOGLE_OAUTH_CLIENT_ID",
   "GOOGLE_OAUTH_CLIENT_SECRET",

@@ -2,6 +2,7 @@ import { Activity, ChevronDown, ExternalLink, FileJson, Image, Info, RefreshCw, 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
+import { resolveCardGenerationEndpoint } from "../../src/browserGatePolicy";
 import { providerCatalog } from "../../src/providerCatalog";
 import { AdminCardGalleryView } from "./AdminCardGalleryView";
 
@@ -76,7 +77,7 @@ interface BucketJsonPreview {
 }
 
 function buildProbeTargets(): ProbeTarget[] {
-  const cardGenUrl = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
+  const { legacyBaseUrl: cardGenUrl } = resolveCardGenerationEndpoint(import.meta.env);
   return [
     { id: "web", name: "Web app", url: "/?probe=1" },
     { id: "api", name: "API health", url: "/api/health" },

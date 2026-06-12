@@ -195,6 +195,14 @@ describe("api server wrapper", () => {
           liveProviderCalls: number;
           blockers: string[];
         };
+        legalCompliance: {
+          total: number;
+          euRequirements: number;
+          usRequirements: number;
+          externalReviewRequired: number;
+          launchBlocked: number;
+          publicClaimsAllowed: number;
+        };
         reviewerDbSeedReadiness: {
           total: number;
           repoLocalReady: number;
@@ -443,6 +451,14 @@ describe("api server wrapper", () => {
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
       blockers: []
+    });
+    expect(report.readiness.legalCompliance).toMatchObject({
+      total: 12,
+      euRequirements: 6,
+      usRequirements: 6,
+      externalReviewRequired: 12,
+      launchBlocked: 12,
+      publicClaimsAllowed: 0
     });
     expect(report.readiness.reviewerDbSeedReadiness).toMatchObject({
       total: 8,
@@ -869,6 +885,14 @@ describe("api server wrapper", () => {
         realOrdersEnabled: 0,
         liveProviderCalls: 0,
         blockers: []
+      });
+      expect(readiness.legalCompliance).toMatchObject({
+        total: 12,
+        euRequirements: 6,
+        usRequirements: 6,
+        externalReviewRequired: 12,
+        launchBlocked: 12,
+        publicClaimsAllowed: 0
       });
       expect(readiness.reviewerDbSeedReadiness).toMatchObject({
         total: 8,

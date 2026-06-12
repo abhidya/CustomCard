@@ -148,7 +148,7 @@ module owning both its catalog metadata and its request builder.
 
 ## D011: Collapse Readiness Fan-Out Behind ReadinessSummary Seam (C2)
 
-Decision: create `readinessSummary.ts` as a single-import facade for all 12 readiness
+Decision: create `readinessSummary.ts` as a single-import facade for all 13 readiness
 domains. `App.tsx` calls `buildReadinessSummary()` once; `AdminPanelView` receives
 one `readiness: ReadinessSummary` prop instead of 29 individual readiness params.
 
@@ -156,7 +156,7 @@ Reason: the 12 individual readiness imports in `App.tsx` had grown into a shallo
 fan-out — each domain followed the same `getXxxReadinessItems()` / `getXxxReadinessSummary()`
 pattern with no domain logic differentiating their call sites. Aggregating them behind
 one seam concentrates the "which domains exist" knowledge in one file, makes adding
-a 13th domain a single-file change, and cuts `AdminPanelView`'s prop count from 29
+a domain a single-file manifest change, and cuts `AdminPanelView`'s prop count from 29
 to 6. The deletion test: removing the facade causes complexity to reappear across all
 12 call sites.
 
@@ -222,18 +222,24 @@ full component tree.
 
 ## D016: Promote ReadinessSummary Into A Domain Manifest
 
-Decision: create `readinessDomains.ts` as the canonical manifest for the 12
-Readiness Register domains. `readinessSummary.ts` now re-exports that seam;
-`apiContracts.ts` builds API readiness, customer bootstrap readiness payloads, and
-readiness validation through `buildReadinessSummary()` and
-`validateReadinessDomains()` instead of importing each domain directly.
+Decision: make `readinessSummaryData.mjs` the canonical runtime-readable manifest
+for the 13 Readiness Register domains. `readinessDomains.ts` is now a TypeScript
+wrapper over that manifest, and `readinessSummary.ts` re-exports the same seam.
+`apiContracts.ts`, the API server Doctor, customer bootstrap readiness payloads, and
+readiness validation all cross `buildReadinessSummary()`,
+`validateReadinessDomains()`, and `validateReadinessSummary()` instead of importing
+each domain directly.
 
 Reason: D011 collapsed the admin fan-out, but the same domain list still leaked
-into API bootstrap and API validation. The manifest concentrates each domain's
-payload, summary function, and validator in one module, so adding or changing a
-Readiness Register no longer requires hand-editing every API caller. The deletion
-test: removing the manifest makes the domain list reappear in both
-`readinessSummary.ts` and `apiContracts.ts`.
+into API bootstrap, API validation, and the Node Doctors. The runtime manifest
+concentrates each domain's payload, summary function, and validator in one module,
+so adding or changing a Readiness Register no longer requires hand-editing every API
+caller or maintaining a separate Node manifest. Domain proof rules, such as "live
+provider calls remain zero" and "hosted proof counts are not claimed", now live on
+the manifest definitions through `validateReadinessSummary()` instead of inside the
+API server Doctor. The deletion test: removing the manifest makes the domain list
+and proof rules reappear in `readinessSummary.ts`, `apiContracts.ts`, and
+`scripts/api-server.mjs`.
 
 ## D017: Share Retail Coupon Planning Across Pricing And Operation Start
 
@@ -278,3 +284,58 @@ while preserving catalog integrity tests.
 
 Rejected: hard-coding retail docs URLs in the catalog. That would remove the
 adapter dependency but reintroduce URL drift.
+
+## D020: Name The Runtime Env Contract
+
+Decision: add `scripts/runtime-env-contract.mjs` as the runtime-readable contract
+for durable server env, worker env, mobile env, runtime modes, production runtime
+detection, placeholder detection, secret-strength checks, and kill-switch policy.
+`validate-runtime-env.mjs`, `worker-runtime.mjs`, `api-runtime.mjs`, and the mobile
+Doctor now ask this Module for env facts instead of carrying local copies.
+
+Reason: bootstrap and readiness were safe but shallow: the same env names and
+runtime policy were spread across Doctors, API runtime creation, worker validation,
+and mobile validation. A single contract keeps the list of required runtime env
+vars and the production/postgres/secret rules in one place while preserving each
+caller's existing error messages.
+
+Rejected: importing the mobile CommonJS `app.config.js` into the contract. Expo
+still needs synchronous config loading, so the shared Module stays pure validation
+and the app config remains a small consumer-facing Adapter.
+
+## D021: Derive API Route Adapter Paths From Route Contracts
+
+Decision: add `scripts/api-route-adapter-contract.mjs` as the shared route Adapter
+contract for local and deployed API path ownership. The Vite dev bridge now calls
+`isApiRouteAdapterPath()` instead of maintaining its own hand-written set of AI,
+retail, OAuth, and checkout paths. The contract derives paths from
+`apiRouteContractsData.mjs` and adds explicit aliases for `/oauth/callback` and
+`/api/oauth/callback`.
+
+Reason: bootstrap was remembering route ownership in several places: route
+contracts, Vite middleware, API server OAuth constants, and deployed route shims.
+The route contract already owns the API path list, while OAuth callback aliases are
+the only non-contract paths the dev bridge must handle. A tiny runtime-readable
+Adapter contract gives local dev, tests, and the API server one path list without
+making Vite import individual feature routes.
+
+Rejected: continuing to import feature route constants directly into
+`vite.config.ts`. That kept the bridge working but forced every new API path to be
+remembered in a separate startup file.
+
+## D022: Browser Feature Gates Use One Policy Module
+
+Decision: add `src/browserGatePolicy.ts` as the browser bootstrap policy for
+admin email env parsing, Clerk metadata interpretation, and AI card-generation
+endpoint resolution. The app shell, admin probe view, and customer app-state
+orchestrator consume this module instead of reading
+`VITE_CUSTOMCARD_ADMIN_EMAILS`, `VITE_CUSTOMCARD_ADMIN_EMAIL`, or
+`VITE_CARD_GEN_URL` directly.
+
+Reason: admin route visibility and AI availability are bootstrap decisions, not
+render details. Centralizing them keeps Clerk metadata shape, browser env names,
+and same-origin API fallback behavior testable in one place.
+
+Rejected: keeping each browser caller responsible for env parsing and metadata
+shape. That preserves short local code but lets gate behavior drift across app
+startup surfaces.

@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateMobileRuntimeEnv } from "../../../scripts/runtime-env-contract.mjs";
 
 const mobileRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const required = ["CUSTOMCARD_API_BASE_URL"];
-const missing = required.filter((key) => !process.env[key]);
+const missing = validateMobileRuntimeEnv(process.env).map((issue) => issue.replace("Mobile shell missing env: ", ""));
 const sourceIssues = inspectMobileSources();
 
 if (missing.length > 0 || sourceIssues.length > 0) {

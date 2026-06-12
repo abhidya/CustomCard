@@ -345,6 +345,14 @@ describe("api contracts", () => {
       liveProviderCalls: 0,
       blockers: []
     });
+    expect(summary.legalCompliance).toMatchObject({
+      total: 12,
+      euRequirements: 6,
+      usRequirements: 6,
+      externalReviewRequired: 12,
+      launchBlocked: 12,
+      publicClaimsAllowed: 0
+    });
     expect(summary.capacity.maxDailyCards).toBe(12000);
     expect(summary.capacity.maxDailyImageGenerations).toBe(1000);
     expect(summary.observability).toMatchObject({

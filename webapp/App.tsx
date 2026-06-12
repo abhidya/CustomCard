@@ -24,6 +24,12 @@ import {
   type ViewId
 } from "../src/appStateOrchestrator";
 import {
+  browserAdminEmailEnvNames,
+  configuredAdminEmailsFromEnv,
+  resolveBrowserAdminAccess,
+  type BrowserAdminAccessPolicy
+} from "../src/browserGatePolicy";
+import {
   buildHandoffChecklistText,
   type ArchiveEntry,
   copyHandoffChecklist,
@@ -65,16 +71,7 @@ import { StudioView } from "./views/StudioView";
 
 const AdminOperationalView = lazy(() => import("./AdminOperationalView"));
 
-const configuredAdminEmails = new Set(
-  [
-    import.meta.env.VITE_CUSTOMCARD_ADMIN_EMAILS as string | undefined,
-    import.meta.env.VITE_CUSTOMCARD_ADMIN_EMAIL as string | undefined
-  ]
-    .filter(Boolean)
-    .flatMap((value) => value!.split(","))
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean)
-);
+const configuredAdminEmails = configuredAdminEmailsFromEnv(import.meta.env);
 
 function updateViewRoute(view: ViewId) {
   if (typeof window === "undefined") return;
@@ -728,30 +725,14 @@ function useViewportWidth(): number | undefined {
   return viewportWidth;
 }
 
-interface AdminAccess extends AdminAccessPolicy {
-  isLoaded: boolean;
-  isSignedIn: boolean;
-  isAdmin: boolean;
-  hasConfiguredEmails: boolean;
-}
+type AdminAccess = BrowserAdminAccessPolicy & AdminAccessPolicy;
 
 function useAdminAccess(): AdminAccess {
   const { isLoaded, isSignedIn, user } = useUser();
-  const email = user?.primaryEmailAddress?.emailAddress?.trim().toLowerCase();
-  const metadata = user?.publicMetadata as Record<string, unknown> | undefined;
-  const role = typeof metadata?.role === "string" ? metadata.role.toLowerCase() : "";
-  const roles = Array.isArray(metadata?.roles)
-    ? metadata.roles.map((value) => String(value).toLowerCase())
-    : [];
-  const emailAllowed = email ? configuredAdminEmails.has(email) : false;
-  const roleAllowed = role === "admin" || roles.includes("admin");
-
-  return {
-    isLoaded,
-    isSignedIn: Boolean(isSignedIn),
-    isAdmin: Boolean(isSignedIn && (emailAllowed || roleAllowed)),
-    hasConfiguredEmails: configuredAdminEmails.size > 0
-  };
+  return useMemo(
+    () => resolveBrowserAdminAccess({ isLoaded, isSignedIn, user, configuredAdminEmails }),
+    [isLoaded, isSignedIn, user]
+  );
 }
 
 function AdminRoute({
@@ -832,7 +813,7 @@ function AdminGate({ access, target }: { access: AdminAccess; target: string }) 
         {!access.hasConfiguredEmails ? (
           <small>
             Admin access can be granted with Clerk public metadata role <code>admin</code> or a
-            comma-separated <code>VITE_CUSTOMCARD_ADMIN_EMAILS</code> allowlist.
+            comma-separated <code>{browserAdminEmailEnvNames[0]}</code> allowlist.
           </small>
         ) : null}
       </div>

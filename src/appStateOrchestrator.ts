@@ -51,6 +51,7 @@ import {
   type PanelOverride,
   type PanelOverrides
 } from "./panelEdits";
+import { resolveCardGenerationEndpoint } from "./browserGatePolicy";
 // --- Bootstrap constants (canonical home; reviewerBootstrap.ts re-exports these) ---
 
 export interface ReviewerAuthForm {
@@ -80,8 +81,7 @@ export const reviewerDraftOptions: {
 
 export type ViewId = "customer" | "mobile" | "opportunities" | "studio" | "memory" | "people" | "handoff" | "settings" | "business" | "legal" | "admin" | "adapters";
 
-const legacyCardGenApiUrl: string = (import.meta.env.VITE_CARD_GEN_URL as string | undefined) ?? "";
-const sameOriginCardGenPath = "/api/ai/card/generate";
+const cardGenerationEndpoint = resolveCardGenerationEndpoint(import.meta.env);
 
 export type CustomerApiTokenProvider = () => Promise<string | null | undefined>;
 export type AiPanelGenerationStatus = "queued" | "copy-ready" | "artwork-loading" | "artwork-ready" | "artwork-missing";
@@ -306,7 +306,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     setAiCardGenStatus("Starting your AI card. Panels will appear as each one is ready.");
     buildAiCardGenerationHeaders(getCustomerApiToken)
       .then((headers) =>
-        fetch(legacyCardGenApiUrl ? `${legacyCardGenApiUrl}/generate` : sameOriginCardGenPath, {
+        fetch(cardGenerationEndpoint.requestUrl, {
           method: "POST",
           headers,
           body

@@ -3,8 +3,15 @@ import { buildApiBootstrapPayload, buildApiReadinessSummary } from "./apiContrac
 import {
   buildReadinessSummary,
   readinessDomainIds,
-  validateReadinessDomains
+  validateReadinessDomains,
+  validateReadinessSummary
 } from "./readinessSummary";
+import {
+  buildReadinessSummary as buildRuntimeReadinessSummary,
+  readinessDomainIds as runtimeReadinessDomainIds,
+  validateReadinessDomains as validateRuntimeReadinessDomains,
+  validateReadinessSummary as validateRuntimeReadinessSummary
+} from "./readinessSummaryData.mjs";
 
 describe("readinessSummary", () => {
   it("keeps the readiness domain manifest as the single domain list", () => {
@@ -23,12 +30,20 @@ describe("readinessSummary", () => {
       "retailFulfillment",
       "reviewerDbSeed"
     ]);
+    expect(runtimeReadinessDomainIds).toEqual(readinessDomainIds);
     expect(new Set(readinessDomainIds).size).toBe(readinessDomainIds.length);
     expect(validateReadinessDomains()).toEqual([]);
+    expect(validateRuntimeReadinessDomains()).toEqual([]);
+    expect(validateReadinessSummary()).toEqual([]);
+    expect(validateRuntimeReadinessSummary()).toEqual([]);
   });
 
   it("builds a summary with all 13 readiness domains present", () => {
     const summary = buildReadinessSummary();
+    const runtimeSummary = buildRuntimeReadinessSummary();
+
+    expect(Object.keys(summary)).toEqual(readinessDomainIds);
+    expect(Object.keys(runtimeSummary)).toEqual(readinessDomainIds);
 
     expect(summary.aiProvider.items.length).toBeGreaterThan(0);
     expect(summary.aiProvider.summary.total).toBeGreaterThan(0);
@@ -86,6 +101,36 @@ describe("readinessSummary", () => {
     expect(buildReadinessSummary().legalCompliance.summary.publicClaimsAllowed).toBe(0);
   });
 
+  it("validates domain proof rules from the runtime manifest", () => {
+    const readiness = buildReadinessSummary();
+
+    expect(
+      validateReadinessSummary({
+        ...readiness,
+        aiProvider: {
+          ...readiness.aiProvider,
+          summary: {
+            ...readiness.aiProvider.summary,
+            liveProviderCallsEnabled: 1
+          }
+        }
+      })
+    ).toContain("AI provider readiness cannot enable live provider calls.");
+
+    expect(
+      validateReadinessSummary({
+        ...readiness,
+        legalCompliance: {
+          ...readiness.legalCompliance,
+          summary: {
+            ...readiness.legalCompliance.summary,
+            publicClaimsAllowed: 1
+          }
+        }
+      })
+    ).toContain("Legal compliance readiness cannot allow public claims.");
+  });
+
   it("feeds API readiness and bootstrap from the same readiness seam", () => {
     const readiness = buildReadinessSummary();
     const apiReadiness = buildApiReadinessSummary();
@@ -94,11 +139,13 @@ describe("readinessSummary", () => {
     expect(apiReadiness.aiProviderReadiness).toEqual(readiness.aiProvider.summary);
     expect(apiReadiness.paymentReadiness).toEqual(readiness.payment.summary);
     expect(apiReadiness.hostedApiReadiness).toEqual(readiness.hostedApi.summary);
+    expect(apiReadiness.legalCompliance).toEqual(readiness.legalCompliance.summary);
     expect(apiReadiness.businessEngagementReadiness).toEqual(readiness.businessEngagement.summary);
 
     expect(bootstrap.aiProviderReadiness.items).toBe(readiness.aiProvider.items);
     expect(bootstrap.capacity.profiles).toBe(readiness.capacity.profiles);
     expect(bootstrap.cloudArtifactProofReadiness.items).toBe(readiness.cloudArtifactProof.items);
+    expect(bootstrap.legalCompliance.items).toBe(readiness.legalCompliance.items);
     expect(bootstrap.reviewerDbSeedReadiness.items).toBe(readiness.reviewerDbSeed.items);
   });
 });

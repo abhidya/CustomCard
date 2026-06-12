@@ -2,6 +2,7 @@ import { mobileExperience, summarizeMobileExperience, validateMobileExperience }
 import {
   buildReadinessSummary,
   validateReadinessDomains,
+  validateReadinessSummary,
   type AiProviderReadinessItem,
   type AiProviderReadinessSummary,
   type BusinessEngagementReadinessItem,
@@ -16,6 +17,8 @@ import {
   type ExternalAuditReadinessSummary,
   type HostedApiReadinessItem,
   type HostedApiReadinessSummary,
+  type LegalComplianceItem,
+  type LegalComplianceSummary,
   type MobileRenderReadinessItem,
   type MobileRenderReadinessSummary,
   type ObservabilityReadinessItem,
@@ -123,6 +126,7 @@ export interface ApiReadinessSummary {
   paymentReadiness: PaymentReadinessSummary;
   mobileRenderReadiness: MobileRenderReadinessSummary;
   hostedApiReadiness: HostedApiReadinessSummary;
+  legalCompliance: LegalComplianceSummary;
   reviewerDbSeedReadiness: ReviewerDbSeedReadinessSummary;
   cloudArtifactProofReadiness: CloudArtifactProofReadinessSummary;
   businessEngagementReadiness: BusinessEngagementReadinessSummary;
@@ -184,6 +188,10 @@ export interface ApiBootstrapPayload {
     items: HostedApiReadinessItem[];
     summary: HostedApiReadinessSummary;
   };
+  legalCompliance: {
+    items: LegalComplianceItem[];
+    summary: LegalComplianceSummary;
+  };
   reviewerDbSeedReadiness: {
     items: ReviewerDbSeedReadinessItem[];
     summary: ReviewerDbSeedReadinessSummary;
@@ -243,6 +251,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     paymentReadiness: readiness.payment.summary,
     mobileRenderReadiness: readiness.mobileRender.summary,
     hostedApiReadiness: readiness.hostedApi.summary,
+    legalCompliance: readiness.legalCompliance.summary,
     reviewerDbSeedReadiness: readiness.reviewerDbSeed.summary,
     cloudArtifactProofReadiness: readiness.cloudArtifactProof.summary,
     businessEngagementReadiness: readiness.businessEngagement.summary,
@@ -279,6 +288,7 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     paymentReadiness: readiness.payment,
     mobileRenderReadiness: readiness.mobileRender,
     hostedApiReadiness: readiness.hostedApi,
+    legalCompliance: readiness.legalCompliance,
     reviewerDbSeedReadiness: readiness.reviewerDbSeed,
     cloudArtifactProofReadiness: readiness.cloudArtifactProof,
     businessEngagementReadiness: readiness.businessEngagement,
@@ -421,6 +431,7 @@ export function validateApiContracts(routes: ApiRouteContract[] = apiRouteContra
     issues.push(retailOperationIssue);
   }
   issues.push(...validateReadinessDomains());
+  issues.push(...validateReadinessSummary());
 
   return issues;
 }

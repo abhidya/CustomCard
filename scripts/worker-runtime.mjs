@@ -1,18 +1,11 @@
 import { apiRouteContracts as defaultRoutes } from "../src/apiRouteContractsData.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
+import {
+  validateWorkerRuntimeEnv,
+  workerRequiredEnv
+} from "./runtime-env-contract.mjs";
 
-export const workerRequiredEnv = [
-  "CUSTOMCARD_ENV",
-  "CUSTOMCARD_API_RUNTIME",
-  "DATABASE_URL",
-  "QUEUE_URL",
-  "OBJECT_STORE_URL",
-  "OBJECT_STORE_SIGNING_SECRET",
-  "AUTH_SESSION_SECRET",
-  "REAL_ORDER_KILL_SWITCH"
-];
-
-const productionEnvNames = new Set(["prod", "production"]);
+export { workerRequiredEnv };
 
 export function createWorkerRuntime({
   env = process.env,
@@ -129,20 +122,7 @@ export function describeWorkerReadiness({ env = process.env, routes = defaultRou
 }
 
 export function validateWorkerEnv(env = process.env, { requirePostgres = false } = {}) {
-  const missing = workerRequiredEnv.filter((key) => !env[key]);
-  const blockers = missing.map((key) => `CustomCard worker missing env: ${key}`);
-  const customCardEnv = String(env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
-  const productionRuntime = productionEnvNames.has(customCardEnv) || env.NODE_ENV === "production";
-  if ((productionRuntime || requirePostgres) && env.CUSTOMCARD_API_RUNTIME !== "postgres") {
-    blockers.push("CustomCard worker execution requires CUSTOMCARD_API_RUNTIME=postgres.");
-  }
-  if (String(env.AUTH_SESSION_SECRET ?? "").length < 32) {
-    blockers.push("CustomCard worker requires AUTH_SESSION_SECRET to be at least 32 characters.");
-  }
-  if (String(env.OBJECT_STORE_SIGNING_SECRET ?? "").length < 32) {
-    blockers.push("CustomCard worker requires OBJECT_STORE_SIGNING_SECRET to be at least 32 characters.");
-  }
-  return blockers;
+  return validateWorkerRuntimeEnv(env, { requirePostgres });
 }
 
 async function leaseJobs({ postgresRuntime, workerId, limit }) {

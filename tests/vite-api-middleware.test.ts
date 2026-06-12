@@ -94,6 +94,15 @@ describe("Vite API middleware", () => {
     });
   });
 
+  it("serves the route catalog through the derived API adapter path set", async () => {
+    const response = await fetch(`${baseUrl}/api/routes`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    const routes = await response.json();
+    expect(routes.some((route: { path: string }) => route.path === "/api/ai/card/generate")).toBe(true);
+  });
+
   it("serves Walgreens checkout uploads through the JSON API handler", async () => {
     const response = await fetch(`${baseUrl}${walgreensCheckoutUploadRoute}`, {
       method: "POST",

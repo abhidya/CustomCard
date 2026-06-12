@@ -1,17 +1,8 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
-import {
-  aiCardGenerateRoute,
-  aiChatRespondRoute
-} from "./scripts/ai-card-generator.mjs";
+import { isApiRouteAdapterPath } from "./scripts/api-route-adapter-contract.mjs";
 import { handleApiRequest } from "./scripts/api-server.mjs";
-import {
-  walgreensCheckoutCallbackRoute,
-  walgreensCheckoutSessionRoute,
-  walgreensCheckoutStatusRoute,
-  walgreensCheckoutUploadRoute
-} from "./src/walgreensHostedCheckout.mjs";
 
 export default defineConfig(() => ({
   plugins: [react(), customCardCoreApiPlugin()],
@@ -42,6 +33,7 @@ export default defineConfig(() => ({
         "src/hostedApiReadiness.ts",
         "src/hostedApiReadinessData.mjs",
         "src/legalCompliance.ts",
+        "src/legalComplianceData.mjs",
         "src/reviewerBootstrap.ts",
         "src/reviewerDbSeedReadiness.ts",
         "src/reviewerDbSeedReadinessData.mjs",
@@ -53,6 +45,7 @@ export default defineConfig(() => ({
         "src/agentContracts.ts",
         "src/artifactHandoff.ts",
         "src/artifactStore.ts",
+        "src/browserGatePolicy.ts",
         "src/demoSeed.ts",
         "src/domain.ts",
         "src/freeMvp.ts",
@@ -85,25 +78,13 @@ export default defineConfig(() => ({
   }
 }));
 
-const coreApiDevRoutes = new Set([
-  "/api/calendar/connections/start",
-  "/oauth/callback",
-  "/api/oauth/callback",
-  walgreensCheckoutStatusRoute,
-  walgreensCheckoutUploadRoute,
-  walgreensCheckoutSessionRoute,
-  walgreensCheckoutCallbackRoute,
-  aiCardGenerateRoute,
-  aiChatRespondRoute
-]);
-
 function customCardCoreApiPlugin(): Plugin {
   return {
     name: "customcard-core-api",
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const url = new URL(request.url ?? "/", "http://localhost");
-        if (!coreApiDevRoutes.has(url.pathname)) {
+        if (!isApiRouteAdapterPath(url.pathname)) {
           next();
           return;
         }

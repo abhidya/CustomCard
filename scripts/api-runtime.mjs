@@ -6,24 +6,21 @@ import { missingRetailPrinterCouponPortalEvidenceFields } from "../src/retailPri
 import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/apiRouteContractsData.mjs";
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime, postgresPoolConfig } from "./postgres-runtime.mjs";
+import {
+  hasStrongEnvSecret,
+  isProductionRuntimeEnv,
+  runtimeModes
+} from "./runtime-env-contract.mjs";
 
 export { postgresPoolConfig } from "./postgres-runtime.mjs";
 
-const runtimeModes = new Set(["contract", "memory", "postgres"]);
-const productionEnvNames = new Set(["prod", "production"]);
 const authSessionSecretMessage = "Postgres API runtime requires AUTH_SESSION_SECRET to be at least 32 characters.";
-
-function isProductionRuntimeEnv(env) {
-  const customCardEnv = String(env.CUSTOMCARD_ENV ?? "").trim().toLowerCase();
-  const nodeEnv = String(env.NODE_ENV ?? "").trim().toLowerCase();
-  return productionEnvNames.has(customCardEnv) || nodeEnv === "production";
-}
 
 export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
   const configuredMode = String(env.CUSTOMCARD_API_RUNTIME ?? "").trim();
   const requestedMode = configuredMode || "contract";
   const objectStoreRuntime = createObjectStoreRuntime({ env });
-  if (!runtimeModes.has(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime });
+  if (!runtimeModes.includes(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime });
   if (isProductionRuntimeEnv(env) && requestedMode !== "postgres") {
     return createInvalidApiRuntime({
       requestedMode: configuredMode || "(missing)",
@@ -48,7 +45,7 @@ export function createApiRuntime({ env = process.env, routes = [], postgresPoolF
 }
 
 function hasStrongAuthSessionSecret(env) {
-  return String(env.AUTH_SESSION_SECRET ?? "").length >= 32;
+  return hasStrongEnvSecret(env, "AUTH_SESSION_SECRET");
 }
 
 export function hashSessionToken(token, sessionSecret = "") {
