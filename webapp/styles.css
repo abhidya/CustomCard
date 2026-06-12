@@ -371,6 +371,41 @@ a { color: inherit; }
 .resume-arrow { margin-left: auto; color: var(--ink-faint); flex: none; }
 
 /* ---------- Page heads ---------- */
+/* ---------- Create-flow stepper ---------- */
+.flowstepper { padding-top: 26px; }
+.flowstepper ol {
+  display: flex; align-items: center; gap: 6px;
+  list-style: none; margin: 0; padding: 0;
+}
+.flowstepper li { display: flex; align-items: center; gap: 6px; }
+.flowstepper li + li::before {
+  content: ""; width: 18px; height: 1.5px; background: var(--line);
+}
+.flowstepper li > button,
+.flowstepper li > span {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid transparent; border-radius: 999px;
+  background: none; padding: 5px 12px 5px 6px;
+  font-size: 13px; font-weight: 560; color: var(--ink-faint);
+}
+.flowstepper li[data-now="true"] > span { color: var(--ink); border-color: var(--line); background: var(--surface); }
+.flowstepper li[data-done="true"] > button { color: var(--second); }
+.flowstepper li[data-done="true"] > button:hover { border-color: var(--line); background: var(--surface); }
+.flowstepper-num {
+  display: grid; place-items: center; width: 20px; height: 20px;
+  border-radius: 50%; border: 1.5px solid currentColor;
+  font-size: 11px; font-weight: 640;
+}
+.flowstepper li[data-now="true"] .flowstepper-num { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.flowstepper + .pagehead { padding-top: 18px; }
+
+.backlink {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 12px; padding: 0; border: none; background: none;
+  font-size: 14px; font-weight: 560; color: var(--accent);
+}
+.backlink:hover { text-decoration: underline; }
+
 .pagehead { min-width: 0; padding: 48px 0 26px; max-width: 640px; }
 .pagehead h1 {
   font-family: var(--font-display); font-weight: var(--display-weight);

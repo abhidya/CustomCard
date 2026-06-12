@@ -6,6 +6,17 @@ import { handleApiRequest } from "./scripts/api-server.mjs";
 
 export default defineConfig(() => ({
   plugins: [react(), customCardCoreApiPlugin()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          // Clerk is the largest dependency and only needs to load for auth UI.
+          if (id.includes("node_modules/@clerk/")) return "clerk";
+          return undefined;
+        }
+      }
+    }
+  },
   test: {
     coverage: {
       include: [

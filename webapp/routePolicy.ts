@@ -33,6 +33,45 @@ export function isBusinessRoute(view: ViewId): boolean {
   return view === "business";
 }
 
+/**
+ * The B2B landing still reads as internal readiness commentary, so it stays
+ * admin-only until real marketing copy exists. Everyone else lands on the
+ * customer home instead.
+ */
+export function shouldRenderBusinessLanding(view: ViewId, isAdmin: boolean): boolean {
+  return isBusinessRoute(view) && isAdmin;
+}
+
+/**
+ * Deep links straight to print with nothing designed yet show an empty proof
+ * page; send those visits to the studio so the flow starts where work exists.
+ * In-session navigation (Continue to proof checks) is not affected — this is
+ * only consulted for the entry view.
+ */
+export function resolveCreateFlowEntryView(view: ViewId, hasMeaningfulProgress: boolean): ViewId {
+  return view === "handoff" && !hasMeaningfulProgress ? "studio" : view;
+}
+
+export interface CreateFlowStep {
+  view: Extract<ViewId, "customer" | "studio" | "handoff">;
+  label: string;
+}
+
+/** The three labeled stages of the create flow, in order. */
+export const createFlowSteps: readonly CreateFlowStep[] = [
+  { view: "customer", label: "Start" },
+  { view: "studio", label: "Design" },
+  { view: "handoff", label: "Print" }
+];
+
+export function createFlowStepIndex(view: ViewId): number {
+  return createFlowSteps.findIndex((step) => step.view === view);
+}
+
+export function shouldShowCreateFlowStepper(view: ViewId): boolean {
+  return view === "studio" || view === "handoff";
+}
+
 export function resolveVisibleCustomerView(view: ViewId): ViewId {
   return isAdminRoute(view) || view === "mobile" || isBusinessRoute(view) ? "customer" : view;
 }
