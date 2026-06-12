@@ -30,11 +30,18 @@ cd CustomCard
 npm install
 ```
 
-Create `.env.local` from `.env.example` and keep the Clerk React key:
+Create `.env.local` from `.env.example` and keep the Clerk React key plus
+the server-side Clerk JWT verification public key:
 
 ```bash
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_replace_with_clerk_publishable_key
+CLERK_JWT_KEY="-----BEGIN PUBLIC KEY-----\nreplace-with-clerk-jwks-public-key\n-----END PUBLIC KEY-----"
+CLERK_AUTHORIZED_PARTIES=http://127.0.0.1:5173,http://localhost:5173
 ```
+
+`CLERK_JWT_KEY` is the Clerk dashboard **JWKS Public Key**. It is public
+verification material, but real values still belong only in ignored local env
+files or Vercel env, never in tracked docs or source.
 
 Clerk React setup follows the current quickstart:
 https://clerk.com/docs/react/getting-started/quickstart.
@@ -120,6 +127,8 @@ vercel link             # links this directory to your Vercel project
 
 # Set QA env vars (preview scope only)
 vercel env add VITE_CLERK_PUBLISHABLE_KEY preview # value: pk_test_replace_with_clerk_publishable_key
+vercel env add CLERK_JWT_KEY preview               # value: Clerk JWKS Public Key
+vercel env add CLERK_AUTHORIZED_PARTIES preview    # value: preview URL + local dev URLs if needed
 vercel env add DATABASE_URL preview          # paste your Neon connection string
 vercel env add CUSTOMCARD_API_RUNTIME preview   # value: postgres
 vercel env add NODE_ENV preview              # value: production
@@ -191,6 +200,8 @@ DATABASE_URL="postgres://..." npm run migrate
 
 ```bash
 vercel env add VITE_CLERK_PUBLISHABLE_KEY production # value: pk_test_replace_with_clerk_publishable_key
+vercel env add CLERK_JWT_KEY production               # value: Clerk JWKS Public Key
+vercel env add CLERK_AUTHORIZED_PARTIES production    # value: https://customcard-three.vercel.app
 vercel env add DATABASE_URL production           # Neon production connection string
 vercel env add CUSTOMCARD_API_RUNTIME production # value: postgres
 vercel env add NODE_ENV production               # value: production
@@ -458,6 +469,8 @@ DATABASE_URL="postgres://..." node scripts/hosted-api-readiness-doctor.mjs
 | Variable | Where set | Required | Purpose |
 |---|---|---|---|
 | `VITE_CLERK_PUBLISHABLE_KEY` | Vercel / `.env.local` | Yes | Clerk React publishable key |
+| `CLERK_JWT_KEY` | Vercel / `.env.local` | Yes for Clerk-backed API auth | Clerk JWKS public key used to verify session JWTs server-side |
+| `CLERK_AUTHORIZED_PARTIES` | Vercel / `.env.local` | Yes for Clerk-backed API auth | Comma-separated allowed `azp` origins for Clerk session JWTs |
 | `VITE_CARD_GEN_URL` | Vercel / `.env.local` | No | AI sidecar URL — enables Generate with AI button |
 | `DATABASE_URL` | Vercel / shell | For API | Postgres connection string |
 | `CUSTOMCARD_API_RUNTIME` | Vercel / shell | For API | `postgres` in production; `contract`/`memory` only for local reviewer checks |

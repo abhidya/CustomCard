@@ -92,6 +92,45 @@ describe("api runtime safety", () => {
     });
   });
 
+  it("records AI provider call events in the memory provider ledger", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "memory",
+        CUSTOMCARD_CUSTOMER_SESSION_TOKEN: "test-customer-session-token",
+        CUSTOMCARD_ADMIN_SESSION_TOKEN: "test-admin-session-token"
+      },
+      routes: apiRouteContracts
+    });
+
+    await expect(
+      runtime.recordProviderCallEvents({
+        authContext: { userId: "user-ai-ledger", role: "customer", sessionId: "session-ai-ledger" },
+        events: [
+          {
+            id: "provider-call-ai-ledger",
+            tenant_id: "user-ai-ledger",
+            route_id: "ai-card-generate",
+            flow_id: "card-image",
+            adapter_id: "cloudflare-workers-ai-image",
+            provider: "Cloudflare",
+            capability: "image-generation",
+            status: "reserved",
+            month_bucket: "2026-06",
+            request_units: 4,
+            estimated_cost_cents: 300,
+            rate_limit_window_start: "2026-06-12T01:00:00.000Z",
+            live_network_call: true,
+            metadata: { phase: "card-image", token: "must-not-persist" }
+          }
+        ]
+      })
+    ).resolves.toMatchObject({
+      persisted: true,
+      count: 1,
+      runtimeMode: "memory"
+    });
+  });
+
   it("attaches the Postgres pool to the serverless lifecycle when enabled", async () => {
     const pool = {
       async query() {

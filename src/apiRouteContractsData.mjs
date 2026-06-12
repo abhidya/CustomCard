@@ -160,6 +160,9 @@ export const apiRouteContracts = [
     responseSchema: [
       "assistant_message",
       "ai_flow",
+      "ai_cost_gate",
+      "ai_cost_ledger",
+      "provider_call_events",
       "live_provider_calls_enabled",
       "fallback_queued",
       "external_network_calls"
@@ -196,6 +199,9 @@ export const apiRouteContracts = [
       "images",
       "generated_by",
       "ai_flow",
+      "ai_cost_gate",
+      "ai_cost_ledger",
+      "provider_call_events",
       "live_provider_calls_enabled",
       "fallback_queued",
       "external_network_calls"

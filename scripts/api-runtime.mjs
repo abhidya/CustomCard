@@ -120,6 +120,9 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
         }
       };
     },
+    async recordProviderCallEvents() {
+      return { persisted: false, count: 0, runtimeMode: "contract" };
+    },
     async persistGoogleCalendarImport({ record }) {
       return {
         persisted: false,
@@ -181,6 +184,9 @@ function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, va
     },
     async persistMutation({ route }) {
       return { ok: false, statusCode: 503, payload: { ...payload, route: route.id } };
+    },
+    async recordProviderCallEvents() {
+      return { persisted: false, count: 0, runtimeMode: "invalid" };
     },
     async persistGoogleCalendarImport() {
       return { persisted: false, payload };
@@ -263,7 +269,10 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       const token = readBearerToken(request);
       if (!token || !looksLikeJwt(token)) return sessionResult;
       const verification = verifyClerkSessionToken(token, env);
-      if (!verification.ok) return sessionResult;
+      if (!verification.ok) {
+        const localSessionResult = authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, token, verification });
+        return localSessionResult ?? sessionResult;
+      }
       const sessionId = stableRuntimeId("session", "clerk", verification.clerkUserId, verification.clerkSessionId);
       sessions.set(hashSessionToken(token, env.AUTH_SESSION_SECRET), {
         id: sessionId,
@@ -333,6 +342,13 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       }
 
       return { ok: true, statusCode: 202, payload };
+    },
+    async recordProviderCallEvents({ authContext, events = [] }) {
+      const normalized = normalizeProviderCallEvents({ authContext, events });
+      for (const event of normalized) {
+        providerCallEvents.set(event.id, event);
+      }
+      return { persisted: normalized.length > 0, count: normalized.length, runtimeMode: "memory" };
     },
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
@@ -407,6 +423,54 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       return undefined;
     }
   };
+}
+
+function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, token, verification }) {
+  if (verification?.status !== "clerk-not-configured") return undefined;
+  if (isProductionRuntimeEnv(env)) return undefined;
+  if (route.auth !== "customer-session") return undefined;
+  const preview = readLocalClerkJwtPreview(token);
+  if (!preview) return undefined;
+  const sessionId = stableRuntimeId("session", "local-clerk", preview.clerkUserId, preview.clerkSessionId);
+  sessions.set(hashSessionToken(token, env.AUTH_SESSION_SECRET), {
+    id: sessionId,
+    sessionId,
+    role: "customer",
+    userId: stableRuntimeId("user", "local-clerk", preview.clerkUserId),
+    email: preview.email
+  });
+  return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
+}
+
+function readLocalClerkJwtPreview(token, { nowMs = Date.now() } = {}) {
+  if (!looksLikeJwt(token)) return undefined;
+  const [, encodedPayload] = String(token).split(".");
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
+  } catch {
+    return undefined;
+  }
+  const clerkUserId = String(payload.sub ?? "").trim();
+  const clerkSessionId = String(payload.sid ?? "").trim();
+  if (!/^user_/.test(clerkUserId) || !/^sess_/.test(clerkSessionId)) return undefined;
+  const expiresAtMs = Number(payload.exp) * 1000;
+  if (!Number.isFinite(expiresAtMs) || expiresAtMs < nowMs) return undefined;
+  const notBeforeMs = Number(payload.nbf) * 1000;
+  if (Number.isFinite(notBeforeMs) && notBeforeMs > nowMs) return undefined;
+  return {
+    clerkUserId,
+    clerkSessionId,
+    email: readJwtEmailPreview(payload)
+  };
+}
+
+function readJwtEmailPreview(payload) {
+  for (const key of ["email", "primary_email", "primaryEmail", "email_address", "emailAddress"]) {
+    const value = String(payload[key] ?? "").trim();
+    if (value.includes("@")) return value;
+  }
+  return "";
 }
 
 function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime }) {
@@ -598,6 +662,46 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           );
         }
         return { ok: true, statusCode: 202, payload: responseBody };
+      });
+    },
+    async recordProviderCallEvents({ authContext, events = [] }) {
+      const normalized = normalizeProviderCallEvents({ authContext, events });
+      if (normalized.length === 0) return { persisted: false, count: 0, runtimeMode: "postgres" };
+      return postgresRuntime.withTransaction(async (client) => {
+        for (const event of normalized) {
+          await client.query(
+            `INSERT INTO provider_call_events
+               (id, tenant_id, user_id, route_id, idempotency_key_id, adapter_id, provider, capability, status,
+                fallback_from_adapter_id, fallback_reason, month_bucket, request_units, estimated_cost_cents,
+                actual_cost_cents, rate_limit_window_start, latency_ms, error_class, pii_free, live_network_call, metadata)
+             VALUES ($1, $2, $3, $4, NULL, $5, $6, $7, $8,
+                     $9, $10, $11, $12, $13,
+                     $14, $15::timestamptz, $16, $17, TRUE, $18, $19::jsonb)
+             ON CONFLICT (id) DO NOTHING`,
+            [
+              event.id,
+              event.tenantId,
+              event.userId,
+              event.routeId,
+              event.adapterId,
+              event.provider,
+              event.capability,
+              event.status,
+              event.fallbackFromAdapterId,
+              event.fallbackReason,
+              event.monthBucket,
+              event.requestUnits,
+              event.estimatedCostCents,
+              event.actualCostCents,
+              event.rateLimitWindowStartIso,
+              event.latencyMs,
+              event.errorClass,
+              event.liveNetworkCall,
+              JSON.stringify(event.metadata)
+            ]
+          );
+        }
+        return { persisted: true, count: normalized.length, runtimeMode: "postgres" };
       });
     },
     async readArtifact(input) {
@@ -2244,6 +2348,102 @@ function buildRenderProviderCallEvent({ authContext, bodyText, idempotencyId }) 
       auditEventName: "provider.fallback.selected"
     }
   };
+}
+
+const providerEventStatuses = new Set(["reserved", "succeeded", "failed", "blocked", "fallback-selected"]);
+const providerFallbackReasons = new Set([
+  "missing-credentials",
+  "safety-gate",
+  "monthly-budget-exceeded",
+  "per-request-budget-exceeded",
+  "rate-limit-exceeded",
+  "provider-blocked",
+  "provider-unavailable",
+  "circuit-open",
+  "no-preferred-provider"
+]);
+
+function normalizeProviderCallEvents({ authContext, events }) {
+  return (Array.isArray(events) ? events : [])
+    .filter((event) => event && typeof event === "object")
+    .map((event, index) => {
+      const routeId = safeText(event.routeId ?? event.route_id, "ai-flow").slice(0, 80);
+      const flowId = safeText(event.flowId ?? event.flow_id, "ai-flow").slice(0, 80);
+      const adapterId = safeText(event.adapterId ?? event.adapter_id, "unknown-adapter").slice(0, 120);
+      const status = providerEventStatuses.has(event.status) ? event.status : "reserved";
+      const fallbackReasonInput = event.fallbackReason ?? event.fallback_reason;
+      const fallbackReason = providerFallbackReasons.has(fallbackReasonInput) ? fallbackReasonInput : null;
+      const monthBucket = safeMonthBucket(event.monthBucket ?? event.month_bucket);
+      const rateLimitWindowStartIso = safeIso(event.rateLimitWindowStartIso ?? event.rate_limit_window_start, new Date());
+      const requestUnits = Math.max(1, safeEventInteger(event.requestUnits ?? event.request_units, 1));
+      const estimatedCostCents = Math.max(0, safeEventInteger(event.estimatedCostCents ?? event.estimated_cost_cents, 0));
+      const actualCostInput = event.actualCostCents ?? event.actual_cost_cents;
+      const actualCostCents = actualCostInput === undefined || actualCostInput === null
+        ? null
+        : Math.max(0, safeEventInteger(actualCostInput, 0));
+      const id = safeText(
+        event.id,
+        stableRuntimeId("provider-call", authContext.userId, routeId, flowId, adapterId, String(index), rateLimitWindowStartIso)
+      ).slice(0, 160);
+      return {
+        id,
+        tenantId: safeText(event.tenantId ?? event.tenant_id, authContext.userId).slice(0, 120),
+        userId: authContext.userId,
+        routeId,
+        flowId,
+        adapterId,
+        provider: safeText(event.provider, "AI provider").slice(0, 120),
+        capability: safeText(event.capability, "text-chat").slice(0, 80),
+        status,
+        fallbackFromAdapterId: optionalSafeText(event.fallbackFromAdapterId ?? event.fallback_from_adapter_id, 120),
+        fallbackReason,
+        monthBucket,
+        requestUnits,
+        estimatedCostCents,
+        actualCostCents,
+        rateLimitWindowStartIso,
+        latencyMs: optionalSafeInteger(event.latencyMs ?? event.latency_ms),
+        errorClass: optionalSafeText(event.errorClass ?? event.error_class, 120),
+        liveNetworkCall: Boolean(event.liveNetworkCall ?? event.live_network_call),
+        metadata: sanitizeProviderEventMetadata(event.metadata)
+      };
+    });
+}
+
+function sanitizeProviderEventMetadata(metadata) {
+  if (!metadata || typeof metadata !== "object") return {};
+  const result = {};
+  for (const [key, value] of Object.entries(metadata)) {
+    if (/token|secret|key|authorization|api/i.test(key)) continue;
+    if (typeof value === "string") result[key] = value.slice(0, 500);
+    else if (typeof value === "number" || typeof value === "boolean" || value === null) result[key] = value;
+  }
+  return result;
+}
+
+function safeMonthBucket(value) {
+  const text = safeText(value, new Date().toISOString().slice(0, 7));
+  return /^[0-9]{4}-[0-9]{2}$/.test(text) ? text : new Date().toISOString().slice(0, 7);
+}
+
+function safeIso(value, fallbackDate) {
+  const timestamp = Date.parse(String(value ?? ""));
+  return Number.isNaN(timestamp) ? fallbackDate.toISOString() : new Date(timestamp).toISOString();
+}
+
+function safeEventInteger(value, fallback) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.round(numeric) : fallback;
+}
+
+function optionalSafeInteger(value) {
+  if (value === undefined || value === null) return null;
+  return Math.max(0, safeEventInteger(value, 0));
+}
+
+function optionalSafeText(value, maxLength) {
+  if (value === undefined || value === null || value === "") return null;
+  return safeText(value, "").slice(0, maxLength);
 }
 
 function buildRenderPacketRepositoryPayload(record, runtimeMode, artifactPersistencePayload) {

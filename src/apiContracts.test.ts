@@ -247,7 +247,7 @@ describe("api contracts", () => {
     expect(aiCardGenerate?.requestSchema).toEqual(expect.arrayContaining(["memory_notes"]));
     expect(aiCardGenerate?.requestSchema).not.toContain("aiFlowConfig");
     expect(aiChatRespond?.requestSchema).not.toContain("aiFlowConfig");
-    expect(aiChatRespond?.responseSchema).toEqual(expect.arrayContaining(["ai_flow", "fallback_queued"]));
+    expect(aiChatRespond?.responseSchema).toEqual(expect.arrayContaining(["ai_flow", "ai_cost_gate", "ai_cost_ledger", "provider_call_events", "fallback_queued"]));
     expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
       expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])
     );

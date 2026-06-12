@@ -31,6 +31,7 @@ import {
   buildBrowserAiFlowSummary,
   loadBrowserAiFlowAdminConfigs,
   normalizeAiFlowAdminConfigs,
+  saveBrowserAiFlowAdminConfigs,
   type AiFlowAdminConfig,
   type AiFlowConfigSummary
 } from "./aiFlowConfig";
@@ -235,6 +236,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   const setAiFlowConfigs = useCallback((configs: AiFlowAdminConfig[]) => {
     const normalized = normalizeAiFlowAdminConfigs(configs);
     setAiFlowConfigsState(normalized);
+    saveBrowserAiFlowAdminConfigs(normalized);
   }, []);
   // Chat starts empty: the conversation belongs to the customer, not a scripted transcript.
   const customerChatSession = useMemo(
@@ -435,11 +437,14 @@ export async function buildAiCardGenerationHeaders(
     "X-Idempotency-Key": buildIdempotencyKey("card-gen")
   });
   const token = await getCustomerApiToken?.();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (!token) {
+    throw new Error("AI card generation needs an active signed-in session.");
+  }
+  headers.set("Authorization", `Bearer ${token}`);
   return headers;
 }
 
-async function readAiGenerationResponse(response: Response): Promise<AiGenerationApiResult> {
+export async function readAiGenerationResponse(response: Response): Promise<AiGenerationApiResult> {
   const contentType = response.headers.get("content-type") ?? "";
   const payload = contentType.includes("application/json")
     ? await response.json() as Record<string, unknown>
@@ -457,7 +462,11 @@ async function readAiGenerationResponse(response: Response): Promise<AiGeneratio
 function formatAiGenerationHttpError(status: number, payload: Record<string, unknown> | undefined): string {
   const detail = readAiGenerationErrorDetail(payload);
   if (status === 404) return "AI card generation route is unavailable. Redeploy the API and try again.";
-  if (status === 401 || status === 403) return "AI card generation needs a signed-in session.";
+  if (status === 401 || status === 403) {
+    return detail
+      ? `AI card generation could not verify your signed-in session: ${detail}.`
+      : "AI card generation needs a signed-in session.";
+  }
   return detail ? `AI card generation failed: ${detail}` : `AI card generation returned HTTP ${status}.`;
 }
 

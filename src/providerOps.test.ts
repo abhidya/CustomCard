@@ -109,4 +109,58 @@ describe("provider ops", () => {
     expect(providerOps.users.userManagementRequiredEnv).toEqual(expect.arrayContaining(["VITE_CUSTOMCARD_ADMIN_EMAILS"]));
     expect(JSON.stringify(providerOps)).not.toContain("token_text");
   });
+
+  it("surfaces DeepAI usage and ORR metadata in admin provider ops", () => {
+    const deepAi = getProviderAdapter("deepai-text2img-image");
+    const deepAiEnv = {
+      DEEPAI_API_KEY: "deepai-token",
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    };
+    expect(deepAi).toBeDefined();
+    const providerOps = buildProviderOpsModel({
+      model: buildAdminPanelModel(),
+      providerGovernance: summarizeProviderGovernance(),
+      runtimeReadiness: buildRuntimeReadiness(deepAiEnv),
+      aiFlowSummary: summarizeAiFlowConfigs(deepAiEnv),
+      readiness: buildReadinessSummary(),
+      env: deepAiEnv,
+      usageEvents: [
+        buildProviderCallEvent({
+          adapter: deepAi!,
+          tenantId: "default",
+          routeId: "ai-card-generate",
+          status: "succeeded",
+          nowIso,
+          requestUnits: 4,
+          estimatedCostCents: 4,
+          actualCostCents: 4
+        })
+      ],
+      nowIso
+    });
+    const deepAiOps = providerOps.providers.find((provider) => provider.adapterId === "deepai-text2img-image");
+
+    expect(validateProviderOpsModel(providerOps)).toEqual([]);
+    expect(providerOps.env.configuredProviders).toEqual(expect.arrayContaining(["deepai-text2img-image"]));
+    expect(deepAiOps).toMatchObject({
+      availability: "env-configured",
+      missingEnv: [],
+      selectedForFlow: true,
+      metricSource: {
+        kind: "provider-dashboard",
+        label: "DeepAI Pro dashboard",
+        providerSourced: true,
+        usageUnit: "HD images / wallet credits / provider_call_events"
+      }
+    });
+    expect(providerOps.usage).toMatchObject({
+      actualSpendCents: 4,
+      ledgerEvents: 1,
+      providerSourcedMetricAdapters: 1,
+      monthBucket: "2026-06"
+    });
+    expect(providerOps.orr.latencyGateRequired).toBeGreaterThan(0);
+    expect(JSON.stringify(providerOps)).not.toContain("deepai-token");
+  });
 });

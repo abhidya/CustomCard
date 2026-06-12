@@ -2,6 +2,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { renderToString } from "react-dom/server";
 import { createElement, type ReactNode } from "react";
 import App from "../webapp/App";
+import { AdminCardGalleryView } from "../webapp/views/AdminCardGalleryView";
 import { StudioView } from "../webapp/views/StudioView";
 import { buildOpportunity, generateCardDraft, getDefaultDraftInput, parseFreeImport } from "../src/customerWorkflow";
 import {
@@ -87,12 +88,16 @@ function stubShellGlobals({ admin = false, search = "", signedIn = true }: Shell
 function renderShell(options: ShellWindowOptions = {}): { html: string; text: string } {
   stubShellGlobals(options);
   const html = renderToString(createElement(App));
-  const text = html
+  const text = textFromHtml(html);
+  return { html, text };
+}
+
+function textFromHtml(html: string): string {
+  return html
     .replace(/<[^>]*>/g, " ")
     .replace(/&rsquo;|&#x27;|&#39;|’/g, "'")
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ");
-  return { html, text };
 }
 
 const sampleWorkspace = {
@@ -140,6 +145,19 @@ afterEach(() => {
 });
 
 describe("customer shell server render", () => {
+  it("renders the admin featured-card curation workflow shell", () => {
+    const html = renderToString(createElement(AdminCardGalleryView, {}));
+    const text = textFromHtml(html);
+
+    expect(text).toContain("Card gallery");
+    expect(text).toContain("Candidates");
+    expect(text).toContain("Drafts");
+    expect(text).toContain("Needs review");
+    expect(text).toContain("Featured");
+    expect(text).toContain("Select a card to curate.");
+    expect(text).toContain("No generated cards yet.");
+  });
+
   it("keeps the customer create flow visible when signed out", () => {
     const { text } = renderShell({ signedIn: false });
 

@@ -1,0 +1,80 @@
+{
+  "phase": "smoke",
+  "focus": "text",
+  "storyId": "first-time-user-birthday",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "[redacted]",
+  "imageCandidateId": "image-browser-svg-renderer",
+  "imageAdapterId": "browser-svg-renderer",
+  "imageModel": "[redacted]",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer",
+  "startedAt": "2026-06-12T06:18:09.944Z",
+  "finishedAt": "2026-06-12T06:18:19.736Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "[redacted]",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-front.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-inside-left.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-inside-right.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-back.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/contact-sheet.png",
+  "providerCallCount": 1,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 1
+    },
+    "missingMustInclude": [
+      "Jordan",
+      "plant",
+      "humor"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

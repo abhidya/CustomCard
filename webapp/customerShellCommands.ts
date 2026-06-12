@@ -140,6 +140,7 @@ export function useDraftAutosave({
       }),
     [draftInput, draftProgress.status, localeCode, opportunityDecision, opportunityId, vendorId]
   );
+  const lastAutosaveSnapshot = useRef("");
 
   useEffect(() => {
     if (!enabled) {
@@ -169,9 +170,15 @@ export function useDraftAutosave({
 
   useEffect(() => {
     if (!enabled || !hydrated.current || !draftProgress.hasMeaningfulProgress) return;
+    if (lastAutosaveSnapshot.current === draftSnapshot) return;
     const timer = window.setTimeout(() => {
       const body = JSON.parse(draftSnapshot) as Record<string, unknown>;
-      void postCustomerMutation(getToken, "/api/customer/draft-state", body).catch(() => undefined);
+      lastAutosaveSnapshot.current = draftSnapshot;
+      void postCustomerMutation(getToken, "/api/customer/draft-state", body, {
+        idempotencyKey: buildDraftAutosaveIdempotencyKey("/api/customer/draft-state", draftSnapshot)
+      }).catch(() => {
+        lastAutosaveSnapshot.current = "";
+      });
     }, 700);
 
     return () => window.clearTimeout(timer);
@@ -188,11 +195,12 @@ export async function getCustomerJson(getToken: () => Promise<string | null>, pa
 export async function postCustomerMutation(
   getToken: () => Promise<string | null>,
   path: string,
-  body: Record<string, unknown>
+  body: Record<string, unknown>,
+  options: { idempotencyKey?: string } = {}
 ): Promise<void> {
   const headers = await buildCustomerHeaders(getToken);
   headers.set("Content-Type", "application/json");
-  headers.set("X-Idempotency-Key", buildBrowserIdempotencyKey(path));
+  headers.set("X-Idempotency-Key", options.idempotencyKey ?? buildBrowserIdempotencyKey(path));
   const response = await fetch(path, {
     method: "POST",
     headers,
@@ -219,6 +227,20 @@ export function buildBrowserIdempotencyKey(path: string): string {
   const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "mutation";
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return `${routeSlug}-${crypto.randomUUID()}`;
   return `${routeSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function buildDraftAutosaveIdempotencyKey(path: string, snapshot: string): string {
+  const routeSlug = path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "draft-autosave";
+  return `${routeSlug}-snapshot-${fnv1a64(snapshot)}`;
+}
+
+function fnv1a64(value: string): string {
+  let hash = 0xcbf29ce484222325n;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= BigInt(value.charCodeAt(index));
+    hash = BigInt.asUintN(64, hash * 0x100000001b3n);
+  }
+  return hash.toString(16).padStart(16, "0");
 }
 
 function downloadBlob(blob: Blob, fileName: string) {

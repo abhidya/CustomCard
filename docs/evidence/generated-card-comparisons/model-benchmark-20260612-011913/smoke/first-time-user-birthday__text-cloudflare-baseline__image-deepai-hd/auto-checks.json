@@ -1,0 +1,19 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": false,
+    "noProviderFailure": false,
+    "mustIncludeCovered": false,
+    "mustAvoidClean": true,
+    "providerCalls": 0
+  },
+  "missingMustInclude": [
+    "Maya",
+    "Jordan",
+    "birthday",
+    "plant",
+    "humor"
+  ],
+  "avoidedFailures": [],
+  "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+}

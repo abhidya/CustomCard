@@ -315,7 +315,7 @@ export const migrationRequiredSignals = [
   "month_bucket TEXT NOT NULL",
   "estimated_cost_cents INTEGER NOT NULL",
   "pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE)",
-  "live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE)",
+  "live_network_call BOOLEAN NOT NULL DEFAULT FALSE",
   "CREATE INDEX idx_provider_call_events_tenant_month",
   "CREATE TABLE api_jobs",
   "idempotency_key_id TEXT REFERENCES idempotency_keys(id)",

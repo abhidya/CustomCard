@@ -54,11 +54,17 @@ def sidecar_env(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("CARD_GEN_API_TOKEN", raising=False)
     monkeypatch.delenv("CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL", raising=False)
     monkeypatch.delenv("CARD_GEN_RATE_LIMIT_PER_MINUTE", raising=False)
+    monkeypatch.delenv("CARD_GEN_MONTHLY_BUDGET_CENTS", raising=False)
+    monkeypatch.delenv("CARD_GEN_PER_REQUEST_BUDGET_CENTS", raising=False)
+    monkeypatch.delenv("CARD_TEXT_UNIT_COST_CENTS", raising=False)
+    monkeypatch.delenv("CARD_IMAGE_UNIT_COST_CENTS", raising=False)
     monkeypatch.delenv("CARD_GEN_MAX_BODY_BYTES", raising=False)
     app_module._rate_limit_buckets.clear()
+    app_module._monthly_spend_buckets.clear()
     yield
     app_module._service = None
     app_module._rate_limit_buckets.clear()
+    app_module._monthly_spend_buckets.clear()
 
 
 def test_generate_requires_configured_bearer_token() -> None:
@@ -96,6 +102,21 @@ def test_generate_rate_limits_per_token(monkeypatch: pytest.MonkeyPatch) -> None
 
     assert first.status_code == 200
     assert second.status_code == 429
+
+
+def test_generate_enforces_monthly_budget_per_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CARD_GEN_API_TOKEN", TOKEN)
+    monkeypatch.setenv("CARD_GEN_MONTHLY_BUDGET_CENTS", "12")
+    monkeypatch.setenv("CARD_TEXT_UNIT_COST_CENTS", "12")
+
+    with TestClient(app_module.app) as client:
+        app_module._service = FakeCardGenService()
+        first = client.post("/generate", headers={"Authorization": f"Bearer {TOKEN}"}, json=_payload())
+        second = client.post("/generate", headers={"Authorization": f"Bearer {TOKEN}"}, json=_payload())
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert "projected monthly spend" in second.json()["detail"]
 
 
 def test_generate_rejects_oversized_payload(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -1,0 +1,818 @@
+{
+  "phase": "smoke",
+  "createdAtIso": "2026-06-12T06:18:09.941Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "[redacted]",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "deepseek-ai/DeepSeek-V4-Flash",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-gpt-oss-20b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "openai/gpt-oss-20b",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "[redacted]",
+      "imageCandidateId": "image-cloudflare-sdxl-lightning",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "[redacted]"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "[redacted]",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "[redacted]",
+      "imageCandidateId": "image-deepai-hd",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "hd"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "[redacted]",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": "[redacted]",
+      "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer",
+      "startedAt": "2026-06-12T06:18:09.944Z",
+      "finishedAt": "2026-06-12T06:18:19.736Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "[redacted]",
+      "providerFailures": {},
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-front.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-inside-left.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-inside-right.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/provider-back.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-cloudflare-baseline__image-browser-svg-renderer/contact-sheet.png",
+      "providerCallCount": 1,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": true,
+          "mustIncludeCovered": false,
+          "mustAvoidClean": true,
+          "providerCalls": 1
+        },
+        "missingMustInclude": [
+          "Jordan",
+          "plant",
+          "humor"
+        ],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": "[redacted]",
+      "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer",
+      "startedAt": "2026-06-12T06:18:19.744Z",
+      "finishedAt": "2026-06-12T06:18:37.041Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "providerFailures": {},
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/provider-front.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/provider-inside-left.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/provider-inside-right.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/provider-back.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-browser-svg-renderer/contact-sheet.png",
+      "providerCallCount": 1,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": true,
+          "mustIncludeCovered": false,
+          "mustAvoidClean": true,
+          "providerCalls": 1
+        },
+        "missingMustInclude": [
+          "Jordan",
+          "humor"
+        ],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "deepseek-ai/DeepSeek-V4-Flash",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": "[redacted]",
+      "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer",
+      "startedAt": "2026-06-12T06:18:37.053Z",
+      "finishedAt": "2026-06-12T06:18:52.799Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "deepseek-ai/DeepSeek-V4-Flash",
+      "providerFailures": {},
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/provider-front.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/provider-inside-left.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/provider-inside-right.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/provider-back.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-deepseek-v4-flash__image-browser-svg-renderer/contact-sheet.png",
+      "providerCallCount": 1,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": true,
+          "mustIncludeCovered": false,
+          "mustAvoidClean": true,
+          "providerCalls": 1
+        },
+        "missingMustInclude": [
+          "Jordan",
+          "plant",
+          "humor"
+        ],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-gpt-oss-20b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "openai/gpt-oss-20b",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": "[redacted]",
+      "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer",
+      "startedAt": "2026-06-12T06:18:52.822Z",
+      "finishedAt": "2026-06-12T06:18:57.359Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "openai/gpt-oss-20b",
+      "providerFailures": {
+        "text": "AI provider response did not contain text."
+      },
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/provider-front.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/provider-inside-left.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/provider-inside-right.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/provider-back.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/smoke/first-time-user-birthday__text-hf-gpt-oss-20b__image-browser-svg-renderer/contact-sheet.png",
+      "providerCallCount": 1,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": false,
+          "mustIncludeCovered": false,
+          "mustAvoidClean": true,
+          "providerCalls": 1
+        },
+        "missingMustInclude": [
+          "Maya",
+          "Jordan",
+          "birthday",
+          "plant",
+          "humor"
+        ],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "[redacted]"
+        },
+        "body": {
+          "model": "[redacted]",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Maya\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, helpful, lightly dry humor, not romantic\",\n    \"style\": \"soft houseplant stationery, airy pastel palette, polished first-purchase card design\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.\",\n    \"memory_notes\": [\n      \"Maya likes houseplants.\",\n      \"Maya likes soft colors.\",\n      \"The card should use light humor without inventing memories.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": 2200,
+          "temperature": 0.62,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theme_guide",
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "theme_guide": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "theme_title",
+                    "palette",
+                    "motifs",
+                    "border_style",
+                    "front_back_pairing",
+                    "interior_pairing"
+                  ],
+                  "properties": {
+                    "theme_title": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "palette": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 6,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "motifs": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 8,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "border_style": {
+                      "type": "string",
+                      "maxLength": 180
+                    },
+                    "front_back_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    },
+                    "interior_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    }
+                  }
+                },
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 4164,
+        "body": {
+          "id": "id-1781245096913",
+          "object": "chat.completion",
+          "created": 1781245096,
+          "model": "[redacted]",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"cinematic single-object cover with a 5x7 paper field, clean text-safe space for app overlay, airy pastel palette, and a light greenery border.\",\n      \"body\": \"\",\n      \"headline\": \"Happy Birthday, Maya!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A warm, single 5x7 flat print panel of a bright, delicate orchid, surrounded by a light greenery border and a clean text-safe space for the app overlay.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery design with a refined frame, quiet center, clean text-safe space for app overlay, light ivory/cream low-contrast interior, and sparse edge/corner motifs.\",\n      \"body\": \"Maya, I'm so glad we're friends. Here's to another year of growing together, just like your lovely houseplants!\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A 5x7 flat print panel of a light ivory/cream background with a delicate, hand-drawn border and a quiet center, featuring a small, sparse illustration of a houseplant and a clean text-safe space for the app overlay.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery design with a refined frame, quiet center, clean text-safe space for app overlay, light ivory/cream low-contrast interior, and sparse edge/corner motifs.\",\n      \"body\": \"Wishing you a birthday as bright and beautiful as your smile, Maya. May this year bring you growth, joy, and all your favorite things!\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A 5x7 flat print panel of a light ivory/cream background with a delicate, hand-drawn border and a quiet center, featuring a small, sparse illustration of a gift box and a clean text-safe space for the app overlay.\"\n    },\n    {\n      \"art_direction\": \"mostly negative space with a small coordinating lower mark or border echo, airy pastel palette, and a light greenery border.\",\n      \"body\": \"Thanks for being an amazing friend, Maya!\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A 5x7 flat print panel with mostly negative space, featuring a small, delicate illustration of a sprig of greenery and a clean text-safe space for the app overlay.\"\n    }\n  ],\n  \"theme_guide\": {\n    \"border_style\": \"light greenery border\",\n    \"front_back_pairing\": \"cinematic single-object cover with a 5x7 paper field and mostly negative space\",\n    \"interior_pairing\": \"border-first stationery design with a refined frame and a quiet center\",\n    \"motifs\": [\n      \"houseplants\",\n      \"soft colors\",\n      \"delicate illustrations\",\n      \"greenery\",\n      \"pastel palette\"\n    ],\n    \"palette\": [\n      \"airy pastel colors\",\n      \"light greenery\",\n      \"light ivory/cream\"\n    ],\n    \"theme_title\": \"Warm Birthday Wishes for a Friend\"\n  }\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": null
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 2012,
+            "completion_tokens": 832,
+            "total_tokens": 2844,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          }
+        }
+      },
+      "durationMs": 6912
+    },
+    {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "[redacted]"
+        },
+        "body": {
+          "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Maya\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, helpful, lightly dry humor, not romantic\",\n    \"style\": \"soft houseplant stationery, airy pastel palette, polished first-purchase card design\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.\",\n    \"memory_notes\": [\n      \"Maya likes houseplants.\",\n      \"Maya likes soft colors.\",\n      \"The card should use light humor without inventing memories.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": 2200,
+          "temperature": 0.62
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 6260,
+        "body": {
+          "id": "chatcmpl-c86cfcc6-7249-480c-8899-f395841a1559",
+          "object": "chat.completion",
+          "created": 1781245100,
+          "model": "qwen3-235b-a22b-instruct-2507",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"theme_guide\": {\n    \"theme_title\": \"Tender Shoots\",\n    \"palette\": [\n      \"blush pink\",\n      \"sage green\",\n      \"warm ivory\",\n      \"dusty lavender\",\n      \"soft peach\"\n    ],\n    \"motifs\": [\n      \"potted pothos\",\n      \"curled fiddle leaf fig leaf\",\n      \"tiny terracotta pots\",\n      \"subtle water droplets\",\n      \"minimalist plant labels\"\n    ],\n    \"border_style\": \"delicate vine-line border with open corners\",\n    \"front_back_pairing\": \"hero plant on front, small pot echo on back\",\n    \"interior_pairing\": \"matching border-first stationery with corner motifs\"\n  },\n  \"panels\": [\n    {\n      \"id\": \"front\",\n      \"headline\": \"Happy Birthday, Maya\",\n      \"body\": \"May your year grow well.\",\n      \"art_direction\": \"Cinematic single-object cover with dominant centered pothos sprout emerging from warm ivory field. Lower third reserved for text with generous margin. Palette: sage green, blush pink, warm ivory. Full-bleed 2D illustration. Border: none. Front/back pairing: strong hero plant up front, subtle echo on back.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, front cover role, one lush curled pothos shoot centered and growing upward from bottom edge, soft sage green leaves with delicate blush pink undertones, isolated on a warm ivory field, full-bleed 2D digital illustration, no people, no hands, no text, clean lower text-safe area, cinematic single-object composition, soft pastel palette, airy and light, no physical mockup, no watermark.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"inside-left\",\n      \"headline\": \"For the one who keeps plants alive\",\n      \"body\": \"Not by magic, just consistent watering and moderate light. A rare skill.\",\n      \"art_direction\": \"Border-first stationery layout with thin sage green vine-line border, open corners. Quiet center in light ivory with generous margins. Motifs: tiny terracotta pots in lower corners, one water droplet near bottom edge. Palette: soft peach, sage green, warm ivory. Interior pairing: matches inside-right with same border and corner treatment.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, inside-left panel role, border-first stationery design with thin sage green vine-line border and open corners, light ivory center field, two tiny terracotta pots in lower corners, one small water droplet near bottom edge, soft peach and sage green accents, 2D flat illustration, no people, no hands, no text, clean central text-safe area, generous margins, paper-like warmth, no physical mockup, no watermark.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"inside-right\",\n      \"headline\": \"Another year, another leaf unfurling\",\n      \"body\": \"Hope your birthday brings the quiet joy of a new sprout, the satisfaction of a plant that hasn’t died under your care, and at least one moment where you feel like you’ve got this. Thanks for being the kind of friend who remembers to water mine when I forget. —Jordan\",\n      \"art_direction\": \"Matching border-first stationery with same thin vine-line border and open corners as inside-left. Light cream center with generous margins. Motifs: curled fiddle leaf fig leaf in upper right, minimalist plant label icon near bottom left. Palette: warm ivory, dusty lavender, sage green. Interior pairing: symmetrical with inside-left, calm and cohesive when opened.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, inside-right panel role, border-first stationery layout with thin sage green vine-line border and open corners, warm ivory center, curled fiddle leaf fig leaf in upper right corner, minimalist plant label icon in lower left, soft dusty lavender accents, 2D flat illustration, no people, no hands, no text, clean central text-safe area, generous margins, paper-like texture, no physical mockup, no watermark.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"back\",\n      \"headline\": \"\",\n      \"body\": \"A small pot, turned upright. A quiet wish for steady growth.\",\n      \"art_direction\": \"Mostly negative space with one small coordinating mark: a single tiny terracotta pot centered near bottom edge. Palette: warm ivory with sage green accent. Border: none. Front/back pairing: subtle echo of front’s plant motif, minimal and resolved.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, back cover role, warm ivory field with one small terracotta pot centered near bottom edge, sage green shadow beneath, full-bleed 2D digital illustration, no people, no hands, no text, mostly blank space, lower-center text-safe area, minimal composition, no physical mockup, no watermark.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    }\n  ],\n  \"memory_citations\": [\n    \"Maya likes houseplants.\",\n    \"Maya likes soft colors.\",\n    \"The card should use light humor without inventing memories.\"\n  ]\n}",
+                "refusal": null,
+                "annotations": null,
+                "audio": null,
+                "function_call": null,
+                "tool_calls": [],
+                "reasoning": null,
+                "reasoning_content": null
+              },
+              "logprobs": null,
+              "finish_reason": "stop",
+              "stop_reason": null,
+              "token_ids": null
+            }
+          ],
+          "service_tier": null,
+          "system_fingerprint": null,
+          "usage": {
+            "prompt_tokens": 2003,
+            "total_tokens": 3240,
+            "completion_tokens": 1237,
+            "prompt_tokens_details": null
+          },
+          "prompt_logprobs": null,
+          "prompt_token_ids": null,
+          "kv_transfer_params": null
+        }
+      },
+      "durationMs": 15885
+    },
+    {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "[redacted]"
+        },
+        "body": {
+          "model": "deepseek-ai/DeepSeek-V4-Flash",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Maya\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, helpful, lightly dry humor, not romantic\",\n    \"style\": \"soft houseplant stationery, airy pastel palette, polished first-purchase card design\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.\",\n    \"memory_notes\": [\n      \"Maya likes houseplants.\",\n      \"Maya likes soft colors.\",\n      \"The card should use light humor without inventing memories.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": 2200,
+          "temperature": 0.62
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 10389,
+        "body": {
+          "id": "Root=1-6a2ba4bd-67a047ad6899f76a61ed3731-chatcmpl-085774e",
+          "object": "chat.completion",
+          "created": 1781245118,
+          "model": "accounts/fireworks/models/deepseek-v4-flash",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "{\n  \"theme_guide\": {\n    \"theme_title\": \"Soft Houseplant Birthday\",\n    \"palette\": [\n      \"sage green\",\n      \"blush pink\",\n      \"cream\",\n      \"soft lavender\"\n    ],\n    \"motifs\": [\n      \"monstera leaf\",\n      \"trailing pothos\",\n      \"snake plant\",\n      \"small potted succulent\"\n    ],\n    \"border_style\": \"thin delicate line border with leaf corner accents\",\n    \"front_back_pairing\": \"front has hero monstera leaf; back has small succulent mark\",\n    \"interior_pairing\": \"border-first stationery with matching border and corner leaf motifs\"\n  },\n  \"panels\": [\n    {\n      \"id\": \"front\",\n      \"headline\": \"Happy Birthday, Maya\",\n      \"body\": \"You're not getting older, just becoming a rare succulent.\",\n      \"art_direction\": \"Composition archetype: cinematic single-object cover. Hero monstera leaf in lower left quadrant, leaving upper right and center as clean text-safe area. Typography area: upper right to center. Safe-margin plan: 0.5 inch all around. Palette: sage green leaf on blush background with cream border. Border: thin sage line with small leaf corner accents. Front-back pairing: same blush background and border style.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, front cover. Dominant composition: a large stylized monstera leaf in soft sage green with delicate line details, positioned in lower left quadrant, leaving upper right and center as clean text-safe negative space. Background: airy pastel blush with subtle texture. Thin delicate border in matching sage with small leaf corner accents. Full-bleed 2D digital illustration, no shadows, no physical card. No people, no hands, no text.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"inside-left\",\n      \"headline\": \"\",\n      \"body\": \"Here's to another year of growth, new leaves, and maybe a few less watering mishaps. May your plant collection expand faster than your to-do list.\",\n      \"art_direction\": \"Composition archetype: ornate border-first note sheet. Border-first stationery layout with thin refined frame in soft lavender. Corner motifs: trailing pothos leaves at top-left and bottom-right. Background: light ivory with subtle paper texture. Center is clean text-safe area with generous margins (0.75 inch). Interior pairing: inside-left and inside-right share same border style and background, only corner motifs differ. Palette: cream background, lavender border, sage leaf accents.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, inside-left panel. Border-first stationery layout: thin refined frame in soft lavender, with small trailing pothos leaf motifs at top-left and bottom-right corners. Background: light ivory with subtle paper texture. Center is clean text-safe area with generous margins. No text. Full-bleed 2D digital illustration. No people, no hands.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"inside-right\",\n      \"headline\": \"\",\n      \"body\": \"Maya, I hope your birthday is full of sunshine, good soil, and the kind of happiness that makes you want to propagate it everywhere. You deserve a day as lovely as your plant-filled home. With warm birthday wishes, Jordan\",\n      \"art_direction\": \"Composition archetype: ornate border-first note sheet. Same border-first stationery layout as inside-left: thin refined frame in soft lavender. Corner motifs: snake plant leaves at top-right and bottom-left (mirroring inside-left). Background: light ivory with subtle paper texture. Center clean text-safe area with generous margins. Interior pairing: inside-left and inside-right form a symmetrical spread when opened. Palette consistent.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, inside-right panel. Border-first stationery layout: thin refined frame in soft lavender, with small snake plant leaf motifs at top-right and bottom-left corners. Background: light ivory with subtle paper texture. Center is clean text-safe area with generous margins. No text. Full-bleed 2D digital illustration. No people, no hands.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"back\",\n      \"headline\": \"\",\n      \"body\": \"Stay rooted and keep blooming.\",\n      \"art_direction\": \"Composition archetype: mostly blank back mark. Mostly negative space with a single small potted succulent line art in bottom center. Background: matching blush pastel from front. Thin border echo (same sage line). Safe-margin plan: 0.5 inch. Front-back pairing: back repeats front's blush background and border style for visual cohesion.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork, back panel. Mostly negative space with a single small potted succulent line art in bottom center, drawn in soft sage green. Background: airy pastel blush matching front cover. Thin delicate border in sage. No text. Full-bleed 2D digital illustration. No people, no hands.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    }\n  ],\n  \"memory_citations\": [\n    \"Maya likes houseplants.\",\n    \"Maya likes soft colors.\",\n    \"The card should use light humor without inventing memories.\"\n  ]\n}",
+                "reasoning_content": "We need to generate a JSON response for a 5x7 greeting card with four panels: front, inside-left, inside-right, back. The input: sender Jordan, recipient Maya, friend, birthday, warm/lightly dry humor, soft houseplant stationery, airy pastel palette. Memory notes: Maya likes houseplants, soft colors, light humor without inventing memories. No romantic, no invented facts.\n\nWe need a cohesive theme: \"Soft Houseplant Birthday\" with palette of pastels (sage, blush, cream, soft lavender), motifs like monstera leaves, snake plant, trailing pothos, small pots, airy line art. Border style: thin delicate line border with leaf corner accents. Front-back pairing: front has hero plant illustration, back has small leaf mark. Interior pairing: border-first stationery with matching border and light texture.\n\nPanel copy requirements: front headline <=90 chars, body <=160. Inside-left body 120-320, inside-right 180-420, back <=160. Use only provided memory notes, transform into natural language. No filler. Emotional arc: cover intrigue, inside warm message, back quiet finish.\n\nFront: headline like \"Happy Birthday, Maya\" or something with dry humor? Since Jordan doesn't know what to write, we can use a light joke about plants. E.g., \"You're not getting older, you're just becoming a rare succulent.\" But careful not to invent memories. Use \"May your day be as bright as a sun-loving pothos\" or something. Keep it warm and dry humor. Body short: \"From your friend, Jordan\" or a subtitle.\n\nInside-left: scene-setting message. Could be a plant-related blessing: \"Here's to another year of growth, new leaves, and maybe a few less watering mishaps.\" But that's a bit long. Actually inside-left body 120-320 chars, so we can have a short paragraph. Use dry humor: \"Maya, on your birthday, may your plant collection expand faster than your to-do list. And may all your plants stay alive (even the finicky ones).\" That's about 150 chars. Then inside-right main message: more personal, sign-off. \"Jordan\" at end.\n\nBack: quiet, like \"Stay rooted and keep blooming\" or something.\n\nNow art_direction for each panel: layout notes for app typography and safe margins. For front: hero composition with a large monstera leaf in lower left, text-safe area upper right or center. Use pastel background. For inside-left and inside-right: border-first stationery with thin frame, corner leaf motifs, light cream background, text area centered with generous margins. Back: mostly blank with small leaf mark bottom center.\n\nImage prompts: must be concrete visual, no text, no people, no mockup. For front: \"Premium 5x7 vertical flat print panel artwork, front cover. Dominant composition: a large stylized monstera leaf in soft sage green with delicate line details, positioned in lower left quadrant, leaving upper right and center as clean text-safe negative space. Background: airy pastel blush with subtle texture. Thin delicate border in matching sage. Full-bleed 2D digital illustration, no shadows, no physical card. No people, no hands, no text.\" Negative prompt: readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\n\nFor inside-left: \"Premium 5x7 vertical flat print panel artwork, inside-left panel. Border-first stationery layout: thin refined frame in soft lavender, with small trailing pothos leaf motifs at top-left and bottom-right corners. Background: light ivory with subtle paper texture. Center is clean text-safe area with generous margins. No text. Full-bleed 2D digital illustration. No people, no hands.\" Negative similar.\n\nInside-right similar but maybe different corner motifs (snake plant leaves). Back: \"Premium 5x7 vertical flat print panel artwork, back panel. Mostly negative space with a single small potted succulent line art in bottom center, in soft sage. Background: matching blush pastel from front. Thin border echo. No text. Full-bleed 2D digital illustration.\"\n\nMemory_citations: just list the memory notes as provided.\n\nNow write JSON. Ensure all fields present. Use double quotes. No markdown."
+              },
+              "finish_reason": "stop"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 2069,
+            "total_tokens": 4263,
+            "completion_tokens": 2194,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          }
+        }
+      },
+      "durationMs": 13209
+    },
+    {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "[redacted]"
+        },
+        "body": {
+          "model": "openai/gpt-oss-20b",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Maya\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, helpful, lightly dry humor, not romantic\",\n    \"style\": \"soft houseplant stationery, airy pastel palette, polished first-purchase card design\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.\",\n    \"memory_notes\": [\n      \"Maya likes houseplants.\",\n      \"Maya likes soft colors.\",\n      \"The card should use light humor without inventing memories.\"\n    ]\n  }\n}"
+            }
+          ],
+          "max_tokens": 2200,
+          "temperature": 0.62
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 10853,
+        "body": {
+          "id": "chatcmpl-8fbfb0b5-84aa-452e-849a-3e19278907fa",
+          "object": "chat.completion",
+          "created": 1781245135,
+          "model": "openai/gpt-oss-20b",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "",
+                "reasoning": "We need to produce JSON with theme_guide, panels, memory_citations. The theme_guide: theme_title, palette, motifs, border_style, front_back_pairing, interior_pairing.\n\nWe have style: soft houseplant stationery, airy pastel palette, polished first-purchase card design. So theme: \"Soft Houseplant Pastel Birthday\". Palette: pastel greens, blush pink, light blue, cream. Motifs: houseplants (succulents, ferns), leaves, small vines. Border style: thin botanical line border with subtle leaf accents.\n\nFront_back_pairing: front hero composition with a single plant illustration; back echo with a small leaf motif. interior_pairing: border-first stationery with light paper background.\n\nWe need to use memory_notes: \"Maya likes houseplants\", \"Maya likes soft colors\", \"The card should use light humor without inventing memories.\" So we must incorporate that.\n\nWe need to produce panels with id front, inside-left, inside-right, back. Each panel has headline, body, art_direction, image_prompt, image_negative_prompt. Must obey constraints: front headline <=90 chars, body <=160. Inside-left body 120-320. Inside-right body 180-420. Back body <=160.\n\nWe must not mention any meta instructions. Just final card copy.\n\nWe need to ensure the body text fits. Let's draft.\n\nFront: headline: \"Happy Birthday, Maya!\" body: \"May your year grow as lush as your favorite plants.\" That's 55 characters. Good.\n\nInside-left: headline: \"Another year, another pot of joy\" maybe. Body: \"Like a well-watered fern, may your days unfurl with vibrant leaves and gentle breezes. Here’s to another season of growth—both in life and in your plant collection.\" Let's count: \"Like a well-watered fern, may your days unfurl with vibrant leaves and gentle breezes. Here’s to another season of growth—both in life and in your plant collection.\" Count: Let's approximate: \"Like a well-watered fern, \" (24) \"may your days unfurl with vibrant leaves and gentle breezes.\" (57) \" Here’s to another season of growth—both in life and in your plant collection.\" (68) Total ~149. Good within 120-320.\n\nInside-right: headline: \"You’ve got the green thumb, now add a birthday wish\" maybe. Body: \"I’ve tried to think of a perfect birthday pun, but I’m still figuring out how to keep the humor as dry as a cactus. So here’s a simple wish: May your candles be as many as your plants, and may your wishes grow into reality—just like the ones that never wilt.\" Count: Let's count: \"I’ve tried to think of a perfect birthday pun, but I’m still figuring out how to keep the humor as dry as a cactus.\" (117) \" So here’s a simple wish: May your candles be as many as your plants, and may your wishes grow into reality—just like the ones that never wilt.\" (147) Total ~264. Good within 180-420.\n\nBack: headline: \"From your plant-loving friend\" body: \"P.S. If you need extra watering tips, I’m just a text away.\" Count: headline: \"From your plant-loving friend\" (24). Body: \"P.S. If you need extra watering tips, I’m just a text away.\" (63). Good within 160.\n\nNow art_direction: Must describe composition archetype, layout, typography area, safe-margin plan, palette, border, relationship to matching panel. For each.\n\nFront: cinematic single-object cover: a stylized succulent or fern in center, with soft pastel background, clear lower text-safe area. Border? maybe none. Let's write: \"Cinematic single-object cover featuring a stylized succulent in the lower center, with a soft pastel gradient background. Text-safe area reserved in the lower third, with generous margins. Palette: pastel greens, blush pink, light blue, cream. No border to keep focus.\" That meets.\n\nInside-left: border-first stationery layout: thin botanical line border with subtle leaf accents, light ivory background, text-safe center. Let's write: \"Border-first stationery layout with a thin botanical line border featuring subtle leaf motifs. Light ivory background, generous margins, clean central text area. Palette: soft pastel greens and blush pink accents.\" Good.\n\nInside-right: same as inside-left but maybe slightly different: same border-first but maybe a different leaf arrangement. Let's describe: \"Border-first stationery layout matching inside-left, with a thin botanical line border and subtle leaf accents. Light ivory background, generous margins, central text area. Palette: pastel greens, blush pink.\" Good.\n\nBack: mostly negative space with small coordinating lower mark: maybe a small leaf icon in lower right. Let's write: \"Mostly negative space with a small coordinating lower leaf mark in pastel green. Light cream background. Text-safe area in upper left for app overlay. No border.\" Good.\n\nNow image_prompt: Must describe a single panel with composition, motifs, palette, style, etc. For front: \"Premium 5x7 vertical flat print panel artwork featuring a stylized succulent in the lower center against a soft pastel gradient background of blush pink, light blue, and cream. The composition is cinematic single-object cover with a clear lower third text-safe area. No people, no text, no logos, no physical mockup.\" Negative prompt: \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\"\n\nInside-left: \"Premium 5x7 vertical flat print panel artwork with a thin botanical line border featuring subtle leaf motifs along the edges. Light ivory background, generous margins, central text-safe area. Palette includes pastel greens and blush pink accents. No people, no text, no logos.\" Negative prompt: same.\n\nInside-right: same as inside-left but maybe with a slightly different leaf arrangement. We'll keep same negative prompt.\n\nBack: \"Premium 5x7 vertical flat print panel artwork with mostly negative space, light cream background, and a small pastel green leaf mark in the lower right corner. Text-safe area reserved in upper left. No people, no text, no logos.\" Negative prompt: same.\n\nMemory citations: we must list the memory notes used. They are \"Maya likes houseplants\", \"Maya likes soft colors\", \"The card should use light humor without inventing memories.\" We'll list them.\n\nWe must ensure no meta. The JSON must have exactly the required schema: theme_guide object, panels array, memory_citations array.\n\nCheck that each panel object includes id, headline, body, art_direction, image_prompt, image_negative_prompt.\n\nWe must ensure front body <=160; inside-left body <=320; inside-right body <=420; back body <=160.\n\nLet's double-check lengths:\n\nFront body: \"May your year grow as lush as your favorite plants.\" Count: 55. Good.\n\nInside-left body: \"Like a well-watered fern, may your days unfurl with vibrant leaves and gentle breezes. Here’s to another season of growth—both in life and in your plant collection.\" Count: Let's count precisely: \"Like a well-watered fern, \" = 24. \"may your days unfurl with vibrant leaves and gentle breezes.\" = 57. \" Here’s to another season of growth—both in life and in your plant collection.\" = 68. Total 149. Good.\n\nInside-right body: \"I’ve tried to think of a perfect birthday pun, but I’m still figuring out how to keep the humor as dry as a cactus. So here’s a simple wish: May your candles be as many as your plants, and may your wishes grow into reality—just like the ones that never wilt.\" Count: \"I’ve tried to think of a perfect birthday pun, but I’m still figuring out how to keep the humor as dry as a cactus.\" = 117. \" So here’s a simple wish: May your candles be as many as your plants, and may your wishes grow into reality—just like the ones that never wilt.\" = 147. Total 264. Good.\n\nBack body: \"P.S. If you need extra watering tips, I’m just a text away.\" Count: 63. Good.\n\nNow front headline: \"Happy Birthday, Maya!\" 18. Good. Inside-left headline: \"Another year, another pot of joy\" Count: 27. Inside-right headline: \"You’ve got the green thumb, now add a birthday wish\" Count: 41. Back headline: \"From your plant-loving friend\" Count: 24. All within limit.\n\nNow art_direction must describe composition archetype, layout purpose, typography area, safe-margin plan, palette, border, relationship to matching panel. We'll include all.\n\nLet's write art_direction for front: \"Cinematic single-object cover featuring a stylized succulent in lower center. Soft pastel gradient background (blush pink, light blue, cream). Text-safe area reserved in lower third, generous margins. Palette: pastel greens, blush pink, light blue, cream. No border to keep focus.\" Good.\n\nInside-left: \"Border-first stationery layout with a thin botanical line border and subtle leaf motifs along edges. Light ivory background, generous margins, central text-safe area. Palette: pastel greens, blush pink accents. Matches inside-right border style.\" Good.\n\nInside-right: \"Border-first stationery layout matching inside-left, with identical thin botanical line border and subtle leaf motifs. Light ivory background, generous margins, central text-safe area. Palette: pastel greens, blush pink accents. Harmonizes with inside-left.\" Good.\n\nBack: \"Mostly negative space with light cream background, small pastel green leaf mark in lower right corner. Text-safe area in upper left. No border. Echoes front hero leaf motif.\" Good.\n\nNow image_prompt for front: we need to mention \"Premium 5x7 vertical flat print panel artwork featuring a stylized succulent in the lower center against a soft pastel gradient background of blush pink, light blue, and cream. The composition is cinematic single-object cover with a clear lower third text-safe area. No people, no text, no logos, no physical mockup.\" Good.\n\nInside-left: \"Premium 5x7 vertical flat print panel artwork with a thin botanical line border featuring subtle leaf motifs along the edges. Light ivory background, generous margins, central text-safe area. Palette includes pastel greens and blush pink accents. No people, no text, no logos.\" Good.\n\nInside-right: same but maybe mention \"identical border\" etc. \"Premium"
+              },
+              "logprobs": null,
+              "finish_reason": "length"
+            }
+          ],
+          "usage": {
+            "queue_time": 0.034008764,
+            "prompt_tokens": 2052,
+            "prompt_time": 0.110576741,
+            "completion_tokens": 2200,
+            "completion_time": 2.532602638,
+            "total_tokens": 4252,
+            "total_time": 2.643179379,
+            "completion_tokens_details": {
+              "reasoning_tokens": 2198
+            }
+          },
+          "usage_breakdown": null,
+          "system_fingerprint": "fp_2caf65dc64",
+          "x_groq": {
+            "id": "req_01ktx7qgb5etab8e5me9r7gsdc",
+            "seed": 368585335
+          },
+          "service_tier": "on_demand"
+        }
+      },
+      "durationMs": 2768
+    }
+  ]
+}

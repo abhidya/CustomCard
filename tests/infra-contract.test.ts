@@ -56,7 +56,7 @@ describe("production infrastructure contract", () => {
     expect(migration).toContain("month_bucket TEXT NOT NULL");
     expect(migration).toContain("estimated_cost_cents INTEGER NOT NULL");
     expect(migration).toContain("pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE)");
-    expect(migration).toContain("live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE)");
+    expect(migration).toContain("live_network_call BOOLEAN NOT NULL DEFAULT FALSE");
     expect(migration).toContain("CREATE INDEX idx_provider_call_events_tenant_month");
     expect(migration).toContain("adapter_version TEXT NOT NULL");
     expect(migration).toContain("metadata_schema JSONB NOT NULL");

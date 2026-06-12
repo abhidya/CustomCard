@@ -17,13 +17,14 @@ import {
   type ProofChecklistState
 } from "../webapp/proofApproval";
 import {
+  buildDraftAutosaveIdempotencyKey,
   buildBrowserIdempotencyKey,
   buildHandoffChecklistText,
   buildZipArchiveBlob,
   postCustomerMutation
 } from "../webapp/customerShellCommands";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
-import { buildAiCardGenerationHeaders } from "../src/appStateOrchestrator";
+import { buildAiCardGenerationHeaders, readAiGenerationResponse } from "../src/appStateOrchestrator";
 import { jpegDataUrlByteLength, jpegDataUrlToBytes } from "../webapp/panelMediaAdapter";
 import {
   adminNavItems,
@@ -141,12 +142,46 @@ describe("frontend architecture seams", () => {
     expect(key).toMatch(/^api-customer-draft-state-/);
   });
 
+  it("uses deterministic autosave idempotency keys for identical draft snapshots", () => {
+    const snapshot = JSON.stringify({ draftInput: { recipient: "Sara" }, status: "in-progress" });
+    const first = buildDraftAutosaveIdempotencyKey("/api/customer/draft-state", snapshot);
+    const second = buildDraftAutosaveIdempotencyKey("/api/customer/draft-state", snapshot);
+    const changed = buildDraftAutosaveIdempotencyKey(
+      "/api/customer/draft-state",
+      JSON.stringify({ draftInput: { recipient: "Mina" }, status: "in-progress" })
+    );
+
+    expect(first).toBe(second);
+    expect(first).toMatch(/^api-customer-draft-state-snapshot-[0-9a-f]{16}$/);
+    expect(changed).not.toBe(first);
+  });
+
   it("sends the signed-in customer token with AI card generation requests", async () => {
     const headers = await buildAiCardGenerationHeaders(async () => "customer-token-123");
 
     expect(headers.get("Authorization")).toBe("Bearer customer-token-123");
     expect(headers.get("Content-Type")).toBe("application/json");
     expect(headers.get("X-Idempotency-Key")).toMatch(/^card-gen-/);
+  });
+
+  it("blocks AI card generation before posting without an active customer token", async () => {
+    await expect(buildAiCardGenerationHeaders(async () => null)).rejects.toThrow(
+      "AI card generation needs an active signed-in session."
+    );
+  });
+
+  it("keeps API auth failure details visible for signed-in AI card sessions", async () => {
+    const response = new Response(
+      JSON.stringify({
+        status: "invalid-session",
+        detail: "Clerk session token is expired"
+      }),
+      { status: 401, headers: { "content-type": "application/json" } }
+    );
+
+    await expect(readAiGenerationResponse(response)).rejects.toThrow(
+      "AI card generation could not verify your signed-in session: Clerk session token is expired."
+    );
   });
 
   it("builds one archive for browser print downloads", async () => {

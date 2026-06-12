@@ -318,7 +318,23 @@ export function createApiRouteFamilies(deps) {
       path === aiCardGenerateRoute
         ? await aiGenerationService.generateCard(parsedBody, { authContext, idempotencyKey, rateKey })
         : await aiGenerationService.respondChat(parsedBody, { authContext, idempotencyKey, rateKey });
-    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload });
+    const ledger = await recordAiProviderEvents({ authContext, result });
+    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload, ...(ledger ? { ai_cost_ledger: ledger } : {}) });
     return true;
+  }
+
+  async function recordAiProviderEvents({ authContext, result }) {
+    const events = result?.payload?.provider_call_events;
+    if (!Array.isArray(events) || events.length === 0 || !apiRuntime.recordProviderCallEvents) return undefined;
+    try {
+      return await apiRuntime.recordProviderCallEvents({ authContext, events });
+    } catch (error) {
+      return {
+        persisted: false,
+        count: 0,
+        runtimeMode: apiRuntime.mode ?? "unknown",
+        error: error instanceof Error ? error.message.slice(0, 180) : "provider-call-ledger-unavailable"
+      };
+    }
   }
 }

@@ -588,6 +588,37 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
   });
 
+  it("honors server-owned AI flow profile JSON without accepting customer-controlled profile changes", async () => {
+    const fetchImpl = vi.fn();
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_FLOW_CONFIG_JSON: JSON.stringify({
+          flows: buildDefaultAiFlowAdminConfigs().map((config) =>
+            config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: false } : config
+          )
+        })
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        aiFlowConfig: buildDefaultAiFlowAdminConfigs().map((config) =>
+          config.flowId === "card-copy" ? { ...config, liveProviderCallsEnabled: true } : config
+        )
+      },
+      { rateKey: "test-server-profile" }
+    );
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
+  });
+
   it("ignores request-scoped provider toggles unless explicitly enabled", async () => {
     const fetchImpl = vi.fn(async () =>
       new Response(
@@ -760,6 +791,51 @@ describe("AI card generator service", () => {
     expect(payload.images).toHaveLength(4);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/jpeg;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_image_token");
+  });
+
+  it("uses DeepAI HD image generation when configured", async () => {
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      if (String(url).includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response(JSON.stringify({ output_url: "data:image/png;base64,iVBORw0KGgo=" }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        DEEPAI_API_KEY: "test_deepai_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-deepai-hd-images" });
+    const imageCalls = fetchImpl.mock.calls.slice(1) as unknown as [RequestInfo | URL, RequestInit?][];
+    const imageBodies = imageCalls.map((call) => call[1]?.body as FormData);
+    const payload = result.payload as {
+      images: Array<{ image_url: string; revised_prompt: string }>;
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(5);
+    expect(imageCalls.every((call) => String(call[0]) === "https://api.deepai.org/api/text2img")).toBe(true);
+    expect(imageCalls.every((call) => (call[1]?.headers as Record<string, string>)["api-key"] === "test_deepai_token")).toBe(true);
+    expect(imageBodies.every((body) => body.get("image_generator_version") === "hd")).toBe(true);
+    expect(imageBodies.every((body) => body.get("width") === "832" && body.get("height") === "1216")).toBe(true);
+    expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("Full-bleed flat 2D artwork layer"))).toBe(true);
+    expect(imageBodies.every((body) => String(body.get("negative_prompt") ?? "").includes("folded card mockup"))).toBe(true);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
+    expect(JSON.stringify(result.payload)).not.toContain("test_deepai_token");
   });
 
   it("uses OpenAI Responses structured output and OpenAI image generation when configured", async () => {

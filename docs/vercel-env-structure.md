@@ -1,6 +1,6 @@
 # Vercel Environment Structure
 
-Last verified: 2026-06-11 13:51 UTC.
+Last verified: 2026-06-12.
 
 This file records environment variable names and Vercel scopes only. Do not add
 secret values here.
@@ -89,9 +89,11 @@ separate database/resource for that scope.
 
 ## Preview
 
-Preview currently has AI/provider-client bootstrap keys only. It does not have a
-durable database resource.
+Preview currently has AI/provider-client bootstrap keys and Clerk session JWT
+verification config only. It does not have a durable database resource.
 
+- `CLERK_AUTHORIZED_PARTIES`
+- `CLERK_JWT_KEY`
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`

@@ -42,6 +42,7 @@ class CardTextAgentFactory:
     base_url: str | None = None
     temperature: float = 0.75
     max_tokens: int = 2048
+    request_limit: int = 1
     _agent: Any | None = None
     _lock: threading.Lock = threading.Lock  # type: ignore[assignment]
 
@@ -117,7 +118,7 @@ class CardTextAgentFactory:
         result = await agent.run(
             prompt,
             deps=deps,
-            usage_limits=imp.UsageLimits(request_limit=4),
+            usage_limits=imp.UsageLimits(request_limit=max(1, self.request_limit)),
         )
         return result.output
 

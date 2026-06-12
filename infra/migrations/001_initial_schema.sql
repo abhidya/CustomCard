@@ -279,7 +279,7 @@ CREATE TABLE provider_call_events (
   latency_ms INTEGER CHECK (latency_ms IS NULL OR latency_ms >= 0),
   error_class TEXT,
   pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE),
-  live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE),
+  live_network_call BOOLEAN NOT NULL DEFAULT FALSE,
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

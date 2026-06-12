@@ -563,6 +563,371 @@ a { color: inherit; }
   font-weight: 700;
 }
 
+.galleryWorkflow {
+  gap: 16px;
+}
+
+.galleryToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.galleryTabs {
+  display: flex;
+  flex: 1 1 420px;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.galleryTab {
+  min-width: 116px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.galleryTab strong {
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.galleryTab[data-on="true"] {
+  border-color: var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+
+.galleryFilter {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.galleryWorkspace {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.34fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  min-width: 0;
+}
+
+.galleryList {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.galleryListItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.galleryListItem:hover,
+.galleryListItem[data-selected="true"] {
+  border-color: var(--ink-soft);
+  background: var(--surface);
+}
+
+.galleryListItem[data-selected="true"] {
+  box-shadow: var(--shadow-card);
+}
+
+.galleryListItem img,
+.galleryThumbMissing {
+  grid-row: 1 / span 3;
+  width: 42px;
+  aspect-ratio: 5 / 7;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.galleryThumbMissing {
+  border: 1px dashed var(--line);
+}
+
+.galleryListKicker {
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.galleryListItem strong,
+.galleryEditorHead h3,
+.galleryBlockHead h4 {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.galleryListItem strong {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.galleryListItem small {
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.galleryEditor {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.galleryEditorHead,
+.galleryBlockHead,
+.galleryDangerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.galleryEditorHead h3 {
+  font-size: 18px;
+}
+
+.galleryEditorActions,
+.galleryDangerActions {
+  justify-content: flex-start;
+}
+
+.galleryEditorGrid {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.36fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  min-width: 0;
+}
+
+.galleryPreviewPane,
+.galleryForm,
+.galleryCopyBlock,
+.galleryReview {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.galleryPreviewCard {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  text-align: center;
+}
+
+.galleryPreviewCard img {
+  width: min(100%, 178px);
+  aspect-ratio: 5 / 7;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: var(--shadow-pop);
+}
+
+.galleryPreviewCard strong {
+  color: var(--ink);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.galleryPreviewCard p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.galleryPreviewMissing,
+.galleryEmpty {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  min-height: 180px;
+  padding: 16px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-s);
+  color: var(--ink-soft);
+  background: var(--surface);
+  text-align: center;
+}
+
+.galleryFieldGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px;
+  gap: 10px;
+}
+
+.galleryField {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.galleryField input,
+.galleryField select,
+.galleryField textarea,
+.galleryFilter select {
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.galleryField input,
+.galleryField select,
+.galleryFilter select {
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.galleryField textarea {
+  min-height: 76px;
+  padding: 9px 10px;
+  resize: vertical;
+}
+
+.galleryCopyBlock,
+.galleryReview {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+}
+
+.galleryBlockHead h4 {
+  font-size: 13.5px;
+  font-weight: 820;
+}
+
+.galleryChecks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.galleryCheck {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.galleryCheck input {
+  flex: none;
+  margin-top: 2px;
+  accent-color: var(--second);
+}
+
+.galleryReady,
+.galleryNotReady,
+.galleryWarning {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  color: #165b4e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.galleryNotReady,
+.galleryWarning {
+  color: #8a5a1d;
+}
+
+.galleryWarning {
+  margin: 0;
+  align-items: flex-start;
+  line-height: 1.4;
+}
+
+.galleryBlockers {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.galleryDangerActions {
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
 .opsJobList,
 .opsJob,
 .opsJobPanels,
@@ -2487,6 +2852,10 @@ a { color: inherit; }
   .opsFacts,
   .opsFacts-four,
   .opsFacts-five,
+  .galleryWorkspace,
+  .galleryEditorGrid,
+  .galleryFieldGrid,
+  .galleryChecks,
   .opsJobPanels,
   .opsBucketControls,
   .opsBucketObject,
@@ -2505,6 +2874,27 @@ a { color: inherit; }
   .opsStatus,
   .opsJobHead em {
     justify-self: start;
+  }
+  .galleryToolbar,
+  .galleryEditorHead,
+  .galleryBlockHead,
+  .galleryDangerActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .galleryTabs {
+    flex: none;
+  }
+  .galleryTab,
+  .galleryFilter,
+  .galleryEditorActions .btn,
+  .galleryDangerActions .btn {
+    width: 100%;
+  }
+  .galleryEditorActions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
   }
   .opsBucketMeta {
     justify-content: flex-start;

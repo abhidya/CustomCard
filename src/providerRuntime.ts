@@ -1025,6 +1025,7 @@ function imageModelEnvKeys(adapterId: string): string[] {
     "azure-openai-image": ["CUSTOMCARD_AZURE_OPENAI_IMAGE_MODEL", "AZURE_OPENAI_IMAGE_DEPLOYMENT", "CARD_IMAGE_MODEL"],
     "aws-bedrock-image": ["CUSTOMCARD_BEDROCK_IMAGE_MODEL", "BEDROCK_IMAGE_MODEL_ID"],
     "google-gemini-image": ["CUSTOMCARD_GEMINI_IMAGE_MODEL", "GEMINI_IMAGE_MODEL", "CARD_IMAGE_MODEL"],
+    "deepai-text2img-image": ["CUSTOMCARD_DEEPAI_IMAGE_MODEL", "DEEPAI_IMAGE_MODEL"],
     "huggingface-image": ["CUSTOMCARD_HUGGINGFACE_IMAGE_MODEL", "HUGGINGFACE_IMAGE_MODEL"],
     "stability-stable-image": ["CUSTOMCARD_STABILITY_IMAGE_MODEL", "STABILITY_IMAGE_MODEL"],
     "together-image": ["CUSTOMCARD_TOGETHER_IMAGE_MODEL", "TOGETHER_IMAGE_MODEL"],
@@ -1059,6 +1060,7 @@ function defaultImageModel(adapterId: string): string {
   const defaults: Record<string, string> = {
     "openai-images": "gpt-image-2",
     "google-gemini-image": "gemini-3.1-flash-image",
+    "deepai-text2img-image": "hd",
     "huggingface-image": "black-forest-labs/FLUX.1-schnell",
     "stability-stable-image": "stable-image-core",
     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
@@ -1623,6 +1625,10 @@ function buildSinglePanelImageRequest(
   if (adapter.id === "deepai-text2img-image") {
     return request(adapter, "POST", "https://api.deepai.org/api/text2img", ["DEEPAI_API_KEY"], {
       text: prompt,
+      image_generator_version: model || "hd",
+      width: 832,
+      height: 1216,
+      negative_prompt: "readable text, fake text, logos, watermark, folded card mockup, tabletop scene",
       metadata
     }, [], {
       "api-key": "{DEEPAI_API_KEY}"

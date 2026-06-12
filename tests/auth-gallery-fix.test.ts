@@ -125,6 +125,24 @@ describe("clerk to api session bridge (memory runtime)", () => {
     expect(result.ok).toBe(false);
     expect(result.statusCode).toBe(403);
   });
+
+  it("authorizes signed-in local Clerk customers for AI generation when memory runtime has no Clerk verification key", async () => {
+    const { CLERK_JWT_KEY: _clerkJwtKey, ...localMemoryEnv } = runtimeEnv;
+    const runtime = createApiRuntime({ env: localMemoryEnv, routes: apiRouteContracts });
+    const token = signClerkJwt(clerkClaims());
+    const aiCardRoute = getApiRouteById("ai-card-generate");
+
+    await expect(runtime.authorize(aiCardRoute, bearerRequest(token))).resolves.toMatchObject({
+      ok: true,
+      role: "customer"
+    });
+
+    const adminRoute = getApiRouteById("admin-card-gallery");
+    await expect(runtime.authorize(adminRoute, bearerRequest(token))).resolves.toMatchObject({
+      ok: false,
+      statusCode: 403
+    });
+  });
 });
 
 describe("customer calendar connection state", () => {
@@ -354,6 +372,43 @@ describe("admin card gallery and public featured cards", () => {
     const wedding = byCategory.get("wedding") as { cards: unknown[] };
     expect(wedding.cards).toHaveLength(1); // single card case
     expect(payload.fallbackToBuiltInExamples).toBe(false);
+  });
+
+  it("persists regenerated card-front copy for the public featured gallery", async () => {
+    const runtime = createApiRuntime({ env: runtimeEnv, routes: apiRouteContracts });
+    await saveEntry(runtime, "regen-draft", {
+      entryId: "gallery-regenerated-1",
+      category: "thank-you",
+      title: "Draft thank-you",
+      publicCaption: "Draft caption",
+      featured: false,
+      publicApproved: false,
+      frontSvg: "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>Old draft copy</text></svg>"
+    });
+    await saveEntry(runtime, "regen-featured", {
+      entryId: "gallery-regenerated-1",
+      category: "thank-you",
+      title: "Public thank-you example",
+      publicCaption: "A reviewed customer thank-you card.",
+      featured: true,
+      publicApproved: true,
+      featuredRank: 4,
+      frontSvg: "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>Regenerated front headline</text></svg>"
+    });
+
+    const payload = await runtime.readFeaturedCards();
+    const thankYou = payload.categories.find((category: { category: string }) => category.category === "thank-you") as {
+      cards: Array<{ title: string; caption: string; frontSvg: string; featuredRank: number }>;
+    };
+    expect(thankYou.cards).toEqual([
+      expect.objectContaining({
+        title: "Public thank-you example",
+        caption: "A reviewed customer thank-you card.",
+        frontSvg: expect.stringContaining("Regenerated front headline"),
+        featuredRank: 4
+      })
+    ]);
+    expect(payload.rawContentStored).toBe(false);
   });
 
   it("lets admins update category, unfeature, and remove entries", async () => {

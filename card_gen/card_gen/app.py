@@ -5,9 +5,15 @@ Environment variables:
   CARD_GEN_API_TOKEN     required for /generate unless local unauth opt-in is enabled
   CARD_GEN_ALLOWED_ORIGINS optional comma-separated browser origins for CORS
   CARD_GEN_RATE_LIMIT_PER_MINUTE optional — defaults to 12
+  CARD_GEN_MONTHLY_BUDGET_CENTS optional — defaults to 3000
+  CARD_GEN_PER_REQUEST_BUDGET_CENTS optional — defaults to 400
+  CARD_TEXT_UNIT_COST_CENTS optional — defaults to 12
+  CARD_IMAGE_UNIT_COST_CENTS optional — defaults to 75
   CARD_GEN_MAX_BODY_BYTES optional — defaults to 32768
   OPENAI_API_KEY         optional — enables image generation
   CARD_TEXT_MODEL        optional — defaults to claude-sonnet-4-6
+  CARD_TEXT_MAX_TOKENS   optional — defaults to 1200
+  CARD_TEXT_REQUEST_LIMIT optional — defaults to 1
   CARD_IMAGE_MODEL       optional — defaults to dall-e-3
   CARD_IMAGE_QUALITY     optional — defaults to standard
   CARD_IMAGE_ENABLED     optional — set to "true" to enable image gen
@@ -35,6 +41,7 @@ from .domain import CardDraftInput, CardGenerationResult
 
 _service: CardGenService | None = None
 _rate_limit_buckets: dict[str, list[float]] = {}
+_monthly_spend_buckets: dict[str, int] = {}
 
 
 def _env_int(name: str, default: int) -> int:
@@ -72,16 +79,48 @@ def _enforce_rate_limit(request: Request, token: str | None) -> None:
         raise HTTPException(status_code=429, detail="Card generation rate limit exceeded")
 
 
+def _month_bucket() -> str:
+    return time.strftime("%Y-%m", time.gmtime())
+
+
+def _estimated_request_cost_cents(service: CardGenService) -> int:
+    text_unit_cost = max(0, _env_int("CARD_TEXT_UNIT_COST_CENTS", 12))
+    image_unit_cost = max(0, _env_int("CARD_IMAGE_UNIT_COST_CENTS", 75))
+    image_units = 4 if service.image_factory is not None else 0
+    return text_unit_cost + image_unit_cost * image_units
+
+
+def _enforce_spend_budget(service: CardGenService, budget_key: str) -> None:
+    estimated_cost = _estimated_request_cost_cents(service)
+    per_request_budget = max(0, _env_int("CARD_GEN_PER_REQUEST_BUDGET_CENTS", 400))
+    monthly_budget = max(0, _env_int("CARD_GEN_MONTHLY_BUDGET_CENTS", 3000))
+    if estimated_cost > per_request_budget:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Card generation estimated cost {estimated_cost}c exceeds per-request budget {per_request_budget}c",
+        )
+    bucket_key = f"{budget_key}:{_month_bucket()}"
+    projected = _monthly_spend_buckets.get(bucket_key, 0) + estimated_cost
+    if projected > monthly_budget:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Card generation projected monthly spend {projected}c exceeds monthly budget {monthly_budget}c",
+        )
+    if len(_monthly_spend_buckets) > 10_000:
+        _monthly_spend_buckets.clear()
+    _monthly_spend_buckets[bucket_key] = projected
+
+
 def require_card_gen_auth(
     request: Request,
     authorization: str | None = Header(default=None),
-) -> None:
+) -> str:
     expected_token = os.environ.get("CARD_GEN_API_TOKEN", "")
     allow_local_unauthenticated = os.environ.get("CARD_GEN_ALLOW_UNAUTHENTICATED_LOCAL", "false").lower() == "true"
 
     if allow_local_unauthenticated and _is_local_request(request):
         _enforce_rate_limit(request, None)
-        return
+        return _rate_limit_key(request, None)
 
     if len(expected_token) < 32:
         raise HTTPException(status_code=503, detail="CARD_GEN_API_TOKEN must be configured with at least 32 characters")
@@ -95,6 +134,7 @@ def require_card_gen_auth(
         raise HTTPException(status_code=401, detail="Invalid card generation token")
 
     _enforce_rate_limit(request, supplied_token)
+    return _rate_limit_key(request, supplied_token)
 
 
 @asynccontextmanager
@@ -108,6 +148,8 @@ async def lifespan(app: FastAPI):
     text_factory = CardTextAgentFactory(
         model_name=os.environ.get("CARD_TEXT_MODEL", "claude-sonnet-4-6"),
         api_key=anthropic_key,
+        max_tokens=max(256, _env_int("CARD_TEXT_MAX_TOKENS", 1200)),
+        request_limit=max(1, _env_int("CARD_TEXT_REQUEST_LIMIT", 1)),
     )
 
     image_factory: CardImageAgentFactory | None = None
@@ -159,10 +201,11 @@ async def enforce_generate_body_size(request: Request, call_next):
 @app.post("/generate", response_model=CardGenerationResult)
 async def generate_card(
     draft_input: CardDraftInput,
-    _: None = Depends(require_card_gen_auth),
+    budget_key: str = Depends(require_card_gen_auth),
 ) -> CardGenerationResult:
     if _service is None:  # pragma: no cover
         raise HTTPException(status_code=503, detail="Service not initialised")
+    _enforce_spend_budget(_service, budget_key)
     return await _service.generate(draft_input)
 
 

@@ -42,9 +42,15 @@
 
 ## Components
 - Existing components to reuse: `StatusChip`, `Metric`, `SegmentedControl`, `AdapterMiniList`, panel previews, pricing option rows.
-- New/changed components: customer start/import module, customer event queue, customer fulfillment recommendation cards, Studio AI card generation control, admin provider usage-cost metrics.
-- Variants and states: signed out/signed in, event ready/needs detail, public-price/confirmation-required, local fallback/live gated.
+- New/changed components: customer start/import module, customer event queue, customer fulfillment recommendation cards, Studio AI card generation control, admin provider usage-cost metrics, admin featured-card curation workflow.
+- Variants and states: signed out/signed in, event ready/needs detail, public-price/confirmation-required, local fallback/live gated, gallery candidate/draft/needs-review/featured states.
 - Token/component ownership: repo-local CSS in `src/styles.css`; no new design-system dependency.
+
+## Admin featured-card curation workflow
+- User stories: admin can promote generated cards into public-safe examples; admin can edit or regenerate card-front copy; admin can edit public title/caption separately; admin can approve, feature, unfeature, or archive cards.
+- Happy path: candidate -> gallery draft -> edit/regenerate card text -> update front preview -> review permission/privacy/text-fit/public copy -> approve -> feature on the public landing gallery.
+- Sad paths: no candidates, missing gallery repository, missing front preview, stale preview after text edits, sensitive occasion review, text too long, missing permission/privacy/public-copy checks, save failure, and permission revocation/unfeature.
+- Publishing rule: a card is not featureable until it has a category, title, caption, front preview, text-fit check, privacy review, permission confirmation, and public-copy approval.
 
 ## Accessibility
 - Target standard: WCAG 2.1 AA intent for contrast, keyboard operation, labels, and focus flow.
@@ -59,11 +65,11 @@
 - Touch/hover differences: touch targets remain at least 40px high.
 
 ## Interaction states
-- Loading: AI card generation shows copy and artwork progress for the four 5x7 panels; future live imports need loading rows.
-- Empty: show import actions and sample/manual event path.
-- Error: show missing detail, confirmation-required copy, or provider spend blocking reason instead of provider errors.
-- Success: show event ready, print-safe card, panel-level artwork readiness, and recommended fulfillment option.
-- Disabled: direct checkout/order buttons stay absent until live quote/payment/order gates exist.
+- Loading: AI card generation shows copy and artwork progress for the four 5x7 panels; future live imports need loading rows; admin gallery reload keeps the current curation state visible.
+- Empty: show import actions and sample/manual event path; gallery workflow shows empty candidate/draft/review/featured states separately.
+- Error: show missing detail, confirmation-required copy, provider spend blocking reason, or gallery repository unavailability instead of provider errors.
+- Success: show event ready, print-safe card, panel-level artwork readiness, recommended fulfillment option, and gallery ready-to-feature checklist state.
+- Disabled: direct checkout/order buttons stay absent until live quote/payment/order gates exist; feature/publish stays disabled until permission, privacy, text-fit, public-copy, and front-preview checks pass.
 - Offline/slow network: local demo path remains usable without network.
 
 ## Content voice

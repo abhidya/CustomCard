@@ -1,0 +1,43 @@
+{
+  "phase": "smoke",
+  "focus": "image",
+  "storyId": "first-time-user-birthday",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "[redacted]",
+  "imageCandidateId": "image-deepai-hd",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "hd",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-011913/smoke/first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd",
+  "startedAt": "2026-06-12T06:15:29.108Z",
+  "finishedAt": "2026-06-12T06:15:29.126Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-only",
+  "cardCopyModel": "[redacted]",
+  "providerFailures": {
+    "text": "fetch failed",
+    "image": "fetch failed"
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 0,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 0
+    },
+    "missingMustInclude": [
+      "Maya",
+      "Jordan",
+      "birthday",
+      "plant",
+      "humor"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

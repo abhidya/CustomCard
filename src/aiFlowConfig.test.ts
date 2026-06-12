@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   buildDefaultAiFlowAdminConfigs,
+  loadBrowserAiFlowAdminConfigs,
   resolveAiFlowConfig,
+  saveBrowserAiFlowAdminConfigs,
   summarizeAiFlowConfigs
 } from "./aiFlowConfig";
 
@@ -45,6 +47,21 @@ describe("AI flow config", () => {
     expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
     expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
     expect(flow.model).toBe("@cf/bytedance/stable-diffusion-xl-lightning");
+    expect(flow.liveProviderCallsEnabled).toBe(true);
+    expect(flow.readyForLiveCalls).toBe(true);
+    expect(flow.blockedReasons).toEqual([]);
+  });
+
+  it("allows DeepAI HD as an executable card-image override", () => {
+    const flow = resolveAiFlowConfig("card-image", {
+      DEEPAI_API_KEY: "deepai-token",
+      CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
+      CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+    });
+
+    expect(flow.primaryAdapterId).toBe("deepai-text2img-image");
+    expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(flow.model).toBe("hd");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);
@@ -96,6 +113,29 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons.join(" ")).toContain("GROQ_API_KEY");
   });
 
+  it("saves browser admin profiles as optional session drafts", () => {
+    const restore = installSessionStorageStub();
+    try {
+      const configs = buildDefaultAiFlowAdminConfigs().map((config) =>
+        config.flowId === "card-image"
+          ? { ...config, liveProviderCallsEnabled: true, rateLimitPerMinute: 1, monthlyBudgetCents: 75 }
+          : config
+      );
+
+      saveBrowserAiFlowAdminConfigs(configs);
+      const loaded = loadBrowserAiFlowAdminConfigs();
+      const cardImage = loaded.find((config) => config.flowId === "card-image");
+
+      expect(cardImage).toMatchObject({
+        liveProviderCallsEnabled: true,
+        rateLimitPerMinute: 1,
+        monthlyBudgetCents: 75
+      });
+    } finally {
+      restore();
+    }
+  });
+
   it("summarizes configured providers without exposing secret values", () => {
     const summary = summarizeAiFlowConfigs(cloudflareEnv);
 
@@ -106,3 +146,32 @@ describe("AI flow config", () => {
     expect(JSON.stringify(summary)).not.toContain("token_text");
   });
 });
+
+function installSessionStorageStub() {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
+  const store = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      store.set(key, value);
+    },
+    removeItem: (key: string) => {
+      store.delete(key);
+    },
+    clear: () => {
+      store.clear();
+    },
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size;
+    }
+  } as Storage;
+  Object.defineProperty(globalThis, "sessionStorage", {
+    configurable: true,
+    value: storage
+  });
+  return () => {
+    if (original) Object.defineProperty(globalThis, "sessionStorage", original);
+    else Reflect.deleteProperty(globalThis, "sessionStorage");
+  };
+}

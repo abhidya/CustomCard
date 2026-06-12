@@ -53,7 +53,7 @@ const checks = [
     "month_bucket TEXT NOT NULL",
     "estimated_cost_cents INTEGER NOT NULL",
     "pii_free BOOLEAN NOT NULL DEFAULT TRUE CHECK (pii_free = TRUE)",
-    "live_network_call BOOLEAN NOT NULL DEFAULT FALSE CHECK (live_network_call = FALSE)",
+    "live_network_call BOOLEAN NOT NULL DEFAULT FALSE",
     "idx_provider_call_events_tenant_month"
   ]),
   checkIncludes("runtime", "render-route-ledger-insert", contents.apiRuntime, [
@@ -113,4 +113,3 @@ console.log(
 );
 
 if (failed.length > 0) process.exit(1);
-

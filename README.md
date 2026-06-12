@@ -100,10 +100,11 @@ Vite mobile route is the browser review path.
 
 ## Optional Provider Setup
 
-The tracked `.env.example` is intentionally frontend-only. It includes the
-public Clerk key placeholder, legal-policy link slots, optional AI sidecar URL,
-server-owned Cloudflare Workers AI settings, and Google Calendar OAuth start
-settings such as `GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`.
+The tracked `.env.example` uses placeholders only. It includes the public Clerk
+publishable-key placeholder, Clerk JWKS public-key verification slots,
+legal-policy link slots, optional AI sidecar URL, server-owned Cloudflare
+Workers AI settings, and Google Calendar OAuth start settings such as
+`GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY`.
 
 Full backend/runtime variables live in `infra/env/.env.example`, including
 Postgres, queue, object storage, signed artifact URLs, API runtime mode, session

@@ -419,7 +419,7 @@ function requestScopedAiFlowConfig(body, env, requestContext = {}) {
 }
 
 function isAiEnvKey(key) {
-  return /^(CUSTOMCARD_AI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_)/.test(key);
+  return /^(CUSTOMCARD_AI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_)/.test(key);
 }
 
 async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
@@ -576,6 +576,26 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
       }
     );
     return extractImageUrl(data, "image/png");
+  }
+
+  if (flow.primaryAdapterId === "deepai-text2img-image") {
+    const body = new FormData();
+    body.set("text", truncate(prompt, 2048));
+    body.set("negative_prompt", truncate(negativePrompt, 500));
+    body.set("width", "832");
+    body.set("height", "1216");
+    body.set("image_generator_version", normalizeDeepAiImageVersion(flow.model));
+    const response = await fetchImpl("https://api.deepai.org/api/text2img", {
+      method: "POST",
+      headers: { "api-key": requiredEnv(env, "DEEPAI_API_KEY") },
+      body
+    });
+    const contentType = response.headers?.get?.("content-type") ?? "";
+    const data = await response.json().catch(() => undefined);
+    if (!response.ok) {
+      throw new Error(`DeepAI image provider returned ${response.status}: ${data?.err || data?.status || "request failed"}.`);
+    }
+    return extractImageUrl(data, contentType || "image/png");
   }
 
   throw new Error(`Image adapter ${flow.primaryAdapterId} is configured but not executable in this runtime yet.`);
@@ -953,6 +973,11 @@ function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt
 
 function isCloudflareFluxModel(model) {
   return String(model || "").includes("/flux-1-schnell");
+}
+
+function normalizeDeepAiImageVersion(model) {
+  const normalized = String(model || "hd").trim().toLowerCase().replace(/[-\s]+/g, "_");
+  return new Set(["standard", "hd", "genius", "super_genius"]).has(normalized) ? normalized : "hd";
 }
 
 function openAiCompatibleAdapter(adapterId, env) {
@@ -1922,6 +1947,7 @@ function extractImageUrl(data, contentType) {
   const image =
     data?.result?.image_url ??
     data?.result?.url ??
+    data?.output_url ??
     data?.image_url ??
     data?.url ??
     data?.data?.[0]?.url ??
