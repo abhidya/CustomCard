@@ -1,0 +1,39 @@
+{
+  "textRank": [
+    {
+      "id": "text-hf-qwen3-235b-a22b",
+      "averageScore": 57,
+      "providerFailures": 0,
+      "total": 10
+    },
+    {
+      "id": "text-cloudflare-baseline",
+      "averageScore": 41,
+      "providerFailures": 4,
+      "total": 10
+    },
+    {
+      "id": "text-hf-deepseek-v4-flash",
+      "averageScore": 34,
+      "providerFailures": 9,
+      "total": 10
+    }
+  ],
+  "imageRank": [
+    {
+      "id": "image-deepai-hd",
+      "averageScore": 48,
+      "providerFailures": 1,
+      "total": 15
+    },
+    {
+      "id": "image-cloudflare-flux-schnell",
+      "averageScore": 40,
+      "providerFailures": 6,
+      "total": 15
+    }
+  ],
+  "bestCurrentCombo": "text-hf-qwen3-235b-a22b + image-deepai-hd for reliability; text-hf-qwen3-235b-a22b + image-cloudflare-flux-schnell for visual upside after backoff",
+  "cheapestAcceptableCombo": "No combo passed all five stories. After fixes, Cloudflare Flux is cheapest image path; DeepAI HD is $0.04/card and more available in this run.",
+  "highestQualityCombo": "Qwen text + Cloudflare Flux on birthday/simple stationery, but not reliable under current rate settings."
+}

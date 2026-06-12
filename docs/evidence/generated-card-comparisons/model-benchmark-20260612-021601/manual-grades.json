@@ -1,0 +1,1070 @@
+{
+  "grader": "Codex agent visual/manual rubric pass",
+  "createdAtIso": "2026-06-12T06:43:16.043Z",
+  "rubric": "model-benchmark-loop/references/grading-rubric.md",
+  "grades": [
+    {
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 78,
+      "tier": "B",
+      "dimensionScores": {
+        "promptPanelContract": 12,
+        "storyFit": 10,
+        "copy": 12,
+        "compositionPrint": 11,
+        "coherence": 9,
+        "textNameFidelity": 6,
+        "sensitivity": 8,
+        "commercialUsefulness": 7,
+        "originality": 2
+      },
+      "hardFailureCaps": [],
+      "bestPanel": "front",
+      "worstPanel": "front/back",
+      "blockingFailures": [],
+      "smallestPromptOrConfigFix": "Tighten prompt policy and panel-specific art direction.",
+      "failureSide": "mixed",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Clean Flux card, but Cloudflare copy is generic.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/first-time-user-birthday__text-cloudflare-baseline__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 68,
+      "tier": "C",
+      "dimensionScores": {
+        "promptPanelContract": 9,
+        "storyFit": 8,
+        "copy": 9,
+        "compositionPrint": 6,
+        "coherence": 7,
+        "textNameFidelity": 4,
+        "sensitivity": 5,
+        "commercialUsefulness": 4,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Image prompts must request art-only blank panels with no words/calligraphy/signage; overlay all text in app.",
+      "failureSide": "image-model-capability plus prompt-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Usable birthday structure but generic copy and DeepAI typography risk.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 84,
+      "tier": "B",
+      "dimensionScores": {
+        "promptPanelContract": 13,
+        "storyFit": 13,
+        "copy": 15,
+        "compositionPrint": 13,
+        "coherence": 10,
+        "textNameFidelity": 9,
+        "sensitivity": 10,
+        "commercialUsefulness": 8,
+        "originality": 3
+      },
+      "hardFailureCaps": [],
+      "bestPanel": "front",
+      "worstPanel": "front/back",
+      "blockingFailures": [],
+      "smallestPromptOrConfigFix": "Tighten prompt policy and panel-specific art direction.",
+      "failureSide": "mixed",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Best simple-card smoke/full result; strong Qwen copy and clean Flux art.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 82,
+      "tier": "B",
+      "dimensionScores": {
+        "promptPanelContract": 13,
+        "storyFit": 13,
+        "copy": 15,
+        "compositionPrint": 13,
+        "coherence": 10,
+        "textNameFidelity": 9,
+        "sensitivity": 10,
+        "commercialUsefulness": 8,
+        "originality": 3
+      },
+      "hardFailureCaps": [],
+      "bestPanel": "front",
+      "worstPanel": "front/back",
+      "blockingFailures": [],
+      "smallestPromptOrConfigFix": "Tighten prompt policy and panel-specific art direction.",
+      "failureSide": "mixed",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Strong Qwen copy and usable DeepAI floral frame, slightly generic art.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/first-time-user-birthday__text-hf-qwen3-235b-a22b__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 45,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "DeepSeek text parse failure caused fallback/generic copy.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/first-time-user-birthday__text-hf-deepseek-v4-flash__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI text provider did not return parseable JSON."
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 42,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap",
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap",
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepSeek text parse failure; image cannot rescue wrong/fallback copy.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/first-time-user-birthday__text-hf-deepseek-v4-flash__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "Expected ',' or ']' after array element in JSON at position 1821 (line 18 column 6)"
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "long-time-user-get-well-friend",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 55,
+      "tier": "D",
+      "dimensionScores": {
+        "promptPanelContract": 9,
+        "storyFit": 8,
+        "copy": 9,
+        "compositionPrint": 6,
+        "coherence": 7,
+        "textNameFidelity": 4,
+        "sensitivity": 5,
+        "commercialUsefulness": 4,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Image prompts must request art-only blank panels with no words/calligraphy/signage; overlay all text in app.",
+      "failureSide": "image-model-capability plus prompt-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Warm but generic; Flux rendered fake/misspelled get-well text.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-cloudflare-baseline__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "long-time-user-get-well-friend",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 20,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Tighten prompt policy and panel-specific art direction.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepAI returned 400 and no panels materialized.",
+      "contactSheet": null,
+      "providerFailures": {
+        "image": "DeepAI image provider returned 400: An error occurred processing this request. Please check your inputs and try again.."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "long-time-user-get-well-friend",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 58,
+      "tier": "D",
+      "dimensionScores": {
+        "promptPanelContract": 9,
+        "storyFit": 8,
+        "copy": 9,
+        "compositionPrint": 6,
+        "coherence": 7,
+        "textNameFidelity": 4,
+        "sensitivity": 5,
+        "commercialUsefulness": 4,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Image prompts must request art-only blank panels with no words/calligraphy/signage; overlay all text in app.",
+      "failureSide": "image-model-capability plus prompt-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Good inside-joke copy; Flux fake text hard-caps print usability.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "long-time-user-get-well-friend",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 56,
+      "tier": "D",
+      "dimensionScores": {
+        "promptPanelContract": 9,
+        "storyFit": 8,
+        "copy": 9,
+        "compositionPrint": 6,
+        "coherence": 7,
+        "textNameFidelity": 4,
+        "sensitivity": 5,
+        "commercialUsefulness": 4,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Image prompts must request art-only blank panels with no words/calligraphy/signage; overlay all text in app.",
+      "failureSide": "image-model-capability plus prompt-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Good copy, but DeepAI rendered large misspelled/extra typography.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "long-time-user-get-well-friend",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 40,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "DeepSeek JSON parse failure plus fake image text risk.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-deepseek-v4-flash__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {
+        "text": "Expected ',' or ']' after array element in JSON at position 1825 (line 18 column 6)"
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "long-time-user-get-well-friend",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 38,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepSeek JSON parse failure; fallback copy below bar.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-deepseek-v4-flash__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "Expected ',' or ']' after array element in JSON at position 2172 (line 28 column 6)"
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "b2b-crm-warranty-renewal",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 38,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "inside-left/inside-right",
+      "blockingFailures": [
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Replace hardcoded small-business repair with request-derived/B2B-specific repair plan.",
+      "failureSide": "prompt/repair-policy-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Small-business fallback copy and citrus visuals; wrong B2B domain.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-cloudflare-baseline__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "b2b-crm-warranty-renewal",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 42,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "inside-left/inside-right",
+      "blockingFailures": [
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Replace hardcoded small-business repair with request-derived/B2B-specific repair plan.",
+      "failureSide": "prompt/repair-policy-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "CTA partly present, but small-business copy and citrus imagery fail brief.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-cloudflare-baseline__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "b2b-crm-warranty-renewal",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 46,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "illegible/generated-image-text-cap",
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "inside-left/inside-right",
+      "blockingFailures": [
+        "illegible/generated-image-text-cap",
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Replace hardcoded small-business repair with request-derived/B2B-specific repair plan.",
+      "failureSide": "prompt/repair-policy-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Qwen improves headings but repair path injects small-business copy and Flux fake text.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "b2b-crm-warranty-renewal",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 44,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "inside-left/inside-right",
+      "blockingFailures": [
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Replace hardcoded small-business repair with request-derived/B2B-specific repair plan.",
+      "failureSide": "prompt/repair-policy-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepAI clean borders but wrong citrus imagery and small-business repair copy.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "b2b-crm-warranty-renewal",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 32,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "inside-left/inside-right",
+      "blockingFailures": [
+        "text-provider-failure",
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "DeepSeek parse failure and wrong fallback domain.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-deepseek-v4-flash__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI text provider did not return parseable JSON."
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "b2b-crm-warranty-renewal",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 32,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "wrong-occasion/domain-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "inside-left/inside-right",
+      "blockingFailures": [
+        "text-provider-failure",
+        "wrong-occasion/domain-cap"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepSeek parse failure and wrong fallback domain.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-deepseek-v4-flash__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI text provider did not return parseable JSON."
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "distant-relative-wedding",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 20,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "text-provider-failure",
+        "image-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "text-provider-failure",
+        "image-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Cloudflare text/image 429; no panels.",
+      "contactSheet": null,
+      "providerFailures": {
+        "text": "AI provider returned 429.",
+        "image": "Cloudflare image provider returned 429."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "distant-relative-wedding",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 35,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap",
+        "name-fidelity-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap",
+        "name-fidelity-cap"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Cloudflare text 429 fallback; panels exist but copy/name fidelity unreliable.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/distant-relative-wedding__text-cloudflare-baseline__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI provider returned 429."
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "distant-relative-wedding",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 25,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Qwen copy acceptable but Cloudflare image 429 produced no panels.",
+      "contactSheet": null,
+      "providerFailures": {
+        "image": "Cloudflare image provider returned 429."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "distant-relative-wedding",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 72,
+      "tier": "C",
+      "dimensionScores": {
+        "promptPanelContract": 12,
+        "storyFit": 10,
+        "copy": 12,
+        "compositionPrint": 11,
+        "coherence": 9,
+        "textNameFidelity": 6,
+        "sensitivity": 8,
+        "commercialUsefulness": 7,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "name-fidelity-cap"
+      ],
+      "bestPanel": "front",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "name-fidelity-cap"
+      ],
+      "smallestPromptOrConfigFix": "Require recipient-name placement in deterministic overlay copy, not image prompt.",
+      "failureSide": "mixed",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Respectful and visually clean, but visible card misses Lina/Omar names.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/distant-relative-wedding__text-hf-qwen3-235b-a22b__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "distant-relative-wedding",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 20,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "text-provider-failure",
+        "image-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "text-provider-failure",
+        "image-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "DeepSeek parse failure and Cloudflare image 429.",
+      "contactSheet": null,
+      "providerFailures": {
+        "text": "Expected ',' or ']' after array element in JSON at position 4330 (line 44 column 6)",
+        "image": "Cloudflare image provider returned 429."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "distant-relative-wedding",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 35,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "name-fidelity-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure",
+        "name-fidelity-cap"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepSeek parse failure; fallback copy below name/personalization bar.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/distant-relative-wedding__text-hf-deepseek-v4-flash__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI text provider did not return parseable JSON."
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "medical-school-graduation",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 20,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "text-provider-failure",
+        "image-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "text-provider-failure",
+        "image-provider-failure",
+        "illegible/generated-image-text-cap"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Cloudflare text/image 429; no panels.",
+      "contactSheet": null,
+      "providerFailures": {
+        "text": "AI provider returned 429.",
+        "image": "Cloudflare image provider returned 429."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "medical-school-graduation",
+      "textCandidateId": "text-cloudflare-baseline",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 38,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap",
+        "name-fidelity-cap"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure",
+        "illegible/generated-image-text-cap",
+        "name-fidelity-cap"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Cloudflare text 429 fallback; image panels exist but name fidelity/copy unreliable.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/medical-school-graduation__text-cloudflare-baseline__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI provider returned 429."
+      },
+      "panelCount": 4
+    },
+    {
+      "storyId": "medical-school-graduation",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 25,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Good Qwen copy, but Cloudflare image 429 produced no panels.",
+      "contactSheet": null,
+      "providerFailures": {
+        "image": "Cloudflare image provider returned 429."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "medical-school-graduation",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 78,
+      "tier": "B",
+      "dimensionScores": {
+        "promptPanelContract": 12,
+        "storyFit": 10,
+        "copy": 12,
+        "compositionPrint": 11,
+        "coherence": 9,
+        "textNameFidelity": 6,
+        "sensitivity": 8,
+        "commercialUsefulness": 7,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "name-fidelity-cap"
+      ],
+      "bestPanel": "front/inside-left",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "name-fidelity-cap"
+      ],
+      "smallestPromptOrConfigFix": "Require recipient-name placement in deterministic overlay copy, not image prompt.",
+      "failureSide": "mixed",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "Strong navy/gold medical visual system and good sentiment, but Noura missing visibly.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/medical-school-graduation__text-hf-qwen3-235b-a22b__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {},
+      "panelCount": 4
+    },
+    {
+      "storyId": "medical-school-graduation",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "totalScore": 20,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 4,
+        "storyFit": 4,
+        "copy": 4,
+        "compositionPrint": 4,
+        "coherence": 3,
+        "textNameFidelity": 3,
+        "sensitivity": 3,
+        "commercialUsefulness": 3,
+        "originality": 2
+      },
+      "hardFailureCaps": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "all panels missing",
+      "blockingFailures": [
+        "missing-panels/no-materialized-card",
+        "image-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Add provider queue/backoff and lower benchmark/admin rate limits before parallel runs.",
+      "failureSide": "provider-adapter/runtime-side",
+      "estimatedCostPer4PanelCard": "~$0.004 Cloudflare Flux image + text cost",
+      "notes": "Cloudflare image 429; no panels.",
+      "contactSheet": null,
+      "providerFailures": {
+        "image": "Cloudflare image provider returned 429."
+      },
+      "panelCount": 0
+    },
+    {
+      "storyId": "medical-school-graduation",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "imageCandidateId": "image-deepai-hd",
+      "totalScore": 38,
+      "tier": "F",
+      "dimensionScores": {
+        "promptPanelContract": 7,
+        "storyFit": 5,
+        "copy": 5,
+        "compositionPrint": 4,
+        "coherence": 5,
+        "textNameFidelity": 3,
+        "sensitivity": 4,
+        "commercialUsefulness": 2,
+        "originality": 1
+      },
+      "hardFailureCaps": [
+        "text-provider-failure"
+      ],
+      "bestPanel": "n/a",
+      "worstPanel": "front/back",
+      "blockingFailures": [
+        "text-provider-failure"
+      ],
+      "smallestPromptOrConfigFix": "Use Qwen or add model-specific JSON repair/extraction before fallback.",
+      "failureSide": "model-output/wiring-side",
+      "estimatedCostPer4PanelCard": "$0.04 image + text cost",
+      "notes": "DeepSeek parse failure; image stronger than copy but not shippable.",
+      "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/medical-school-graduation__text-hf-deepseek-v4-flash__image-deepai-hd/contact-sheet.png",
+      "providerFailures": {
+        "text": "AI text provider did not return parseable JSON."
+      },
+      "panelCount": 4
+    }
+  ]
+}
