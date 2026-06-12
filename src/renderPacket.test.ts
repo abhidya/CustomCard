@@ -54,6 +54,25 @@ describe("buildPanelSvg", () => {
   it("defaults legacy panels without a style to the botanical layout", () => {
     expect(buildPanelSvg(panel)).toContain('data-customcard-style="botanical"');
   });
+
+  it("uses safe text layout presets when AI copy provides them", () => {
+    const svg = buildPanelSvg({
+      ...panel,
+      textLayout: {
+        headlineZone: "upper",
+        bodyZone: "lower",
+        alignment: "right",
+        fontPairing: "bold-editorial",
+        colorMode: "accent-ink",
+        scale: "large"
+      }
+    });
+
+    expect(svg).toContain('text-anchor="end"');
+    expect(svg).toContain('x="1240"');
+    expect(svg).toContain('font-family="Helvetica, Arial, sans-serif"');
+    expect(svg).toContain('y="1320"');
+  });
 });
 
 const panel: CardPanel = {

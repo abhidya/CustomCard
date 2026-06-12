@@ -1,5 +1,5 @@
 import { SignInButton } from "@clerk/react";
-import { HeartHandshake, RefreshCw, Undo2 } from "lucide-react";
+import { CalendarDays, HeartHandshake, RefreshCw, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type {
   CardDraft,
@@ -8,9 +8,12 @@ import type {
   LanguageChoice,
   MemoryItem,
   Tone,
-  VisualStyle
+  TonePreset,
+  VisualStyle,
+  VisualStylePreset
 } from "../../src/freeMvp";
 import type { AiPanelGenerationProgress, AiPanelGenerationStatus } from "../../src/appStateOrchestrator";
+import type { CalendarMomentDraftContext } from "../calendarMomentDraft";
 import {
   hasPanelOverride,
   panelTransformLabels,
@@ -22,21 +25,21 @@ import {
 import { displayDraftValue } from "../draftProgress";
 import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
-const allTones: Tone[] = ["warm", "playful", "elegant", "simple", "reverent", "sentimental"];
-const styles: VisualStyle[] = ["botanical", "bold-type", "photo-note", "minimal"];
+const allTones: TonePreset[] = ["warm", "funny", "elegant", "simple", "reverent", "sentimental"];
+const styles: VisualStylePreset[] = ["botanical", "bold-type", "photo-note", "minimal"];
 const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
 const aiButtonLogoSrc = "/customcard-ai-button-logo.png";
 
-const toneLabels: Record<Tone, string> = {
+const toneLabels: Record<TonePreset, string> = {
   warm: "Warm",
-  playful: "Funny",
+  funny: "Funny",
   elegant: "Elegant",
   simple: "Simple",
   reverent: "Reverent",
   sentimental: "Sentimental"
 };
 
-const styleLabels: Record<VisualStyle, string> = {
+const styleLabels: Record<VisualStylePreset, string> = {
   botanical: "Botanical",
   "bold-type": "Bold type",
   "photo-note": "Photo note",
@@ -50,6 +53,26 @@ export function isSensitiveOccasion(occasion: string): boolean {
 
 function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function humanizeChoice(value: string): string {
+  return value
+    .split(/[-\s]+/)
+    .filter(Boolean)
+    .map(titleCase)
+    .join(" ");
+}
+
+function toneLabel(value: Tone): string {
+  return toneLabels[value as TonePreset] ?? humanizeChoice(value);
+}
+
+function styleLabel(value: VisualStyle): string {
+  return styleLabels[value as VisualStylePreset] ?? humanizeChoice(value);
+}
+
+function toneImpliesHumor(value: string): boolean {
+  return /\b(funny|playful|witty|humou?r)\b/i.test(value);
 }
 
 function panelArtworkLabel(panel: CardPanel, stale: boolean, status: AiPanelGenerationStatus | undefined): string {
@@ -118,6 +141,7 @@ export function StudioView({
   aiRequiresSignIn,
   panelOverrides = {},
   printFitPassed,
+  sourceMoment,
   onAddNote,
   onField,
   onGenerateAi,
@@ -137,9 +161,10 @@ export function StudioView({
   aiRequiresSignIn: boolean;
   panelOverrides: PanelOverrides;
   printFitPassed: boolean;
+  sourceMoment?: CalendarMomentDraftContext;
   onAddNote: () => void;
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
-  onGenerateAi: () => void;
+  onGenerateAi: (panelId?: CardPanel["id"]) => void;
   onKeepArtwork: () => void;
   onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
   onPanelRevert: (panelId: CardPanel["id"]) => void;
@@ -153,11 +178,11 @@ export function StudioView({
   const totalPanels = draft.panels.length;
   const activePanelStatus = aiPanelProgress[panel.id];
   const sensitive = isSensitiveOccasion(draftInput.occasion);
-  const tones = sensitive ? allTones.filter((tone) => tone !== "playful") : allTones;
+  const tones = sensitive ? allTones.filter((tone) => tone !== "funny") : allTones;
 
   // High-care occasions never keep a humorous tone selected.
   useEffect(() => {
-    if (sensitive && draftInput.tone === "playful") onField("tone", "simple");
+    if (sensitive && toneImpliesHumor(draftInput.tone)) onField("tone", "simple");
   }, [draftInput.tone, onField, sensitive]);
   const aiState = aiLoading ? "loading" : aiActive ? "ready" : "idle";
   const stages = generationStages({
@@ -220,6 +245,18 @@ export function StudioView({
         <h1>Your card, their story</h1>
         <p>Everything updates live — what you see here is exactly what prints.</p>
       </header>
+
+      {sourceMoment ? (
+        <div className="sourceMomentBanner reveal" role="note">
+          <CalendarDays size={17} aria-hidden="true" />
+          <div>
+            <strong>Drafting from {sourceMoment.title}</strong>
+            <span>
+              {sourceMoment.dateLabel} · {sourceMoment.sourceLabel} · {sourceMoment.confidenceLabel}
+            </span>
+          </div>
+        </div>
+      ) : null}
 
       {sensitive ? (
         <div className="sensitivebanner reveal" role="note">
@@ -284,8 +321,10 @@ export function StudioView({
               </div>
               <PanelEditor
                 aiActive={aiActive}
+                aiLoading={aiLoading}
                 edited={hasPanelOverride(panelOverrides, panel.id)}
                 onPanelEdit={onPanelEdit}
+                onPanelGenerate={onGenerateAi}
                 onPanelRevert={onPanelRevert}
                 panel={panel}
                 panelStatus={activePanelStatus}
@@ -307,7 +346,7 @@ export function StudioView({
                 <button className="btn btn-ghost btn-sm" onClick={onKeepArtwork} type="button">
                   Keep current artwork
                 </button>
-                <button className="btn btn-ink btn-sm" onClick={onGenerateAi} type="button">
+                <button className="btn btn-ink btn-sm" onClick={() => onGenerateAi()} type="button">
                   <RefreshCw size={14} />
                   Regenerate affected panels
                 </button>
@@ -352,7 +391,7 @@ export function StudioView({
               <button
                 className="aibutton"
                 disabled={aiLoading || !minContextReady}
-                onClick={onGenerateAi}
+                onClick={() => onGenerateAi()}
                 type="button"
               >
                 <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
@@ -419,7 +458,7 @@ export function StudioView({
 
           <Step
             defaultOpen
-            meta={`${toneLabels[draftInput.tone]} · ${styleLabels[draftInput.style]}`}
+            meta={`${toneLabel(draftInput.tone)} · ${styleLabel(draftInput.style)}`}
             number={2}
             title="The look and feel"
           >
@@ -428,7 +467,14 @@ export function StudioView({
                 format={(value) => toneLabels[value]}
                 onValue={(value) => onField("tone", value)}
                 options={tones}
-                value={tones.includes(draftInput.tone) ? draftInput.tone : "simple"}
+                value={draftInput.tone}
+              />
+              <input
+                aria-label="Custom tone"
+                className="choiceinput"
+                onChange={(event) => onField("tone", event.target.value)}
+                placeholder="Type a tone, e.g. sincere and a little witty"
+                value={draftInput.tone}
               />
             </Field>
             <Field label="Style">
@@ -438,8 +484,15 @@ export function StudioView({
                 options={styles}
                 value={draftInput.style}
               />
+              <input
+                aria-label="Custom style"
+                className="choiceinput"
+                onChange={(event) => onField("style", event.target.value)}
+                placeholder="Type a style, e.g. ink wash with gold accents"
+                value={draftInput.style}
+              />
             </Field>
-            <Field label="Card language">
+            <Field label="Language">
               <Chips onValue={(value) => onField("language", value)} options={languages} value={draftInput.language} />
             </Field>
           </Step>
@@ -488,17 +541,21 @@ function PanelEditor({
   panel,
   panelStatus,
   aiActive,
+  aiLoading,
   edited,
   sensitive,
   onPanelEdit,
+  onPanelGenerate,
   onPanelRevert
 }: {
   panel: CardPanel;
   panelStatus: AiPanelGenerationStatus | undefined;
   aiActive: boolean;
+  aiLoading: boolean;
   edited: boolean;
   sensitive: boolean;
   onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
+  onPanelGenerate: (panelId: CardPanel["id"]) => void;
   onPanelRevert: (panelId: CardPanel["id"]) => void;
 }) {
   const transforms: PanelTransformId[] = sensitive
@@ -555,16 +612,17 @@ function PanelEditor({
         ))}
         <button
           className="btn btn-ghost btn-sm"
-          disabled
-          title="Selected-panel AI improvements are not connected yet."
+          disabled={aiLoading}
+          onClick={() => onPanelGenerate(panel.id)}
+          title="Regenerate only the selected panel."
           type="button"
         >
-          Regenerate artwork for this panel
+          <RefreshCw size={14} />
+          {aiLoading ? "Generating panel..." : "Regenerate this panel"}
         </button>
       </div>
       <small className="paneleditor-aiNote">
-        Selected-panel AI improvements are not connected yet. You can edit this panel directly or improve the whole
-        card.
+        Panel generation updates only the selected panel. The other panels stay unchanged.
       </small>
       {aiActive && panelStatus === "artwork-missing" && !panel.imageUrl ? (
         <p className="paneleditor-warn" role="status">

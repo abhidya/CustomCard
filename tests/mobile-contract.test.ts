@@ -445,6 +445,18 @@ describe("mobile customer experience contract", () => {
       stderr = String((error as { stderr?: string }).stderr);
     }
     expect(stderr).toContain("kill switch must resolve to disabled");
+
+    stderr = "";
+    try {
+      execFileSync("node", ["apps/mobile/scripts/doctor.mjs"], {
+        encoding: "utf8",
+        env: { ...process.env, CUSTOMCARD_API_BASE_URL: "replace-me", REAL_ORDER_KILL_SWITCH: "disabled" },
+        stdio: ["ignore", "pipe", "pipe"]
+      });
+    } catch (error) {
+      stderr = String((error as { stderr?: string }).stderr);
+    }
+    expect(stderr).toContain("Mobile shell has placeholder env: CUSTOMCARD_API_BASE_URL");
   }, shellDoctorTimeoutMs);
 
   it("ships a native release profile gate without hardcoded production API endpoints", () => {

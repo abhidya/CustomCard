@@ -75,9 +75,9 @@
       "textCandidateId": "text-cloudflare-baseline",
       "textAdapterId": "cloudflare-workers-ai-chat",
       "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
-      "imageCandidateId": "image-deepai-hd",
+      "imageCandidateId": "image-deepai-text2img",
       "imageAdapterId": "deepai-text2img-image",
-      "imageModel": "hd"
+      "imageModel": "text2img"
     }
   ]
 }

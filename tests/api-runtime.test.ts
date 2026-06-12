@@ -94,6 +94,25 @@ describe("api runtime safety", () => {
     });
   });
 
+  it("fails closed when production Postgres runtime enables real orders", () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_ENV: "production",
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        DATABASE_URL: "postgres://example/customcard",
+        QUEUE_URL: "redis://example",
+        OBJECT_STORE_URL: "https://objects.customcard.test",
+        OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        REAL_ORDER_KILL_SWITCH: "enabled"
+      },
+      routes: apiRouteContracts
+    });
+
+    expect(runtime.mode).toBe("invalid");
+    expect(runtime.validate()).toContain("CustomCard runtime requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded.");
+  });
+
   it("bounds Postgres pool settings for serverless-safe defaults", () => {
     expect(postgresPoolConfig({ DATABASE_URL: "postgres://example/customcard" })).toMatchObject({
       connectionString: "postgres://example/customcard",

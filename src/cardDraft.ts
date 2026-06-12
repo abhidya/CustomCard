@@ -6,9 +6,27 @@ import {
 } from "./renderPacketContract";
 import type { CardOpportunity, LocalWorkspace, MemoryItem } from "./freeMvp";
 
-export type Tone = "warm" | "playful" | "elegant" | "simple" | "reverent" | "sentimental";
-export type VisualStyle = "botanical" | "bold-type" | "photo-note" | "minimal";
+export type TonePreset = "warm" | "funny" | "elegant" | "simple" | "reverent" | "sentimental";
+export type LegacyTonePreset = "playful";
+export type Tone = TonePreset | LegacyTonePreset | (string & {});
+export type VisualStylePreset = "botanical" | "bold-type" | "photo-note" | "minimal";
+export type VisualStyle = VisualStylePreset | (string & {});
 export type LanguageChoice = "English" | "Spanish" | "Urdu" | "Arabic";
+
+export type TextZone = "top" | "upper" | "center" | "lower" | "bottom";
+export type TextAlignment = "left" | "center" | "right";
+export type TextFontPairing = "serif-sans" | "bold-editorial" | "minimal-sans" | "soft-serif";
+export type TextColorMode = "dark-ink" | "light-ink" | "accent-ink" | "high-contrast";
+export type TextScale = "compact" | "standard" | "large";
+
+export interface CardTextLayout {
+  headlineZone: Exclude<TextZone, "bottom">;
+  bodyZone: Exclude<TextZone, "top">;
+  alignment: TextAlignment;
+  fontPairing: TextFontPairing;
+  colorMode: TextColorMode;
+  scale: TextScale;
+}
 
 export interface CardDraftInput {
   sender: string;
@@ -34,8 +52,9 @@ export interface CardPanel {
   rtl: boolean;
   overflowRisk: boolean;
   imageUrl?: string;
+  textLayout?: CardTextLayout;
   /** Visual style the renderer uses for layout/decoration. Older panels omit it; renderer defaults to botanical. */
-  styleId?: VisualStyle;
+  styleId?: VisualStylePreset;
 }
 
 export interface CardDraft {
@@ -84,6 +103,7 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
     : [];
   const memoryLine = approvedMemories[0]?.note ?? "The best details are the small ones you both recognize.";
   const rtl = isRtlLanguage(input.language);
+  const stylePreset = normalizeVisualStylePreset(input.style);
   const voice = toneLine(input.tone);
   const visual = artDirection(input.style, input.tone);
   const note = cleanText(input.personalNote) || "Keep it simple, specific, and sincere.";
@@ -136,7 +156,7 @@ export function generateCardDraft(input: CardDraftInput, memories: MemoryItem[])
   ];
   const panels: CardPanel[] = basePanels.map((panel) => ({
     ...panel,
-    styleId: input.style,
+    styleId: stylePreset,
     overflowRisk: panelOverflowRisk(panel.headline, panel.body)
   }));
 
@@ -192,20 +212,26 @@ export function validateCardDraft(draft: CardDraft): CardValidation {
 }
 
 function toneLine(tone: Tone): string {
-  const lines: Record<Tone, string> = {
+  const lines: Record<TonePreset, string> = {
     warm: "You two make commitment look gentle and alive.",
-    playful: "Another year, another excellent excuse to celebrate your shared weird little traditions.",
+    funny: "Another year, another excellent excuse to celebrate your shared weird little traditions.",
     elegant: "Your life together has the quiet grace of something tended with care.",
     simple: "Thinking of you today, and glad you're in my life.",
     reverent: "May the love around you continue to be a source of steadiness and blessing.",
     sentimental: "Some people make ordinary days feel worth keeping \u2014 you're one of them."
   };
-  return lines[tone];
+  const preset = normalizeTonePreset(tone);
+  const normalized = cleanText(tone).toLowerCase();
+  if (normalized === preset || (preset === "funny" && normalized === "playful")) return lines[preset];
+  const customTone = cleanText(tone).toLowerCase();
+  return `A ${customTone || lines[preset].toLowerCase()} note, personal and specific.`;
 }
 
 function artDirection(style: VisualStyle, tone: Tone) {
-  const toneAccent = tone === "playful" ? "with a lively offset rhythm" : "with calm spacing";
-  const directions: Record<VisualStyle, { frontLine: string; front: string; left: string; right: string; back: string }> = {
+  const tonePreset = normalizeTonePreset(tone);
+  const stylePreset = normalizeVisualStylePreset(style);
+  const toneAccent = tonePreset === "funny" ? "with a lively offset rhythm" : "with calm spacing";
+  const directions: Record<VisualStylePreset, { frontLine: string; front: string; left: string; right: string; back: string }> = {
     botanical: {
       frontLine: "Soft stems, small blooms, and a hand-lettered center.",
       front: `Botanical border ${toneAccent}`,
@@ -235,11 +261,50 @@ function artDirection(style: VisualStyle, tone: Tone) {
       back: "Small signature lockup"
     }
   };
-  return directions[style];
+  const direction = directions[stylePreset];
+  if (style === stylePreset && tone === tonePreset) return direction;
+
+  const customStyle = cleanText(style);
+  const customTone = cleanText(tone);
+  const customPhrase = [customStyle, customTone].filter(Boolean).join(", ");
+  if (!customPhrase) return direction;
+
+  return {
+    ...direction,
+    frontLine: `${direction.frontLine} ${titleCase(customPhrase)}.`,
+    front: `${direction.front}; custom direction: ${customPhrase}`,
+    left: `${direction.left}; custom direction: ${customPhrase}`,
+    right: `${direction.right}; custom direction: ${customPhrase}`,
+    back: `${direction.back}; custom direction: ${customPhrase}`
+  };
 }
 
 function isRtlLanguage(language: LanguageChoice): boolean {
   return language === "Arabic" || language === "Urdu";
+}
+
+export function normalizeTonePreset(tone: Tone): TonePreset {
+  const normalized = cleanText(tone).toLowerCase();
+  if (["warm", "funny", "elegant", "simple", "reverent", "sentimental"].includes(normalized)) {
+    return normalized as TonePreset;
+  }
+  if (/\b(funny|playful|witty|humou?r)\b/.test(normalized)) return "funny";
+  if (/\b(elegant|formal|polished|premium)\b/.test(normalized)) return "elegant";
+  if (/\b(simple|plain|direct|minimal)\b/.test(normalized)) return "simple";
+  if (/\b(reverent|spiritual|solemn|sacred)\b/.test(normalized)) return "reverent";
+  if (/\b(sentimental|nostalgic|emotional|tender)\b/.test(normalized)) return "sentimental";
+  return "warm";
+}
+
+export function normalizeVisualStylePreset(style: VisualStyle): VisualStylePreset {
+  const normalized = cleanText(style).toLowerCase();
+  if (["botanical", "bold-type", "photo-note", "minimal"].includes(normalized)) {
+    return normalized as VisualStylePreset;
+  }
+  if (/\b(botanical|floral|flower|leaf|garden)\b/.test(normalized)) return "botanical";
+  if (/\b(bold|type|typographic|poster|editorial)\b/.test(normalized)) return "bold-type";
+  if (/\b(photo|note|scrapbook|caption|polaroid)\b/.test(normalized)) return "photo-note";
+  return "minimal";
 }
 
 function namesOverlap(left: string, right: string): boolean {

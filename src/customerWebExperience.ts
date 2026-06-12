@@ -231,8 +231,7 @@ export function buildCustomerWebExperience(input: CustomerWebExperienceInput): C
     localeMetrics: {
       Locales: `${input.supportedLocaleCount}`,
       RTL: input.selectedLocaleRequiresRtl ? "Review" : "No",
-      Copy: localeReviewLabel,
-      "Card language": input.cardLanguage || input.selectedLocaleLabel
+      Copy: localeReviewLabel
     },
     safetyMetrics: {
       Ordering: "Outside app",

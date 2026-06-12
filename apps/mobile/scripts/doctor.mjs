@@ -4,12 +4,12 @@ import { fileURLToPath } from "node:url";
 import { validateMobileRuntimeEnv } from "../../../scripts/runtime-env-contract.mjs";
 
 const mobileRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const missing = validateMobileRuntimeEnv(process.env).map((issue) => issue.replace("Mobile shell missing env: ", ""));
+const envIssues = validateMobileRuntimeEnv(process.env);
 const sourceIssues = inspectMobileSources();
 
-if (missing.length > 0 || sourceIssues.length > 0) {
-  if (missing.length > 0) {
-    console.error(`Mobile shell missing env: ${missing.join(", ")}`);
+if (envIssues.length > 0 || sourceIssues.length > 0) {
+  for (const issue of envIssues) {
+    console.error(issue);
   }
   for (const issue of sourceIssues) {
     console.error(issue);

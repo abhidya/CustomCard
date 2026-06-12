@@ -9,7 +9,8 @@ import { createPostgresRuntime, postgresPoolConfig } from "./postgres-runtime.mj
 import {
   hasStrongEnvSecret,
   isProductionRuntimeEnv,
-  runtimeModes
+  runtimeModes,
+  validateDurableRuntimeEnv
 } from "./runtime-env-contract.mjs";
 
 export { postgresPoolConfig } from "./postgres-runtime.mjs";
@@ -31,6 +32,17 @@ export function createApiRuntime({ env = process.env, routes = [], postgresPoolF
     });
   }
   const mode = requestedMode;
+  if (isProductionRuntimeEnv(env)) {
+    const validationMessages = durableRuntimeValidationMessages(validateDurableRuntimeEnv(env));
+    if (validationMessages.length > 0) {
+      return createInvalidApiRuntime({
+        requestedMode: mode,
+        routes,
+        objectStoreRuntime,
+        validationMessages
+      });
+    }
+  }
   if (mode === "postgres" && !hasStrongAuthSessionSecret(env)) {
     return createInvalidApiRuntime({
       requestedMode: mode,
@@ -46,6 +58,14 @@ export function createApiRuntime({ env = process.env, routes = [], postgresPoolF
 
 function hasStrongAuthSessionSecret(env) {
   return hasStrongEnvSecret(env, "AUTH_SESSION_SECRET");
+}
+
+function durableRuntimeValidationMessages(report) {
+  return [
+    ...report.missing.map((key) => `CustomCard runtime missing env: ${key}`),
+    ...report.placeholders.map((key) => `CustomCard runtime has placeholder env: ${key}`),
+    ...report.blockers
+  ];
 }
 
 export function hashSessionToken(token, sessionSecret = "") {
@@ -166,9 +186,12 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
   };
 }
 
-function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, validationMessage }) {
+function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, validationMessage, validationMessages }) {
   const contractRuntime = createContractApiRuntime({ routes, objectStoreRuntime });
-  const blockers = [validationMessage ?? `Unsupported CUSTOMCARD_API_RUNTIME: ${requestedMode}. Expected contract, memory, or postgres.`];
+  const blockers =
+    validationMessages?.length > 0
+      ? validationMessages
+      : [validationMessage ?? `Unsupported CUSTOMCARD_API_RUNTIME: ${requestedMode}. Expected contract, memory, or postgres.`];
   const payload = {
     service: "customcard-api",
     status: "api-runtime-invalid",
@@ -2775,7 +2798,8 @@ function safeLongDraftText(value, fallback) {
 
 function safeTone(value) {
   const tone = String(value ?? "warm").trim().toLowerCase();
-  return ["warm", "playful", "elegant", "reverent"].includes(tone) ? tone : "warm";
+  if (tone === "playful") return "funny";
+  return ["warm", "funny", "elegant", "simple", "reverent", "sentimental"].includes(tone) ? tone : "warm";
 }
 
 function safeVisualStyle(value) {

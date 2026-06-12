@@ -144,7 +144,7 @@ describeWithChrome("CustomCard UI smoke", () => {
         setValue(sender, "Abdul");
         await raf();
         const panelCount = document.querySelectorAll(".pagetab img").length;
-        await clickByText("Review print proof");
+        await clickByText("Continue to proof checks");
 
         return {
           homeText,

@@ -11,6 +11,7 @@ import {
   type CustomerConnection,
   type ImportedOpportunity
 } from "../calendarConnectionAdapter";
+import { buildCalendarMomentDraftContext } from "../calendarMomentDraft";
 import { requestServerImportPreview, type ServerImportPreview } from "../importPreviewAdapter";
 
 const urgencyLabels: Record<CardOpportunity["urgency"], { label: string; tone: "warn" | "ok" | "soft" }> = {
@@ -147,8 +148,9 @@ export function ImportSection({
   }
 
   function editMoment(moment: ImportedOpportunity) {
-    const datePart = moment.startsAt ? ` on ${moment.startsAt.slice(0, 10)}` : "";
-    onInviteText(`${moment.title}${moment.recipientName ? ` for ${moment.recipientName}` : ""}${datePart}`);
+    const context = buildCalendarMomentDraftContext(moment);
+    const datePart = context.isoDate ? ` on ${context.isoDate}` : "";
+    onInviteText(`${context.title}${context.recipient ? ` for ${context.recipient}` : ""}${datePart}`);
   }
 
   const viewState = resolveConnectionViewState(isSignedIn, connectionLoaded, connection);
@@ -368,28 +370,29 @@ export function ImportSection({
             {visibleMoments.map((moment) => {
               const decision = momentDecisions[moment.opportunityId];
               const inPast = moment.startsAt ? new Date(moment.startsAt).getTime() < Date.now() : false;
+              const context = buildCalendarMomentDraftContext(moment);
               return (
                 <li className="momentItem" key={moment.opportunityId}>
                   <div className="momentBody">
-                    <strong>{moment.title}</strong>
+                    <strong>{context.title}</strong>
                     <small>
-                      {moment.recipientName ? `For ${moment.recipientName} · ` : "Recipient needed · "}
-                      {moment.startsAt ? moment.startsAt.slice(0, 10) : "Date needed"}
-                      {` · From Google Calendar · ${(moment.confidence * 100).toFixed(0)}% match`}
+                      {context.recipient ? `For ${context.recipient} · ` : "Recipient needed · "}
+                      {context.dateLabel}
+                      {` · From ${context.sourceLabel} · ${context.confidenceLabel}`}
                     </small>
-                    {!moment.recipientName ? <small className="momentWarn">Confirm who this card is for.</small> : null}
+                    {!context.recipient ? <small className="momentWarn">Confirm who this card is for.</small> : null}
                     {!moment.startsAt ? <small className="momentWarn">Add the date before printing.</small> : null}
                     {inPast ? <small className="momentWarn">This moment already passed — a belated card still counts.</small> : null}
                     {decision === "snooze" ? <small>Snoozed for later.</small> : null}
                   </div>
                   <div className="opp-actions">
                     <button
-                      aria-label={`Make a card for ${moment.recipientName || moment.title}`}
+                      aria-label={context.recipient ? `Make a card for ${context.recipient}` : `Add details for ${context.title}`}
                       className="btn btn-primary btn-sm"
-                      onClick={() => decideMoment(moment, "make-card")}
+                      onClick={() => (context.recipient ? decideMoment(moment, "make-card") : editMoment(moment))}
                       type="button"
                     >
-                      Make card
+                      {context.recipient ? "Make card" : "Add details"}
                     </button>
                     <button className="btn btn-ghost btn-sm" onClick={() => editMoment(moment)} type="button">
                       Edit details

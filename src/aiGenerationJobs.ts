@@ -1,4 +1,4 @@
-import type { CardDraft, CardPanel } from "./customerWorkflow";
+import type { CardDraft, CardPanel, CardTextLayout } from "./customerWorkflow";
 
 export type AiGenerationJobStatus = "succeeded" | "partial" | "copy-only";
 export type AiGenerationJobPanelStatus = "generated" | "missing";
@@ -14,8 +14,25 @@ export interface AiGenerationApiPanel {
   headline?: string;
   body?: string;
   art_direction?: string;
+  visual_cue?: string;
+  visualCue?: string;
+  text_layout?: AiGenerationApiTextLayout;
+  textLayout?: AiGenerationApiTextLayout;
   image_prompt?: string;
   image_negative_prompt?: string;
+}
+
+export interface AiGenerationApiTextLayout {
+  headline_zone?: string;
+  headlineZone?: string;
+  body_zone?: string;
+  bodyZone?: string;
+  alignment?: string;
+  font_pairing?: string;
+  fontPairing?: string;
+  color_mode?: string;
+  colorMode?: string;
+  scale?: string;
 }
 
 export interface AiGenerationApiImage {
@@ -45,6 +62,8 @@ export interface AiGenerationJobPanelEvidence {
   headline: string;
   body: string;
   artDirection: string;
+  visualCue: string;
+  textLayout?: CardTextLayout;
   imagePrompt: string;
   negativePrompt: string;
   revisedPrompt: string;
@@ -129,6 +148,8 @@ function buildPanelEvidence(
     headline: redactSensitiveText(copy?.headline || panel.headline),
     body: redactSensitiveText(copy?.body || panel.body),
     artDirection: redactSensitiveText(copy?.art_direction || panel.artDirection),
+    visualCue: redactSensitiveText(copy?.visual_cue || copy?.visualCue || ""),
+    textLayout: normalizeEvidenceTextLayout(copy?.text_layout || copy?.textLayout || panel.textLayout),
     imagePrompt: redactSensitiveText(copy?.image_prompt || ""),
     negativePrompt: redactSensitiveText(copy?.image_negative_prompt || ""),
     revisedPrompt: redactSensitiveText(image?.revised_prompt || copy?.image_prompt || ""),
@@ -137,6 +158,28 @@ function buildPanelEvidence(
     height: coercePositiveInt(image?.height, panel.height),
     status: imageUrl ? "generated" : "missing"
   };
+}
+
+function normalizeEvidenceTextLayout(value: AiGenerationApiTextLayout | CardTextLayout | undefined): CardTextLayout | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const headlineZone = safeEnum(readLayoutValue(value, "headline_zone", "headlineZone"), ["top", "upper", "center", "lower"]);
+  const bodyZone = safeEnum(readLayoutValue(value, "body_zone", "bodyZone"), ["upper", "center", "lower", "bottom"]);
+  const alignment = safeEnum(readLayoutValue(value, "alignment", "alignment"), ["left", "center", "right"]);
+  const fontPairing = safeEnum(readLayoutValue(value, "font_pairing", "fontPairing"), ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"]);
+  const colorMode = safeEnum(readLayoutValue(value, "color_mode", "colorMode"), ["dark-ink", "light-ink", "accent-ink", "high-contrast"]);
+  const scale = safeEnum(readLayoutValue(value, "scale", "scale"), ["compact", "standard", "large"]);
+  if (!headlineZone || !bodyZone || !alignment || !fontPairing || !colorMode || !scale) return undefined;
+  return { headlineZone, bodyZone, alignment, fontPairing, colorMode, scale };
+}
+
+function readLayoutValue(value: AiGenerationApiTextLayout | CardTextLayout, snakeKey: keyof AiGenerationApiTextLayout, camelKey: keyof AiGenerationApiTextLayout): unknown {
+  const record = value as Record<string, unknown>;
+  return record[snakeKey] ?? record[camelKey];
+}
+
+function safeEnum<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return (allowed as readonly string[]).includes(normalized) ? (normalized as T) : undefined;
 }
 
 function coercePositiveInt(value: unknown, fallback: number): number {

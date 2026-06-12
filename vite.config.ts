@@ -30,6 +30,7 @@ export default defineConfig(() => ({
         "src/paymentReadinessData.mjs",
         "src/mobileRenderReadiness.ts",
         "src/mobileRenderReadinessData.mjs",
+        "src/mobileBootstrapData.mjs",
         "src/hostedApiReadiness.ts",
         "src/hostedApiReadinessData.mjs",
         "src/legalCompliance.ts",

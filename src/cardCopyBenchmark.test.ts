@@ -36,6 +36,22 @@ function richPanel(id: string, body: string) {
       id === "front" || id === "back"
         ? "Coordinated botanical layout with safe margin, cream palette, delicate border ornament, app typography area, and matching front/back visual rhythm."
         : "Coordinated inside spread layout with watercolor botanical border, sparse fern corner ornament, quiet blank low-contrast center, clean text-safe app typography space, generous safe margin, and matching inside panel rhythm.",
+    visual_cue:
+      id === "front"
+        ? "Botanical birthday cover with fern fronds, tiny trail flowers, morning light, and a clean central text-safe field."
+        : id === "back"
+          ? "Small fern sprig back mark with warm cream negative space and a quiet lower text-safe area."
+          : id === "inside-left"
+            ? "Soft cream interior with pressed-fern corner border, gentle coffee-steam curve, and open center-left note area."
+            : "Matching botanical interior with sparse leaf border, tiny trail line near the bottom, and calm main-message space.",
+    text_layout: {
+      headline_zone: id === "back" ? "lower" : "upper",
+      body_zone: id === "back" ? "bottom" : id === "front" ? "lower" : "center",
+      alignment: "center",
+      font_pairing: id === "back" ? "minimal-sans" : "serif-sans",
+      color_mode: "dark-ink",
+      scale: id === "back" ? "compact" : "standard"
+    },
     image_prompt:
       id === "inside-left" || id === "inside-right"
         ? `Premium 5x7 vertical flat 2D full-bleed print panel artwork for the ${id} panel, watercolor botanical border with sparse fern corner motifs and tiny trail flowers, warm cream paper texture, deep green accents, morning gold palette, quiet blank low-contrast center, clean text-safe area for app overlay, generous safe margins, coordinated with the matching interior panel, no readable text, no words, no letters, no logos, no watermark, no people, no hands, no mockup.`

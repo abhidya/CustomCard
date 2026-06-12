@@ -18,7 +18,7 @@
 | --- | --- | --- | --- | --- |
 | `image-cloudflare-sdxl-lightning` | `cloudflare-workers-ai-image` | `@cf/bytedance/stable-diffusion-xl-lightning` | yes | none |
 | `image-cloudflare-flux-schnell` | `cloudflare-workers-ai-image` | `@cf/black-forest-labs/flux-1-schnell` | yes | none |
-| `image-deepai-hd` | `deepai-text2img-image` | `hd` | yes | none |
+| `image-deepai-text2img` | `deepai-text2img-image` | `text2img` | yes | none |
 | `image-openai-gpt-image-2` | `openai-images` | `gpt-image-2` | no | OPENAI_API_KEY |
 | `image-gemini-supported` | `google-gemini-image` | `gemini-3.1-flash-image` | no | GOOGLE_GENERATIVE_AI_API_KEY |
 

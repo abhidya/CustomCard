@@ -57,7 +57,7 @@ export function Chips<T extends string>({
   format
 }: {
   options: readonly T[];
-  value: T;
+  value: string;
   onValue: (value: T) => void;
   format?: (value: T) => string;
 }) {

@@ -1580,6 +1580,39 @@ a { color: inherit; }
   border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
   background: var(--accent-soft);
 }
+.sourceMomentBanner {
+  max-width: 720px;
+  margin: -10px 0 24px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--second) 36%, var(--line));
+  border-radius: var(--radius-s);
+  background: var(--second-soft);
+  color: var(--ink);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.sourceMomentBanner svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--second);
+}
+.sourceMomentBanner strong,
+.sourceMomentBanner span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sourceMomentBanner strong {
+  font-size: 13.5px;
+  font-weight: 740;
+}
+.sourceMomentBanner span {
+  margin-top: 2px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
 .pagetabs { display: flex; gap: 8px; padding: 16px 0 0; }
 .pagetab {
   position: relative;
@@ -1708,6 +1741,9 @@ a { color: inherit; }
 .field input:focus, .field textarea:focus, .field select:focus {
   border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
   background: var(--surface);
+}
+.choiceinput {
+  margin-top: 2px;
 }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -2737,8 +2773,9 @@ a { color: inherit; }
 .adminSurfaceHead {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 18px;
+  max-width: 920px;
   margin-bottom: 22px;
 }
 
@@ -2751,6 +2788,10 @@ a { color: inherit; }
   font-weight: var(--display-weight);
   letter-spacing: var(--display-tracking);
   line-height: 1.04;
+}
+
+.adminSurfaceHead h1 {
+  font-size: clamp(24px, 3vw, 32px);
 }
 
 .adminSurfaceHead p,
@@ -3040,11 +3081,19 @@ a { color: inherit; }
 /* ============================================================
    Settings and privacy
    ============================================================ */
-.settings { display: grid; gap: 18px; max-width: 720px; }
+.settingsLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 720px) minmax(260px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.settings { display: grid; gap: 18px; min-width: 0; }
 .settingsection h2 { margin: 0; font-size: 17px; }
 .settingsection p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; }
 .settingsectionHead { display: flex; align-items: center; gap: 10px; color: var(--accent); margin-bottom: 8px; }
 .settingsectionHead h2 { color: var(--ink); }
+.settingsection,
+.settingsSummary { padding: 18px; }
 .settingfacts { display: grid; gap: 10px; margin: 8px 0 0; }
 .settingfacts div { display: flex; justify-content: space-between; gap: 14px; border-bottom: 1px dashed var(--line-soft); padding-bottom: 8px; }
 .settingfacts dt { font-size: 13px; color: var(--ink-faint); }
@@ -3061,6 +3110,9 @@ a { color: inherit; }
   border-radius: var(--radius-s);
   padding: 12px 14px;
 }
+.settingrequest[data-disabled="true"] {
+  background: var(--surface-alt);
+}
 .settingrequest strong { display: block; font-size: 14px; }
 .settingrequest small { font-size: 12.5px; color: var(--ink-faint); }
 .settinghint { display: block; margin-top: 10px; font-size: 12.5px; color: var(--ink-faint); }
@@ -3070,10 +3122,51 @@ a { color: inherit; }
 .settinglegal { display: flex; flex-wrap: wrap; gap: 8px 16px; }
 .settinglegal a { font-size: 13.5px; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; }
 .settinglegal a:hover { color: var(--ink); }
+.settingsSummary {
+  position: sticky;
+  top: 22px;
+  display: grid;
+  gap: 12px;
+}
+.settingSummaryList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.settingSummaryList li {
+  display: grid;
+  gap: 3px;
+  padding: 11px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+.settingSummaryList span {
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 700;
+}
+.settingSummaryList strong {
+  color: var(--ink);
+  font-size: 13.5px;
+  overflow-wrap: anywhere;
+}
 
 @media (max-width: 560px) {
   .settingrequest { flex-direction: column; align-items: flex-start; }
   .howitworksGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+  .settingsLayout {
+    grid-template-columns: 1fr;
+  }
+  .settingsSummary {
+    position: static;
+    order: -1;
+  }
 }
 
 /* ============================================================

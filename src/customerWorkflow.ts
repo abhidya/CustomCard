@@ -54,16 +54,20 @@ export type {
   CardOpportunity,
   FreeImportSignal,
   CardPanel,
+  CardTextLayout,
   CardValidation,
   LanguageChoice,
+  LegacyTonePreset,
   LocalWorkspace,
   MemoryItem,
   OpportunityDecision,
   SavedEvent,
   Tone,
+  TonePreset,
   VendorHandoff,
   VendorId,
-  VisualStyle
+  VisualStyle,
+  VisualStylePreset
 } from "./freeMvp";
 export {
   buildCustomerChatSession,

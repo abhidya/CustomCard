@@ -749,7 +749,7 @@ function parseJson(text) {
 }
 
 function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
-  const layout = panelLayout(panelId, previewThemeForPanelCopy(panelCopy));
+  const layout = panelLayout(panelId, previewThemeForPanelCopy(panelCopy), panelCopy.text_layout || panelCopy.textLayout);
   const headline = wrapText(panelCopy.headline || "", layout.headlineChars).slice(0, 3);
   const body = wrapText(panelCopy.body || "", layout.bodyChars).slice(0, layout.bodyLines);
   const box = layout.box.opacity > 0
@@ -759,11 +759,11 @@ function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
     <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
       <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${layout.frameOpacity}"/>
       ${box}
-      <text x="750" y="${layout.headlineY}" text-anchor="middle" font-family="Georgia, Times New Roman, serif" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700">
-        ${headline.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
+      <text x="${layout.x}" y="${layout.headlineY}" text-anchor="${layout.anchor}" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700">
+        ${headline.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
       </text>
-      <text x="750" y="${layout.bodyY}" text-anchor="middle" font-family="Inter, Arial, sans-serif" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="500">
-        ${body.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : layout.bodySize * 1.25}">${escapeXml(line)}</tspan>`).join("")}
+      <text x="${layout.x}" y="${layout.bodyY}" text-anchor="${layout.anchor}" font-family="${layout.bodyFont}" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="500">
+        ${body.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.bodySize * 1.25}">${escapeXml(line)}</tspan>`).join("")}
       </text>
     </svg>
   `);
@@ -777,14 +777,17 @@ function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
 function previewThemeForPanelCopy(panelCopy = {}) {
   const source = `${panelCopy.image_prompt || ""} ${panelCopy.art_direction || ""} ${panelCopy.headline || ""} ${panelCopy.body || ""}`.toLowerCase();
   if (/\b(medical|doctor|stethoscope|white[- ]coat|ecg|dream to doctor)\b/.test(source)) return "medical";
+  if (/\b(bold[- ]type|editorial|poster|sprint|project-management|project management)\b/.test(source)) return "bold-type";
+  if (/\b(photo[- ]note|sympathy|condolence|grieving|quiet support)\b/.test(source)) return "photo-note";
+  if (/\b(minimal|plain thanks|watering the plants|watered the plants|neighbor)\b/.test(source)) return "minimal";
   if (/\b(citrus|small-business|small business|choose small|independent)\b/.test(source)) return "citrus";
   if (/\b(father|dad|fix|repair|tool|workshop|blueprint|hinge)\b/.test(source)) return "tools";
   if (/\b(botanical|birthday|fern|flower|hike|coffee)\b/.test(source)) return "botanical";
   return "stationery";
 }
 
-function panelLayout(panelId, theme = "stationery") {
-  const darkCover = ["medical", "citrus", "tools"].includes(theme);
+function panelLayout(panelId, theme = "stationery", rawTextLayout) {
+  const darkCover = ["medical", "citrus", "tools", "bold-type"].includes(theme);
   const frameColor = panelId.startsWith("inside")
     ? theme === "tools"
       ? "#0f6b5f"
@@ -795,7 +798,7 @@ function panelLayout(panelId, theme = "stationery") {
       ? "#fffaf0"
       : "#31584e";
   if (panelId === "front") {
-    return {
+    return applyPanelTextLayout({
       box: { x: 142, y: 1328, width: 1216, height: 506, fill: "#fffaf0", opacity: 0 },
       headlineY: 1410,
       bodyY: 1580,
@@ -808,10 +811,10 @@ function panelLayout(panelId, theme = "stationery") {
       bodyColor: darkCover ? "#f4e6b0" : "#2d3733",
       frameColor,
       frameOpacity: darkCover ? 0.86 : 0.74
-    };
+    }, rawTextLayout);
   }
   if (panelId === "back") {
-    return {
+    return applyPanelTextLayout({
       box: { x: 190, y: 1520, width: 1120, height: 300, fill: "#fffaf0", opacity: 0 },
       headlineY: 1588,
       bodyY: 1694,
@@ -824,9 +827,9 @@ function panelLayout(panelId, theme = "stationery") {
       bodyColor: darkCover ? "#f4e6b0" : "#56645d",
       frameColor,
       frameOpacity: darkCover ? 0.82 : 0.7
-    };
+    }, rawTextLayout);
   }
-  return {
+  return applyPanelTextLayout({
     box: { x: 150, y: 360, width: 1200, height: 1360, fill: "#fffdf7", opacity: 0 },
     headlineY: 560,
     bodyY: 740,
@@ -839,7 +842,60 @@ function panelLayout(panelId, theme = "stationery") {
     bodyColor: "#3f4c45",
     frameColor,
     frameOpacity: 0.64
+  }, rawTextLayout);
+}
+
+function applyPanelTextLayout(base, rawTextLayout) {
+  const shared = {
+    ...base,
+    x: 750,
+    anchor: "middle",
+    headlineFont: "Georgia, Times New Roman, serif",
+    bodyFont: "Inter, Arial, sans-serif"
   };
+  const layout = normalizePreviewTextLayout(rawTextLayout);
+  if (!layout) return shared;
+  const scale = layout.scale === "compact" ? 0.86 : layout.scale === "large" ? 1.14 : 1;
+  const font = layout.font_pairing === "bold-editorial"
+    ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 116, bodySize: 42, headlineChars: 16, bodyChars: 34 }
+    : layout.font_pairing === "minimal-sans"
+      ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 70, bodySize: 34, headlineChars: 28, bodyChars: 48 }
+      : layout.font_pairing === "soft-serif"
+        ? { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Georgia, Times New Roman, serif", headlineSize: 76, bodySize: 36, headlineChars: 26, bodyChars: 42 }
+        : { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 82, bodySize: 38, headlineChars: 24, bodyChars: 44 };
+  return {
+    ...shared,
+    x: layout.alignment === "left" ? 260 : layout.alignment === "right" ? 1240 : 750,
+    anchor: layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle",
+    headlineY: { top: 290, upper: 470, center: 860, lower: 1280 }[layout.headline_zone],
+    bodyY: { upper: 650, center: 930, lower: 1320, bottom: 1660 }[layout.body_zone],
+    headlineSize: Math.round(font.headlineSize * scale),
+    bodySize: Math.round(font.bodySize * scale),
+    headlineChars: layout.scale === "large" ? Math.max(12, font.headlineChars - 5) : layout.scale === "compact" ? font.headlineChars + 6 : font.headlineChars,
+    bodyChars: layout.scale === "large" ? Math.max(28, font.bodyChars - 6) : layout.scale === "compact" ? font.bodyChars + 6 : font.bodyChars,
+    headlineFont: font.headlineFont,
+    bodyFont: font.bodyFont,
+    headlineColor: layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#fff8dc" : layout.color_mode === "accent-ink" ? base.frameColor : base.headlineColor,
+    bodyColor: layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#f4e6b0" : base.bodyColor
+  };
+}
+
+function normalizePreviewTextLayout(value) {
+  if (!value || typeof value !== "object") return undefined;
+  const layout = {
+    headline_zone: cleanLayoutEnum(value.headline_zone || value.headlineZone, ["top", "upper", "center", "lower"]),
+    body_zone: cleanLayoutEnum(value.body_zone || value.bodyZone, ["upper", "center", "lower", "bottom"]),
+    alignment: cleanLayoutEnum(value.alignment, ["left", "center", "right"]),
+    font_pairing: cleanLayoutEnum(value.font_pairing || value.fontPairing, ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"]),
+    color_mode: cleanLayoutEnum(value.color_mode || value.colorMode, ["dark-ink", "light-ink", "accent-ink", "high-contrast"]),
+    scale: cleanLayoutEnum(value.scale, ["compact", "standard", "large"])
+  };
+  return Object.values(layout).every(Boolean) ? layout : undefined;
+}
+
+function cleanLayoutEnum(value, allowed) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return allowed.includes(normalized) ? normalized : undefined;
 }
 
 async function renderContactSheet({ fixtureDir, fixture, competitor, panelFiles }) {

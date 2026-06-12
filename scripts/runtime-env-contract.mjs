@@ -66,10 +66,20 @@ export function validateDurableRuntimeEnv(env = process.env) {
 }
 
 export function validateWorkerRuntimeEnv(env = process.env, { requirePostgres = false } = {}) {
-  const blockers = missingEnv(env, workerRequiredEnv).map((key) => `CustomCard worker missing env: ${key}`);
+  const blockers = [
+    ...missingEnv(env, workerRequiredEnv).map((key) => `CustomCard worker missing env: ${key}`),
+    ...placeholderEnv(env, workerRequiredEnv).map((key) => `CustomCard worker has placeholder env: ${key}`)
+  ];
+  const mode = runtimeMode(env);
 
-  if ((isProductionRuntimeEnv(env) || requirePostgres) && env.CUSTOMCARD_API_RUNTIME !== "postgres") {
+  if (!runtimeModes.includes(mode)) {
+    blockers.push(`CustomCard worker requires CUSTOMCARD_API_RUNTIME to be one of: ${runtimeModes.join(", ")}.`);
+  }
+  if ((isProductionRuntimeEnv(env) || requirePostgres) && mode !== "postgres") {
     blockers.push("CustomCard worker execution requires CUSTOMCARD_API_RUNTIME=postgres.");
+  }
+  if (env.REAL_ORDER_KILL_SWITCH !== "disabled") {
+    blockers.push("CustomCard worker requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded.");
   }
   if (!hasStrongEnvSecret(env, "AUTH_SESSION_SECRET")) {
     blockers.push("CustomCard worker requires AUTH_SESSION_SECRET to be at least 32 characters.");
@@ -82,5 +92,8 @@ export function validateWorkerRuntimeEnv(env = process.env, { requirePostgres = 
 }
 
 export function validateMobileRuntimeEnv(env = process.env) {
-  return missingEnv(env, mobileRequiredEnv).map((key) => `Mobile shell missing env: ${key}`);
+  return [
+    ...missingEnv(env, mobileRequiredEnv).map((key) => `Mobile shell missing env: ${key}`),
+    ...placeholderEnv(env, mobileRequiredEnv).map((key) => `Mobile shell has placeholder env: ${key}`)
+  ];
 }

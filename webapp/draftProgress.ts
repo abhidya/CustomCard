@@ -26,7 +26,6 @@ export function hasMeaningfulDraftProgress(input: CardDraftInput): boolean {
     input.occasion.trim() !== "card" ||
     input.tone !== "warm" ||
     input.style !== "botanical" ||
-    input.language !== "English" ||
     input.personalNote.trim().length > 0
   );
 }

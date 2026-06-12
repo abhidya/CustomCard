@@ -12,15 +12,16 @@ import {
   type CardDraftInput,
   type CardOpportunity,
   type CardPanel,
+  type CardTextLayout,
   type CardValidation,
   type LanguageChoice,
   type LocalWorkspace,
   type MemoryItem,
   type OpportunityDecision,
-  type Tone,
+  type TonePreset,
   type VendorHandoff,
   type VendorId,
-  type VisualStyle,
+  type VisualStylePreset,
   type CustomerChatSession
 } from "./customerWorkflow";
 import { getSupportedLocale, summarizeLocalizationReadiness, type LocalizationReadinessSummary, type SupportedLocale, type SupportedLocaleCode } from "./localization";
@@ -68,12 +69,12 @@ export const reviewerInitialExportStatus = "Ready to export";
 export const reviewerEmptyMemories: MemoryItem[] = [];
 
 export const reviewerDraftOptions: {
-  tones: Tone[];
-  styles: VisualStyle[];
+  tones: TonePreset[];
+  styles: VisualStylePreset[];
   languages: LanguageChoice[];
   vendors: VendorId[];
 } = {
-  tones: ["warm", "playful", "elegant", "simple", "reverent", "sentimental"],
+  tones: ["warm", "funny", "elegant", "simple", "reverent", "sentimental"],
   styles: ["botanical", "bold-type", "photo-note", "minimal"],
   languages: ["English", "Spanish", "Urdu", "Arabic"],
   vendors: ["walgreens", "cvs", "fedex", "walmart", "staples", "office-depot", "local-print-shop"]
@@ -122,7 +123,7 @@ export interface AppState {
   aiCardGenStatus: string;
   aiPanelGenerationProgress: AiPanelGenerationProgress;
   aiGenerationJobs: AiGenerationJobEvidence[];
-  triggerAiCardGen: () => void;
+  triggerAiCardGen: (targetPanelId?: CardPanel["id"]) => void;
   cardGenAvailable: boolean;
   aiFlowConfigs: AiFlowAdminConfig[];
   setAiFlowConfigs: (configs: AiFlowAdminConfig[]) => void;
@@ -189,6 +190,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   const [draftInput, setDraftInput] = useState<CardDraftInput>(() =>
     getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], new Date()))
   );
+  const syncedOpportunityId = useRef(opportunity.id);
   const [aiDraft, setAiDraft] = useState<CardDraft | null>(null);
   const [panelOverrides, setPanelOverrides] = useState<PanelOverrides>(emptyPanelOverrides);
   const [aiStale, setAiStale] = useState(false);
@@ -201,12 +203,15 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
   const [aiFlowConfigs, setAiFlowConfigsState] = useState<AiFlowAdminConfig[]>(() => loadBrowserAiFlowAdminConfigs());
 
   useEffect(() => {
-    setDraftInput((current) => ({
-      ...getDefaultDraftInput(workspace, opportunity),
-      tone: current.tone,
-      style: current.style,
-      language: current.language
-    }));
+    const opportunityChanged = syncedOpportunityId.current !== opportunity.id;
+    syncedOpportunityId.current = opportunity.id;
+    setDraftInput((current) =>
+      syncDraftInputWithOpportunity(current, {
+        workspace,
+        opportunity,
+        opportunityChanged
+      })
+    );
   }, [workspace, opportunity]);
 
   useEffect(() => {
@@ -284,10 +289,11 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     [approvedMemoryNotes, customerChatMessages, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
   );
 
-  const triggerAiCardGen = useCallback(() => {
+  const triggerAiCardGen = useCallback((targetPanelId?: CardPanel["id"]) => {
     if (aiCardGenLoading) return;
-    const requestDraft = draft;
-    const requestPanels = requestDraft.panels;
+    const selectedPanel = targetPanelId ? activeDraft.panels.find((panel) => panel.id === targetPanelId) : undefined;
+    const requestDraft = selectedPanel ? activeDraft : draft;
+    const requestPanels = selectedPanel ? [selectedPanel] : requestDraft.panels;
     const baseBody = {
       sender: draftInput.sender,
       recipient: draftInput.recipient,
@@ -303,7 +309,11 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     setAiCardGenLoading(true);
     setAiStale(false);
     setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
-    setAiCardGenStatus("Starting your AI card. Panels will appear as each one is ready.");
+    setAiCardGenStatus(
+      selectedPanel
+        ? `Regenerating ${selectedPanel.label}. The other panels will stay unchanged.`
+        : "Starting your AI card. Panels will appear as each one is ready."
+    );
     buildAiCardGenerationHeaders(getCustomerApiToken)
       .then((headers) =>
         fetch(cardGenerationEndpoint.requestUrl, {
@@ -326,7 +336,9 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
             .filter((copy): copy is AiGenerationApiPanel & { id: string } => typeof copy.id === "string" && copy.id.length > 0)
             .map((copy) => [copy.id, copy])
         );
-        const aiPanels = requestPanels.map((panel) => {
+        const basePanels = selectedPanel ? requestDraft.panels : requestPanels;
+        const aiPanels = basePanels.map((panel) => {
+          if (selectedPanel && panel.id !== selectedPanel.id) return panel;
           const copy = copyByPanel.get(panel.id);
           if (!copy) return panel;
           return {
@@ -334,6 +346,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
             headline: copy.headline || panel.headline,
             body: copy.body || panel.body,
             artDirection: copy.art_direction || panel.artDirection,
+            textLayout: readAiTextLayout(copy) ?? panel.textLayout,
             imageUrl: undefined
           };
         });
@@ -341,8 +354,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         const hasImages = imageByPanel.size > 0;
         const artworkFailure = readArtworkFailure(result);
         setAiDraft({ ...requestDraft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
-        // A fresh whole-card draft replaces earlier exact panel edits on purpose.
-        setPanelOverrides(emptyPanelOverrides);
+        // A fresh whole-card draft replaces exact edits; selected-panel generation replaces only that panel's edit.
+        setPanelOverrides((current) =>
+          selectedPanel ? clearPanelOverride(current, selectedPanel.id) : emptyPanelOverrides
+        );
         setAiStale(false);
         setAiPanelGenerationProgress(buildAiPanelGenerationProgress(requestPanels, copyByPanel, imageByPanel));
         setAiGenerationJobs((current) =>
@@ -354,12 +369,18 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
               ? artworkFailure === imageGenerationDisabledFailure
                 ? "Copy is ready. Artwork is using the printable template because image generation is not enabled."
                 : `Copy is ready. Artwork is blocked by settings: ${artworkFailure}`
-              : "Copy is ready. No artwork was returned, so template panels stay editable."
+              : selectedPanel
+                ? `${selectedPanel.label} copy is ready. No artwork was returned, so template artwork stays editable.`
+                : "Copy is ready. No artwork was returned, so template panels stay editable."
           );
           return;
         }
 
-        setAiCardGenStatus(`Copy is ready. Loading ${imageByPanel.size}/${panelCount} artwork panels as they finish.`);
+        setAiCardGenStatus(
+          selectedPanel
+            ? `${selectedPanel.label} copy is ready. Loading artwork for this panel.`
+            : `Copy is ready. Loading ${imageByPanel.size}/${panelCount} artwork panels as they finish.`
+        );
         let loadedPanelCount = 0;
         await Promise.allSettled(
           requestPanels.map(async (panel) => {
@@ -387,7 +408,9 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
           })
         );
         setAiCardGenStatus(
-          loadedPanelCount === panelCount
+          selectedPanel && loadedPanelCount === panelCount
+            ? `${selectedPanel.label} regenerated. Review this panel before printing.`
+            : loadedPanelCount === panelCount
             ? "AI draft ready. Review each panel before printing."
             : `AI draft ready with ${loadedPanelCount}/${panelCount} artwork panels. Review the copy before printing.`
         );
@@ -398,7 +421,7 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         setAiPanelGenerationProgress(progressForPanels(requestPanels, "artwork-missing"));
       })
       .finally(() => { setAiCardGenLoading(false); });
-  }, [aiCardGenLoading, approvedMemoryNotes, draft, draftInput, getCustomerApiToken]);
+  }, [activeDraft, aiCardGenLoading, approvedMemoryNotes, draft, draftInput, getCustomerApiToken]);
 
   // Keep the generated artwork but apply the customer's latest words to the panels.
   const keepAiArtwork = useCallback(() => {
@@ -462,6 +485,48 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     calendarConnectionStartPackets,
     customerChatSession
   };
+}
+
+export function syncDraftInputWithOpportunity(
+  current: CardDraftInput,
+  {
+    workspace,
+    opportunity,
+    opportunityChanged
+  }: {
+    workspace: LocalWorkspace | undefined;
+    opportunity: CardOpportunity;
+    opportunityChanged: boolean;
+  }
+): CardDraftInput {
+  const base = opportunityChanged ? getDefaultDraftInput(workspace, opportunity) : current;
+  return {
+    ...base,
+    sender: current.sender === "Local User" ? (workspace?.name ?? current.sender) : current.sender,
+    useMemory: opportunity.memoryIds.length > 0 ? true : current.useMemory,
+    tone: current.tone,
+    style: current.style,
+    language: current.language
+  };
+}
+
+function readAiTextLayout(copy: AiGenerationApiPanel): CardTextLayout | undefined {
+  const raw = copy.text_layout ?? copy.textLayout;
+  if (!raw || typeof raw !== "object") return undefined;
+  const record = raw as Record<string, unknown>;
+  const headlineZone = safeLayoutEnum(record.headline_zone ?? record.headlineZone, ["top", "upper", "center", "lower"]);
+  const bodyZone = safeLayoutEnum(record.body_zone ?? record.bodyZone, ["upper", "center", "lower", "bottom"]);
+  const alignment = safeLayoutEnum(record.alignment, ["left", "center", "right"]);
+  const fontPairing = safeLayoutEnum(record.font_pairing ?? record.fontPairing, ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"]);
+  const colorMode = safeLayoutEnum(record.color_mode ?? record.colorMode, ["dark-ink", "light-ink", "accent-ink", "high-contrast"]);
+  const scale = safeLayoutEnum(record.scale, ["compact", "standard", "large"]);
+  if (!headlineZone || !bodyZone || !alignment || !fontPairing || !colorMode || !scale) return undefined;
+  return { headlineZone, bodyZone, alignment, fontPairing, colorMode, scale };
+}
+
+function safeLayoutEnum<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return (allowed as readonly string[]).includes(normalized) ? (normalized as T) : undefined;
 }
 
 function buildIdempotencyKey(prefix: string): string {

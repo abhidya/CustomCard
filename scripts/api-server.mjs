@@ -29,6 +29,7 @@ import {
   walgreensCheckoutStatusRoute,
   walgreensCheckoutUploadRoute
 } from "../src/walgreensHostedCheckout.mjs";
+import { mobileBootstrap } from "../src/mobileBootstrapData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 import {
   googleCalendarApiOAuthCallbackRoute,
@@ -130,138 +131,6 @@ function clientRateLimitKey(request) {
   return forwardedFor || remoteAddress;
 }
 
-const mobileBootstrap = {
-  service: "customcard-api",
-  safetyBanner: {
-    label: "Confirm before checkout",
-    detail: "Printing, payment, and ordering happen only after customer review."
-  },
-  todaySummary: {
-    cardQueueItemId: "card_anniversary_sara_ahmed",
-    recipientLabel: "Sara and Ahmed",
-    eventLabel: "Anniversary",
-    dueLabel: "Today by 5:00 PM",
-    primaryAction: "approve",
-    riskBadge: "Review before handoff",
-    panelCount: 4,
-    offlineReady: true,
-    realOrdersEnabled: false,
-    customerVisible: true
-  },
-  sections: ["card-queue", "approval-controls", "memory-review", "text-chat", "image-render", "pricing-preview", "handoff", "offline-sync"],
-  queueItems: [
-    {
-      id: "card_anniversary_sara_ahmed",
-      recipientLabel: "Sara and Ahmed",
-      eventLabel: "Anniversary",
-      dueIso: "2026-06-03T17:00:00.000Z",
-      status: "needs-approval",
-      nextAction: "approve",
-      panelCount: 4,
-      source: "ics-import"
-    },
-    {
-      id: "card_birthday_mom",
-      recipientLabel: "Mom",
-      eventLabel: "Birthday",
-      dueIso: "2026-07-10T12:00:00.000Z",
-      status: "approved",
-      nextAction: "edit-tone",
-      panelCount: 4,
-      source: "manual-entry"
-    }
-  ],
-  approvalActions: [
-    { kind: "approve", mutationType: "approve-card", idempotencyRequired: true, networkMode: "local-first-api" },
-    { kind: "edit-tone", mutationType: "update-tone", idempotencyRequired: true, networkMode: "local-first-api" },
-    { kind: "snooze", mutationType: "snooze-card", idempotencyRequired: true, networkMode: "local-first-api" },
-    { kind: "dismiss", mutationType: "dismiss-card", idempotencyRequired: true, networkMode: "local-first-api" },
-    { kind: "request-regeneration", mutationType: "update-tone", idempotencyRequired: true, networkMode: "local-only" }
-  ],
-  chatTranscript: [
-    "I found one anniversary card candidate from your pasted invite.",
-    "Local scripted assistant can draft and explain the card before any live model is connected.",
-    "Live AI and vendor orders stay off until admin credentials and certification gates pass."
-  ],
-  memoryReviewItems: [
-    {
-      id: "memory_sara_ahmed_first_apartment",
-      cardQueueItemId: "card_anniversary_sara_ahmed",
-      recipientLabel: "Sara and Ahmed",
-      memoryLabel: "First apartment note",
-      usage: "approved",
-      approvalRequired: false,
-      rawContentStored: false,
-      customerVisible: true
-    },
-    {
-      id: "memory_mom_garden",
-      cardQueueItemId: "card_birthday_mom",
-      recipientLabel: "Mom",
-      memoryLabel: "Garden hobby note",
-      usage: "review-required",
-      approvalRequired: true,
-      rawContentStored: false,
-      customerVisible: true
-    }
-  ],
-  renderChoices: ["Browser SVG renderer", "Local print package export", "Credential-gated AI image providers"],
-  pricingPreviews: [
-    { vendor: "Walgreens", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false },
-    { vendor: "CVS", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false },
-    { vendor: "FedEx", sourceMode: "review-only-public-price", manualConfirmationRequired: true, liveQuote: false }
-  ],
-  printProofChecks: [
-    {
-      id: "proof-size",
-      label: "5x7 format",
-      detail: "Four SVG panels match the manual print package.",
-      passed: true,
-      realOrderState: "manual",
-      customerVisible: true
-    },
-    {
-      id: "proof-resolution",
-      label: "300 DPI export",
-      detail: "Render packet keeps print dimensions and checksum evidence together.",
-      passed: true,
-      realOrderState: "manual",
-      customerVisible: true
-    },
-    {
-      id: "proof-safe-zone",
-      label: "Safe zone",
-      detail: "Panel text stays inside the tested SVG print area.",
-      passed: true,
-      realOrderState: "manual",
-      customerVisible: true
-    },
-    {
-      id: "proof-order-gate",
-      label: "Order gate",
-      detail: "Retail-printer submission stays blocked until certification evidence exists.",
-      passed: true,
-      realOrderState: "disabled",
-      customerVisible: true
-    }
-  ],
-  handoffSteps: [
-    { label: "Download SVG set", realOrderState: "manual" },
-    { label: "Confirm pickup manually", realOrderState: "disabled" }
-  ],
-  localeOptions: ["en-US", "es-US", "ur-PK", "ar-EG"],
-  syncState: {
-    apiBaseUrlRequired: true,
-    authMode: "customer-session",
-    offlineQueueEnabled: true,
-    idempotencyRequired: true,
-    pendingMutationTypes: ["approve-card", "update-tone", "snooze-card", "dismiss-card", "prepare-handoff"],
-    forbiddenMutationTypes: ["submit-live-order", "charge-payment", "upload-raw-memory"],
-    retryPolicy: "exponential-backoff"
-  },
-  realOrdersEnabled: false
-};
-
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
   [".html", "text/html; charset=utf-8"],
@@ -306,7 +175,7 @@ export const readiness = {
     customer: routes.filter((route) => route.audience === "customer").length,
     admin: routes.filter((route) => route.audience === "admin").length,
     mutations: routes.filter((route) => route.method === "POST").length,
-    idempotentMutations: routes.filter((route) => route.method === "POST").length
+    idempotentMutations: routes.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length
   },
   providers: {
     total: 131,
@@ -332,6 +201,7 @@ export const readiness = {
   localization: {
     defaultLocale: "en-US",
     supportedLocales: 4,
+    cardLanguageLabel: "Card language",
     customerVisible: 4,
     adminVisible: 4,
     rtlLocales: 2,
@@ -646,8 +516,15 @@ function validateApiServerContract() {
   }
   if (readiness.realOrdersEnabled) blockers.push("API readiness cannot enable real orders.");
   if (readiness.safety.externalNetworkCalls) blockers.push("API readiness cannot enable live provider calls.");
-  if (readiness.routes.mutations !== readiness.routes.idempotentMutations) {
-    blockers.push("Every mutation route must require idempotency.");
+  const nonIdempotentMutations = routes.filter(
+    (route) => route.method === "POST" && !route.idempotencyKeyRequired && !hostedCheckoutExemptRouteIds.has(route.id)
+  );
+  if (nonIdempotentMutations.length > 0) {
+    blockers.push(`Every non-checkout mutation route must require idempotency: ${nonIdempotentMutations.map((route) => route.id).join(", ")}.`);
+  }
+  const idempotentMutationCount = routes.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length;
+  if (readiness.routes.idempotentMutations !== idempotentMutationCount) {
+    blockers.push("API readiness idempotent mutation count must match route contracts.");
   }
   if (readiness.providers.total < 124) blockers.push("Provider API summary is missing expanded adapter coverage.");
   if (readiness.providerGovernance.total !== readiness.providers.total) {
@@ -1602,11 +1479,28 @@ function googleEventStartIso(start) {
 }
 
 function inferCalendarRecipient(title) {
-  const withoutOccasion = title
-    .replace(/\b(birthday|anniversary|wedding|graduation|dinner|party|celebration|brunch|lunch)\b/gi, " ")
+  const cleanTitle = safeContractText(title, "");
+  const possessive = cleanTitle.match(/^(.+?)[’']s\s+(birthday|anniversary|wedding|graduation|party|celebration)\b/i);
+  const forMatch = cleanTitle.match(/\b(?:birthday|anniversary|wedding|graduation|party|celebration|brunch|lunch|dinner)\s+for\s+(.+?)(?:\s+(?:on|at|in)\b|$)/i);
+  const inferred = possessive?.[1] ?? forMatch?.[1] ?? cleanTitle
+    .replace(/\b(happy|birthday|anniversary|wedding|graduation|dinner|party|celebration|brunch|lunch)\b/gi, " ");
+  const recipient = cleanCalendarRecipient(inferred);
+  return safeContractText(recipient, "Someone important");
+}
+
+function cleanCalendarRecipient(value) {
+  const recipient = safeContractText(value, "")
+    .replace(/^[\s"'`]+|[\s"'`]+$/g, "")
+    .replace(/[!?.:,;]+$/g, "")
+    .replace(/\s+[!?.:,;]+$/g, "")
+    .replace(/[’']s$/i, "")
     .replace(/\s+/g, " ")
     .trim();
-  return safeContractText(withoutOccasion, "Someone important");
+  if (!recipient) return "";
+  if (/^(happy|birthday|calendar event|event|party|dinner|brunch|lunch|celebration|meeting|appointment|someone important)$/i.test(recipient)) {
+    return "";
+  }
+  return recipient;
 }
 
 function leadTimeHoursFromNow(startsAt) {
@@ -1973,7 +1867,8 @@ function safeContractLongText(value, fallback) {
 
 function safeContractTone(value) {
   const tone = String(value ?? "warm").trim().toLowerCase();
-  return ["warm", "playful", "elegant", "simple", "reverent", "sentimental"].includes(tone) ? tone : "warm";
+  if (tone === "playful") return "funny";
+  return ["warm", "funny", "elegant", "simple", "reverent", "sentimental"].includes(tone) ? tone : "warm";
 }
 
 function safeContractVisualStyle(value) {

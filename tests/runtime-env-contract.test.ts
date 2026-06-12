@@ -60,7 +60,16 @@ describe("runtime env contract", () => {
     expect(validateWorkerRuntimeEnv({ ...durableEnv, CUSTOMCARD_API_RUNTIME: "contract" }, { requirePostgres: true })).toContain(
       "CustomCard worker execution requires CUSTOMCARD_API_RUNTIME=postgres."
     );
+    expect(validateWorkerRuntimeEnv({ ...durableEnv, CUSTOMCARD_API_RUNTIME: "surprise" })).toEqual(
+      expect.arrayContaining(["CustomCard worker requires CUSTOMCARD_API_RUNTIME to be one of: contract, memory, postgres."])
+    );
+    expect(validateWorkerRuntimeEnv({ ...durableEnv, REAL_ORDER_KILL_SWITCH: "enabled" })).toEqual(
+      expect.arrayContaining(["CustomCard worker requires REAL_ORDER_KILL_SWITCH=disabled until certification is recorded."])
+    );
     expect(validateMobileRuntimeEnv({})).toEqual(["Mobile shell missing env: CUSTOMCARD_API_BASE_URL"]);
+    expect(validateMobileRuntimeEnv({ CUSTOMCARD_API_BASE_URL: "replace-me" })).toEqual([
+      "Mobile shell has placeholder env: CUSTOMCARD_API_BASE_URL"
+    ]);
     expect(validateMobileRuntimeEnv({ CUSTOMCARD_API_BASE_URL: "http://127.0.0.1:5173" })).toEqual([]);
   });
 });

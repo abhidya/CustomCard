@@ -31,6 +31,15 @@ describe("AI generation job evidence", () => {
               headline: "Grateful for You",
               body: "Thanks for choosing us.",
               art_direction: "Warm citrus and local-shop texture.",
+              visual_cue: "Warm citrus cover with editorial negative space and a clean lower text-safe area.",
+              text_layout: {
+                headline_zone: "upper",
+                body_zone: "lower",
+                alignment: "center",
+                font_pairing: "serif-sans",
+                color_mode: "dark-ink",
+                scale: "standard"
+              },
               image_prompt:
                 "Flat citrus pattern. CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN=test-only-token should not appear.",
               image_negative_prompt: "readable text, logos"
@@ -72,6 +81,8 @@ describe("AI generation job evidence", () => {
       height: 2100
     });
     expect(job.panels[0].imagePrompt).toContain("Flat citrus pattern");
+    expect(job.panels[0].visualCue).toContain("Warm citrus cover");
+    expect(job.panels[0].textLayout).toMatchObject({ headlineZone: "upper", bodyZone: "lower" });
     expect(job.panels[0].revisedPrompt).toContain("authorization=<redacted>");
     expect(serialized).not.toContain("test-only-token");
     expect(serialized).not.toContain("test-only-secret");

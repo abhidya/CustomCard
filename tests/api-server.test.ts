@@ -2,6 +2,7 @@ import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_pr
 import { createServer, type Server } from "node:http";
 import { describe, expect, it } from "vitest";
 import { handleApiRequest } from "../scripts/api-server.mjs";
+import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
 
 const shellDoctorTimeoutMs = 30_000;
 const runtimeDoctorEnv = {
@@ -15,6 +16,7 @@ const runtimeDoctorEnv = {
   AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
   REAL_ORDER_KILL_SWITCH: "disabled"
 };
+const expectedIdempotentMutations = apiRouteContracts.filter((route) => route.method === "POST" && route.idempotencyKeyRequired).length;
 
 function walgreensPortalEvidenceArtifact() {
   return {
@@ -547,7 +549,7 @@ describe("api server wrapper", () => {
       ])
     );
     expect(report.readiness.routes.total).toBe(31);
-    expect(report.readiness.routes.mutations).toBe(report.readiness.routes.idempotentMutations);
+    expect(report.readiness.routes.idempotentMutations).toBe(expectedIdempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 8,
       cspFrameAncestors: true,
@@ -760,7 +762,7 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 31, admin: 9, idempotentMutations: 16 });
+      expect(readiness.routes).toMatchObject({ total: 31, admin: 9, idempotentMutations: expectedIdempotentMutations });
       expect(readiness.providers).toMatchObject({ total: 131, readyLocal: 18, credentialGated: 97, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
         total: 131,
@@ -989,9 +991,15 @@ describe("api server wrapper", () => {
       });
 
       const mobile = await getJson(port, "/api/mobile/bootstrap");
-      expect(mobile.sections).toEqual(
-        expect.arrayContaining(["card-queue", "approval-controls", "text-chat", "pricing-preview", "handoff", "offline-sync"])
+      expect(mobile.sections.map((section: { id: string }) => section.id)).toEqual(
+        expect.arrayContaining(["account-import", "card-queue", "approval-controls", "text-chat", "pricing-preview", "handoff", "offline-sync"])
       );
+      expect(mobile.proofBoundary).toMatchObject({
+        deterministicProofMode: "repo-local-contract",
+        proofApproved: false,
+        printOptionsUnlocked: false,
+        blockedLiveProofs: ["native-emulator-render", "signed-native-artifact", "app-store-review", "live-retail-order"]
+      });
       expect(mobile.safetyBanner).toMatchObject({ label: "Confirm before checkout" });
       expect(mobile.todaySummary).toMatchObject({
         cardQueueItemId: "card_anniversary_sara_ahmed",
@@ -1005,6 +1013,18 @@ describe("api server wrapper", () => {
         expect.arrayContaining([
           expect.objectContaining({ status: "needs-approval", panelCount: 4 }),
           expect.objectContaining({ status: "approved", panelCount: 4 })
+        ])
+      );
+      expect(mobile.accountOptions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ provider: "Google", liveOAuthEnabled: false, canStartNow: false }),
+          expect.objectContaining({ provider: "Apple", liveOAuthEnabled: false, canStartNow: true })
+        ])
+      );
+      expect(mobile.chatTranscript).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ speaker: "assistant", source: "local-script", text: expect.stringContaining("Local scripted assistant") }),
+          expect.objectContaining({ speaker: "assistant", source: "local-script", text: expect.stringContaining("Live AI and automatic orders stay off") })
         ])
       );
       expect(mobile.approvalActions.every((action: { idempotencyRequired: boolean }) => action.idempotencyRequired)).toBe(true);
@@ -1032,7 +1052,7 @@ describe("api server wrapper", () => {
         idempotencyRequired: true,
         forbiddenMutationTypes: ["submit-live-order", "charge-payment", "upload-raw-memory"]
       });
-      expect(mobile.localeOptions).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
+      expect(mobile.localeOptions.map((option: { locale: string }) => option.locale)).toEqual(["en-US", "es-US", "ur-PK", "ar-EG"]);
       expect(mobile.localization).toMatchObject({ supportedLocales: 4, rtlLocales: 2, liveTranslationProvider: false });
       expect(mobile.realOrdersEnabled).toBe(false);
 
@@ -2370,8 +2390,8 @@ describe("api server wrapper", () => {
       const callbackPayload = await callbackResponse.json();
       expect(callbackPayload).toMatchObject({
         status: "google-calendar-connected",
-        importedEventCount: 1,
-        opportunityCount: 1,
+        importedEventCount: 3,
+        opportunityCount: 3,
         credentialStorageEnabled: true,
         rawContentStored: false,
         calendarConnection: expect.objectContaining({
@@ -2385,9 +2405,19 @@ describe("api server wrapper", () => {
             title: "Nadia birthday dinner",
             timezone: "America/New_York",
             sourceEvidence: "Google Calendar metadata: title and start time."
+          }),
+          expect.objectContaining({
+            title: "Papa's birthday"
+          }),
+          expect.objectContaining({
+            title: "Happy birthday!"
           })
         ],
-        opportunities: [expect.objectContaining({ recipientName: "Nadia", decision: "pending" })],
+        opportunities: [
+          expect.objectContaining({ recipientName: "Nadia", decision: "pending" }),
+          expect.objectContaining({ recipientName: "Papa", decision: "pending" }),
+          expect.objectContaining({ recipientName: "Someone important", decision: "pending" })
+        ],
         repository: expect.objectContaining({
           runtimeMode: "memory",
           persisted: true,
@@ -2398,6 +2428,8 @@ describe("api server wrapper", () => {
       const serialized = JSON.stringify(callbackPayload);
       expect(serialized).not.toContain("This raw description must not be stored");
       expect(serialized).not.toContain("fake-google-refresh-token");
+      expect(serialized).not.toContain("Papa's\",");
+      expect(serialized).not.toContain("Happy !");
       expect(google.requests).toEqual(expect.arrayContaining(["POST /token", "GET /calendar/v3/calendars/primary/events"]));
       expect(new URLSearchParams(google.tokenRequestBodies[0]).get("code_verifier")).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
@@ -2405,8 +2437,8 @@ describe("api server wrapper", () => {
       expect(health.runtime).toMatchObject({
         mode: "memory",
         providerConnectionRecords: 1,
-        importedEventRecords: 1,
-        cardOpportunityRecords: 1
+        importedEventRecords: 3,
+        cardOpportunityRecords: 3
       });
     } finally {
       server.kill();
@@ -2600,6 +2632,22 @@ async function startFakeGoogleCalendarServer(): Promise<{ port: number; server: 
                 timeZone: "America/New_York"
               },
               description: "This raw description must not be stored or returned."
+            },
+            {
+              id: "google-event-2",
+              summary: "Papa's birthday",
+              start: {
+                date: "2027-05-02",
+                timeZone: "America/New_York"
+              }
+            },
+            {
+              id: "google-event-3",
+              summary: "Happy birthday!",
+              start: {
+                date: "2026-09-12",
+                timeZone: "America/New_York"
+              }
             }
           ]
         })

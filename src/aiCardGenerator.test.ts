@@ -105,6 +105,13 @@ describe("AI card generator service", () => {
         "Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like."
       ])
     );
+    expect(userPrompt.story_playbooks).toEqual(
+      expect.arrayContaining([
+        "High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.",
+        "B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.",
+        "Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested."
+      ])
+    );
     expect(userPrompt.layout_requirements).toEqual(
       expect.arrayContaining([
         "front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.",
@@ -114,7 +121,15 @@ describe("AI card generator service", () => {
     expect(userPrompt.layout_requirements).toEqual(
       expect.arrayContaining([
         "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.",
-        "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern."
+        "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
+        "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
+        "text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text."
+      ])
+    );
+    expect(userPrompt.image_prompt_requirements).toEqual(
+      expect.arrayContaining([
+        "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",
+        "For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes."
       ])
     );
     expect(requestBody.response_format).toMatchObject({
@@ -129,12 +144,14 @@ describe("AI card generator service", () => {
                 minItems: 4,
                 maxItems: 4,
                 items: {
-                  required: ["id", "headline", "body", "art_direction", "image_prompt", "image_negative_prompt"]
+                  required: ["id", "headline", "body", "art_direction", "visual_cue", "text_layout", "image_prompt", "image_negative_prompt"]
                 }
               }
             }
           }
     });
+    expect(JSON.stringify(result.payload)).toContain("text_layout");
+    expect(JSON.stringify(result.payload)).toContain("visual_cue");
     expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
@@ -325,7 +342,7 @@ describe("AI card generator service", () => {
       { rateKey: "test-meta-copy-repair" }
     );
     const payload = result.payload as {
-      card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
+      card_copy: { panels: Array<{ id: string; headline: string; body: string; visual_cue?: string; text_layout?: Record<string, string>; image_prompt?: string }> };
     };
     const serializedCopy = JSON.stringify(payload.card_copy);
 
@@ -424,7 +441,16 @@ describe("AI card generator service", () => {
       { rateKey: "test-medical-third-person-repair" }
     );
     const payload = result.payload as {
-      card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
+      card_copy: {
+        panels: Array<{
+          id: string;
+          headline: string;
+          body: string;
+          visual_cue?: string;
+          text_layout?: Record<string, string>;
+          image_prompt?: string;
+        }>;
+      };
     };
 
     expect(payload.card_copy.panels[1]).toMatchObject({
@@ -433,6 +459,14 @@ describe("AI card generator service", () => {
     });
     expect(payload.card_copy.panels[2].body).toContain("We are proud not only of the doctor you are becoming");
     expect(payload.card_copy.panels[3].headline).toBe("From Dream to Doctor");
+    expect(payload.card_copy.panels[0].visual_cue).toContain("White doctor's coat");
+    expect(payload.card_copy.panels[1].visual_cue).toContain("Quiet desk after a long hospital shift");
+    expect(payload.card_copy.panels[2].visual_cue).toContain("Golden sunrise through a hospital window");
+    expect(payload.card_copy.panels[3].visual_cue).toContain("stethoscope forming a subtle heart");
+    expect(payload.card_copy.panels[0].text_layout).toMatchObject({ headline_zone: "upper", body_zone: "lower" });
+    expect(payload.card_copy.panels[1].text_layout).toMatchObject({ alignment: "left", font_pairing: "soft-serif" });
+    expect(payload.card_copy.panels[1].image_prompt).toContain("Quiet desk after a long hospital shift");
+    expect(payload.card_copy.panels[2].image_prompt).toContain("Golden sunrise through a hospital window");
   });
 
   it("repairs benchmark copy misses for dad and small-business cards", async () => {
@@ -562,6 +596,129 @@ describe("AI card generator service", () => {
       body: "Made with gratitude for customers who choose small."
     });
     expect(JSON.stringify(payload.card_copy)).not.toMatch(/You're the best|Thanks again|The CustomCard Team|valued customer|continued success|all your endeavors|look forward to serving/i);
+  });
+
+  it("repairs core benchmark risks for recovery, warranty CTA, and distant wedding cards", async () => {
+    const weakResponse = (headlineFor: (panelId: string) => string, bodyFor: (panelId: string) => string) => ({
+      ...cardCopyResponse,
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        headline: headlineFor(panel.id),
+        body: bodyFor(panel.id),
+        art_direction: "Simple card layout.",
+        image_prompt: "A simple border style reserved for the message.",
+        image_negative_prompt: "readable text"
+      }))
+    });
+    const generateWithResponse = async (
+      response: unknown,
+      request: Record<string, unknown>,
+      rateKey: string
+    ): Promise<{ card_copy: { panels: Array<{ id: string; headline: string; body: string }> } }> => {
+      const fetchImpl = vi.fn(async () =>
+        new Response(JSON.stringify({ result: { response } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        })
+      );
+      const service = createAiCardGenerationService({
+        env: {
+          CLOUDFLARE_ACCOUNT_ID: "acct_123",
+          CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+          CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+          CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
+        },
+        fetchImpl
+      });
+      const result = await service.generateCard(request, { rateKey });
+      expect(result.statusCode).toBe(200);
+      return result.payload as { card_copy: { panels: Array<{ id: string; headline: string; body: string }> } };
+    };
+
+    const getWellPayload = await generateWithResponse(
+      weakResponse(
+        () => "Get Well Soon",
+        () => "Wishing you a speedy recovery and hoping you feel better soon."
+      ),
+      {
+        ...cardRequest,
+        sender: "Jordan",
+        recipient: "Sam",
+        relationship: "close friend",
+        occasion: "get well after surgery",
+        style: "calm recovery stationery with basil green and soup-warm ivory",
+        personal_note: "Sam is recovering from surgery.",
+        memory_notes: [
+          "Inside joke: the soup rating spreadsheet.",
+          "Inside joke: terrible hospital socks.",
+          "Sam has a garden that only grows basil.",
+          "Sam is jokingly the mayor of taking tiny walks."
+        ]
+      },
+      "test-get-well-benchmark-risk-repair"
+    );
+    const getWellCopy = JSON.stringify(getWellPayload.card_copy);
+    expect(getWellCopy).toMatch(/tiny walks|tiny-walk/);
+    expect(getWellCopy).toMatch(/soup/);
+    expect(getWellCopy).toMatch(/basil/);
+    expect(getWellCopy).not.toMatch(/speedy recovery|feel better soon|miracle cure/i);
+
+    const b2bPayload = await generateWithResponse(
+      weakResponse(
+        () => "Valued Customer",
+        () => "Act now for a limited time exclusive discount. Terms and conditions apply."
+      ),
+      {
+        ...cardRequest,
+        sender: "Northstar Dental Supply",
+        recipient: "Avery at BrightSmile Clinic",
+        relationship: "customer success team to clinic operations contact",
+        occasion: "one-year purchase anniversary and extended warranty renewal reminder",
+        style: "premium dental supply customer-success stationery",
+        personal_note:
+          "Thank Avery at BrightSmile Clinic for one year since purchase of their sterilizer system and gently remind them their extended warranty renewal window closes July 31. CTA: Scan the enclosed QR code or contact their account manager.",
+        memory_notes: [
+          "BrightSmile Clinic purchased a sterilizer system one year ago.",
+          "The extended warranty renewal window closes July 31.",
+          "Leave a clean area for an app-rendered QR code and account-manager CTA."
+        ]
+      },
+      "test-b2b-warranty-benchmark-risk-repair"
+    );
+    const b2bCopy = JSON.stringify(b2bPayload.card_copy);
+    expect(b2bCopy).toContain("BrightSmile Clinic");
+    expect(b2bCopy).toContain("July 31");
+    expect(b2bCopy).toContain("QR code");
+    expect(b2bCopy).toContain("account manager");
+    expect(b2bCopy).not.toMatch(/exclusive discount|limited time|terms and conditions|valued customer/i);
+
+    const weddingPayload = await generateWithResponse(
+      weakResponse(
+        () => "Congratulations",
+        () => "As your close family, I have watched your love story become perfect. God bless your soulmate journey forever."
+      ),
+      {
+        ...cardRequest,
+        sender: "Jordan",
+        recipient: "Lina and Omar",
+        relationship: "distant cousin",
+        occasion: "wedding",
+        style: "elegant wedding stationery with soft ivory, sage, restrained gold, generous handwriting space",
+        personal_note:
+          "Make a wedding card for distant cousin Lina and her fiance Omar. It should feel respectful and warm even though we are not close. Include a short blessing and leave room for a handwritten note.",
+        memory_notes: [
+          "Lina and Omar are getting married.",
+          "The sender is not close to them and wants restraint.",
+          "The inside should leave space for a handwritten note."
+        ]
+      },
+      "test-wedding-benchmark-risk-repair"
+    );
+    const weddingCopy = JSON.stringify(weddingPayload.card_copy);
+    expect(weddingCopy).toContain("Lina and Omar");
+    expect(weddingCopy).toMatch(/blessing/i);
+    expect(weddingCopy).toMatch(/handwritten|handwriting/i);
+    expect(weddingCopy).not.toMatch(/God bless|close family|soulmate|perfect/i);
   });
 
   it("honors a trusted admin live-provider off toggle even when credentials exist", async () => {

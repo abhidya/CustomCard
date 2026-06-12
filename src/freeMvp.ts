@@ -11,8 +11,11 @@ import {
 export type FreeImportSource = "ics-paste" | "invite-paste" | "manual-note" | "empty";
 export type OpportunityStatus = "ready" | "needs-more-detail";
 export type Urgency = "same-day" | "this-week" | "planned" | "needs-date";
-export type Tone = "warm" | "playful" | "elegant" | "simple" | "reverent" | "sentimental";
-export type VisualStyle = "botanical" | "bold-type" | "photo-note" | "minimal";
+export type TonePreset = "warm" | "funny" | "elegant" | "simple" | "reverent" | "sentimental";
+export type LegacyTonePreset = "playful";
+export type Tone = TonePreset | LegacyTonePreset | (string & {});
+export type VisualStylePreset = "botanical" | "bold-type" | "photo-note" | "minimal";
+export type VisualStyle = VisualStylePreset | (string & {});
 export type LanguageChoice = "English" | "Spanish" | "Urdu" | "Arabic";
 export type VendorId = "walgreens" | "cvs" | "fedex" | "walmart" | "staples" | "office-depot" | "local-print-shop";
 
@@ -123,7 +126,23 @@ export interface CardPanel {
   rtl: boolean;
   overflowRisk: boolean;
   imageUrl?: string;
-  styleId?: VisualStyle;
+  textLayout?: CardTextLayout;
+  styleId?: VisualStylePreset;
+}
+
+export type TextZone = "top" | "upper" | "center" | "lower" | "bottom";
+export type TextAlignment = "left" | "center" | "right";
+export type TextFontPairing = "serif-sans" | "bold-editorial" | "minimal-sans" | "soft-serif";
+export type TextColorMode = "dark-ink" | "light-ink" | "accent-ink" | "high-contrast";
+export type TextScale = "compact" | "standard" | "large";
+
+export interface CardTextLayout {
+  headlineZone: Exclude<TextZone, "bottom">;
+  bodyZone: Exclude<TextZone, "top">;
+  alignment: TextAlignment;
+  fontPairing: TextFontPairing;
+  colorMode: TextColorMode;
+  scale: TextScale;
 }
 
 export interface CardDraft {

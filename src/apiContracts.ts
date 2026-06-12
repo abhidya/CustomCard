@@ -1,4 +1,5 @@
 import { mobileExperience, summarizeMobileExperience, validateMobileExperience } from "../apps/mobile/src/customerExperience.ts";
+import { mobileBootstrap } from "./mobileBootstrapData.mjs";
 import {
   buildReadinessSummary,
   validateReadinessDomains,
@@ -143,7 +144,7 @@ export interface ApiReadinessSummary {
 export interface ApiBootstrapPayload {
   customer: ReturnType<typeof buildCustomerPanelModel>;
   admin: ReturnType<typeof buildAdminPanelModel>;
-  mobile: typeof mobileExperience;
+  mobile: typeof mobileBootstrap;
   localization: {
     locales: typeof supportedLocales;
     summary: LocalizationReadinessSummary;
@@ -270,7 +271,7 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
   return {
     customer: buildCustomerPanelModel(),
     admin: buildAdminPanelModel(),
-    mobile: mobileExperience,
+    mobile: mobileBootstrap,
     localization: {
       locales: supportedLocales,
       summary: summarizeLocalizationReadiness()

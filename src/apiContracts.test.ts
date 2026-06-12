@@ -10,6 +10,7 @@ import {
   type ApiRouteContract
 } from "./apiContracts";
 import { apiRouteContracts as apiRouteContractData, persistedTablesForRouteId } from "./apiRouteContractsData.mjs";
+import { mobileBootstrap } from "./mobileBootstrapData.mjs";
 
 describe("api contracts", () => {
   it("uses the Node-safe route contract data as the canonical route interface", () => {
@@ -886,6 +887,7 @@ describe("api contracts", () => {
       blockers: expect.arrayContaining(["Object store persistence is not configured."])
     });
     expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);
+    expect(resolveApiContractResponse("/api/mobile/bootstrap")).toEqual(mobileBootstrap);
     expect(resolveApiContractResponse("/api/mobile/bootstrap")).toMatchObject({
       safetyBanner: { label: "Confirm before checkout" },
       todaySummary: { primaryAction: "approve", realOrdersEnabled: false },

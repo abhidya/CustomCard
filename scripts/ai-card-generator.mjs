@@ -10,6 +10,14 @@ export const aiCardGenerateRoute = "/api/ai/card/generate";
 export const aiChatRespondRoute = "/api/ai/chat/respond";
 
 const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
+const textLayoutEnums = {
+  headline_zone: ["top", "upper", "center", "lower"],
+  body_zone: ["upper", "center", "lower", "bottom"],
+  alignment: ["left", "center", "right"],
+  font_pairing: ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"],
+  color_mode: ["dark-ink", "light-ink", "accent-ink", "high-contrast"],
+  scale: ["compact", "standard", "large"]
+};
 const cardCopyJsonSchema = {
   type: "object",
   additionalProperties: false,
@@ -45,12 +53,26 @@ const cardCopyJsonSchema = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "headline", "body", "art_direction", "image_prompt", "image_negative_prompt"],
+        required: ["id", "headline", "body", "art_direction", "visual_cue", "text_layout", "image_prompt", "image_negative_prompt"],
         properties: {
           id: { type: "string", enum: requiredPanelIds },
           headline: { type: "string", maxLength: 120 },
           body: { type: "string", maxLength: 600 },
           art_direction: { type: "string", maxLength: 500 },
+          visual_cue: { type: "string", maxLength: 360 },
+          text_layout: {
+            type: "object",
+            additionalProperties: false,
+            required: ["headline_zone", "body_zone", "alignment", "font_pairing", "color_mode", "scale"],
+            properties: {
+              headline_zone: { type: "string", enum: textLayoutEnums.headline_zone },
+              body_zone: { type: "string", enum: textLayoutEnums.body_zone },
+              alignment: { type: "string", enum: textLayoutEnums.alignment },
+              font_pairing: { type: "string", enum: textLayoutEnums.font_pairing },
+              color_mode: { type: "string", enum: textLayoutEnums.color_mode },
+              scale: { type: "string", enum: textLayoutEnums.scale }
+            }
+          },
           image_prompt: { type: "string", maxLength: 1200 },
           image_negative_prompt: { type: "string", maxLength: 500 }
         }
@@ -68,6 +90,15 @@ const panelDefaults = {
     headline: "For you",
     body: "A card made with care.",
     art_direction: "Coordinated front cover artwork with safe margins.",
+    visual_cue: "One dominant front-cover symbol with a clean upper or lower text-safe area.",
+    text_layout: {
+      headline_zone: "upper",
+      body_zone: "lower",
+      alignment: "center",
+      font_pairing: "serif-sans",
+      color_mode: "dark-ink",
+      scale: "standard"
+    },
     image_prompt:
       "Full-bleed flat 2D artwork layer for a premium 5x7 vertical front print panel, one clear hero visual idea, disciplined negative space for app-added typography, restrained edge ornament, refined print stationery composition, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -77,6 +108,15 @@ const panelDefaults = {
     headline: "Thinking of you",
     body: "A note for this moment.",
     art_direction: "Soft interior panel with room for a short message.",
+    visual_cue: "Quiet left-interior opening panel with border detail and a calm center for the first note.",
+    text_layout: {
+      headline_zone: "upper",
+      body_zone: "center",
+      alignment: "center",
+      font_pairing: "soft-serif",
+      color_mode: "dark-ink",
+      scale: "standard"
+    },
     image_prompt:
       "Full-bleed flat 2D artwork layer for a soft 5x7 vertical inside-left print panel, border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, large quiet blank center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -86,6 +126,15 @@ const panelDefaults = {
     headline: "From the heart",
     body: "With warm wishes.",
     art_direction: "Main message panel with readable typography and generous margins.",
+    visual_cue: "Quiet right-interior message panel with matching border detail and generous open space for the main note.",
+    text_layout: {
+      headline_zone: "upper",
+      body_zone: "center",
+      alignment: "center",
+      font_pairing: "serif-sans",
+      color_mode: "dark-ink",
+      scale: "standard"
+    },
     image_prompt:
       "Full-bleed flat 2D artwork layer for a clean 5x7 vertical inside-right print panel, matching border-first stationery layout, thin refined frame, sparse corner or lower-edge motif, generous quiet text-safe center for app-added typography, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -95,6 +144,15 @@ const panelDefaults = {
     headline: "CustomCard",
     body: "Made with CustomCard. Printed locally.",
     art_direction: "Clean coordinating back panel with minimal ornamentation.",
+    visual_cue: "Minimal back-cover echo with one small coordinating mark and a clean lower text-safe area.",
+    text_layout: {
+      headline_zone: "lower",
+      body_zone: "bottom",
+      alignment: "center",
+      font_pairing: "minimal-sans",
+      color_mode: "dark-ink",
+      scale: "compact"
+    },
     image_prompt:
       "Full-bleed flat 2D artwork layer for a minimal 5x7 vertical back print panel, mostly negative space, one small coordinating lower mark or border echo, refined print stationery finish, no all-over wallpaper pattern, no words, no letters, no typography, no logos, no watermark.",
     image_negative_prompt:
@@ -688,7 +746,7 @@ function svgMotifOverlapsSafeArea(x, y, scale, safeArea) {
 
 function themeForPrompt(prompt) {
   const text = String(prompt).toLowerCase();
-  if (/\b(medical|doctor|stethoscope|white[- ]coat|ecg|anatomy|graduation cap)\b/.test(text)) {
+  if (/\b(medical|doctor|stethoscope|white[- ]coat|ecg|anatomy|graduation cap|residen(?:cy|t))\b/.test(text)) {
     return {
       kind: "medical",
       background: (panelId) => panelId.startsWith("inside") ? "#fffdf7" : "#101d3b",
@@ -712,6 +770,45 @@ function themeForPrompt(prompt) {
       overlay: () => "",
       border: (panelId) => toolBorder(panelId),
       motif: (index, panelId) => toolMotif(index, panelId)
+    };
+  }
+  if (/\b(bold[- ]type|editorial|poster|sprint|project-management|project management)\b/.test(text)) {
+    return {
+      kind: "bold-type",
+      background: (panelId) => panelId.startsWith("inside") ? "#fffaf0" : "#15181d",
+      accent: (panelId) => panelId.startsWith("inside") ? "#2f4f5f" : "#f2b84b",
+      count: 0,
+      texture: () => "",
+      hero: (panelId) => boldTypeHero(panelId),
+      overlay: () => "",
+      border: (panelId) => minimalEditorialBorder(panelId),
+      motif: () => ""
+    };
+  }
+  if (/\b(photo[- ]note|sympathy|condolence|grieving|quiet support)\b/.test(text)) {
+    return {
+      kind: "photo-note",
+      background: "#fbf7ef",
+      accent: "#7d8b72",
+      count: 0,
+      texture: () => paperGrainTexture("#7d8b72", 0.09),
+      hero: (panelId) => photoNoteHero(panelId),
+      overlay: () => "",
+      border: (panelId) => photoNoteBorder(panelId),
+      motif: () => ""
+    };
+  }
+  if (/\b(minimal|plain thanks|watering the plants|watered the plants|neighbor)\b/.test(text)) {
+    return {
+      kind: "minimal",
+      background: "#fdfcf8",
+      accent: "#52775b",
+      count: 0,
+      texture: () => "",
+      hero: (panelId) => minimalPlantHero(panelId),
+      overlay: () => "",
+      border: (panelId) => minimalEditorialBorder(panelId),
+      motif: () => ""
     };
   }
   if (/\b(birthday|botanical|flower|fern|rose)\b/.test(text)) {
@@ -758,13 +855,31 @@ function medicalPaperTexture() {
 }
 
 function medicalHero(panelId) {
-  if (panelId.startsWith("inside")) {
+  if (panelId === "inside-left") {
     return `
-      <g data-customcard-hero="medical-interior">
-        <path d="M170 1682 L360 1682 L390 1608 L435 1742 L485 1526 L535 1682 L1030 1682 L1070 1628 L1122 1728 L1182 1588 L1222 1682 L1332 1682" fill="none" stroke="#c49b42" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
-        <path d="M1114 1556 C1080 1608 1086 1664 1130 1690 C1178 1718 1242 1688 1258 1634" fill="none" stroke="#253454" stroke-width="12" stroke-linecap="round" opacity="0.75"/>
-        <circle cx="1102" cy="1550" r="22" fill="none" stroke="#c49b42" stroke-width="9" opacity="0.82"/>
-        <circle cx="1270" cy="1628" r="34" fill="none" stroke="#c49b42" stroke-width="9" opacity="0.82"/>
+      <g data-customcard-hero="medical-inside-left">
+        <rect x="188" y="1518" width="1124" height="16" rx="8" fill="#8a7044" opacity="0.24"/>
+        <path d="M260 1518 H650 C682 1448 780 1448 812 1518 H1240" fill="none" stroke="#c49b42" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+        <rect x="344" y="1390" width="250" height="84" rx="10" fill="#253454" opacity="0.18"/>
+        <rect x="376" y="1356" width="250" height="84" rx="10" fill="#c49b42" opacity="0.22"/>
+        <path d="M890 1374 C846 1448 866 1512 940 1530 C1024 1550 1102 1492 1080 1408" fill="none" stroke="#253454" stroke-width="14" stroke-linecap="round" opacity="0.62"/>
+        <circle cx="884" cy="1370" r="20" fill="none" stroke="#c49b42" stroke-width="8" opacity="0.78"/>
+        <circle cx="1085" cy="1405" r="30" fill="none" stroke="#c49b42" stroke-width="8" opacity="0.78"/>
+        <path d="M1110 1468 C1170 1428 1230 1432 1272 1486" fill="none" stroke="#8a7044" stroke-width="12" stroke-linecap="round" opacity="0.3"/>
+      </g>
+    `;
+  }
+  if (panelId === "inside-right") {
+    return `
+      <g data-customcard-hero="medical-inside-right">
+        <rect x="182" y="220" width="1136" height="430" rx="20" fill="#f7e7b5" opacity="0.2"/>
+        <path d="M190 650 C460 468 730 440 1310 650" fill="#f6d170" opacity="0.2"/>
+        <path d="M250 650 H1250" stroke="#c49b42" stroke-width="8" stroke-linecap="round" opacity="0.42"/>
+        <path d="M1015 1450 L958 1570 L980 1768 L1208 1768 L1230 1570 L1174 1450 C1138 1488 1050 1488 1015 1450Z" fill="#253454" opacity="0.1"/>
+        <path d="M1028 1468 L1090 1606 L1098 1766 M1160 1468 L1106 1606 L1098 1766" fill="none" stroke="#253454" stroke-width="8" opacity="0.18"/>
+        <path d="M250 1660 C390 1568 510 1568 648 1660" fill="none" stroke="#c49b42" stroke-width="12" stroke-linecap="round" opacity="0.34"/>
+        <circle cx="356" cy="1602" r="42" fill="#253454" opacity="0.1"/>
+        <circle cx="538" cy="1602" r="42" fill="#253454" opacity="0.1"/>
       </g>
     `;
   }
@@ -773,6 +888,9 @@ function medicalHero(panelId) {
       <g data-customcard-hero="medical-back" opacity="0.78">
         <path d="M210 1040 H560 L600 968 L644 1118 L692 900 L746 1040 H1290" fill="none" stroke="#e8c66c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M702 860 C632 768 506 788 506 906 C506 1014 646 1074 750 1158 C854 1074 994 1014 994 906 C994 788 868 768 798 860 C774 890 726 890 702 860Z" fill="none" stroke="#fff4d3" stroke-width="10" opacity="0.74"/>
+        <path d="M610 690 L890 690 L812 632 L688 632Z" fill="#fff4d3" stroke="#e8c66c" stroke-width="7" opacity="0.72"/>
+        <path d="M750 690 V806" stroke="#e8c66c" stroke-width="6" stroke-linecap="round" opacity="0.74"/>
+        <circle cx="750" cy="824" r="14" fill="#e8c66c" opacity="0.86"/>
       </g>
     `;
   }
@@ -781,6 +899,8 @@ function medicalHero(panelId) {
       <path d="M0 760 H520 L552 704 L592 842 L638 612 L688 760 H1500" fill="none" stroke="#e8c66c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
       <path d="M620 380 L552 548 L582 1036 L918 1036 L948 548 L880 380 C820 432 680 432 620 380Z" fill="#f7f2df" opacity="0.84"/>
       <path d="M646 408 L736 642 L750 1030 M854 408 L764 642 L750 1030" fill="none" stroke="#c9d1d4" stroke-width="12" opacity="0.72"/>
+      <path d="M572 384 C514 518 492 704 520 1038" fill="none" stroke="#e8c66c" stroke-width="26" opacity="0.58"/>
+      <path d="M928 384 C986 518 1008 704 980 1038" fill="none" stroke="#e8c66c" stroke-width="26" opacity="0.58"/>
       <path d="M520 336 L980 336 L858 248 L642 248Z" fill="#1d4267" stroke="#e8c66c" stroke-width="8" opacity="0.96"/>
       <path d="M750 336 V546" stroke="#e8c66c" stroke-width="7" stroke-linecap="round"/>
       <circle cx="750" cy="574" r="20" fill="#e8c66c"/>
@@ -873,6 +993,70 @@ function citrusHero(panelId) {
       <path d="M1156 ${y - 48} V${y + 116} M1074 ${y + 34} H1238 M1098 ${y - 24} L1214 ${y + 92} M1214 ${y - 24} L1098 ${y + 92}" stroke="#fff8dc" stroke-width="7" opacity="0.86"/>
       <ellipse cx="1280" cy="${y - 76}" rx="34" ry="98" fill="#d6d7a3" transform="rotate(46 1280 ${y - 76})"/>
       <ellipse cx="1052" cy="${y + 150}" rx="30" ry="84" fill="#1f7a68" transform="rotate(-42 1052 ${y + 150})"/>
+    </g>
+  `;
+}
+
+function boldTypeHero(panelId) {
+  const cover = panelId === "front";
+  const back = panelId === "back";
+  const y = cover ? 420 : back ? 1510 : 1640;
+  const opacity = cover ? 0.9 : back ? 0.4 : 0.22;
+  return `
+    <g data-customcard-hero="bold-type" opacity="${opacity}">
+      <rect x="${cover ? 0 : 190}" y="${cover ? 0 : y - 70}" width="${cover ? 1500 : 1120}" height="${cover ? 650 : 18}" fill="#f2b84b"/>
+      <rect x="${cover ? 160 : 250}" y="${cover ? 730 : y}" width="${cover ? 500 : 520}" height="${cover ? 34 : 12}" fill="${cover ? "#fffaf0" : "#2f4f5f"}"/>
+      <circle cx="${cover ? 1180 : 1110}" cy="${cover ? 840 : y + 44}" r="${cover ? 56 : 30}" fill="#f2b84b"/>
+      <path d="M${cover ? 1128 : 1082} ${cover ? 840 : y + 44} L${cover ? 1232 : 1138} ${cover ? 840 : y + 44} L${cover ? 1180 : 1110} ${cover ? 900 : y + 78}Z" fill="${cover ? "#15181d" : "#fffaf0"}" opacity="0.72"/>
+    </g>
+  `;
+}
+
+function photoNoteHero(panelId) {
+  const inside = panelId.startsWith("inside");
+  const y = inside ? 280 : panelId === "back" ? 1290 : 300;
+  const h = inside ? 520 : panelId === "back" ? 280 : 760;
+  return `
+    <g data-customcard-hero="photo-note" opacity="${inside ? 0.36 : 0.48}">
+      <rect x="210" y="${y}" width="1080" height="${h}" rx="18" fill="none" stroke="#9aa58d" stroke-width="8" stroke-dasharray="32 20"/>
+      <rect x="250" y="${y + 40}" width="1000" height="${Math.max(80, h - 80)}" rx="10" fill="#ffffff" opacity="0.22"/>
+      <path d="M300 ${y + h + 160} H1180" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
+      <ellipse cx="1135" cy="${y + h + 108}" rx="34" ry="90" fill="#7d8b72" transform="rotate(42 1135 ${y + h + 108})"/>
+    </g>
+  `;
+}
+
+function minimalPlantHero(panelId) {
+  const y = panelId === "front" ? 1380 : panelId === "back" ? 1550 : 1660;
+  const x = panelId.startsWith("inside") ? 1090 : 260;
+  return `
+    <g data-customcard-hero="minimal-plant" opacity="0.74">
+      <path d="M${x} ${y + 120} C${x + 24} ${y + 20} ${x + 18} ${y - 60} ${x - 8} ${y - 140}" fill="none" stroke="#52775b" stroke-width="10" stroke-linecap="round"/>
+      <ellipse cx="${x + 42}" cy="${y - 58}" rx="28" ry="78" fill="#52775b" transform="rotate(36 ${x + 42} ${y - 58})" opacity="0.72"/>
+      <ellipse cx="${x - 42}" cy="${y + 10}" rx="24" ry="66" fill="#9bae86" transform="rotate(-34 ${x - 42} ${y + 10})" opacity="0.74"/>
+      <line x1="${panelId.startsWith("inside") ? 220 : 260}" y1="${y + 170}" x2="${panelId.startsWith("inside") ? 980 : 540}" y2="${y + 170}" stroke="#52775b" stroke-width="8" stroke-linecap="round" opacity="0.4"/>
+    </g>
+  `;
+}
+
+function minimalEditorialBorder(panelId) {
+  const stroke = panelId.startsWith("inside") ? "#2f4f5f" : "#f2b84b";
+  return `<rect x="100" y="100" width="1300" height="1900" rx="8" fill="none" stroke="${stroke}" stroke-width="4" opacity="0.28"/>`;
+}
+
+function photoNoteBorder(panelId) {
+  const stroke = panelId.startsWith("inside") ? "#9aa58d" : "#7d8b72";
+  return `
+    <rect x="92" y="92" width="1316" height="1916" rx="18" fill="none" stroke="${stroke}" stroke-width="5" opacity="0.42"/>
+    <rect x="128" y="128" width="1244" height="1844" rx="12" fill="none" stroke="#a98f68" stroke-width="2" opacity="0.24"/>
+  `;
+}
+
+function paperGrainTexture(stroke = "#7d8b72", opacity = 0.08) {
+  return `
+    <g data-customcard-texture="paper-grain" opacity="${opacity}">
+      <path d="M240 420 C430 390 610 440 820 402 C1030 364 1160 412 1290 388" fill="none" stroke="${stroke}" stroke-width="3"/>
+      <path d="M260 1710 C470 1660 630 1730 830 1686 C1010 1646 1140 1690 1260 1660" fill="none" stroke="${stroke}" stroke-width="3"/>
     </g>
   `;
 }
@@ -1109,6 +1293,15 @@ function buildCardCopyPrompt(input) {
           headline: "string",
           body: "string",
           art_direction: "string",
+          visual_cue: "string",
+          text_layout: {
+            headline_zone: "top|upper|center|lower",
+            body_zone: "upper|center|lower|bottom",
+            alignment: "left|center|right",
+            font_pairing: "serif-sans|bold-editorial|minimal-sans|soft-serif",
+            color_mode: "dark-ink|light-ink|accent-ink|high-contrast",
+            scale: "compact|standard|large"
+          },
           image_prompt: "string",
           image_negative_prompt: "string"
         })),
@@ -1118,6 +1311,8 @@ function buildCardCopyPrompt(input) {
         "Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.",
         "Write the panel copy so the card has an emotional arc from cover to interior to back.",
         "Write art_direction as layout notes for app-rendered typography and print-safe artwork.",
+        "Write visual_cue as the specific image composition each panel should show.",
+        "Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.",
         "Write each image_prompt as a separate one-panel visual request for the image provider."
       ],
       copy_requirements: [
@@ -1136,9 +1331,20 @@ function buildCardCopyPrompt(input) {
         "back body <= 160 characters and should feel quiet, polished, and optional.",
         "All body text must fit a 5x7 card panel with generous margins."
       ],
+      story_playbooks: [
+        "Low-context first-time cards: be useful and specific from the supplied occasion/style without inventing memories; use one gentle human detail and enough copy that the sender could approve it immediately.",
+        "High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.",
+        "B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.",
+        "Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested.",
+        "Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, and overdesigned ornament."
+      ],
       layout_requirements: [
         "theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.",
         "art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.",
+        "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
+        "visual_cue should describe concrete objects, light, palette, spacing, and text-safe negative space for that exact panel; do not mention final words, letters, signatures, or fake handwriting.",
+        "text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text.",
+        "text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.",
         "front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.",
         "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
         "inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.",
@@ -1164,6 +1370,8 @@ function buildCardCopyPrompt(input) {
         "For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.",
         "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
         "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
+        "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",
+        "For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.",
         "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text."
       ],
       safety_requirements: [
@@ -1250,10 +1458,16 @@ function buildPanelImagePrompt(input, panelId, panel) {
       "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
   }[panelId];
   const visualBrief = buildVisualBrief(input, panel);
+  const visualCue = normalizeVisualCue(panel.visual_cue || panel.visualCue, panelId, input);
+  const textLayout = normalizeTextLayout(panel.text_layout || panel.textLayout, panelId, input);
+  const textSafeCue = textSafeCueForLayout(textLayout);
 
   return [
     panelInstruction,
+    "Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup.",
     visualBrief,
+    `Use this panel-specific composition: ${visualCue}`,
+    `Keep natural negative space for app-rendered typography in the ${textSafeCue}; do not draw words, labels, or handwriting.`,
     "Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
   ].join(" ");
 }
@@ -1267,6 +1481,15 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     ? buildPanelImagePrompt(input, panelId, panel)
     : cleaned || panelDefaults[panelId].image_prompt;
   const guardrails = [];
+  const visualCue = normalizeVisualCue(panel?.visual_cue || panel?.visualCue, panelId, input);
+  if (visualCue && !stringSharesEnoughTerms(base, visualCue, 3)) {
+    guardrails.push(`Use this panel-specific composition: ${visualCue}`);
+  }
+  const textLayout = normalizeTextLayout(panel?.text_layout || panel?.textLayout, panelId, input);
+  const textSafeCue = textSafeCueForLayout(textLayout);
+  if (!textSafeCueMentioned(base, textSafeCue)) {
+    guardrails.push(`Keep natural negative space for app-rendered typography in the ${textSafeCue}; do not draw words, labels, or handwriting.`);
+  }
   if (!/\b5x7\b/i.test(base)) guardrails.push("5x7 vertical print panel.");
   if (!/\bflat\b/i.test(base) || !/\b2d\b/i.test(base)) guardrails.push("Flat 2D full-bleed digital illustration.");
   if (!/\bno readable text\b/i.test(base)) guardrails.push("No readable text.");
@@ -1342,6 +1565,7 @@ function promptSpecificityTerms(input, panel) {
     input.style,
     input.personal_note,
     input.memory_notes.join(" "),
+    panel.visual_cue,
     panel.art_direction,
     buildVisualBrief(input, panel)
   ].join(" ");
@@ -1444,9 +1668,30 @@ function normalizeImageNegativePrompt(value) {
 }
 
 function buildVisualBrief(input, panel) {
-  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction}`.toLowerCase();
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction} ${panel.visual_cue || panel.visualCue || ""}`.toLowerCase();
   if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
     return "Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons.";
+  }
+  if (/\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source)) {
+    return "Calm recovery stationery: soup-warm ivory paper, basil green accents, tiny walking-path linework, small basil sprig and soup-spoon motifs, tender negative space, no hospital room, no medical equipment, no pitying imagery.";
+  }
+  if (/\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source)) {
+    return "Premium B2B customer-success stationery: clean white and deep teal field, soft metallic accent line, subtle sterile-supply geometry, lower-right app-overlay area reserved for QR/CTA, confident whitespace, no discounts, no legal fine print, no product photo.";
+  }
+  if (/\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source)) {
+    return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
+  }
+  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
+    return "Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches.";
+  }
+  if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
+    return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
+  }
+  if (/\b(anniversary|years together|spouse|balcony basil|sunday morning walks?)\b/.test(source)) {
+    return "Sentimental botanical anniversary stationery: balcony basil sprig, Sunday-walk path line, warm cream and deep green palette, tender negative space, quiet paired motifs, intimate but not vow-like.";
+  }
+  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    return "Simple minimal thank-you stationery: one small plant-related mark, clean white or warm ivory field, fine rule, direct negative space, no floral pattern, no ornate language.";
   }
   if (/\b(graduat|class year|diploma|school)\b/.test(source)) {
     return "Elegant graduation artwork: navy, ivory, and gold palette, one graduation cap or diploma hero mark, ribbon linework, sparse starbursts, generous negative space, no confetti wallpaper.";
@@ -1539,6 +1784,62 @@ function buildThemeGuide(input) {
       border: "thin gold-and-navy medical stationery border with sparse corner linework"
     });
   }
+  if (/\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source)) {
+    return themeGuide({
+      title: "Tiny Walks And Warm Soup",
+      palette: ["soup-warm ivory", "basil green", "soft clay"],
+      motifs: ["tiny walking path", "basil sprig", "soup spoon curve", "cozy sock stripe"],
+      border: "calm recovery border with sparse basil corners and tiny path linework"
+    });
+  }
+  if (/\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source)) {
+    return themeGuide({
+      title: "A Year Of Trusted Care",
+      palette: ["clean white", "deep teal", "soft metallic accent"],
+      motifs: ["sterile supply line", "calendar mark", "quiet QR-safe square", "account-manager ribbon"],
+      border: "premium customer-success border with sparse teal geometry and a calm CTA area"
+    });
+  }
+  if (/\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source)) {
+    return themeGuide({
+      title: "Warm Wedding Wishes",
+      palette: ["soft ivory", "sage green", "restrained gold"],
+      motifs: ["paired botanical stems", "quiet ribbon arc", "small gold dot", "open note field"],
+      border: "elegant wedding border with sparse sage stems and restrained gold corners"
+    });
+  }
+  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
+    return themeGuide({
+      title: "Quietly With You",
+      palette: ["soft ivory", "muted gray-green", "warm taupe"],
+      motifs: ["photo-note frame", "single quiet leaf", "soft paper field", "thin rule"],
+      border: "restrained photo-note border with a quiet frame motif and generous open space"
+    });
+  }
+  if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
+    return themeGuide({
+      title: "Sprint Complete",
+      palette: ["warm white", "ink black", "bright accent"],
+      motifs: ["offset editorial block", "tiny milestone dot", "clean rule", "cake-slice mark"],
+      border: "bold editorial spacing with clean rules and no clutter"
+    });
+  }
+  if (/\b(anniversary|years together|spouse|balcony basil|sunday morning walks?)\b/.test(source)) {
+    return themeGuide({
+      title: "Our Small Garden",
+      palette: ["warm cream", "deep basil green", "soft morning gold"],
+      motifs: ["balcony basil sprig", "Sunday-walk path line", "paired leaves", "small window-light shape"],
+      border: "sentimental botanical border with paired basil details and quiet path linework"
+    });
+  }
+  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    return themeGuide({
+      title: "Plain Thanks",
+      palette: ["clean white", "warm ivory", "leaf green"],
+      motifs: ["small plant mark", "fine rule", "single water drop"],
+      border: "minimal fine-rule border with one small plant-related mark"
+    });
+  }
   if (/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
     return themeGuide({
       title: "Local Thanks",
@@ -1582,6 +1883,284 @@ function themeGuide({ title, palette, motifs, border }) {
   };
 }
 
+function normalizeVisualCue(value, panelId, input, themeGuide = buildThemeGuide(input)) {
+  const fallback = buildPanelVisualCue(input, panelId, themeGuide);
+  const cleaned = truncate(cleanText(value || ""), 360);
+  if (!cleaned || visualCueNeedsRepair(cleaned) || visualCueTooGenericForSource(cleaned, input)) return fallback;
+  return cleaned;
+}
+
+function visualCueTooGenericForSource(value, input) {
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  const text = String(value || "").toLowerCase();
+  if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
+    return !/\b(?:doctor|medical|hospital|white[- ]coat|stethoscope|graduation|residen(?:cy|t))\b/.test(text);
+  }
+  return false;
+}
+
+function visualCueNeedsRepair(value) {
+  const text = String(value || "").toLowerCase();
+  if (/\b(?:readable text|fake text|letters|logo|watermark|qr code|caption plaque|text box|tabletop|mockup|product photo)\b/.test(text)) {
+    return !/\b(?:no|without|avoid|not)\b.{0,40}\b(?:readable text|fake text|letters|logo|watermark|qr code|caption plaque|text box|tabletop|mockup|product photo)\b/.test(text);
+  }
+  if (/\b(?:people|person|faces?|hands?|portrait)\b/.test(text)) {
+    return !/\b(?:no|without|avoid|not)\b.{0,40}\b(?:people|person|faces?|hands?|portrait)\b/.test(text);
+  }
+  return false;
+}
+
+function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)) {
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
+    const cues = {
+      front:
+        "White doctor's coat hanging beside a graduation stole in soft hospital hallway sunrise light; stethoscope and folded residency notes with no readable writing; subtle gold accents; clean upper-third text-safe area; no people or faces.",
+      "inside-left":
+        "Quiet desk after a long hospital shift with stethoscope, coffee cup, closed medical books, graduation cap, and warm lamplight; soft cream, navy, muted gold, and warm brown tones; center-left text-safe paper field; no readable writing.",
+      "inside-right":
+        "Golden sunrise through a hospital window, white coat draped over a chair, stethoscope nearby, and a tiny abstract brotherly memory silhouette without specific faces; lower half calm and open for the closing note.",
+      back:
+        "Minimal warm cream back cover with a small centered stethoscope forming a subtle heart beside a graduation cap; soft gold and navy accents; clean lower text-safe area."
+    };
+    return cues[panelId];
+  }
+  if (/\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source)) {
+    const cues = {
+      front: "Tender recovery cover with a basil sprig, small soup bowl curve, and tiny walking-path line; warm ivory field with clay and basil accents; clean upper text-safe area.",
+      "inside-left": "Soft interior note sheet with a small soup spoon and basil corner cluster, quiet paper texture, and wide center text-safe area for encouragement.",
+      "inside-right": "Matching interior panel with tiny walking-path linework along the lower edge, calm blank center, and practical-care warmth without hospital-room imagery.",
+      back: "Minimal back mark using a basil leaf and tiny path line on warm ivory paper; mostly negative space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source)) {
+    const cues = {
+      front: "Premium customer-success cover with clean white and deep teal fields, subtle sterile-supply geometry, and a calm lower text-safe area; polished B2B stationery.",
+      "inside-left": "Left interior with thin teal frame, soft metallic accent line, small calendar/partnership motif, and a quiet center for the thank-you note.",
+      "inside-right": "Right interior with a clean app-overlay zone for QR or account-manager CTA, sparse teal geometry, generous margins, and no actual QR code or interface art.",
+      back: "Minimal back cover with one small teal-and-metallic partnership mark and ample negative space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source)) {
+    const cues = {
+      front: "Restrained wedding cover with paired sage stems, soft ivory field, quiet ribbon arc, restrained gold detail, and a clean central text-safe area.",
+      "inside-left": "Elegant border-first interior with sage corner stems, warm ivory paper, and calm center space for a short blessing.",
+      "inside-right": "Matching interior with generous open lower area for handwritten words, subtle ribbon arc, and sparse botanical corners; no fake script.",
+      back: "Minimal back cover echoing paired stems and one small gold dot with mostly blank ivory space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
+    const cues = {
+      front: "Quiet sympathy cover with a restrained photo-note frame motif, soft ivory paper, muted gray-green leaf, warm taupe rule, and a clean central text-safe field; no portrait or religious symbol.",
+      "inside-left": "Soft left interior with a thin photo-note border, one small quiet leaf, warm paper texture, and wide center-left text-safe space for grounded support.",
+      "inside-right": "Matching right interior with a calm open message field, low-contrast frame edge, and subtle taupe rule near the bottom; no actual photograph or face.",
+      back: "Minimal back cover with one small leaf and fine rule on soft ivory, mostly negative space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
+    const cues = {
+      front: "Funny bold-type birthday cover using abstract editorial blocks, a tiny cake-slice mark, lively offset rhythm, warm accent color, and a clean central text-safe area; no rendered letters.",
+      "inside-left": "Left interior with sparse editorial rules, one small milestone dot, bright accent corner, and open message field for the affectionate setup.",
+      "inside-right": "Right interior with matching bold-rule structure, offset accent block near the lower edge, and generous text-safe area for the punchline and sign-off.",
+      back: "Minimal back cover with a tiny cake-slice mark and one clean editorial rule, mostly blank."
+    };
+    return cues[panelId];
+  }
+  if (/\b(anniversary|years together|spouse|balcony basil|sunday morning walks?)\b/.test(source)) {
+    const cues = {
+      front: "Sentimental anniversary cover with paired basil sprigs, a Sunday-walk path line, warm morning light, and a clean central text-safe field.",
+      "inside-left": "Soft cream left interior with a balcony-basil corner, paired leaves, quiet paper texture, and open center space for the first reflection.",
+      "inside-right": "Matching right interior with a subtle walking-path line along the lower edge, small window-light shape, and calm main-message area.",
+      back: "Small paired-basil back mark with warm cream negative space and a quiet lower text-safe area."
+    };
+    return cues[panelId];
+  }
+  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    const cues = {
+      front: "Simple minimal thank-you cover with one small plant mark, clean white and warm ivory field, fine leaf-green rule, and lower text-safe space.",
+      "inside-left": "Minimal left interior with a tiny water-drop mark, fine rule, generous blank center, and no floral pattern.",
+      "inside-right": "Matching minimal right interior with one small plant-related mark near the lower edge and calm main-message space.",
+      back: "Clean back cover with a single plant mark and mostly white negative space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    const cues = {
+      front: "Warm local-shop thank-you cover with controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, kraft paper texture, and open text-safe center.",
+      "inside-left": "Cream interior note sheet with a thin editorial border, small citrus corner, and quiet center-left space for the opening thank-you.",
+      "inside-right": "Matching interior with subtle boutique awning silhouette near the lower edge, sparse leaves, and generous blank message area.",
+      back: "Small citrus-and-leaf back mark on warm cream paper with mostly negative space."
+    };
+    return cues[panelId];
+  }
+  if (/\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source)) {
+    const cues = {
+      front: "Practical-love cover with one organized lower-corner tool cluster, blueprint linework, workshop green and golden accents, and clean upper text-safe area.",
+      "inside-left": "Interior note sheet with fine blueprint rules, a tightened-screw detail, and a quiet center for the first message.",
+      "inside-right": "Matching interior with a small hinge or measuring-tape motif tucked along the lower edge and a generous main-message field.",
+      back: "Minimal back panel with one small wrench-and-pencil mark and sparse blueprint lines."
+    };
+    return cues[panelId];
+  }
+  if (/\b(birthday|botanical|fern|flower|trail|hike|coffee)\b/.test(source)) {
+    const cues = {
+      front: "Botanical birthday cover with fern fronds, tiny trail flowers, morning light, and a clean central text-safe field.",
+      "inside-left": "Soft cream interior with pressed-fern corner border, gentle coffee-steam curve, and open center-left note area.",
+      "inside-right": "Matching botanical interior with sparse leaf border, tiny trail line near the bottom, and calm main-message space.",
+      back: "Small fern sprig back mark with warm cream negative space and a quiet lower text-safe area."
+    };
+    return cues[panelId];
+  }
+  const motifs = Array.isArray(themeGuide.motifs) && themeGuide.motifs.length
+    ? themeGuide.motifs.slice(0, 3).join(", ")
+    : "one symbolic motif";
+  const palette = Array.isArray(themeGuide.palette) && themeGuide.palette.length
+    ? themeGuide.palette.slice(0, 4).join(", ")
+    : "warm ivory, soft accent, deep neutral";
+  const cues = {
+    front: `${themeGuide.theme_title} front cover with one dominant composition built from ${motifs}; ${palette} palette; clean upper or central text-safe area.`,
+    "inside-left": `${themeGuide.theme_title} left interior as a border-first note sheet with sparse ${motifs} edge detail, light paper field, and quiet center text-safe area.`,
+    "inside-right": `${themeGuide.theme_title} right interior matching the left panel with generous main-message space and sparse lower or corner motif detail.`,
+    back: `${themeGuide.theme_title} back cover with one small coordinating mark from ${motifs}, mostly negative space, and clean lower text-safe area.`
+  };
+  return truncate(cues[panelId] || cues.front, 360);
+}
+
+function normalizeTextLayout(value, panelId, input) {
+  const raw = value && typeof value === "object" ? value : {};
+  const fallback = panelTextLayoutFallback(panelId, input);
+  if (textLayoutTooGenericForSource(raw, panelId, input)) return fallback;
+  const layout = {
+    headline_zone: enumTextValue(raw.headline_zone || raw.headlineZone, textLayoutEnums.headline_zone, fallback.headline_zone),
+    body_zone: enumTextValue(raw.body_zone || raw.bodyZone, textLayoutEnums.body_zone, fallback.body_zone),
+    alignment: enumTextValue(raw.alignment, textLayoutEnums.alignment, fallback.alignment),
+    font_pairing: enumTextValue(raw.font_pairing || raw.fontPairing, textLayoutEnums.font_pairing, fallback.font_pairing),
+    color_mode: enumTextValue(raw.color_mode || raw.colorMode, textLayoutEnums.color_mode, fallback.color_mode),
+    scale: enumTextValue(raw.scale, textLayoutEnums.scale, fallback.scale)
+  };
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  if (
+    /\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source) &&
+    (panelId === "inside-left" || panelId === "inside-right") &&
+    layout.alignment === "center"
+  ) {
+    return { ...layout, alignment: fallback.alignment };
+  }
+  return layout;
+}
+
+function textLayoutTooGenericForSource(raw, panelId, input) {
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  if (!/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) return false;
+  const defaults = panelDefaults[panelId]?.text_layout || panelDefaults.front.text_layout;
+  return textLayoutValue(raw, "headline_zone", "headlineZone") === defaults.headline_zone &&
+    textLayoutValue(raw, "body_zone", "bodyZone") === defaults.body_zone &&
+    textLayoutValue(raw, "alignment") === defaults.alignment &&
+    textLayoutValue(raw, "font_pairing", "fontPairing") === defaults.font_pairing &&
+    textLayoutValue(raw, "color_mode", "colorMode") === defaults.color_mode &&
+    textLayoutValue(raw, "scale") === defaults.scale;
+}
+
+function textLayoutValue(raw, key, camelKey = key) {
+  return raw?.[key] ?? raw?.[camelKey];
+}
+
+function panelTextLayoutFallback(panelId, input) {
+  const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
+  if (/\b(bold type|bold-type|poster|editorial)\b/.test(source)) {
+    return {
+      headline_zone: panelId === "back" ? "lower" : "upper",
+      body_zone: panelId === "front" ? "lower" : panelId === "back" ? "bottom" : "center",
+      alignment: "center",
+      font_pairing: "bold-editorial",
+      color_mode: "high-contrast",
+      scale: panelId === "back" ? "compact" : "large"
+    };
+  }
+  if (/\b(photo note|photo-note|scrapbook|caption|polaroid)\b/.test(source)) {
+    return {
+      headline_zone: panelId === "front" ? "lower" : "upper",
+      body_zone: panelId === "front" ? "bottom" : "lower",
+      alignment: "left",
+      font_pairing: "soft-serif",
+      color_mode: "dark-ink",
+      scale: panelId === "back" ? "compact" : "standard"
+    };
+  }
+  if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
+    const layouts = {
+      front: {
+        headline_zone: "upper",
+        body_zone: "lower",
+        alignment: "center",
+        font_pairing: "serif-sans",
+        color_mode: "light-ink",
+        scale: "standard"
+      },
+      "inside-left": {
+        headline_zone: "upper",
+        body_zone: "center",
+        alignment: "left",
+        font_pairing: "soft-serif",
+        color_mode: "dark-ink",
+        scale: "standard"
+      },
+      "inside-right": {
+        headline_zone: "upper",
+        body_zone: "center",
+        alignment: "left",
+        font_pairing: "serif-sans",
+        color_mode: "dark-ink",
+        scale: "standard"
+      },
+      back: {
+        headline_zone: "lower",
+        body_zone: "bottom",
+        alignment: "center",
+        font_pairing: "minimal-sans",
+        color_mode: "dark-ink",
+        scale: "compact"
+      }
+    };
+    return layouts[panelId];
+  }
+  return panelDefaults[panelId]?.text_layout || panelDefaults.front.text_layout;
+}
+
+function enumTextValue(value, allowed, fallback) {
+  const normalized = cleanText(value || "").toLowerCase();
+  return allowed.includes(normalized) ? normalized : fallback;
+}
+
+function textSafeCueForLayout(layout) {
+  const headline = layout?.headline_zone || "upper";
+  const body = layout?.body_zone || "center";
+  if (headline === "top" && body === "upper") return "upper third";
+  if (headline === "upper" && body === "center") return "upper-to-center field";
+  if (headline === "upper" && (body === "lower" || body === "bottom")) return "upper and lower fields";
+  if (headline === "center" || body === "center") return "quiet center field";
+  if (body === "lower" || body === "bottom") return "lower half";
+  return "main message field";
+}
+
+function textSafeCueMentioned(prompt, cue) {
+  const promptText = String(prompt || "").toLowerCase();
+  if (promptText.includes(cue.toLowerCase())) return true;
+  if (/\b(text-safe|negative space|blank center|quiet center|open note area|message field|clean area)\b/.test(promptText)) return true;
+  return false;
+}
+
+function stringSharesEnoughTerms(left, right, minimum) {
+  const leftText = String(left || "").toLowerCase();
+  const terms = Array.from(new Set(String(right || "").toLowerCase().match(/[a-z][a-z-]{4,}/g) ?? []))
+    .filter((term) => !["clean", "field", "panel", "space", "without", "people", "faces"].includes(term));
+  return terms.filter((term) => leftText.includes(term)).length >= minimum;
+}
+
 function normalizeCardCopy(parsed, input) {
   const rawThemeGuide = parsed?.theme_guide || parsed?.themeGuide || parsed?.card_copy?.theme_guide || parsed?.cardCopy?.themeGuide;
   const rawPanels = Array.isArray(parsed?.panels)
@@ -1596,14 +2175,27 @@ function normalizeCardCopy(parsed, input) {
     const headline = truncate(cleanText(raw.headline || defaults.headline), 120);
     const body = truncate(cleanText(raw.body || defaults.body), 600);
     const artDirection = truncate(cleanText(raw.art_direction || raw.artDirection || defaults.art_direction), 500);
+    const visualCue = normalizeVisualCue(raw.visual_cue || raw.visualCue, id, input, themeGuide);
+    const textLayout = normalizeTextLayout(raw.text_layout || raw.textLayout, id, input);
     const rawImagePrompt = truncate(cleanText(raw.image_prompt || raw.imagePrompt || defaults.image_prompt), 1200);
+    const promptPanel = {
+      ...defaults,
+      headline,
+      body,
+      art_direction: artDirection,
+      visual_cue: visualCue,
+      text_layout: textLayout,
+      image_prompt: rawImagePrompt
+    };
     return {
       id,
       headline,
       body,
       art_direction: artDirection,
+      visual_cue: visualCue,
+      text_layout: textLayout,
       image_prompt: truncate(
-        normalizeImagePrompt(rawImagePrompt, id, input, { ...defaults, headline, body, art_direction: artDirection, image_prompt: rawImagePrompt }),
+        normalizeImagePrompt(rawImagePrompt, id, input, promptPanel),
         1200
       ),
       image_negative_prompt: truncate(
@@ -1627,55 +2219,38 @@ function normalizeCardCopy(parsed, input) {
 function buildFallbackCardCopy(input) {
   const themeGuide = buildThemeGuide(input);
   const copyPlan = buildCopyRepairPlan(input, themeGuide);
+  const artDirections = {
+    front: `${themeGuide.theme_title} front cover with ${themeGuide.border_style}, clear title area, generous safe margins, ${themeGuide.palette.join(", ")} palette, and motifs that echo on the back panel.`,
+    "inside-left": `${themeGuide.theme_title} inside-left panel with ${themeGuide.border_style}, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.`,
+    "inside-right": `${themeGuide.theme_title} inside-right message panel with matching ${themeGuide.border_style}, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.`,
+    back: `${themeGuide.theme_title} back panel with mostly negative space, subtle lower ornamentation, ${themeGuide.border_style}, and border details that visually pair with the front cover.`
+  };
   return {
     theme_guide: themeGuide,
-    panels: [
-      {
-        id: "front",
-        headline: copyPlan.front.headline,
-        body: copyPlan.front.body,
-        art_direction: `${themeGuide.theme_title} front cover with ${themeGuide.border_style}, clear title area, generous safe margins, ${themeGuide.palette.join(", ")} palette, and motifs that echo on the back panel.`,
-        image_prompt: buildPanelImagePrompt(input, "front", {
-          ...panelDefaults.front,
-          art_direction: `${themeGuide.theme_title} front cover with ${themeGuide.border_style}, clear title area, generous safe margins, ${themeGuide.palette.join(", ")} palette, and motifs that echo on the back panel.`
-        }),
-        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults.front.image_negative_prompt)
-      },
-      {
-        id: "inside-left",
-        headline: copyPlan["inside-left"].headline,
-        body: copyPlan["inside-left"].body,
-        art_direction: `${themeGuide.theme_title} inside-left panel with ${themeGuide.border_style}, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.`,
-        image_prompt: buildPanelImagePrompt(input, "inside-left", {
-          ...panelDefaults["inside-left"],
-          art_direction: `${themeGuide.theme_title} inside-left panel with ${themeGuide.border_style}, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.`
-        }),
-        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults["inside-left"].image_negative_prompt)
-      },
-      {
-        id: "inside-right",
-        headline: copyPlan["inside-right"].headline,
-        body: copyPlan["inside-right"].body,
-        art_direction: `${themeGuide.theme_title} inside-right message panel with matching ${themeGuide.border_style}, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.`,
-        image_prompt: buildPanelImagePrompt(input, "inside-right", {
-          ...panelDefaults["inside-right"],
-          art_direction: `${themeGuide.theme_title} inside-right message panel with matching ${themeGuide.border_style}, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.`
-        }),
-        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults["inside-right"].image_negative_prompt)
-      },
-      {
-        id: "back",
-        headline: copyPlan.back.headline,
-        body: copyPlan.back.body,
-        art_direction: `${themeGuide.theme_title} back panel with mostly negative space, subtle lower ornamentation, ${themeGuide.border_style}, and border details that visually pair with the front cover.`,
-        image_prompt: buildPanelImagePrompt(input, "back", {
-          ...panelDefaults.back,
-          art_direction: `${themeGuide.theme_title} back panel with mostly negative space, subtle lower ornamentation, ${themeGuide.border_style}, and border details that visually pair with the front cover.`
-        }),
-        image_negative_prompt: normalizeImageNegativePrompt(panelDefaults.back.image_negative_prompt)
-      }
-    ],
+    panels: requiredPanelIds.map((id) => buildFallbackCardPanel(input, themeGuide, copyPlan, id, artDirections[id])),
     memory_citations: input.memory_notes.slice(0, 2)
+  };
+}
+
+function buildFallbackCardPanel(input, themeGuide, copyPlan, panelId, artDirection) {
+  const copy = copyPlan[panelId] ?? copyPlan.front;
+  const visualCue = normalizeVisualCue("", panelId, input, themeGuide);
+  const textLayout = normalizeTextLayout(undefined, panelId, input);
+  const promptPanel = {
+    ...panelDefaults[panelId],
+    art_direction: artDirection,
+    visual_cue: visualCue,
+    text_layout: textLayout
+  };
+  return {
+    id: panelId,
+    headline: copy.headline,
+    body: copy.body,
+    art_direction: artDirection,
+    visual_cue: visualCue,
+    text_layout: textLayout,
+    image_prompt: truncate(buildPanelImagePrompt(input, panelId, promptPanel), 1200),
+    image_negative_prompt: normalizeImageNegativePrompt(panelDefaults[panelId].image_negative_prompt)
   };
 }
 
@@ -1695,6 +2270,9 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   const value = cleanText(headline);
   const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
   const isMedical = /\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source);
+  const isGetWell = /\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source);
+  const isB2B = /\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source);
+  const isWedding = /\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source);
   const isSmallBusiness = /\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source);
   const isDad = /\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source);
   if (!value) return true;
@@ -1705,6 +2283,9 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   if (isMedical && /^(?:thinking of you|from the heart)$/i.test(value)) return true;
   if (isMedical && /^(?:congratulations, doctor!?|congrats, doctor!?)$/i.test(value)) return true;
   if (isMedical && panelId === "back" && /^(?:wishing you a bright future|wishing you a wonderful day|congratulations, doctor!?|congrats, doctor!?)$/i.test(value)) return true;
+  if (isGetWell && /^(?:thinking of you|get well soon|feel better soon|from the heart|sending healing thoughts)$/i.test(value)) return true;
+  if (isB2B && /^(?:thank you|happy anniversary|for you|valued customer|your loyalty|renew today|limited time)$/i.test(value)) return true;
+  if (isWedding && /^(?:congratulations|best wishes|thinking of you|from the heart|for this moment)$/i.test(value)) return true;
   if (isSmallBusiness && /^(?:you matter|you'?re the best!?|thanks again!?|the customcard team|thank you for choosing us|a big thank you|a heartfelt thank you|a sincere thank you|until next time|our small business|wishing you continued.*)$/i.test(value)) return true;
   if ((isSmallBusiness || isDad) && /^(?:thinking of you|from the heart)$/i.test(value)) return true;
   if (isDad && /^(?:with love and appreciation|a love that's always fixing|love from the heart|a handy dad's love|to an amazing dad|fixing everything with love|thanks for being the best dad|wishing you a wonderful day)$/i.test(value)) return true;
@@ -1716,6 +2297,9 @@ function panelBodyNeedsRepair(body, panelId, input) {
   const value = cleanText(body);
   const source = `${input.occasion} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
   const isMedical = /\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source);
+  const isGetWell = /\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source);
+  const isB2B = /\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source);
+  const isWedding = /\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source);
   const isSmallBusiness = /\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source);
   const isDad = /\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source);
   if (!value) return true;
@@ -1725,6 +2309,17 @@ function panelBodyNeedsRepair(body, panelId, input) {
   if (isMedical && genericMilestoneCopy.test(value)) return true;
   if (isMedical && panelId.startsWith("inside") && /\b(?:he|his|him)\b/i.test(value) && !/\byou\b/i.test(value)) return true;
   if (isMedical && panelId === "inside-right" && !/\b(?:discipline|patience|heart|dedication|late nights?|long shifts?|sacrifices?)\b/i.test(value)) return true;
+  const genericGetWellCopy = /\b(?:speedy recovery|feel better soon|get well soon|back to normal|everything happens for a reason|this too shall pass|miracle cure|follow your doctor's orders)\b/i;
+  if (isGetWell && genericGetWellCopy.test(value)) return true;
+  if (isGetWell && panelId.startsWith("inside") && !/\b(?:tiny walks?|soup|basil|socks?|quiet company|practical)\b/i.test(value)) return true;
+  const genericB2BCopy = /\b(?:valued customer|limited time|act now|exclusive discount|special discount|terms and conditions|legal warranty terms|your order has shipped|checkout)\b/i;
+  if (isB2B && genericB2BCopy.test(value)) return true;
+  if (isB2B && panelId === "inside-left" && !/\b(?:one year|first year|sterilizer|BrightSmile|trust)\b/i.test(value)) return true;
+  if (isB2B && panelId === "inside-right" && !/\b(?:July 31|QR|account manager|warranty renewal)\b/i.test(value)) return true;
+  const overfamiliarWeddingCopy = /\b(?:we have shared so many memories|as your close family|i have watched your love story|soulmates|god bless|lord|forever perfect)\b/i;
+  if (isWedding && overfamiliarWeddingCopy.test(value) && !/\b(?:god|lord|christ|muslim|islam|jewish|hindu|religious)\b/i.test(source)) return true;
+  if (isWedding && panelId === "inside-left" && !/\b(?:blessing|patience|kindness|wishing)\b/i.test(value)) return true;
+  if (isWedding && panelId === "inside-right" && /\bhandwrit|handwritten|handwrite\b/i.test(source) && !/\bhandwrit|handwritten|handwrite\b/i.test(value)) return true;
   const genericSmallBusinessCopy = /\b(?:thank you for supporting our small business|customers like you|valued customer|look forward to serving|continue to support us|loyalty means the world|opportunity to serve you|loyalty and trust mean everything|thank you again for your loyalty and support|continued success and happiness|all your endeavors)\b/i;
   if (isSmallBusiness && genericSmallBusinessCopy.test(value)) return true;
   if (isSmallBusiness && panelId === "front" && !/\b(?:support|supporting|independent|local)\b/i.test(value)) return true;
@@ -1766,6 +2361,146 @@ function buildCopyRepairPlan(input, themeGuide) {
       back: {
         headline: title,
         body: "With pride, love, and deep respect for the doctor you worked so hard to become."
+      }
+    };
+  }
+  if (/\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source)) {
+    return {
+      front: {
+        headline: "Tiny Walks, Big Heart",
+        body: "For the mayor of tiny walks, soup scores, basil victories, and getting through today one gentle step at a time."
+      },
+      "inside-left": {
+        headline: "Recovery, Your Way",
+        body: "I know surgery recovery can make the smallest things feel like a whole expedition. So here is to tiny walks, terrible socks, and whatever soup earns a respectable score this week."
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `I am here for the practical parts and the ridiculous parts: basil updates, soup debates, tiny-walk mayoral duties, quiet company, and days when you do not need to be entertaining at all. No pressure, just steady care from ${sender}.`
+      },
+      back: {
+        headline: "One Gentle Step",
+        body: "For recovery measured in tiny walks, warm soup, and people who are glad to be nearby."
+      }
+    };
+  }
+  if (/\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source)) {
+    return {
+      front: {
+        headline: "A Year Of Trusted Care",
+        body: `Thank you, ${recipient}, for one year with your sterilizer system and the team behind it.`
+      },
+      "inside-left": {
+        headline: "One Year In Service",
+        body: `BrightSmile Clinic's first year with the sterilizer system deserves a clear thank-you. We appreciate the trust your team has placed in ${sender} and the care you bring to every patient-facing detail.`
+      },
+      "inside-right": {
+        headline: "Renewal Window",
+        body: "Your extended warranty renewal window closes July 31. To review the next step, scan the enclosed QR code or contact your account manager. We are keeping this reminder calm, useful, and easy to act on."
+      },
+      back: {
+        headline: sender,
+        body: "With appreciation for one year of partnership and a clear path for warranty renewal."
+      }
+    };
+  }
+  if (/\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source)) {
+    return {
+      front: {
+        headline: `For ${recipient}`,
+        body: "Warm wedding wishes for a day filled with grace, steadiness, and joy."
+      },
+      "inside-left": {
+        headline: "A Quiet Blessing",
+        body: "May your life together be met with patience, kindness, laughter, and the steady care that makes ordinary days feel held. Wishing you both a beautiful beginning."
+      },
+      "inside-right": {
+        headline: "Room For A Note",
+        body: `I am leaving this side open for a few handwritten words, but wanted the card itself to carry a simple blessing first: may this new chapter be generous, peaceful, and full of mutual care. With warm wishes, ${sender}.`
+      },
+      back: {
+        headline: "With Warm Wishes",
+        body: "A restrained wedding note for Lina and Omar, made with space for handwriting."
+      }
+    };
+  }
+  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
+    return {
+      front: {
+        headline: `For ${recipient}`,
+        body: "A quiet note for the days that ask for steadiness, space, and care."
+      },
+      "inside-left": {
+        headline: "With You In This",
+        body: "I am so sorry for the loss your family is carrying. I will not try to explain it away or fill the silence with easy words; I just want you to know you are not alone."
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `I am here for the practical things, the quiet check-ins, and the days when talking is too much. May you have room to grieve at your own pace, with steady care around you. With sympathy and friendship, ${sender}.`
+      },
+      back: {
+        headline: "With Steady Care",
+        body: "A quiet support note, made with room for what words cannot hold."
+      }
+    };
+  }
+  if (/\b(anniversary|years together|spouse|balcony basil|sunday morning walks?)\b/.test(source)) {
+    return {
+      front: {
+        headline: `For ${recipient}`,
+        body: "For the small rituals that became our life: basil on the balcony, Sunday walks, and choosing each other again."
+      },
+      "inside-left": {
+        headline: "The Little Things Stayed",
+        body: "I keep thinking about the small things that somehow became ours: the balcony basil, the Sunday morning walks, the ordinary routines that made a life feel tender and real."
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `Happy anniversary, my love. I do not need this to sound like a vow; I just want it to sound true. I am grateful for the quiet days, the shared jokes, the plants we keep alive, and the way walking beside you still feels like home. With all my love, ${sender}.`
+      },
+      back: {
+        headline: "Our Small Garden",
+        body: "For balcony basil, Sunday walks, and the life we keep tending together."
+      }
+    };
+  }
+  if (/\b(thank|grateful|appreciat|water(?:ed|ing) the plants?|neighbor)\b/.test(source) && !/\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source)) {
+    return {
+      front: {
+        headline: `Thank You, ${recipient}`,
+        body: "For showing up in a simple way that mattered."
+      },
+      "inside-left": {
+        headline: "That Help Mattered",
+        body: "Thank you for watering the plants while I was away. It was a small practical kindness, but it made coming home easier and reminded me what a good neighbor feels like."
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `I appreciate the time and care you gave so freely. No big speech, just real gratitude: you helped, it mattered, and I am glad to have a neighbor I can trust. The plants and I are both grateful. With thanks, ${sender}.`
+      },
+      back: {
+        headline: "With Thanks",
+        body: "For a neighborly kindness that did not go unnoticed."
+      }
+    };
+  }
+  if (/\b(funny|playful|witty|sprint|project-management|project management)\b/.test(source) && /\bbirthday\b/.test(source)) {
+    return {
+      front: {
+        headline: `Happy Birthday ${recipient}`,
+        body: "Another successful trip around the sun, completed on schedule and with only minor stakeholder feedback."
+      },
+      "inside-left": {
+        headline: "Sprint Complete",
+        body: "You somehow turn family plans into sprint planning and still make everyone feel taken care of. Today, the only deliverable is enjoying yourself with zero action items."
+      },
+      "inside-right": {
+        headline: `From ${sender}`,
+        body: `Happy birthday to the person who could probably run a retrospective on cake. I hope this year brings clean timelines, excellent snacks, and the kind of affection that does not require a status update. With love, ${sender}.`
+      },
+      back: {
+        headline: "No Action Items",
+        body: "Just love, cake, and one very official birthday milestone."
       }
     };
   }
@@ -1821,7 +2556,7 @@ function buildCopyRepairPlan(input, themeGuide) {
       },
       "inside-right": {
         headline: `From ${sender}`,
-        body: `Wishing you a year of more hikes, more laughter, and more quiet moments that feel like yours. I am grateful for the warmth you bring into the lives around you. With love, ${sender}.`
+        body: `Wishing you a year of more hikes, more laughter, more good coffee, and more quiet moments that feel like yours. I am grateful for the warmth you bring into the lives around you and for the tiny bright things you help other people notice. With love, ${sender}.`
       },
       back: {
         headline: "For The Little Wonders",

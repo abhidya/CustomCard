@@ -8,7 +8,19 @@ import { resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
 const repoRoot = resolve(import.meta.dirname, "..");
 const outputRoot = resolve(repoRoot, "docs/evidence/card-copy-comparisons");
 const panelIds = ["front", "inside-left", "inside-right", "back"];
-const defaultFixtureIds = ["small-business-thank-you", "medical-graduation", "dad-fix-anything", "botanical-birthday"];
+const defaultFixtureIds = [
+  "small-business-thank-you",
+  "medical-graduation",
+  "dad-fix-anything",
+  "botanical-birthday",
+  "get-well-friend",
+  "b2b-warranty-renewal",
+  "distant-relative-wedding",
+  "funny-bold-type-birthday",
+  "simple-minimal-thank-you",
+  "reverent-photo-note-sympathy",
+  "sentimental-botanical-anniversary"
+];
 
 const referencePrompt = `Create 4 separate print-ready vertical 5x7 inch card images for a folded greeting card set.
 
@@ -111,6 +123,162 @@ const fixtures = {
         "She keeps a fern by the kitchen window.",
         "She loves morning hikes and tiny trail flowers.",
         "The birthday card should feel personal without feeling overly sentimental."
+      ]
+    }
+  },
+  "get-well-friend": {
+    id: "get-well-friend",
+    category: "High-memory get-well card",
+    competitorCategory: "Get-well card template",
+    competitorPrompt: "heartfelt funny get well card",
+    request: {
+      sender: "Jordan",
+      recipient: "Sam",
+      relationship: "close friend",
+      occasion: "get well after surgery",
+      tone: "heartfelt, tender, funny, emotionally specific, not maudlin",
+      style: "calm recovery stationery with basil green, soup-warm ivory, tiny walking path details",
+      language: "English",
+      personal_note:
+        "Use saved memories for Sam recovering from surgery: the soup rating spreadsheet, terrible hospital socks, basil-only garden, and the running joke that Sam is the mayor of taking tiny walks.",
+      memory_notes: [
+        "Sam is recovering from surgery.",
+        "Inside joke: the soup rating spreadsheet.",
+        "Inside joke: terrible hospital socks.",
+        "Sam has a garden that only grows basil.",
+        "Sam is jokingly the mayor of taking tiny walks."
+      ]
+    }
+  },
+  "b2b-warranty-renewal": {
+    id: "b2b-warranty-renewal",
+    category: "B2B purchase-anniversary warranty CTA card",
+    competitorCategory: "CRM direct-mail renewal card",
+    competitorPrompt: "warranty renewal customer anniversary card",
+    request: {
+      sender: "Northstar Dental Supply",
+      recipient: "Avery at BrightSmile Clinic",
+      relationship: "customer success team to clinic operations contact",
+      occasion: "one-year purchase anniversary and extended warranty renewal reminder",
+      tone: "professional, warm, trust-building, useful, not pushy",
+      style: "premium dental supply customer-success stationery, clean white, deep teal, soft metallic accent",
+      language: "English",
+      personal_note:
+        "Thank Avery at BrightSmile Clinic for one year since purchase of their sterilizer system and gently remind them their extended warranty renewal window closes July 31. CTA: Scan the enclosed QR code or contact their account manager.",
+      memory_notes: [
+        "BrightSmile Clinic purchased a sterilizer system one year ago.",
+        "The extended warranty renewal window closes July 31.",
+        "Leave a clean area for an app-rendered QR code and account-manager CTA."
+      ]
+    }
+  },
+  "distant-relative-wedding": {
+    id: "distant-relative-wedding",
+    category: "Respectful distant-relative wedding card",
+    competitorCategory: "Wedding card template",
+    competitorPrompt: "elegant wedding blessing card",
+    request: {
+      sender: "Jordan",
+      recipient: "Lina and Omar",
+      relationship: "distant cousin",
+      occasion: "wedding",
+      tone: "respectful, warm, elegant, not over-familiar",
+      style: "elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space",
+      language: "English",
+      personal_note:
+        "Make a wedding card for distant cousin Lina and her fiance Omar. It should feel respectful and warm even though we are not close. Include a short blessing and leave room for a handwritten note.",
+      memory_notes: [
+        "Lina and Omar are getting married.",
+        "The sender is not close to them and wants restraint.",
+        "The inside should leave space for a handwritten note."
+      ]
+    }
+  },
+  "funny-bold-type-birthday": {
+    id: "funny-bold-type-birthday",
+    category: "Funny bold-type birthday card",
+    competitorCategory: "Funny birthday card template",
+    competitorPrompt: "funny bold birthday card for older sibling",
+    request: {
+      sender: "Manny",
+      recipient: "Aisha",
+      relationship: "younger sibling to older sister",
+      occasion: "birthday",
+      tone: "funny",
+      style: "bold type",
+      language: "English",
+      personal_note:
+        "Make it witty but affectionate for an older sister who pretends birthdays are project-management milestones. Avoid mean age jokes.",
+      memory_notes: [
+        "Aisha calls every family plan a sprint.",
+        "She loves clean editorial design and hates clutter.",
+        "The joke should be affectionate, not sarcastic."
+      ]
+    }
+  },
+  "simple-minimal-thank-you": {
+    id: "simple-minimal-thank-you",
+    category: "Simple minimal thank-you card",
+    competitorCategory: "Minimal thank-you template",
+    competitorPrompt: "simple thank you card",
+    request: {
+      sender: "Manny",
+      recipient: "Nora",
+      relationship: "neighbor",
+      occasion: "thank-you",
+      tone: "simple",
+      style: "minimal",
+      language: "English",
+      personal_note:
+        "Thank Nora for watering the plants while I was away. Keep it plain, useful, and not flowery.",
+      memory_notes: [
+        "Nora watered the plants while Manny was away.",
+        "The card should feel direct and grateful.",
+        "Use one small plant-related mark, not a floral pattern."
+      ]
+    }
+  },
+  "reverent-photo-note-sympathy": {
+    id: "reverent-photo-note-sympathy",
+    category: "Reverent photo-note sympathy card",
+    competitorCategory: "Sympathy photo card",
+    competitorPrompt: "quiet sympathy card with photo note style",
+    request: {
+      sender: "Manny",
+      recipient: "Elena",
+      relationship: "friend",
+      occasion: "sympathy and quiet support",
+      tone: "reverent",
+      style: "photo note",
+      language: "English",
+      personal_note:
+        "Write a quiet support card for Elena after a family loss. Do not make religious claims. Leave a photo-note style frame but no actual face or portrait.",
+      memory_notes: [
+        "Elena is grieving a family loss.",
+        "The sender wants steady support without cliches.",
+        "Use a photo-note style frame as a design motif only; do not invent a photograph."
+      ]
+    }
+  },
+  "sentimental-botanical-anniversary": {
+    id: "sentimental-botanical-anniversary",
+    category: "Sentimental botanical anniversary card",
+    competitorCategory: "Anniversary card catalog",
+    competitorPrompt: "sentimental botanical anniversary card",
+    request: {
+      sender: "Manny",
+      recipient: "Leah",
+      relationship: "spouse",
+      occasion: "anniversary",
+      tone: "sentimental",
+      style: "botanical",
+      language: "English",
+      personal_note:
+        "Make it tender and specific without sounding like a wedding vow. Mention the small balcony basil plant and Sunday morning walks.",
+      memory_notes: [
+        "Leah and Manny keep a small balcony basil plant.",
+        "They take Sunday morning walks together.",
+        "The message should feel intimate but not overly dramatic."
       ]
     }
   }
@@ -231,6 +399,8 @@ export function evaluateCardCopy({ cardCopy, request }) {
     const body = cleanText(panel.body);
     const headline = cleanText(panel.headline);
     const artDirection = cleanText(panel.art_direction || panel.artDirection);
+    const visualCue = cleanText(panel.visual_cue || panel.visualCue);
+    const textLayout = panel.text_layout || panel.textLayout;
     const imagePrompt = cleanText(panel.image_prompt || panel.imagePrompt);
     const negativePrompt = cleanText(panel.image_negative_prompt || panel.imageNegativePrompt).toLowerCase();
 
@@ -251,8 +421,12 @@ export function evaluateCardCopy({ cardCopy, request }) {
       artDirection,
       /\b(layout|safe|margin|border|ornament|typography|type|text|space|palette|matching|coordinated|front|back|inside|spread)\b/gi
     );
-    if (artDirection.length >= 90 && layoutHits >= 3) layoutPoints += 5;
+    if (artDirection.length >= 90 && layoutHits >= 3) layoutPoints += 3;
     else warnings.push(`${panelId}: art_direction lacks enough layout/theme detail.`);
+    if (visualCue.length >= 70) layoutPoints += 1;
+    else blockers.push(`${panelId}: missing panel-specific visual_cue.`);
+    if (hasValidTextLayout(textLayout)) layoutPoints += 1;
+    else blockers.push(`${panelId}: missing valid text_layout enum plan.`);
 
     if (imagePrompt.length >= 180) imagePoints += 2;
     if (/\b5x7\b/i.test(imagePrompt)) imagePoints += 1;
@@ -311,6 +485,8 @@ export function evaluateCardCopy({ cardCopy, request }) {
         bodyChars: cleanText(panel.body).length,
         bodyWords: wordCount(panel.body),
         artDirectionChars: cleanText(panel.art_direction || panel.artDirection).length,
+        visualCueChars: cleanText(panel.visual_cue || panel.visualCue).length,
+        hasValidTextLayout: hasValidTextLayout(panel.text_layout || panel.textLayout),
         imagePromptChars: cleanText(panel.image_prompt || panel.imagePrompt).length
       };
     })
@@ -348,6 +524,14 @@ function buildFixtureComparison({ fixture, payload, evaluation }) {
       panel.body || "",
       "",
       `Art direction: ${panel.art_direction || ""}`,
+      "",
+      `Visual cue: ${panel.visual_cue || panel.visualCue || ""}`,
+      "",
+      "Text layout:",
+      "",
+      "```json",
+      JSON.stringify(panel.text_layout || panel.textLayout || {}, null, 2),
+      "```",
       "",
       `Image prompt: ${panel.image_prompt || ""}`,
       ""
@@ -588,6 +772,22 @@ function containsBusyInterior(value) {
   const text = cleanText(value);
   return /\b(busy|dense|full-surface|all-over|cluttered|packed|maximalist|filled with|covered in)\b/i.test(text) &&
     !/\b(quiet|blank|calm|open|negative|low[- ]contrast|text-safe)\b/i.test(text);
+}
+
+function hasValidTextLayout(value) {
+  if (!value || typeof value !== "object") return false;
+  const headlineZone = cleanText(value.headline_zone || value.headlineZone).toLowerCase();
+  const bodyZone = cleanText(value.body_zone || value.bodyZone).toLowerCase();
+  const alignment = cleanText(value.alignment).toLowerCase();
+  const fontPairing = cleanText(value.font_pairing || value.fontPairing).toLowerCase();
+  const colorMode = cleanText(value.color_mode || value.colorMode).toLowerCase();
+  const scale = cleanText(value.scale).toLowerCase();
+  return ["top", "upper", "center", "lower"].includes(headlineZone) &&
+    ["upper", "center", "lower", "bottom"].includes(bodyZone) &&
+    ["left", "center", "right"].includes(alignment) &&
+    ["serif-sans", "bold-editorial", "minimal-sans", "soft-serif"].includes(fontPairing) &&
+    ["dark-ink", "light-ink", "accent-ink", "high-contrast"].includes(colorMode) &&
+    ["compact", "standard", "large"].includes(scale);
 }
 
 function normalizeThemeGuide(value) {

@@ -1233,6 +1233,18 @@ function AiGenerationJobsPanel({ jobs }: { jobs: AiGenerationJobEvidence[] }) {
                       </div>
                       <p>{panel.headline}</p>
                       <small>{panel.body}</small>
+                      {panel.visualCue ? (
+                        <details>
+                          <summary>Visual cue</summary>
+                          <pre>{panel.visualCue}</pre>
+                        </details>
+                      ) : null}
+                      {panel.textLayout ? (
+                        <details>
+                          <summary>Text layout</summary>
+                          <pre>{JSON.stringify(panel.textLayout, null, 2)}</pre>
+                        </details>
+                      ) : null}
                       <details>
                         <summary>Image prompt</summary>
                         <pre>{panel.revisedPrompt || panel.imagePrompt || "No image prompt captured."}</pre>

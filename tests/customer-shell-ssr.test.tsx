@@ -179,7 +179,7 @@ describe("customer shell server render", () => {
     expect(studio.html).toContain('aria-label="Sign in to generate AI card"');
     expect(studio.text).toContain("Create a free account to generate your card");
     expect(studio.text).toContain("Signing in does not connect your email or calendar.");
-    expect(studio.text).toContain("Review print proof");
+    expect(studio.text).toContain("Continue to proof checks");
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
     expect(print.text).toContain("Print at Walgreens");
@@ -269,7 +269,7 @@ describe("customer shell server render", () => {
         const studio = renderShell({ search: "?view=studio", storedWorkspace });
         const dockCount = studio.html.split('class="ctadock"').length - 1;
         expect(dockCount).toBe(1);
-        expect(studio.text).toContain("Review print proof");
+        expect(studio.text).toContain("Continue to proof checks");
       }
     });
 
@@ -312,12 +312,15 @@ describe("customer shell server render", () => {
       expect(text).toContain("Who it's for");
       expect(text).toContain("Tone");
       expect(text).toContain("Style");
-      expect(text).toContain("Card language");
+      expect(text).toContain("Funny");
+      expect(text).not.toContain("Card language");
+      expect(html).toContain("Type a tone");
+      expect(html).toContain("Type a style");
       expect(text).toContain("Make it personal");
       expect(text).toContain("Draft your card with AI");
       expect(text).toContain("4 print panels");
       expect(text).toContain("Add who it's for, the occasion, and one real detail");
-      expect(text).toContain("Review print proof");
+      expect(text).toContain("Continue to proof checks");
       expect(html.split("pagetab").length - 1).toBeGreaterThanOrEqual(4);
     });
 
@@ -362,6 +365,9 @@ describe("customer shell server render", () => {
           onField: () => undefined,
           onGenerateAi: () => undefined,
           onKeepArtwork: () => undefined,
+          onPanelEdit: () => undefined,
+          onPanelRevert: () => undefined,
+          panelOverrides: {},
           printFitPassed: true
         })
       );
@@ -402,8 +408,8 @@ describe("customer shell server render", () => {
       expect(text).toContain("Make simpler");
       expect(text).toContain("Make less generic");
       expect(text).toContain("Revert panel");
-      expect(text).toContain("Regenerate artwork for this panel");
-      expect(text).toContain("Selected-panel AI improvements are not connected yet.");
+      expect(text).toContain("Regenerate this panel");
+      expect(text).toContain("Panel generation updates only the selected panel.");
       expect(text).toContain("Advanced: art direction");
       // WAI-ARIA tabs pattern for the panel switcher.
       expect(html).toContain('role="tablist"');

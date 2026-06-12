@@ -11,7 +11,6 @@ import {
   updateCardHistoryStatus,
   type CardDraftInput,
   type CardLifecycleStatus,
-  type CardOpportunity,
   type CardPanel,
   type LocalWorkspace
 } from "../src/customerWorkflow";
@@ -20,6 +19,7 @@ import { legalDocumentLinks } from "../src/legalCompliance";
 import {
   initialViewFromLocation,
   reviewerReferenceDate,
+  syncDraftInputWithOpportunity,
   useAppState,
   type ViewId
 } from "../src/appStateOrchestrator";
@@ -39,6 +39,12 @@ import {
   postCustomerMutation,
   useDraftAutosave
 } from "./customerShellCommands";
+import {
+  applyCalendarMomentToDraftInput,
+  buildCalendarMomentDraftContext,
+  buildCalendarMomentOpportunity,
+  type CalendarMomentDraftContext
+} from "./calendarMomentDraft";
 import { buildDraftProgressState } from "./draftProgress";
 import { jpegDataUrlToBytes, panelToJpegBase64 } from "./panelMediaAdapter";
 import { buildProofSignature } from "./proofApproval";
@@ -87,6 +93,7 @@ export default function App() {
   const { getToken } = useAuth();
   const { isLoaded, isSignedIn, user } = useUser();
   const state = useAppState(getToken);
+  const [studioMomentContext, setStudioMomentContext] = useState<CalendarMomentDraftContext | null>(null);
   const {
     activeView,
     setActiveView,
@@ -226,16 +233,26 @@ export default function App() {
   }
 
   function startOccasion(occasion: string) {
+    setStudioMomentContext(null);
     setDraftInput((current) => ({ ...current, occasion }));
     openView("studio");
   }
 
   function acceptOpportunity() {
+    setStudioMomentContext(null);
     setOpportunityDecision("accepted");
+    setDraftInput((current) =>
+      syncDraftInputWithOpportunity(current, {
+        workspace,
+        opportunity,
+        opportunityChanged: true
+      })
+    );
     openView("studio");
   }
 
   function dismissOpportunity() {
+    setStudioMomentContext(null);
     setOpportunityDecision("dismissed");
     setInviteText("");
   }
@@ -246,27 +263,20 @@ export default function App() {
 
   /** Moments-inbox decisions from real imported calendar opportunities. */
   function handleMomentDecision(
-    moment: { opportunityId: string; recipientName: string; title: string; startsAt: string },
+    moment: { opportunityId: string; recipientName: string; title: string; startsAt: string; confidence: number },
     decision: "make-card" | "snooze" | "dismiss" | "handled"
   ) {
-    const savedOpportunity: CardOpportunity = {
-      ...opportunity,
-      id: moment.opportunityId,
-      title: moment.title,
-      recipient: moment.recipientName || opportunity.recipient,
-      dateLabel: moment.startsAt ? moment.startsAt.slice(0, 10) : "Date needed"
-    };
-    const base = saveEventToWorkspace(ensureWorkspace(), savedOpportunity, moment.startsAt ? moment.startsAt.slice(0, 10) : undefined);
+    const context = buildCalendarMomentDraftContext(moment);
+    const savedOpportunity = buildCalendarMomentOpportunity(opportunity, moment);
+    const base = saveEventToWorkspace(ensureWorkspace(), savedOpportunity, context.isoDate);
     if (decision === "make-card") {
       saveWorkspace(base);
-      setDraftInput((current) => ({
-        ...current,
-        recipient: moment.recipientName || current.recipient,
-        occasion: moment.title || current.occasion
-      }));
+      setStudioMomentContext(context);
+      setDraftInput((current) => applyCalendarMomentToDraftInput(current, moment));
       openView("studio");
       return;
     }
+    setStudioMomentContext(null);
     const status = decision === "snooze" ? "snoozed" : "dismissed";
     saveWorkspace(setSavedEventStatus(base, moment.opportunityId, status));
     setExportStatus(
@@ -376,6 +386,7 @@ export default function App() {
   const priceLabel = estimate?.effectiveSubtotalLabel;
   const designing = visibleCustomerView === "studio";
   const printing = visibleCustomerView === "handoff";
+  const ctaRecipient = draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient;
 
   const cta = printing
     ? {
@@ -388,11 +399,15 @@ export default function App() {
       }
     : designing
       ? {
-          label: "Review print proof",
+          label: "Continue to proof checks",
           icon: <ArrowRight size={16} />,
           disabled: false,
-          meta: priceLabel ? `est. ${priceLabel} at Walgreens · same-day pickup` : "Print at Walgreens",
-          metaTitle: `Card for ${draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient}`,
+          meta: validation.passed
+            ? priceLabel
+              ? `For ${ctaRecipient} · est. ${priceLabel} at Walgreens`
+              : `For ${ctaRecipient} · review 4 panels`
+            : "Proof checks will show what needs attention",
+          metaTitle: validation.passed ? "Ready for proof checks" : "Text fit needs review",
           onClick: () => openView("handoff")
         }
       : {
@@ -539,7 +554,10 @@ export default function App() {
               opportunity,
               signal
             }}
-            onCreate={() => openView("studio")}
+            onCreate={() => {
+              setStudioMomentContext(null);
+              openView("studio");
+            }}
             onFindMoments={() => openView("opportunities")}
             onOccasion={startOccasion}
             onResume={() => openView("studio")}
@@ -589,6 +607,7 @@ export default function App() {
             onPanelRevert={revertPanelOverride}
             panelOverrides={panelOverrides}
             printFitPassed={validation.passed}
+            sourceMoment={studioMomentContext ?? undefined}
           />
         ) : null}
 

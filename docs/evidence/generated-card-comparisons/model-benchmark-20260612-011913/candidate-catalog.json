@@ -122,10 +122,10 @@
       "missingEnv": []
     },
     {
-      "id": "image-deepai-hd",
-      "label": "DeepAI HD",
+      "id": "image-deepai-text2img",
+      "label": "DeepAI text2img",
       "adapterId": "deepai-text2img-image",
-      "model": "hd",
+      "model": "text2img",
       "requiredEnv": [
         "DEEPAI_API_KEY"
       ],

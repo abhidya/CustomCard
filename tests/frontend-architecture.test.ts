@@ -24,6 +24,11 @@ import {
   buildZipArchiveBlob,
   postCustomerMutation
 } from "../webapp/customerShellCommands";
+import {
+  applyCalendarMomentToDraftInput,
+  buildCalendarMomentDraftContext,
+  buildCalendarMomentOpportunity
+} from "../webapp/calendarMomentDraft";
 import { buildDraftProgressState, displayDraftValue } from "../webapp/draftProgress";
 import { buildAiCardGenerationHeaders, readAiGenerationResponse } from "../src/appStateOrchestrator";
 import { jpegDataUrlByteLength, jpegDataUrlToBytes } from "../webapp/panelMediaAdapter";
@@ -128,6 +133,65 @@ describe("frontend architecture seams", () => {
     expect(getAdminAccessStatus({ isLoaded: false, isSignedIn: false, isAdmin: false })).toBe("Checking account access");
     expect(getAdminAccessStatus({ isLoaded: true, isSignedIn: false, isAdmin: false })).toBe("Sign in required");
     expect(getAdminAccessStatus({ isLoaded: true, isSignedIn: true, isAdmin: false })).toBe("Admin access required");
+  });
+
+  it("turns imported calendar birthdays into a real studio draft instead of a placeholder", () => {
+    const papaMoment = {
+      opportunityId: "opportunity-papa-birthday",
+      eventId: "event-papa-birthday",
+      recipientName: "Papa's",
+      title: "Papa's birthday",
+      startsAt: "2027-05-02T00:00:00.000Z",
+      timezone: "UTC",
+      confidence: 0.88,
+      decision: "pending"
+    };
+    const genericMoment = {
+      ...papaMoment,
+      opportunityId: "opportunity-happy-birthday",
+      recipientName: "Happy !",
+      title: "Happy birthday!"
+    };
+    const baseOpportunity = {
+      id: "opportunity-empty",
+      title: "Card for Someone important",
+      recipient: "Someone important",
+      occasion: "card",
+      dateLabel: "Date needed",
+      urgency: "needs-date" as const,
+      status: "needs-more-detail" as const,
+      confidence: 32,
+      evidence: [],
+      recommendedPath: "Ask for the event date before choosing a printer path.",
+      memoryIds: []
+    };
+
+    expect(buildCalendarMomentDraftContext(papaMoment)).toMatchObject({
+      title: "Papa's birthday",
+      recipient: "Papa",
+      occasion: "birthday",
+      dateLabel: "May 2, 2027",
+      sourceLabel: "Google Calendar",
+      confidenceLabel: "88% match"
+    });
+    expect(buildCalendarMomentDraftContext(genericMoment).recipient).toBe("");
+    expect(applyCalendarMomentToDraftInput(defaultDraftInput, papaMoment)).toMatchObject({
+      recipient: "Papa",
+      occasion: "birthday"
+    });
+    expect(buildCalendarMomentOpportunity(baseOpportunity, papaMoment)).toMatchObject({
+      id: "opportunity-papa-birthday",
+      title: "Birthday card for Papa",
+      recipient: "Papa",
+      occasion: "birthday",
+      dateLabel: "May 2, 2027"
+    });
+    expect(buildCalendarMomentOpportunity(baseOpportunity, genericMoment)).toMatchObject({
+      id: "opportunity-happy-birthday",
+      title: "Happy birthday!",
+      recipient: "Recipient needed",
+      occasion: "birthday"
+    });
   });
 
   it("centralizes draft progress and placeholder display rules", () => {

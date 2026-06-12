@@ -4,8 +4,8 @@ import { createWorkerRuntime, describeWorkerReadiness } from "../scripts/worker-
 const baseEnv = {
   CUSTOMCARD_ENV: "dev",
   CUSTOMCARD_API_RUNTIME: "contract",
-  DATABASE_URL: "postgres://example/customcard",
-  QUEUE_URL: "redis://example",
+  DATABASE_URL: "postgres://customcard.local/customcard",
+  QUEUE_URL: "redis://queue.customcard.local",
   OBJECT_STORE_URL: "file:///tmp/customcard-objects",
   OBJECT_STORE_SIGNING_SECRET: "test-object-store-signing-secret-32",
   AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",

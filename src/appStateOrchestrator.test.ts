@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildAiPanelGenerationProgress,
   initialViewFromLocation,
-  progressForPanels
+  progressForPanels,
+  syncDraftInputWithOpportunity
 } from "./appStateOrchestrator";
 import type { CardPanel } from "./customerWorkflow";
 import {
@@ -110,6 +111,61 @@ describe("active draft pipeline", () => {
     );
 
     expect(validateCardDraft(activeDraft).passed).toBe(false);
+  });
+});
+
+describe("draft input opportunity sync", () => {
+  it("does not wipe a calendar moment draft when saving the moment creates a workspace", () => {
+    const emptyOpportunity = buildOpportunity(parseFreeImport(""), [], new Date("2026-06-12T12:00:00.000Z"));
+    const current = {
+      ...getDefaultDraftInput(undefined, emptyOpportunity),
+      recipient: "Papa",
+      occasion: "birthday",
+      tone: "playful" as const
+    };
+    const next = syncDraftInputWithOpportunity(current, {
+      workspace: {
+        id: "workspace-maya",
+        name: "Maya",
+        email: "maya@example.com",
+        createdAtIso: "2026-06-12T12:00:00.000Z",
+        memories: [],
+        events: []
+      },
+      opportunity: emptyOpportunity,
+      opportunityChanged: false
+    });
+
+    expect(next).toMatchObject({
+      sender: "Maya",
+      recipient: "Papa",
+      occasion: "birthday",
+      tone: "playful"
+    });
+  });
+
+  it("does sync from the parser when the active opportunity changes", () => {
+    const emptyOpportunity = buildOpportunity(parseFreeImport(""), [], new Date("2026-06-12T12:00:00.000Z"));
+    const parsedOpportunity = buildOpportunity(
+      parseFreeImport(sampleInviteText),
+      [],
+      new Date("2026-06-12T12:00:00.000Z")
+    );
+    const current = {
+      ...getDefaultDraftInput(undefined, emptyOpportunity),
+      tone: "elegant" as const
+    };
+    const next = syncDraftInputWithOpportunity(current, {
+      workspace: undefined,
+      opportunity: parsedOpportunity,
+      opportunityChanged: true
+    });
+
+    expect(next).toMatchObject({
+      recipient: "Sara and Ahmed",
+      occasion: "anniversary",
+      tone: "elegant"
+    });
   });
 });
 
