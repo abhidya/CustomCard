@@ -1,34 +1,53 @@
-import { readFileSync } from "node:fs";
 import {
   hostedApiReadinessItems,
   summarizeHostedApiReadiness,
   validateHostedApiReadiness
 } from "../src/hostedApiReadinessData.mjs";
-import { checkArrayIncludes, checkExact, checkIncludes, checkMinimum, checkNoBlockers } from "./doctor-harness.mjs";
+import {
+  checkArrayIncludes,
+  checkExact,
+  checkItemsHaveKeys,
+  checkMinimum,
+  checkNoBlockers,
+  runDoctorReport
+} from "./doctor-harness.mjs";
+import {
+  checkDoctorDocs,
+  checkDoctorScriptedAndGated,
+  checkDoctorSourceSignals,
+  defineDoctorManifest,
+  readDoctorManifestFiles
+} from "./doctor-manifest.mjs";
 
-const files = {
-  readinessTest: "src/hostedApiReadiness.test.ts",
-  deploymentEvidence: "docs/deployment-evidence.md",
-  platformDocs: "docs/platform-expansion-design.md",
-  verificationDocs: "docs/verification.md",
-  packageJson: "package.json",
-  workflow: ".github/workflows/verify.yml",
-  vercel: "vercel.json",
-  vercelApiHandler: "api/[...path].js",
-  vercelAiCardGenerateHandler: "api/ai/card/generate.js",
-  vercelAiChatRespondHandler: "api/ai/chat/respond.js",
-  envExample: "infra/env/.env.example",
-  apiContracts: "src/apiContracts.ts",
-  apiServer: "scripts/api-server.mjs",
-  adminApp: "src/App.tsx",
-  readinessSummaryData: "src/readinessSummaryData.mjs",
-  postgresHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
-  accountDoctor: "scripts/account-auth-doctor.mjs"
-};
+const doctorManifest = defineDoctorManifest({
+  id: "hosted-api",
+  service: "customcard-hosted-api-readiness-doctor",
+  npmScript: "hosted:api:doctor",
+  scriptPath: "scripts/hosted-api-readiness-doctor.mjs",
+  workflowLabel: "Validate hosted API proof readiness",
+  docsTitle: "Hosted API proof readiness",
+  readinessModule: "src/hostedApiReadiness.ts",
+  files: {
+    readinessTest: "src/hostedApiReadiness.test.ts",
+    deploymentEvidence: "docs/deployment-evidence.md",
+    platformDocs: "docs/platform-expansion-design.md",
+    verificationDocs: "docs/verification.md",
+    vercel: "vercel.json",
+    vercelApiHandler: "api/[...path].js",
+    vercelAiCardGenerateHandler: "api/ai/card/generate.js",
+    vercelAiChatRespondHandler: "api/ai/chat/respond.js",
+    envExample: "infra/env/.env.example",
+    apiContracts: "src/apiContracts.ts",
+    apiServer: "scripts/api-server.mjs",
+    adminApp: "src/App.tsx",
+    readinessSummaryData: "src/readinessSummaryData.mjs",
+    postgresHttpDoctor: "scripts/postgres-api-http-doctor.mjs",
+    accountDoctor: "scripts/account-auth-doctor.mjs"
+  },
+  docsKeys: ["platformDocs", "verificationDocs"]
+});
 
-const contents = Object.fromEntries(
-  Object.entries(files).map(([key, path]) => [key, readFileSync(path, "utf8")])
-);
+const contents = readDoctorManifestFiles(doctorManifest);
 
 const summary = summarizeHostedApiReadiness(hostedApiReadinessItems);
 const validationBlockers = validateHostedApiReadiness(hostedApiReadinessItems);
@@ -70,115 +89,7 @@ const checks = [
     "hosted-account-token-verification",
     "backup-recovery-policy"
   ]),
-  checkItemsShape("register", "hosted-api-readiness-item-shape", hostedApiReadinessItems),
-  checkIncludes("tests", "hosted-api-readiness-tests", contents.readinessTest, [
-    "tracks Vercel and hosted DB proof readiness without claiming public production proof",
-    "covers hosted env, routes, deployment protection, token verification, and backup policy explicitly",
-    "flags unsafe hosted proof claims"
-  ]),
-  checkIncludes("vercel-source", "vercel-serverless-source-signals", `${contents.vercel}\n${contents.vercelApiHandler}\n${contents.vercelAiCardGenerateHandler}\n${contents.vercelAiChatRespondHandler}`, [
-    '"buildCommand": "npm run build"',
-    '"source": "/api/(.*)"',
-    '"destination": "/api/$1"',
-    '"source": "/oauth/callback"',
-    '"destination": "/api/oauth/callback"',
-    "handleApiRequest"
-  ]),
-  checkIncludes("hosted-env", "hosted-env-and-db-source-signals", `${contents.envExample}\n${contents.postgresHttpDoctor}\n${contents.accountDoctor}`, [
-    "CUSTOMCARD_API_RUNTIME=contract",
-    "DATABASE_URL=",
-    "CUSTOMCARD_CUSTOMER_SESSION_TOKEN=",
-    "CUSTOMCARD_ADMIN_SESSION_TOKEN=",
-    "AUTH_SESSION_SECRET=",
-    "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled",
-    "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled"
-  ]),
-  checkIncludes("surfaces", "admin-api-hosted-surfaces", `${contents.adminApp}\n${contents.apiContracts}\n${contents.apiServer}\n${contents.readinessSummaryData}`, [
-    "Hosted API proof readiness",
-    "summarizeHostedApiReadiness",
-    "hostedApiReadiness",
-    "publicRouteProofs",
-    "hostedDbProofs"
-  ]),
-  checkIncludes("deployment-evidence", "deployment-evidence-boundary", contents.deploymentEvidence, [
-    "Vercel",
-    "Deployment URL",
-    "HTTP 401 from Vercel deployment protection",
-    "no environment variables",
-    "hosted DB doctor run"
-  ]),
-  checkIncludes("docs", "hosted-api-readiness-docs", `${contents.platformDocs}\n${contents.verificationDocs}`, [
-    "Hosted API proof readiness",
-    "`src/hostedApiReadiness.ts`",
-    "`npm run hosted:api:doctor`",
-    "not public DB-backed Vercel proof"
-  ]),
-  checkIncludes("ci", "hosted-api-doctor-scripted-and-gated", `${contents.packageJson}\n${contents.workflow}`, [
-    '"hosted:api:doctor": "node scripts/hosted-api-readiness-doctor.mjs"',
-    "Validate hosted API proof readiness",
-    "npm run hosted:api:doctor"
-  ]),
-  checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
-    "Vercel project link",
-    "DATABASE_URL configured proof",
-    "Hosted /api/admin/readiness runtime=postgres response",
-    "Hosted customer token probe",
-    "Hosted backup policy"
-  ])
-];
-
-const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) => {
-  const laneChecks = checks.filter((check) => check.lane === lane);
-  return {
-    lane,
-    passed: laneChecks.filter((check) => check.passed).length,
-    total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
-  };
-});
-const failed = checks.filter((check) => !check.passed);
-
-console.log(
-  JSON.stringify(
-    {
-      service: "customcard-hosted-api-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
-      items: summary.total,
-      repoLocalReady: summary.repoLocalReady,
-      evidenceMissing: summary.evidenceMissing,
-      protectionBlocked: summary.protectionBlocked,
-      hostedDbRequired: summary.hostedDbRequired,
-      publicRouteProofRequired: summary.publicRouteProofRequired,
-      hostedTokenVerificationRequired: summary.hostedTokenVerificationRequired,
-      backupPolicyRequired: summary.backupPolicyRequired,
-      repoLocalContractProofs: summary.repoLocalContractProofs,
-      liveHostedProofRequired: summary.liveHostedProofRequired,
-      protectionBlockedProofs: summary.protectionBlockedProofs,
-      liveProofClaims: summary.liveProofClaims,
-      routeContracts: summary.routeContracts,
-      requiredEnvVars: summary.requiredEnvVars,
-      envSyncProofs: summary.envSyncProofs,
-      hostedDbProofs: summary.hostedDbProofs,
-      publicRouteProofs: summary.publicRouteProofs,
-      hostedTokenVerificationProofs: summary.hostedTokenVerificationProofs,
-      backupPolicies: summary.backupPolicies,
-      deploymentProtectionBypasses: summary.deploymentProtectionBypasses,
-      externalNetworkCalls: summary.externalNetworkCalls,
-      realOrdersEnabled: summary.realOrdersEnabled,
-      liveProviderCalls: summary.liveProviderCalls,
-      lanes,
-      checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
-    },
-    null,
-    2
-  )
-);
-
-if (failed.length > 0) process.exit(1);
-
-function checkItemsShape(lane, id, items) {
-  const requiredKeys = [
+  checkItemsHaveKeys("register", "hosted-api-readiness-item-shape", hostedApiReadinessItems, [
     "id",
     "label",
     "lane",
@@ -204,20 +115,105 @@ function checkItemsShape(lane, id, items) {
     "currentEvidence",
     "requiredEvidence",
     "blocker"
-  ];
-  const missing = [];
-  for (const item of items) {
-    for (const key of requiredKeys) {
-      if (!(key in item)) missing.push(`${item.id ?? "unknown"}.${key}`);
-    }
-  }
-  return {
-    id,
-    lane,
-    passed: missing.length === 0,
-    detail:
-      missing.length === 0
-        ? `Validated ${items.length} executable hosted API readiness item shapes.`
-        : `Missing hosted API readiness fields: ${missing.join(", ")}`
-  };
-}
+  ], {
+    readyDetail: `Validated ${hostedApiReadinessItems.length} executable hosted API readiness item shapes.`,
+    missingPrefix: "Missing hosted API readiness fields"
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "tests",
+    id: "hosted-api-readiness-tests",
+    sourceKeys: ["readinessTest"],
+    signals: [
+      "tracks Vercel and hosted DB proof readiness without claiming public production proof",
+      "covers hosted env, routes, deployment protection, token verification, and backup policy explicitly",
+      "flags unsafe hosted proof claims"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "vercel-source",
+    id: "vercel-serverless-source-signals",
+    sourceKeys: ["vercel", "vercelApiHandler", "vercelAiCardGenerateHandler", "vercelAiChatRespondHandler"],
+    signals: [
+      '"buildCommand": "npm run build"',
+      '"source": "/api/(.*)"',
+      '"destination": "/api/$1"',
+      '"source": "/oauth/callback"',
+      '"destination": "/api/oauth/callback"',
+      "handleApiRequest"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "hosted-env",
+    id: "hosted-env-and-db-source-signals",
+    sourceKeys: ["envExample", "postgresHttpDoctor", "accountDoctor"],
+    signals: [
+      "CUSTOMCARD_API_RUNTIME=contract",
+      "DATABASE_URL=",
+      "CUSTOMCARD_CUSTOMER_SESSION_TOKEN=",
+      "CUSTOMCARD_ADMIN_SESSION_TOKEN=",
+      "AUTH_SESSION_SECRET=",
+      "CUSTOMCARD_POSTGRES_API_HTTP_DOCTOR=enabled",
+      "CUSTOMCARD_ACCOUNT_AUTH_DOCTOR=enabled"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "surfaces",
+    id: "admin-api-hosted-surfaces",
+    sourceKeys: ["adminApp", "apiContracts", "apiServer", "readinessSummaryData"],
+    signals: [
+      "Hosted API proof readiness",
+      "summarizeHostedApiReadiness",
+      "hostedApiReadiness",
+      "publicRouteProofs",
+      "hostedDbProofs"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "deployment-evidence",
+    id: "deployment-evidence-boundary",
+    sourceKeys: ["deploymentEvidence"],
+    signals: [
+      "Vercel",
+      "Deployment URL",
+      "HTTP 401 from Vercel deployment protection",
+      "no environment variables",
+      "hosted DB doctor run"
+    ]
+  }),
+  checkDoctorDocs(doctorManifest, contents, ["not public DB-backed Vercel proof"], { id: "hosted-api-readiness-docs" }),
+  checkDoctorScriptedAndGated(doctorManifest, contents, { id: "hosted-api-doctor-scripted-and-gated" }),
+  checkArrayIncludes("evidence", "required-evidence-signals", summary.requiredEvidence, [
+    "Vercel project link",
+    "DATABASE_URL configured proof",
+    "Hosted /api/admin/readiness runtime=postgres response",
+    "Hosted customer token probe",
+    "Hosted backup policy"
+  ])
+];
+
+runDoctorReport({
+  service: doctorManifest.service,
+  items: summary.total,
+  repoLocalReady: summary.repoLocalReady,
+  evidenceMissing: summary.evidenceMissing,
+  protectionBlocked: summary.protectionBlocked,
+  hostedDbRequired: summary.hostedDbRequired,
+  publicRouteProofRequired: summary.publicRouteProofRequired,
+  hostedTokenVerificationRequired: summary.hostedTokenVerificationRequired,
+  backupPolicyRequired: summary.backupPolicyRequired,
+  repoLocalContractProofs: summary.repoLocalContractProofs,
+  liveHostedProofRequired: summary.liveHostedProofRequired,
+  protectionBlockedProofs: summary.protectionBlockedProofs,
+  liveProofClaims: summary.liveProofClaims,
+  routeContracts: summary.routeContracts,
+  requiredEnvVars: summary.requiredEnvVars,
+  envSyncProofs: summary.envSyncProofs,
+  hostedDbProofs: summary.hostedDbProofs,
+  publicRouteProofs: summary.publicRouteProofs,
+  hostedTokenVerificationProofs: summary.hostedTokenVerificationProofs,
+  backupPolicies: summary.backupPolicies,
+  deploymentProtectionBypasses: summary.deploymentProtectionBypasses,
+  externalNetworkCalls: summary.externalNetworkCalls,
+  realOrdersEnabled: summary.realOrdersEnabled,
+  liveProviderCalls: summary.liveProviderCalls
+}, checks);
