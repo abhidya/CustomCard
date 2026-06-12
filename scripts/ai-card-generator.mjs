@@ -449,7 +449,7 @@ function buildDeterministicPanelSvg({ panelId, prompt }) {
     const scale = seededRange(seed, index + 71, 48, 118) / 100;
     const { x, y } = svgMotifPosition(seed, index, scale, safeArea);
     const rotation = seededRange(seed, index + 103, -24, 24);
-    return `<g transform="translate(${x} ${y}) rotate(${rotation}) scale(${scale})">${theme.motif(index)}</g>`;
+    return `<g transform="translate(${x} ${y}) rotate(${rotation}) scale(${scale})">${theme.motif(index, panelId)}</g>`;
   }).join("\n");
   const texture = theme.texture?.(panelId) ?? "";
   const hero = theme.hero?.(panelId) ?? "";
@@ -474,9 +474,7 @@ function resolvePanelThemeValue(value, panelId) {
 }
 
 function defaultPanelOverlay(panelId) {
-  if (panelId === "front") return '<rect x="0" y="1180" width="1500" height="520" fill="#fffaf0" opacity="0.18"/>';
-  if (panelId === "back") return '<rect x="0" y="1450" width="1500" height="380" fill="#fffaf0" opacity="0.12"/>';
-  return '<rect x="240" y="430" width="1020" height="1240" rx="34" fill="#fffdf7" opacity="0.16"/>';
+  return "";
 }
 
 function svgTextSafeArea(panelId) {
@@ -523,12 +521,10 @@ function themeForPrompt(prompt) {
       kind: "medical",
       background: (panelId) => panelId.startsWith("inside") ? "#fffdf7" : "#101d3b",
       accent: "#e8c66c",
-      count: (panelId) => panelId === "front" ? 4 : panelId === "back" ? 3 : 0,
+      count: (panelId) => panelId === "front" ? 2 : 0,
       texture: (panelId) => panelId.startsWith("inside") ? medicalPaperTexture() : "",
       hero: (panelId) => medicalHero(panelId),
-      overlay: (panelId) => panelId.startsWith("inside")
-        ? '<rect x="190" y="300" width="1120" height="1500" rx="26" fill="#fffefa" opacity="0.82"/>'
-        : defaultPanelOverlay(panelId),
+      overlay: () => "",
       border: (panelId) => medicalBorder(panelId),
       motif: (index) => medicalMotif(index)
     };
@@ -536,12 +532,14 @@ function themeForPrompt(prompt) {
   if (/\b(father|dad|fix(?:-it)?|repair|handy(?:man)?|wrench|tools?|toolbox|workshop|blueprints?|glue|hammer|measure|measuring)\b/.test(text)) {
     return {
       kind: "tools",
-      background: "#0f6b5f",
-      accent: "#f5c542",
-      count: (panelId) => panelId.startsWith("inside") ? 8 : 14,
-      texture: () => blueprintTexture(),
+      background: (panelId) => panelId.startsWith("inside") ? "#fbf5e8" : "#0f6b5f",
+      accent: (panelId) => panelId.startsWith("inside") ? "#0f6b5f" : "#f5c542",
+      count: (panelId) => panelId.startsWith("inside") ? 3 : panelId === "back" ? 2 : 5,
+      texture: (panelId) => blueprintTexture(panelId),
       hero: (panelId) => toolHero(panelId),
-      motif: (index) => toolMotif(index)
+      overlay: () => "",
+      border: (panelId) => toolBorder(panelId),
+      motif: (index, panelId) => toolMotif(index, panelId)
     };
   }
   if (/\b(birthday|botanical|flower|fern|rose)\b/.test(text)) {
@@ -557,11 +555,13 @@ function themeForPrompt(prompt) {
   if (/\b(citrus|small-business|shop|thank)\b/.test(text)) {
     return {
       kind: "citrus",
-      background: "#0f3d3f",
-      accent: "#f6b53f",
-      count: (panelId) => panelId.startsWith("inside") ? 10 : 18,
+      background: (panelId) => panelId.startsWith("inside") ? "#fffaf0" : "#0f3d3f",
+      accent: (panelId) => panelId.startsWith("inside") ? "#c79531" : "#f6b53f",
+      count: (panelId) => panelId.startsWith("inside") ? 3 : panelId === "back" ? 2 : 5,
       hero: (panelId) => citrusHero(panelId),
-      motif: (index) => citrusMotif(index)
+      overlay: () => "",
+      border: (panelId) => citrusBorder(panelId),
+      motif: (index, panelId) => citrusMotif(index, panelId)
     };
   }
   return {
@@ -628,25 +628,50 @@ function medicalBorder(panelId) {
   `;
 }
 
-function blueprintTexture() {
+function toolBorder(panelId) {
+  const inside = panelId.startsWith("inside");
+  const stroke = inside ? "#0f6b5f" : "#f5c542";
+  const secondary = inside ? "#c79531" : "#d9fff5";
+  return `
+    <rect x="70" y="70" width="1360" height="1960" rx="18" fill="none" stroke="${stroke}" stroke-width="5" opacity="${inside ? 0.42 : 0.5}"/>
+    <rect x="106" y="106" width="1288" height="1888" rx="10" fill="none" stroke="${secondary}" stroke-width="2" opacity="${inside ? 0.28 : 0.36}"/>
+  `;
+}
+
+function citrusBorder(panelId) {
+  const inside = panelId.startsWith("inside");
+  const stroke = inside ? "#c79531" : "#f6b53f";
+  const secondary = inside ? "#1f7a68" : "#fff8dc";
+  return `
+    <rect x="70" y="70" width="1360" height="1960" rx="18" fill="none" stroke="${stroke}" stroke-width="5" opacity="${inside ? 0.42 : 0.52}"/>
+    <rect x="106" y="106" width="1288" height="1888" rx="10" fill="none" stroke="${secondary}" stroke-width="2" opacity="${inside ? 0.24 : 0.38}"/>
+  `;
+}
+
+function blueprintTexture(panelId = "") {
+  const inside = panelId.startsWith("inside");
+  const stroke = inside ? "#0f6b5f" : "#d9fff5";
+  const opacity = inside ? 0.055 : 0.11;
   const verticals = Array.from({ length: 6 }, (_, index) => 180 + index * 230)
-    .map((x) => `<line x1="${x}" y1="0" x2="${x}" y2="2100" stroke="#d9fff5" stroke-width="2" opacity="0.11"/>`)
+    .map((x) => `<line x1="${x}" y1="0" x2="${x}" y2="2100" stroke="${stroke}" stroke-width="2" opacity="${opacity}"/>`)
     .join("");
   const horizontals = Array.from({ length: 8 }, (_, index) => 160 + index * 245)
-    .map((y) => `<line x1="0" y1="${y}" x2="1500" y2="${y}" stroke="#d9fff5" stroke-width="2" opacity="0.11"/>`)
+    .map((y) => `<line x1="0" y1="${y}" x2="1500" y2="${y}" stroke="${stroke}" stroke-width="2" opacity="${opacity}"/>`)
     .join("");
   return `<g data-customcard-texture="blueprint">${verticals}${horizontals}</g>`;
 }
 
 function toolHero(panelId) {
   const y = panelId.startsWith("inside") ? 1660 : panelId === "front" ? 875 : 1560;
-  const opacity = panelId.startsWith("inside") ? 0.42 : 0.56;
+  const opacity = panelId.startsWith("inside") ? 0.18 : panelId === "back" ? 0.24 : 0.46;
+  const pale = panelId.startsWith("inside") ? "#0f6b5f" : "#f8e6a1";
+  const line = panelId.startsWith("inside") ? "#0f6b5f" : "#d9fff5";
   return `
     <g data-customcard-hero="tools" opacity="${opacity}">
-      <path d="M1040 ${y + 70} L1290 ${y - 180}" stroke="#f8e6a1" stroke-width="30" stroke-linecap="round"/>
+      <path d="M1040 ${y + 70} L1290 ${y - 180}" stroke="${pale}" stroke-width="30" stroke-linecap="round"/>
       <circle cx="1308" cy="${y - 198}" r="48" fill="none" stroke="#f5c542" stroke-width="20"/>
       <rect x="936" y="${y - 34}" width="330" height="36" rx="18" fill="#f5c542" transform="rotate(-9 1100 ${y - 16})"/>
-      <path d="M930 ${y + 150} C1030 ${y + 102} 1140 ${y + 102} 1258 ${y + 152}" fill="none" stroke="#d9fff5" stroke-width="8" stroke-linecap="round"/>
+      <path d="M930 ${y + 150} C1030 ${y + 102} 1140 ${y + 102} 1258 ${y + 152}" fill="none" stroke="${line}" stroke-width="8" stroke-linecap="round"/>
     </g>
   `;
 }
@@ -668,8 +693,9 @@ function botanicalHero(panelId) {
 
 function citrusHero(panelId) {
   const y = panelId.startsWith("inside") ? 1640 : panelId === "front" ? 420 : 1530;
+  const opacity = panelId.startsWith("inside") ? 0.32 : panelId === "back" ? 0.42 : 0.68;
   return `
-    <g data-customcard-hero="citrus" opacity="0.72">
+    <g data-customcard-hero="citrus" opacity="${opacity}">
       <path d="M1010 ${y + 180} C1120 ${y + 40} 1246 ${y - 16} 1402 ${y - 72}" fill="none" stroke="#f6b53f" stroke-width="14" stroke-linecap="round"/>
       <circle cx="1156" cy="${y + 34}" r="92" fill="#f6b53f" stroke="#fff8dc" stroke-width="10"/>
       <path d="M1156 ${y - 48} V${y + 116} M1074 ${y + 34} H1238 M1098 ${y - 24} L1214 ${y + 92} M1214 ${y - 24} L1098 ${y + 92}" stroke="#fff8dc" stroke-width="7" opacity="0.86"/>
@@ -679,11 +705,12 @@ function citrusHero(panelId) {
   `;
 }
 
-function citrusMotif(index) {
+function citrusMotif(index, panelId = "") {
+  const inside = panelId.startsWith("inside");
   const fill = index % 3 === 0 ? "#f6b53f" : index % 3 === 1 ? "#fce7a3" : "#f7f2df";
-  const leaf = index % 2 === 0 ? "#1f7a68" : "#d6d7a3";
+  const leaf = index % 2 === 0 ? "#1f7a68" : inside ? "#9ea66a" : "#d6d7a3";
   return `
-    <g opacity="0.92">
+    <g opacity="${inside ? 0.5 : 0.84}">
       <circle cx="0" cy="0" r="58" fill="${fill}" stroke="#fff8dc" stroke-width="8"/>
       ${Array.from({ length: 10 }, (_, ray) => `<line x1="0" y1="0" x2="${Math.cos((ray * Math.PI) / 5) * 52}" y2="${Math.sin((ray * Math.PI) / 5) * 52}" stroke="#fff8dc" stroke-width="5"/>`).join("")}
       <ellipse cx="96" cy="-50" rx="24" ry="62" fill="${leaf}" transform="rotate(35 96 -50)"/>
@@ -706,15 +733,18 @@ function botanicalMotif(index) {
   `;
 }
 
-function toolMotif(index) {
+function toolMotif(index, panelId = "") {
+  const inside = panelId.startsWith("inside");
   const yellow = index % 2 === 0 ? "#f5c542" : "#f8e6a1";
+  const pale = inside ? "#0f6b5f" : "#f7f2df";
+  const line = inside ? "#0f6b5f" : "#d9fff5";
   return `
-    <g opacity="0.9">
+    <g opacity="${inside ? 0.34 : 0.76}">
       <rect x="-95" y="-14" width="190" height="28" rx="14" fill="${yellow}"/>
-      <circle cx="-112" cy="0" r="26" fill="none" stroke="#f7f2df" stroke-width="12"/>
-      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="#f7f2df"/>
+      <circle cx="-112" cy="0" r="26" fill="none" stroke="${pale}" stroke-width="12"/>
+      <rect x="-18" y="-92" width="36" height="184" rx="18" fill="${pale}"/>
       <circle cx="0" cy="-112" r="34" fill="none" stroke="#f5c542" stroke-width="12"/>
-      <line x1="-125" y1="76" x2="125" y2="76" stroke="#d9fff5" stroke-width="7" opacity="0.65"/>
+      <line x1="-125" y1="76" x2="125" y2="76" stroke="${line}" stroke-width="7" opacity="0.65"/>
     </g>
   `;
 }
@@ -902,7 +932,9 @@ function buildCardCopyPrompt(input) {
         "front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.",
         "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
         "inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.",
+        "Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.",
         "Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.",
+        "Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.",
         "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.",
         "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
         "Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative."
@@ -915,9 +947,10 @@ function buildCardCopyPrompt(input) {
         "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
         "Reserve clean text-safe space for the app overlay where the panel copy belongs.",
         "Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.",
+        "Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.",
         "image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.",
         "For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.",
-        "For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.",
         "For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.",
         "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
         "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
@@ -998,20 +1031,20 @@ function buildImagePromptPlan(input, cardCopy) {
 function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = {
     front:
-      "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper.",
+      "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper.",
     "inside-left":
-      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins.",
+      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
     "inside-right":
-      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins.",
+      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
     back:
-      "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo."
+      "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
   }[panelId];
   const visualBrief = buildVisualBrief(input, panel);
 
   return [
     panelInstruction,
     visualBrief,
-    "Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+    "Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
   ].join(" ");
 }
 
@@ -1035,6 +1068,12 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   if (!/\b(?:no all-over|avoid all-over|not an all-over|mostly negative space|sparse|restrained)\b/i.test(base)) {
     guardrails.push("Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space.");
   }
+  if (!/\bno (?:caption plaque|text box|inner card rectangle|blank tag|label)\b/i.test(base)) {
+    guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
+  }
+  if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
+    guardrails.push("Use a light ivory or cream low-contrast note-sheet field for the interior unless the user explicitly requested a dark interior.");
+  }
   if (!/\bnot (?:a )?(?:physical|photographed|mockup|photo)\b/i.test(base)) {
     guardrails.push("Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.");
   }
@@ -1049,7 +1088,7 @@ function imagePromptNeedsRepair(prompt, panelId, input, panel) {
 }
 
 function imagePromptHasUnsafeSubject(prompt) {
-  return /\b(person|people|human|owner|customer|customers|face|portrait|body|hands?|holding|model|signature|handwriting|lettering|readable text|['"]?thank you['"]?\s+sign|signage|sign|worn|creased)\b/i.test(prompt) ||
+  return /\b(person|people|human|owner|customer|customers|face|portrait|body|hands?|holding|model|signature|handwriting|lettering|readable text|thank[- ]you note|['"]?thank you['"]?\s+sign|signage|sign|worn|creased)\b/i.test(prompt) ||
     /(?:shop|store|brand|company|business)['’]?\s+logo|\blogo\s+(?:in|at|on|near|as)\b/i.test(prompt);
 }
 
@@ -1456,9 +1495,9 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   if (isMedical && /^(?:thinking of you|from the heart)$/i.test(value)) return true;
   if (isMedical && /^(?:congratulations, doctor!?|congrats, doctor!?)$/i.test(value)) return true;
   if (isMedical && panelId === "back" && /^(?:wishing you a bright future|wishing you a wonderful day|congratulations, doctor!?|congrats, doctor!?)$/i.test(value)) return true;
-  if (isSmallBusiness && /^(?:you matter|thank you for choosing us|a big thank you|a heartfelt thank you|a sincere thank you|until next time|our small business)$/i.test(value)) return true;
+  if (isSmallBusiness && /^(?:you matter|you'?re the best!?|thanks again!?|the customcard team|thank you for choosing us|a big thank you|a heartfelt thank you|a sincere thank you|until next time|our small business|wishing you continued.*)$/i.test(value)) return true;
   if ((isSmallBusiness || isDad) && /^(?:thinking of you|from the heart)$/i.test(value)) return true;
-  if (isDad && /^(?:with love and appreciation|a love that's always fixing|thanks for being the best dad|wishing you a wonderful day)$/i.test(value)) return true;
+  if (isDad && /^(?:with love and appreciation|a love that's always fixing|love from the heart|a handy dad's love|to an amazing dad|fixing everything with love|thanks for being the best dad|wishing you a wonderful day)$/i.test(value)) return true;
   if (isDad && panelId !== "front" && /^thanks for fixing everything$/i.test(value)) return true;
   return /\b(?:card front|panel|headline|title area)\b/i.test(value);
 }
@@ -1472,16 +1511,22 @@ function panelBodyNeedsRepair(body, panelId, input) {
   if (!value) return true;
   const metaCopy = /\b(?:with a .* feeling|i wanted this card to feel|design language|the heart of it is simple|it should carry this approved detail|make this feel|design a theme called|customcard needs|approved detail|a card made with care|made for .* with customcard|made with customcard|not salesy feeling|not cheesy feeling)\b/i;
   if (metaCopy.test(value)) return true;
-  const genericMilestoneCopy = /\b(?:congratulations on achieving your dream|congratulations on this amazing achievement|congratulations on your medical school graduation|you are now a doctor|as you begin this new chapter|may your dreams continue to flourish|compassion and kindness|filled with compassion|lifetime of healing and service)\b/i;
+  const genericMilestoneCopy = /\b(?:congratulations on achieving your dream|congratulations on this amazing achievement|congratulations on your medical school graduation|you are now a doctor|as you begin this new chapter|may your dreams continue to flourish|compassion and kindness|filled with compassion|lifetime of healing and service|lifetime of happiness|fulfillment in your medical career)\b/i;
   if (isMedical && genericMilestoneCopy.test(value)) return true;
   if (isMedical && panelId.startsWith("inside") && /\b(?:he|his|him)\b/i.test(value) && !/\byou\b/i.test(value)) return true;
   if (isMedical && panelId === "inside-right" && !/\b(?:discipline|patience|heart|dedication|late nights?|long shifts?|sacrifices?)\b/i.test(value)) return true;
-  const genericSmallBusinessCopy = /\b(?:thank you for supporting our small business|customers like you|loyalty means the world|opportunity to serve you|loyalty and trust mean everything|thank you again for your loyalty and support|continued success and happiness|all your endeavors)\b/i;
+  const genericSmallBusinessCopy = /\b(?:thank you for supporting our small business|customers like you|valued customer|look forward to serving|continue to support us|loyalty means the world|opportunity to serve you|loyalty and trust mean everything|thank you again for your loyalty and support|continued success and happiness|all your endeavors)\b/i;
   if (isSmallBusiness && genericSmallBusinessCopy.test(value)) return true;
+  if (isSmallBusiness && panelId === "front" && !/\b(?:support|supporting|independent|local)\b/i.test(value)) return true;
+  if (isSmallBusiness && panelId === "front" && /\bindependent\b/i.test(source) && !/\bindependent\b/i.test(value)) return true;
+  if (isSmallBusiness && panelId === "inside-right" && !/\btrust\b/i.test(value)) return true;
+  if (isSmallBusiness && panelId === "inside-left" && !/\b(?:choice|chose|independent)\b/i.test(value)) return true;
   const genericDadCopy = /\b(?:love is in the details|thanks for being a rock|steady presence is a powerful thing|tools for the job, love for the family)\b/i;
-  const broadDadCopy = /\b(?:best dad|amazing dad|glue that holds our family together|shows love by fixing the small things|our family feel safe and secure)\b/i;
+  const broadDadCopy = /\b(?:best handyman|best dad|amazing dad|handy dad|love from the heart|mean the world to me|glue that holds our family together|keeps our home running smoothly|shows love by fixing the small things|our family feel safe and secure)\b/i;
   if (isDad && genericDadCopy.test(value)) return true;
   if (isDad && broadDadCopy.test(value)) return true;
+  if (isDad && panelId === "front" && !/\b(?:quiet fix|small rescue|handled before anyone asked)\b/i.test(value)) return true;
+  if (isDad && panelId === "inside-left" && !/\b(?:tightened screw|fixed hinge|before anyone had to ask)\b/i.test(value)) return true;
   if (panelId === "front" && value.length < 35) return true;
   if (panelId === "inside-left" && value.length < 90) return true;
   if (panelId === "inside-right" && value.length < 130) return true;

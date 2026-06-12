@@ -1,0 +1,246 @@
+{
+  "fixtureId": "dad-fix-anything",
+  "scorer": {
+    "type": "deterministic-rule-rubric",
+    "implementation": "scripts/card-generation-benchmark.mjs:evaluateBenchmarkQuality",
+    "humanVisualReviewRequired": true,
+    "limitations": [
+      "Keyword and marker checks catch regressions but do not fully judge taste, composition balance, or emotional quality.",
+      "Contact sheets still need human visual review against the reference bar.",
+      "A future vision-model judge should be calibrated against human ratings before replacing manual review."
+    ]
+  },
+  "referenceBar": "Warm workshop stationery: blueprint field, a few organized tool marks, calm message panels, and specific practical-love copy without generic best-dad slogans.",
+  "passScore": 82,
+  "score": 100,
+  "status": "pass",
+  "passed": 28,
+  "total": 28,
+  "criticalFailures": [],
+  "checks": [
+    {
+      "id": "panels.count",
+      "category": "render",
+      "description": "All four folded-card panels rendered.",
+      "passed": true,
+      "evidence": "4/4 panels",
+      "critical": true
+    },
+    {
+      "id": "panel.front.copy-present",
+      "category": "copy",
+      "description": "front has headline and body copy.",
+      "passed": true,
+      "evidence": "Happy Father's Day, Dad! / For every quiet fix, every small rescue, and every thing you handled before anyone asked.",
+      "critical": true
+    },
+    {
+      "id": "panel.front.prompt-present",
+      "category": "prompt",
+      "description": "front has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lowe…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.copy-present",
+      "category": "copy",
+      "description": "inside-left has headline and body copy.",
+      "passed": true,
+      "evidence": "Steady Hands / You have a way of showing love through the small things: the tightened screw, the fixed hinge, the problem solved before anyone had to ask.",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.prompt-present",
+      "category": "prompt",
+      "description": "inside-left has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.copy-present",
+      "category": "copy",
+      "description": "inside-right has headline and body copy.",
+      "passed": true,
+      "evidence": "From Manny / This Father's Day, I wanted you to know those quiet repairs never went unnoticed. They added up to something bigger: steadiness, care, and …",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.prompt-present",
+      "category": "prompt",
+      "description": "inside-right has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin ref…",
+      "critical": true
+    },
+    {
+      "id": "panel.back.copy-present",
+      "category": "copy",
+      "description": "back has headline and body copy.",
+      "passed": true,
+      "evidence": "Built With Love / For the dad who fixes the small things and makes them mean everything.",
+      "critical": true
+    },
+    {
+      "id": "panel.back.prompt-present",
+      "category": "prompt",
+      "description": "back has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. W…",
+      "critical": true
+    },
+    {
+      "id": "copy.unique-headlines",
+      "category": "copy",
+      "description": "At least 3 distinct panel headlines.",
+      "passed": true,
+      "evidence": "4 distinct headlines",
+      "critical": false
+    },
+    {
+      "id": "copy.front.required-terms",
+      "category": "copy",
+      "description": "front copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: quiet fix, small rescue",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-left.required-terms",
+      "category": "copy",
+      "description": "inside-left copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: tightened screw, fixed hinge",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-right.required-terms",
+      "category": "copy",
+      "description": "inside-right copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: quiet repairs, looked after",
+      "critical": true
+    },
+    {
+      "id": "copy.back.required-terms",
+      "category": "copy",
+      "description": "back copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: fixes, small things",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.best-dad",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: best dad",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.amazing-dad",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: amazing dad",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.glue-that-holds",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: glue that holds",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.thanks-for-being-a-rock",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: thanks for being a rock",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.love-is-in-the-details",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: love is in the details",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.blueprint",
+      "category": "prompt",
+      "description": "Image prompts include target term: blueprint",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.lower-corner-tool-cluster",
+      "category": "prompt",
+      "description": "Image prompts include target term: lower-corner tool cluster",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.measured-pencil-lines",
+      "category": "prompt",
+      "description": "Image prompts include target term: measured pencil lines",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.sparse-enough",
+      "category": "prompt",
+      "description": "Image prompts include target term: sparse enough",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.no-text-box",
+      "category": "prompt",
+      "description": "Image prompts include target term: no text box",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.text-safe",
+      "category": "prompt",
+      "description": "Image prompts include target term: text-safe",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.hardware-store",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: hardware-store",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.cluttered",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: cluttered",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.main-message",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: main message",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    }
+  ]
+}

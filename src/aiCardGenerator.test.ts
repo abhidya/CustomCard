@@ -343,6 +343,135 @@ describe("AI card generator service", () => {
     expect(payload.card_copy.panels[3].headline).toBe("From Dream to Doctor");
   });
 
+  it("repairs benchmark copy misses for dad and small-business cards", async () => {
+    const weakDadResponse = {
+      ...cardCopyResponse,
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        headline:
+          panel.id === "front"
+            ? "Fixing Everything with Love"
+            : panel.id === "inside-left"
+              ? "A Handy Dad's Love"
+              : panel.id === "inside-right"
+                ? "Love from the Heart"
+                : "To an Amazing Dad",
+        body:
+          panel.id === "front"
+            ? "Happy Father's Day to the best handyman in the world!"
+            : panel.id === "inside-left"
+              ? "You're the one who keeps our home running smoothly, Dad. Your steady presence and practical love mean the world to me."
+              : panel.id === "inside-right"
+                ? "This Father's Day, I wanted you to know those quiet repairs never went unnoticed. They added up to something bigger: steadiness, care, and a home that always felt looked after. With love, Manny."
+                : "For the dad who fixes the small things and makes them mean everything."
+      }))
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response: weakDadResponse } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const dadResult = await service.generateCard(
+      {
+        ...cardRequest,
+        recipient: "Dad",
+        occasion: "Father's Day",
+        style: "workshop blueprint tools",
+        memory_notes: [
+          "Dad shows love by fixing the small things before anyone asks.",
+          "Use tools as symbols, not a cluttered hardware-store scene."
+        ]
+      },
+      { rateKey: "test-dad-benchmark-copy-repair" }
+    );
+    const dadPayload = dadResult.payload as {
+      card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
+    };
+
+    expect(dadPayload.card_copy.panels[0].body).toContain("every quiet fix");
+    expect(dadPayload.card_copy.panels[1].body).toContain("tightened screw");
+    expect(dadPayload.card_copy.panels[3].headline).toBe("Built With Love");
+    expect(JSON.stringify(dadPayload.card_copy)).not.toMatch(/best handyman|Amazing Dad|mean the world to me/i);
+  });
+
+  it("repairs salesy small-business copy into specific gratitude", async () => {
+    const weakSmallBusinessResponse = {
+      ...cardCopyResponse,
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        headline:
+          panel.id === "front"
+            ? "You're the best!"
+            : panel.id === "inside-left"
+              ? "A Big Thank You"
+              : panel.id === "inside-right"
+                ? "Thanks again!"
+                : "The CustomCard Team",
+        body:
+          panel.id === "front"
+            ? "Thank you for supporting our small business!"
+            : panel.id === "inside-left"
+              ? "Thanks for being a valued customer. We look forward to serving you again."
+              : panel.id === "inside-right"
+                ? "Thank you for being a valued customer and for helping to keep our community vibrant and unique."
+                : "Wishing you continued success and happiness in all your endeavors."
+      }))
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response: weakSmallBusinessResponse } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        occasion: "thank-you for supporting a small business",
+        style: "warm citrus, soft gold, deep teal, local shop texture",
+        memory_notes: [
+          "The customer chose an independent small business instead of a large marketplace.",
+          "The owner wants the message to feel handmade, specific, and grateful rather than promotional."
+        ]
+      },
+      { rateKey: "test-small-business-benchmark-copy-repair" }
+    );
+    const payload = result.payload as {
+      card_copy: { panels: Array<{ id: string; headline: string; body: string }> };
+    };
+
+    expect(payload.card_copy.panels[0]).toMatchObject({
+      headline: "Thank you for choosing local"
+    });
+    expect(payload.card_copy.panels[1].body).toContain("independent small business");
+    expect(payload.card_copy.panels[2].body).toContain("trust");
+    expect(payload.card_copy.panels[3]).toMatchObject({
+      headline: "With Thanks",
+      body: "Made with gratitude for customers who choose small."
+    });
+    expect(JSON.stringify(payload.card_copy)).not.toMatch(/You're the best|Thanks again|The CustomCard Team|valued customer|continued success|all your endeavors|look forward to serving/i);
+  });
+
   it("honors a trusted admin live-provider off toggle even when credentials exist", async () => {
     const fetchImpl = vi.fn();
     const service = createAiCardGenerationService({

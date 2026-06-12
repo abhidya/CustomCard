@@ -1,0 +1,46 @@
+{
+  "fixture": "dad-fix-anything",
+  "category": "Father's Day repair-themed card",
+  "competitor": {
+    "competitor": "Greetings Island",
+    "category": "Free template card maker",
+    "sourcePage": "https://www.greetingsisland.com/",
+    "localFile": "greetings-island-fathers-day-preview.jpeg",
+    "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "Dad",
+    "relationship": "child to father",
+    "occasion": "Father's Day",
+    "tone": "warm, funny, sincere, practical love",
+    "style": "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+    "language": "English",
+    "personal_note": "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+    "memory_notes": [
+      "Dad shows love by fixing the small things before anyone asks.",
+      "The card should feel printable, cheerful, and original.",
+      "Use tools as symbols, not a cluttered hardware-store scene."
+    ]
+  },
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "panelPrompts": [
+    {
+      "panelId": "front",
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    },
+    {
+      "panelId": "inside-left",
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    },
+    {
+      "panelId": "inside-right",
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    },
+    {
+      "panelId": "back",
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+    }
+  ]
+}

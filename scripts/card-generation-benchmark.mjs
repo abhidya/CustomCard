@@ -36,6 +36,65 @@ export const cardGenerationBenchmarkFixtures = {
         "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
         "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
       ]
+    },
+    qualityTarget: {
+      passScore: 82,
+      referenceBar:
+        "Premium editorial thank-you stationery: restrained citrus corner hierarchy, large calm text fields, specific customer gratitude, and no promotional filler.",
+      copy: {
+        minUniqueHeadlines: 3,
+        requiredTermsByPanel: {
+          front: ["support", "independent"],
+          "inside-left": ["independent", "choice"],
+          "inside-right": ["community", "trust"],
+          back: ["gratitude", "choose small"]
+        },
+        forbiddenPatterns: [
+          "\\bfor you\\b",
+          "you'?re the best",
+          "thanks again",
+          "The CustomCard Team",
+          "continued success",
+          "all your endeavors",
+          "loyalty means the world",
+          "opportunity to serve",
+          "customers like you",
+          "thank you for supporting our small business",
+          "CustomCard needs"
+        ]
+      },
+      image: {
+        requiredPromptTerms: [
+          "controlled citrus-and-leaf corner",
+          "editorial negative space",
+          "not busy repeated fruit",
+          "no text box",
+          "text-safe"
+        ],
+        forbiddenPromptPatterns: [
+          "recipient['’]?s? name",
+          "main message",
+          "thank[- ]you note",
+          "hand-drawn thank-you note",
+          "owner holding",
+          "customers"
+        ],
+        requiredSvgTheme: "citrus",
+        requiredHeroByPanel: {
+          front: "citrus",
+          "inside-left": "citrus",
+          "inside-right": "citrus",
+          back: "citrus"
+        },
+        requiredBackgroundByPanel: {
+          "inside-left": "#fffaf0",
+          "inside-right": "#fffaf0"
+        },
+        forbiddenSvgPatterns: [
+          "x=\"240\" y=\"430\" width=\"1020\" height=\"1240\"",
+          "y=\"1180\" width=\"1500\" height=\"520\""
+        ]
+      }
     }
   },
   "medical-graduation": {
@@ -58,6 +117,60 @@ export const cardGenerationBenchmarkFixtures = {
         "The family is proud of his discipline, patience, heart, and dedication.",
         "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
       ]
+    },
+    qualityTarget: {
+      passScore: 86,
+      referenceBar:
+        "Reference medical cards: deep navy/soft gold, one cinematic white-coat hero or sparse ECG line, ivory note-sheet interiors, no scattered icon wallpaper, and direct family-pride copy.",
+      copy: {
+        minUniqueHeadlines: 3,
+        requiredTermsByPanel: {
+          front: ["Dream", "Doctor"],
+          "inside-left": ["You", "late nights", "sacrifices"],
+          "inside-right": ["you", "patience", "heart", "dedication"],
+          back: ["Dream", "Doctor"]
+        },
+        forbiddenPatterns: [
+          "Congratulations, Doctor",
+          "\\bHe pushed\\b",
+          "\\bHis dedication\\b",
+          "doctor he has become",
+          "you are now a doctor",
+          "as you begin this new chapter",
+          "lifetime of healing"
+        ]
+      },
+      image: {
+        requiredPromptTerms: [
+          "one white coat",
+          "graduation cap",
+          "stethoscope",
+          "ivory note-sheet",
+          "never dense repeated medical icons",
+          "no caption plaque",
+          "text-safe"
+        ],
+        forbiddenPromptPatterns: [
+          "recipient['’]?s? name",
+          "main message",
+          "foreground"
+        ],
+        requiredSvgTheme: "medical",
+        requiredHeroByPanel: {
+          front: "medical-front",
+          "inside-left": "medical-interior",
+          "inside-right": "medical-interior",
+          back: "medical-back"
+        },
+        requiredBackgroundByPanel: {
+          "inside-left": "#fffdf7",
+          "inside-right": "#fffdf7"
+        },
+        forbiddenSvgPatterns: [
+          "x=\"190\" y=\"300\" width=\"1120\" height=\"1500\"",
+          "y=\"1180\" width=\"1500\" height=\"520\""
+        ]
+      }
     }
   },
   "dad-fix-anything": {
@@ -80,6 +193,57 @@ export const cardGenerationBenchmarkFixtures = {
         "The card should feel printable, cheerful, and original.",
         "Use tools as symbols, not a cluttered hardware-store scene."
       ]
+    },
+    qualityTarget: {
+      passScore: 82,
+      referenceBar:
+        "Warm workshop stationery: blueprint field, a few organized tool marks, calm message panels, and specific practical-love copy without generic best-dad slogans.",
+      copy: {
+        minUniqueHeadlines: 3,
+        requiredTermsByPanel: {
+          front: ["quiet fix", "small rescue"],
+          "inside-left": ["tightened screw", "fixed hinge"],
+          "inside-right": ["quiet repairs", "looked after"],
+          back: ["fixes", "small things"]
+        },
+        forbiddenPatterns: [
+          "best dad",
+          "amazing dad",
+          "glue that holds",
+          "thanks for being a rock",
+          "love is in the details"
+        ]
+      },
+      image: {
+        requiredPromptTerms: [
+          "blueprint",
+          "lower-corner tool cluster",
+          "measured pencil lines",
+          "sparse enough",
+          "no text box",
+          "text-safe"
+        ],
+        forbiddenPromptPatterns: [
+          "hardware-store",
+          "cluttered",
+          "main message"
+        ],
+        requiredSvgTheme: "tools",
+        requiredHeroByPanel: {
+          front: "tools",
+          "inside-left": "tools",
+          "inside-right": "tools",
+          back: "tools"
+        },
+        requiredBackgroundByPanel: {
+          "inside-left": "#fbf5e8",
+          "inside-right": "#fbf5e8"
+        },
+        forbiddenSvgPatterns: [
+          "x=\"240\" y=\"430\" width=\"1020\" height=\"1240\"",
+          "y=\"1180\" width=\"1500\" height=\"520\""
+        ]
+      }
     }
   },
   "botanical-birthday": {
@@ -101,6 +265,32 @@ export const cardGenerationBenchmarkFixtures = {
         "She loves morning hikes and tiny trail flowers.",
         "The birthday card should feel personal without feeling overly sentimental."
       ]
+    },
+    qualityTarget: {
+      passScore: 80,
+      referenceBar:
+        "Elegant botanical stationery: side/corner foliage, quiet cream field, personal birthday copy, and no dense confetti or generic greeting-card filler.",
+      copy: {
+        minUniqueHeadlines: 3,
+        requiredTermsByPanel: {
+          front: ["Birthday", "Sara"],
+          "inside-left": ["coffee", "green trails"],
+          "inside-right": ["hikes", "laughter"],
+          back: ["green paths", "coffee"]
+        },
+        forbiddenPatterns: ["A card made with care", "For this moment", "From the heart"]
+      },
+      image: {
+        requiredPromptTerms: ["botanical", "corner border", "generous blank field", "text-safe"],
+        forbiddenPromptPatterns: ["dense confetti", "recipient['’]?s? name", "main message"],
+        requiredSvgTheme: "botanical",
+        requiredHeroByPanel: {
+          front: "botanical",
+          "inside-left": "botanical",
+          "inside-right": "botanical",
+          back: "botanical"
+        }
+      }
     }
   }
 };
@@ -209,7 +399,10 @@ async function runFixture({ fixture, manifest, service, objectStoreRuntime, prov
   writeJson(resolve(fixtureDir, "provider-http.json"), fixtureProviderCalls);
 
   const contactSheetFile = await renderContactSheet({ fixtureDir, fixture, competitor, panelFiles });
-  const comparisonMarkdown = buildFixtureComparison({ fixture, competitor, payload, panelFiles, contactSheetFile });
+  const quality = evaluateBenchmarkQuality({ fixture, payload: sanitizedOutput, panelFiles });
+  writeJson(resolve(fixtureDir, "qa-scorecard.json"), quality);
+  writeMarkdown(resolve(fixtureDir, "qa-scorecard.md"), buildQualityScorecardMarkdown({ fixture, quality }));
+  const comparisonMarkdown = buildFixtureComparison({ fixture, competitor, payload, panelFiles, contactSheetFile, quality });
   writeMarkdown(resolve(fixtureDir, "comparison.md"), comparisonMarkdown);
 
   const persistence = await persistFixtureArtifacts({
@@ -232,9 +425,230 @@ async function runFixture({ fixture, manifest, service, objectStoreRuntime, prov
     outputDir: relativePath(fixtureDir),
     panelCount: panelFiles.length,
     contactSheet: contactSheetFile ? relativePath(contactSheetFile) : undefined,
+    quality: {
+      status: quality.status,
+      score: quality.score,
+      passed: quality.passed,
+      total: quality.total,
+      scorecard: relativePath(resolve(fixtureDir, "qa-scorecard.md"))
+    },
     prompts: effectivePrompts.panelPrompts,
     persistence
   };
+}
+
+export function evaluateBenchmarkQuality({ fixture, payload, panelFiles }) {
+  const target = fixture.qualityTarget || {};
+  const checks = [];
+  const panels = new Map((payload.card_copy?.panels || []).map((panel) => [panel.id, panel]));
+  const files = new Map(panelFiles.map((file) => [file.panelId, file]));
+
+  addCheck(checks, {
+    id: "panels.count",
+    category: "render",
+    description: "All four folded-card panels rendered.",
+    passed: panelFiles.length === panelIds.length,
+    evidence: `${panelFiles.length}/${panelIds.length} panels`,
+    critical: true
+  });
+
+  for (const panelId of panelIds) {
+    const panel = panels.get(panelId);
+    const file = files.get(panelId);
+    addCheck(checks, {
+      id: `panel.${panelId}.copy-present`,
+      category: "copy",
+      description: `${panelId} has headline and body copy.`,
+      passed: Boolean(panel?.headline && panel?.body),
+      evidence: panel ? `${panel.headline || "<no headline>"} / ${truncateEvidence(panel.body || "<no body>")}` : "missing panel copy",
+      critical: true
+    });
+    addCheck(checks, {
+      id: `panel.${panelId}.prompt-present`,
+      category: "prompt",
+      description: `${panelId} has an image prompt and generated asset.`,
+      passed: Boolean(file?.prompt && file?.providerFile && file?.previewFile),
+      evidence: file?.prompt ? truncateEvidence(file.prompt, 180) : "missing image prompt",
+      critical: true
+    });
+  }
+
+  const allCopy = panelIds.map((panelId) => {
+    const panel = panels.get(panelId) || {};
+    return `${panelId}: ${panel.headline || ""} ${panel.body || ""}`;
+  }).join("\n");
+  const uniqueHeadlines = new Set(panelIds.map((panelId) => panels.get(panelId)?.headline).filter(Boolean).map((value) => value.toLowerCase()));
+  if (target.copy?.minUniqueHeadlines) {
+    addCheck(checks, {
+      id: "copy.unique-headlines",
+      category: "copy",
+      description: `At least ${target.copy.minUniqueHeadlines} distinct panel headlines.`,
+      passed: uniqueHeadlines.size >= target.copy.minUniqueHeadlines,
+      evidence: `${uniqueHeadlines.size} distinct headlines`
+    });
+  }
+
+  for (const [panelId, terms] of Object.entries(target.copy?.requiredTermsByPanel || {})) {
+    const panel = panels.get(panelId) || {};
+    const panelText = `${panel.headline || ""} ${panel.body || ""}`;
+    const missing = terms.filter((term) => !textIncludesTerm(panelText, term));
+    addCheck(checks, {
+      id: `copy.${panelId}.required-terms`,
+      category: "copy",
+      description: `${panelId} copy includes target-specific anchors.`,
+      passed: missing.length === 0,
+      evidence: missing.length ? `missing: ${missing.join(", ")}` : `matched: ${terms.join(", ")}`,
+      critical: true
+    });
+  }
+
+  for (const pattern of target.copy?.forbiddenPatterns || []) {
+    const match = regexMatch(allCopy, pattern);
+    addCheck(checks, {
+      id: `copy.forbidden.${slugify(pattern)}`,
+      category: "copy",
+      description: `Copy avoids forbidden pattern: ${pattern}`,
+      passed: !match,
+      evidence: match ? truncateEvidence(match[0]) : "not found",
+      critical: true
+    });
+  }
+
+  const allPrompts = panelFiles.map((file) => `${file.panelId}: ${file.prompt || ""}`).join("\n");
+  for (const term of target.image?.requiredPromptTerms || []) {
+    addCheck(checks, {
+      id: `prompt.required.${slugify(term)}`,
+      category: "prompt",
+      description: `Image prompts include target term: ${term}`,
+      passed: textIncludesTerm(allPrompts, term),
+      evidence: textIncludesTerm(allPrompts, term) ? "found" : "missing",
+      critical: true
+    });
+  }
+  for (const pattern of target.image?.forbiddenPromptPatterns || []) {
+    const match = regexMatch(allPrompts, pattern);
+    addCheck(checks, {
+      id: `prompt.forbidden.${slugify(pattern)}`,
+      category: "prompt",
+      description: `Image prompts avoid forbidden pattern: ${pattern}`,
+      passed: !match,
+      evidence: match ? truncateEvidence(match[0]) : "not found",
+      critical: true
+    });
+  }
+
+  for (const file of panelFiles) {
+    const svg = file.providerFile?.endsWith(".svg") && existsSync(resolve(repoRoot, file.providerFile))
+      ? readFileSync(resolve(repoRoot, file.providerFile), "utf8")
+      : "";
+    if (!svg) continue;
+    addCheck(checks, {
+      id: `svg.${file.panelId}.no-text`,
+      category: "visual",
+      description: `${file.panelId} SVG artwork layer contains no rendered text nodes.`,
+      passed: !/<text\b/i.test(svg),
+      evidence: /<text\b/i.test(svg) ? "contains <text>" : "no <text>",
+      critical: true
+    });
+    if (target.image?.requiredSvgTheme) {
+      addCheck(checks, {
+        id: `svg.${file.panelId}.theme`,
+        category: "visual",
+        description: `${file.panelId} SVG uses target theme marker.`,
+        passed: svg.includes(`data-customcard-theme="${target.image.requiredSvgTheme}"`),
+        evidence: svg.match(/data-customcard-theme="([^"]+)"/)?.[1] || "missing theme marker",
+        critical: true
+      });
+    }
+    const requiredHero = target.image?.requiredHeroByPanel?.[file.panelId];
+    if (requiredHero) {
+      addCheck(checks, {
+        id: `svg.${file.panelId}.hero`,
+        category: "visual",
+        description: `${file.panelId} SVG uses target hero/composition marker.`,
+        passed: svg.includes(`data-customcard-hero="${requiredHero}"`),
+        evidence: svg.match(/data-customcard-hero="([^"]+)"/)?.[1] || "missing hero marker",
+        critical: true
+      });
+    }
+    const requiredBackground = target.image?.requiredBackgroundByPanel?.[file.panelId];
+    if (requiredBackground) {
+      addCheck(checks, {
+        id: `svg.${file.panelId}.background`,
+        category: "visual",
+        description: `${file.panelId} SVG uses target background field.`,
+        passed: svg.includes(`<rect width="1500" height="2100" fill="${requiredBackground}"`),
+        evidence: svg.match(/<rect width="1500" height="2100" fill="([^"]+)"/)?.[1] || "missing background rect",
+        critical: true
+      });
+    }
+    for (const pattern of target.image?.forbiddenSvgPatterns || []) {
+      const match = regexMatch(svg, pattern);
+      addCheck(checks, {
+        id: `svg.${file.panelId}.forbidden.${slugify(pattern)}`,
+        category: "visual",
+        description: `${file.panelId} SVG avoids forbidden renderer pattern: ${pattern}`,
+        passed: !match,
+        evidence: match ? truncateEvidence(match[0]) : "not found",
+        critical: true
+      });
+    }
+  }
+
+  const passed = checks.filter((check) => check.passed).length;
+  const total = checks.length;
+  const score = total ? Math.round((passed / total) * 100) : 0;
+  const passScore = Number(target.passScore) || 80;
+  const criticalFailures = checks.filter((check) => check.critical && !check.passed);
+  return {
+    fixtureId: fixture.id,
+    scorer: {
+      type: "deterministic-rule-rubric",
+      implementation: "scripts/card-generation-benchmark.mjs:evaluateBenchmarkQuality",
+      humanVisualReviewRequired: true,
+      limitations: [
+        "Keyword and marker checks catch regressions but do not fully judge taste, composition balance, or emotional quality.",
+        "Contact sheets still need human visual review against the reference bar.",
+        "A future vision-model judge should be calibrated against human ratings before replacing manual review."
+      ]
+    },
+    referenceBar: target.referenceBar || "No explicit quality target defined.",
+    passScore,
+    score,
+    status: score >= passScore && criticalFailures.length === 0 ? "pass" : "needs-improvement",
+    passed,
+    total,
+    criticalFailures: criticalFailures.map((check) => check.id),
+    checks
+  };
+}
+
+function addCheck(checks, check) {
+  checks.push({
+    id: check.id,
+    category: check.category,
+    description: check.description,
+    passed: Boolean(check.passed),
+    evidence: check.evidence || "",
+    critical: Boolean(check.critical)
+  });
+}
+
+function textIncludesTerm(value, term) {
+  return String(value || "").toLowerCase().includes(String(term || "").toLowerCase());
+}
+
+function regexMatch(value, pattern) {
+  return String(value || "").match(new RegExp(pattern, "i"));
+}
+
+function slugify(value) {
+  return String(value || "check").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "check";
+}
+
+function truncateEvidence(value, maxLength = 140) {
+  const text = String(value || "");
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
 }
 
 function parseArgs(values) {
@@ -335,17 +749,20 @@ function parseJson(text) {
 }
 
 function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
-  const layout = panelLayout(panelId);
+  const layout = panelLayout(panelId, previewThemeForPanelCopy(panelCopy));
   const headline = wrapText(panelCopy.headline || "", layout.headlineChars).slice(0, 3);
   const body = wrapText(panelCopy.body || "", layout.bodyChars).slice(0, layout.bodyLines);
+  const box = layout.box.opacity > 0
+    ? `<rect x="${layout.box.x}" y="${layout.box.y}" width="${layout.box.width}" height="${layout.box.height}" rx="28" fill="${layout.box.fill}" opacity="${layout.box.opacity}"/>`
+    : "";
   const overlay = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
-      <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="#fffaf0" stroke-width="8" opacity="0.9"/>
-      <rect x="${layout.box.x}" y="${layout.box.y}" width="${layout.box.width}" height="${layout.box.height}" rx="28" fill="${layout.box.fill}" opacity="${layout.box.opacity}"/>
+      <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${layout.frameOpacity}"/>
+      ${box}
       <text x="750" y="${layout.headlineY}" text-anchor="middle" font-family="Georgia, Times New Roman, serif" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700">
         ${headline.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
       </text>
-      <text x="750" y="${layout.bodyY}" text-anchor="middle" font-family="Inter, Arial, sans-serif" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="600">
+      <text x="750" y="${layout.bodyY}" text-anchor="middle" font-family="Inter, Arial, sans-serif" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="500">
         ${body.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : layout.bodySize * 1.25}">${escapeXml(line)}</tspan>`).join("")}
       </text>
     </svg>
@@ -357,37 +774,60 @@ function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
     .toBuffer();
 }
 
-function panelLayout(panelId) {
+function previewThemeForPanelCopy(panelCopy = {}) {
+  const source = `${panelCopy.image_prompt || ""} ${panelCopy.art_direction || ""} ${panelCopy.headline || ""} ${panelCopy.body || ""}`.toLowerCase();
+  if (/\b(medical|doctor|stethoscope|white[- ]coat|ecg|dream to doctor)\b/.test(source)) return "medical";
+  if (/\b(citrus|small-business|small business|choose small|independent)\b/.test(source)) return "citrus";
+  if (/\b(father|dad|fix|repair|tool|workshop|blueprint|hinge)\b/.test(source)) return "tools";
+  if (/\b(botanical|birthday|fern|flower|hike|coffee)\b/.test(source)) return "botanical";
+  return "stationery";
+}
+
+function panelLayout(panelId, theme = "stationery") {
+  const darkCover = ["medical", "citrus", "tools"].includes(theme);
+  const frameColor = panelId.startsWith("inside")
+    ? theme === "tools"
+      ? "#0f6b5f"
+      : theme === "citrus"
+        ? "#c79531"
+        : "#c49b42"
+    : darkCover
+      ? "#fffaf0"
+      : "#31584e";
   if (panelId === "front") {
     return {
-      box: { x: 142, y: 1328, width: 1216, height: 506, fill: "#fffaf0", opacity: 0.9 },
-      headlineY: 1460,
-      bodyY: 1628,
-      headlineSize: 82,
-      bodySize: 40,
+      box: { x: 142, y: 1328, width: 1216, height: 506, fill: "#fffaf0", opacity: 0 },
+      headlineY: 1410,
+      bodyY: 1580,
+      headlineSize: 88,
+      bodySize: 39,
       headlineChars: 24,
       bodyChars: 43,
       bodyLines: 4,
-      headlineColor: "#202824",
-      bodyColor: "#2d3733"
+      headlineColor: darkCover ? "#fff8dc" : "#202824",
+      bodyColor: darkCover ? "#f4e6b0" : "#2d3733",
+      frameColor,
+      frameOpacity: darkCover ? 0.86 : 0.74
     };
   }
   if (panelId === "back") {
     return {
-      box: { x: 190, y: 1520, width: 1120, height: 300, fill: "#fffaf0", opacity: 0.86 },
-      headlineY: 1635,
-      bodyY: 1738,
+      box: { x: 190, y: 1520, width: 1120, height: 300, fill: "#fffaf0", opacity: 0 },
+      headlineY: 1588,
+      bodyY: 1694,
       headlineSize: 58,
-      bodySize: 34,
+      bodySize: 32,
       headlineChars: 30,
       bodyChars: 46,
       bodyLines: 2,
-      headlineColor: "#25302b",
-      bodyColor: "#56645d"
+      headlineColor: darkCover ? "#fff8dc" : "#25302b",
+      bodyColor: darkCover ? "#f4e6b0" : "#56645d",
+      frameColor,
+      frameOpacity: darkCover ? 0.82 : 0.7
     };
   }
   return {
-    box: { x: 150, y: 360, width: 1200, height: 1360, fill: "#fffdf7", opacity: 0.88 },
+    box: { x: 150, y: 360, width: 1200, height: 1360, fill: "#fffdf7", opacity: 0 },
     headlineY: 560,
     bodyY: 740,
     headlineSize: 68,
@@ -396,7 +836,9 @@ function panelLayout(panelId) {
     bodyChars: 44,
     bodyLines: 10,
     headlineColor: "#25302b",
-    bodyColor: "#3f4c45"
+    bodyColor: "#3f4c45",
+    frameColor,
+    frameOpacity: 0.64
   };
 }
 
@@ -488,13 +930,36 @@ async function persistFixtureArtifacts({ objectStoreRuntime, fixture, fixtureDir
   }
 }
 
-function buildFixtureComparison({ fixture, competitor, payload, panelFiles, contactSheetFile }) {
+function buildQualityScorecardMarkdown({ fixture, quality }) {
+  const lines = [
+    `# QA Scorecard: ${fixture.id}`,
+    "",
+    `- Status: ${quality.status}`,
+    `- Score: ${quality.score}/100`,
+    `- Checks: ${quality.passed}/${quality.total}`,
+    `- Pass score: ${quality.passScore}`,
+    `- Critical failures: ${quality.criticalFailures.length ? quality.criticalFailures.join(", ") : "none"}`,
+    `- Reference bar: ${quality.referenceBar}`,
+    "",
+    "| Result | Gate | Category | Check | Evidence |",
+    "|---|---|---|---|---|"
+  ];
+  for (const check of quality.checks) {
+    lines.push(`| ${check.passed ? "Pass" : "Fail"} | ${check.critical ? "Critical" : "Standard"} | ${check.category} | ${escapeMarkdownTable(check.description)} | ${escapeMarkdownTable(check.evidence)} |`);
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+function buildFixtureComparison({ fixture, competitor, payload, panelFiles, contactSheetFile, quality }) {
   const lines = [
     `# ${fixture.category}`,
     "",
     `- Competitor: ${competitor?.competitor || "n/a"}`,
     `- Source: ${competitor?.sourcePage || "n/a"}`,
     `- Competitor prompt/category: ${fixture.competitorPrompt}`,
+    `- Target bar: ${fixture.qualityTarget?.referenceBar || "n/a"}`,
+    `- QA score: ${quality?.score ?? "n/a"}/100 (${quality?.status || "n/a"})`,
+    `- QA scorecard: [qa-scorecard.md](./qa-scorecard.md)`,
     `- CustomCard generated by: ${payload.generated_by}`,
     `- Card copy model: ${payload.ai_flow?.card_copy?.model || "n/a"}`,
     `- Image model: ${payload.ai_flow?.card_image?.model || "n/a"}`,
@@ -517,17 +982,22 @@ function buildRunReadme(summary) {
     "",
     "Live benchmark run for CustomCard card generation against research-only competitor fixtures.",
     "",
-    "| Fixture | Category | Panels | Contact sheet | Persistence |",
-    "|---|---|---:|---|---|"
+    "| Fixture | Category | QA | Panels | Contact sheet | Scorecard | Persistence |",
+    "|---|---|---:|---:|---|---|---|"
   ];
   for (const fixture of summary.fixtures) {
     lines.push(
-      `| ${fixture.id} | ${fixture.category} | ${fixture.panelCount} | ${fixture.contactSheet ? `[open](${fixture.id}/contact-sheet.png)` : "n/a"} | ${fixture.persistence?.artifactPersistence?.status || "n/a"} |`
+      `| ${fixture.id} | ${fixture.category} | ${fixture.quality ? `${fixture.quality.score}/100 ${fixture.quality.status}` : "n/a"} | ${fixture.panelCount} | ${fixture.contactSheet ? `[open](${fixture.id}/contact-sheet.png)` : "n/a"} | ${fixture.quality?.scorecard ? `[open](${fixture.id}/qa-scorecard.md)` : "n/a"} | ${fixture.persistence?.artifactPersistence?.status || "n/a"} |`
     );
   }
   lines.push("");
+  lines.push("Each fixture now includes an explicit target bar plus `qa-scorecard.json` / `qa-scorecard.md` checks for copy, prompts, and deterministic SVG visual markers.");
   lines.push("Secrets are redacted in `debug-log.json`; provider image data URLs are stored as files instead of inline payloads.");
   return `${lines.join("\n")}\n`;
+}
+
+function escapeMarkdownTable(value) {
+  return String(value ?? "").replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
 
 function readCompetitorManifest() {

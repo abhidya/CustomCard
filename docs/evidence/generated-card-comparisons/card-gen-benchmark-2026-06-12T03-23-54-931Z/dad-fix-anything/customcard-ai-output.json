@@ -1,0 +1,123 @@
+{
+  "draft_id": "ai-mqad4t1r-dad",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Practical Love",
+      "palette": [
+        "golden yellow",
+        "green",
+        "light blue-gray"
+      ],
+      "motifs": [
+        "toolbox",
+        "wrench",
+        "hammer",
+        "screwdriver"
+      ],
+      "border_style": "thin refined frame",
+      "front_back_pairing": "golden yellow and green accents",
+      "interior_pairing": "border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Father's Day",
+        "body": "For every quiet fix, every small rescue, and every thing you handled before anyone asked.",
+        "art_direction": "Clean workshop illustration with golden yellow and green accents, border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "image_prompt": "Golden yellow and green accents, toolbox, wrench, hammer, and screwdriver arranged in a clean border-first stationery layout with a quiet center and generous margins. The toolbox should be the central object, and the wrench, hammer, and screwdriver should be arranged around it in a sparse edge/corner or lower-edge motif. The background should be a light blue-gray color with a subtle texture resembling a workshop blueprint. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Steady Presence",
+        "body": "You have a way of showing love through the small things: the tightened screw, the fixed hinge, the problem solved before anyone had to ask.",
+        "art_direction": "Border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "image_prompt": "A small toolbox with a hammer and screwdriver placed on a workbench. The workbench should be a light wood color with a subtle texture resembling a workshop surface. The toolbox should have a golden yellow and green accent on the lid. The background should be a light blue-gray color with a subtle texture resembling a workshop blueprint. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Practical Love",
+        "body": "This Father's Day, I wanted you to know those quiet repairs never went unnoticed. They added up to something bigger: steadiness, care, and a home that always felt looked after. With love, Manny.",
+        "art_direction": "Border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "image_prompt": "A small wrench and hammer placed on a workbench. The workbench should be a light wood color with a subtle texture resembling a workshop surface. The wrench and hammer should have golden yellow and green accents. The background should be a light blue-gray color with a subtle texture resembling a workshop blueprint. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "Built With Love",
+        "body": "For the dad who fixes the small things and makes them mean everything.",
+        "art_direction": "Mostly negative space with one small coordinating lower mark or border echo.",
+        "image_prompt": "A small golden yellow and green accent at the bottom of the panel, resembling a toolbox or a wrench. The background should be a light blue-gray color with a subtle texture resembling a workshop blueprint. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 12834 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 8670 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 8682 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 12846 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

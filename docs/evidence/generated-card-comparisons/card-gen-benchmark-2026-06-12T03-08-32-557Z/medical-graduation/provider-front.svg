@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="medical">
+<rect width="1500" height="2100" fill="#101d3b"/>
+
+
+    <g data-customcard-hero="medical-front">
+      <path d="M0 760 H520 L552 704 L592 842 L638 612 L688 760 H1500" fill="none" stroke="#e8c66c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+      <path d="M620 380 L552 548 L582 1036 L918 1036 L948 548 L880 380 C820 432 680 432 620 380Z" fill="#f7f2df" opacity="0.84"/>
+      <path d="M646 408 L736 642 L750 1030 M854 408 L764 642 L750 1030" fill="none" stroke="#c9d1d4" stroke-width="12" opacity="0.72"/>
+      <path d="M520 336 L980 336 L858 248 L642 248Z" fill="#1d4267" stroke="#e8c66c" stroke-width="8" opacity="0.96"/>
+      <path d="M750 336 V546" stroke="#e8c66c" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="750" cy="574" r="20" fill="#e8c66c"/>
+      <path d="M640 710 C594 790 610 894 710 924 C814 954 924 884 894 772" fill="none" stroke="#24324c" stroke-width="20" stroke-linecap="round" opacity="0.84"/>
+      <circle cx="630" cy="704" r="24" fill="none" stroke="#e8c66c" stroke-width="10"/>
+      <circle cx="900" cy="768" r="34" fill="none" stroke="#e8c66c" stroke-width="10"/>
+    </g>
+  
+<g transform="translate(146 2183) rotate(20) scale(0.51)">
+    <g opacity="0.86">
+      <path d="M-120 0 C-60 -80 60 -80 120 0 C60 86 -60 86 -120 0Z" fill="none" stroke="#e8c66c" stroke-width="10"/>
+      <path d="M-115 92 L-70 92 L-52 40 L-18 144 L18 -18 L46 92 L112 92" fill="none" stroke="#f7f2df" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="-42" y="-130" width="84" height="54" rx="8" fill="#f7f2df" opacity="0.84"/>
+      <path d="M-78 -76 L78 -76 L42 -44 L-42 -44Z" fill="#e8c66c" opacity="0.78"/>
+    </g>
+  </g>
+<g transform="translate(142 653) rotate(22) scale(1.02)">
+    <g opacity="0.86">
+      <path d="M-120 0 C-60 -80 60 -80 120 0 C60 86 -60 86 -120 0Z" fill="none" stroke="#fff4d3" stroke-width="10"/>
+      <path d="M-115 92 L-70 92 L-52 40 L-18 144 L18 -18 L46 92 L112 92" fill="none" stroke="#f7f2df" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="-42" y="-130" width="84" height="54" rx="8" fill="#f7f2df" opacity="0.84"/>
+      <path d="M-78 -76 L78 -76 L42 -44 L-42 -44Z" fill="#fff4d3" opacity="0.78"/>
+    </g>
+  </g>
+<g transform="translate(1499 782) rotate(-21) scale(1.05)">
+    <g opacity="0.86">
+      <path d="M-120 0 C-60 -80 60 -80 120 0 C60 86 -60 86 -120 0Z" fill="none" stroke="#e8c66c" stroke-width="10"/>
+      <path d="M-115 92 L-70 92 L-52 40 L-18 144 L18 -18 L46 92 L112 92" fill="none" stroke="#f7f2df" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="-42" y="-130" width="84" height="54" rx="8" fill="#f7f2df" opacity="0.84"/>
+      <path d="M-78 -76 L78 -76 L42 -44 L-42 -44Z" fill="#e8c66c" opacity="0.78"/>
+    </g>
+  </g>
+<g transform="translate(1588 231) rotate(8) scale(0.89)">
+    <g opacity="0.86">
+      <path d="M-120 0 C-60 -80 60 -80 120 0 C60 86 -60 86 -120 0Z" fill="none" stroke="#fff4d3" stroke-width="10"/>
+      <path d="M-115 92 L-70 92 L-52 40 L-18 144 L18 -18 L46 92 L112 92" fill="none" stroke="#f7f2df" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="-42" y="-130" width="84" height="54" rx="8" fill="#f7f2df" opacity="0.84"/>
+      <path d="M-78 -76 L78 -76 L42 -44 L-42 -44Z" fill="#fff4d3" opacity="0.78"/>
+    </g>
+  </g>
+<rect x="0" y="1180" width="1500" height="520" fill="#fffaf0" opacity="0.18"/>
+
+    <rect x="70" y="70" width="1360" height="1960" rx="18" fill="none" stroke="#e8c66c" stroke-width="5" opacity="0.44"/>
+    <rect x="102" y="102" width="1296" height="1896" rx="10" fill="none" stroke="#e8c66c" stroke-width="2" opacity="0.31679999999999997"/>
+  
+</svg>

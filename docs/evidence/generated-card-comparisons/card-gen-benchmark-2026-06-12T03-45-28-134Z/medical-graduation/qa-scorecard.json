@@ -1,0 +1,272 @@
+{
+  "fixtureId": "medical-graduation",
+  "scorer": {
+    "type": "deterministic-rule-rubric",
+    "implementation": "scripts/card-generation-benchmark.mjs:evaluateBenchmarkQuality",
+    "humanVisualReviewRequired": true,
+    "limitations": [
+      "Keyword and marker checks catch regressions but do not fully judge taste, composition balance, or emotional quality.",
+      "Contact sheets still need human visual review against the reference bar.",
+      "A future vision-model judge should be calibrated against human ratings before replacing manual review."
+    ]
+  },
+  "referenceBar": "Reference medical cards: deep navy/soft gold, one cinematic white-coat hero or sparse ECG line, ivory note-sheet interiors, no scattered icon wallpaper, and direct family-pride copy.",
+  "passScore": 86,
+  "score": 97,
+  "status": "needs-improvement",
+  "passed": 30,
+  "total": 31,
+  "criticalFailures": [
+    "copy.inside-left.required-terms"
+  ],
+  "checks": [
+    {
+      "id": "panels.count",
+      "category": "render",
+      "description": "All four folded-card panels rendered.",
+      "passed": true,
+      "evidence": "4/4 panels",
+      "critical": true
+    },
+    {
+      "id": "panel.front.copy-present",
+      "category": "copy",
+      "description": "front has headline and body copy.",
+      "passed": true,
+      "evidence": "From Dream to Doctor / For every late night, long shift, and quiet sacrifice that brought you here.",
+      "critical": true
+    },
+    {
+      "id": "panel.front.prompt-present",
+      "category": "prompt",
+      "description": "front has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lowe…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.copy-present",
+      "category": "copy",
+      "description": "inside-left has headline and body copy.",
+      "passed": true,
+      "evidence": "Years In The Making / Years of dedication, countless sacrifices, and unwavering commitment have led you to this moment. We are proud of the discipline, patience,…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.prompt-present",
+      "category": "prompt",
+      "description": "inside-left has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.copy-present",
+      "category": "copy",
+      "description": "inside-right has headline and body copy.",
+      "passed": true,
+      "evidence": "With So Much Pride / We are proud not only of the doctor you are becoming, but of the patience, heart, and dedication that brought you here. This moment belongs…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.prompt-present",
+      "category": "prompt",
+      "description": "inside-right has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin ref…",
+      "critical": true
+    },
+    {
+      "id": "panel.back.copy-present",
+      "category": "copy",
+      "description": "back has headline and body copy.",
+      "passed": true,
+      "evidence": "From Dream to Doctor / With pride, love, and deep respect for the doctor you worked so hard to become.",
+      "critical": true
+    },
+    {
+      "id": "panel.back.prompt-present",
+      "category": "prompt",
+      "description": "back has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. E…",
+      "critical": true
+    },
+    {
+      "id": "copy.unique-headlines",
+      "category": "copy",
+      "description": "At least 3 distinct panel headlines.",
+      "passed": true,
+      "evidence": "3 distinct headlines",
+      "critical": false
+    },
+    {
+      "id": "copy.front.required-terms",
+      "category": "copy",
+      "description": "front copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: Dream, Doctor",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-left.required-terms",
+      "category": "copy",
+      "description": "inside-left copy includes target-specific anchors.",
+      "passed": false,
+      "evidence": "missing: late nights",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-right.required-terms",
+      "category": "copy",
+      "description": "inside-right copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: you, patience, heart, dedication",
+      "critical": true
+    },
+    {
+      "id": "copy.back.required-terms",
+      "category": "copy",
+      "description": "back copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: Dream, Doctor",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.congratulations-doctor",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: Congratulations, Doctor",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.bhe-pushed-b",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: \\bHe pushed\\b",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.bhis-dedication-b",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: \\bHis dedication\\b",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.doctor-he-has-become",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: doctor he has become",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.you-are-now-a-doctor",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: you are now a doctor",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.as-you-begin-this-new-chapter",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: as you begin this new chapter",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.lifetime-of-healing",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: lifetime of healing",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.one-white-coat",
+      "category": "prompt",
+      "description": "Image prompts include target term: one white coat",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.graduation-cap",
+      "category": "prompt",
+      "description": "Image prompts include target term: graduation cap",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.stethoscope",
+      "category": "prompt",
+      "description": "Image prompts include target term: stethoscope",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.ivory-note-sheet",
+      "category": "prompt",
+      "description": "Image prompts include target term: ivory note-sheet",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.never-dense-repeated-medical-icons",
+      "category": "prompt",
+      "description": "Image prompts include target term: never dense repeated medical icons",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.no-caption-plaque",
+      "category": "prompt",
+      "description": "Image prompts include target term: no caption plaque",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.text-safe",
+      "category": "prompt",
+      "description": "Image prompts include target term: text-safe",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.recipient-s-name",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: recipient['’]?s? name",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.main-message",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: main message",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.foreground",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: foreground",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    }
+  ]
+}

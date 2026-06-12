@@ -1,0 +1,131 @@
+{
+  "draft_id": "ai-mqae00ok-my-brother",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "From Dream to Doctor",
+      "palette": [
+        "deep navy",
+        "soft gold",
+        "white",
+        "light ivory"
+      ],
+      "motifs": [
+        "white graduation cap",
+        "stethoscope",
+        "anatomy sketch lines",
+        "ECG line",
+        "graduation cap",
+        "white coat of honor"
+      ],
+      "border_style": "soft gold border",
+      "front_back_pairing": "deep navy cover with a soft gold border",
+      "interior_pairing": "refined thin gold frame with a light ivory center"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "From Dream to Doctor",
+        "body": "For every late night, long shift, and quiet sacrifice that brought you here.",
+        "art_direction": "Deep navy cover with a soft gold border, elegant medical graduation stationery. Front and back visually match each other.",
+        "image_prompt": "A deep navy cover with a soft gold border, a white graduation cap on a soft gold background, a stethoscope hanging from the cap, and a subtle ECG line pattern on the background, clean lower text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Years In The Making",
+        "body": "Years of dedication, countless sacrifices, and unwavering commitment have led you to this moment. We are proud of the discipline, patience, heart, and dedication you've shown throughout your journey.",
+        "art_direction": "Inside-left and inside-right visually match each other and feel like the opened interior spread. Border-first stationery design with a calm blank/low-contrast center reserved for app-rendered text. Interior art must keep motifs on edges, corners, borders, or low-density background texture.",
+        "image_prompt": "A refined thin gold frame surrounds a quiet light ivory center with a subtle anatomy sketch line pattern, a stethoscope leaning against a corner, and a few medical-school graduation symbols in the background, clean text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "With So Much Pride",
+        "body": "We are proud not only of the doctor you are becoming, but of the patience, heart, and dedication that brought you here. This moment belongs to every hard choice you made and every day you kept going. With love, Manny.",
+        "art_direction": "Inside-left and inside-right visually match each other and feel like the opened interior spread. Border-first stationery design with a calm blank/low-contrast center reserved for app-rendered text. Interior art must keep motifs on edges, corners, borders, or low-density background texture.",
+        "image_prompt": "A delicate white coat of honor hangs from a corner, with a few medical-school graduation symbols and a stethoscope in the background, clean text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Use a light ivory or cream low-contrast note-sheet field for the interior unless the user explicitly requested a dark interior. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "From Dream to Doctor",
+        "body": "With pride, love, and deep respect for the doctor you worked so hard to become.",
+        "art_direction": "Back visually matches the front. The front carries the strongest hero idea and the back repeats a small quiet echo.",
+        "image_prompt": "A mostly negative space with a small soft gold border, a graduation cap in the lower corner, and a few subtle medical-school graduation symbols in the background, clean text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": [
+      "From Dream to Doctor",
+      "Years of dedication",
+      "White coat of honor",
+      "Stethoscope of pride"
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 1001882 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 63666 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 1016990 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 63666 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

@@ -1,0 +1,131 @@
+{
+  "draft_id": "ai-mqad4bm8-loyal-customers",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Premium Small-Business Editorial Stationery",
+      "palette": [
+        "warm citrus",
+        "cream",
+        "deep teal",
+        "soft gold"
+      ],
+      "motifs": [
+        "subtle gradient",
+        "single-object cover",
+        "border-first stationery layout",
+        "thin refined frame",
+        "quiet center",
+        "generous margins",
+        "low-contrast interior"
+      ],
+      "border_style": "thin refined frame",
+      "front_back_pairing": "warm citrus background, cream text, deep teal accents, soft gold ornaments, and handmade texture",
+      "interior_pairing": "mix of warm citrus and cream colors with deep teal accents and soft gold ornaments"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Thank you for choosing local",
+        "body": "Thank you for choosing to support a small business like mine.",
+        "art_direction": "Warm citrus background, cream text, deep teal accents, soft gold ornaments, and handmade texture. Front cover should feature a simple yet elegant composition with a clean text-safe area for the headline and body. The dominant composition idea is a single-object cover with a subtle gradient.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "A message from the heart",
+        "body": "You chose an independent small business when there were easier, bigger options. That choice matters, and it helps keep the care, craft, and human side of this work alive.",
+        "art_direction": "Inside-left should feature a calm, quiet composition with a border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs. The palette should be a mix of warm citrus and cream colors with deep teal accents and soft gold ornaments. The motifs should be subtle and not overpower the message area.",
+        "image_prompt": "A 5x7, vertical, flat, premium print panel artwork featuring a calm, quiet composition with a border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs. The palette should be a mix of warm citrus and cream colors with deep teal accents and soft gold ornaments. The motifs should be subtle and not overpower the message area. The composition should have a mostly blank back mark with a small coordinating lower mark or border echo. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Wishing you all the best",
+        "body": "Thank you for being part of the community around this little business. We notice every return visit, every kind word, and every bit of trust. Your support helps make the work feel possible.",
+        "art_direction": "Inside-right should feature a calm, quiet composition with a border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs. The palette should be a mix of warm citrus and cream colors with deep teal accents and soft gold ornaments. The motifs should be subtle and not overpower the message area.",
+        "image_prompt": "A 5x7, vertical, flat, premium print panel artwork featuring a calm, quiet composition with a border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner or lower-edge motifs. The palette should be a mix of warm citrus and cream colors with deep teal accents and soft gold ornaments. The motifs should be subtle and not overpower the message area. The composition should have a mostly blank back mark with a small coordinating lower mark or border echo. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Thanks",
+        "body": "Made with gratitude for customers who choose small.",
+        "art_direction": "The back should feature a mostly negative space composition with a small coordinating lower mark or border echo. The palette should be a mix of warm citrus and cream colors with deep teal accents and soft gold ornaments. The motifs should be subtle and not overpower the message area.",
+        "image_prompt": "A 5x7, vertical, flat, premium print panel artwork featuring a mostly negative space composition with a small coordinating lower mark or border echo. The palette should be a mix of warm citrus and cream colors with deep teal accents and soft gold ornaments. The motifs should be subtle and not overpower the message area. The composition should have a clean, text-safe area reserved for the app overlay. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": [
+      "The customer chose an independent small business instead of a large marketplace.",
+      "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+      "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "<data-url 34362 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "<data-url 19778 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "<data-url 19794 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "<data-url 34390 chars>",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 10,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 12,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 3000,
+      "per_request_budget_cents": 75,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

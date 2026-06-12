@@ -1,0 +1,312 @@
+{
+  "fixtureId": "small-business-thank-you",
+  "scorer": {
+    "type": "deterministic-rule-rubric",
+    "implementation": "scripts/card-generation-benchmark.mjs:evaluateBenchmarkQuality",
+    "humanVisualReviewRequired": true,
+    "limitations": [
+      "Keyword and marker checks catch regressions but do not fully judge taste, composition balance, or emotional quality.",
+      "Contact sheets still need human visual review against the reference bar.",
+      "A future vision-model judge should be calibrated against human ratings before replacing manual review."
+    ]
+  },
+  "referenceBar": "Premium editorial thank-you stationery: restrained citrus corner hierarchy, large calm text fields, specific customer gratitude, and no promotional filler.",
+  "passScore": 82,
+  "score": 97,
+  "status": "needs-improvement",
+  "passed": 35,
+  "total": 36,
+  "criticalFailures": [
+    "copy.inside-left.required-terms"
+  ],
+  "checks": [
+    {
+      "id": "panels.count",
+      "category": "render",
+      "description": "All four folded-card panels rendered.",
+      "passed": true,
+      "evidence": "4/4 panels",
+      "critical": true
+    },
+    {
+      "id": "panel.front.copy-present",
+      "category": "copy",
+      "description": "front has headline and body copy.",
+      "passed": true,
+      "evidence": "Thank you for choosing local / Your support keeps independent work personal, human, and close to home.",
+      "critical": true
+    },
+    {
+      "id": "panel.front.prompt-present",
+      "category": "prompt",
+      "description": "front has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lowe…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.copy-present",
+      "category": "copy",
+      "description": "inside-left has headline and body copy.",
+      "passed": true,
+      "evidence": "Because You Chose Us / We're grateful you chose to support a small, independent business like ours. It means the world to us!",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-left.prompt-present",
+      "category": "prompt",
+      "description": "inside-left has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.copy-present",
+      "category": "copy",
+      "description": "inside-right has headline and body copy.",
+      "passed": true,
+      "evidence": "With Real Gratitude / Thank you for being part of the community around this little business. We notice every return visit, every kind word, and every bit of trus…",
+      "critical": true
+    },
+    {
+      "id": "panel.inside-right.prompt-present",
+      "category": "prompt",
+      "description": "inside-right has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin ref…",
+      "critical": true
+    },
+    {
+      "id": "panel.back.copy-present",
+      "category": "copy",
+      "description": "back has headline and body copy.",
+      "passed": true,
+      "evidence": "With Thanks / Made with gratitude for customers who choose small.",
+      "critical": true
+    },
+    {
+      "id": "panel.back.prompt-present",
+      "category": "prompt",
+      "description": "back has an image prompt and generated asset.",
+      "passed": true,
+      "evidence": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. W…",
+      "critical": true
+    },
+    {
+      "id": "copy.unique-headlines",
+      "category": "copy",
+      "description": "At least 3 distinct panel headlines.",
+      "passed": true,
+      "evidence": "4 distinct headlines",
+      "critical": false
+    },
+    {
+      "id": "copy.front.required-terms",
+      "category": "copy",
+      "description": "front copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: support, independent",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-left.required-terms",
+      "category": "copy",
+      "description": "inside-left copy includes target-specific anchors.",
+      "passed": false,
+      "evidence": "missing: choice",
+      "critical": true
+    },
+    {
+      "id": "copy.inside-right.required-terms",
+      "category": "copy",
+      "description": "inside-right copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: community, trust",
+      "critical": true
+    },
+    {
+      "id": "copy.back.required-terms",
+      "category": "copy",
+      "description": "back copy includes target-specific anchors.",
+      "passed": true,
+      "evidence": "matched: gratitude, choose small",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.bfor-you-b",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: \\bfor you\\b",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.you-re-the-best",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: you'?re the best",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.thanks-again",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: thanks again",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.the-customcard-team",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: The CustomCard Team",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.continued-success",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: continued success",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.all-your-endeavors",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: all your endeavors",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.loyalty-means-the-world",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: loyalty means the world",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.opportunity-to-serve",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: opportunity to serve",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.customers-like-you",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: customers like you",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.thank-you-for-supporting-our-small-business",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: thank you for supporting our small business",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "copy.forbidden.customcard-needs",
+      "category": "copy",
+      "description": "Copy avoids forbidden pattern: CustomCard needs",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.controlled-citrus-and-leaf-corner",
+      "category": "prompt",
+      "description": "Image prompts include target term: controlled citrus-and-leaf corner",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.editorial-negative-space",
+      "category": "prompt",
+      "description": "Image prompts include target term: editorial negative space",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.not-busy-repeated-fruit",
+      "category": "prompt",
+      "description": "Image prompts include target term: not busy repeated fruit",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.no-text-box",
+      "category": "prompt",
+      "description": "Image prompts include target term: no text box",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.required.text-safe",
+      "category": "prompt",
+      "description": "Image prompts include target term: text-safe",
+      "passed": true,
+      "evidence": "found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.recipient-s-name",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: recipient['’]?s? name",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.main-message",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: main message",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.thank-you-note",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: thank[- ]you note",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.hand-drawn-thank-you-note",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: hand-drawn thank-you note",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.owner-holding",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: owner holding",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    },
+    {
+      "id": "prompt.forbidden.customers",
+      "category": "prompt",
+      "description": "Image prompts avoid forbidden pattern: customers",
+      "passed": true,
+      "evidence": "not found",
+      "critical": true
+    }
+  ]
+}

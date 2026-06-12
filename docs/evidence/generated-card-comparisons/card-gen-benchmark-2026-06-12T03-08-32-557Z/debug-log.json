@@ -1,0 +1,2276 @@
+{
+  "runId": "card-gen-benchmark-2026-06-12T03-08-32-557Z",
+  "createdAtIso": "2026-06-12T03:08:32.559Z",
+  "fixtureIds": [
+    "small-business-thank-you",
+    "medical-graduation",
+    "dad-fix-anything"
+  ],
+  "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ARTIFACT_SIGNED_URL_TTL_MINUTES",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "CUSTOMCARD_ARTIFACT_PERSISTENCE",
+      "OBJECT_STORE_ACCESS_KEY_ID",
+      "OBJECT_STORE_BUCKET",
+      "OBJECT_STORE_PUBLIC_BASE_URL",
+      "OBJECT_STORE_READ_ACCESS_KEY_ID",
+      "OBJECT_STORE_READ_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_REGION",
+      "OBJECT_STORE_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_SIGNING_SECRET",
+      "OBJECT_STORE_URL"
+    ],
+    "secretsRedacted": true
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "browser-svg-renderer",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "cloudflare-workers-ai-image",
+        "browser-svg-renderer"
+      ],
+      "blockedReasons": []
+    }
+  ],
+  "objectStore": {
+    "configured": true,
+    "provider": "cloudflare-r2",
+    "endpoint": "https://{account_id}.r2.cloudflarestorage.com",
+    "bucket": "customcard-prod",
+    "publicBaseUrl": "http://127.0.0.1:4173/api/artifacts",
+    "signedUrlTtlMinutes": 15,
+    "writeConcurrency": 4,
+    "liveNetworkCalls": true,
+    "credentialMode": "write-read-split",
+    "blockers": []
+  },
+  "fixtures": [
+    {
+      "id": "small-business-thank-you",
+      "category": "Small business thank-you AI card",
+      "competitor": {
+        "competitor": "Adobe Express",
+        "category": "Small business thank-you AI card",
+        "sourcePage": "https://www.adobe.com/express/create/ai/card",
+        "localFile": "adobe-express-small-business-thanks.png",
+        "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/small-business-thank-you",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/small-business-thank-you/contact-sheet.png",
+      "quality": {
+        "status": "pass",
+        "score": 95,
+        "passed": 41,
+        "total": 43,
+        "scorecard": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/small-business-thank-you/qa-scorecard.md"
+      },
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "back",
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-12T03:23:40.000Z"
+      }
+    },
+    {
+      "id": "medical-graduation",
+      "category": "Medical school graduation folded card",
+      "competitor": {
+        "competitor": "Shutterfly",
+        "category": "Photo-card print product",
+        "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+        "localFile": "shutterfly-grad-card-preview.webp",
+        "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/medical-graduation",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/medical-graduation/contact-sheet.png",
+      "quality": {
+        "status": "pass",
+        "score": 95,
+        "passed": 40,
+        "total": 42,
+        "scorecard": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/medical-graduation/qa-scorecard.md"
+      },
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "back",
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-12T03:24:00.000Z"
+      }
+    },
+    {
+      "id": "dad-fix-anything",
+      "category": "Father's Day repair-themed card",
+      "competitor": {
+        "competitor": "Greetings Island",
+        "category": "Free template card maker",
+        "sourcePage": "https://www.greetingsisland.com/",
+        "localFile": "greetings-island-fathers-day-preview.jpeg",
+        "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+      },
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/dad-fix-anything",
+      "panelCount": 4,
+      "contactSheet": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/dad-fix-anything/contact-sheet.png",
+      "quality": {
+        "status": "pass",
+        "score": 95,
+        "passed": 37,
+        "total": 39,
+        "scorecard": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-12T03-08-32-557Z/dad-fix-anything/qa-scorecard.md"
+      },
+      "prompts": [
+        {
+          "panelId": "front",
+          "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "inside-left",
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "inside-right",
+          "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        },
+        {
+          "panelId": "back",
+          "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+        }
+      ],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 6,
+          "verifiedWrites": 6,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-12T03:24:10.000Z"
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not includ...<truncated 8443 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theme_guide",
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "theme_guide": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "theme_title",
+                    "palette",
+                    "motifs",
+                    "border_style",
+                    "front_back_pairing",
+                    "interior_pairing"
+                  ],
+                  "properties": {
+                    "theme_title": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "palette": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 6,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "motifs": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 8,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "border_style": {
+                      "type": "string",
+                      "maxLength": 180
+                    },
+                    "front_back_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    },
+                    "interior_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    }
+                  }
+                },
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 4701,
+        "body": {
+          "id": "id-1781233719064",
+          "object": "chat.completion",
+          "created": 1781233719,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"cinematic single-object cover with a warm citrus background, deep teal accents, and a soft gold frame; use a clean lower text-safe area for the app overlay.\",\n      \"body\": \"\",\n      \"headline\": \"Thank You\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A single, elegant, hand-drawn illustration of a small, independent shop with a warm citrus background, deep teal accents, and a soft gold frame; reserve a clean lower text-safe area for the app overlay.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents.\",\n      \"body\": \"You chose to support a small business like mine, and for that, I'm truly grateful. Your decision helps keep our community vibrant and unique.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents, and reserve a clean text-safe area for the app overlay.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents.\",\n      \"body\": \"Thank you for being part of our story. I hope you enjoy the unique products and services we offer, and that you'll continue to support us in the future.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents, and reserve a clean text-safe area for the app overlay.\"\n    },\n    {\n      \"art_direction\": \"mostly negative space with a small coordinating lower mark or border echo in deep teal and soft gold; use a warm citrus background.\",\n      \"body\": \"Wishing you all the best.\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A mostly negative space design with a small coordinating lower mark or border echo in deep teal and soft gold; use a warm citrus background, and reserve a clean text-safe area for the app overlay.\"\n    }\n  ],\n  \"theme_guide\": {\n    \"border_style\": \"thin refined frame\",\n    \"front_back_pairing\": \"cinematic single-object cover with a warm citrus background, deep teal accents, and a soft gold frame\",\n    \"interior_pairing\": \"border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs\",\n    \"motifs\": [\n      \"small independent shop\",\n      \"warm citrus background\",\n      \"deep teal accents\",\n      \"soft gold frame\",\n      \"thin refined frame\",\n      \"quiet center\",\n      \"clean text-safe area\",\n      \"generous margins\"\n    ],\n    \"palette\": [\n      \"warm citrus\",\n      \"deep teal\",\n      \"soft gold\",\n      \"cream\"\n    ],\n    \"theme_title\": \"Thank You for Supporting a Small Business\"\n  }\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 6366
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-inside-left.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "b3c635ffc199564d9ddd68386db4249834d208b2f8221487dae225de87fb1f33",
+          "x-amz-date": "20260612T030840Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-inside-left.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-b3c635ffc199564d9ddd68386db4249834d208b2f8221487dae225de87fb1f33",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 479
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-front.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "f425427f47706e814f4524e08edadd297b2d298affa728e1777bfd00e64fa3d7",
+          "x-amz-date": "20260612T030840Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-front.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-f425427f47706e814f4524e08edadd297b2d298affa728e1777bfd00e64fa3d7",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 522
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-inside-right.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "a050b488dee3c8804fe213a8eefe5d180c77fd550badf58b0e041424f735ad01",
+          "x-amz-date": "20260612T030840Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-inside-right.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-a050b488dee3c8804fe213a8eefe5d180c77fd550badf58b0e041424f735ad01",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 524
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-back.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "18e52c19cecbacd839130d22ca137371419d02c249c2ae0d2b37be3a8f00e45c",
+          "x-amz-date": "20260612T030840Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-back.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-18e52c19cecbacd839130d22ca137371419d02c249c2ae0d2b37be3a8f00e45c",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 624
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-back.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030841Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 25773
+      },
+      "durationMs": 207
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-front.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030841Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 25751
+      },
+      "durationMs": 423
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-inside-right.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030841Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 14824
+      },
+      "durationMs": 421
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/provider-inside-left.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030841Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 14812
+      },
+      "durationMs": 539
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "c52596df2cf1bafee6adc7d8220cea2d20441b71b38e215fceca82a3171e99f0",
+          "x-amz-date": "20260612T030841Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-c52596df2cf1bafee6adc7d8220cea2d20441b71b38e215fceca82a3171e99f0",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 306
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "a8e1ba3a0454c94b0581d374f3ac6f94a31557613ff0b660be7d7850a12064ca",
+          "x-amz-date": "20260612T030841Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-a8e1ba3a0454c94b0581d374f3ac6f94a31557613ff0b660be7d7850a12064ca",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 417
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030841Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 5860,
+        "body": {
+          "fixture": "small-business-thank-you",
+          "category": "Small business thank-you AI card",
+          "competitor": {
+            "competitor": "Adobe Express",
+            "category": "Small business thank-you AI card",
+            "sourcePage": "https://www.adobe.com/express/create/ai/card",
+            "localFile": "adobe-express-small-business-thanks.png",
+            "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+          },
+          "requestBody": {
+            "sender": "CustomCard",
+            "recipient": "loyal customers",
+            "relationship": "small business to repeat customer",
+            "occasion": "thank-you for supporting a small business",
+            "tone": "warm, sincere, polished, grateful, not salesy",
+            "style": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+            "language": "English",
+            "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+            "memory_notes": [
+              "The customer chose an independent small business instead of a large marketplace.",
+              "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+              "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "back",
+              "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            }
+          ]
+        }
+      },
+      "durationMs": 136
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030841Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 13574,
+        "body": {
+          "draft_id": "ai-mqackdr1-loyal-customers",
+          "card_copy": {
+            "theme_guide": {
+              "theme_title": "Thank You for Supporting a Small Business",
+              "palette": [
+                "warm citrus",
+                "deep teal",
+                "soft gold",
+                "cream"
+              ],
+              "motifs": [
+                "small independent shop",
+                "warm citrus background",
+                "deep teal accents",
+                "soft gold frame",
+                "thin refined frame",
+                "quiet center",
+                "generous margins"
+              ],
+              "border_style": "thin refined frame",
+              "front_back_pairing": "cinematic single-object cover with a warm citrus background, deep teal accents, and a soft gold frame",
+              "interior_pairing": "border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs"
+            },
+            "panels": [
+              {
+                "id": "front",
+                "headline": "Thank You",
+                "body": "Your support keeps independent work personal, human, and close to home.",
+                "art_direction": "cinematic single-object cover with a warm citrus background, deep teal accents, and a soft gold frame; use a clean lower text-safe area for the app overlay.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Because You Chose Us",
+                "body": "You chose to support a small business like mine, and for that, I'm truly grateful. Your decision helps keep our community vibrant and unique.",
+                "art_direction": "border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents.",
+                "image_prompt": "A border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents, and reserve a clean text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "inside-right",
+                "headline": "With Real Gratitude",
+                "body": "Thank you for being part of our story. I hope you enjoy the unique products and services we offer, and that you'll continue to support us in the future.",
+                "art_direction": "border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents.",
+                "image_prompt": "A border-first stationery layout with a thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs; use a deep teal border and soft gold accents, and reserve a clean text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "back",
+                "headline": "With Thanks",
+                "body": "Made with gratitude for customers who choose small.",
+                "art_direction": "mostly negative space with a small coordinating lower mark or border echo in deep teal and soft gold; use a warm citrus background.",
+                "image_prompt": "A mostly negative space design with a small coordinating lower mark or border echo in deep teal and soft gold; use a warm citrus background, and reserve a clean text-safe area for the app overlay. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              }
+            ],
+            "memory_citations": []
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 34362 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 19778 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 19794 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 34390 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "browser-svg-renderer",
+              "primary_adapter_id": "browser-svg-renderer",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 180
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-12T03-08-32-557Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "3f6691f2ac1641cbfe5ae09a1ccdb0ef6b828aaa71f0f8b50c925e16432cb52e",
+          "x-amz-date": "20260612T030842Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 213
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not includ...<truncated 8323 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theme_guide",
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "theme_guide": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "theme_title",
+                    "palette",
+                    "motifs",
+                    "border_style",
+                    "front_back_pairing",
+                    "interior_pairing"
+                  ],
+                  "properties": {
+                    "theme_title": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "palette": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 6,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "motifs": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 8,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "border_style": {
+                      "type": "string",
+                      "maxLength": 180
+                    },
+                    "front_back_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    },
+                    "interior_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    }
+                  }
+                },
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 6764,
+        "body": {
+          "id": "id-1781233739025",
+          "object": "chat.completion",
+          "created": 1781233739,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [\n    \"From Dream to Doctor\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"Deep navy and soft gold elegant medical graduation stationery with a clean white coat as the central motif. The composition archetype is cinematic single-object cover. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the back is a quiet echo of the front.\",\n      \"body\": \"Congratulations on your medical school graduation!\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A premium 5x7 vertical flat print panel artwork of a white coat hanging on a wall with a soft gold stethoscope draped over it. The background is a deep navy (#032B44) with a subtle anatomy sketch line texture. The composition is cinematic single-object cover with a clean lower text-safe area for the app overlay. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The artwork is full-bleed 2D digital illustration quality. There are no people, no hands, no logos, no watermark, and no readable text.\"\n    },\n    {\n      \"art_direction\": \"Deep navy and soft gold elegant medical graduation stationery with a border-first stationery design. The composition archetype is ornate border-first note sheet. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the inside-right is a complementary message to the inside-left.\",\n      \"body\": \"With every late night, every long shift, and every sacrifice, you've proven your dedication and heart. We're so proud of you!\",\n      \"headline\": \"Your Journey to Success\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A premium 5x7 vertical flat print panel artwork of a stethoscope and an ECG line crossing over each other with a deep navy (#032B44) background and a subtle anatomy sketch line texture. The composition is ornate border-first note sheet with a clean text-safe area for the app overlay. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The artwork is full-bleed 2D digital illustration quality. There are no people, no hands, no logos, no watermark, and no readable text. The composition is mostly low-contrast interior with sparse edge/corner or lower-edge motifs.\"\n    },\n    {\n      \"art_direction\": \"Deep navy and soft gold elegant medical graduation stationery with a border-first stationery design. The composition archetype is ornate border-first note sheet. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the inside-left is a complementary message to the inside-right.\",\n      \"body\": \"You've made it, brother! We're so proud of your discipline, patience, and heart. Enjoy this moment and know that we're here to support you on your journey to becoming a doctor.\",\n      \"headline\": \"Congratulations, Doctor!\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A premium 5x7 vertical flat print panel artwork of a graduation cap with a soft gold (#F8E231) ribbon and a deep navy (#032B44) background with a subtle anatomy sketch line texture. The composition is ornate border-first note sheet with a clean text-safe area for the app overlay. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The artwork is full-bleed 2D digital illustration quality. There are no people, no hands, no logos, no watermark, and no readable text. The composition is mostly low-contrast interior with sparse edge/corner or lower-edge motifs.\"\n    },\n    {\n      \"art_direction\": \"Deep navy and soft gold elegant medical graduation stationery with a quiet echo of the front. The composition archetype is mostly blank back mark. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the back is a quiet echo of the front.\",\n      \"body\": \"With love and pride, Manny\",\n      \"headline\": \"From Dream to Doctor\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, phys...<truncated 6085 chars>",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 16633
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-back.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "838e436e78e69c91e2922ed1e89463e785d4cac4c1b68d5eb56f3e384fea1855",
+          "x-amz-date": "20260612T030900Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-back.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-838e436e78e69c91e2922ed1e89463e785d4cac4c1b68d5eb56f3e384fea1855",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 305
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-inside-left.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "7d3b381808d73e712353cc197bddaaffba14e2c208f730d84f066ff2fc41423c",
+          "x-amz-date": "20260612T030900Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-inside-left.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-7d3b381808d73e712353cc197bddaaffba14e2c208f730d84f066ff2fc41423c",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 309
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-inside-left.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030900Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 1844
+      },
+      "durationMs": 146
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-front.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "23e859d9444be4ba3c6ef55579b79d6351185bb3a024cf005c8ea323af968dcf",
+          "x-amz-date": "20260612T030900Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-front.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-23e859d9444be4ba3c6ef55579b79d6351185bb3a024cf005c8ea323af968dcf",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 623
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-inside-right.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "7d3b381808d73e712353cc197bddaaffba14e2c208f730d84f066ff2fc41423c",
+          "x-amz-date": "20260612T030900Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-inside-right.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-7d3b381808d73e712353cc197bddaaffba14e2c208f730d84f066ff2fc41423c",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 623
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-inside-right.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030900Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 1844
+      },
+      "durationMs": 114
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "b59cb0a5de17e8634726a3804481121a8219d370822af473c20edef46b96c587",
+          "x-amz-date": "20260612T030900Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-b59cb0a5de17e8634726a3804481121a8219d370822af473c20edef46b96c587",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 293
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-front.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030900Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 3956
+      },
+      "durationMs": 133
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030900Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 15874,
+        "body": {
+          "draft_id": "ai-mqackt4f-my-brother",
+          "card_copy": {
+            "theme_guide": {
+              "theme_title": "From Dream to Doctor",
+              "palette": [
+                "#032B44",
+                "#FFFFFF",
+                "#F8E231"
+              ],
+              "motifs": [
+                "white coat",
+                "stethoscope",
+                "anatomy sketch lines",
+                "ECG line",
+                "graduation cap"
+              ],
+              "border_style": "thin refined frame",
+              "front_back_pairing": "cinematic single-object cover, mostly blank back mark",
+              "interior_pairing": "ornate border-first note sheet, ornate border-first note sheet"
+            },
+            "panels": [
+              {
+                "id": "front",
+                "headline": "From Dream to Doctor",
+                "body": "For every late night, long shift, and quiet sacrifice that brought you here.",
+                "art_direction": "Deep navy and soft gold elegant medical graduation stationery with a clean white coat as the central motif. The composition archetype is cinematic single-object cover. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the back is a quiet echo of the front.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Your Journey to Success",
+                "body": "With every late night, every long shift, and every sacrifice, you've proven your dedication and heart. We're so proud of you!",
+                "art_direction": "Deep navy and soft gold elegant medical graduation stationery with a border-first stationery design. The composition archetype is ornate border-first note sheet. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the inside-right is a complementary message to the inside-left.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "inside-right",
+                "headline": "With So Much Pride",
+                "body": "You've made it, brother! We're so proud of your discipline, patience, and heart. Enjoy this moment and know that we're here to support you on your journey to becoming a doctor.",
+                "art_direction": "Deep navy and soft gold elegant medical graduation stationery with a border-first stationery design. The composition archetype is ornate border-first note sheet. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the inside-left is a complementary message to the inside-right.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "back",
+                "headline": "From Dream to Doctor",
+                "body": "With pride, love, and deep respect for the doctor you worked so hard to become.",
+                "art_direction": "Deep navy and soft gold elegant medical graduation stationery with a quiet echo of the front. The composition archetype is mostly blank back mark. The palette is deep navy (#032B44), white (#FFFFFF), and soft gold (#F8E231). The border style is a thin refined frame. The relationship to the matching panel is that the back is a quiet echo of the front.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              }
+            ],
+            "memory_citations": [
+              "From Dream to Doctor"
+            ]
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 5302 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 2486 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 2486 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 3718 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "browser-svg-renderer",
+              "primary_adapter_id": "browser-svg-renderer",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 162
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "219c9a7ed85857fde3c0398e13b74cc14e757c2fdd674e27694bed7839c95d03",
+          "x-amz-date": "20260612T030900Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-219c9a7ed85857fde3c0398e13b74cc14e757c2fdd674e27694bed7839c95d03",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 173
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030901Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 5870,
+        "body": {
+          "fixture": "medical-graduation",
+          "category": "Medical school graduation folded card",
+          "competitor": {
+            "competitor": "Shutterfly",
+            "category": "Photo-card print product",
+            "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+            "localFile": "shutterfly-grad-card-preview.webp",
+            "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "my brother",
+            "relationship": "brother",
+            "occasion": "medical school graduation",
+            "tone": "proud, emotional, premium, warm family pride, not cheesy",
+            "style": "deep navy, white, soft gold, elegant medical graduation stationery",
+            "language": "English",
+            "personal_note": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+            "memory_notes": [
+              "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+              "The family is proud of his discipline, patience, heart, and dedication.",
+              "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "back",
+              "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            }
+          ]
+        }
+      },
+      "durationMs": 161
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/provider-back.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030900Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 2768
+      },
+      "durationMs": 921
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-12T03-08-32-557Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "99a49f8c38d5b4e236dfe35a4e3722b9ee75bce28a55c8bbc48d987e09dd8673",
+          "x-amz-date": "20260612T030901Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 439
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/<redacted-account>/ai/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not includ...<truncated 8233 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62,
+          "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "theme_guide",
+                "panels",
+                "memory_citations"
+              ],
+              "properties": {
+                "theme_guide": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "theme_title",
+                    "palette",
+                    "motifs",
+                    "border_style",
+                    "front_back_pairing",
+                    "interior_pairing"
+                  ],
+                  "properties": {
+                    "theme_title": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "palette": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 6,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "motifs": {
+                      "type": "array",
+                      "minItems": 3,
+                      "maxItems": 8,
+                      "items": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "border_style": {
+                      "type": "string",
+                      "maxLength": 180
+                    },
+                    "front_back_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    },
+                    "interior_pairing": {
+                      "type": "string",
+                      "maxLength": 220
+                    }
+                  }
+                },
+                "panels": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "headline",
+                      "body",
+                      "art_direction",
+                      "image_prompt",
+                      "image_negative_prompt"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "front",
+                          "inside-left",
+                          "inside-right",
+                          "back"
+                        ]
+                      },
+                      "headline": {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      "body": {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      "art_direction": {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      "image_prompt": {
+                        "type": "string",
+                        "maxLength": 1200
+                      },
+                      "image_negative_prompt": {
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    }
+                  }
+                },
+                "memory_citations": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 3963,
+        "body": {
+          "id": "id-1781233747942",
+          "object": "chat.completion",
+          "created": 1781233747,
+          "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "index": 0,
+              "logprobs": null,
+              "message": {
+                "annotations": null,
+                "audio": null,
+                "content": "{\n  \"memory_citations\": [\n    \"Dad shows love by fixing the small things before anyone asks.\",\n    \"The card should feel printable, cheerful, and original.\",\n    \"Use tools as symbols, not a cluttered hardware-store scene.\"\n  ],\n  \"panels\": [\n    {\n      \"art_direction\": \"cinematic single-object cover, clean golden yellow and green accents, generous margins, low-contrast interior, and sparse edge/corner motifs.\",\n      \"body\": \"\",\n      \"headline\": \"Happy Father's Day\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A golden wrench leaning on a small toolbox with a cheerful green and yellow background and clean text-safe space for the recipient's name.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery design, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs.\",\n      \"body\": \"Dad's steady presence is like a reliable tool - always ready to fix the little things before anyone asks.\",\n      \"headline\": \"\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A small toolbox with a few essential tools and a clean text-safe area for the opening note.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery design, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs.\",\n      \"body\": \"You're the glue that holds our family together, Dad. Here's to many more years of fixing things and making memories.\",\n      \"headline\": \"\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A small toolbox with a few essential tools and a clean text-safe area for the main personal message.\"\n    },\n    {\n      \"art_direction\": \"mostly negative space, one small coordinating lower mark or border echo, premium 5x7 vertical flat print panel artwork, and a small golden wrench.\",\n      \"body\": \"Thanks for being there for us, Dad.\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A small golden wrench leaning on a small toolbox with a mostly negative space background and clean text-safe space for the optional message.\"\n    }\n  ],\n  \"theme_guide\": {\n    \"border_style\": \"thin refined frame\",\n    \"front_back_pairing\": \"cinematic single-object cover, mostly negative space\",\n    \"interior_pairing\": \"border-first stationery design, border-first stationery design\",\n    \"motifs\": [\n      \"golden wrench\",\n      \"small toolbox\",\n      \"green and yellow accents\",\n      \"essential tools\"\n    ],\n    \"palette\": [\n      \"golden yellow\",\n      \"green\",\n      \"clean white\"\n    ],\n    \"theme_title\": \"The Fix-It Dad\"\n  }\n}",
+                "function_call": null,
+                "reasoning": null,
+                "refusal": null,
+                "role": "assistant",
+                "tool_calls": []
+              },
+              "stop_reason": null,
+              "token_ids": "<redacted>"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": "<redacted>",
+            "completion_tokens": "<redacted>",
+            "total_tokens": "<redacted>",
+            "prompt_tokens_details": "<redacted>"
+          }
+        }
+      },
+      "durationMs": 6925
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-front.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "b30a21c22e1f3a0f9b0952279e611648648b77b73da22720beced16c1e536c85",
+          "x-amz-date": "20260612T030910Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-front.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-b30a21c22e1f3a0f9b0952279e611648648b77b73da22720beced16c1e536c85",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 339
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-back.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "2733fc585171f794da039caaa8d2a36db30ea58bc1ddafc0d5cf37cfbd273388",
+          "x-amz-date": "20260612T030910Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-back.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-2733fc585171f794da039caaa8d2a36db30ea58bc1ddafc0d5cf37cfbd273388",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 470
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-inside-right.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "2baba6407173bf79575f012604a0c2a915a5e697a36c71295e8bf4f3274331b4",
+          "x-amz-date": "20260612T030910Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-inside-right.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-2baba6407173bf79575f012604a0c2a915a5e697a36c71295e8bf4f3274331b4",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 473
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-inside-left.svg",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "8d38a55e58ca20b07c863b2f6a3bce61300e0e62f7ea56b62d4d1fc6d2140e4a",
+          "x-amz-date": "20260612T030910Z",
+          "content-type": "image/svg+xml",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "provider-inside-left.svg",
+          "x-amz-meta-kind": "generated-image",
+          "x-amz-meta-contenthash": "sha256-8d38a55e58ca20b07c863b2f6a3bce61300e0e62f7ea56b62d4d1fc6d2140e4a",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 495
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-inside-right.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030910Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 6490
+      },
+      "durationMs": 162
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-back.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030910Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 9613
+      },
+      "durationMs": 180
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-inside-left.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030910Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 6482
+      },
+      "durationMs": 280
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "256353db086b1d8c5f47f8cf5f8896073f54d9fcac7000887168882b9cf4b89c",
+          "x-amz-date": "20260612T030911Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-256353db086b1d8c5f47f8cf5f8896073f54d9fcac7000887168882b9cf4b89c",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 222
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "3f108f497910466d2d494469935bfc9d68e27c0cfc32676d9416d0ecb9331faa",
+          "x-amz-date": "20260612T030911Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-3f108f497910466d2d494469935bfc9d68e27c0cfc32676d9416d0ecb9331faa",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 234
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030911Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 14150,
+        "body": {
+          "draft_id": "ai-mqacl0r9-dad",
+          "card_copy": {
+            "theme_guide": {
+              "theme_title": "The Fix-It Dad",
+              "palette": [
+                "golden yellow",
+                "green",
+                "clean white"
+              ],
+              "motifs": [
+                "golden wrench",
+                "small toolbox",
+                "green and yellow accents",
+                "essential tools"
+              ],
+              "border_style": "thin refined frame",
+              "front_back_pairing": "cinematic single-object cover, mostly negative space",
+              "interior_pairing": "border-first stationery design, border-first stationery design"
+            },
+            "panels": [
+              {
+                "id": "front",
+                "headline": "Happy Father's Day",
+                "body": "For every quiet fix, every small rescue, and every thing you handled before anyone asked.",
+                "art_direction": "cinematic single-object cover, clean golden yellow and green accents, generous margins, low-contrast interior, and sparse edge/corner motifs.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "inside-left",
+                "headline": "Steady Hands",
+                "body": "Dad's steady presence is like a reliable tool - always ready to fix the little things before anyone asks.",
+                "art_direction": "border-first stationery design, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "inside-right",
+                "headline": "From Manny",
+                "body": "This Father's Day, I wanted you to know those quiet repairs never went unnoticed. They added up to something bigger: steadiness, care, and a home that always felt looked after. With love, Manny.",
+                "art_direction": "border-first stationery design, thin refined frame, quiet center, clean text-safe area, generous margins, low-contrast interior, and sparse edge/corner motifs.",
+                "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              },
+              {
+                "id": "back",
+                "headline": "Built With Love",
+                "body": "Thanks for being there for us, Dad.",
+                "art_direction": "mostly negative space, one small coordinating lower mark or border echo, premium 5x7 vertical flat print panel artwork, and a small golden wrench.",
+                "image_prompt": "A small golden wrench leaning on a small toolbox with a mostly negative space background and clean text-safe space for the optional message. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+                "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+              }
+            ],
+            "memory_citations": [
+              "Dad shows love by fixing the small things before anyone asks.",
+              "The card should feel printable, cheerful, and original.",
+              "Use tools as symbols, not a cluttered hardware-store scene."
+            ]
+          },
+          "images": [
+            {
+              "panel_id": "front",
+              "image_url": "<data-url 12834 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-left",
+              "image_url": "<data-url 8670 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "inside-right",
+              "image_url": "<data-url 8682 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            },
+            {
+              "panel_id": "back",
+              "image_url": "<data-url 12846 chars>",
+              "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+              "width": 1500,
+              "height": 2100
+            }
+          ],
+          "generated_by": "ai-text-and-image",
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "cloudflare-workers-ai-chat",
+              "primary_adapter_id": "cloudflare-workers-ai-chat",
+              "fallback_adapter_id": "deterministic-customer-chat",
+              "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+              "rate_limit_per_minute": 10,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 12,
+              "queue_enabled": false,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            },
+            "card_image": {
+              "flow_id": "card-image",
+              "adapter_id": "browser-svg-renderer",
+              "primary_adapter_id": "browser-svg-renderer",
+              "fallback_adapter_id": "browser-svg-renderer",
+              "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 3000,
+              "per_request_budget_cents": 75,
+              "queue_enabled": true,
+              "fallback_queue_enabled": true,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": []
+            }
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 173
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030911Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 5558,
+        "body": {
+          "fixture": "dad-fix-anything",
+          "category": "Father's Day repair-themed card",
+          "competitor": {
+            "competitor": "Greetings Island",
+            "category": "Free template card maker",
+            "sourcePage": "https://www.greetingsisland.com/",
+            "localFile": "greetings-island-fathers-day-preview.jpeg",
+            "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "Dad",
+            "relationship": "child to father",
+            "occasion": "Father's Day",
+            "tone": "warm, funny, sincere, practical love",
+            "style": "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+            "language": "English",
+            "personal_note": "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+            "memory_notes": [
+              "Dad shows love by fixing the small things before anyone asks.",
+              "The card should feel printable, cheerful, and original.",
+              "Use tools as symbols, not a cluttered hardware-store scene."
+            ]
+          },
+          "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+          "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+          "panelPrompts": [
+            {
+              "panelId": "front",
+              "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep a clean text-safe area, and avoid all-over motif wallpaper. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "inside-left",
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "inside-right",
+              "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank low-contrast center, clean text-safe area, generous safe margins. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            },
+            {
+              "panelId": "back",
+              "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo. Warm Father's Day practical-love artwork: clean blueprint field, one organized lower-corner tool cluster, measured pencil lines, small hardware details, golden yellow and workshop green accents, sparse enough for app-added copy. Artwork layer only, not a physical card or photographed paper. No inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands."
+            }
+          ]
+        }
+      },
+      "durationMs": 148
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/provider-front.svg",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260612T030910Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/svg+xml",
+        "contentLength": null,
+        "byteLength": 9606
+      },
+      "durationMs": 715
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-12T03-08-32-557Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "6e61cfb7bbe6c783404ed8af0aec2a71b2b508aeb686c7875eeb62947bb144f4",
+          "x-amz-date": "20260612T030911Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-12T03-08-32-557Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 234
+    }
+  ]
+}
