@@ -5,7 +5,6 @@ import type {
   CardDraft,
   CardDraftInput,
   CardPanel,
-  LanguageChoice,
   MemoryItem,
   Tone,
   TonePreset,
@@ -27,7 +26,6 @@ import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
 const allTones: TonePreset[] = ["warm", "funny", "elegant", "simple", "reverent", "sentimental"];
 const styles: VisualStylePreset[] = ["botanical", "bold-type", "photo-note", "minimal"];
-const languages: LanguageChoice[] = ["English", "Spanish", "Urdu", "Arabic"];
 const aiButtonLogoSrc = "/customcard-ai-button-logo.png";
 
 const toneLabels: Record<TonePreset, string> = {
@@ -491,9 +489,6 @@ export function StudioView({
                 placeholder="Type a style, e.g. ink wash with gold accents"
                 value={draftInput.style}
               />
-            </Field>
-            <Field label="Language">
-              <Chips onValue={(value) => onField("language", value)} options={languages} value={draftInput.language} />
             </Field>
           </Step>
 

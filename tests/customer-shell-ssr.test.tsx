@@ -314,6 +314,10 @@ describe("customer shell server render", () => {
       expect(text).toContain("Style");
       expect(text).toContain("Funny");
       expect(text).not.toContain("Card language");
+      expect(text).not.toContain("Language");
+      for (const language of ["English", "Spanish", "Urdu", "Arabic"]) {
+        expect(text).not.toContain(language);
+      }
       expect(html).toContain("Type a tone");
       expect(html).toContain("Type a style");
       expect(text).toContain("Make it personal");
