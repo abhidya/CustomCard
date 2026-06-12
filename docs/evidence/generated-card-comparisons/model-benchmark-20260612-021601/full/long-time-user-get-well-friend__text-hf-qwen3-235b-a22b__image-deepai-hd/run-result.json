@@ -1,0 +1,78 @@
+{
+  "phase": "full",
+  "focus": "combo",
+  "storyId": "long-time-user-get-well-friend",
+  "textCandidateId": "text-hf-qwen3-235b-a22b",
+  "textAdapterId": "huggingface-chat",
+  "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "imageCandidateId": "image-deepai-hd",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "hd",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd",
+  "startedAt": "2026-06-12T06:31:09.314Z",
+  "finishedAt": "2026-06-12T06:31:31.026Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/provider-front.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Original get well after surgery theme in a calm recovery stationery with basil green, soup-warm ivory, tiny walking path details style with specific symbolic motifs, coordinated palette, and emotional tone: heartfelt, tender, funny, emotionally specific, not maudlin. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "hosted-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/provider-inside-left.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original get well after surgery theme in a calm recovery stationery with basil green, soup-warm ivory, tiny walking path details style with specific symbolic motifs, coordinated palette, and emotional tone: heartfelt, tender, funny, emotionally specific, not maudlin. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "hosted-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/provider-inside-right.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original get well after surgery theme in a calm recovery stationery with basil green, soup-warm ivory, tiny walking path details style with specific symbolic motifs, coordinated palette, and emotional tone: heartfelt, tender, funny, emotionally specific, not maudlin. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "hosted-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/provider-back.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Original get well after surgery theme in a calm recovery stationery with basil green, soup-warm ivory, tiny walking path details style with specific symbolic motifs, coordinated palette, and emotional tone: heartfelt, tender, funny, emotionally specific, not maudlin. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "hosted-url",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/long-time-user-get-well-friend__text-hf-qwen3-235b-a22b__image-deepai-hd/contact-sheet.png",
+  "providerCallCount": 5,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 5
+    },
+    "missingMustInclude": [
+      "Sam"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

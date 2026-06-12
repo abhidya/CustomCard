@@ -1,0 +1,227 @@
+{
+  "draft_id": "ai-mqajh94x-maya",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Warm Birthday Wishes",
+      "palette": [
+        "#F7F7F7",
+        "#C9E4CA",
+        "#C7C5B8"
+      ],
+      "motifs": [
+        "houseplant",
+        "soft colors",
+        "dry humor"
+      ],
+      "border_style": "thin refined frame",
+      "front_back_pairing": "soft white border and light pastel background",
+      "interior_pairing": "light ivory/cream low-contrast interior and sparse edge/corner or lower-edge motifs"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Birthday, Maya!",
+        "body": "Your support keeps independent work personal, human, and close to home.",
+        "art_direction": "cinematic single-object cover, warm pastel palette, airy white space, simple sans-serif typography",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Wishing You a Bright Birthday",
+        "body": "You chose an independent small business when there were easier, bigger options. That choice matters, and it helps keep the care, craft, and human side of this work alive.",
+        "art_direction": "border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs",
+        "image_prompt": "A 5x7 vertical panel with a thin, refined frame and a quiet center. The background should be a light ivory/cream color with sparse edge/corner or lower-edge motifs. The text should be clean and easy to read, with generous margins and a calm atmosphere. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Cheers to Another Year",
+        "body": "Thank you for being part of the community around this little business. We notice every return visit, every kind word, and every bit of trust. Your support helps make the work feel possible.",
+        "art_direction": "border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs",
+        "image_prompt": "A 5x7 vertical panel with a thin, refined frame and a quiet center. The background should be a light ivory/cream color with sparse edge/corner or lower-edge motifs. The text should be clean and easy to read, with generous margins and a calm atmosphere. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Thanks",
+        "body": "Wishing you a peaceful and joyful year ahead.",
+        "art_direction": "mostly negative space and one small coordinating lower mark or border echo",
+        "image_prompt": "A 5x7 vertical panel with mostly negative space and a small, coordinating lower mark or border echo. The background should be a soft white or light pastel color, with a clean and simple design. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "https://api.deepai.org/job-view-file/5789ca5d-577f-49f5-be49-6937e16a1a34/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "https://api.deepai.org/job-view-file/126dbeca-ca97-4ae6-9869-307480f9a3d8/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "https://api.deepai.org/job-view-file/eb6cb95f-e48f-4c84-9124-be4ad0ddb75b/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "https://api.deepai.org/job-view-file/48953da2-5be9-422a-b319-0077313ceebe/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "primary_adapter_id": "deepai-text2img-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "hd",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-d076cd04",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245319243",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:21:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-a726dc07",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245319243",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:21:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-372ac7d9",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245319243",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:22:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "deepai-text2img-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-8bca9a3c",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245319243",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:22:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "deepai-text2img-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "generatedPanelCount": 4
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 2500,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

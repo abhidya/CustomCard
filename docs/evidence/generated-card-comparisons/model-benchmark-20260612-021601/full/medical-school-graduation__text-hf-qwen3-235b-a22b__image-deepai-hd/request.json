@@ -1,0 +1,55 @@
+{
+  "sender": "Family",
+  "recipient": "Noura",
+  "relationship": "family",
+  "occasion": "medical school graduation",
+  "tone": "proud, refined, celebratory, warm, not clinical",
+  "style": "elegant navy and gold medical graduation stationery with subtle heartbeat or stethoscope symbolism",
+  "language": "English",
+  "personal_note": "Create a card for Noura graduating medical school. She loves navy and gold, wants something elegant, and her family is proud of how hard she worked. Include stethoscope or heartbeat symbolism without making it look like a hospital ad.",
+  "memory_notes": [
+    "Noura is graduating medical school.",
+    "Noura loves navy and gold.",
+    "Her family is proud of how hard she worked."
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "huggingface-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "hd",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

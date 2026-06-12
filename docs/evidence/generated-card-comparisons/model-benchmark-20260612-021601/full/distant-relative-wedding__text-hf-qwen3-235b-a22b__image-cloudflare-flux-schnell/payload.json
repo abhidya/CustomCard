@@ -1,0 +1,204 @@
+{
+  "draft_id": "ai-mqajxkcm-lina-and-omar",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Elegant Botanical Wedding",
+      "palette": [
+        "soft ivory",
+        "sage green",
+        "restrained gold"
+      ],
+      "motifs": [
+        "delicate olive branches",
+        "minimal gold line borders",
+        "subtle laurel accents"
+      ],
+      "border_style": "thin gold line border with corner botanical flourishes",
+      "front_back_pairing": "front has central olive branch; back has small lower corner olive sprig",
+      "interior_pairing": "matching sage-edged borders with gold corner motifs and light ivory fields"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Wishing You Joy",
+        "body": "With warm congratulations on your wedding.",
+        "art_direction": "Cinematic single-object cover with central composition; soft ivory background, one graceful olive branch arcing from lower left to upper right; thin gold line border; lower third reserved for clean text-safe area; elegant and minimal.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "A Blessing for Your Life Together",
+        "body": "May your days be filled with quiet understanding, shared laughter, and the kind of love that grows deeper with time.",
+        "art_direction": "Ornate border-first note sheet; light ivory paper field with thin sage green border and delicate gold laurel corners; generous margins; low-contrast center; text-safe area spans central 70%; interior elegance matches right panel.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "With Warmest Wishes",
+        "body": "It’s a joy to celebrate this special moment in your lives. Though we haven’t had the chance to be close, I’m truly happy for both of you as you begin this new chapter. Wishing you a lifetime of kindness, connection, and quiet joy. With warmest wishes, Jordan",
+        "art_direction": "Ornate border-first note sheet; matching sage border and gold laurel corners as left panel; light ivory field; low-density edge motifs; 70% central text-safe area with room for handwriting; elegant and open.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Care",
+        "body": "With happiness for your new beginning.",
+        "art_direction": "Mostly blank back mark; soft ivory field; thin gold line border echo; small olive sprig in lower right corner; 80% negative space; refined and quiet.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": [
+      "Lina and Omar are getting married.",
+      "The sender is not close to them and wants restraint.",
+      "The inside should leave space for a handwritten note."
+    ]
+  },
+  "images": [],
+  "generated_by": "ai-text-only",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "huggingface-chat",
+      "primary_adapter_id": "huggingface-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/black-forest-labs/flux-1-schnell",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "Cloudflare image provider returned 429."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-b0ac2d31",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell-1781246080331",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "huggingface-chat",
+      "provider": "Hugging Face",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:34:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "huggingface-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-9df9c0e4",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell-1781246080331",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "huggingface-chat",
+      "provider": "Hugging Face",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:34:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "huggingface-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-c934fab5",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell-1781246080331",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "provider": "Cloudflare",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:34:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "cloudflare-workers-ai-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-91c24e51",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell-1781246080331",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "provider": "Cloudflare",
+      "capability": "image-generation",
+      "status": "fallback-selected",
+      "fallback_reason": "provider-unavailable",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:34:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "cloudflare-workers-ai-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "Cloudflare image provider returned 429."
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 2500,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": true,
+  "external_network_calls": true
+}

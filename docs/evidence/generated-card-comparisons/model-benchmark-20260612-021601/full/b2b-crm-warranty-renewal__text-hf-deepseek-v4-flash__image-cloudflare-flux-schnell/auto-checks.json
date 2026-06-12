@@ -1,0 +1,19 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "noProviderFailure": false,
+    "mustIncludeCovered": false,
+    "mustAvoidClean": true,
+    "providerCalls": 5
+  },
+  "missingMustInclude": [
+    "one year",
+    "BrightSmile Clinic",
+    "July 31",
+    "QR",
+    "account manager"
+  ],
+  "avoidedFailures": [],
+  "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+}

@@ -1,0 +1,207 @@
+{
+  "draft_id": "ai-mqajyzfu-noura",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "From Dream to Doctor",
+      "palette": [
+        "deep navy",
+        "white coat ivory",
+        "soft gold"
+      ],
+      "motifs": [
+        "stethoscope line",
+        "graduation cap",
+        "ECG curve",
+        "anatomy sketch texture"
+      ],
+      "border_style": "thin gold-and-navy medical stationery border with sparse corner linework",
+      "front_back_pairing": "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
+      "interior_pairing": "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "From Dream to Doctor",
+        "body": "For every late night, long shift, and quiet sacrifice that brought you here.",
+        "art_direction": "From Dream to Doctor front cover with thin gold-and-navy medical stationery border with sparse corner linework, clear title area, generous safe margins, deep navy, white coat ivory, soft gold palette, and motifs that echo on the back panel.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Years In The Making",
+        "body": "You kept going through exams, late nights, long shifts, and the sacrifices most people never saw. Today honors the discipline behind the white coat as much as the degree itself.",
+        "art_direction": "From Dream to Doctor inside-left panel with thin gold-and-navy medical stationery border with sparse corner linework, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "With So Much Pride",
+        "body": "We are proud not only of the doctor you are becoming, but of the patience, heart, and dedication that brought you here. This moment belongs to every hard choice you made and every day you kept going. With love, Family.",
+        "art_direction": "From Dream to Doctor inside-right message panel with matching thin gold-and-navy medical stationery border with sparse corner linework, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "back",
+        "headline": "From Dream to Doctor",
+        "body": "With pride, love, and deep respect for the doctor you worked so hard to become.",
+        "art_direction": "From Dream to Doctor back panel with mostly negative space, subtle lower ornamentation, thin gold-and-navy medical stationery border with sparse corner linework, and border details that visually pair with the front cover.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Elegant medical-school graduation artwork: deep navy and soft gold, one white coat plus graduation cap and stethoscope hero composition or sparse ECG line; interiors use ivory note-sheet field, thin gold border, lower ECG, one stethoscope corner; never dense repeated medical icons. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      }
+    ],
+    "memory_citations": [
+      "Noura is graduating medical school.",
+      "Noura loves navy and gold."
+    ]
+  },
+  "images": [],
+  "generated_by": "ai-text-only",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "AI provider returned 429."
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "cloudflare-workers-ai-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "@cf/black-forest-labs/flux-1-schnell",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "Cloudflare image provider returned 429."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-be090723",
+      "tenant_id": "model-benchmark-medical-school-graduation__text-cloudflare-baseline__image-cloudflare-flux-schnell-1781246157312",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:35:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-29a1f747",
+      "tenant_id": "model-benchmark-medical-school-graduation__text-cloudflare-baseline__image-cloudflare-flux-schnell-1781246157312",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "fallback-selected",
+      "fallback_reason": "provider-unavailable",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:35:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "AI provider returned 429."
+      }
+    },
+    {
+      "id": "provider-call-7779065b",
+      "tenant_id": "model-benchmark-medical-school-graduation__text-cloudflare-baseline__image-cloudflare-flux-schnell-1781246157312",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "provider": "Cloudflare",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:35:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "cloudflare-workers-ai-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-8219d84f",
+      "tenant_id": "model-benchmark-medical-school-graduation__text-cloudflare-baseline__image-cloudflare-flux-schnell-1781246157312",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "cloudflare-workers-ai-image",
+      "provider": "Cloudflare",
+      "capability": "image-generation",
+      "status": "fallback-selected",
+      "fallback_reason": "provider-unavailable",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:35:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "cloudflare-workers-ai-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "Cloudflare image provider returned 429."
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 2500,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": true,
+  "external_network_calls": true
+}

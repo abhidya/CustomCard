@@ -1,0 +1,81 @@
+{
+  "phase": "full",
+  "focus": "combo",
+  "storyId": "b2b-crm-warranty-renewal",
+  "textCandidateId": "text-hf-qwen3-235b-a22b",
+  "textAdapterId": "huggingface-chat",
+  "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "imageCandidateId": "image-cloudflare-flux-schnell",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/black-forest-labs/flux-1-schnell",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell",
+  "startedAt": "2026-06-12T06:32:49.231Z",
+  "finishedAt": "2026-06-12T06:33:09.333Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/provider-front.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/provider-inside-left.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/provider-inside-right.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/provider-back.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm small-business thank-you stationery: cream or deep teal field, controlled citrus-and-leaf corner arrangement, soft gold ribbon curve, subtle boutique awning silhouette, kraft paper texture, editorial negative space, not busy repeated fruit. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/b2b-crm-warranty-renewal__text-hf-qwen3-235b-a22b__image-cloudflare-flux-schnell/contact-sheet.png",
+  "providerCallCount": 5,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 5
+    },
+    "missingMustInclude": [
+      "BrightSmile Clinic",
+      "July 31",
+      "QR",
+      "account manager"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

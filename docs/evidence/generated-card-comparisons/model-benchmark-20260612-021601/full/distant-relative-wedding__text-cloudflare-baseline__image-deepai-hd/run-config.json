@@ -1,0 +1,51 @@
+{
+  "phase": "full",
+  "focus": "combo",
+  "storyId": "distant-relative-wedding",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "[redacted]",
+  "imageCandidateId": "image-deepai-hd",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "hd",
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "hd",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

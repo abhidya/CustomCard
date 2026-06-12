@@ -1,0 +1,150 @@
+[
+  {
+    "url": "https://router.huggingface.co/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "[redacted]"
+      },
+      "body": {
+        "model": "deepseek-ai/DeepSeek-V4-Flash",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Lina and Omar\",\n    \"relationship\": \"distant cousin\",\n    \"occasion\": \"wedding\",\n    \"tone\": \"respectful, warm, elegant, not over-familiar\",\n    \"style\": \"elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a wedding card for distant cousin Lina and her fiance Omar. It should feel respectful and warm even though we are not close. Include a short blessing and leave room for a handwritten note.\",\n    \"memory_notes\": [\n      \"Lina and Omar are getting married.\",\n      \"The sender is not close to them and wants restraint.\",\n      \"The inside should leave space for a handwritten note.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": 2200,
+        "temperature": 0.62
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 10080,
+      "body": {
+        "id": "Root=1-6a2ba8b2-6659c6be0bc67a976b699f01-chatcmpl-23e94b1",
+        "object": "chat.completion",
+        "created": 1781246131,
+        "model": "accounts/fireworks/models/deepseek-v4-flash",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "We need to generate a cohesive folded 5x7 greeting card theme, layout, and copy plan as JSON. The input: sender Jordan, recipient Lina and Omar, distant cousin, wedding, tone respectful/warm/elegant/not over-familiar, style elegant wedding stationery, soft ivory, sage, restrained gold. Memory notes: Lina and Omar getting married, sender not close, inside leave space for handwritten note.\n\nWe must create four panels: front, inside-left, inside-right, back. Follow schema: theme_guide with palette, motifs, border_style, front_back_pairing, interior_pairing. Then panels with headline, body, art_direction, image_prompt, image_negative_prompt. Also memory_citations (list of strings). Copy requirements: front headline <=90 chars, body <=160; inside-left body 120-320; inside-right body 180-420; back body <=160. Use only provided memory_notes, no invented facts. No order/payment claims. No religious claims unless in input (none). Keep respectful, warm, elegant.\n\nTheme: wedding stationery, soft ivory, sage, restrained gold. Motifs: maybe delicate floral or geometric, but not overdone. Border style: thin elegant line or subtle ornament. Front_back_pairing: front has hero, back has quiet echo. Interior_pairing: inside-left and inside-right match as border-first stationery with calm center.\n\nArt_direction needs composition archetype, layout purpose, typography area, safe-margin plan, palette, border/ornament strategy, relationship to matching panel. Image_prompt must be concrete visual composition, no text, reserve text-safe space. Image_negative_prompt: readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\n\nWe need to write copy that feels finished, not terse. Front: headline like \"With Joy for Your Union\" or something. Body short subtitle. Inside-left: opening note, blessing, scene-setting. Inside-right: main personal message with sign-off. Back: quiet polished.\n\nSince sender is distant cousin, keep respectful, not overly familiar. Use \"Jordan\" as sender. Possibly sign off with \"With warm wishes, Jordan\" or similar.\n\nMemory_citations: we can list the approved memory notes as strings.\n\nLet's construct JSON step by step.\n\nTheme guide:\n- theme_title: \"Elegant Wedding Blessing\"\n- palette: [\"soft ivory\", \"sage green\", \"restrained gold\", \"warm taupe\"]\n- motifs: [\"delicate botanical sprigs\", \"fine gold linework\", \"subtle geometric border\"]\n- border_style: \"thin gold line with corner botanical accents\"\n- front_back_pairing: \"front features a central botanical sprig with gold accents; back repeats a smaller version in lower corner\"\n- interior_pairing: \"inside-left and inside-right share a matching thin gold border with sage-green corner motifs, leaving a large ivory text-safe area\"\n\nPanels:\n\nFront:\n- headline: \"With Joy for Your Union\" (16 chars, ok)\n- body: \"A blessing for Lina and Omar\" (28 chars, ok)\n- art_direction: \"Composition: central single botanical sprig (sage and gold) on ivory background, with thin gold line border. Typography area: lower third of panel, centered, generous margins. Palette: soft ivory background, sage green and gold accents. Border: thin gold line with small sage leaf at each corner. Relationship to back: back will have a smaller version of the sprig in lower right corner.\"\n- image_prompt: \"Premium 5x7 vertical flat print panel artwork for a wedding card front. Central composition: a single delicate botanical sprig with sage green leaves and small gold berries, rendered in flat 2D digital illustration style. Background: soft ivory with subtle texture. Thin gold line border around the entire panel with small sage leaf accents at each corner. Clean text-safe area in the lower third of the panel, no text. No people, no hands, no mockup. Full-bleed design.\"\n- image_negative_prompt: \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, watermark, logo\"\n\nInside-left:\n- headline: \"\" (maybe no headline? But schema has headline field. Could be empty string or a short phrase. Since it's a note, maybe \"With Warmest Wishes\" but that might be too much. Let's use empty string for headline or a short blessing. But inside-left body should be 120-320. We'll put the blessing there. Headline can be empty or a simple \"A Blessing\". Let's use \"A Blessing\" as headline (10 chars). Body: \"May your life together be filled with love, laughter, and the beauty of shared moments. May you find strength in each other and joy in every season.\" That's about 150 chars, within 120-320. Good.)\n- body: \"May your life together be filled with love, laughter, and the beauty of shared moments. May you find strength in each other and joy in every season.\" (147 chars)\n- art_direction: \"Composition: border-first stationery layout with thin gold line border and sage green corner motifs. Background: light ivory with subtle paper texture. Typography area: entire inner panel, centered, with generous margins. Palette: soft ivory background, sage green and gold border accents. Border: thin gold line with small sage leaf at each corner. Relationship to inside-right: identical border treatment, forming a cohesive spread.\"\n- image_prompt: \"Premium 5x7 vertical flat print panel artwork for a wedding card inside-left panel. Border-first stationery design: thin gold line border around the entire panel with small sage green leaf motifs at each corner. Background: light ivory with a subtle paper grain texture. The center of the panel is a large clean text-safe area with no decoration, reserved for typography. No text, no people, no hands, no mockup. Full-bleed 2D digital illustration.\"\n- image_negative_prompt: \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, watermark, logo, dense pattern\"\n\nInside-right:\n- headline: \"\" (empty or maybe \"With Love\" but we need to leave space for handwritten note. The body should carry main personal message plus sign-off. Let's use empty headline to maximize space. Body: \"Dear Lina and Omar, Though we may not be close, I am so happy for you both. May your wedding day be the start of a beautiful journey. Wishing you all the best. With warm wishes, Jordan\" That's about 200 chars, within 180-420. Good.)\n- body: \"Dear Lina and Omar, Though we may not be close, I am so happy for you both. May your wedding day be the start of a beautiful journey. Wishing you all the best. With warm wishes, Jordan\" (202 chars)\n- art_direction: \"Composition: border-first stationery layout identical to inside-left, with thin gold line border and sage green corner motifs. Background: light ivory with subtle paper texture. Typography area: entire inner panel, centered, with generous margins. Palette: soft ivory background, sage green and gold border accents. This panel is designed for a longer personal message and handwritten note, so the text-safe area is large and unobstructed.\"\n- image_prompt: \"Premium 5x7 vertical flat print panel artwork for a wedding card inside-right panel. Border-first stationery design: thin gold line border around the entire panel with small sage green leaf motifs at each corner. Background: light ivory with a subtle paper grain texture. The center of the panel is a large clean text-safe area with no decoration, reserved for typography. No text, no people, no hands, no mockup. Full-bleed 2D digital illustration.\"\n- image_negative_prompt: \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, watermark, logo, dense pattern\"\n\nBack:\n- headline: \"\" (empty or maybe a short phrase like \"With Joy\" but body <=160. Let's use empty headline and body: \"Celebrate love\" or \"Joy to you both\" but keep quiet. Body: \"With joy and best wishes\" (23 chars) or \"May your love grow\" (16). Let's use \"With joy and best wishes\" (23 chars) but that's fine. Or \"With warmest wishes\" (18). I'll use \"With joy and best wishes\" as body. Headline empty.)\n- body: \"With joy and best wishes\" (23 chars)\n- art_direction: \"Composition: mostly negative space with a small coordinating botanical mark in the lower right corner. Background: soft ivory. Typography area: lower left or centered, small and quiet. Palette: soft ivory background, sage green and gold for the mark. Border: none, or a very faint gold line at edge. Relationship to front: the botanical mark echoes the front sprig but smaller and simpler.\"\n- image_prompt: \"Premium 5x7 vertical flat print panel artwork for a wedding card back panel. Mostly negative space with a soft ivory background. In the lower right corner, a small delicate botanical sprig in sage green and gold, echoing the front design but simpler. No border. Clean text-safe area in the lower left or center, no text. No people, no hands, no mockup. Full-bleed 2D digital illustration.\"\n- image_negative_prompt: \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, watermark, logo\"\n\nMemory_citations: [\"Lina and Omar are getting married.\", \"The sender is not close to them and wants restraint.\", \"The inside should leave space for a handwritten note.\"]\n\nCheck copy requirements: front headline 16 chars <=90, body 28 <=160. Inside-left body 147 within 120-320. Inside-right body 202 within 180-420. Back body 23 <=160. All good.\n\nNo invented facts. No religious claims. No order"
+            },
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 2088,
+          "total_tokens": 4288,
+          "completion_tokens": 2200,
+          "prompt_tokens_details": {
+            "cached_tokens": 2087
+          }
+        }
+      }
+    },
+    "durationMs": 17879
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "21a767fd-642f-4376-acd4-e2535aed8eba",
+        "output_url": "https://api.deepai.org/job-view-file/21a767fd-642f-4376-acd4-e2535aed8eba/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/f76b0dcfdcee4f209de3a219d83b0ee5/full-bleed-flat-2d-artwork-layer-for-the-front-of-a-p.jpg",
+        "backend_request_id": "5aa6a246-0362-4108-9682-cdb6f32f3295"
+      }
+    },
+    "durationMs": 1837
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "8914b75c-1af0-424d-a9d4-fae12aa2c1a6",
+        "output_url": "https://api.deepai.org/job-view-file/8914b75c-1af0-424d-a9d4-fae12aa2c1a6/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/ace2590c938b4b0a845786ac26433a48/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "dac6a905-0323-4859-b233-87a6aa7613ea"
+      }
+    },
+    "durationMs": 1345
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "e9f86d4e-e60c-472d-9581-5faeec289e89",
+        "output_url": "https://api.deepai.org/job-view-file/e9f86d4e-e60c-472d-9581-5faeec289e89/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/801e3b49fc794f75819d26e86039e9de/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "0eb73012-8723-47c5-926b-43ba433f6f3a"
+      }
+    },
+    "durationMs": 1398
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "d4657a88-ebc9-4436-84ae-c1e903c7e28e",
+        "output_url": "https://api.deepai.org/job-view-file/d4657a88-ebc9-4436-84ae-c1e903c7e28e/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/244ea116334542abbb3f6da6f3168ffa/full-bleed-flat-2d-artwork-layer-for-a-minimal-vertic.jpg",
+        "backend_request_id": "bf7724e0-f99d-4dab-8f0b-b56b475f27c9"
+      }
+    },
+    "durationMs": 1253
+  }
+]

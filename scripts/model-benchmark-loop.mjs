@@ -23,7 +23,7 @@ const stories = {
       relationship: "friend",
       occasion: "birthday",
       tone: "warm, helpful, lightly dry humor, not romantic",
-      style: "soft houseplant stationery, airy pastel palette, polished first-purchase card design",
+      style: "soft houseplant stationery, airy pastel palette, polished first-try card design",
       language: "English",
       personal_note:
         "Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.",
@@ -244,6 +244,7 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const outputDir = resolve(args["output-dir"] || defaultOutputDir);
   const phase = args.phase || "smoke";
+  const phaseDirName = args["phase-dir"] || phase;
   const live = args.live === true || args.live === "true" || String(process.env.CUSTOMCARD_BENCHMARK_LIVE || "").toLowerCase() === "enabled";
   const env = loadBenchmarkEnv();
   mkdirSync(outputDir, { recursive: true });
@@ -254,10 +255,11 @@ async function main() {
   writeJson(resolve(outputDir, "resolved-flows-before-benchmark.json"), sanitize(resolveAiFlowConfigs(env), env));
 
   if (!live) {
-    writeJson(resolve(outputDir, `${phase}-dry-run.json`), {
+    const plannedRuns = applyRunFilters(plannedRunsForPhase(phase, candidates), args);
+    writeJson(resolve(outputDir, `${phaseDirName}-dry-run.json`), {
       phase,
       liveProviderCallsEnabled: false,
-      plannedRuns: plannedRunsForPhase(phase, candidates).map(plannedRunSummary)
+      plannedRuns: plannedRuns.map(plannedRunSummary)
     });
     console.log(JSON.stringify({ outputDir: relativePath(outputDir), phase, dryRun: true }, null, 2));
     return;
@@ -266,10 +268,12 @@ async function main() {
   const providerHttp = [];
   const fetchImpl = createLoggingFetch(providerHttp, env);
   const service = createAiCardGenerationService({ env, fetchImpl });
-  const phaseDir = resolve(outputDir, phase);
+  const phaseDir = resolve(outputDir, phaseDirName);
   mkdirSync(phaseDir, { recursive: true });
+  const plannedRuns = applyRunFilters(plannedRunsForPhase(phase, candidates), args);
   const summary = {
     phase,
+    phaseDir: phaseDirName,
     createdAtIso: new Date().toISOString(),
     liveProviderCallsEnabled: true,
     outputDir: relativePath(outputDir),
@@ -278,19 +282,19 @@ async function main() {
       configuredProviderKeys: Object.keys(env).filter(isSafeConfiguredKey).sort(),
       secretsRedacted: true
     },
-    plannedRuns: plannedRunsForPhase(phase, candidates).map(plannedRunSummary),
+    plannedRuns: plannedRuns.map(plannedRunSummary),
     runs: [],
     providerHttp
   };
 
-  for (const run of plannedRunsForPhase(phase, candidates)) {
+  for (const run of plannedRuns) {
     summary.runs.push(await runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fetchImpl }));
-    writeJson(resolve(outputDir, `${phase}-summary.json`), sanitize(summary, env));
+    writeJson(resolve(outputDir, `${phaseDirName}-summary.json`), sanitize(summary, env));
   }
 
-  writeJson(resolve(outputDir, `${phase}-provider-http.json`), sanitize(providerHttp, env));
-  writeJson(resolve(outputDir, `${phase}-summary.json`), sanitize(summary, env));
-  writeMarkdown(resolve(outputDir, `${phase}-README.md`), buildPhaseReadme(summary));
+  writeJson(resolve(outputDir, `${phaseDirName}-provider-http.json`), sanitize(providerHttp, env));
+  writeJson(resolve(outputDir, `${phaseDirName}-summary.json`), sanitize(summary, env));
+  writeMarkdown(resolve(outputDir, `${phaseDirName}-README.md`), buildPhaseReadme(summary));
   console.log(JSON.stringify({ outputDir: relativePath(outputDir), phase, runCount: summary.runs.length }, null, 2));
 }
 
@@ -323,6 +327,16 @@ function plannedRunsForPhase(phase, candidates) {
   if (phase === "full") return fullRuns(candidates);
   if (phase === "all") return [...smokeRuns(candidates), ...fullRuns(candidates)];
   throw new Error(`Unknown benchmark phase: ${phase}`);
+}
+
+function applyRunFilters(runs, args) {
+  return runs.filter((run) => {
+    if (args.story && run.storyId !== args.story) return false;
+    if (args.text && run.text.id !== args.text) return false;
+    if (args.image && run.image.id !== args.image) return false;
+    if (args.focus && run.focus !== args.focus) return false;
+    return true;
+  });
 }
 
 function smokeRuns(candidates) {
@@ -360,8 +374,8 @@ function smokeRuns(candidates) {
 }
 
 function fullRuns(candidates) {
-  const textIds = new Set(["text-cloudflare-baseline", "text-hf-gpt-oss-20b", "text-hf-qwen3-235b-a22b"]);
-  const imageIds = new Set(["image-deepai-hd", "image-cloudflare-flux-schnell", "image-cloudflare-sdxl-lightning"]);
+  const textIds = new Set(["text-cloudflare-baseline", "text-hf-qwen3-235b-a22b", "text-hf-deepseek-v4-flash"]);
+  const imageIds = new Set(["image-deepai-hd", "image-cloudflare-flux-schnell"]);
   const texts = candidates.text.filter((candidate) => candidate.configured && textIds.has(candidate.id));
   const images = candidates.image.filter((candidate) => candidate.configured && imageIds.has(candidate.id));
   return Object.values(stories).flatMap((story) =>
@@ -833,7 +847,9 @@ function parseJson(text) {
 }
 
 function sanitize(value, env) {
+  if (value === undefined) return undefined;
   let serialized = JSON.stringify(value, null, 2);
+  if (serialized === undefined) return undefined;
   for (const secret of Object.values(env || {})) {
     if (typeof secret !== "string" || secret.length < 8) continue;
     serialized = serialized.split(secret).join("[redacted]");

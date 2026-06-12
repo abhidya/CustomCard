@@ -279,7 +279,8 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         sessionId,
         role: verification.role,
         userId: stableRuntimeId("user", "clerk", verification.clerkUserId),
-        email: verification.email
+        email: verification.email,
+        provider: verification.provider ?? "clerk"
       });
       return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
     },
@@ -437,7 +438,8 @@ function authorizeLocalMemoryClerkCustomer({ route, request, sessions, env, toke
     sessionId,
     role: "customer",
     userId: stableRuntimeId("user", "local-clerk", preview.clerkUserId),
-    email: preview.email
+    email: preview.email,
+    provider: "local-clerk"
   });
   return authorizeFromSessions(route, request, sessions, env.AUTH_SESSION_SECRET);
 }
@@ -529,17 +531,27 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
       const pool = await getPool();
       const sessionHash = hashSessionToken(token, env.AUTH_SESSION_SECRET);
       const result = await pool.query(
-        `SELECT s.id AS session_id, s.user_id, s.role, u.email
+        `SELECT s.id AS session_id, s.user_id, s.role, u.email, ai.provider AS identity_provider
          FROM auth_sessions s
          JOIN users u ON u.id = s.user_id
+         LEFT JOIN account_identities ai ON ai.user_id = s.user_id AND ai.provider = 'clerk'
          WHERE s.session_hash = $1
            AND s.revoked_at IS NULL
            AND s.expires_at > NOW()
          LIMIT 1`,
         [sessionHash]
       );
-      const session = result.rows[0];
-      const requiredRole = requiredRoleForAuth(route.auth);
+      const sessionRow = result.rows[0];
+      const session = sessionRow
+        ? {
+            id: sessionRow.session_id,
+            sessionId: sessionRow.session_id,
+            role: sessionRow.role,
+            userId: sessionRow.user_id,
+            email: sessionRow.email,
+            provider: sessionRow.identity_provider ?? "auth-session"
+          }
+        : null;
       if (!session) {
         // Clerk bridge: verify the Clerk session JWT offline and mint a durable
         // auth_sessions row so signed-in browsers are never rejected with 401.
@@ -549,21 +561,12 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             const bridged = await postgresRuntime.withTransaction(async (client) =>
               ensureClerkAuthSession(client, { verification, sessionHash })
             );
-            if (bridged.role !== requiredRole) return authError(403, "wrong-role", route);
-            return { ok: true, role: bridged.role, userId: bridged.userId, sessionId: bridged.sessionId, email: bridged.email };
+            return authorizeSessionForRoute(route, bridged);
           }
         }
         return authError(401, "invalid-session", route);
       }
-      if (session.role !== requiredRole) return authError(403, "wrong-role", route);
-
-      return {
-        ok: true,
-        role: session.role,
-        userId: session.user_id,
-        sessionId: session.session_id,
-        email: session.email
-      };
+      return authorizeSessionForRoute(route, session);
     },
     async persistMutation({ route, request, authContext, bodyText, responsePayload }) {
       const prepared = prepareIdempotentMutation({ route, request, authContext, bodyText, responsePayload });
@@ -944,7 +947,8 @@ function addSession(sessions, token, role, userId, sessionSecret) {
   sessions.set(hashSessionToken(token, sessionSecret), {
     id: stableRuntimeId("session", role, userId),
     role,
-    userId
+    userId,
+    provider: "seeded"
   });
 }
 
@@ -954,9 +958,24 @@ function authorizeFromSessions(route, request, sessions, sessionSecret) {
   if (!token) return authError(401, "auth-required", route);
   const session = sessions.get(hashSessionToken(token, sessionSecret));
   if (!session) return authError(401, "invalid-session", route);
+  return authorizeSessionForRoute(route, session);
+}
+
+function authorizeSessionForRoute(route, session) {
   const requiredRole = requiredRoleForAuth(route.auth);
-  if (session.role !== requiredRole) return authError(403, "wrong-role", route);
-  return { ok: true, ...session };
+  if (session.role === requiredRole) return { ok: true, ...session, role: requiredRole };
+  if (canClerkAdminUseCustomerRoute(session, requiredRole)) return { ok: true, ...session, role: "customer" };
+  return authError(403, "wrong-role", route);
+}
+
+function canClerkAdminUseCustomerRoute(session, requiredRole) {
+  return (
+    requiredRole === "customer" &&
+    session.role === "admin" &&
+    String(session.provider ?? "")
+      .toLowerCase()
+      .includes("clerk")
+  );
 }
 
 function anonymousAuthContext(route) {
@@ -1940,7 +1959,7 @@ async function ensureClerkAuthSession(client, { verification, sessionHash }) {
      VALUES ('auth_session', $1, $2, 'auth.clerk_session.bridged', $3::jsonb)`,
     [sessionId, userId, JSON.stringify({ provider: "clerk", role: verification.role })]
   );
-  return { userId, role: verification.role, sessionId, email };
+  return { userId, role: verification.role, sessionId, email, provider: verification.provider ?? "clerk" };
 }
 
 function publicOpportunity(opportunity, importedEvent) {

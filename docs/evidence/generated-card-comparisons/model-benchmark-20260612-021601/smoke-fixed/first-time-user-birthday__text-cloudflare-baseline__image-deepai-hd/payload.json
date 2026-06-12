@@ -1,0 +1,227 @@
+{
+  "draft_id": "ai-mqajn2ni-maya",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Warm Birthday Wishes",
+      "palette": [
+        "soft pastel colors",
+        "light ivory/cream",
+        "airy pastel palette"
+      ],
+      "motifs": [
+        "houseplant",
+        "bright flowers",
+        "sparse edge/corner or lower-edge motifs"
+      ],
+      "border_style": "thin refined frame",
+      "front_back_pairing": "soft pastel color palette",
+      "interior_pairing": "light ivory/cream low-contrast interior"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Warm Wishes",
+        "body": "For a day with room for fresh air, small wonders, and the kind of joy that lingers.",
+        "art_direction": "Soft pastel color palette with a dominant houseplant composition on the cover, clean text-safe area for the headline and body.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "To a Bright Friend",
+        "body": "Maya, I hope your birthday is as bright and beautiful as you are. Wishing you a year filled with love, laughter, and all your favorite things.",
+        "art_direction": "Polished stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "Cheers to You",
+        "body": "Thanks for being such a bright spot in my life, Maya. Here's to another year of adventures, laughter, and making memories together!",
+        "art_direction": "Polished stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Love",
+        "body": "Wishing you a peaceful and joyful year ahead.",
+        "art_direction": "Simple and elegant design with mostly negative space and a small coordinating lower mark or border echo.",
+        "image_prompt": "A mostly negative space background with a small coordinating lower mark or border echo in a soft pastel color, with a few subtle hints of a houseplant in the background. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "https://api.deepai.org/job-view-file/b58da622-969a-4325-9e0e-54cff7222b45/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "https://api.deepai.org/job-view-file/b992adda-1b1d-400f-8069-c246bee9b460/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "https://api.deepai.org/job-view-file/d9fefd9a-d6a7-4c4c-9ade-418ad9d0cc6d/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "https://api.deepai.org/job-view-file/320b7459-b0d2-466e-8c4a-264dd7bfb055/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Warm birthday stationery: botanical greenery and soft flowers as elegant side or corner border, small candle accents, morning-light palette, generous blank field, no dense confetti wallpaper. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "primary_adapter_id": "deepai-text2img-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "hd",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-06ec14c0",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245589365",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:26:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-d7c40423",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245589365",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:26:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-5fbb8626",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245589365",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:26:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "deepai-text2img-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-9aebd8a1",
+      "tenant_id": "model-benchmark-first-time-user-birthday__text-cloudflare-baseline__image-deepai-hd-1781245589365",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:26:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "deepai-text2img-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "generatedPanelCount": 4
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 2500,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

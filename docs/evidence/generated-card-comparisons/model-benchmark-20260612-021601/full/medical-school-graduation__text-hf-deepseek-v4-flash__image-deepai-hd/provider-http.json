@@ -1,0 +1,151 @@
+[
+  {
+    "url": "https://router.huggingface.co/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "[redacted]"
+      },
+      "body": {
+        "model": "deepseek-ai/DeepSeek-V4-Flash",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Family\",\n    \"recipient\": \"Noura\",\n    \"relationship\": \"family\",\n    \"occasion\": \"medical school graduation\",\n    \"tone\": \"proud, refined, celebratory, warm, not clinical\",\n    \"style\": \"elegant navy and gold medical graduation stationery with subtle heartbeat or stethoscope symbolism\",\n    \"language\": \"English\",\n    \"personal_note\": \"Create a card for Noura graduating medical school. She loves navy and gold, wants something elegant, and her family is proud of how hard she worked. Include stethoscope or heartbeat symbolism without making it look like a hospital ad.\",\n    \"memory_notes\": [\n      \"Noura is graduating medical school.\",\n      \"Noura loves navy and gold.\",\n      \"Her family is proud of how hard she worked.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": 2200,
+        "temperature": 0.62
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 10125,
+      "body": {
+        "id": "Root=1-6a2ba909-41b92bf2520fefba0f3c0052-chatcmpl-68983e1",
+        "object": "chat.completion",
+        "created": 1781246217,
+        "model": "accounts/fireworks/models/deepseek-v4-flash",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"theme_guide\": {\n    \"theme_title\": \"Elegant Navy & Gold Medical Graduation\",\n    \"palette\": [\n      \"Deep Navy (#1B2A4A)\",\n      \"Warm Gold (#C9A84",
+              "reasoning_content": "We are given a task to generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only. The input includes sender \"Family\", recipient \"Noura\", relationship \"family\", occasion \"medical school graduation\", tone \"proud, refined, celebratory, warm, not clinical\", style \"elegant navy and gold medical graduation stationery with subtle heartbeat or stethoscope symbolism\", language \"English\", personal_note and memory_notes. We need to produce a JSON with theme_guide and four panels (front, inside-left, inside-right, back) each with headline, body, art_direction, image_prompt, image_negative_prompt. Also memory_citations array.\n\nWe must follow all copy requirements: front headline <=90 chars, body <=160; inside-left body 120-320; inside-right body 180-420; back body <=160. Use only provided memory_notes. No invented facts. Transform memory_notes into natural card language. No meta-copy about tone/style. No filler. Use approved memories only.\n\nLayout requirements: theme_guide binding, front/back match, interior match, interior lighter/warmer, border-first stationery for interior, text-safe space via negative space, no caption plaques, use composition archetypes. Image prompts: concrete visual, no text rendering, no people/hands, no mockup, etc. Safety: no people, no physical card mockup, no text in image.\n\nWe need to design a card for Noura's medical school graduation. Theme: navy and gold, elegant, with subtle medical symbols (heartbeat line, stethoscope). Tone proud and warm.\n\nLet's plan the emotional arc: Front: strong hero image with headline expressing pride and celebration. Inside-left: opening note, scene-setting, maybe a quote or blessing. Inside-right: main personal message from family, expressing pride in her hard work, congratulations. Back: quiet echo, maybe a small motif and a simple line.\n\nCopy: Use \"Family\" as sender. Recipient \"Noura\". Use memory notes: graduating medical school, loves navy and gold, family proud of hard work.\n\nFront headline: Could be \"Congratulations, Dr. Noura!\" or \"To Noura, Our Doctor!\" but need to be <=90 chars. Let's try: \"Noura, Your Hard Work Has Paid Off\" but that's 33 chars. Actually we can be more elegant: \"With Pride and Joy, Noura\" but need to convey graduation. \"Celebrating Your Medical School Graduation\" is 37 chars. We can combine: \"Noura, Congratulations on Your Medical School Graduation\" is 51 chars. That's fine. But body is subtitle: maybe \"With love and pride from your family\" (35 chars). That fits.\n\nInside-left: opening note. Could be a quote or blessing. Since family is proud, maybe: \"We have watched you pour your heart into this journey. Your dedication and compassion have inspired us all.\" That's 120 chars? Count: \"We have watched you pour your heart into this journey. Your dedication and compassion have inspired us all.\" = 98 chars. Need 120-320, so add more. \"We have watched you pour your heart into this journey. Your dedication and compassion have inspired us all. This moment is a testament to your strength.\" That's 143 chars. Good.\n\nInside-right: main message. \"Noura, as you step into the world of medicine, know that you carry with you the love and pride of your family. You have worked so hard, and we could not be more proud. May your stethoscope always bring comfort, and your heart always guide you with wisdom. With all our love, your family.\" That's 281 chars. Good.\n\nBack: quiet. \"With love, your family\" or something like \"Always proud of you.\" But body <=160. \"Your journey inspires us. With love, your family.\" That's 37 chars. Could add \"Noura\" but not necessary. Or \"Dr. Noura – your family is with you always.\" That's 45 chars.\n\nNow art_direction and image_prompt for each panel. Need to coordinate theme: navy and gold, elegant, medical symbols subtle. Use heartbeat line or stethoscope. Composition archetypes: front: cinematic single-object cover (maybe a stethoscope forming a heart shape or a heartbeat line integrated with a gold laurel). inside-left: border-first note sheet with thin gold border, navy corners, heartbeat line as border ornament. inside-right: similar but with stethoscope motif in lower corner. back: mostly blank with small gold star or heartbeat line echo.\n\nWe must avoid people, hands, text in image. Use 2D flat illustration, full-bleed, no mockup.\n\nLet's write each panel's art_direction and image_prompt.\n\nFront art_direction: \"Hero composition: a stylized stethoscope curved into a heart shape at center, with a subtle heartbeat line trailing from the earpieces. Navy background, gold accents. Clean lower third reserved for app-rendered headline and body text. Full-bleed 2D digital illustration. Palette: deep navy (#1B2A4A), warm gold (#C9A84C), soft ivory (#F5F0E1). Border: thin gold line frame with rounded corners. Motif: stethoscope heart, heartbeat line.\"\n\nFront image_prompt: \"Premium 5x7 vertical flat print panel artwork for front cover. Elegant medical graduation theme. Deep navy background with a subtle radial gradient. Center composition: a stylized stethoscope curved into a heart shape, rendered in warm gold line art with soft glow. A thin gold heartbeat line extends from the stethoscope earpieces, trailing across the lower third. Clean lower third area with negative space for text overlay. Thin gold border frame. Full-bleed 2D digital illustration, flat vector style, no shadows. No people, no hands, no text, no mockup. Palette: navy, gold, ivory.\"\n\nInside-left art_direction: \"Border-first stationery design for inside left panel. Light ivory background with a thin refined gold border. Navy corner ornaments: small stethoscope bell icons in lower left and upper right. A subtle heartbeat line runs along the bottom edge. Quiet center with generous margins reserved for app-rendered headline and body text. Palette: ivory, navy, gold. Composition: border frame with sparse edge motifs.\"\n\nInside-left image_prompt: \"Premium 5x7 vertical flat print panel artwork for inside left panel. Elegant stationery design. Light ivory background with a thin gold border frame. Navy corner ornaments: small stylized stethoscope bell icons at lower left and upper right corners. A subtle navy heartbeat line runs along the bottom edge, very thin. Center area mostly blank with clean negative space for text overlay. Full-bleed 2D digital illustration, flat vector style. No people, no hands, no text, no mockup. Palette: ivory, navy, gold.\"\n\nInside-right art_direction: \"Border-first stationery design matching inside-left. Light ivory background, thin gold border. Navy corner ornaments: small gold star and stethoscope icon at upper left and lower right. A subtle heartbeat line runs along the top edge. Quiet center with generous margins for main personal message. Palette: ivory, navy, gold. Composition: border frame with sparse edge motifs.\"\n\nInside-right image_prompt: \"Premium 5x7 vertical flat print panel artwork for inside right panel. Elegant stationery design matching inside-left. Light ivory background with a thin gold border frame. Navy corner ornaments: a small gold star at upper left and a small stylized stethoscope icon at lower right. A subtle navy heartbeat line runs along the top edge, very thin. Center area mostly blank with clean negative space for text overlay. Full-bleed 2D digital illustration, flat vector style. No people, no hands, no text, no mockup. Palette: ivory, navy, gold.\"\n\nBack art_direction: \"Mostly negative space with a small coordinating mark: a gold heartbeat line forming a loop at the bottom center, with a tiny navy star. Navy background matching front. Clean upper area for optional back text. Full-bleed 2D digital illustration. Palette: navy, gold.\"\n\nBack image_prompt: \"Premium 5x7 vertical flat print panel artwork for back cover. Deep navy background matching front. At bottom center, a small gold heartbeat line forms a loop, with a tiny navy star inside the loop. Rest of panel is clean negative space for optional text overlay. Full-bleed 2D digital illustration, flat vector style. No people, no hands, no text, no mockup. Palette: navy, gold.\"\n\nNow image_negative_prompt for each: must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo. We'll add that.\n\nNow memory_citations: we need to list the memory notes we used. We used all three: \"Noura is graduating medical school.\", \"Noura loves navy and gold.\", \"Her family is proud of how hard she worked.\" But we transformed them. The instruction says \"memory_citations\" is an array of strings. We can restate the memory notes as given.\n\nNow theme_guide: theme_title: \"Elegant Navy & Gold Medical Graduation\". palette: [\"Deep Navy (#1B2A4A)\", \"Warm Gold (#C9A84C)\", \"Soft Ivory (#F5F0E1)\"]. motifs: [\"Stylized stethoscope heart\", \"Heartbeat line\", \"Gold star\", \"Thin gold border frame\"]. border_style: \"Thin gold line frame with rounded corners\". front_back_pairing: \"Both use deep navy background with gold accents; front has central stethoscope heart, back has small heartbeat loop at bottom\". interior_pairing: \"Both interior panels use ivory background with thin gold border, navy corner ornaments, and heartbeat line edge motif; text-safe center\".\n\nNow write the JSON. Ensure all fields are present. Use double quotes. No markdown. Only JSON.\n\nLet's write the full JSON."
+            },
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 2088,
+          "total_tokens": 4288,
+          "completion_tokens": 2200,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      }
+    },
+    "durationMs": 21190
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "626a1520-a91d-409d-9405-dcb80787692d",
+        "output_url": "https://api.deepai.org/job-view-file/626a1520-a91d-409d-9405-dcb80787692d/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/2171679d1fcb4015b6eedbc6f80d9327/full-bleed-flat-2d-artwork-layer-for-the-front-of-a-p.jpg",
+        "backend_request_id": "0cff84a6-7569-40c0-a980-ca546ea7a1a1"
+      }
+    },
+    "durationMs": 1821
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "d04eb794-db72-400c-bb17-2dbea8a26627",
+        "output_url": "https://api.deepai.org/job-view-file/d04eb794-db72-400c-bb17-2dbea8a26627/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/ae65a5317cff45f29f75c5b0802a0972/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "7c110c1f-0a92-42fc-b6c4-2994d4db9405"
+      }
+    },
+    "durationMs": 1532
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "367a2b04-de97-4d9c-be02-e4454e3a3974",
+        "output_url": "https://api.deepai.org/job-view-file/367a2b04-de97-4d9c-be02-e4454e3a3974/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/f115ecc570184efb9e412663d5bd0e64/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "9903e79f-afea-4cf2-9830-c209ba8e5065"
+      }
+    },
+    "durationMs": 1318
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "bb04424e-bacb-4776-88a0-dc3fb71bb5e3",
+        "output_url": "https://api.deepai.org/job-view-file/bb04424e-bacb-4776-88a0-dc3fb71bb5e3/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/27d1364b9ce8453b99d7d3ffe5d2ea00/full-bleed-flat-2d-artwork-layer-for-a-minimal-vertic.jpg",
+        "backend_request_id": "5d138918-37c2-4e1e-8a3d-797f8d235eb7"
+      }
+    },
+    "durationMs": 1402
+  }
+]

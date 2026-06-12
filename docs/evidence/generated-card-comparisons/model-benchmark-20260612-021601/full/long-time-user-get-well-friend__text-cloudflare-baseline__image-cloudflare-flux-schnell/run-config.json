@@ -1,0 +1,51 @@
+{
+  "phase": "full",
+  "focus": "combo",
+  "storyId": "long-time-user-get-well-friend",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "[redacted]",
+  "imageCandidateId": "image-cloudflare-flux-schnell",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/black-forest-labs/flux-1-schnell",
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "cloudflare-workers-ai-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/black-forest-labs/flux-1-schnell",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

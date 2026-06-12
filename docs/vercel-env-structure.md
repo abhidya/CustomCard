@@ -89,11 +89,11 @@ separate database/resource for that scope.
 
 ## Preview
 
-Preview currently has AI/provider-client bootstrap keys and Clerk session JWT
-verification config only. It does not have a durable database resource.
+Preview currently has AI/provider-client bootstrap keys only. It does not have a
+durable database resource. Add the Clerk session JWT verification config with a
+non-production branch-scoped Vercel env command before relying on authenticated
+Preview API routes.
 
-- `CLERK_AUTHORIZED_PARTIES`
-- `CLERK_JWT_KEY`
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN`

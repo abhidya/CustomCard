@@ -126,6 +126,37 @@ describe("clerk to api session bridge (memory runtime)", () => {
     expect(result.statusCode).toBe(403);
   });
 
+  it("lets Clerk admins use customer Walgreens checkout routes without opening admin routes to customers", async () => {
+    const runtime = createApiRuntime({ env: runtimeEnv, routes: apiRouteContracts });
+    const clerkAdminToken = signClerkJwt(
+      clerkClaims({
+        sub: "user_2clerkAdmin",
+        sid: "sess_2clerkAdmin",
+        email: "owner@customcard.example",
+        publicMetadata: { role: "admin" }
+      })
+    );
+    const walgreensUploadRoute = getApiRouteById("walgreens-checkout-upload");
+
+    await expect(runtime.authorize(walgreensUploadRoute, bearerRequest(clerkAdminToken))).resolves.toMatchObject({
+      ok: true,
+      role: "customer"
+    });
+
+    await expect(runtime.authorize(walgreensUploadRoute, bearerRequest(runtimeEnv.CUSTOMCARD_ADMIN_SESSION_TOKEN))).resolves.toMatchObject({
+      ok: false,
+      statusCode: 403,
+      payload: expect.objectContaining({ status: "wrong-role" })
+    });
+
+    const clerkCustomerToken = signClerkJwt(clerkClaims({ sub: "user_2clerkCustomer", sid: "sess_2clerkCustomer" }));
+    const adminRoute = getApiRouteById("admin-card-gallery");
+    await expect(runtime.authorize(adminRoute, bearerRequest(clerkCustomerToken))).resolves.toMatchObject({
+      ok: false,
+      statusCode: 403
+    });
+  });
+
   it("authorizes signed-in local Clerk customers for AI generation when memory runtime has no Clerk verification key", async () => {
     const { CLERK_JWT_KEY: _clerkJwtKey, ...localMemoryEnv } = runtimeEnv;
     const runtime = createApiRuntime({ env: localMemoryEnv, routes: apiRouteContracts });

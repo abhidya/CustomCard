@@ -28,10 +28,12 @@ Verification:
 - Original `vercel env ls` reported no environment variables for the project.
 - On 2026-06-11, `VITE_CLERK_PUBLISHABLE_KEY` was added to Production,
   Preview, and Development scopes for Clerk React auth.
-- On 2026-06-12, `CLERK_JWT_KEY` and `CLERK_AUTHORIZED_PARTIES` were added to
-  Production, Preview, and Development scopes for server-side Clerk session JWT
-  verification. Real values are stored only in Vercel env / ignored local env,
-  not in tracked docs.
+- On 2026-06-12, `CLERK_JWT_KEY` and `CLERK_AUTHORIZED_PARTIES` were confirmed
+  for Production and Development scopes for server-side Clerk session JWT
+  verification. Preview still needs a branch-scoped Vercel env add; the CLI
+  rejected the unscoped Preview add because it requires a non-production branch.
+  Real values are stored only in Vercel env / ignored local env, not in tracked
+  docs.
 - On 2026-06-11, Cloudflare Workers AI env vars were added to Production,
   Preview, and Development scopes: `CLOUDFLARE_ACCOUNT_ID`,
   `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN`,

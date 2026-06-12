@@ -1,0 +1,15 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "noProviderFailure": true,
+    "mustIncludeCovered": false,
+    "mustAvoidClean": true,
+    "providerCalls": 5
+  },
+  "missingMustInclude": [
+    "tiny walks"
+  ],
+  "avoidedFailures": [],
+  "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+}

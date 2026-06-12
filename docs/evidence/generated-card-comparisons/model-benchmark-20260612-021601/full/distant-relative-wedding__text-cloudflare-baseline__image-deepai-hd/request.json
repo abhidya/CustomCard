@@ -1,0 +1,55 @@
+{
+  "sender": "Jordan",
+  "recipient": "Lina and Omar",
+  "relationship": "distant cousin",
+  "occasion": "wedding",
+  "tone": "respectful, warm, elegant, not over-familiar",
+  "style": "elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space",
+  "language": "English",
+  "personal_note": "Make a wedding card for distant cousin Lina and her fiance Omar. It should feel respectful and warm even though we are not close. Include a short blessing and leave room for a handwritten note.",
+  "memory_notes": [
+    "Lina and Omar are getting married.",
+    "The sender is not close to them and wants restraint.",
+    "The inside should leave space for a handwritten note."
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "hd",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

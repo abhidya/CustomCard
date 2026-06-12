@@ -1,0 +1,57 @@
+{
+  "sender": "Jordan",
+  "recipient": "Sam",
+  "relationship": "close friend",
+  "occasion": "get well after surgery",
+  "tone": "heartfelt, tender, funny, emotionally specific, not maudlin",
+  "style": "calm recovery stationery with basil green, soup-warm ivory, tiny walking path details",
+  "language": "English",
+  "personal_note": "Use saved memories for Sam recovering from surgery: the soup rating spreadsheet, terrible hospital socks, basil-only garden, and the running joke that Sam is the mayor of taking tiny walks.",
+  "memory_notes": [
+    "Sam is recovering from surgery.",
+    "Inside joke: the soup rating spreadsheet.",
+    "Inside joke: terrible hospital socks.",
+    "Sam has a garden that only grows basil.",
+    "Sam is jokingly the mayor of taking tiny walks."
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "huggingface-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "hd",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

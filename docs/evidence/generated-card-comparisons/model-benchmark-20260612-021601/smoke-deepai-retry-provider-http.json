@@ -1,0 +1,332 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "[redacted]"
+      },
+      "body": {
+        "model": "[redacted]",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Maya\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, helpful, lightly dry humor, not romantic\",\n    \"style\": \"soft houseplant stationery, airy pastel palette, polished first-purchase card design\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.\",\n    \"memory_notes\": [\n      \"Maya likes houseplants.\",\n      \"Maya likes soft colors.\",\n      \"The card should use light humor without inventing memories.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": 2200,
+        "temperature": 0.62,
+        "response_format": {
+          "type": "json_schema",
+          "json_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "theme_guide",
+              "panels",
+              "memory_citations"
+            ],
+            "properties": {
+              "theme_guide": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "theme_title",
+                  "palette",
+                  "motifs",
+                  "border_style",
+                  "front_back_pairing",
+                  "interior_pairing"
+                ],
+                "properties": {
+                  "theme_title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "palette": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 6,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "motifs": {
+                    "type": "array",
+                    "minItems": 3,
+                    "maxItems": 8,
+                    "items": {
+                      "type": "string",
+                      "maxLength": 80
+                    }
+                  },
+                  "border_style": {
+                    "type": "string",
+                    "maxLength": 180
+                  },
+                  "front_back_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  },
+                  "interior_pairing": {
+                    "type": "string",
+                    "maxLength": 220
+                  }
+                }
+              },
+              "panels": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "headline",
+                    "body",
+                    "art_direction",
+                    "image_prompt",
+                    "image_negative_prompt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "front",
+                        "inside-left",
+                        "inside-right",
+                        "back"
+                      ]
+                    },
+                    "headline": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "body": {
+                      "type": "string",
+                      "maxLength": 600
+                    },
+                    "art_direction": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "image_prompt": {
+                      "type": "string",
+                      "maxLength": 1200
+                    },
+                    "image_negative_prompt": {
+                      "type": "string",
+                      "maxLength": 500
+                    }
+                  }
+                }
+              },
+              "memory_citations": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 4241,
+      "body": {
+        "id": "id-1781245323804",
+        "object": "chat.completion",
+        "created": 1781245323,
+        "model": "[redacted]",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": null,
+              "audio": null,
+              "content": "{\n  \"memory_citations\": [],\n  \"panels\": [\n    {\n      \"art_direction\": \"cinematic single-object cover, warm pastel palette, airy white space, simple sans-serif typography\",\n      \"body\": \"\",\n      \"headline\": \"Happy Birthday, Maya!\",\n      \"id\": \"front\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A clean, 5x7 vertical panel with a single, tall houseplant in the center, surrounded by a soft white border and a light pastel background. The houseplant should be the dominant composition, with a clean lower text-safe area for the headline and body.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs\",\n      \"body\": \"Maya, you're a bright spot in my life, just like a houseplant brings life to a room. Here's to another year of growth, friendship, and soft colors!\",\n      \"headline\": \"Wishing You a Bright Birthday\",\n      \"id\": \"inside-left\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A 5x7 vertical panel with a thin, refined frame and a quiet center. The background should be a light ivory/cream color with sparse edge/corner or lower-edge motifs. The text should be clean and easy to read, with generous margins and a calm atmosphere.\"\n    },\n    {\n      \"art_direction\": \"border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs\",\n      \"body\": \"Thanks for being a friend who always knows how to make me laugh. Here's to many more dry jokes and good times!\",\n      \"headline\": \"Cheers to Another Year\",\n      \"id\": \"inside-right\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A 5x7 vertical panel with a thin, refined frame and a quiet center. The background should be a light ivory/cream color with sparse edge/corner or lower-edge motifs. The text should be clean and easy to read, with generous margins and a calm atmosphere.\"\n    },\n    {\n      \"art_direction\": \"mostly negative space and one small coordinating lower mark or border echo\",\n      \"body\": \"Wishing you a peaceful and joyful year ahead.\",\n      \"headline\": \"\",\n      \"id\": \"back\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\",\n      \"image_prompt\": \"A 5x7 vertical panel with mostly negative space and a small, coordinating lower mark or border echo. The background should be a soft white or light pastel color, with a clean and simple design.\"\n    }\n  ],\n  \"theme_guide\": {\n    \"border_style\": \"thin refined frame\",\n    \"front_back_pairing\": \"soft white border and light pastel background\",\n    \"interior_pairing\": \"light ivory/cream low-contrast interior and sparse edge/corner or lower-edge motifs\",\n    \"motifs\": [\n      \"houseplant\",\n      \"soft colors\",\n      \"dry humor\"\n    ],\n    \"palette\": [\n      \"#F7F7F7\",\n      \"#C9E4CA\",\n      \"#C7C5B8\"\n    ],\n    \"theme_title\": \"Warm Birthday Wishes\"\n  }\n}",
+              "function_call": null,
+              "reasoning": null,
+              "refusal": null,
+              "role": "assistant",
+              "tool_calls": []
+            },
+            "stop_reason": null,
+            "token_ids": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 2012,
+          "completion_tokens": 855,
+          "total_tokens": 2867,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      }
+    },
+    "durationMs": 4302
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "5789ca5d-577f-49f5-be49-6937e16a1a34",
+        "output_url": "https://api.deepai.org/job-view-file/5789ca5d-577f-49f5-be49-6937e16a1a34/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/6926e662d2f241558ca658b4eab0d35c/full-bleed-flat-2d-artwork-layer-for-the-front-of-a-p.jpg",
+        "backend_request_id": "580d1ec9-9c15-47c7-99b3-e6a64240d198"
+      }
+    },
+    "durationMs": 2038
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "126dbeca-ca97-4ae6-9869-307480f9a3d8",
+        "output_url": "https://api.deepai.org/job-view-file/126dbeca-ca97-4ae6-9869-307480f9a3d8/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/0d64ee8ea85149018ae8c7eadcfecce2/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "4dbdc685-1e9d-433b-8cfa-9bd633cd0814"
+      }
+    },
+    "durationMs": 1707
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "eb6cb95f-e48f-4c84-9124-be4ad0ddb75b",
+        "output_url": "https://api.deepai.org/job-view-file/eb6cb95f-e48f-4c84-9124-be4ad0ddb75b/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/f1e74a4844284dc5857cfa9319185799/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "5ec76cc8-45e9-4303-8845-a6b3cfd9722a"
+      }
+    },
+    "durationMs": 1572
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "48953da2-5be9-422a-b319-0077313ceebe",
+        "output_url": "https://api.deepai.org/job-view-file/48953da2-5be9-422a-b319-0077313ceebe/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/dd2d88e926e44455b4b328601c75616d/full-bleed-flat-2d-artwork-layer-for-a-minimal-vertic.jpg",
+        "backend_request_id": "c48d1bae-02c5-456a-9c78-9c30b6024b14"
+      }
+    },
+    "durationMs": 1410
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/5789ca5d-577f-49f5-be49-6937e16a1a34/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 43670
+    },
+    "durationMs": 552
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/126dbeca-ca97-4ae6-9869-307480f9a3d8/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 42254
+    },
+    "durationMs": 130
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/eb6cb95f-e48f-4c84-9124-be4ad0ddb75b/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 54046
+    },
+    "durationMs": 88
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/48953da2-5be9-422a-b319-0077313ceebe/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 34980
+    },
+    "durationMs": 187
+  }
+]

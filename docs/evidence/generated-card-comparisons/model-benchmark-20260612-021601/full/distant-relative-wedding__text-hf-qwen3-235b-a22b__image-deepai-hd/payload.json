@@ -1,0 +1,231 @@
+{
+  "draft_id": "ai-mqajxz25-lina-and-omar",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Elegant Botanical Wedding",
+      "palette": [
+        "soft ivory",
+        "sage green",
+        "restrained gold"
+      ],
+      "motifs": [
+        "delicate olive branches",
+        "minimal gold line wreath",
+        "subtle geometric border"
+      ],
+      "border_style": "thin gold geometric border with open corners",
+      "front_back_pairing": "front has central wreath; back repeats lower corner motif",
+      "interior_pairing": "matching border-first stationery with edge botanicals"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Wishing You Joy",
+        "body": "With warm congratulations on your wedding day.",
+        "art_direction": "Cinematic single-object cover with central gold wreath motif, lower text-safe area, soft ivory field, sage undertones, and restrained gold accents. Full-bleed 2D illustration with no central text block.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "A Blessing",
+        "body": "May your life together be filled with quiet understanding, shared laughter, and enduring kindness. Wishing you both deep joy as you begin this new chapter.",
+        "art_direction": "Border-first stationery layout with thin gold geometric frame, light ivory paper texture, delicate olive sprigs in lower corners, generous margins, and large blank center for app-rendered text. Warmer and softer than cover.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "With Warmest Wishes",
+        "body": "It’s a joy to celebrate this special moment in your lives. Though we haven’t had the chance to be close, I’m truly happy to hear of your love and commitment. Wishing you a lifetime of gentle moments, shared strength, and growing happiness. With warmest wishes for your future together.",
+        "art_direction": "Matching border-first stationery with identical frame and texture as inside-left, olive sprig mirrored on opposite side, large quiet center for personal message and sign-off. Slight warmth in paper tone to suggest handwriting space.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Care",
+        "body": "With warm congratulations to both of you on your wedding day.",
+        "art_direction": "Mostly negative space with soft ivory field, one small gold olive sprig in lower right corner, same geometric border edge echo, minimal and polished. Quiet continuation of front theme.",
+        "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": [
+      "Lina and Omar are getting married.",
+      "The sender is not close to them and wants restraint.",
+      "The inside should leave space for a handwritten note."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "https://api.deepai.org/job-view-file/54c7ab82-c0e2-46b6-a7f0-f8126cef1004/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "https://api.deepai.org/job-view-file/7c57cd42-1717-49ae-bc9e-7dedf57e0f9c/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "https://api.deepai.org/job-view-file/5beb33e1-e6dc-471a-b6d4-9ff55db52701/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "https://api.deepai.org/job-view-file/d7043128-f6b7-42d0-b7e1-cca7031ad287/outputs/output.jpg",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Original wedding theme in a elegant wedding stationery, soft ivory, sage, restrained gold, generous handwriting space style with specific symbolic motifs, coordinated palette, and emotional tone: respectful, warm, elegant, not over-familiar. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No people. No hands.",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "huggingface-chat",
+      "primary_adapter_id": "huggingface-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "primary_adapter_id": "deepai-text2img-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "hd",
+      "rate_limit_per_minute": 120,
+      "monthly_budget_cents": 50000,
+      "per_request_budget_cents": 500,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-ee3698c8",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-deepai-hd-1781246092841",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "huggingface-chat",
+      "provider": "Hugging Face",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:34:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "huggingface-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-465ce1bb",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-deepai-hd-1781246092841",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "huggingface-chat",
+      "provider": "Hugging Face",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 500,
+      "rate_limit_window_start": "2026-06-12T06:34:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "huggingface-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-e7f417b2",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-deepai-hd-1781246092841",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:35:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "deepai-text2img-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-bee1906d",
+      "tenant_id": "model-benchmark-distant-relative-wedding__text-hf-qwen3-235b-a22b__image-deepai-hd-1781246092841",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "deepai-text2img-image",
+      "provider": "AI provider",
+      "capability": "image-generation",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 2000,
+      "rate_limit_window_start": "2026-06-12T06:35:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "deepai-text2img-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "generatedPanelCount": 4
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 2500,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

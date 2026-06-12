@@ -1,0 +1,40 @@
+{
+  "phase": "full",
+  "focus": "combo",
+  "storyId": "distant-relative-wedding",
+  "textCandidateId": "text-hf-deepseek-v4-flash",
+  "textAdapterId": "huggingface-chat",
+  "textModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "imageCandidateId": "image-cloudflare-flux-schnell",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/black-forest-labs/flux-1-schnell",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260612-021601/full/distant-relative-wedding__text-hf-deepseek-v4-flash__image-cloudflare-flux-schnell",
+  "startedAt": "2026-06-12T06:35:14.558Z",
+  "finishedAt": "2026-06-12T06:35:29.129Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-only",
+  "cardCopyModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "providerFailures": {
+    "text": "Expected ',' or ']' after array element in JSON at position 4330 (line 44 column 6)",
+    "image": "Cloudflare image provider returned 429."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 2,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 2
+    },
+    "missingMustInclude": [
+      "blessing",
+      "handwrite"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

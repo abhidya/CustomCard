@@ -1,0 +1,55 @@
+{
+  "sender": "Northstar Dental Supply",
+  "recipient": "Avery at BrightSmile Clinic",
+  "relationship": "customer success team to clinic operations contact",
+  "occasion": "one-year purchase anniversary and extended warranty renewal reminder",
+  "tone": "professional, warm, trust-building, useful, not pushy",
+  "style": "premium dental supply customer-success stationery, clean white, deep teal, soft metallic accent",
+  "language": "English",
+  "personal_note": "Thank Avery at BrightSmile Clinic for one year since purchase of their sterilizer system and gently remind them their extended warranty renewal window closes July 31. CTA: Scan the enclosed QR code or contact their account manager.",
+  "memory_notes": [
+    "BrightSmile Clinic purchased a sterilizer system one year ago.",
+    "The extended warranty renewal window closes July 31.",
+    "Leave a clean area for an app-rendered QR code and account-manager CTA."
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "[redacted]",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "hd",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 120,
+      "monthlyBudgetCents": 50000,
+      "perRequestBudgetCents": 500,
+      "maxRetries": 0,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

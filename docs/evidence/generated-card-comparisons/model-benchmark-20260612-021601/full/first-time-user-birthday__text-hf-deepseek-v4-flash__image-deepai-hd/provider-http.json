@@ -1,0 +1,151 @@
+[
+  {
+    "url": "https://router.huggingface.co/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "[redacted]"
+      },
+      "body": {
+        "model": "deepseek-ai/DeepSeek-V4-Flash",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short dedication.\",\n    \"inside-left body should be 120-320 characters and feel like an opening note, quote, blessing, or scene-setting message.\",\n    \"inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.\",\n    \"back body <= 160 characters and should feel quiet, polished, and optional.\",\n    \"All body text must fit a 5x7 card panel with generous margins.\"\n  ],\n  \"layout_requirements\": [\n    \"theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.\",\n    \"art_direction must name the panel's composition archetype, layout purpose, typography area, safe-margin plan, palette, border or ornament strategy, and relationship to its matching panel.\",\n    \"front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.\",\n    \"inside-left and inside-right should visually match each other and feel like the opened interior spread.\",\n    \"inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.\",\n    \"Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.\",\n    \"Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.\",\n    \"Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.\",\n    \"Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.\",\n    \"Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.\",\n    \"Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative.\"\n  ],\n  \"image_prompt_requirements\": [\n    \"image_prompt is the exact prompt the image model will receive for that panel.\",\n    \"image_prompt must describe one separate portrait 5x7 panel, not the whole four-panel set.\",\n    \"image_prompt must be a concrete visual composition, not a restatement of form fields.\",\n    \"image_prompt must not include labels such as Recipient, Relationship, Occasion, Tone, Style, Language context, Panel headline, Panel body, or Art direction.\",\n    \"Do not ask the image model to render the headline or body. The app overlays typography after generation.\",\n    \"Reserve clean text-safe space for the app overlay where the panel copy belongs.\",\n    \"Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.\",\n    \"Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.\",\n    \"image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.\",\n    \"For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.\",\n    \"For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.\",\n    \"For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.\",\n    \"Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.\",\n    \"Coordinate palette, border style, motifs, and spacing across all four image_prompt values.\",\n    \"For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text.\"\n  ],\n  \"safety_requirements\": [\n    \"Do not include people, faces, bodies, hands, customer groups, shop owners, signatures, handwriting, or portraits unless the user explicitly asks for a portrait/photo.\",\n    \"Do not describe a physical paper card, folded card, envelope, tabletop, desk scene, product photo, mockup, shadowed card, framed card, or any object photographed in a scene.\",\n    \"Do not include words, letters, glyphs, calligraphy, handwriting, labels, signatures, fake text, pseudo text, or decorative script marks.\",\n    \"image_negative_prompt is a concise comma-separated list of visual failure modes to avoid for that panel, and must include readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\",\n    \"Return JSON only, no markdown.\"\n  ],\n  \"input\": {\n    \"sender\": \"Jordan\",\n    \"recipient\": \"Maya\",\n    \"relationship\": \"friend\",\n    \"occasion\": \"birthday\",\n    \"tone\": \"warm, helpful, lightly dry humor, not romantic\",\n    \"style\": \"soft houseplant stationery, airy pastel palette, polished first-try card design\",\n    \"language\": \"English\",\n    \"personal_note\": \"Make a warm birthday card for Maya from Jordan. She likes houseplants, soft colors, and dry humor, but Jordan does not know what to write.\",\n    \"memory_notes\": [\n      \"Maya likes houseplants.\",\n      \"Maya likes soft colors.\",\n      \"The card should use light humor without inventing memories.\"\n    ]\n  }\n}"
+          }
+        ],
+        "max_tokens": 2200,
+        "temperature": 0.62
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 10325,
+      "body": {
+        "id": "Root=1-6a2ba767-129b537d39647b0d65690f75-chatcmpl-49d19d0",
+        "object": "chat.completion",
+        "created": 1781245800,
+        "model": "accounts/fireworks/models/deepseek-v4-flash",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\n  \"theme_guide\": {\n    \"theme_title\": \"Happy Birthday, Plant Friend\",\n    \"palette\": [\"soft mint\", \"blush pink\", \"lavender\", \"cream\", \"warm ivory\"],\n    \"motifs\": [\"potted houseplant with rounded leaves\", \"small leaf clusters\", \"thin delicate line borders\", \"succulent silhouette\"],\n    \"border_style\": \"thin refined line border with leaf corner accents on front/back; matching thin frame on interior panels\",\n    \"front_back_pairing\": \"front has a central hero plant; back has a single small leaf at bottom center, echoing the front\",\n    \"interior_pairing\": \"both interior panels share a border-first stationery layout with matching thin frames and leaf corner clusters, light cream background with subtle texture\"\n  },\n  \"panels\": [\n    {\n      \"id\": \"front\",\n      \"headline\": \"Happy Birthday, Maya!\",\n      \"body\": \"Hope your day is full of sunshine and good soil.\",\n      \"art_direction\": \"Composition: central hero potted houseplant with large rounded leaves, soft mint and blush tones, on cream background. Thin delicate line border with small leaf corner accents. Lower third is a clean text-safe area for headline and body. Palette: mint, blush, cream. Full-bleed flat illustration.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork for the front cover of a birthday card. A single stylized potted houseplant with large rounded leaves in soft mint and blush tones on a cream background. Thin delicate line border with small leaf corner accents. Clean lower third reserved for text-safe area. Full-bleed 2D digital illustration, flat vector style, no people, no hands, no logos, no watermark, no readable text.\",\n      \"image_negative_prompt\": \"readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo\"\n    },\n    {\n      \"id\": \"inside-left\",\n      \"headline\": \"\",\n      \"body\": \"Dear Maya, Happy birthday! I hope your day is filled with gentle sunshine, plenty of laughter, and maybe a new plant or two. You deserve all the good things.\",\n      \"art_direction\": \"Border-first stationery layout: thin refined frame in soft mint, small leaf clusters at top-left and bottom-right corners. Background is light cream with a subtle faint texture. Center is a large clean text-safe area with generous margins. No other motifs. Palette: mint, cream, blush accents on leaves. Full-bleed flat illustration.\",\n      \"image_prompt\": \"Premium 5x7 vertical flat print panel artwork for the inside-left panel of a birthday card. Border-first stationery design: a thin refined frame in soft mint, with small leaf clusters at the top-left and bottom-right corners. Background is light cream with",
+              "reasoning_content": "We need to generate a cohesive folded 5x7 greeting card JSON with four panels. The theme is birthday, friend, warm, lightly dry humor, soft houseplant stationery, airy pastel palette. No invented memories. Use only provided memory notes: Maya likes houseplants, soft colors, light humor without inventing memories. Sender Jordan, recipient Maya. Personal note says Jordan doesn't know what to write, so we need to create natural card language.\n\nTheme guide: theme_title: \"Happy Birthday, Plant Friend\" or similar. Palette: soft pastels like mint, blush, lavender, cream. Motifs: houseplants (potted plants, leaves, succulents), maybe watering can, but keep restrained. Border style: thin delicate line border with leaf corner accents. Front/back pairing: front has hero plant illustration, back has small leaf mark. Interior pairing: both have border-first stationery with light texture and edge motifs.\n\nPanel copy: front headline <=90 chars, body <=160. Inside-left body 120-320, inside-right 180-420, back body <=160. Use dry humor: e.g., \"Another year older, but at least you're still growing.\" But careful not to be too generic. Since no memories, we can use houseplant metaphors: \"Hope your birthday is as refreshing as a new leaf.\" But need to keep it warm and lightly dry.\n\nLet's draft:\n\nFront headline: \"Happy Birthday, Maya!\" (or something with plant pun) \"You're not getting older, you're just becoming a more interesting specimen.\" But that might be too long. Let's keep simple: \"Happy Birthday to my favorite plant parent.\" But Jordan is friend, not necessarily plant parent. Use \"Happy Birthday, Maya\" and body: \"Another year of growth, and you're still the best in the greenhouse.\" But need to be careful not to claim they are plant parent if not known. Use general: \"Hope your day is full of sunshine and good soil.\" That's warm, lightly humorous.\n\nInside-left: opening note. \"Dear Maya, On your birthday, I wanted to send you something that feels as fresh and cheerful as you are.\" Or \"Just a little note to say: you're pretty great, and I'm glad you were born.\" But need to incorporate houseplant theme. \"They say people are like plants – they need good light, water, and occasional pruning. You've got the first two down, and I'll help with the third if needed.\" That's dry humor. But inside-left should be scene-setting. Let's do: \"Happy birthday! I hope your day is filled with gentle sunshine, plenty of laughter, and maybe a new plant or two.\" That's warm.\n\nInside-right: main personal message plus sign-off. \"Maya, you're one of those rare people who makes the world a little greener just by being in it. Thanks for being a great friend. Keep growing, keep blooming, and remember: even succulents need a little celebration. With lots of warmth, Jordan.\" That's 180-420 chars? Count: \"Maya, you're one of those rare people who makes the world a little greener just by being in it. Thanks for being a great friend. Keep growing, keep blooming, and remember: even succulents need a little celebration. With lots of warmth, Jordan.\" That's about 200 chars. Good.\n\nBack: quiet, polished. \"Thanks for being you. – Jordan\" But need to tie to theme. \"Grow on, friend.\" Or \"Stay rooted and keep reaching.\" Use plant pun. \"Keep blooming, Maya.\" That's short.\n\nNow art direction and image prompts. Need to follow layout requirements: front/back match, interior match. Front: hero composition with a single potted plant or a few leaves, clean lower text-safe area. Use soft pastel palette, thin border. Image prompt: \"Premium 5x7 vertical flat print panel artwork for the front cover of a birthday card. A single stylized potted houseplant with large rounded leaves in soft mint and blush tones on a cream background. Thin delicate line border with small leaf corner accents. Clean lower third reserved for text-safe area. Full-bleed 2D digital illustration, flat vector style, no people, no hands, no logos, no watermark, no readable text. Composition: central plant with leaves reaching upward, text-safe area at bottom.\" Negative prompt: readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo.\n\nInside-left: border-first stationery, light ivory background, thin refined frame, quiet center for text. Motifs on edges/corners. Image prompt: \"Premium 5x7 vertical flat print panel artwork for the inside-left panel of a birthday card. Border-first stationery design: a thin refined frame in soft mint, with small leaf clusters at the top-left and bottom-right corners. Background is light cream with a subtle faint texture. Center is a large clean text-safe area with generous margins. No other motifs. Full-bleed 2D digital illustration, flat vector style, no people, no hands, no logos, no watermark, no readable text.\" Negative prompt similar.\n\nInside-right: matching interior, but maybe a slightly different corner motif or a small lower-edge plant motif. \"Premium 5x7 vertical flat print panel artwork for the inside-right panel of a birthday card. Matching border-first stationery design: thin refined frame in soft mint, with small leaf clusters at the top-right and bottom-left corners. Background is light cream with subtle faint texture. Center is a large clean text-safe area. A small potted succulent illustration sits at the lower edge, centered, as a subtle decoration. Full-bleed 2D digital illustration, flat vector style, no people, no hands, no logos, no watermark, no readable text.\"\n\nBack: mostly blank with a small coordinating mark, e.g., a single leaf or small plant. \"Premium 5x7 vertical flat print panel artwork for the back cover of a birthday card. Mostly negative space with a light cream background. A single small stylized leaf in soft mint is placed at the bottom center, echoing the front cover's plant. Thin delicate border line in matching mint. Full-bleed 2D digital illustration, flat vector style, no people, no hands, no logos, no watermark, no readable text.\"\n\nMemory citations: list the memory notes used.\n\nNow ensure copy fits character limits. Front headline: \"Happy Birthday, Maya!\" (19 chars) body: \"Hope your day is full of sunshine and good soil.\" (44 chars) fine.\n\nInside-left body: \"Happy birthday! I hope your day is filled with gentle sunshine, plenty of laughter, and maybe a new plant or two.\" (110 chars) - need 120-320, so expand a bit. \"Dear Maya, Happy birthday! I hope your day is filled with gentle sunshine, plenty of laughter, and maybe a new plant or two. You deserve all the good things.\" That's 150 chars. Good.\n\nInside-right body: \"Maya, you're one of those rare people who makes the world a little greener just by being in it. Thanks for being a great friend. Keep growing, keep blooming, and remember: even succulents need a little celebration. With lots of warmth, Jordan.\" Count: 230 chars. Good.\n\nBack body: \"Keep blooming, Maya.\" (18 chars) fine.\n\nNow write JSON. Ensure no markdown. Use double quotes. Include theme_guide with all fields.\n\nLet's construct."
+            },
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 2069,
+          "total_tokens": 4269,
+          "completion_tokens": 2200,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        }
+      }
+    },
+    "durationMs": 15581
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "5f3cd5fe-3ba8-4bfe-b97e-531b29c0825c",
+        "output_url": "https://api.deepai.org/job-view-file/5f3cd5fe-3ba8-4bfe-b97e-531b29c0825c/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/3188821e1fa64050848ccce6119d189b/full-bleed-flat-2d-artwork-layer-for-the-front-of-a-p.jpg",
+        "backend_request_id": "d7ec1a8a-f370-4d42-b05f-86e255d6f625"
+      }
+    },
+    "durationMs": 1708
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "8aa00163-5173-4c25-b4a4-d8b7ffd3f69c",
+        "output_url": "https://api.deepai.org/job-view-file/8aa00163-5173-4c25-b4a4-d8b7ffd3f69c/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/1ec87de95e674cb6b104df97cc34bb3d/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "3393c910-195f-4d24-a5a5-d0d3a5eca20f"
+      }
+    },
+    "durationMs": 1572
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "c5572f7a-dc2d-44c4-8c53-852f9875581b",
+        "output_url": "https://api.deepai.org/job-view-file/c5572f7a-dc2d-44c4-8c53-852f9875581b/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/756acb669ac4415a8ac1d895fd0406db/full-bleed-flat-2d-artwork-layer-for-a-vertical-5x7-i.jpg",
+        "backend_request_id": "5fd6f1d2-a628-4766-af75-58a7cf030120"
+      }
+    },
+    "durationMs": 1443
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "df14ca04-851c-4492-a9f4-956a4aa6de5e",
+        "output_url": "https://api.deepai.org/job-view-file/df14ca04-851c-4492-a9f4-956a4aa6de5e/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/13b6fef433174cbc908a8e40a6248da6/full-bleed-flat-2d-artwork-layer-for-a-minimal-vertic.jpg",
+        "backend_request_id": "9fb344ad-af7e-4bdc-88f2-f8aec1add4f2"
+      }
+    },
+    "durationMs": 1451
+  }
+]
