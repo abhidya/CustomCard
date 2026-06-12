@@ -517,6 +517,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
 
   return {
     mode: "postgres",
+    /** Shared pool access for the durable AI cost gate (provider_call_events). */
+    getAiFlowCostPool: getPool,
     describe() {
       const poolConfig = postgresRuntime.describe();
       return {

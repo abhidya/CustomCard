@@ -43,6 +43,7 @@ import {
   createAiCardGenerationService,
   loadLocalAiEnvFiles
 } from "./ai-card-generator.mjs";
+import { createAiFlowCostGate, createPostgresAiFlowCostStore } from "./ai-flow-cost-gate.mjs";
 
 const root = resolve("dist");
 const port = Number(process.env.PORT ?? 4173);
@@ -54,10 +55,6 @@ loadLocalAiEnvFiles();
 export const routes = apiRouteContracts;
 
 const walgreensCheckout = createWalgreensHostedCheckoutService({
-  env: process.env,
-  fetchImpl: (...args) => globalThis.fetch(...args)
-});
-const aiGenerationService = createAiCardGenerationService({
   env: process.env,
   fetchImpl: (...args) => globalThis.fetch(...args)
 });
@@ -316,6 +313,17 @@ export const readiness = {
   }
 };
 const apiRuntime = createApiRuntime({ env: process.env, routes });
+// AI budgets and rate limits enforce in Postgres when the runtime is durable,
+// so serverless instances share one ledger instead of per-process Maps.
+const aiGenerationService = createAiCardGenerationService({
+  env: process.env,
+  fetchImpl: (...args) => globalThis.fetch(...args),
+  costGate: createAiFlowCostGate({
+    store: apiRuntime.getAiFlowCostPool
+      ? createPostgresAiFlowCostStore({ getPool: apiRuntime.getAiFlowCostPool })
+      : undefined
+  })
+});
 const apiRouteFamilies = createApiRouteFamilies({
   aiCardGenerateRoute,
   aiChatRespondRoute,

@@ -75,6 +75,11 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
+  "overrides": {
+    "wrangler": {
+      "esbuild": "0.28.1"
+    }
+  },
   "devDependencies": {
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.15",
