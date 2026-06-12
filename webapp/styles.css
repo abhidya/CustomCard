@@ -808,6 +808,15 @@ a { color: inherit; }
   text-align: center;
 }
 
+.adminGalleryEmptyImage {
+  width: min(170px, 72%);
+  aspect-ratio: 1;
+  display: block;
+  border-radius: var(--radius-s);
+  object-fit: cover;
+  box-shadow: var(--shadow-card);
+}
+
 .galleryFieldGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 100px;
@@ -1937,6 +1946,15 @@ a { color: inherit; }
 }
 .printsection > p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
 
+.printHandoffFulfillmentImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+  border-radius: var(--radius);
+  object-fit: cover;
+  box-shadow: var(--shadow-card);
+}
+
 .vendorgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 560px) { .vendorgrid { grid-template-columns: 1fr; } }
 .vendor {
@@ -2208,6 +2226,15 @@ a { color: inherit; }
   display: grid;
   gap: 18px;
   padding: 18px;
+}
+
+.businessLifecycleWorkflowImage {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: block;
+  border-radius: var(--radius);
+  object-fit: cover;
+  box-shadow: var(--shadow-card);
 }
 
 .businessPipeline {
@@ -3062,6 +3089,13 @@ a { color: inherit; }
   box-shadow: var(--shadow-pop);
   transform: rotate(2.5deg);
 }
+.landingHeroCard.landingHeroProductImage {
+  width: min(360px, 100%);
+  aspect-ratio: 16 / 10;
+  display: block;
+  object-fit: cover;
+  transform: rotate(1.2deg);
+}
 .landingHeroCaption { font-size: 12.5px; color: var(--ink-faint); }
 .occasionsLead { margin: 26px 0 10px; font-size: 15px; color: var(--ink-soft); }
 
@@ -3093,7 +3127,13 @@ a { color: inherit; }
   text-align: center;
 }
 .examplecard:hover { border-color: var(--accent); }
-.examplecard img { width: 100%; border-radius: var(--radius-s); }
+.examplecard img {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  display: block;
+  border-radius: var(--radius-s);
+  object-fit: cover;
+}
 .examplecard span { font-size: 13.5px; font-weight: 600; }
 
 .finalcta {
@@ -3282,6 +3322,7 @@ a { color: inherit; }
   .landingHero { grid-template-columns: 1fr; }
   .landingHeroVisual { order: -1; }
   .landingHeroCard { width: min(190px, 70vw); }
+  .landingHeroCard.landingHeroProductImage { width: min(360px, 92vw); }
 }
 @media (max-width: 560px) {
   .carditem { flex-direction: column; align-items: flex-start; }

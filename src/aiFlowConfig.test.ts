@@ -31,7 +31,7 @@ describe("AI flow config", () => {
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("defaults card generation to Qwen copy and DeepAI HD while image live calls stay disabled", () => {
+  it("defaults card generation to Qwen copy and DeepAI text2img while image live calls stay disabled", () => {
     const configs = buildDefaultAiFlowAdminConfigs();
     const cardCopy = configs.find((config) => config.flowId === "card-copy");
     const cardImage = configs.find((config) => config.flowId === "card-image");
@@ -42,14 +42,14 @@ describe("AI flow config", () => {
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
     expect(cardImage?.primaryAdapterId).toBe("deepai-text2img-image");
-    expect(cardImage?.model).toBe("hd");
+    expect(cardImage?.model).toBe("text2img");
     expect(cardImage?.fallbackAdapterId).toBe("browser-svg-renderer");
     expect(cardImage?.rateLimitPerMinute).toBe(4);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
     expect(cardImage?.liveProviderCallsEnabled).toBe(false);
   });
 
-  it("uses the benchmark-winning Qwen plus DeepAI HD combo when those credentials exist", () => {
+  it("uses the benchmark-winning Qwen plus DeepAI text2img combo when those credentials exist", () => {
     const cardCopy = resolveAiFlowConfig("card-copy", recommendedCardGenerationEnv);
     const cardImage = resolveAiFlowConfig("card-image", {
       ...recommendedCardGenerationEnv,
@@ -61,7 +61,7 @@ describe("AI flow config", () => {
     expect(cardCopy.rateLimitPerMinute).toBe(4);
     expect(cardCopy.readyForLiveCalls).toBe(true);
     expect(cardImage.primaryAdapterId).toBe("deepai-text2img-image");
-    expect(cardImage.model).toBe("hd");
+    expect(cardImage.model).toBe("text2img");
     expect(cardImage.rateLimitPerMinute).toBe(4);
     expect(cardImage.perRequestBudgetCents).toBe(1);
     expect(cardImage.readyForLiveCalls).toBe(true);
@@ -94,7 +94,7 @@ describe("AI flow config", () => {
     expect(flow.readyForLiveCalls).toBe(true);
   });
 
-  it("allows DeepAI HD as an executable card-image override", () => {
+  it("allows DeepAI text2img as an executable card-image override", () => {
     const flow = resolveAiFlowConfig("card-image", {
       DEEPAI_API_KEY: "deepai-token",
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
@@ -103,7 +103,7 @@ describe("AI flow config", () => {
 
     expect(flow.primaryAdapterId).toBe("deepai-text2img-image");
     expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
-    expect(flow.model).toBe("hd");
+    expect(flow.model).toBe("text2img");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);

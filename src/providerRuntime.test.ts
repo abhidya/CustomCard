@@ -665,11 +665,14 @@ describe("provider runtime contracts", () => {
       url: "https://api.deepai.org/api/text2img",
       headers: expect.objectContaining({ "api-key": "{DEEPAI_API_KEY}" }),
       body: expect.objectContaining({
-        image_generator_version: "hd",
-        width: 832,
-        height: 1216,
-        negative_prompt: expect.stringContaining("folded card mockup")
+        text: expect.stringContaining("folded card mockup")
       })
+    });
+    expect(buildImageGenerationRuntime("deepai-text2img-image", imageInput, readyEnv, openGates).request?.body).not.toMatchObject({
+      image_generator_version: expect.anything(),
+      negative_prompt: expect.anything(),
+      width: expect.anything(),
+      height: expect.anything()
     });
     expect(buildImageGenerationRuntime("ideogram-image", imageInput, readyEnv, openGates).request?.headers).toMatchObject({
       "Api-Key": "{IDEOGRAM_API_KEY}"

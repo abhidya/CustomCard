@@ -839,7 +839,7 @@ describe("AI card generator service", () => {
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/jpeg;base64,"))).toBe(true);
   });
 
-  it("uses DeepAI HD image generation when configured", async () => {
+  it("uses DeepAI text2img generation with documented request fields when configured", async () => {
     const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
       if (String(url).includes("/ai/v1/chat/completions")) {
         return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
@@ -865,7 +865,7 @@ describe("AI card generator service", () => {
       fetchImpl
     });
 
-    const result = await service.generateCard(cardRequest, { rateKey: "test-deepai-hd-images" });
+    const result = await service.generateCard(cardRequest, { rateKey: "test-deepai-text2img-images" });
     const imageCalls = fetchImpl.mock.calls.slice(1) as unknown as [RequestInfo | URL, RequestInit?][];
     const imageBodies = imageCalls.map((call) => call[1]?.body as FormData);
     const payload = result.payload as {
@@ -876,10 +876,10 @@ describe("AI card generator service", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(5);
     expect(imageCalls.every((call) => String(call[0]) === "https://api.deepai.org/api/text2img")).toBe(true);
     expect(imageCalls.every((call) => (call[1]?.headers as Record<string, string>)["api-key"] === "test_deepai_token")).toBe(true);
-    expect(imageBodies.every((body) => body.get("image_generator_version") === "hd")).toBe(true);
-    expect(imageBodies.every((body) => body.get("width") === "832" && body.get("height") === "1216")).toBe(true);
+    expect(imageBodies.every((body) => Array.from(body.keys()).join(",") === "text")).toBe(true);
     expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("Full-bleed flat 2D artwork layer"))).toBe(true);
-    expect(imageBodies.every((body) => String(body.get("negative_prompt") ?? "").includes("folded card mockup"))).toBe(true);
+    expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("Avoid:"))).toBe(true);
+    expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("folded card mockup"))).toBe(true);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_deepai_token");
   });
@@ -931,6 +931,53 @@ describe("AI card generator service", () => {
     expect(imageBodies.every((body) => body.size === "1024x1536" && body.n === 1)).toBe(true);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_openai_token");
+  });
+
+  it("materializes provider-hosted image URLs into embeddable data URLs", async () => {
+    let imageIndex = 0;
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("/v1/responses")) {
+        return new Response(JSON.stringify({ output_text: JSON.stringify(cardCopyResponse) }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("/v1/images/generations")) {
+        imageIndex += 1;
+        return new Response(JSON.stringify({ data: [{ url: `https://images.example/panel-${imageIndex}.png` }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.startsWith("https://images.example/")) {
+        return new Response(new Uint8Array([1, 2, 3, imageIndex]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        });
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        OPENAI_API_KEY: "test_openai_token",
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "openai-responses-chat",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "openai-images",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-openai-hosted-images" });
+    const payload = result.payload as { images: Array<{ image_url: string }> };
+    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://images.example/"));
+
+    expect(result.statusCode).toBe(200);
+    expect(hostedFetches).toHaveLength(4);
+    expect(payload.images).toHaveLength(4);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
+    expect(payload.images.some((image) => image.image_url.includes("https://images.example/"))).toBe(false);
   });
 
   it("uses Gemini structured text output and Gemini inline image responses when configured", async () => {

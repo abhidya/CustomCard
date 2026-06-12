@@ -181,6 +181,13 @@ export function PrintView({
         <div className="printpane reveal reveal-2">
           <section className="panelcard printsection">
             <h2>Walgreens print details</h2>
+            <img
+              alt="Printed card panels and Walgreens handoff preview"
+              className="printHandoffFulfillmentImage"
+              decoding="async"
+              loading="lazy"
+              src="/generated/print-handoff-fulfillment.png"
+            />
             <div className="partnercheckout">
               <div>
                 <span>Partner</span>

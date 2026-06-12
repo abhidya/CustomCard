@@ -11,8 +11,8 @@ import {
   Store,
   WandSparkles
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { generateCardDraft, type CardDraft, type CardDraftInput } from "../../src/freeMvp";
+import { useEffect, useState } from "react";
+import type { CardDraft } from "../../src/freeMvp";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";
 
@@ -79,26 +79,24 @@ const trustPoints = [
   "Saved personal details are yours to edit or delete at any time."
 ];
 
-const exampleInputs: Array<{ label: string; input: Partial<CardDraftInput> }> = [
-  { label: "Birthday", input: { occasion: "birthday", recipient: "Maya", tone: "playful", style: "bold-type" } },
-  { label: "Graduation", input: { occasion: "graduation", recipient: "Sami", tone: "warm", style: "bold-type" } },
-  { label: "Wedding", input: { occasion: "wedding", recipient: "Lena & Tom", tone: "elegant", style: "botanical" } },
-  { label: "Thank you", input: { occasion: "thank-you", recipient: "Coach Reyes", tone: "warm", style: "minimal" } },
-  { label: "Sympathy", input: { occasion: "sympathy", recipient: "The Khans", tone: "reverent", style: "minimal" } },
-  { label: "Anniversary", input: { occasion: "anniversary", recipient: "Mom & Dad", tone: "sentimental", style: "botanical" } }
-];
-
-const exampleBaseInput: CardDraftInput = {
-  recipient: "Someone important",
-  sender: "You",
-  relationship: "Friends",
-  occasion: "card",
-  tone: "warm",
-  style: "botanical",
-  language: "English",
-  personalNote: "",
-  useMemory: false
+const cardImageByCategory: Record<string, string> = {
+  birthday: "/generated/card-birthday.png",
+  graduation: "/generated/card-graduation.png",
+  wedding: "/generated/card-wedding-anniversary.png",
+  anniversary: "/generated/card-photo-milestone.png",
+  "thank-you": "/generated/card-thank-you.png",
+  sympathy: "/generated/card-sympathy.png",
+  custom: "/generated/card-default-botanical.png"
 };
+
+const exampleCards = [
+  { label: "Birthday", category: "birthday", imageUrl: cardImageByCategory.birthday },
+  { label: "Graduation", category: "graduation", imageUrl: cardImageByCategory.graduation },
+  { label: "Wedding", category: "wedding", imageUrl: cardImageByCategory.wedding },
+  { label: "Thank you", category: "thank-you", imageUrl: cardImageByCategory["thank-you"] },
+  { label: "Sympathy", category: "sympathy", imageUrl: cardImageByCategory.sympathy },
+  { label: "Anniversary", category: "anniversary", imageUrl: cardImageByCategory.anniversary }
+];
 
 export function HomeView({
   draft,
@@ -119,14 +117,6 @@ export function HomeView({
 }) {
   // Auto-expand when an invite is already pasted (e.g. returning from a calendar redirect).
   const [importOpen, setImportOpen] = useState(() => importProps.inviteText.trim().length > 0);
-  const exampleDrafts = useMemo(
-    () =>
-      exampleInputs.map((example) => ({
-        label: example.label,
-        draft: generateCardDraft({ ...exampleBaseInput, ...example.input }, [])
-      })),
-    []
-  );
   // Admin-featured real cards replace the built-in examples when available.
   const [featuredCategories, setFeaturedCategories] = useState<FeaturedCategory[]>([]);
   useEffect(() => {
@@ -169,7 +159,12 @@ export function HomeView({
           </div>
         </div>
         <div className="landingHeroVisual" aria-label="Example 5 by 7 card preview">
-          <PanelArt className="landingHeroCard" panel={draft.panels[0]} />
+          <img
+            alt="Premium folded greeting card and envelope"
+            className="landingHeroCard landingHeroProductImage"
+            decoding="async"
+            src="/generated/landing-hero-product.png"
+          />
           <span className="landingHeroCaption">5 × 7 folded card · print-ready at 300 DPI</span>
         </div>
       </section>
@@ -252,14 +247,14 @@ export function HomeView({
           <>
             <p className="examplesLead">Every example below is a real print panel rendered by CustomCard.</p>
             <div className="examplesGrid">
-              {exampleDrafts.map((example) => (
+              {exampleCards.map((example) => (
                 <button
                   className="examplecard"
                   key={example.label}
-                  onClick={() => onOccasion(example.label.toLowerCase().replace(/\s+/g, "-"))}
+                  onClick={() => onOccasion(example.category)}
                   type="button"
                 >
-                  <PanelArt panel={example.draft.panels[0]} />
+                  <img alt={`${example.label} card example`} decoding="async" loading="lazy" src={example.imageUrl} />
                   <span>{example.label}</span>
                 </button>
               ))}
@@ -291,7 +286,7 @@ export function HomeView({
   );
 }
 
-function FeaturedCardFace({ card }: { card: FeaturedCard }) {
+function FeaturedCardFace({ card, category }: { card: FeaturedCard; category: string }) {
   if (card.frontSvg) {
     return (
       <img
@@ -300,7 +295,7 @@ function FeaturedCardFace({ card }: { card: FeaturedCard }) {
       />
     );
   }
-  const imageUrl = card.thumbnailUrl ?? card.frontImageUrl;
+  const imageUrl = card.thumbnailUrl ?? card.frontImageUrl ?? cardImageByCategory[category] ?? cardImageByCategory.custom;
   if (imageUrl) return <img alt={`${card.title} card front`} src={imageUrl} />;
   return <span aria-hidden="true" className="carditem-thumbfallback" />;
 }
@@ -336,7 +331,7 @@ function FeaturedCategoryCard({
         onClick={() => onOccasion(category.category)}
         type="button"
       >
-        <FeaturedCardFace card={card} />
+        <FeaturedCardFace card={card} category={category.category} />
         <span>{category.label}</span>
         <small>{card.caption}</small>
       </button>

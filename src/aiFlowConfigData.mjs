@@ -176,7 +176,7 @@ const defaultModelsByAdapter = {
   "anthropic-messages-chat": "claude-3-5-haiku-latest",
   "google-gemini-chat": "gemini-1.5-flash",
   "google-gemini-image": "gemini-3.1-flash-image",
-  "deepai-text2img-image": "hd",
+  "deepai-text2img-image": "text2img",
   "huggingface-chat": "Qwen/Qwen3-235B-A22B-Instruct-2507",
   "huggingface-image": "black-forest-labs/FLUX.1-schnell",
   "mistral-chat": "mistral-small-latest",

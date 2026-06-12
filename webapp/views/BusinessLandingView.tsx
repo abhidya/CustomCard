@@ -114,6 +114,12 @@ export function BusinessLandingView({
         </div>
 
         <div className="businessHeroVisual" aria-label="Lifecycle card workflow preview">
+          <img
+            alt="Lifecycle workflow and card proof preview"
+            className="businessLifecycleWorkflowImage"
+            decoding="async"
+            src="/generated/b2b-lifecycle-workflow.png"
+          />
           <div className="businessPipeline">
             <span>CRM date</span>
             <span>Review</span>

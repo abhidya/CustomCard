@@ -310,7 +310,7 @@ export function providerOpsMetricSourceForAdapter(adapterId: string): ProviderOp
       label: "DeepAI Pro dashboard",
       detail: "DeepAI API image calls draw from Pro monthly allowances or wallet balance; CustomCard reconciles panel calls, failures, and fallbacks in provider_call_events.",
       kind: "provider-dashboard",
-      usageUnit: "HD images / wallet credits / provider_call_events",
+      usageUnit: "images / wallet credits / provider_call_events",
       docsUrl: "https://deepai.org/pricing",
       providerSourced: true
     };

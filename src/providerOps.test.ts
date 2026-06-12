@@ -151,7 +151,7 @@ describe("provider ops", () => {
         kind: "provider-dashboard",
         label: "DeepAI Pro dashboard",
         providerSourced: true,
-        usageUnit: "HD images / wallet credits / provider_call_events"
+        usageUnit: "images / wallet credits / provider_call_events"
       }
     });
     expect(providerOps.usage).toMatchObject({

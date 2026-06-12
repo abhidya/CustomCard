@@ -220,7 +220,7 @@ export interface WalgreensPhotoAdapter {
 
 export function createWalgreensPhotoAdapter(config: WalgreensAdapterConfig): WalgreensPhotoAdapter {
   if (config.mode === "disabled_until_certified") {
-    throw new Error("Walgreens adapter is disabled_until_certified. Set WALGREENS_VENDOR_MODE=sandbox to enable sandbox calls.");
+    throw new Error("Walgreens adapter is disabled_until_certified. Set WALGREENS_VENDOR_MODE=production to enable Walgreens calls.");
   }
 
   const base = config.baseUrl;

@@ -546,7 +546,7 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
       const buffer = Buffer.from(await response.arrayBuffer());
       return `data:${contentType};base64,${buffer.toString("base64")}`;
     }
-    return extractImageUrl(await response.json(), contentType);
+    return materializeGeneratedImageUrl(await extractImageUrl(await response.json(), contentType), fetchImpl);
   }
 
   if (flow.primaryAdapterId === "openai-images") {
@@ -559,7 +559,7 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
         n: 1
       }
     });
-    return extractImageUrl(data, "image/png");
+    return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
   }
 
   if (flow.primaryAdapterId === "google-gemini-image") {
@@ -578,16 +578,12 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
         }
       }
     );
-    return extractImageUrl(data, "image/png");
+    return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
   }
 
   if (flow.primaryAdapterId === "deepai-text2img-image") {
     const body = new FormData();
-    body.set("text", truncate(prompt, 2048));
-    body.set("negative_prompt", truncate(negativePrompt, 500));
-    body.set("width", "832");
-    body.set("height", "1216");
-    body.set("image_generator_version", normalizeDeepAiImageVersion(flow.model));
+    body.set("text", buildDeepAiTextPrompt({ prompt, negativePrompt }));
     const response = await fetchWithProviderBackoff(
       fetchImpl,
       "https://api.deepai.org/api/text2img",
@@ -603,7 +599,7 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
     if (!response.ok) {
       throw new Error(`DeepAI image provider returned ${response.status}: ${data?.err || data?.status || "request failed"}.`);
     }
-    return extractImageUrl(data, contentType || "image/png");
+    return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl);
   }
 
   throw new Error(`Image adapter ${flow.primaryAdapterId} is configured but not executable in this runtime yet.`);
@@ -983,9 +979,14 @@ function isCloudflareFluxModel(model) {
   return String(model || "").includes("/flux-1-schnell");
 }
 
-function normalizeDeepAiImageVersion(model) {
-  const normalized = String(model || "hd").trim().toLowerCase().replace(/[-\s]+/g, "_");
-  return new Set(["standard", "hd", "genius", "super_genius"]).has(normalized) ? normalized : "hd";
+function buildDeepAiTextPrompt({ prompt, negativePrompt }) {
+  const avoid = truncate(negativePrompt, 500);
+  return truncate(
+    avoid
+      ? `${prompt}\n\nAvoid: ${avoid}.`
+      : prompt,
+    2048
+  );
 }
 
 function openAiCompatibleAdapter(adapterId, env) {
@@ -1995,6 +1996,16 @@ function extractImageUrl(data, contentType) {
   if (!image) throw new Error("AI image provider response did not contain an image.");
   if (String(image).startsWith("http") || String(image).startsWith("data:")) return String(image);
   return `data:${inferImageContentType(image, inlineImage?.mimeType || contentType)};base64,${image}`;
+}
+
+async function materializeGeneratedImageUrl(imageUrl, fetchImpl) {
+  const value = String(imageUrl);
+  if (!/^https?:\/\//i.test(value)) return value;
+  const response = await fetchImpl(value, { method: "GET" });
+  if (!response.ok) throw new Error(`Generated image URL fetch failed with ${response.status}.`);
+  const contentType = response.headers?.get?.("content-type") || "image/png";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
 }
 
 function extractInlineImage(data) {

@@ -1,14 +1,53 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { buildPanelSvg } from "../src/renderPacket";
 import type { CardPanel } from "../src/customerWorkflow";
 
 /** Render a real print panel as an image (same SVG the export produces). */
 export function PanelArt({ panel, className }: { panel: CardPanel; className?: string }) {
-  const src = useMemo(
-    () => `data:image/svg+xml;utf8,${encodeURIComponent(buildPanelSvg(panel))}`,
-    [panel]
+  const svg = useMemo(() => buildPanelSvg(panel), [panel]);
+  const inlineSrc = useMemo(() => svgDataUri(svg), [svg]);
+  const placeholderSrc = useMemo(() => panelPlaceholderDataUri(panel), [panel]);
+  const [objectSrc, setObjectSrc] = useState<string | undefined>();
+  const [fallbackSrc, setFallbackSrc] = useState<string | undefined>();
+
+  useEffect(() => {
+    setFallbackSrc(undefined);
+    if (!panel.imageUrl || !canCreateSvgObjectUrl()) {
+      setObjectSrc(undefined);
+      return undefined;
+    }
+
+    const objectUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    setObjectSrc(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [panel.imageUrl, svg]);
+
+  const src = fallbackSrc ?? objectSrc ?? (panel.imageUrl ? placeholderSrc : inlineSrc);
+
+  return (
+    <img
+      alt={`${panel.label} preview`}
+      className={className}
+      decoding="async"
+      onError={() => {
+        if (panel.imageUrl && fallbackSrc !== panel.imageUrl) setFallbackSrc(panel.imageUrl);
+      }}
+      src={src}
+    />
   );
-  return <img alt={`${panel.label} preview`} className={className} src={src} />;
+}
+
+function svgDataUri(svg: string): string {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+function panelPlaceholderDataUri(panel: CardPanel): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${panel.width}" height="${panel.height}" viewBox="0 0 ${panel.width} ${panel.height}"><rect width="100%" height="100%" fill="#f7f8fa"/></svg>`;
+  return svgDataUri(svg);
+}
+
+function canCreateSvgObjectUrl(): boolean {
+  return typeof Blob !== "undefined" && typeof URL !== "undefined" && typeof URL.createObjectURL === "function";
 }
 
 export function Chips<T extends string>({

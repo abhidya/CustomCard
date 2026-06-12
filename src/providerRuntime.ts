@@ -1061,7 +1061,7 @@ function defaultImageModel(adapterId: string): string {
     "cloudflare-workers-ai-image": "@cf/black-forest-labs/flux-1-schnell",
     "openai-images": "gpt-image-2",
     "google-gemini-image": "gemini-3.1-flash-image",
-    "deepai-text2img-image": "hd",
+    "deepai-text2img-image": "text2img",
     "huggingface-image": "black-forest-labs/FLUX.1-schnell",
     "stability-stable-image": "stable-image-core",
     "together-image": "black-forest-labs/FLUX.1-schnell-Free",
@@ -1625,11 +1625,7 @@ function buildSinglePanelImageRequest(
 
   if (adapter.id === "deepai-text2img-image") {
     return request(adapter, "POST", "https://api.deepai.org/api/text2img", ["DEEPAI_API_KEY"], {
-      text: prompt,
-      image_generator_version: model || "hd",
-      width: 832,
-      height: 1216,
-      negative_prompt: "readable text, fake text, logos, watermark, folded card mockup, tabletop scene",
+      text: `${prompt}\n\nAvoid: readable text, fake text, logos, watermark, folded card mockup, tabletop scene.`,
       metadata
     }, [], {
       "api-key": "{DEEPAI_API_KEY}"

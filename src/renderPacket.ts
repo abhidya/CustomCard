@@ -11,7 +11,7 @@ export function buildPanelSvg(panel: CardPanel): string {
   const x = panel.rtl ? 1240 : 260;
 
   const decorativeLayer = panel.imageUrl
-    ? `  <image href="${escapeXml(panel.imageUrl)}" x="120" y="120" width="1260" height="1860" preserveAspectRatio="xMidYMid slice"/>`
+    ? buildArtworkLayer(panel.imageUrl)
     : `  <circle cx="1210" cy="330" r="96" fill="${accent}" opacity="0.15"/>
   <path d="M210 1710 C480 1580, 720 1890, 1260 1670" fill="none" stroke="${accent}" stroke-width="18" opacity="0.22"/>`;
   const textFill = panel.imageUrl ? "#ffffff" : "#1d2429";
@@ -61,4 +61,54 @@ function escapeXml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function buildArtworkLayer(imageUrl: string): string {
+  const inlineSvg = deterministicArtworkSvg(imageUrl);
+  if (inlineSvg) {
+    return `  <svg x="120" y="120" width="1260" height="1860" viewBox="0 0 1500 2100" preserveAspectRatio="xMidYMid slice">
+${inlineSvg}
+  </svg>`;
+  }
+  return `  <image href="${escapeXml(imageUrl)}" x="120" y="120" width="1260" height="1860" preserveAspectRatio="xMidYMid slice"/>`;
+}
+
+function deterministicArtworkSvg(imageUrl: string): string | undefined {
+  const svg = decodeSvgDataUrl(imageUrl);
+  if (!svg?.includes("data-customcard-theme=")) return undefined;
+  return svg
+    .replace(/^\uFEFF/, "")
+    .replace(/^<\?xml[^>]*>\s*/i, "")
+    .trim()
+    .replace(/^<svg\b[^>]*>/i, "")
+    .replace(/<\/svg>\s*$/i, "")
+    .trim()
+    .split("\n")
+    .map((line) => `    ${line}`)
+    .join("\n");
+}
+
+function decodeSvgDataUrl(imageUrl: string): string | undefined {
+  const separatorIndex = imageUrl.indexOf(",");
+  if (separatorIndex < 0) return undefined;
+  const header = imageUrl.slice(0, separatorIndex);
+  if (!/^data:image\/svg\+xml/i.test(header)) return undefined;
+  const payload = imageUrl.slice(separatorIndex + 1);
+  if (/;base64/i.test(header)) return decodeBase64Utf8(payload);
+  try {
+    return decodeURIComponent(payload);
+  } catch {
+    return undefined;
+  }
+}
+
+function decodeBase64Utf8(value: string): string | undefined {
+  if (typeof atob !== "function") return undefined;
+  try {
+    const binary = atob(value);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return undefined;
+  }
 }

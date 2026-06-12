@@ -376,6 +376,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("Queued");
       expect(html).toContain('data-status="artwork-ready"');
       expect(html).toContain('data-status="artwork-loading"');
+      expect(html).not.toContain("data:image/png;base64,AAAA");
     });
 
     it("renders print options with downloads and the outside-checkout boundary", () => {

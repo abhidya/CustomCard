@@ -36,3 +36,25 @@
 - Parse result: `grep -iE 'Test Files|Tests |passed|failed|vuln' /tmp/check.log`
 
 <!-- headroom:learn:end -->
+
+## Manual Ops Notes
+
+### Updating Vercel environment variables
+
+- Use `vercel env ls` first to confirm the project is linked and the target env exists.
+- For existing encrypted/sensitive variables, replace them with an explicit remove + add. Do not rely on `vercel env add --force`; it may not update an existing encrypted value even when it exits successfully.
+- Do not echo secrets in terminal output. Pipe values through stdin:
+
+```bash
+vercel env rm WALGREENS_VENDOR_MODE production --yes
+printf "%s" "$WALGREENS_VENDOR_MODE" | vercel env add WALGREENS_VENDOR_MODE production --yes --sensitive
+```
+
+- Repeat for each key and environment (`production`, `preview`, or `development`) intentionally. For production Walgreens hosted checkout, keep `PUBLIC_APP_ORIGIN=https://customcard-three.vercel.app`.
+- Verify replacement with metadata, not secret values:
+
+```bash
+vercel env ls | rg "WALGREENS_|PUBLIC_APP_ORIGIN"
+```
+
+- `vercel env pull --environment=production` may omit encrypted production values, so do not treat a missing pulled value as proof that the remote variable is absent.

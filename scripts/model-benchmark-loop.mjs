@@ -204,10 +204,10 @@ const imageCandidates = [
     requiredEnv: ["CLOUDFLARE_ACCOUNT_ID", ["CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN", "CLOUDFLARE_API_TOKEN"]]
   },
   {
-    id: "image-deepai-hd",
-    label: "DeepAI HD",
+    id: "image-deepai-text2img",
+    label: "DeepAI text2img",
     adapterId: "deepai-text2img-image",
-    model: "hd",
+    model: "text2img",
     requiredEnv: ["DEEPAI_API_KEY"]
   },
   {
@@ -375,7 +375,7 @@ function smokeRuns(candidates) {
 
 function fullRuns(candidates) {
   const textIds = new Set(["text-cloudflare-baseline", "text-hf-qwen3-235b-a22b", "text-hf-deepseek-v4-flash"]);
-  const imageIds = new Set(["image-deepai-hd", "image-cloudflare-flux-schnell"]);
+  const imageIds = new Set(["image-deepai-text2img", "image-cloudflare-flux-schnell"]);
   const texts = candidates.text.filter((candidate) => candidate.configured && textIds.has(candidate.id));
   const images = candidates.image.filter((candidate) => candidate.configured && imageIds.has(candidate.id));
   return Object.values(stories).flatMap((story) =>
