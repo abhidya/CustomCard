@@ -40,12 +40,13 @@ vi.mock("@clerk/react", () => ({
  */
 
 interface ShellWindowOptions {
+  admin?: boolean;
   search?: string;
   signedIn?: boolean;
   storedWorkspace?: unknown;
 }
 
-function stubShellGlobals({ search = "", signedIn = true }: ShellWindowOptions = {}) {
+function stubShellGlobals({ admin = false, search = "", signedIn = true }: ShellWindowOptions = {}) {
   clerkState.isLoaded = true;
   clerkState.isSignedIn = signedIn;
   clerkState.user = signedIn
@@ -56,7 +57,7 @@ function stubShellGlobals({ search = "", signedIn = true }: ShellWindowOptions =
         primaryEmailAddress: { emailAddress: "maya@example.com" },
         primaryPhoneNumber: null,
         phoneNumbers: [],
-        publicMetadata: {}
+        publicMetadata: admin ? { role: "admin" } : {}
       }
     : null as never;
   const href = `http://127.0.0.1/${search}`;
@@ -252,7 +253,7 @@ describe("customer shell server render", () => {
       }
     });
 
-    it("renders the business landing page only by direct route", () => {
+    it("renders the business landing page by direct route and exposes it in admin nav", () => {
       const { html, text } = renderShell({ search: "?view=business" });
 
       expect(text).toContain("For customer lifecycle teams");
@@ -262,6 +263,10 @@ describe("customer shell server render", () => {
       expect(text).toContain("Human approval required");
       expect(text).not.toContain("Never miss the card-worthy moment.");
       expect(html).not.toContain(">Business<");
+      expect(html).not.toContain("navlink-admin");
+
+      const admin = renderShell({ admin: true, search: "?view=business" });
+      expect(admin.html).toContain('class="navlink navlink-admin" data-active="true" type="button">B2B</button>');
     });
 
     it("renders the events view with import box and calendar sources", () => {

@@ -76,7 +76,7 @@ describe("frontend architecture seams", () => {
     expect(resolveVisibleCustomerView("business")).toBe("customer");
     expect(resolveVisibleCustomerView("opportunities")).toBe("opportunities");
 
-    expect(resolveActiveCustomerNavView("business")).toBe("customer");
+    expect(resolveActiveCustomerNavView("business")).toBe("business");
     expect(resolveActiveCustomerNavView("legal")).toBe("customer");
     expect(resolveActiveCustomerNavView("studio")).toBe("customer");
     expect(resolveActiveCustomerNavView("handoff")).toBe("customer");
@@ -87,7 +87,7 @@ describe("frontend architecture seams", () => {
     expect(resolveVisibleCustomerView("settings")).toBe("settings");
     expect(resolveVisibleCustomerView("people")).toBe("people");
     expect(customerNavItems.map((item) => item.label)).toEqual(["Create", "My cards", "People", "Settings"]);
-    expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "Adapters", "Legal"]);
+    expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "B2B", "Adapters", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
     expect(shouldShowCustomerCta("studio")).toBe(true);

@@ -20,6 +20,7 @@ export const customerNavItems: NavItem[] = [
 
 export const adminNavItems: NavItem[] = [
   { id: "admin", label: "Admin" },
+  { id: "business", label: "B2B" },
   { id: "adapters", label: "Adapters" },
   { id: "legal", label: "Legal" }
 ];
@@ -37,7 +38,8 @@ export function resolveVisibleCustomerView(view: ViewId): ViewId {
 }
 
 export function resolveActiveCustomerNavView(view: ViewId): ViewId {
-  if (isAdminRoute(view) || view === "mobile" || isBusinessRoute(view)) return "customer";
+  if (isAdminRoute(view) || view === "mobile") return "customer";
+  if (isBusinessRoute(view)) return view;
   // Studio, print, and invite import are stages of the create flow — highlight "Create".
   if (view === "studio" || view === "handoff" || view === "opportunities") return "customer";
   return view;
