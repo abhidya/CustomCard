@@ -106,7 +106,7 @@ describe("frontend architecture seams", () => {
     expect(adminNavItems.map((item) => item.label)).toEqual(["Admin", "B2B", "Adapters", "Legal"]);
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
-    expect(shouldShowCustomerCta("studio")).toBe(true);
+    expect(shouldShowCustomerCta("studio")).toBe(false);
     expect(shouldShowCustomerCta("handoff")).toBe(true);
     expect(shouldShowCustomerCta("settings")).toBe(false);
     expect(shouldShowCustomerCta("legal")).toBe(false);

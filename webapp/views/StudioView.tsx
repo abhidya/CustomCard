@@ -1,5 +1,5 @@
 import { SignInButton } from "@clerk/react";
-import { CalendarDays, HeartHandshake, RefreshCw, Undo2 } from "lucide-react";
+import { ArrowRight, CalendarDays, HeartHandshake, RefreshCw, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type {
   CardDraft,
@@ -144,6 +144,7 @@ export function StudioView({
   onField,
   onGenerateAi,
   onKeepArtwork,
+  onReviewProof,
   onPanelEdit = () => undefined,
   onPanelRevert = () => undefined
 }: {
@@ -164,16 +165,19 @@ export function StudioView({
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
   onGenerateAi: (panelId?: CardPanel["id"]) => void;
   onKeepArtwork: () => void;
+  onReviewProof: () => void;
   onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
   onPanelRevert: (panelId: CardPanel["id"]) => void;
 }) {
   const [activePanel, setActivePanel] = useState<CardPanel["id"]>("front");
   const [previewMode, setPreviewMode] = useState<"proof" | "folded">("proof");
+  const [templateReviewStarted, setTemplateReviewStarted] = useState(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
   const approvedForRecipient = memories.filter((memory) => memory.approved).length;
   const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
   const totalPanels = draft.panels.length;
+  const setupRecipient = displayDraftValue(draftInput.recipient);
   const activePanelStatus = aiPanelProgress[panel.id];
   const sensitive = isSensitiveOccasion(draftInput.occasion);
   const tones = sensitive ? allTones.filter((tone) => tone !== "funny") : allTones;
@@ -209,6 +213,7 @@ export function StudioView({
     }
   ];
   const minContextReady = contextChecklist.every((item) => item.done);
+  const proofWorkspaceVisible = aiActive || aiLoading || templateReviewStarted;
   const aiNote = aiRequiresSignIn
     ? "AI drafting needs sign-in so your draft can be generated and saved. You can still make, edit, preview, and save a print package without AI."
     : aiStatus
@@ -237,11 +242,20 @@ export function StudioView({
     tabRefs.current[nextIndex]?.focus();
   }
 
+  function startAiGeneration(panelId?: CardPanel["id"]) {
+    setTemplateReviewStarted(false);
+    onGenerateAi(panelId);
+  }
+
+  function startTemplateReview() {
+    setTemplateReviewStarted(true);
+  }
+
   return (
     <>
       <header className="pagehead reveal">
         <h1>Your card, their story</h1>
-        <p>Everything updates live — what you see here is exactly what prints.</p>
+        <p>Add the details first, then draft the card and review the exact proof before printing.</p>
       </header>
 
       {sourceMoment ? (
@@ -266,69 +280,81 @@ export function StudioView({
 
       <div className="studio">
         <div className="stage reveal reveal-1">
-          <div className="previewmodes" role="group" aria-label="Preview mode">
-            <button className="previewmode" data-on={previewMode === "proof"} onClick={() => setPreviewMode("proof")} type="button">
-              Proof view
-            </button>
-            <button className="previewmode" data-on={previewMode === "folded"} onClick={() => setPreviewMode("folded")} type="button">
-              Folded preview
-            </button>
-          </div>
-
-          {previewMode === "folded" ? (
-            <FoldedCardPreview panels={draft.panels} />
-          ) : (
+          {proofWorkspaceVisible ? (
             <>
-              <div className="stage-frame" data-panel-status={activePanelStatus ?? "idle"}>
-                <PanelArt className="stage-card" panel={panel} />
-                <span className="stage-panel-badge">{panelArtworkLabel(panel, aiStale, activePanelStatus)}</span>
+              <div className="previewmodes" role="group" aria-label="Preview mode">
+                <button className="previewmode" data-on={previewMode === "proof"} onClick={() => setPreviewMode("proof")} type="button">
+                  Proof view
+                </button>
+                <button className="previewmode" data-on={previewMode === "folded"} onClick={() => setPreviewMode("folded")} type="button">
+                  Folded preview
+                </button>
               </div>
-              <div className="stage-ai-state" data-state={aiState}>
-                <span>{aiLoading ? "Building AI card" : aiActive ? "Ready to review" : "AI card generator"}</span>
-                <strong>{stagePanelSummary}</strong>
-              </div>
-              <div aria-label="Card panels" className="pagetabs" role="tablist">
-                {draft.panels.map((candidate, index) => {
-                  const candidateStatus = aiPanelProgress[candidate.id];
-                  return (
-                    <button
-                      aria-controls="panel-editor"
-                      aria-selected={candidate.id === activePanel}
-                      className="pagetab"
-                      data-on={candidate.id === activePanel}
-                      data-status={candidateStatus ?? "idle"}
-                      id={`panel-tab-${candidate.id}`}
-                      key={candidate.id}
-                      onClick={() => setActivePanel(candidate.id)}
-                      onKeyDown={(event) => handleTabKeys(event, index)}
-                      ref={(node) => {
-                        tabRefs.current[index] = node;
-                      }}
-                      role="tab"
-                      tabIndex={candidate.id === activePanel ? 0 : -1}
-                      type="button"
-                    >
-                      <PanelArt panel={candidate} />
-                      <span>{candidate.label}</span>
-                      <small data-warn={candidate.overflowRisk || undefined}>
-                        {candidate.overflowRisk ? "Too much text" : panelArtworkLabel(candidate, aiStale, candidateStatus)}
-                      </small>
-                    </button>
-                  );
-                })}
-              </div>
-              <PanelEditor
-                aiActive={aiActive}
-                aiLoading={aiLoading}
-                edited={hasPanelOverride(panelOverrides, panel.id)}
-                onPanelEdit={onPanelEdit}
-                onPanelGenerate={onGenerateAi}
-                onPanelRevert={onPanelRevert}
-                panel={panel}
-                panelStatus={activePanelStatus}
-                sensitive={sensitive}
-              />
+
+              {previewMode === "folded" ? (
+                <FoldedCardPreview panels={draft.panels} />
+              ) : (
+                <>
+                  <div className="stage-frame" data-panel-status={activePanelStatus ?? "idle"}>
+                    <PanelArt className="stage-card" panel={panel} />
+                    <span className="stage-panel-badge">{panelArtworkLabel(panel, aiStale, activePanelStatus)}</span>
+                  </div>
+                  <div className="stage-ai-state" data-state={aiState}>
+                    <span>{aiLoading ? "Building AI card" : aiActive ? "Ready to review" : "Template proof"}</span>
+                    <strong>{stagePanelSummary}</strong>
+                  </div>
+                  <div aria-label="Card panels" className="pagetabs" role="tablist">
+                    {draft.panels.map((candidate, index) => {
+                      const candidateStatus = aiPanelProgress[candidate.id];
+                      return (
+                        <button
+                          aria-controls="panel-editor"
+                          aria-selected={candidate.id === activePanel}
+                          className="pagetab"
+                          data-on={candidate.id === activePanel}
+                          data-status={candidateStatus ?? "idle"}
+                          id={`panel-tab-${candidate.id}`}
+                          key={candidate.id}
+                          onClick={() => setActivePanel(candidate.id)}
+                          onKeyDown={(event) => handleTabKeys(event, index)}
+                          ref={(node) => {
+                            tabRefs.current[index] = node;
+                          }}
+                          role="tab"
+                          tabIndex={candidate.id === activePanel ? 0 : -1}
+                          type="button"
+                        >
+                          <PanelArt panel={candidate} />
+                          <span>{candidate.label}</span>
+                          <small data-warn={candidate.overflowRisk || undefined}>
+                            {candidate.overflowRisk ? "Too much text" : panelArtworkLabel(candidate, aiStale, candidateStatus)}
+                          </small>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <PanelEditor
+                    aiActive={aiActive}
+                    aiLoading={aiLoading}
+                    edited={hasPanelOverride(panelOverrides, panel.id)}
+                    onPanelEdit={onPanelEdit}
+                    onPanelGenerate={startAiGeneration}
+                    onPanelRevert={onPanelRevert}
+                    panel={panel}
+                    panelStatus={activePanelStatus}
+                    sensitive={sensitive}
+                  />
+                </>
+              )}
             </>
+          ) : (
+            <section className="setupPreview" aria-label="Card setup preview">
+              <img alt="Folded greeting card and envelope" decoding="async" src="/generated/landing-hero-product.webp" />
+              <div>
+                <strong>{setupRecipient ? `Set up the card for ${setupRecipient}` : "Set up the card first"}</strong>
+                <span>Once the details are in, draft with AI or review the printable template across four print panels.</span>
+              </div>
+            </section>
           )}
           <div className="stage-caption">
             <span>5 × 7 in folded card</span>
@@ -337,83 +363,6 @@ export function StudioView({
         </div>
 
         <div className="steps reveal reveal-2">
-          {aiStale && !aiLoading ? (
-            <section className="stalebanner" aria-label="Artwork out of date">
-              <strong>You changed the message after AI artwork was generated.</strong>
-              <div className="stalebanner-actions">
-                <button className="btn btn-ghost btn-sm" onClick={onKeepArtwork} type="button">
-                  Keep current artwork
-                </button>
-                <button className="btn btn-ink btn-sm" onClick={() => onGenerateAi()} type="button">
-                  <RefreshCw size={14} />
-                  Regenerate affected panels
-                </button>
-              </div>
-            </section>
-          ) : null}
-
-          {aiRequiresSignIn ? (
-            <section className="aiLaunch accountgate" data-state={aiState} aria-label="Account needed for AI generation">
-              <div className="aiLaunchText">
-                <strong>Create a free account to generate your card</strong>
-                <span>
-                  AI drafting needs sign-in so your draft can be generated and saved. You can still make, edit,
-                  preview, and save a print package without AI. Your draft stays right here while you sign in.
-                </span>
-                <small className="accountgate-privacy">
-                  Signing in does not connect your email or calendar. You choose that separately.
-                </small>
-              </div>
-              <SignInButton mode="modal">
-                <button aria-label="Sign in to generate AI card" className="aibutton" type="button">
-                  <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
-                  Sign in
-                </button>
-              </SignInButton>
-            </section>
-          ) : aiAvailable ? (
-            <section className="aiLaunch" data-state={aiState} aria-label="AI card drafting">
-              <div className="aiLaunchText">
-                <strong>{aiLoading ? "Building your AI card" : aiActive ? "Ready to review" : "Draft your card with AI"}</strong>
-                <span aria-live="polite">{aiNote}</span>
-                {!aiActive && !aiLoading ? (
-                  <ul aria-label="Details that shape the draft" className="aiContextChecklist">
-                    {contextChecklist.map((item) => (
-                      <li data-done={item.done} key={item.label}>
-                        {item.label}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-              <button
-                className="aibutton"
-                disabled={aiLoading || !minContextReady}
-                onClick={() => onGenerateAi()}
-                type="button"
-              >
-                <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
-                {aiLoading
-                  ? "Drafting card..."
-                  : !minContextReady
-                    ? "Add one detail to draft a better card"
-                    : aiActive
-                      ? "Improve whole card"
-                      : "Draft my card"}
-              </button>
-            </section>
-          ) : null}
-
-          {stages.length > 0 ? (
-            <ol className="genstages" aria-label="Generation progress">
-              {stages.map((stage) => (
-                <li className="genstage" data-state={stage.state} key={stage.label}>
-                  {stage.label}
-                </li>
-              ))}
-            </ol>
-          ) : null}
-
           <Step
             defaultOpen
             meta={displayDraftValue(draftInput.recipient) ? `To ${draftInput.recipient}` : "Add names"}
@@ -528,6 +477,149 @@ export function StudioView({
               Add or edit saved notes
             </button>
           </Step>
+
+          {aiStale && !aiLoading ? (
+            <section className="stalebanner" aria-label="Artwork out of date">
+              <strong>You changed the message after AI artwork was generated.</strong>
+              <div className="stalebanner-actions">
+                <button className="btn btn-ghost btn-sm" onClick={onKeepArtwork} type="button">
+                  Keep current artwork
+                </button>
+                <button className="btn btn-ink btn-sm" onClick={() => startAiGeneration()} type="button">
+                  <RefreshCw size={14} />
+                  Regenerate affected panels
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          {aiRequiresSignIn ? (
+            <section className="aiLaunch accountgate" data-state={aiState} aria-label="Account needed for AI generation">
+              <div className="aiLaunchText">
+                <strong>Create a free account to generate your card</strong>
+                <span>
+                  AI drafting needs sign-in so your draft can be generated and saved. You can still review the printable
+                  template without AI.
+                </span>
+                <small className="accountgate-privacy">
+                  Signing in does not connect your email or calendar. You choose that separately.
+                </small>
+              </div>
+              <div className="aiLaunchActions">
+                {templateReviewStarted ? (
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={!printFitPassed}
+                    onClick={onReviewProof}
+                    type="button"
+                  >
+                    Continue to proof checks
+                    <ArrowRight size={14} />
+                  </button>
+                ) : null}
+                <SignInButton mode="modal">
+                  <button aria-label="Sign in to generate AI card" className="aibutton" type="button">
+                    <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
+                    Sign in
+                  </button>
+                </SignInButton>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  disabled={!minContextReady}
+                  onClick={startTemplateReview}
+                  type="button"
+                >
+                  {minContextReady ? "Review template instead" : "Add details before proof"}
+                </button>
+                {templateReviewStarted && !printFitPassed ? (
+                  <small className="proofblocked">Shorten panels marked too long before proof checks.</small>
+                ) : null}
+              </div>
+            </section>
+          ) : aiAvailable ? (
+            <section className="aiLaunch" data-state={aiState} aria-label="AI card drafting">
+              <div className="aiLaunchText">
+                <strong>
+                  {aiLoading
+                    ? "Building your AI card"
+                    : aiActive
+                      ? "Card drafted. Review it before checkout."
+                      : templateReviewStarted
+                        ? "Template proof is ready to review"
+                        : "Draft your card with AI"}
+                </strong>
+                <span aria-live="polite">
+                  {aiLoading
+                    ? aiNote
+                    : aiActive
+                    ? "Review the copy, artwork, and print fit before continuing."
+                    : templateReviewStarted
+                      ? "The template is printable, but AI can still improve the copy and artwork from these details."
+                      : aiNote}
+                </span>
+                {!aiActive && !aiLoading ? (
+                  <ul aria-label="Details that shape the draft" className="aiContextChecklist">
+                    {contextChecklist.map((item) => (
+                      <li data-done={item.done} key={item.label}>
+                        {item.label}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+              <div className="aiLaunchActions">
+                {aiActive || templateReviewStarted ? (
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={!printFitPassed}
+                    onClick={onReviewProof}
+                    type="button"
+                  >
+                    Continue to proof checks
+                    <ArrowRight size={14} />
+                  </button>
+                ) : null}
+                <button
+                  className="aibutton"
+                  disabled={aiLoading || !minContextReady}
+                  onClick={() => startAiGeneration()}
+                  type="button"
+                >
+                  <img alt="" aria-hidden="true" className="aibutton-logo" src={aiButtonLogoSrc} />
+                  {aiLoading
+                    ? "Drafting card..."
+                    : !minContextReady
+                      ? "Add one detail to draft"
+                      : aiActive
+                        ? "Improve whole card"
+                        : "Draft my card"}
+                </button>
+                {!aiActive && !templateReviewStarted ? (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    disabled={!minContextReady}
+                    onClick={startTemplateReview}
+                    type="button"
+                  >
+                    Review template instead
+                  </button>
+                ) : null}
+                {(aiActive || templateReviewStarted) && !printFitPassed ? (
+                  <small className="proofblocked">Shorten panels marked too long before proof checks.</small>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {stages.length > 0 ? (
+            <ol className="genstages" aria-label="Generation progress">
+              {stages.map((stage) => (
+                <li className="genstage" data-state={stage.state} key={stage.label}>
+                  {stage.label}
+                </li>
+              ))}
+            </ol>
+          ) : null}
         </div>
       </div>
     </>

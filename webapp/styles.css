@@ -1498,7 +1498,7 @@ a { color: inherit; }
 }
 
 /* ---------- Studio ---------- */
-.studio { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 34px; align-items: start; min-width: 0; }
+.studio { display: grid; grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr); gap: 34px; align-items: start; min-width: 0; }
 @media (max-width: 980px) {
   .studio { grid-template-columns: 1fr; }
   .steps { order: -1; }
@@ -1506,6 +1506,12 @@ a { color: inherit; }
 }
 
 .stage { position: sticky; top: 24px; min-width: 0; }
+.steps { order: 1; }
+.stage { order: 2; }
+@media (max-width: 980px) {
+  .steps { order: -1; }
+  .stage { position: static; }
+}
 .stage-frame {
   position: relative;
   overflow: hidden;
@@ -1596,6 +1602,37 @@ a { color: inherit; }
 .stage-ai-state[data-state="loading"] {
   border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
   background: var(--accent-soft);
+}
+.setupPreview {
+  min-height: 420px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 34px clamp(18px, 4vw, 50px);
+  border: 1px dashed color-mix(in srgb, var(--line) 82%, var(--ink-faint));
+  border-radius: var(--radius-l);
+  background: linear-gradient(180deg, var(--surface), var(--surface-alt));
+  text-align: center;
+}
+.setupPreview img {
+  width: min(340px, 90%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+.setupPreview div {
+  display: grid;
+  gap: 4px;
+  max-width: 340px;
+}
+.setupPreview strong {
+  color: var(--ink);
+  font-size: 16px;
+}
+.setupPreview span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.45;
 }
 .sourceMomentBanner {
   max-width: 720px;
@@ -1721,6 +1758,24 @@ a { color: inherit; }
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
+.aiLaunchActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: min(260px, 100%);
+}
+.aiLaunchActions .btn,
+.aiLaunchActions .aibutton {
+  justify-content: center;
+}
+.proofblocked {
+  flex: 1 1 100%;
+  color: var(--warn, #a4581f);
+  font-size: 12px;
+  font-weight: 650;
+  text-align: right;
+}
 .step {
   min-width: 0;
   background: var(--surface); border: 1px solid var(--line);
@@ -1820,6 +1875,10 @@ a { color: inherit; }
   .stage-frame {
     padding: 28px 12px;
   }
+  .setupPreview {
+    min-height: 320px;
+    padding: 26px 14px;
+  }
   .stage-card {
     width: min(320px, 92%);
   }
@@ -1837,10 +1896,20 @@ a { color: inherit; }
     align-items: stretch;
     flex-direction: column;
   }
+  .aiLaunchActions {
+    min-width: 0;
+    justify-content: stretch;
+  }
   .aiLaunch .aibutton {
     justify-content: center;
     width: 100%;
     white-space: normal;
+  }
+  .aiLaunchActions .btn {
+    width: 100%;
+  }
+  .proofblocked {
+    text-align: left;
   }
 }
 

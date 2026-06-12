@@ -46,7 +46,7 @@ export function resolveActiveCustomerNavView(view: ViewId): ViewId {
 }
 
 export function shouldShowCustomerCta(view: ViewId): boolean {
-  return view === "studio" || view === "handoff";
+  return view === "handoff";
 }
 
 export function shouldRenderCustomerNav(viewportWidth: number | undefined): boolean {

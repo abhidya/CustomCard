@@ -143,12 +143,19 @@ describeWithChrome("CustomCard UI smoke", () => {
         setValue(recipient, "Sara and Ahmed");
         setValue(sender, "Abdul");
         await raf();
+        const preDraftDock = !!document.querySelector(".ctadock");
+        const preDraftProofCta = [...document.querySelectorAll("button, a")].some((node) =>
+          node.textContent?.includes("Continue to proof checks")
+        );
+        await clickByText("Review template instead");
         const panelCount = document.querySelectorAll(".pagetab img").length;
         await clickByText("Continue to proof checks");
 
         return {
           homeText,
           studioHeading,
+          preDraftDock,
+          preDraftProofCta,
           panelCount,
           printHeading: document.querySelector("h1")?.textContent,
           printText: document.body.textContent,
@@ -167,6 +174,8 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.homeText).not.toContain("Admin panel");
     expect(result.homeText).not.toContain("Adapter readiness");
     expect(result.studioHeading).toBe("Your card, their story");
+    expect(result.preDraftDock).toBe(false);
+    expect(result.preDraftProofCta).toBe(false);
     expect(result.panelCount).toBe(4);
     expect(result.printHeading).toBe("Print at Walgreens");
     expect(result.printText).toContain("Walgreens print details");

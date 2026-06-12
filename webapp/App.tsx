@@ -1,4 +1,4 @@
-import { ArrowRight, Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
+import { Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
 import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
@@ -374,42 +374,16 @@ export default function App() {
   /* ---------- live CTA ---------- */
   const estimate = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
   const priceLabel = estimate?.effectiveSubtotalLabel;
-  const designing = visibleCustomerView === "studio";
   const printing = visibleCustomerView === "handoff";
-  const ctaRecipient = draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient;
 
-  const cta = printing
-    ? {
-        label: "Save print package",
-        icon: <Download size={16} />,
-        disabled: !printPackage.manifest.passed,
-        meta: priceLabel ? `est. ${priceLabel} at Walgreens` : "Walgreens confirms price at checkout",
-        metaTitle: validation.passed ? "Your card is print-ready" : "Almost ready",
-        onClick: downloadPrintPackage
-      }
-    : designing
-      ? {
-          label: "Continue to proof checks",
-          icon: <ArrowRight size={16} />,
-          disabled: false,
-          meta: validation.passed
-            ? priceLabel
-              ? `For ${ctaRecipient} · est. ${priceLabel} at Walgreens`
-              : `For ${ctaRecipient} · review 4 panels`
-            : "Proof checks will show what needs attention",
-          metaTitle: validation.passed ? "Ready for proof checks" : "Text fit needs review",
-          onClick: () => openView("handoff")
-        }
-      : {
-          label: "Design your card",
-          icon: <ArrowRight size={16} />,
-          disabled: false,
-          meta: `${draftInput.occasion === "card" ? "Any occasion" : draftInput.occasion} · to ${
-            draftInput.recipient === "Someone important" ? "someone special" : draftInput.recipient
-          }`,
-          metaTitle: "Card in progress",
-          onClick: () => openView("studio")
-        };
+  const cta = {
+    label: "Save print package",
+    icon: <Download size={16} />,
+    disabled: !printPackage.manifest.passed,
+    meta: priceLabel ? `est. ${priceLabel} at Walgreens` : "Walgreens confirms price at checkout",
+    metaTitle: validation.passed ? "Your card is print-ready" : "Almost ready",
+    onClick: downloadPrintPackage
+  };
 
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
@@ -594,6 +568,7 @@ export default function App() {
             onField={updateDraft}
             onGenerateAi={triggerAiCardGen}
             onKeepArtwork={keepAiArtwork}
+            onReviewProof={() => openView("handoff")}
             onPanelEdit={updatePanelOverride}
             onPanelRevert={revertPanelOverride}
             panelOverrides={panelOverrides}
@@ -665,8 +640,8 @@ export default function App() {
 
       {shouldShowCustomerCta(activeView) ? <div className="ctadock">
         <span className="ctadock-progress" aria-hidden="true">
-          <i data-done={true} data-now={!designing && !printing} />
-          <i data-done={designing || printing} data-now={designing} />
+          <i data-done={true} />
+          <i data-done={printing} />
           <i data-done={printing && printPackage.manifest.passed} data-now={printing} />
         </span>
         <span className="ctadock-meta">

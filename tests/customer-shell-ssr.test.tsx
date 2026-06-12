@@ -180,7 +180,8 @@ describe("customer shell server render", () => {
     expect(studio.html).toContain('aria-label="Sign in to generate AI card"');
     expect(studio.text).toContain("Create a free account to generate your card");
     expect(studio.text).toContain("Signing in does not connect your email or calendar.");
-    expect(studio.text).toContain("Continue to proof checks");
+    expect(studio.text).toContain("Add details before proof");
+    expect(studio.text).not.toContain("Ready for proof checks");
 
     const print = renderShell({ search: "?view=handoff", signedIn: false });
     expect(print.text).toContain("Print at Walgreens");
@@ -261,7 +262,7 @@ describe("customer shell server render", () => {
       expect(text).not.toContain("memory-sara");
     });
 
-    it("keeps bottom next actions scoped to active creation steps", () => {
+    it("keeps bottom next actions off the studio setup step", () => {
       for (const storedWorkspace of [undefined, sampleWorkspace]) {
         const home = renderShell({ storedWorkspace });
         expect(home.html).not.toContain('class="ctadock"');
@@ -269,8 +270,8 @@ describe("customer shell server render", () => {
 
         const studio = renderShell({ search: "?view=studio", storedWorkspace });
         const dockCount = studio.html.split('class="ctadock"').length - 1;
-        expect(dockCount).toBe(1);
-        expect(studio.text).toContain("Continue to proof checks");
+        expect(dockCount).toBe(0);
+        expect(studio.text).not.toContain("Ready for proof checks");
       }
     });
 
@@ -306,7 +307,7 @@ describe("customer shell server render", () => {
       expect(signedOut.text).toContain("Already have the details somewhere?");
     });
 
-    it("renders the studio as a print-preview card stage", () => {
+    it("renders the studio as a details-first draft setup stage", () => {
       const { html, text } = renderShell({ search: "?view=studio", storedWorkspace: sampleWorkspace });
 
       expect(text).toContain("Your card, their story");
@@ -322,11 +323,13 @@ describe("customer shell server render", () => {
       expect(html).toContain("Type a tone");
       expect(html).toContain("Type a style");
       expect(text).toContain("Make it personal");
+      expect(text).toContain("Set up the card first");
       expect(text).toContain("Draft your card with AI");
-      expect(text).toContain("4 print panels");
+      expect(text).toContain("four print panels");
       expect(text).toContain("Add who it's for, the occasion, and one real detail");
-      expect(text).toContain("Continue to proof checks");
-      expect(html.split("pagetab").length - 1).toBeGreaterThanOrEqual(4);
+      expect(text).toContain("Review template instead");
+      expect(text).not.toContain("Continue to proof checks");
+      expect(html).not.toContain('role="tablist"');
     });
 
     it("renders progressive AI generation panel states", () => {
@@ -370,6 +373,7 @@ describe("customer shell server render", () => {
           onField: () => undefined,
           onGenerateAi: () => undefined,
           onKeepArtwork: () => undefined,
+          onReviewProof: () => undefined,
           onPanelEdit: () => undefined,
           onPanelRevert: () => undefined,
           panelOverrides: {},
@@ -403,8 +407,42 @@ describe("customer shell server render", () => {
       expect(text).toContain("Walgreens confirms the final total");
     });
 
-    it("renders the exact-panel editor with tabs, fields, and local text tools", () => {
-      const { html, text } = renderShell({ search: "?view=studio", storedWorkspace: sampleWorkspace });
+    it("renders the exact-panel editor with tabs, fields, and local text tools after a draft exists", () => {
+      const opportunity = buildOpportunity(
+        parseFreeImport("Sara birthday dinner on 2026-07-12"),
+        [],
+        new Date("2026-06-11T12:00:00.000Z")
+      );
+      const draftInput = {
+        ...getDefaultDraftInput(undefined, opportunity),
+        recipient: "Sara",
+        sender: "Maya"
+      };
+      const draft = generateCardDraft(draftInput, []);
+      const html = renderToString(
+        createElement(StudioView, {
+          aiActive: true,
+          aiAvailable: true,
+          aiLoading: false,
+          aiPanelProgress: {},
+          aiRequiresSignIn: false,
+          aiStale: false,
+          aiStatus: "",
+          draft,
+          draftInput,
+          memories: [],
+          onAddNote: () => undefined,
+          onField: () => undefined,
+          onGenerateAi: () => undefined,
+          onKeepArtwork: () => undefined,
+          onReviewProof: () => undefined,
+          onPanelEdit: () => undefined,
+          onPanelRevert: () => undefined,
+          panelOverrides: {},
+          printFitPassed: true
+        })
+      );
+      const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
 
       expect(text).toContain("Editing: Front");
       expect(text).toContain("These are the exact words that print on this panel.");
