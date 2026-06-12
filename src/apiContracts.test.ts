@@ -93,7 +93,9 @@ describe("api contracts", () => {
       externalNetworkCalls: false,
       realOrdersEnabled: false
     });
-    expect(adminArtifactBucket?.responseSchema).toEqual(expect.arrayContaining(["objectStore", "truncated", "nextCursor", "objects", "blockers"]));
+    expect(adminArtifactBucket?.responseSchema).toEqual(
+      expect.arrayContaining(["objectStore", "truncated", "nextCursor", "objects", "renderPackets", "blockers"])
+    );
     expect(renderPackets?.responseSchema).toEqual(expect.arrayContaining(["artifactManifest", "signedArtifactUrls"]));
     expect(renderPackets?.backedBy).toContain("buildArtifactHandoffContract");
     expect(importPreview?.requestSchema).toEqual(
@@ -862,6 +864,7 @@ describe("api contracts", () => {
       objectCount: 0,
       nextCursor: null,
       objects: [],
+      renderPackets: [],
       blockers: expect.arrayContaining(["Object store persistence is not configured."])
     });
     expect(resolveApiContractResponse("/api/routes")).toEqual(apiRouteContracts);

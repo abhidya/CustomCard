@@ -450,6 +450,10 @@ a { color: inherit; }
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.opsFacts-five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .opsFacts li {
   display: grid;
   gap: 3px;
@@ -822,6 +826,226 @@ a { color: inherit; }
 .opsBucketMeta a {
   color: var(--accent);
   background: var(--accent-soft);
+}
+
+.opsBucketPackets,
+.opsPromptList,
+.opsPromptPreview,
+.opsPromptPanels {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.opsBucketPacket {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.opsBucketPacket:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.opsBucketPacketHead,
+.opsPromptArtifactHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.opsBucketPacketHead strong,
+.opsBucketPacketHead span,
+.opsPromptArtifactHead strong {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.opsBucketPacketHead strong,
+.opsPromptArtifactHead strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 820;
+}
+
+.opsBucketPacketHead span {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.opsBucketThumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.opsBucketThumbs a,
+.opsBucketThumbs > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 760;
+  text-align: center;
+  text-decoration: none;
+}
+
+.opsBucketThumbs img,
+.opsBucketThumbs span {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+
+.opsBucketThumbs img {
+  object-fit: cover;
+}
+
+.opsBucketThumbs span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.opsBucketThumbs em {
+  min-width: 0;
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+
+.opsPromptDetails,
+.opsBucketRaw {
+  min-width: 0;
+}
+
+.opsPromptDetails > summary,
+.opsBucketRaw > summary,
+.opsPromptPreview summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.opsPromptArtifact {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.opsPromptArtifact:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.opsPromptBlock {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.opsPromptBlock > strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.opsPromptBlock dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.opsPromptBlock dl > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+}
+
+.opsPromptBlock dt,
+.opsPromptBlock dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.opsPromptBlock dt {
+  color: var(--ink-soft);
+  font-weight: 760;
+}
+
+.opsPromptBlock dd {
+  color: var(--ink);
+  font-weight: 680;
+}
+
+.opsPromptPanels {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.opsPromptPanels article {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  background: var(--surface-alt);
+}
+
+.opsPromptPanels article strong,
+.opsPromptPanels article span,
+.opsPromptPanels article p,
+.opsPromptPanels article pre,
+.opsPromptPreview pre {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.opsPromptPanels article strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.opsPromptPanels article span,
+.opsPromptPanels article p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.opsPromptPanels article pre,
+.opsPromptPreview pre {
+  max-height: 180px;
+  margin: 0;
+  overflow: auto;
+  padding: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-s);
+  color: var(--ink);
+  background: var(--surface);
+  font: 11.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
 }
 
 .flowRow {
@@ -2262,9 +2486,14 @@ a { color: inherit; }
   .opsGrid,
   .opsFacts,
   .opsFacts-four,
+  .opsFacts-five,
   .opsJobPanels,
   .opsBucketControls,
   .opsBucketObject,
+  .opsBucketPacketHead,
+  .opsPromptArtifactHead,
+  .opsPromptBlock dl > div,
+  .opsPromptPanels,
   .flowControls {
     grid-template-columns: 1fr;
   }

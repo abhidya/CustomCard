@@ -349,8 +349,15 @@ export default function App() {
         : error || "Google Calendar connection failed"
     );
     if (calendarConnection === "connected") {
-      // The real imported events and opportunities are loaded from
-      // /api/customer/connections by the moments inbox — no synthetic text.
+      const importedCount = imported ? Number(imported) : 0;
+      if (importedCount > 0) {
+        setInviteText(
+          [
+            "Google Calendar import review",
+            `${importedCount} Google Calendar event${importedCount === 1 ? "" : "s"} imported as read-only event metadata.`
+          ].join("\n")
+        );
+      }
       setOpportunityDecision("pending");
       setActiveView("opportunities");
       url.searchParams.set("view", "opportunities");

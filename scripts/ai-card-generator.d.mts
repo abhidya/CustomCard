@@ -8,7 +8,13 @@ export interface AiHttpResult {
 
 export interface AiRequestContext {
   rateKey?: string;
+  idempotencyKey?: string;
   trustRequestAiFlowConfig?: boolean;
+  authContext?: {
+    userId?: string;
+    sessionId?: string;
+    role?: string;
+  };
 }
 
 export interface AiService {
@@ -24,4 +30,5 @@ export function loadLocalAiEnvFiles(options?: {
 export function createAiCardGenerationService(options?: {
   env?: Record<string, string | undefined>;
   fetchImpl?: typeof fetch;
+  costGate?: unknown;
 }): AiService;

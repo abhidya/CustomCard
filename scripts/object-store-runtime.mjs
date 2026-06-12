@@ -65,11 +65,12 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
           config
         })
       );
+      const dedupePlan = buildArtifactDedupePlan(normalizedArtifacts);
       const blockers = validateStoredArtifacts(normalizedArtifacts);
       let verifiedWrites = 0;
       if (blockers.length === 0) {
-        const results = await runBounded(normalizedArtifacts, config.writeConcurrency, (artifact) =>
-          persistArtifactWithReadback({ artifact, client, record })
+        const results = await runBounded(dedupePlan.uniqueArtifacts, config.writeConcurrency, (artifact) =>
+          persistArtifactWithReadback({ artifact, client, config, record })
         );
         verifiedWrites = results.filter((result) => result.verified).length;
         blockers.push(...results.flatMap((result) => result.blockers));
@@ -83,8 +84,12 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
         bucket: config.bucket,
         artifactCount: normalizedArtifacts.length,
         artifacts: normalizedArtifacts.map(stripRuntimeBody),
+        storedArtifactCount: dedupePlan.uniqueArtifacts.length,
+        deduplicatedArtifactCount: dedupePlan.duplicateArtifacts.length,
+        deduplicatedBytes: dedupePlan.deduplicatedBytes,
         manifestChecksum: record.checksum,
         signedUrlExpiresAt: expiresAtIso,
+        retentionPolicy: buildArtifactRetentionPolicy(config),
         externalShareApprovalRequired: true,
         realOrdersEnabled: false,
         width: 1500,
@@ -135,9 +140,13 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
             provider: config.provider,
             bucket: config.bucket,
             artifactCount: normalizedArtifacts.length,
+            storedArtifactCount: dedupePlan.uniqueArtifacts.length,
+            deduplicatedArtifactCount: dedupePlan.duplicateArtifacts.length,
+            deduplicatedBytes: dedupePlan.deduplicatedBytes,
             verifiedWrites,
             writeConcurrency: config.writeConcurrency,
             manifestStored: blockers.length === 0,
+            retentionPolicy: buildArtifactRetentionPolicy(config),
             liveNetworkCalls: config.liveNetworkCalls,
             blockers
           }
@@ -184,6 +193,7 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
             limit,
             cursor,
             objects: [],
+            renderPackets: [],
             blockers: config.blockers.length ? config.blockers : ["Object store persistence is not configured."]
           }
         };
@@ -191,6 +201,7 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
       const listed = await client.listObjects({ prefix, limit, cursor });
       const expiresAtIso = signedUrlExpiry(config.expiresInMinutes, now());
       const objects = listed.objects.map((object) => buildBucketObjectSummary({ object, config, expiresAtIso }));
+      const renderPackets = buildBucketRenderPacketGroups(objects);
       return {
         statusCode: 200,
         payload: {
@@ -203,6 +214,7 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
           truncated: Boolean(listed.truncated),
           nextCursor: listed.nextCursor ?? null,
           objects,
+          renderPackets,
           blockers: []
         }
       };
@@ -218,6 +230,8 @@ function buildObjectStoreDescription(config) {
     bucket: config.bucket || null,
     publicBaseUrl: config.publicBaseUrl || null,
     signedUrlTtlMinutes: config.expiresInMinutes,
+    artifactRetentionDays: config.artifactRetentionDays,
+    noncurrentArtifactRetentionDays: config.noncurrentArtifactRetentionDays,
     writeConcurrency: config.writeConcurrency,
     liveNetworkCalls: config.liveNetworkCalls,
     credentialMode: config.readCredentialsConfigured ? "write-read-split" : config.writeCredentialsConfigured ? "writer-shared" : "unconfigured",
@@ -225,7 +239,7 @@ function buildObjectStoreDescription(config) {
   };
 }
 
-async function persistArtifactWithReadback({ artifact, client, record }) {
+async function persistArtifactWithReadback({ artifact, client, config, record }) {
   const blockers = [];
   await client.putObject({
     key: artifact.objectKey,
@@ -237,6 +251,8 @@ async function persistArtifactWithReadback({ artifact, client, record }) {
       fileName: artifact.fileName,
       kind: artifact.kind,
       contentHash: artifact.contentHash,
+      artifactRetentionDays: String(config.artifactRetentionDays),
+      noncurrentArtifactRetentionDays: String(config.noncurrentArtifactRetentionDays),
       realOrdersEnabled: "false"
     }
   });
@@ -281,6 +297,13 @@ function resolveObjectStoreConfig(env) {
   const signingSecret = env.OBJECT_STORE_SIGNING_SECRET ?? "";
   const region = env.OBJECT_STORE_REGION ?? env.AWS_REGION ?? "us-east-1";
   const expiresInMinutes = clampSignedUrlMinutes(env.ARTIFACT_SIGNED_URL_TTL_MINUTES);
+  const artifactRetentionDays = safeIntegerEnv(env.CUSTOMCARD_ARTIFACT_RETENTION_DAYS ?? env.ARTIFACT_RETENTION_DAYS, 30, 1, 365);
+  const noncurrentArtifactRetentionDays = safeIntegerEnv(
+    env.CUSTOMCARD_NONCURRENT_ARTIFACT_RETENTION_DAYS ?? env.NONCURRENT_ARTIFACT_RETENTION_DAYS,
+    14,
+    1,
+    90
+  );
   const provider = providerForEndpoint(endpoint);
   const publicBaseUrl = resolvePublicBaseUrl(env);
   const writeConcurrency = safeIntegerEnv(env.CUSTOMCARD_ARTIFACT_WRITE_CONCURRENCY, 4, 1, 8);
@@ -318,6 +341,8 @@ function resolveObjectStoreConfig(env) {
     signingSecret,
     publicBaseUrl,
     expiresInMinutes,
+    artifactRetentionDays,
+    noncurrentArtifactRetentionDays,
     writeConcurrency,
     liveNetworkCalls: Boolean(endpoint && !endpoint.startsWith("memory://")),
     writeCredentialsConfigured: Boolean(accessKeyId && secretAccessKey),
@@ -582,10 +607,115 @@ function buildBucketObjectSummary({ object, config, expiresAtIso }) {
   };
 }
 
+function buildBucketRenderPacketGroups(objects) {
+  const groups = new Map();
+  for (const object of objects) {
+    const parsed = renderPacketPathParts(object);
+    if (!parsed) continue;
+    const groupKey = `${parsed.projectId}/${parsed.renderPacketId}`;
+    const existing = groups.get(groupKey) ?? {
+      projectId: parsed.projectId,
+      renderPacketId: parsed.renderPacketId,
+      objectPrefix: `projects/${parsed.projectId}/render-packets/${parsed.renderPacketId}/`,
+      objectCount: 0,
+      byteLength: 0,
+      lastModifiedIso: "",
+      artifacts: [],
+      panelImages: [],
+      promptArtifacts: [],
+      manifestArtifact: null
+    };
+    existing.objectCount += 1;
+    existing.byteLength += Number(object.byteLength ?? 0);
+    existing.lastModifiedIso = latestIso(existing.lastModifiedIso, object.lastModifiedIso);
+    existing.artifacts.push(object);
+    const role = bucketArtifactRole(object);
+    if (role === "manifest") existing.manifestArtifact = object;
+    if (role === "prompt" || role === "input") existing.promptArtifacts.push(object);
+    if (role === "panel-image") existing.panelImages.push(object);
+    groups.set(groupKey, existing);
+  }
+
+  return Array.from(groups.values())
+    .map((group) => ({
+      ...group,
+      artifacts: group.artifacts.sort(compareBucketObjects),
+      panelImages: group.panelImages.sort(comparePanelArtifacts),
+      promptArtifacts: group.promptArtifacts.sort(comparePromptArtifacts)
+    }))
+    .sort((first, second) => second.lastModifiedIso.localeCompare(first.lastModifiedIso));
+}
+
+function renderPacketPathParts(object) {
+  const objectKey = object.objectKey ?? "";
+  const match = objectKey.match(/^projects\/([^/]+)\/render-packets\/([^/]+)\/(.+)$/);
+  if (!match) return null;
+  const metadata = object.metadata ?? {};
+  return {
+    projectId: metadataValue(metadata, "projectId") || match[1],
+    renderPacketId: metadataValue(metadata, "renderPacketId") || match[2],
+    fileName: match[3]
+  };
+}
+
+function bucketArtifactRole(object) {
+  const fileName = (object.fileName ?? "").toLowerCase();
+  const kind = metadataValue(object.metadata ?? {}, "kind").toLowerCase();
+  const artifactRole = metadataValue(object.metadata ?? {}, "artifactRole").toLowerCase();
+  if (artifactRole === "handoff-manifest" || fileName === "artifact-handoff-manifest.json") return "manifest";
+  if (fileName === "persisted-effective-prompts.json") return "prompt";
+  if (fileName === "persisted-customcard-ai-output.json") return "input";
+  if (kind === "manifest-json" || fileName.endsWith(".json")) return "prompt";
+  if (kind === "generated-image" || kind === "panel-png" || kind === "panel-svg" || /^provider-|^preview-/.test(fileName)) return "panel-image";
+  return "artifact";
+}
+
+function metadataValue(metadata, camelKey) {
+  const compactKey = camelKey.toLowerCase();
+  return String(metadata[camelKey] ?? metadata[compactKey] ?? metadata[camelKey.replace(/[A-Z]/g, (letter) => letter.toLowerCase())] ?? "");
+}
+
+function latestIso(first = "", second = "") {
+  if (!first) return second || "";
+  if (!second) return first;
+  return second.localeCompare(first) > 0 ? second : first;
+}
+
+function compareBucketObjects(first, second) {
+  return (first.objectKey ?? "").localeCompare(second.objectKey ?? "");
+}
+
+function comparePanelArtifacts(first, second) {
+  return panelSortIndex(first.fileName) - panelSortIndex(second.fileName) || compareBucketObjects(first, second);
+}
+
+function comparePromptArtifacts(first, second) {
+  return promptSortIndex(first.fileName) - promptSortIndex(second.fileName) || compareBucketObjects(first, second);
+}
+
+function panelSortIndex(fileName = "") {
+  const normalized = fileName.toLowerCase();
+  if (normalized.includes("front")) return 0;
+  if (normalized.includes("inside-left")) return 1;
+  if (normalized.includes("inside-right")) return 2;
+  if (normalized.includes("back")) return 3;
+  return 9;
+}
+
+function promptSortIndex(fileName = "") {
+  const normalized = fileName.toLowerCase();
+  if (normalized === "persisted-customcard-ai-output.json") return 0;
+  if (normalized === "persisted-effective-prompts.json") return 1;
+  if (normalized === "artifact-handoff-manifest.json") return 2;
+  return 9;
+}
+
 function sanitizeObjectMetadata(metadata) {
   const allowed = [
     "artifactRole",
     "artifactrole",
+    "artifactRetentionDays",
+    "artifactretentiondays",
     "contentHash",
     "contenthash",
     "draftId",
@@ -600,7 +730,9 @@ function sanitizeObjectMetadata(metadata) {
     "realOrdersEnabled",
     "realordersenabled",
     "renderPacketId",
-    "renderpacketid"
+    "renderpacketid",
+    "noncurrentArtifactRetentionDays",
+    "noncurrentartifactretentiondays"
   ];
   return Object.fromEntries(
     Object.entries(metadata)
@@ -733,6 +865,45 @@ function buildStoredArtifact({ artifact, projectId, renderPacketId, expiresAtIso
     },
     ...(artifact.panelId ? { panelId: artifact.panelId } : {}),
     body: artifact.body
+  };
+}
+
+function buildArtifactDedupePlan(artifacts) {
+  const canonicalByHash = new Map();
+  const uniqueArtifacts = [];
+  const duplicateArtifacts = [];
+  let deduplicatedBytes = 0;
+
+  for (const artifact of artifacts) {
+    const dedupeKey = `${artifact.contentHash}:${artifact.mimeType}`;
+    const canonical = canonicalByHash.get(dedupeKey);
+    if (!canonical) {
+      canonicalByHash.set(dedupeKey, artifact);
+      uniqueArtifacts.push(artifact);
+      continue;
+    }
+    duplicateArtifacts.push(artifact);
+    deduplicatedBytes += artifact.byteLength;
+    artifact.duplicateOfObjectKey = canonical.objectKey;
+    artifact.duplicateOfFileName = canonical.fileName;
+    artifact.signedDownload = canonical.signedDownload;
+    artifact.artifactUri = canonical.artifactUri;
+  }
+
+  return {
+    uniqueArtifacts,
+    duplicateArtifacts,
+    deduplicatedBytes
+  };
+}
+
+function buildArtifactRetentionPolicy(config) {
+  return {
+    currentArtifactDays: config.artifactRetentionDays,
+    noncurrentArtifactDays: config.noncurrentArtifactRetentionDays,
+    signedUrlTtlMinutes: config.expiresInMinutes,
+    lifecyclePrefix: "projects/",
+    lifecycleManagedBy: config.liveNetworkCalls ? "object-store-lifecycle" : "runtime-contract"
   };
 }
 

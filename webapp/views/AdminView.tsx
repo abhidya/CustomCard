@@ -1,5 +1,5 @@
-import { Activity, ChevronDown, ExternalLink, Image, Info, RefreshCw, Users } from "lucide-react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { Activity, ChevronDown, ExternalLink, FileJson, Image, Info, RefreshCw, Users } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
 import { providerCatalog } from "../../src/providerCatalog";
@@ -36,6 +36,19 @@ interface BucketObject {
   } | null;
 }
 
+interface BucketRenderPacketGroup {
+  projectId: string;
+  renderPacketId: string;
+  objectPrefix: string;
+  objectCount: number;
+  byteLength: number;
+  lastModifiedIso?: string;
+  artifacts: BucketObject[];
+  panelImages: BucketObject[];
+  promptArtifacts: BucketObject[];
+  manifestArtifact?: BucketObject | null;
+}
+
 interface BucketViewerPayload {
   status?: string;
   objectStore?: {
@@ -51,7 +64,15 @@ interface BucketViewerPayload {
   truncated?: boolean;
   nextCursor?: string | null;
   objects?: BucketObject[];
+  renderPackets?: BucketRenderPacketGroup[];
   blockers?: string[];
+}
+
+interface BucketJsonPreview {
+  status: "loading" | "ready" | "empty" | "failed";
+  text?: string;
+  data?: unknown;
+  message?: string;
 }
 
 function buildProbeTargets(): ProbeTarget[] {
@@ -127,6 +148,7 @@ export function AdminView({
   const [bucketPayload, setBucketPayload] = useState<BucketViewerPayload | null>(null);
   const [bucketLoading, setBucketLoading] = useState(false);
   const [bucketError, setBucketError] = useState("");
+  const [bucketJsonPreviews, setBucketJsonPreviews] = useState<Record<string, BucketJsonPreview>>({});
 
   const loadBucketObjects = useCallback((cursor?: string) => {
     const params = new URLSearchParams({ prefix: bucketPrefix, limit: "20" });
@@ -155,6 +177,62 @@ export function AdminView({
     loadBucketObjects();
   }, [loadBucketObjects]);
 
+  const renderPacketGroups = useMemo(
+    () => bucketPayload?.renderPackets?.length ? bucketPayload.renderPackets : groupBucketObjects(bucketPayload?.objects ?? []),
+    [bucketPayload]
+  );
+
+  const loadBucketJsonPreview = useCallback((artifact: BucketObject) => {
+    const url = artifact.signedDownload?.url;
+    if (!url) return;
+    setBucketJsonPreviews((current) => ({
+      ...current,
+      [artifact.objectKey]: current[artifact.objectKey] ?? { status: "loading" }
+    }));
+    void fetch(url, { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        if (!text.trim()) {
+          setBucketJsonPreviews((current) => ({ ...current, [artifact.objectKey]: { status: "empty" } }));
+          return;
+        }
+        let data: unknown;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = undefined;
+        }
+        setBucketJsonPreviews((current) => ({
+          ...current,
+          [artifact.objectKey]: {
+            status: "ready",
+            text: data ? JSON.stringify(data, null, 2) : text.slice(0, 12_000),
+            data
+          }
+        }));
+      })
+      .catch((error: unknown) => {
+        setBucketJsonPreviews((current) => ({
+          ...current,
+          [artifact.objectKey]: {
+            status: "failed",
+            message: error instanceof Error ? error.message : "Preview unavailable"
+          }
+        }));
+      });
+  }, []);
+
+  useEffect(() => {
+    const artifacts = renderPacketGroups
+      .flatMap((group) => group.promptArtifacts)
+      .filter((artifact) => artifact.signedDownload?.url)
+      .slice(0, 8);
+    for (const artifact of artifacts) {
+      if (!bucketJsonPreviews[artifact.objectKey]) loadBucketJsonPreview(artifact);
+    }
+  }, [bucketJsonPreviews, loadBucketJsonPreview, renderPacketGroups]);
+
   return (
     <section className="opsShell reveal">
       <header className="pagehead">
@@ -169,7 +247,7 @@ export function AdminView({
             <h2>Service</h2>
             <span className="opsStatus" data-ok={serviceUp}>
               <Activity size={14} />
-              {apiResult === "running" || apiResult === undefined ? "Checking" : serviceUp ? "Live" : "API unreachable"}
+              {apiResult === "running" || apiResult === undefined ? "Checking" : serviceUp ? "Live" : "Check API"}
             </span>
           </div>
           <ul className="opsFacts">
@@ -213,7 +291,7 @@ export function AdminView({
                   <span className="opsProbeMs">
                     {result === undefined || result === "running"
                       ? "…"
-                      : `${result.ms} ms${result.ok ? "" : result.status ? ` · HTTP ${result.status}` : " · failed"}`}
+                      : `${result.ms} ms${result.ok ? "" : result.status ? ` · HTTP ${result.status}` : " · unavailable"}`}
                   </span>
                 </li>
               );
@@ -321,7 +399,7 @@ export function AdminView({
           <div className="opsCardHead">
             <h2>Bucket viewer</h2>
             <span className="opsStatus" data-ok={Boolean(bucketPayload?.objectStore?.configured)}>
-              {bucketLoading ? "Loading" : bucketPayload?.objectStore?.configured ? "Configured" : "Needs object store"}
+              {bucketLoading ? "Loading" : bucketPayload?.objectStore?.configured ? "Configured" : "Not configured"}
             </span>
           </div>
 
@@ -342,7 +420,7 @@ export function AdminView({
             </button>
           </div>
 
-          <ul className="opsFacts opsFacts-four">
+          <ul className="opsFacts opsFacts-five">
             <li>
               <span>Provider</span>
               <strong>{bucketPayload?.objectStore?.provider ?? "Unknown"}</strong>
@@ -354,6 +432,10 @@ export function AdminView({
             <li>
               <span>Objects</span>
               <strong>{bucketPayload?.objectCount ?? 0}{bucketPayload?.truncated ? "+" : ""}</strong>
+            </li>
+            <li>
+              <span>Render packets</span>
+              <strong>{renderPacketGroups.length}{bucketPayload?.truncated ? "+" : ""}</strong>
             </li>
             <li>
               <span>Credentials</span>
@@ -373,34 +455,26 @@ export function AdminView({
               <span>{bucketPayload.blockers[0]}</span>
             </div>
           ) : null}
-          {bucketPayload?.objects?.length ? (
-            <div className="opsBucketList" aria-label="Object-store bucket objects">
-              {bucketPayload.objects.map((object) => (
-                <article className="opsBucketObject" key={object.objectKey}>
-                  <div>
-                    <strong>{object.fileName}</strong>
-                    <span>{object.objectKey}</span>
-                  </div>
-                  <div className="opsBucketMeta">
-                    <span>{formatBytes(object.byteLength)}</span>
-                    <span>{object.contentType}</span>
-                    {object.lastModifiedIso ? <span>{formatJobTime(object.lastModifiedIso)}</span> : null}
-                    {object.metadata?.kind ? <span>{object.metadata.kind}</span> : null}
-                    {object.signedDownload?.url ? (
-                      <a href={object.signedDownload.url} rel="noreferrer" target="_blank">
-                        Open signed
-                        <ExternalLink size={12} />
-                      </a>
-                    ) : null}
-                  </div>
-                </article>
+
+          {renderPacketGroups.length ? (
+            <div className="opsBucketPackets" aria-label="Object-store render packets">
+              {renderPacketGroups.map((group) => (
+                <BucketRenderPacketCard group={group} jsonPreviews={bucketJsonPreviews} key={`${group.projectId}-${group.renderPacketId}`} />
               ))}
             </div>
+          ) : bucketPayload?.objects?.length ? (
+            <BucketRawObjectList objects={bucketPayload.objects} />
           ) : !bucketLoading && !bucketError ? (
             <div className="opsEmpty">
               <Info size={16} />
               <span>No bucket objects found for this prefix.</span>
             </div>
+          ) : null}
+          {bucketPayload?.objects?.length && renderPacketGroups.length ? (
+            <details className="opsBucketRaw">
+              <summary>Raw object list</summary>
+              <BucketRawObjectList objects={bucketPayload.objects} />
+            </details>
           ) : null}
           {bucketPayload?.truncated && bucketPayload.nextCursor ? (
             <button className="btn btn-ghost btn-sm" disabled={bucketLoading} onClick={() => loadBucketObjects(bucketPayload.nextCursor ?? undefined)} type="button">
@@ -431,7 +505,7 @@ export function AdminView({
           <div className="opsCardHead">
             <h2>Providers</h2>
             <span className="opsStatus" data-ok={aiFlowSummary.blocked === 0}>
-              {aiFlowSummary.blocked === 0 ? "All flows routable" : `${aiFlowSummary.blocked} blocked`}
+              {aiFlowSummary.blocked === 0 ? "All flows routable" : `${aiFlowSummary.blocked} in fallback`}
             </span>
           </div>
           <div className="flowList">
@@ -443,7 +517,7 @@ export function AdminView({
                   <div className="flowRowHead">
                     <strong>{flow.label}</strong>
                     <span className="opsStatus" data-ok={flow.readyForLiveCalls}>
-                      {flow.readyForLiveCalls ? "Ready" : "Needs credentials"}
+                      {flow.readyForLiveCalls ? "Ready" : "Local fallback"}
                     </span>
                   </div>
                   <div className="flowControls">
@@ -488,7 +562,7 @@ export function AdminView({
                     </label>
                   </div>
                   {flow.blockedReasons.length > 0 ? (
-                    <small className="flowBlocked">{flow.blockedReasons[0]}</small>
+                    <small className="flowBlocked">Setup note: {flow.blockedReasons[0]}</small>
                   ) : null}
                 </div>
               );
@@ -530,9 +604,348 @@ function formatBytes(value: number): string {
 function mergeBucketPayload(current: BucketViewerPayload | null, next: BucketViewerPayload, append: boolean): BucketViewerPayload {
   if (!append || !current?.objects?.length) return next;
   const objects = [...current.objects, ...(next.objects ?? [])];
+  const renderPackets = groupBucketObjects(objects);
   return {
     ...next,
     objectCount: objects.length,
+    renderPackets,
     objects
   };
+}
+
+function BucketRenderPacketCard({
+  group,
+  jsonPreviews
+}: {
+  group: BucketRenderPacketGroup;
+  jsonPreviews: Record<string, BucketJsonPreview>;
+}) {
+  const promptArtifacts = group.promptArtifacts.filter((artifact) => artifact.contentType.includes("json") || artifact.fileName.endsWith(".json"));
+  const otherArtifacts = group.artifacts.filter((artifact) => !promptArtifacts.some((prompt) => prompt.objectKey === artifact.objectKey));
+  return (
+    <article className="opsBucketPacket">
+      <div className="opsBucketPacketHead">
+        <div>
+          <strong>{group.renderPacketId}</strong>
+          <span>{group.projectId}</span>
+          <span>{group.objectPrefix}</span>
+        </div>
+        <div className="opsBucketMeta">
+          <span>{group.objectCount} files</span>
+          <span>{formatBytes(group.byteLength)}</span>
+          {group.lastModifiedIso ? <span>{formatJobTime(group.lastModifiedIso)}</span> : null}
+        </div>
+      </div>
+
+      {group.panelImages.length ? (
+        <div className="opsBucketThumbs" aria-label={`${group.renderPacketId} panel artifacts`}>
+          {group.panelImages.slice(0, 8).map((artifact) => {
+            const preview = artifact.signedDownload?.url && artifact.contentType.startsWith("image/") ? (
+              <img alt={`${artifact.fileName} preview`} src={artifact.signedDownload.url} />
+            ) : (
+              <span aria-hidden="true">
+                <Image size={16} />
+              </span>
+            );
+            const label = <em>{shortPanelFileName(artifact.fileName)}</em>;
+            return artifact.signedDownload?.url ? (
+              <a href={artifact.signedDownload.url} key={artifact.objectKey} rel="noreferrer" target="_blank">
+                {preview}
+                {label}
+              </a>
+            ) : (
+              <div key={artifact.objectKey}>
+                {preview}
+                {label}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <details className="opsPromptDetails" open={promptArtifacts.length > 0}>
+        <summary>
+          <FileJson size={14} />
+          Inputs and prompts ({promptArtifacts.length})
+        </summary>
+        {promptArtifacts.length ? (
+          <div className="opsPromptList">
+            {promptArtifacts.map((artifact) => (
+              <section className="opsPromptArtifact" key={artifact.objectKey}>
+                <div className="opsPromptArtifactHead">
+                  <strong>{promptArtifactLabel(artifact.fileName)}</strong>
+                  <div className="opsBucketMeta">
+                    <span>{artifact.fileName}</span>
+                    <span>{formatBytes(artifact.byteLength)}</span>
+                    {artifact.signedDownload?.url ? (
+                      <a href={artifact.signedDownload.url} rel="noreferrer" target="_blank">
+                        Open signed
+                        <ExternalLink size={12} />
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+                <BucketJsonPreviewPane artifact={artifact} preview={jsonPreviews[artifact.objectKey]} />
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="opsEmpty">
+            <Info size={16} />
+            <span>No prompt JSON found in this page of bucket results.</span>
+          </div>
+        )}
+      </details>
+
+      {otherArtifacts.length ? (
+        <details className="opsBucketRaw">
+          <summary>Files in packet</summary>
+          <BucketRawObjectList objects={group.artifacts} />
+        </details>
+      ) : null}
+    </article>
+  );
+}
+
+function BucketJsonPreviewPane({ artifact, preview }: { artifact: BucketObject; preview?: BucketJsonPreview }) {
+  if (!artifact.signedDownload?.url) {
+    return <p className="opsFoot">Signed preview is not available for this JSON artifact.</p>;
+  }
+  if (!preview || preview.status === "loading") return <p className="opsFoot">Loading JSON preview...</p>;
+  if (preview.status === "empty") return <p className="opsFoot">JSON artifact is empty.</p>;
+  if (preview.status === "failed") return <p className="opsFoot">Preview unavailable{preview.message ? `: ${preview.message}` : ""}.</p>;
+
+  const sections = buildPromptPreviewSections(artifact.fileName, preview.data);
+  return (
+    <div className="opsPromptPreview">
+      {sections.length ? (
+        sections.map((section) => (
+          <section className="opsPromptBlock" key={section.title}>
+            <strong>{section.title}</strong>
+            {section.rows?.length ? (
+              <dl>
+                {section.rows.map(([label, value]) => (
+                  <div key={label}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+            {section.prompts?.length ? (
+              <div className="opsPromptPanels">
+                {section.prompts.map((prompt) => (
+                  <article key={`${section.title}-${prompt.panelId}`}>
+                    <strong>{panelLabel(prompt.panelId)}</strong>
+                    {prompt.headline ? <span>{prompt.headline}</span> : null}
+                    {prompt.body ? <p>{prompt.body}</p> : null}
+                    {prompt.prompt ? <pre>{prompt.prompt}</pre> : null}
+                    {prompt.revisedPrompt ? <pre>{prompt.revisedPrompt}</pre> : null}
+                    {prompt.negativePrompt ? <pre>{prompt.negativePrompt}</pre> : null}
+                  </article>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ))
+      ) : null}
+      <details>
+        <summary>Raw JSON</summary>
+        <pre>{preview.text}</pre>
+      </details>
+    </div>
+  );
+}
+
+function BucketRawObjectList({ objects }: { objects: BucketObject[] }) {
+  return (
+    <div className="opsBucketList" aria-label="Object-store bucket objects">
+      {objects.map((object) => (
+        <article className="opsBucketObject" key={object.objectKey}>
+          <div>
+            <strong>{object.fileName}</strong>
+            <span>{object.objectKey}</span>
+          </div>
+          <div className="opsBucketMeta">
+            <span>{formatBytes(object.byteLength)}</span>
+            <span>{object.contentType}</span>
+            {object.lastModifiedIso ? <span>{formatJobTime(object.lastModifiedIso)}</span> : null}
+            {object.metadata?.kind ? <span>{object.metadata.kind}</span> : null}
+            {object.signedDownload?.url ? (
+              <a href={object.signedDownload.url} rel="noreferrer" target="_blank">
+                Open signed
+                <ExternalLink size={12} />
+              </a>
+            ) : null}
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+type PromptPreviewSection = {
+  title: string;
+  rows?: Array<[string, string]>;
+  prompts?: Array<{
+    panelId: string;
+    headline?: string;
+    body?: string;
+    prompt?: string;
+    revisedPrompt?: string;
+    negativePrompt?: string;
+  }>;
+};
+
+function buildPromptPreviewSections(fileName: string, data: unknown): PromptPreviewSection[] {
+  const record = asRecord(data);
+  if (!record) return [];
+  if (fileName === "persisted-effective-prompts.json") {
+    const requestBody = asRecord(record.requestBody);
+    const rows = requestBody
+      ? compactRows([
+          ["Recipient", jsonText(requestBody.recipient)],
+          ["Sender", jsonText(requestBody.sender)],
+          ["Relationship", jsonText(requestBody.relationship)],
+          ["Occasion", jsonText(requestBody.occasion)],
+          ["Tone", jsonText(requestBody.tone)],
+          ["Style", jsonText(requestBody.style)],
+          ["Language", jsonText(requestBody.language)],
+          ["Personal note", jsonText(requestBody.personal_note ?? requestBody.personalNote)],
+          ["Memory notes", jsonStringList(requestBody.memory_notes ?? requestBody.memoryNotes).join(" | ")]
+        ])
+      : [];
+    const panelPrompts = jsonArray(record.panelPrompts)
+      .map((prompt) => asRecord(prompt))
+      .filter(Boolean)
+      .map((prompt) => ({
+        panelId: jsonText(prompt?.panelId ?? prompt?.panel_id) || "panel",
+        prompt: jsonText(prompt?.prompt)
+      }));
+    return [
+      ...(rows.length ? [{ title: "Input used", rows }] : []),
+      ...(panelPrompts.length ? [{ title: "Prompts sent", prompts: panelPrompts }] : [])
+    ];
+  }
+
+  if (fileName === "persisted-customcard-ai-output.json") {
+    const cardCopy = asRecord(record.card_copy ?? record.cardCopy);
+    const themeGuide = asRecord(cardCopy?.theme_guide ?? cardCopy?.themeGuide);
+    const themeRows = themeGuide
+      ? compactRows([
+          ["Theme", jsonText(themeGuide.theme_title ?? themeGuide.themeTitle)],
+          ["Palette", jsonStringList(themeGuide.palette).join(", ")],
+          ["Motifs", jsonStringList(themeGuide.motifs).join(", ")]
+        ])
+      : [];
+    const panels = jsonArray(cardCopy?.panels)
+      .map((panel) => asRecord(panel))
+      .filter(Boolean)
+      .map((panel) => ({
+        panelId: jsonText(panel?.id) || "panel",
+        headline: jsonText(panel?.headline),
+        body: jsonText(panel?.body),
+        prompt: jsonText(panel?.image_prompt ?? panel?.imagePrompt),
+        negativePrompt: jsonText(panel?.image_negative_prompt ?? panel?.imageNegativePrompt)
+      }));
+    const generatedPrompts = jsonArray(record.images)
+      .map((image) => asRecord(image))
+      .filter(Boolean)
+      .map((image) => ({
+        panelId: jsonText(image?.panel_id ?? image?.panelId) || "panel",
+        revisedPrompt: jsonText(image?.revised_prompt ?? image?.revisedPrompt)
+      }))
+      .filter((image) => image.revisedPrompt);
+    return [
+      ...(themeRows.length ? [{ title: "Generated theme", rows: themeRows }] : []),
+      ...(panels.length ? [{ title: "Generated copy and image prompts", prompts: panels }] : []),
+      ...(generatedPrompts.length ? [{ title: "Generated prompts returned", prompts: generatedPrompts }] : [])
+    ];
+  }
+
+  return [];
+}
+
+function groupBucketObjects(objects: BucketObject[]): BucketRenderPacketGroup[] {
+  const groups = new Map<string, BucketRenderPacketGroup>();
+  for (const object of objects) {
+    const match = object.objectKey.match(/^projects\/([^/]+)\/render-packets\/([^/]+)\//);
+    if (!match) continue;
+    const projectId = object.metadata?.projectId ?? object.metadata?.projectid ?? match[1];
+    const renderPacketId = object.metadata?.renderPacketId ?? object.metadata?.renderpacketid ?? match[2];
+    const key = `${projectId}/${renderPacketId}`;
+    const group = groups.get(key) ?? {
+      projectId,
+      renderPacketId,
+      objectPrefix: `projects/${projectId}/render-packets/${renderPacketId}/`,
+      objectCount: 0,
+      byteLength: 0,
+      lastModifiedIso: "",
+      artifacts: [],
+      panelImages: [],
+      promptArtifacts: [],
+      manifestArtifact: null
+    };
+    group.objectCount += 1;
+    group.byteLength += object.byteLength;
+    group.lastModifiedIso = latestIso(group.lastModifiedIso, object.lastModifiedIso);
+    group.artifacts.push(object);
+    if (isPromptArtifact(object)) group.promptArtifacts.push(object);
+    if (isPanelArtifact(object)) group.panelImages.push(object);
+    if (object.fileName === "artifact-handoff-manifest.json") group.manifestArtifact = object;
+    groups.set(key, group);
+  }
+  return Array.from(groups.values()).sort((first, second) => (second.lastModifiedIso ?? "").localeCompare(first.lastModifiedIso ?? ""));
+}
+
+function isPromptArtifact(object: BucketObject): boolean {
+  return object.fileName.endsWith(".json") && object.fileName !== "artifact-handoff-manifest.json";
+}
+
+function isPanelArtifact(object: BucketObject): boolean {
+  const kind = object.metadata?.kind ?? "";
+  return object.contentType.startsWith("image/") || kind === "panel-svg" || object.fileName.startsWith("provider-") || object.fileName.startsWith("preview-");
+}
+
+function promptArtifactLabel(fileName: string): string {
+  if (fileName === "persisted-customcard-ai-output.json") return "Generated output";
+  if (fileName === "persisted-effective-prompts.json") return "Inputs and prompts used";
+  return fileName;
+}
+
+function shortPanelFileName(fileName: string): string {
+  return fileName.replace(/^provider-/, "").replace(/^preview-/, "").replace(/\.(png|jpg|jpeg|webp|svg)$/i, "");
+}
+
+function panelLabel(panelId: string): string {
+  return panelId
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function jsonArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function jsonText(value: unknown): string {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean" ? String(value) : "";
+}
+
+function jsonStringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.map((item) => jsonText(item)).filter(Boolean) : [];
+}
+
+function compactRows(rows: Array<[string, string]>): Array<[string, string]> {
+  return rows.filter(([, value]) => value.trim().length > 0);
+}
+
+function latestIso(first = "", second = ""): string {
+  if (!first) return second || "";
+  if (!second) return first;
+  return second.localeCompare(first) > 0 ? second : first;
 }

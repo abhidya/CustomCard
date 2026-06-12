@@ -151,6 +151,97 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).toContain("fallback_queued");
   });
 
+  it("enforces monthly text spend caps before making another provider call", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          result: { response: cardCopyResponse }
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_COPY_MONTHLY_BUDGET_CENTS: "12"
+      },
+      fetchImpl
+    });
+
+    const first = await service.generateCard(cardRequest, { rateKey: "test-monthly-budget", idempotencyKey: "idem-1" });
+    const second = await service.generateCard(cardRequest, { rateKey: "test-monthly-budget", idempotencyKey: "idem-2" });
+    const secondPayload = second.payload as {
+      ai_flow: { card_copy: { provider_failure?: string } };
+      ai_cost_gate: { blocked_reasons: string[]; reserved_or_spent_cents: number };
+      provider_call_events: Array<{ status: string; fallback_reason?: string }>;
+    };
+
+    expect(first.statusCode).toBe(200);
+    expect(second.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(secondPayload.ai_flow.card_copy.provider_failure).toContain("projected monthly spend");
+    expect(secondPayload.ai_cost_gate.blocked_reasons).toContain("monthly-budget-exceeded");
+    expect(secondPayload.provider_call_events).toEqual(
+      expect.arrayContaining([expect.objectContaining({ status: "blocked", fallback_reason: "monthly-budget-exceeded" })])
+    );
+  });
+
+  it("counts all four image panels against rate limits before image provider calls", async () => {
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      if (String(url).includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response(new Uint8Array([1, 2, 3, 4]), {
+        status: 200,
+        headers: { "content-type": "image/png" }
+      });
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
+        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_RATE_LIMIT_PER_MINUTE: "3"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-image-rate-units" });
+    const payload = result.payload as {
+      generated_by: string;
+      images: unknown[];
+      ai_flow: { card_image: { provider_failure?: string } };
+      provider_call_events: Array<{ flow_id: string; status: string; fallback_reason?: string; request_units: number }>;
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(payload.generated_by).toBe("ai-text-only");
+    expect(payload.images).toHaveLength(0);
+    expect(payload.ai_flow.card_image.provider_failure).toContain("rate limit 3/minute");
+    expect(payload.provider_call_events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          flow_id: "card-image",
+          status: "blocked",
+          fallback_reason: "rate-limit-exceeded",
+          request_units: 4
+        })
+      ])
+    );
+  });
+
   it("repairs meta provider copy into human card language before returning the payload", async () => {
     const metaCopyResponse = {
       theme_guide: {

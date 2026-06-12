@@ -39,14 +39,25 @@ export type {
 } from "./aiFlowConfigData.mjs";
 
 export function loadBrowserAiFlowAdminConfigs(): AiFlowAdminConfig[] {
-  return buildDefaultAiFlowAdminConfigs();
+  const stored = readBrowserAiFlowAdminConfigDraft();
+  return stored.length > 0 ? stored : buildDefaultAiFlowAdminConfigs();
 }
 
 export function saveBrowserAiFlowAdminConfigs(configs: AiFlowAdminConfig[]): void {
-  normalizeAiFlowAdminConfigs(configs);
+  const normalized = normalizeAiFlowAdminConfigs(configs);
+  try {
+    browserSessionStorage()?.setItem(aiFlowAdminConfigStorageKey, JSON.stringify(normalized));
+  } catch {
+    /* Admin profile drafts are optional; the server-owned env profile remains authoritative. */
+  }
 }
 
 export function resetBrowserAiFlowAdminConfigs(): AiFlowAdminConfig[] {
+  try {
+    browserSessionStorage()?.removeItem(aiFlowAdminConfigStorageKey);
+  } catch {
+    /* Optional browser draft cleanup. */
+  }
   return buildDefaultAiFlowAdminConfigs();
 }
 
@@ -73,6 +84,23 @@ export function getResolvedBrowserAiFlowConfig(
 
 export function getResolvedBrowserAiFlowConfigs(configs: AiFlowAdminConfig[]): ResolvedAiFlowConfig[] {
   return resolveAiFlowConfigs({}, configs);
+}
+
+function readBrowserAiFlowAdminConfigDraft(): AiFlowAdminConfig[] {
+  try {
+    const raw = browserSessionStorage()?.getItem(aiFlowAdminConfigStorageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return normalizeAiFlowAdminConfigs(parsed);
+  } catch {
+    return [];
+  }
+}
+
+function browserSessionStorage(): Storage | undefined {
+  if (typeof globalThis === "undefined") return undefined;
+  const storage = (globalThis as typeof globalThis & { sessionStorage?: Storage }).sessionStorage;
+  return storage;
 }
 
 export function getAiFlowLabel(flowId: AiFlowId, definitions: AiFlowDefinition[] = []): string {

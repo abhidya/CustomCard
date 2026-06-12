@@ -5,17 +5,42 @@ import {
   validateAdminPortalModel,
   type AdminPortalModel
 } from "./adminPortal";
+import { summarizeAiFlowConfigs } from "./aiFlowConfig";
 import { buildAdminOperationsWorkflow } from "./adminOperations";
 import { buildReadinessSummary } from "./readinessSummary";
-import { buildAdminPanelModel, providerCatalog } from "./providerCatalog";
+import { buildAdminPanelModel, getProviderAdapter, providerCatalog } from "./providerCatalog";
 import { summarizeProviderGovernance } from "./providerGovernance";
+import { buildProviderCallEvent, type ProviderCallEvent } from "./providerOperations";
 import { getProviderRuntimeReadiness } from "./providerRuntime";
 import { buildProviderOpsModel } from "./providerOps";
 import { productionLaunchGates, summarizeProductionReadiness } from "./productionReadiness";
 
-function buildPortal(): AdminPortalModel {
+const cloudflareEnv = {
+  CLOUDFLARE_ACCOUNT_ID: "acct_123",
+  CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "token_text",
+  CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+  CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "token_image",
+  CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/bytedance/stable-diffusion-xl-lightning"
+};
+const nowIso = "2026-06-12T04:00:00.000Z";
+
+function buildRuntimeReadiness(env: Record<string, string | undefined> = {}) {
+  return new Map(providerCatalog.map((adapter) => [adapter.id, getProviderRuntimeReadiness(adapter.id, env)]));
+}
+
+function buildPortal({
+  env = {},
+  usageEvents = [],
+  nowIso: usageNowIso
+}: {
+  env?: Record<string, string | undefined>;
+  usageEvents?: ProviderCallEvent[];
+  nowIso?: string;
+} = {}): AdminPortalModel {
   const model = buildAdminPanelModel();
   const readiness = buildReadinessSummary();
+  const providerGovernance = summarizeProviderGovernance();
+  const runtimeReadiness = buildRuntimeReadiness(env);
   const adminOperationsWorkflow = buildAdminOperationsWorkflow({
     model,
     productionGates: productionLaunchGates,
@@ -29,25 +54,30 @@ function buildPortal(): AdminPortalModel {
   return buildAdminPortalModel({
     model,
     readiness,
-    providerGovernance: summarizeProviderGovernance(),
+    providerGovernance,
     providerOps: buildProviderOpsModel({
       model,
       readiness,
-      providerGovernance: summarizeProviderGovernance(),
-      runtimeReadiness: new Map(providerCatalog.map((adapter) => [adapter.id, getProviderRuntimeReadiness(adapter.id)])),
-      aiFlowSummary: {
-        total: 0,
-        liveEnabled: 0,
-        readyForLiveCalls: 0,
-        queued: 0,
-        fallbackQueued: 0,
-        blocked: 0,
-        configuredProviders: [],
-        flows: []
-      }
+      providerGovernance,
+      runtimeReadiness,
+      aiFlowSummary: Object.keys(env).length > 0
+        ? summarizeAiFlowConfigs(env)
+        : {
+            total: 0,
+            liveEnabled: 0,
+            readyForLiveCalls: 0,
+            queued: 0,
+            fallbackQueued: 0,
+            blocked: 0,
+            configuredProviders: [],
+            flows: []
+          },
+      env,
+      usageEvents,
+      nowIso: usageNowIso
     }),
     productionReadiness: summarizeProductionReadiness(),
-    runtimeReadiness: new Map(providerCatalog.map((adapter) => [adapter.id, getProviderRuntimeReadiness(adapter.id)])),
+    runtimeReadiness,
     adminOperationsWorkflow
   });
 }
@@ -87,11 +117,49 @@ describe("admin portal", () => {
       expect.arrayContaining(["Generated card panels", "Object-store artifacts", "Signed mobile artifacts"])
     );
     expect(portal.areas.providers.records.map((record) => record.label)).toEqual(
-      expect.arrayContaining(["User management gates", "ORR latency and alert gates"])
+      expect.arrayContaining(["User management gates", "Usage cost ledger", "ORR latency and alert gates"])
     );
     expect(portal.areas.providers.metrics.map((metric) => metric.label)).toEqual(
-      expect.arrayContaining(["Available", "Env configured", "Fallback queues", "Latency gates", "User env"])
+      expect.arrayContaining(["Available", "Env configured", "Fallback queues", "Cost flows", "Budget month", "Spend est.", "Req capacity", "Provider sources", "Ledger-only", "Latency gates", "User env"])
     );
+  });
+
+  it("surfaces env-configured provider usage cost metrics without secrets", () => {
+    const cloudflareChat = getProviderAdapter("cloudflare-workers-ai-chat");
+    expect(cloudflareChat).toBeDefined();
+    const portal = buildPortal({
+      env: cloudflareEnv,
+      nowIso,
+      usageEvents: [
+        buildProviderCallEvent({
+          adapter: cloudflareChat!,
+          tenantId: "default",
+          routeId: "ai-card-generate",
+          status: "succeeded",
+          nowIso,
+          requestUnits: 1,
+          estimatedCostCents: 12,
+          actualCostCents: 9
+        })
+      ]
+    });
+    const providerMetrics = new Map(portal.areas.providers.metrics.map((metric) => [metric.label, metric.value]));
+    const usageRecord = portal.areas.providers.records.find((record) => record.id === "provider-usage-costs");
+
+    expect(providerMetrics.get("Cost flows")).toBe("3");
+    expect(providerMetrics.get("Budget month")).toBe("$85.00");
+    expect(providerMetrics.get("Spend est.")).toBe("$0.12");
+    expect(providerMetrics.get("Req capacity")).toBe("540");
+    expect(providerMetrics.get("Provider sources")).toBe("2");
+    expect(providerMetrics.get("Ledger-only")).toBe("0");
+    expect(usageRecord).toMatchObject({
+      label: "Usage cost ledger",
+      status: "attention",
+      evidence: expect.arrayContaining(["provider_call_events", "Cloudflare Workers AI", "monthlyBudgetCents"])
+    });
+    expect(usageRecord?.detail).toContain("$85.00 configured monthly budget");
+    expect(usageRecord?.detail).toContain("2 provider-sourced metric adapters");
+    expect(JSON.stringify(portal)).not.toContain("token_text");
   });
 
   it("filters admin portal records by status and search query", () => {

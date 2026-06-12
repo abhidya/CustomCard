@@ -385,6 +385,43 @@ describe("admin card gallery and public featured cards", () => {
     expect(gallery.entries).toEqual([]);
     expect(gallery.categories).toContain("birthday");
   });
+
+  it("keeps the admin gallery route usable when hosted gallery tables are unavailable", async () => {
+    const runtime = createApiRuntime({
+      env: {
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        AUTH_SESSION_SECRET: "test-auth-session-secret-32-chars",
+        DATABASE_URL: "postgres://customcard.example/gallery-test"
+      },
+      routes: apiRouteContracts,
+      postgresPoolFactory: () => ({
+        query: async () => {
+          throw new Error("relation does not exist");
+        },
+        end: async () => undefined
+      })
+    });
+
+    const gallery = await runtime.readCardGallery({ authContext: adminContext });
+    expect(gallery).toMatchObject({
+      status: "degraded",
+      entries: [],
+      candidates: [],
+      galleryReadStatus: {
+        ok: false,
+        message: "Gallery repository is not fully available yet.",
+        issues: expect.arrayContaining([
+          expect.objectContaining({ table: "card_gallery_entries", status: "read-unavailable" }),
+          expect.objectContaining({ table: "draft_states", status: "read-unavailable" })
+        ])
+      },
+      repository: {
+        runtimeMode: "postgres",
+        degraded: true
+      }
+    });
+    expect(gallery.categories).toContain("birthday");
+  });
 });
 
 describe("customer copy safety", () => {

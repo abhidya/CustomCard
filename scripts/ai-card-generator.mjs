@@ -4,6 +4,7 @@ import {
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig
 } from "../src/aiFlowConfigData.mjs";
+import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
 
 export const aiCardGenerateRoute = "/api/ai/card/generate";
 export const aiChatRespondRoute = "/api/ai/chat/respond";
@@ -114,38 +115,71 @@ export function loadLocalAiEnvFiles({ cwd = process.cwd(), target = process.env 
   return target;
 }
 
-export function createAiCardGenerationService({ env = process.env, fetchImpl = globalThis.fetch } = {}) {
-  const rateBuckets = new Map();
+export function createAiCardGenerationService({ env = process.env, fetchImpl = globalThis.fetch, costGate = createAiFlowCostGate() } = {}) {
 
   return {
     async generateCard(body, requestContext = {}) {
-      const adminConfig = requestScopedAiFlowConfig(body, env, requestContext);
+      const adminConfig = runtimeAiFlowConfig(body, env, requestContext);
       const copyFlow = resolveAiFlowConfig("card-copy", env, adminConfig);
       const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
-      const rateLimit = checkRateLimit(rateBuckets, requestContext.rateKey, copyFlow);
-      if (rateLimit) return rateLimit;
 
       const draftInput = normalizeCardInput(body);
+      const providerCallEvents = [];
       let cardCopy;
       let textProviderFailure = "";
       let imageProviderFailure = "";
       let textProvider = copyFlow.primaryAdapterId;
 
       if (copyFlow.readyForLiveCalls) {
-        try {
-          const text = await executeTextProvider({
+        const reservation = costGate.reserve(
+          aiCostGateInput({
             flow: copyFlow,
-            env,
-            fetchImpl,
-            systemPrompt: copyFlow.promptInstructions,
-            userPrompt: buildCardCopyPrompt(draftInput),
-            responseFormat: buildCardCopyResponseFormat(copyFlow)
-          });
-          cardCopy = normalizeCardCopy(parseJsonFromText(text), draftInput);
-        } catch (error) {
-          textProviderFailure = error instanceof Error ? error.message : "Provider text generation failed.";
+            requestContext,
+            routeId: aiCardGenerateRoute,
+            requestUnits: 1,
+            phase: "card-copy"
+          })
+        );
+        providerCallEvents.push(reservation.event);
+        if (!reservation.ok && reservation.statusCode === 429) {
+          return {
+            statusCode: 429,
+            payload: {
+              ...reservation.payload,
+              provider_call_events: publicProviderCallEvents(providerCallEvents),
+              ai_cost_gate: publicCostGateSummary(providerCallEvents)
+            }
+          };
+        }
+        if (!reservation.ok) {
+          textProviderFailure = reservation.providerFailure;
           cardCopy = buildFallbackCardCopy(draftInput);
           textProvider = copyFlow.fallbackAdapterId;
+        } else {
+          try {
+            const text = await executeTextProvider({
+              flow: copyFlow,
+              env,
+              fetchImpl,
+              systemPrompt: copyFlow.promptInstructions,
+              userPrompt: buildCardCopyPrompt(draftInput),
+              responseFormat: buildCardCopyResponseFormat(copyFlow)
+            });
+            cardCopy = normalizeCardCopy(parseJsonFromText(text), draftInput);
+            providerCallEvents.push(costGate.settle(reservation.reservation, { status: "succeeded" }));
+          } catch (error) {
+            textProviderFailure = error instanceof Error ? error.message : "Provider text generation failed.";
+            cardCopy = buildFallbackCardCopy(draftInput);
+            textProvider = copyFlow.fallbackAdapterId;
+            providerCallEvents.push(
+              costGate.settle(reservation.reservation, {
+                status: "fallback-selected",
+                fallbackReason: "provider-unavailable",
+                errorClass: "provider-text-generation-failed",
+                metadata: { providerFailure: textProviderFailure }
+              })
+            );
+          }
         }
       } else {
         textProviderFailure = copyFlow.blockedReasons[0] ?? "Live card-copy provider is disabled.";
@@ -156,10 +190,22 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
       const images = [];
       let imageProvider = imageFlow.fallbackAdapterId;
       if (imageFlow.readyForLiveCalls) {
-        const imageRateLimit = checkRateLimit(rateBuckets, `${requestContext.rateKey}:image`, imageFlow);
-        if (!imageRateLimit) {
+        const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
+        const reservation = costGate.reserve(
+          aiCostGateInput({
+            flow: imageFlow,
+            requestContext,
+            routeId: aiCardGenerateRoute,
+            requestUnits: imagePromptPlan.length,
+            phase: "card-image",
+            metadata: { panelCount: imagePromptPlan.length }
+          })
+        );
+        providerCallEvents.push(reservation.event);
+        if (!reservation.ok) {
+          imageProviderFailure = reservation.providerFailure;
+        } else {
           try {
-            const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
             for (const panelPrompt of imagePromptPlan) {
               const imageUrl = await executeImageProvider({
                 flow: imageFlow,
@@ -180,13 +226,35 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
             }
             if (images.length === imagePromptPlan.length) {
               imageProvider = imageFlow.primaryAdapterId;
+              providerCallEvents.push(
+                costGate.settle(reservation.reservation, {
+                  status: "succeeded",
+                  metadata: { generatedPanelCount: images.length }
+                })
+              );
             } else {
               imageProviderFailure = `Image provider returned ${images.length} of ${imagePromptPlan.length} required panels.`;
               images.length = 0;
+              providerCallEvents.push(
+                costGate.settle(reservation.reservation, {
+                  status: "fallback-selected",
+                  fallbackReason: "provider-unavailable",
+                  errorClass: "provider-image-generation-incomplete",
+                  metadata: { providerFailure: imageProviderFailure }
+                })
+              );
             }
           } catch (error) {
             imageProviderFailure = error instanceof Error ? error.message : "Provider image generation failed.";
             images.length = 0;
+            providerCallEvents.push(
+              costGate.settle(reservation.reservation, {
+                status: "fallback-selected",
+                fallbackReason: "provider-unavailable",
+                errorClass: "provider-image-generation-failed",
+                metadata: { providerFailure: imageProviderFailure }
+              })
+            );
           }
         }
       }
@@ -210,37 +278,73 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
               imageProviderFailure || (imageFlow.readyForLiveCalls ? "" : imageFlow.blockedReasons[0] ?? "")
             )
           },
-          live_provider_calls_enabled: copyFlow.readyForLiveCalls || imageFlow.readyForLiveCalls,
+          provider_call_events: publicProviderCallEvents(providerCallEvents),
+          ai_cost_gate: publicCostGateSummary(providerCallEvents),
+          live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
           fallback_queued: fallbackQueued,
-          external_network_calls: copyFlow.readyForLiveCalls || imageFlow.readyForLiveCalls
+          external_network_calls: hasExternalNetworkEvent(providerCallEvents)
         }
       };
     },
 
     async respondChat(body, requestContext = {}) {
-      const adminConfig = requestScopedAiFlowConfig(body, env, requestContext);
+      const adminConfig = runtimeAiFlowConfig(body, env, requestContext);
       const flow = resolveAiFlowConfig("customer-chat", env, adminConfig);
-      const rateLimit = checkRateLimit(rateBuckets, requestContext.rateKey, flow);
-      if (rateLimit) return rateLimit;
 
       const input = normalizeChatInput(body);
+      const providerCallEvents = [];
       let assistantMessage;
       let providerFailure = "";
       let adapterId = flow.primaryAdapterId;
 
       if (flow.readyForLiveCalls) {
-        try {
-          assistantMessage = await executeTextProvider({
+        const reservation = costGate.reserve(
+          aiCostGateInput({
             flow,
-            env,
-            fetchImpl,
-            systemPrompt: flow.promptInstructions,
-            userPrompt: buildChatPrompt(input)
-          });
-        } catch (error) {
-          providerFailure = error instanceof Error ? error.message : "Provider chat generation failed.";
+            requestContext,
+            routeId: aiChatRespondRoute,
+            requestUnits: 1,
+            phase: "customer-chat"
+          })
+        );
+        providerCallEvents.push(reservation.event);
+        if (!reservation.ok && reservation.statusCode === 429) {
+          return {
+            statusCode: 429,
+            payload: {
+              ...reservation.payload,
+              provider_call_events: publicProviderCallEvents(providerCallEvents),
+              ai_cost_gate: publicCostGateSummary(providerCallEvents)
+            }
+          };
+        }
+        if (!reservation.ok) {
+          providerFailure = reservation.providerFailure;
           assistantMessage = buildLocalChatReply(input);
           adapterId = flow.fallbackAdapterId;
+        } else {
+          try {
+            assistantMessage = await executeTextProvider({
+              flow,
+              env,
+              fetchImpl,
+              systemPrompt: flow.promptInstructions,
+              userPrompt: buildChatPrompt(input)
+            });
+            providerCallEvents.push(costGate.settle(reservation.reservation, { status: "succeeded" }));
+          } catch (error) {
+            providerFailure = error instanceof Error ? error.message : "Provider chat generation failed.";
+            assistantMessage = buildLocalChatReply(input);
+            adapterId = flow.fallbackAdapterId;
+            providerCallEvents.push(
+              costGate.settle(reservation.reservation, {
+                status: "fallback-selected",
+                fallbackReason: "provider-unavailable",
+                errorClass: "provider-chat-generation-failed",
+                metadata: { providerFailure }
+              })
+            );
+          }
         }
       } else {
         providerFailure = flow.blockedReasons[0] ?? "Live customer-chat provider is disabled.";
@@ -255,13 +359,57 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
           ai_flow: {
             customer_chat: publicFlowState(flow, adapterId, providerFailure)
           },
-          live_provider_calls_enabled: flow.readyForLiveCalls,
+          provider_call_events: publicProviderCallEvents(providerCallEvents),
+          ai_cost_gate: publicCostGateSummary(providerCallEvents),
+          live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
           fallback_queued: Boolean(providerFailure && flow.fallbackQueueEnabled),
-          external_network_calls: flow.readyForLiveCalls
+          external_network_calls: hasExternalNetworkEvent(providerCallEvents)
         }
       };
     }
   };
+}
+
+function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, metadata = {} }) {
+  return {
+    flow,
+    routeId,
+    requestUnits,
+    rateKey: requestContext.rateKey,
+    idempotencyKey: requestContext.idempotencyKey,
+    authContext: requestContext.authContext,
+    fallbackFromAdapterId: flow.primaryAdapterId,
+    metadata: {
+      phase,
+      ...metadata
+    }
+};
+}
+
+function runtimeAiFlowConfig(body, env, requestContext = {}) {
+  return mergeAiFlowAdminConfigs(serverScopedAiFlowConfig(env), requestScopedAiFlowConfig(body, env, requestContext));
+}
+
+function serverScopedAiFlowConfig(env) {
+  const raw = env.CUSTOMCARD_AI_FLOW_CONFIG_JSON ?? env.CUSTOMCARD_AI_FLOW_ADMIN_CONFIG_JSON ?? "";
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(String(raw));
+    return normalizeAiFlowAdminConfigs(Array.isArray(parsed) ? parsed : parsed.flows ?? parsed.aiFlowConfig ?? parsed.ai_flow_config ?? [], env);
+  } catch {
+    return [];
+  }
+}
+
+function mergeAiFlowAdminConfigs(...groups) {
+  const byFlowId = new Map();
+  for (const group of groups) {
+    for (const config of Array.isArray(group) ? group : []) {
+      if (!config?.flowId) continue;
+      byFlowId.set(config.flowId, config);
+    }
+  }
+  return normalizeAiFlowAdminConfigs(Array.from(byFlowId.values()));
 }
 
 function requestScopedAiFlowConfig(body, env, requestContext = {}) {
@@ -1674,6 +1822,53 @@ function publicFlowState(flow, adapterId, providerFailure) {
     blocked_reasons: flow.blockedReasons,
     provider_failure: providerFailure || undefined
   };
+}
+
+function publicProviderCallEvents(events) {
+  return events
+    .filter(Boolean)
+    .map((event) => ({
+      id: event.id,
+      tenant_id: event.tenantId,
+      route_id: event.routeId,
+      flow_id: event.flowId,
+      adapter_id: event.adapterId,
+      provider: event.provider,
+      capability: event.capability,
+      status: event.status,
+      fallback_reason: event.fallbackReason ?? undefined,
+      month_bucket: event.monthBucket,
+      request_units: event.requestUnits,
+      estimated_cost_cents: event.estimatedCostCents,
+      actual_cost_cents: event.actualCostCents ?? undefined,
+      rate_limit_window_start: event.rateLimitWindowStartIso,
+      live_network_call: event.liveNetworkCall,
+      metadata: event.metadata
+    }));
+}
+
+function publicCostGateSummary(events) {
+  const publicEvents = publicProviderCallEvents(events);
+  const reservedEvents = publicEvents.filter((event) => event.status === "reserved");
+  return {
+    event_count: publicEvents.length,
+    reserved_or_spent_cents: reservedEvents
+      .reduce((total, event) => total + event.estimated_cost_cents, 0),
+    actual_spend_cents: publicEvents.reduce((total, event) => total + (event.actual_cost_cents ?? 0), 0),
+    request_units: reservedEvents.reduce((total, event) => total + event.request_units, 0),
+    live_network_calls: publicEvents.some((event) => event.live_network_call),
+    blocked_reasons: publicEvents
+      .filter((event) => event.status === "blocked" && event.fallback_reason)
+      .map((event) => event.fallback_reason)
+  };
+}
+
+function hasLiveProviderEvent(events) {
+  return publicProviderCallEvents(events).some((event) => event.status !== "blocked");
+}
+
+function hasExternalNetworkEvent(events) {
+  return publicProviderCallEvents(events).some((event) => event.live_network_call && event.status !== "blocked");
 }
 
 function checkRateLimit(rateBuckets, rateKey = "unknown", flow) {

@@ -293,7 +293,7 @@ export const apiRouteContracts = [
     auth: "admin-session",
     runtimeMode: "durable-api",
     requestSchema: ["adminSession", "prefix", "limit", "cursor"],
-    responseSchema: ["objectStore", "prefix", "objectCount", "truncated", "nextCursor", "objects", "blockers"],
+    responseSchema: ["objectStore", "prefix", "objectCount", "truncated", "nextCursor", "objects", "renderPackets", "blockers"],
     idempotencyKeyRequired: false,
     externalNetworkCalls: false,
     realOrdersEnabled: false,

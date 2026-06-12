@@ -53,7 +53,7 @@ export function createApiRouteFamilies(deps) {
       if (await handleCustomerStateRoute({ authContext, path, response })) return true;
       if (handleWalgreensCallbackRoute({ path, response })) return true;
       if (await handleWalgreensHostedCheckoutRoute({ path, request, response })) return true;
-      if (await handleAiRoute({ path, request, response })) return true;
+      if (await handleAiRoute({ authContext, path, request, response })) return true;
 
       const bodyText = await readRequestBody(request);
       if (route.id === "calendar-connection-start" && calendarConnectionLifecycle) {
@@ -292,7 +292,7 @@ export function createApiRouteFamilies(deps) {
     return true;
   }
 
-  async function handleAiRoute({ path, request, response }) {
+  async function handleAiRoute({ authContext, path, request, response }) {
     if (path !== aiCardGenerateRoute && path !== aiChatRespondRoute) return false;
     if (!request.headers?.["x-idempotency-key"]) {
       sendJson(response, 400, {
@@ -313,10 +313,11 @@ export function createApiRouteFamilies(deps) {
     }
 
     const rateKey = clientRateLimitKey(request);
+    const idempotencyKey = request.headers?.["x-idempotency-key"];
     const result =
       path === aiCardGenerateRoute
-        ? await aiGenerationService.generateCard(parsedBody, { rateKey })
-        : await aiGenerationService.respondChat(parsedBody, { rateKey });
+        ? await aiGenerationService.generateCard(parsedBody, { authContext, idempotencyKey, rateKey })
+        : await aiGenerationService.respondChat(parsedBody, { authContext, idempotencyKey, rateKey });
     sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload });
     return true;
   }

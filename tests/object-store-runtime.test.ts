@@ -151,6 +151,14 @@ describe("object store runtime", () => {
       "projects/project-test/render-packets/render-packet-test/artifact-handoff-manifest.json",
       "projects/project-test/render-packets/render-packet-test/front.svg"
     ]);
+    expect(bucket.payload.renderPackets).toHaveLength(1);
+    expect(bucket.payload.renderPackets[0]).toMatchObject({
+      projectId: "project-test",
+      renderPacketId: "render-packet-test",
+      objectCount: 2,
+      manifestArtifact: expect.objectContaining({ fileName: "artifact-handoff-manifest.json" }),
+      panelImages: [expect.objectContaining({ fileName: "front.svg" })]
+    });
     expect(bucket.payload.objects.find((object) => object.fileName === "front.svg")?.signedDownload?.url).toContain(
       "/api/artifacts/projects/project-test/render-packets/render-packet-test/front.svg?"
     );
@@ -209,6 +217,152 @@ describe("object store runtime", () => {
       verifiedWrites: 3,
       writeConcurrency: 2,
       blockers: []
+    });
+  });
+
+  it("deduplicates identical render artifacts and records retention policy", async () => {
+    const runtime = createObjectStoreRuntime({
+      env: {
+        ...objectStoreEnv,
+        CUSTOMCARD_ARTIFACT_RETENTION_DAYS: "21",
+        CUSTOMCARD_NONCURRENT_ARTIFACT_RETENTION_DAYS: "5"
+      },
+      now: () => new Date("2026-06-11T12:00:00.000Z")
+    });
+    const record = {
+      id: "render-packet-dedupe",
+      projectId: "project-dedupe",
+      kind: "validated_print_packet",
+      width: 1500,
+      height: 2100,
+      dpi: 300,
+      locale: "en-US",
+      direction: "ltr",
+      safeZonePassed: true,
+      textOverflow: false,
+      checksum: "cc_deduped",
+      artifactUri: "file:///tmp/customcard-artifacts/projects/project-dedupe/render-packets/render-packet-dedupe/manifest.json",
+      storageProvider: "filesystem",
+      artifactCount: 2,
+      artifactManifest: {
+        renderPacketId: "render-packet-dedupe",
+        projectId: "project-dedupe",
+        storageProvider: "filesystem",
+        artifactCount: 2,
+        manifestChecksum: "cc_deduped",
+        signedUrlExpiresAt: "2026-06-11T12:15:00.000Z",
+        externalShareApprovalRequired: true,
+        realOrdersEnabled: false
+      },
+      signedUrlExpiresAt: "2026-06-11T12:15:00.000Z",
+      externalShareApprovalRequired: true
+    };
+    const duplicateBody = "<svg viewBox=\"0 0 1500 2100\"><path d=\"M0 0H10\" /></svg>";
+
+    const stored = await runtime.persistRenderPacketArtifacts({
+      record,
+      bodyText: JSON.stringify({
+        artifacts: [
+          { kind: "panel-svg", fileName: "front.svg", mimeType: "image/svg+xml", text: duplicateBody, panelId: "front" },
+          { kind: "panel-svg", fileName: "back.svg", mimeType: "image/svg+xml", text: duplicateBody, panelId: "back" }
+        ]
+      })
+    });
+
+    expect(stored.record.artifactManifest).toMatchObject({
+      artifactCount: 2,
+      storedArtifactCount: 1,
+      deduplicatedArtifactCount: 1,
+      deduplicatedBytes: Buffer.byteLength(duplicateBody),
+      retentionPolicy: {
+        currentArtifactDays: 21,
+        noncurrentArtifactDays: 5,
+        signedUrlTtlMinutes: 15,
+        lifecyclePrefix: "projects/"
+      }
+    });
+    expect(stored.record.artifactManifest.artifacts[1]).toMatchObject({
+      fileName: "back.svg",
+      duplicateOfObjectKey: "projects/project-dedupe/render-packets/render-packet-dedupe/front.svg",
+      duplicateOfFileName: "front.svg"
+    });
+    expect(stored.record.signedArtifactUrls).toHaveLength(2);
+    expect(stored.record.signedArtifactUrls[1].url).toBe(stored.record.signedArtifactUrls[0].url);
+    expect(stored.payload.artifactPersistence).toMatchObject({
+      artifactCount: 2,
+      storedArtifactCount: 1,
+      deduplicatedArtifactCount: 1,
+      verifiedWrites: 1
+    });
+
+    const bucket = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({ prefix: "projects/project-dedupe", limit: "10" })
+    });
+    expect(bucket.payload).toMatchObject({
+      objectCount: 2,
+      renderPackets: [expect.objectContaining({ objectCount: 2 })]
+    });
+    expect(bucket.payload.objects.map((object) => object.objectKey)).toEqual([
+      "projects/project-dedupe/render-packets/render-packet-dedupe/artifact-handoff-manifest.json",
+      "projects/project-dedupe/render-packets/render-packet-dedupe/front.svg"
+    ]);
+  });
+
+  it("groups persisted prompt JSON with its render packet", async () => {
+    const runtime = createObjectStoreRuntime({
+      env: objectStoreEnv,
+      now: () => new Date("2026-06-11T12:00:00.000Z")
+    });
+    await runtime.persistRenderPacketArtifacts({
+      record: {
+        id: "render-packet-prompts",
+        projectId: "project-prompts",
+        kind: "validated_print_packet",
+        locale: "en-US",
+        direction: "ltr",
+        safeZonePassed: true,
+        textOverflow: false,
+        checksum: "cc_33333333",
+        artifactManifest: { persistenceStatus: "pending", blockers: [] }
+      },
+      bodyText: JSON.stringify({
+        artifacts: [
+          {
+            kind: "panel-svg",
+            fileName: "front.svg",
+            mimeType: "image/svg+xml",
+            text: "<svg viewBox=\"0 0 1500 2100\"><text>Hello</text></svg>",
+            panelId: "front"
+          },
+          {
+            kind: "manifest-json",
+            fileName: "persisted-effective-prompts.json",
+            mimeType: "application/json",
+            text: JSON.stringify({
+              requestBody: { recipient: "Maya", occasion: "Graduation" },
+              panelPrompts: [{ panelId: "front", prompt: "Full bleed graduation artwork" }]
+            })
+          }
+        ]
+      })
+    });
+
+    const bucket = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({ prefix: "projects/project-prompts", limit: "10" })
+    });
+
+    expect(bucket.payload.renderPackets).toHaveLength(1);
+    expect(bucket.payload.renderPackets[0]).toMatchObject({
+      projectId: "project-prompts",
+      renderPacketId: "render-packet-prompts",
+      objectCount: 3,
+      panelImages: [expect.objectContaining({ fileName: "front.svg" })],
+      promptArtifacts: [
+        expect.objectContaining({
+          fileName: "persisted-effective-prompts.json",
+          signedDownload: expect.objectContaining({ method: "GET" })
+        })
+      ]
     });
   });
 

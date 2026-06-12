@@ -2,10 +2,10 @@
 
 ## Source of truth
 - Status: Active
-- Last refreshed: 2026-06-11
+- Last refreshed: 2026-06-12
 - Surface walkthrough and demo-debt audit: `docs/ui-ux-walkthrough.md`
 - Primary product surfaces: customer web app, admin operations panel, adapter readiness panel, mobile customer shell.
-- Evidence reviewed: `src/App.tsx`, `src/styles.css`, `src/providerCatalog.ts`, `src/printerPricing.ts`, `docs/platform-expansion-design.md`, `tests/app-smoke.test.ts`.
+- Evidence reviewed: `src/App.tsx`, `src/styles.css`, `src/providerCatalog.ts`, `src/providerOps.ts`, `src/providerOperations.ts`, `src/adminPortal.ts`, `src/printerPricing.ts`, `docs/platform-expansion-design.md`, `tests/app-smoke.test.ts`.
 
 ## Brand
 - Personality: useful, calm, private, and practical.
@@ -42,7 +42,7 @@
 
 ## Components
 - Existing components to reuse: `StatusChip`, `Metric`, `SegmentedControl`, `AdapterMiniList`, panel previews, pricing option rows.
-- New/changed components: customer start/import module, customer event queue, customer fulfillment recommendation cards, Studio AI card generation control.
+- New/changed components: customer start/import module, customer event queue, customer fulfillment recommendation cards, Studio AI card generation control, admin provider usage-cost metrics.
 - Variants and states: signed out/signed in, event ready/needs detail, public-price/confirmation-required, local fallback/live gated.
 - Token/component ownership: repo-local CSS in `src/styles.css`; no new design-system dependency.
 
@@ -61,7 +61,7 @@
 ## Interaction states
 - Loading: AI card generation shows copy and artwork progress for the four 5x7 panels; future live imports need loading rows.
 - Empty: show import actions and sample/manual event path.
-- Error: show missing detail or confirmation-required copy instead of provider errors.
+- Error: show missing detail, confirmation-required copy, or provider spend blocking reason instead of provider errors.
 - Success: show event ready, print-safe card, panel-level artwork readiness, and recommended fulfillment option.
 - Disabled: direct checkout/order buttons stay absent until live quote/payment/order gates exist.
 - Offline/slow network: local demo path remains usable without network.
@@ -77,6 +77,7 @@
 - Performance constraints: keep startup local and static; no live provider SDK bundles in the customer shell.
 - Compatibility constraints: tests run with headless Chrome and Vitest; local demo must pass without credentials.
 - Test/screenshot expectations: smoke tests prove no horizontal overflow and customer-first text/actions.
+- Admin cost metrics: derive from resolved AI/provider config, provider-sourced usage surfaces where available, and provider usage ledger contracts; show aggregate budgets, source labels, and estimates without secret env values or live provider calls.
 
 ## Open questions
 - [ ] Which production auth provider should be first live: Google OAuth directly, Apple directly, or a broker such as Clerk/Auth0?

@@ -589,6 +589,9 @@ function buildAssetsArea(input: AdminPortalModelInput): AdminPortalArea {
 
 function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number, runtimeReady: number): AdminPortalArea {
   const { providerOps } = input;
+  const providerMetricSourceLabels = Array.from(
+    new Set(providerOps.selectedProviders.map((provider) => provider.metricSource.label))
+  ).slice(0, 4);
 
   return {
     id: "providers",
@@ -601,6 +604,12 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
       { label: "Live ready", value: `${providerOps.summary.liveReadyProviders}` },
       { label: "Feature gated", value: `${providerOps.summary.liveGatedProviders}` },
       { label: "Fallback queues", value: `${providerOps.summary.fallbackQueues}` },
+      { label: "Cost flows", value: `${providerOps.usage.configuredFlows}` },
+      { label: "Budget month", value: formatCents(providerOps.usage.monthlyBudgetCents) },
+      { label: "Spend est.", value: formatCents(providerOps.usage.reservedOrSpentCents) },
+      { label: "Req capacity", value: `${providerOps.usage.estimatedMonthlyRequestsAtBudget}` },
+      { label: "Provider sources", value: `${providerOps.usage.providerSourcedMetricAdapters}` },
+      { label: "Ledger-only", value: `${providerOps.usage.localLedgerMetricAdapters}` },
       { label: "Latency gates", value: `${providerOps.orr.latencyGateRequired}` },
       { label: "Runtime blocked", value: `${runtimeBlocked}` },
       { label: "Runtime ready", value: `${runtimeReady}` },
@@ -624,6 +633,22 @@ function buildProvidersArea(input: AdminPortalModelInput, runtimeBlocked: number
         detail: `${providerOps.users.adminTokenProofs} admin token proofs, ${providerOps.users.customerTokenProofs} customer token proofs, ${providerOps.users.optInGates} opt-in gates.`,
         action: "Keep admin/customer support queues metadata-only until hosted token, seed, opt-in, and audit evidence are attached.",
         evidence: providerOps.users.userManagementRequiredEnv.slice(0, 4)
+      }),
+      record({
+        id: "provider-usage-costs",
+        label: "Usage cost ledger",
+        domain: "Provider spend",
+        owner: "Provider integrations",
+        source: "Provider Ops",
+        status: providerOps.usage.overBudgetBlocks > 0 || providerOps.usage.rateLimitBlocks > 0
+          ? "blocked"
+          : providerOps.usage.configuredFlows > 0
+            ? "attention"
+            : "ready",
+        risk: providerOps.usage.liveEnabledConfiguredFlows > 0 ? "high" : "medium",
+        detail: `${formatCents(providerOps.usage.monthlyBudgetCents)} configured monthly budget across ${providerOps.usage.configuredFlows} env-configured flow policies; ${formatCents(providerOps.usage.reservedOrSpentCents)} reserved/spent in ${providerOps.usage.monthBucket}; ${providerOps.usage.providerSourcedMetricAdapters} provider-sourced metric adapters and ${providerOps.usage.localLedgerMetricAdapters} ledger-only adapters.`,
+        action: "Review provider_call_events, provider usage dashboards/APIs, monthly budget caps, per-request ceilings, and rate windows before enabling paid provider traffic.",
+        evidence: ["provider_call_events", ...providerMetricSourceLabels, "monthlyBudgetCents", "perRequestBudgetCents"].slice(0, 6)
       }),
       record({
         id: "provider-orr-latency",
@@ -658,11 +683,11 @@ function providerOpsRecord(provider: ProviderOpsProvider): AdminPortalRecord {
     source: "Provider Ops",
     status,
     risk: provider.liveGate === "live-ready" || provider.liveGate === "local-ready" ? "low" : "medium",
-    detail: `${provider.availability}; ${provider.liveGate}; fallback ${provider.fallbackAdapterId}; ${provider.rateLimitPerMinute}/min.`,
+    detail: `${provider.availability}; ${provider.liveGate}; fallback ${provider.fallbackAdapterId}; ${provider.rateLimitPerMinute}/min; ${formatCents(provider.monthlyBudgetCents)} monthly cap; ${formatCents(provider.perRequestBudgetCents)} request cap; metrics from ${provider.metricSource.label} (${provider.metricSource.usageUnit}).`,
     action: provider.liveGate === "live-ready"
       ? "Keep spend, queue, and ORR evidence attached while live use is enabled."
       : "Attach missing env, safety gates, fallback queue, and ORR evidence before live use.",
-    evidence
+    evidence: [...evidence, provider.metricSource.label].slice(0, 4)
   });
 }
 
@@ -708,6 +733,10 @@ function summarizeAreaStatus(records: AdminPortalRecord[]): AdminPortalStatus {
   if (records.some((record) => record.status === "blocked")) return "blocked";
   if (records.some((record) => record.status === "attention")) return "attention";
   return "ready";
+}
+
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }
 
 function offControl(id: string, label: string, detail: string): AdminPortalControl {

@@ -49,7 +49,7 @@ import {
   type LocalizationReadinessSummary,
 } from "./localization";
 import { type ProviderGovernanceSummary } from "./providerGovernance";
-import { buildProviderOpsModel } from "./providerOps";
+import { buildProviderOpsModel, providerOpsMetricSourceForAdapter } from "./providerOps";
 import { type RuntimeReadiness } from "./providerRuntime";
 import { buildAdminOperationsWorkflow, type AdminOperationsWorkflow, type AdminOperationTask } from "./adminOperations";
 import {
@@ -320,9 +320,15 @@ export function AdminPanelView({
             <Metric label="Rate limited" value={`${providerGovernance.rateLimited}`} />
             <Metric label="Queued" value={`${providerGovernance.queueRequired}`} />
             <Metric label="Max request" value={formatCents(providerGovernance.maxPerRequestBudgetCents)} />
+            <Metric label="Configured budget" value={formatCents(providerOps.usage.monthlyBudgetCents)} />
+            <Metric label="Est. spend" value={formatCents(providerOps.usage.reservedOrSpentCents)} />
+            <Metric label="Actual spend" value={formatCents(providerOps.usage.actualSpendCents)} />
+            <Metric label="Req capacity" value={`${providerOps.usage.estimatedMonthlyRequestsAtBudget}`} />
+            <Metric label="Provider sources" value={`${providerOps.usage.providerSourcedMetricAdapters}`} />
+            <Metric label="Ledger-only" value={`${providerOps.usage.localLedgerMetricAdapters}`} />
           </div>
           <p className="panelNote">
-            Every paid or gated adapter maps to a ready local fallback before live network calls can be enabled.
+            Env-configured provider flows stay budget-capped with provider-sourced metrics reconciled into the local ledger.
           </p>
         </article>
 
@@ -1028,6 +1034,7 @@ function AiFlowConfigPanel({
         {summary.flows.map((flow) => {
           const config = configById.get(flow.flowId);
           if (!config) return null;
+          const metricSource = providerOpsMetricSourceForAdapter(config.primaryAdapterId);
           return (
             <section className="aiFlowRow" key={flow.flowId}>
               <div className="aiFlowRowHeader">
@@ -1148,6 +1155,8 @@ function AiFlowConfigPanel({
               <div className="aiFlowMeta">
                 <span>{formatCents(config.perRequestBudgetCents)} max/request</span>
                 <span>{formatCents(config.monthlyBudgetCents)} monthly</span>
+                <span>{metricSource.label}</span>
+                <span>{metricSource.usageUnit}</span>
                 {flow.blockedReasons.slice(0, 2).map((reason) => (
                   <span key={`${flow.flowId}-${reason}`}>{reason}</span>
                 ))}

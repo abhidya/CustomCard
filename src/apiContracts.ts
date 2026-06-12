@@ -350,6 +350,7 @@ export function resolveApiContractResponse(path: string) {
       truncated: false,
       nextCursor: null,
       objects: [],
+      renderPackets: [],
       blockers: ["Object store persistence is not configured."]
     };
   }

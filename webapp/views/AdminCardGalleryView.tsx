@@ -49,6 +49,10 @@ interface GalleryCandidate {
 interface GalleryPayload {
   entries?: GalleryEntry[];
   candidates?: GalleryCandidate[];
+  galleryReadStatus?: {
+    ok: boolean;
+    message?: string;
+  };
 }
 
 export function AdminCardGalleryView({
@@ -71,15 +75,15 @@ export function AdminCardGalleryView({
         headers: token ? { Authorization: `Bearer ${token}` } : undefined
       });
       if (!response.ok) {
-        setStatusLine(`Gallery load failed (HTTP ${response.status}).`);
+        setStatusLine("Gallery repository is not available yet.");
         return;
       }
       const payload = await response.json() as GalleryPayload;
       setEntries(payload.entries ?? []);
       setCandidates(payload.candidates ?? []);
-      setStatusLine("");
+      setStatusLine(payload.galleryReadStatus?.ok === false ? payload.galleryReadStatus.message ?? "Gallery repository is not fully available yet." : "");
     } catch {
-      setStatusLine("Gallery load failed.");
+      setStatusLine("Gallery repository is not available yet.");
     } finally {
       setLoading(false);
     }

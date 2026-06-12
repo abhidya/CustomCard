@@ -740,49 +740,66 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
     },
     async readFeaturedCards() {
       const pool = await getPool();
-      const result = await pool.query(
-        `SELECT id, category, title, public_caption, featured, featured_rank, public_approved,
-                front_svg, thumbnail_artifact_uri, front_artifact_uri
-         FROM card_gallery_entries
-         WHERE featured = TRUE AND public_approved = TRUE
-         ORDER BY category ASC, featured_rank ASC, created_at ASC
-         LIMIT 60`
-      );
-      return buildFeaturedCardsPayload(
-        result.rows.map((row) => ({
-          id: row.id,
-          category: row.category,
-          title: row.title,
-          publicCaption: row.public_caption,
-          featured: row.featured,
-          featuredRank: Number(row.featured_rank),
-          publicApproved: row.public_approved,
-          frontSvg: row.front_svg ?? undefined,
-          thumbnailArtifactUri: row.thumbnail_artifact_uri ?? undefined,
-          frontArtifactUri: row.front_artifact_uri ?? undefined
-        })),
-        "postgres"
-      );
+      try {
+        const result = await pool.query(
+          `SELECT id, category, title, public_caption, featured, featured_rank, public_approved,
+                  front_svg, thumbnail_artifact_uri, front_artifact_uri
+           FROM card_gallery_entries
+           WHERE featured = TRUE AND public_approved = TRUE
+           ORDER BY category ASC, featured_rank ASC, created_at ASC
+           LIMIT 60`
+        );
+        return buildFeaturedCardsPayload(
+          result.rows.map((row) => ({
+            id: row.id,
+            category: row.category,
+            title: row.title,
+            publicCaption: row.public_caption,
+            featured: row.featured,
+            featuredRank: Number(row.featured_rank),
+            publicApproved: row.public_approved,
+            frontSvg: row.front_svg ?? undefined,
+            thumbnailArtifactUri: row.thumbnail_artifact_uri ?? undefined,
+            frontArtifactUri: row.front_artifact_uri ?? undefined
+          })),
+          "postgres"
+        );
+      } catch {
+        return buildFeaturedCardsPayload([], "postgres");
+      }
     },
     async readCardGallery({ authContext }) {
       const pool = await getPool();
-      const entriesResult = await pool.query(
-        `SELECT id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
-                featured, featured_rank, public_approved, front_svg, created_at, updated_at
-         FROM card_gallery_entries
-         ORDER BY category ASC, featured_rank ASC, updated_at DESC
-         LIMIT 200`
-      );
-      const candidatesResult = await pool.query(
-        `SELECT id, user_id, status, draft_input, locale, updated_at
-         FROM draft_states
-         ORDER BY updated_at DESC
-         LIMIT 25`
-      );
+      const readIssues = [];
+      let entriesRows = [];
+      let candidateRows = [];
+      try {
+        const entriesResult = await pool.query(
+          `SELECT id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
+                  featured, featured_rank, public_approved, front_svg, created_at, updated_at
+           FROM card_gallery_entries
+           ORDER BY category ASC, featured_rank ASC, updated_at DESC
+           LIMIT 200`
+        );
+        entriesRows = entriesResult.rows;
+      } catch (error) {
+        readIssues.push(repositoryReadIssue("card_gallery_entries", error));
+      }
+      try {
+        const candidatesResult = await pool.query(
+          `SELECT id, user_id, status, draft_input, locale, updated_at
+           FROM draft_states
+           ORDER BY updated_at DESC
+           LIMIT 25`
+        );
+        candidateRows = candidatesResult.rows;
+      } catch (error) {
+        readIssues.push(repositoryReadIssue("draft_states", error));
+      }
       return buildCardGalleryReadPayload({
         runtimeMode: "postgres",
         authContext,
-        entries: entriesResult.rows.map((row) =>
+        entries: entriesRows.map((row) =>
           publicGalleryEntry({
             id: row.id,
             projectId: row.project_id,
@@ -799,7 +816,7 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             updatedAtIso: new Date(row.updated_at).toISOString()
           })
         ),
-        candidates: candidatesResult.rows.map((row) =>
+        candidates: candidateRows.map((row) =>
           publicGalleryCandidate({
             id: row.id,
             userId: row.user_id,
@@ -808,7 +825,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             localeCode: row.locale,
             updatedAtIso: new Date(row.updated_at).toISOString()
           })
-        )
+        ),
+        readIssues
       });
     },
     async close() {
@@ -2006,21 +2024,45 @@ function publicGalleryCandidate(draftStateRecord) {
   };
 }
 
-function buildCardGalleryReadPayload({ runtimeMode, authContext, entries, candidates }) {
+function buildCardGalleryReadPayload({ runtimeMode, authContext, entries, candidates, readIssues = [] }) {
+  const degraded = readIssues.length > 0;
   return {
     service: "customcard-api",
-    status: "ready",
+    status: degraded ? "degraded" : "ready",
     authenticatedUserId: authContext.userId,
     categories: [...publicCardCategories],
     entries,
     candidates,
+    ...(degraded
+      ? {
+          galleryReadStatus: {
+            ok: false,
+            message: "Gallery repository is not fully available yet.",
+            issues: readIssues
+          }
+        }
+      : {}),
     rawContentStored: false,
     repository: {
       tables: ["card_gallery_entries", "draft_states"],
       runtimeMode,
-      persisted: entries.length > 0
+      persisted: entries.length > 0,
+      degraded
     }
   };
+}
+
+function repositoryReadIssue(table, error) {
+  return {
+    table,
+    status: "read-unavailable",
+    detail: safeErrorDetail(error)
+  };
+}
+
+function safeErrorDetail(error) {
+  if (!(error instanceof Error)) return "Repository read failed.";
+  return String(error.message || "Repository read failed.").slice(0, 240);
 }
 
 function buildDraftStateRecord({ authContext, bodyText }) {

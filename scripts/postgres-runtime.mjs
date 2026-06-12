@@ -97,7 +97,8 @@ async function createDefaultPostgresPool(poolConfig) {
 
 async function loadVercelAttachDatabasePool() {
   try {
-    const mod = await import("@vercel/functions");
+    const packageName = "@vercel/functions";
+    const mod = await import(/* @vite-ignore */ packageName);
     return mod.attachDatabasePool;
   } catch {
     return undefined;
