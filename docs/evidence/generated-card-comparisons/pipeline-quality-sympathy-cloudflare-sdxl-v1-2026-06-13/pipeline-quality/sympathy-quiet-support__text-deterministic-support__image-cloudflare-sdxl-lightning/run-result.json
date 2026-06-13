@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-deterministic-support",
+  "textAdapterId": "deterministic-customer-chat",
+  "textModel": "deterministic-support-copy",
+  "imageCandidateId": "image-cloudflare-sdxl-lightning",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning",
+  "startedAt": "2026-06-13T07:39:33.897Z",
+  "finishedAt": "2026-06-13T07:40:23.021Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "deterministic-support-copy",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-front.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, lower table plane, meal bowl, folded cloth, phone, key, and one right-edge branch silhouette; integrated clean upper/center text-safe area. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Flat quiet-support still-life sympathy cover with warm ivory open field, quiet window light, lower table plane, meal bowl, folded cloth, muted phone, small key, and a single branch silhouette at the right edge; keep upper/center text-safe space clear; avoid blank-message template, closed frame, physical paper card, and religious symbol. Keep natural negative space for app-rendered typography in the main message field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-inside-left.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, small meal bowl and folded cloth in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Soft left interior artwork with warm ivory open field, small meal bowl and folded cloth in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must be flat quiet-support",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-inside-right.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, muted phone and small key near lower edge, quiet blank center, clean text-safe area, generous safe margins. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Matching right interior artwork with calm open message field, muted phone and small key near the lower edge, and generous negative space; avoid route lines, cars, blank-message template, closed layout, and framed blank page. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must be flat quiet-support still-life",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-back.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal bowl, phone, key, and branch echo in the lower band, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Minimal back cover with one small meal bowl, muted phone, small key, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark. Sympathy art must be flat quiet-support still-life artwork with warm ivory open field, quiet window light, meal bowl, folded cloth, muted phone, small key, one branch silhouette, and no",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/contact-sheet.png",
+  "providerCallCount": 4,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 4
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

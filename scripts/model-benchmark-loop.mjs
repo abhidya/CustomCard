@@ -795,6 +795,7 @@ export function pipelineQualityRuns(candidates) {
   const story = stories[pipelineQualityStoryId];
   const textIds = new Set(["text-deterministic-support", "text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
   const imageIds = new Set([
+    "image-cloudflare-sdxl-lightning",
     "image-deepai-text2img",
     "image-browser-svg-renderer",
     "image-cloudflare-flux-schnell",

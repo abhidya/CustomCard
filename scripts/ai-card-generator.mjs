@@ -1911,7 +1911,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   if (!/\bnot (?:a )?(?:physical|photographed|mockup|photo)\b/i.test(base)) {
     guardrails.push("Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.");
   }
-  return truncate([base, ...guardrails].join(" "), 1200);
+  return truncate([base, ...guardrails].join(" "), 1800);
 }
 
 function imagePromptNeedsRepair(prompt, panelId, input, panel) {
@@ -2671,7 +2671,7 @@ function normalizeCardCopy(parsed, input) {
     const artDirection = truncate(cleanText(raw.art_direction || raw.artDirection || defaults.art_direction), 500);
     const visualCue = normalizeVisualCue(raw.visual_cue || raw.visualCue, id, input, themeGuide);
     const textLayout = normalizeTextLayout(raw.text_layout || raw.textLayout, id, input);
-    const rawImagePrompt = truncate(cleanText(raw.image_prompt || raw.imagePrompt || defaults.image_prompt), 1200);
+    const rawImagePrompt = truncate(cleanText(raw.image_prompt || raw.imagePrompt || defaults.image_prompt), 1800);
     const promptPanel = {
       ...defaults,
       headline,
@@ -2690,7 +2690,7 @@ function normalizeCardCopy(parsed, input) {
       text_layout: textLayout,
       image_prompt: truncate(
         normalizeImagePrompt(rawImagePrompt, id, input, promptPanel),
-        1200
+        1800
       ),
       image_negative_prompt: truncate(
         normalizeImageNegativePrompt(raw.image_negative_prompt || raw.imageNegativePrompt || defaults.image_negative_prompt),

@@ -23,6 +23,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` still-life SVG v24 | `image-browser-svg-renderer` | 40 | 98 | D+ visible product; cleaner cover, still not saleable | [manual grade](./pipeline-quality-sympathy-still-life-svg-v24-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` still-life SVG v25 | `image-browser-svg-renderer` | 8 | 98 | F visible product; contract-only control | [manual grade](./pipeline-quality-sympathy-still-life-svg-v25-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` HF Qwen Image v2 | `image-hf-qwen-image` -> fallback `browser-svg-renderer` | 8 | 72 | F visible product; HF route 402, fallback rendered four panels | [manual grade](./pipeline-quality-sympathy-hf-qwen-image-v2-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-hf-qwen-image/manual-grade.md) |
+| `text-deterministic-support` Cloudflare SDXL v1 | `image-cloudflare-sdxl-lightning` | 30 | 86 | D visible rejection; real raster art but unreadable interiors/back | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 
 ## Findings
 
@@ -41,6 +42,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Still-life SVG v24 improves the deterministic visual route to product `40/100`, contract `98/100` by making the sympathy cover headline-only and adding richer SVG shadows/scene layers. It remains a D+ product because interiors are generic and the vector object craft still looks tool-made.
 - Still-life SVG v25 was overgraded at product `45/100`. User-visible re-audit corrects it to product `8/100`, contract `98/100`: stronger interior side-stem/leaf structure preserves clear text zones but reads as generic low-effort stationery, not a saleable sympathy card.
 - Hugging Face image wiring is now executable, but not visually proven. HF Qwen via `fal-ai` returned 402 before rendering, and HF FLUX via `hf-inference` produced two JPEGs before credits depleted on panel three. The fallback repair now returns four deterministic SVG panels instead of a zero-panel payload, but product score remains `8/100` because no HF image reached the contact sheet.
+- Cloudflare SDXL Lightning is executable in the full pipeline and returned four real PNG panels, but product score is only `30/100`. The front is a usable rough cover, while inside-left, inside-right, and back put small deterministic text over busy fruit/floral/line-art compositions. This proves richer raster art alone does not solve product quality; text-safe composition is the blocking issue.
 
 ## Improvement Loop
 
@@ -72,6 +74,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Still-life SVG v23-v24 | Product 40, contract 98 on v24 | Larger scene layers and headline-only cover improve visible quality. Still capped: deterministic vector art is not premium enough and interiors remain mostly generic. |
 | Still-life SVG v25 | Product 8, contract 98 | User-visible re-audit shows incremental SVG decoration did not improve product quality. It remains a contract-only control that needs real illustration assets/provider before promotion. |
 | HF Qwen Image v1-v2 | v1 product 0/no panels; v2 product 8, contract 72 | Hugging Face image adapter is wired, but current account credits are depleted. Fallback repair prevents zero-panel outputs, but fallback SVG remains unsaleable. |
+| Cloudflare SDXL v1 | Product 30, contract 86 | SDXL can render real raster art and completed all four provider calls, but ignored text-safe/minimal composition enough that three panels are not readable. Shorten prompts and enforce plain text fields before another SDXL grade. |
 
 ## Prompt/Skill Changes Applied
 
@@ -98,6 +101,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added richer deterministic SVG shadows/scene layers and changed deterministic sympathy fallback copy to a headline-only cover.
 - Added stronger interior side-stem/leaf illustration for the deterministic sympathy SVG route.
 - Added a Hugging Face image adapter for Inference Providers, promoted HF FLUX/Qwen/Z-Image benchmark candidates, and repaired image-provider fallback so a live provider failure can still return four local fallback panels.
+- Added Cloudflare SDXL Lightning to the full `pipeline-quality` image comparison list and raised normalized image prompt length to avoid cutting prompts mid-instruction. The first live SDXL grade shows prompt length alone is not enough; prompts need shorter, earlier text-safe constraints.
 
 ## Commands
 
@@ -124,4 +128,6 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-hf-qwen-image --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-hf-qwen-image-v1-2026-06-13 --live true
 CUSTOMCARD_HUGGINGFACE_IMAGE_PROVIDER=hf-inference rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-hf-flux-schnell --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-hf-flux-hfinference-v1-2026-06-13 --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-hf-qwen-image --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-hf-qwen-image-v2-2026-06-13 --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-cloudflare-sdxl-lightning --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-dryrun-2026-06-13
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-cloudflare-sdxl-lightning --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v1-2026-06-13 --live true
 ```
