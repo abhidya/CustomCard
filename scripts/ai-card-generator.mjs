@@ -262,6 +262,14 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
         providerCallEvents.push(reservation.event);
         if (!reservation.ok) {
           imageProviderFailure = reservation.providerFailure;
+          const fallbackPanelCount = await appendFallbackPanelImages({
+            images,
+            imageFlow,
+            imagePromptPlan,
+            env,
+            fetchImpl
+          });
+          if (fallbackPanelCount === imagePromptPlan.length) imageProvider = imageFlow.fallbackAdapterId;
         } else {
           try {
             for (const panelPrompt of imagePromptPlan) {
@@ -293,24 +301,40 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
             } else {
               imageProviderFailure = `Image provider returned ${images.length} of ${imagePromptPlan.length} required panels.`;
               images.length = 0;
+              const fallbackPanelCount = await appendFallbackPanelImages({
+                images,
+                imageFlow,
+                imagePromptPlan,
+                env,
+                fetchImpl
+              });
+              if (fallbackPanelCount === imagePromptPlan.length) imageProvider = imageFlow.fallbackAdapterId;
               providerCallEvents.push(
                 costGate.settle(reservation.reservation, {
                   status: "fallback-selected",
                   fallbackReason: "provider-unavailable",
                   errorClass: "provider-image-generation-incomplete",
-                  metadata: { providerFailure: imageProviderFailure }
+                  metadata: { providerFailure: imageProviderFailure, fallbackPanelCount }
                 })
               );
             }
           } catch (error) {
             imageProviderFailure = error instanceof Error ? error.message : "Provider image generation failed.";
             images.length = 0;
+            const fallbackPanelCount = await appendFallbackPanelImages({
+              images,
+              imageFlow,
+              imagePromptPlan,
+              env,
+              fetchImpl
+            });
+            if (fallbackPanelCount === imagePromptPlan.length) imageProvider = imageFlow.fallbackAdapterId;
             providerCallEvents.push(
               costGate.settle(reservation.reservation, {
                 status: "fallback-selected",
                 fallbackReason: "provider-unavailable",
                 errorClass: "provider-image-generation-failed",
-                metadata: { providerFailure: imageProviderFailure }
+                metadata: { providerFailure: imageProviderFailure, fallbackPanelCount }
               })
             );
           }
@@ -648,6 +672,33 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
     return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
   }
 
+  if (flow.primaryAdapterId === "huggingface-image") {
+    const request = buildHuggingFaceImageRequestBody({ flow, env, panelId, prompt, negativePrompt });
+    const response = await fetchWithProviderBackoff(
+      fetchImpl,
+      request.url,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${requiredEnv(env, "HUGGINGFACE_API_TOKEN")}`,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(request.body)
+      },
+      { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
+    );
+    const contentType = response.headers?.get?.("content-type") ?? "";
+    if (!response.ok) {
+      throw new Error(`Hugging Face image provider returned ${response.status}: ${await readProviderError(response, contentType)}.`);
+    }
+    if (contentType.startsWith("image/")) {
+      const buffer = Buffer.from(await response.arrayBuffer());
+      return `data:${contentType};base64,${buffer.toString("base64")}`;
+    }
+    const data = await response.json().catch(() => undefined);
+    return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl);
+  }
+
   if (flow.primaryAdapterId === "deepai-text2img-image") {
     const body = new FormData();
     body.set("text", buildDeepAiTextPrompt({ prompt, negativePrompt }));
@@ -670,6 +721,43 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
   }
 
   throw new Error(`Image adapter ${flow.primaryAdapterId} is configured but not executable in this runtime yet.`);
+}
+
+async function appendFallbackPanelImages({ images, imageFlow, imagePromptPlan, env, fetchImpl }) {
+  if (!imageFlow.fallbackAdapterId || imageFlow.fallbackAdapterId === imageFlow.primaryAdapterId) return 0;
+  const fallbackFlow = {
+    ...imageFlow,
+    adapterId: imageFlow.fallbackAdapterId,
+    primaryAdapterId: imageFlow.fallbackAdapterId,
+    model: fallbackImageModel(imageFlow.fallbackAdapterId, imageFlow.model),
+    liveProviderCallsEnabled: imageFlow.fallbackAdapterId !== "browser-svg-renderer",
+    maxRetries: 0
+  };
+  const before = images.length;
+  for (const panelPrompt of imagePromptPlan) {
+    const imageUrl = await executeImageProvider({
+      flow: fallbackFlow,
+      env,
+      fetchImpl,
+      panelId: panelPrompt.panel_id,
+      prompt: panelPrompt.prompt,
+      negativePrompt: panelPrompt.negative_prompt
+    });
+    if (!imageUrl) continue;
+    images.push({
+      panel_id: panelPrompt.panel_id,
+      image_url: imageUrl,
+      revised_prompt: panelPrompt.prompt,
+      width: 1500,
+      height: 2100
+    });
+  }
+  return images.length - before;
+}
+
+function fallbackImageModel(adapterId, primaryModel) {
+  if (adapterId === "browser-svg-renderer") return "deterministic-svg";
+  return primaryModel;
 }
 
 function buildDeterministicPanelSvgDataUrl({ panelId, prompt }) {
@@ -1370,6 +1458,76 @@ function isCloudflareFluxModel(model) {
   return String(model || "").includes("/flux-1-schnell");
 }
 
+function buildHuggingFaceImageRequestBody({ flow, env, panelId, prompt, negativePrompt }) {
+  const provider = String(env.CUSTOMCARD_HUGGINGFACE_IMAGE_PROVIDER || "fal-ai").trim() || "fal-ai";
+  const route = huggingFaceImageRoute(flow.model, provider);
+  const seed = numericSeed(`${flow.model}:${panelId}:${prompt}`) % 2147483647;
+  if (route.payloadFormat === "hf-inference") {
+    return {
+      url: route.url,
+      body: {
+        inputs: truncate(prompt, 2048),
+        parameters: {
+          negative_prompt: truncate(negativePrompt, 700),
+          width: 1024,
+          height: 1536,
+          num_inference_steps: 8,
+          seed
+        }
+      }
+    };
+  }
+  return {
+    url: route.url,
+    body: {
+      prompt: truncate(prompt, 2048),
+      negative_prompt: truncate(negativePrompt, 700),
+      image_size: {
+        width: 1024,
+        height: 1536
+      },
+      num_inference_steps: 8,
+      seed
+    }
+  };
+}
+
+function huggingFaceImageRoute(model, provider) {
+  if (provider === "hf-inference") {
+    return {
+      url: `https://router.huggingface.co/hf-inference/models/${String(model || "").trim()}`,
+      payloadFormat: "hf-inference"
+    };
+  }
+  const providerModel = huggingFaceImageProviderModel(model, provider);
+  return {
+    url: `https://router.huggingface.co/${provider}/${providerModel}`,
+    payloadFormat: provider
+  };
+}
+
+function huggingFaceImageProviderModel(model, provider) {
+  const modelId = String(model || "").trim();
+  const mappings = {
+    "fal-ai": {
+      "black-forest-labs/FLUX.1-schnell": "fal-ai/flux/schnell",
+      "Qwen/Qwen-Image": "fal-ai/qwen-image",
+      "Qwen/Qwen-Image-2512": "fal-ai/qwen-image-2512",
+      "Tongyi-MAI/Z-Image-Turbo": "fal-ai/z-image/turbo"
+    },
+    replicate: {
+      "black-forest-labs/FLUX.1-schnell": "black-forest-labs/flux-schnell",
+      "Qwen/Qwen-Image": "qwen/qwen-image",
+      "Tongyi-MAI/Z-Image-Turbo": "prunaai/z-image-turbo"
+    },
+    wavespeed: {
+      "black-forest-labs/FLUX.1-schnell": "wavespeed-ai/flux-schnell",
+      "Tongyi-MAI/Z-Image-Turbo": "wavespeed-ai/z-image/turbo"
+    }
+  };
+  return mappings[provider]?.[modelId] || modelId;
+}
+
 function buildDeepAiTextPrompt({ prompt, negativePrompt }) {
   const avoid = truncate(negativePrompt, 500);
   return truncate(
@@ -1455,6 +1613,14 @@ async function fetchWithProviderBackoff(fetchImpl, url, options, { retries = 0, 
     await sleep(providerBackoffDelayMs(response, attempt, baseDelayMs, maxDelayMs));
   }
   return response;
+}
+
+async function readProviderError(response, contentType) {
+  if (contentType.includes("application/json")) {
+    const data = await response.json().catch(() => undefined);
+    return data?.error?.message || data?.error || data?.message || data?.detail || data?.status || "request failed";
+  }
+  return (await response.text().catch(() => "")).slice(0, 300) || "request failed";
 }
 
 function isRetryableProviderStatus(status) {
@@ -3077,6 +3243,8 @@ function extractImageUrl(data, contentType) {
     data?.url ??
     data?.data?.[0]?.url ??
     data?.data?.[0]?.b64_json ??
+    data?.images?.[0]?.url ??
+    data?.images?.[0]?.image_url ??
     data?.output?.[0] ??
     data?.result?.image ??
     data?.image ??

@@ -246,8 +246,9 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(payload.generated_by).toBe("ai-text-only");
-    expect(payload.images).toHaveLength(0);
+    expect(payload.generated_by).toBe("ai-text-and-image");
+    expect(payload.images).toHaveLength(4);
+    expect(String((payload.images[0] as { image_url: string }).image_url)).toMatch(/^data:image\/svg\+xml;base64,/);
     expect(payload.ai_flow.card_image.provider_failure).toContain("rate limit 3/minute");
     expect(payload.provider_call_events).toEqual(
       expect.arrayContaining([
@@ -1158,6 +1159,69 @@ describe("AI card generator service", () => {
     expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("folded card mockup"))).toBe(true);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_deepai_token");
+  });
+
+  it("uses Hugging Face routed image generation and materializes provider image URLs", async () => {
+    let imageIndex = 0;
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL, _init?: RequestInit) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("router.huggingface.co/fal-ai/fal-ai/qwen-image")) {
+        imageIndex += 1;
+        return new Response(JSON.stringify({ images: [{ url: `https://hf-images.example/panel-${imageIndex}.png` }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.startsWith("https://hf-images.example/")) {
+        return new Response(new Uint8Array([1, 2, 3, imageIndex]), {
+          status: 200,
+          headers: { "content-type": "image/png" }
+        });
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        HUGGINGFACE_API_TOKEN: "test_hf_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "huggingface-image",
+        HUGGINGFACE_IMAGE_MODEL: "Qwen/Qwen-Image",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-huggingface-images" });
+    const hfProviderCalls = fetchImpl.mock.calls.filter(([url]) => String(url).includes("router.huggingface.co/fal-ai/"));
+    const hfBodies = hfProviderCalls.map((call) => JSON.parse(String((call[1] as RequestInit | undefined)?.body)));
+    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://hf-images.example/"));
+    const payload = result.payload as { images: Array<{ image_url: string; revised_prompt: string }> };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(9);
+    expect(hfProviderCalls).toHaveLength(4);
+    expect(hostedFetches).toHaveLength(4);
+    expect(
+      hfProviderCalls.every(
+        ([url, init]) =>
+          String(url) === "https://router.huggingface.co/fal-ai/fal-ai/qwen-image" &&
+          (init?.headers as Record<string, string>).authorization === "Bearer test_hf_token"
+      )
+    ).toBe(true);
+    expect(hfBodies.every((body) => body.prompt.includes("Full-bleed flat 2D artwork layer"))).toBe(true);
+    expect(hfBodies.every((body) => body.image_size.width === 1024 && body.image_size.height === 1536)).toBe(true);
+    expect(hfBodies.every((body) => Number.isInteger(body.seed))).toBe(true);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
+    expect(JSON.stringify(result.payload)).not.toContain("test_hf_token");
   });
 
   it("uses OpenAI Responses structured output and OpenAI image generation when configured", async () => {

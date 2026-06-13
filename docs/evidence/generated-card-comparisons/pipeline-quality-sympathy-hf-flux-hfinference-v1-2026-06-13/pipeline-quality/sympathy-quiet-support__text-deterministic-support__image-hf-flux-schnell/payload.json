@@ -1,0 +1,244 @@
+{
+  "draft_id": "ai-mqc1f53p-eli",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Quietly With You",
+      "palette": [
+        "warm ivory",
+        "muted gray-green",
+        "deep moss",
+        "soft taupe"
+      ],
+      "motifs": [
+        "quiet window light",
+        "meal bowl",
+        "folded cloth",
+        "muted phone",
+        "small key",
+        "single branch silhouette",
+        "soft open field"
+      ],
+      "border_style": "open-edge gallery composition with no closed frame and generous natural negative space",
+      "front_back_pairing": "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
+      "interior_pairing": "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "For Eli",
+        "body": "",
+        "art_direction": "Quietly With You front cover with open-edge gallery composition with no closed frame and generous natural negative space, clear title area, generous safe margins, warm ivory, muted gray-green, deep moss, soft taupe palette, and motifs that echo on the back panel.",
+        "visual_cue": "Flat quiet-support still-life sympathy cover with warm ivory open field, quiet window light, lower table plane, meal bowl, folded cloth, muted phone, small key, and a single branch silhouette at the right edge; keep upper/center text-safe space clear; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "upper",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, lower table plane, meal bowl, folded cloth, phone, key, and one right-edge branch silhouette; integrated clean upper/center text-safe area. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Flat quiet-support still-life sympathy cover with warm ivory open field, quiet window light, lower table plane, meal bowl, folded cloth, muted phone, small key, and a single branch silhouette at the right edge; keep upper/center text-safe space clear; avoid blank-message template, closed frame, physical paper card, and religious symbol. Keep natural negative space for",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "With You In This",
+        "body": "I am so sorry about your father. I will not try to explain the loss or fill the silence with easy words; I just want you to know you are not alone.",
+        "art_direction": "Quietly With You inside-left panel with open-edge gallery composition with no closed frame and generous natural negative space, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.",
+        "visual_cue": "Soft left interior artwork with warm ivory open field, small meal bowl and folded cloth in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, small meal bowl and folded cloth in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Soft left interior artwork with warm ivory open field, small meal bowl and folded cloth in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Jordan",
+        "body": "I am here for the practical things too: meals, rides, calls, and silence when talking is too much. May you have room to grieve at your own pace, with steady care nearby. With sympathy and friendship, Jordan.",
+        "art_direction": "Quietly With You inside-right message panel with matching open-edge gallery composition with no closed frame and generous natural negative space, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.",
+        "visual_cue": "Matching right interior artwork with calm open message field, muted phone and small key near the lower edge, and generous negative space; avoid route lines, cars, blank-message template, closed layout, and framed blank page.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, muted phone and small key near lower edge, quiet blank center, clean text-safe area, generous safe margins. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Matching right interior artwork with calm open message field, muted phone and small key near the lower edge, and generous negative space; avoid route lines, cars, blank-message template, closed layout, and framed blank page. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      },
+      {
+        "id": "back",
+        "headline": "With Steady Care",
+        "body": "For grief, practical help, and quiet support when words cannot hold enough.",
+        "art_direction": "Quietly With You back panel with mostly negative space, subtle lower ornamentation, open-edge gallery composition with no closed frame and generous natural negative space, and border details that visually pair with the front cover.",
+        "visual_cue": "Minimal back cover with one small meal bowl, muted phone, small key, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "minimal-sans",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support still-life artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal bowl, phone, key, and branch echo in the lower band, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Minimal back cover with one small meal bowl, muted phone, small key, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      }
+    ],
+    "memory_citations": [
+      "Eli lost his father.",
+      "Jordan wants to offer practical support: meals, rides, calls, and silence."
+    ]
+  },
+  "images": [],
+  "generated_by": "ai-text-only",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "primary_adapter_id": "deterministic-customer-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "deterministic-support-copy",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "huggingface-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "black-forest-labs/FLUX.1-schnell",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage.."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-855336e5",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-hf-flux-schnell-1781335915480",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "provider": "CustomCard deterministic",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T07:31:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "deterministic-customer-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": true,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-ee9c1e58",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-hf-flux-schnell-1781335915480",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "provider": "CustomCard deterministic",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T07:31:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "deterministic-customer-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": true,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-6b4a5c55",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-hf-flux-schnell-1781335915480",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "huggingface-image",
+      "provider": "Hugging Face",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 4,
+      "rate_limit_window_start": "2026-06-13T07:31:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "huggingface-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-3a379671",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-hf-flux-schnell-1781335915480",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "huggingface-image",
+      "provider": "Hugging Face",
+      "capability": "image-generation",
+      "status": "fallback-selected",
+      "fallback_reason": "provider-unavailable",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 4,
+      "rate_limit_window_start": "2026-06-13T07:31:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "huggingface-image",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage.."
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 4,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": true,
+  "external_network_calls": true
+}

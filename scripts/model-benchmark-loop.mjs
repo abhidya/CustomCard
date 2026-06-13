@@ -544,6 +544,34 @@ const imageCandidates = [
     requiredEnv: ["GOOGLE_GENERATIVE_AI_API_KEY"]
   },
   {
+    id: "image-hf-flux-schnell",
+    label: "Hugging Face FLUX.1 Schnell via Inference Providers",
+    adapterId: "huggingface-image",
+    model: "black-forest-labs/FLUX.1-schnell",
+    requiredEnv: ["HUGGINGFACE_API_TOKEN"]
+  },
+  {
+    id: "image-hf-qwen-image",
+    label: "Hugging Face Qwen Image via Inference Providers",
+    adapterId: "huggingface-image",
+    model: "Qwen/Qwen-Image",
+    requiredEnv: ["HUGGINGFACE_API_TOKEN"]
+  },
+  {
+    id: "image-hf-qwen-image-2512",
+    label: "Hugging Face Qwen Image 2512 via Inference Providers",
+    adapterId: "huggingface-image",
+    model: "Qwen/Qwen-Image-2512",
+    requiredEnv: ["HUGGINGFACE_API_TOKEN"]
+  },
+  {
+    id: "image-hf-z-image-turbo",
+    label: "Hugging Face Z-Image Turbo via Inference Providers",
+    adapterId: "huggingface-image",
+    model: "Tongyi-MAI/Z-Image-Turbo",
+    requiredEnv: ["HUGGINGFACE_API_TOKEN"]
+  },
+  {
     id: "image-browser-svg-renderer",
     label: "Deterministic browser SVG renderer",
     adapterId: "browser-svg-renderer",
@@ -553,10 +581,6 @@ const imageCandidates = [
 ];
 
 const blockedImageCandidates = [
-  ["image-hf-flux-schnell", "huggingface-image", "black-forest-labs/FLUX.1-schnell", "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."],
-  ["image-hf-qwen-image", "huggingface-image", "Qwen/Qwen-Image", "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."],
-  ["image-hf-qwen-image-2512", "huggingface-image", "Qwen/Qwen-Image-2512", "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."],
-  ["image-hf-z-image-turbo", "huggingface-image", "Tongyi-MAI/Z-Image-Turbo", "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."],
   ["image-fal-flux", "fal-image", "fal-ai/flux/schnell", "FAL_KEY missing and generator has no fal-image executor."],
   ["image-together-flux", "together-image", "black-forest-labs/FLUX.1-schnell-Free", "TOGETHER_API_KEY missing and generator has no together-image executor."],
   ["image-replicate-flux", "replicate-image", "black-forest-labs/flux-schnell", "REPLICATE_API_TOKEN missing and generator has no replicate-image executor."]
@@ -770,7 +794,15 @@ export function typographyExperimentRuns(candidates) {
 export function pipelineQualityRuns(candidates) {
   const story = stories[pipelineQualityStoryId];
   const textIds = new Set(["text-deterministic-support", "text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
-  const imageIds = new Set(["image-deepai-text2img", "image-browser-svg-renderer", "image-cloudflare-flux-schnell"]);
+  const imageIds = new Set([
+    "image-deepai-text2img",
+    "image-browser-svg-renderer",
+    "image-cloudflare-flux-schnell",
+    "image-hf-flux-schnell",
+    "image-hf-qwen-image",
+    "image-hf-qwen-image-2512",
+    "image-hf-z-image-turbo"
+  ]);
   const texts = (candidates.text || []).filter((candidate) => candidate.configured && textIds.has(candidate.id));
   const selectedTexts = texts.length > 0 ? texts : [
     {
