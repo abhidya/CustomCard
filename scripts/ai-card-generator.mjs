@@ -884,7 +884,7 @@ function themeForPrompt(prompt) {
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
     return {
-      kind: "sympathy-threshold",
+      kind: "sympathy-papercut",
       background: (panelId) => panelId === "front" || panelId === "back" ? "#17241f" : "#fbf5e9",
       accent: (panelId) => panelId.startsWith("inside") ? "#53685f" : "#ddc998",
       count: 0,
@@ -1350,37 +1350,50 @@ function sympathyAtelierBorder(panelId) {
 
 function sympathyThresholdTexture(panelId) {
   const dark = panelId === "front" || panelId === "back";
-  const base = dark ? "#17241f" : "#fbf5e9";
-  const glow = dark ? "#ead7a9" : "#ddc998";
-  const ink = dark ? "#0f1a16" : "#53685f";
+  const base = dark ? "#101c18" : "#fbf4e6";
+  const glow = dark ? "#ead9aa" : "#d9bd7f";
+  const ink = dark ? "#0a1411" : "#53685f";
   return `
     <defs>
       <filter id="sympathyThresholdGrain" x="-8%" y="-8%" width="116%" height="116%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.017 0.031" numOctaves="4" seed="41"/>
+        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.034" numOctaves="4" seed="47"/>
         <feColorMatrix type="saturate" values="0"/>
         <feComponentTransfer>
-          <feFuncA type="table" tableValues="0 0.14"/>
+          <feFuncA type="table" tableValues="0 0.16"/>
         </feComponentTransfer>
       </filter>
       <filter id="sympathyThresholdSoft" x="-12%" y="-12%" width="124%" height="124%">
-        <feGaussianBlur stdDeviation="18"/>
+        <feGaussianBlur stdDeviation="22"/>
+      </filter>
+      <filter id="sympathyCutShadow" x="-18%" y="-18%" width="136%" height="136%">
+        <feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#07100d" flood-opacity="${dark ? 0.34 : 0.12}"/>
       </filter>
       <linearGradient id="sympathyThresholdWash" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.3 : 0.34}"/>
-        <stop offset="0.5" stop-color="${glow}" stop-opacity="${dark ? 0.1 : 0.16}"/>
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.36 : 0.34}"/>
+        <stop offset="0.48" stop-color="${glow}" stop-opacity="${dark ? 0.12 : 0.16}"/>
         <stop offset="1" stop-color="${base}" stop-opacity="0"/>
       </linearGradient>
       <linearGradient id="sympathyThresholdDoor" x1="0" x2="1" y1="0" y2="0">
-        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.38 : 0.22}"/>
-        <stop offset="0.34" stop-color="${glow}" stop-opacity="${dark ? 0.16 : 0.1}"/>
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.52 : 0.25}"/>
+        <stop offset="0.35" stop-color="${glow}" stop-opacity="${dark ? 0.2 : 0.1}"/>
         <stop offset="1" stop-color="${base}" stop-opacity="0"/>
       </linearGradient>
+      <linearGradient id="sympathyPaperFace" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fffaf0" stop-opacity="${dark ? 0.28 : 0.72}"/>
+        <stop offset="1" stop-color="#d9bd7f" stop-opacity="${dark ? 0.08 : 0.16}"/>
+      </linearGradient>
+      <radialGradient id="sympathyQuietGlow" cx="42%" cy="34%" r="62%">
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.2 : 0.28}"/>
+        <stop offset="0.55" stop-color="${glow}" stop-opacity="${dark ? 0.07 : 0.1}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </radialGradient>
     </defs>
     <rect width="1500" height="2100" fill="${base}"/>
-    <rect width="1500" height="2100" fill="${dark ? "#ead7a9" : ink}" filter="url(#sympathyThresholdGrain)" opacity="${dark ? 0.24 : 0.12}"/>
-    <path d="M-160 ${dark ? 250 : 180} C230 ${dark ? 150 : 250} 540 ${dark ? 240 : 170} 820 ${dark ? 158 : 230} C1060 ${dark ? 96 : 164} 1288 ${dark ? 164 : 190} 1660 ${dark ? 54 : 134} V${dark ? 760 : 560} C1250 ${dark ? 710 : 540} 970 ${dark ? 780 : 620} 650 ${dark ? 850 : 692} C350 ${dark ? 918 : 740} 130 ${dark ? 850 : 704} -160 ${dark ? 960 : 800} Z" fill="url(#sympathyThresholdWash)"/>
-    <path d="M-120 1840 C250 1694 590 1788 890 1668 C1134 1570 1334 1594 1600 1510" fill="none" stroke="${glow}" stroke-width="${dark ? 22 : 13}" stroke-linecap="round" opacity="${dark ? 0.12 : 0.1}"/>
-    <path d="M-80 1930 C278 1794 628 1894 938 1778 C1170 1692 1368 1710 1588 1640" fill="none" stroke="${ink}" stroke-width="${dark ? 8 : 5}" stroke-linecap="round" opacity="${dark ? 0.16 : 0.1}"/>
+    <rect width="1500" height="2100" fill="${dark ? "#ead9aa" : ink}" filter="url(#sympathyThresholdGrain)" opacity="${dark ? 0.26 : 0.11}"/>
+    <ellipse cx="${dark ? 610 : 770}" cy="${dark ? 620 : 680}" rx="${dark ? 650 : 570}" ry="${dark ? 470 : 390}" fill="url(#sympathyQuietGlow)"/>
+    <path d="M-160 ${dark ? 236 : 172} C250 ${dark ? 140 : 250} 548 ${dark ? 244 : 166} 822 ${dark ? 152 : 226} C1070 ${dark ? 86 : 156} 1304 ${dark ? 160 : 190} 1660 ${dark ? 48 : 132} V${dark ? 760 : 560} C1250 ${dark ? 705 : 536} 970 ${dark ? 784 : 620} 650 ${dark ? 852 : 690} C350 ${dark ? 920 : 740} 130 ${dark ? 856 : 704} -160 ${dark ? 968 : 800} Z" fill="url(#sympathyThresholdWash)"/>
+    <path d="M-120 1840 C250 1694 590 1788 890 1668 C1134 1570 1334 1594 1600 1510" fill="none" stroke="${glow}" stroke-width="${dark ? 26 : 16}" stroke-linecap="round" opacity="${dark ? 0.13 : 0.1}"/>
+    <path d="M-80 1930 C278 1794 628 1894 938 1778 C1170 1692 1368 1710 1588 1640" fill="none" stroke="${ink}" stroke-width="${dark ? 8 : 5}" stroke-linecap="round" opacity="${dark ? 0.17 : 0.1}"/>
   `;
 }
 
@@ -1388,15 +1401,17 @@ function sympathyThresholdHero(panelId) {
   if (panelId === "front") {
     return `
       <g data-customcard-hero="sympathy-threshold-front">
-        <rect x="216" y="690" width="1068" height="780" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.7" filter="url(#sympathyThresholdSoft)"/>
-        <path d="M282 720 V1470 H1208" fill="none" stroke="#ead7a9" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.42"/>
-        <path d="M330 770 V1410 H1138" fill="none" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
-        <path d="M248 1548 C438 1490 638 1528 842 1458 C1028 1394 1172 1398 1308 1326" fill="none" stroke="#ead7a9" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
-        <path d="M994 628 C928 820 938 1004 1020 1180 C1080 1308 1068 1426 1008 1540" fill="none" stroke="#d4cfb9" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
-        <path d="M1012 834 C918 794 850 842 842 948 C944 984 1008 936 1012 834Z" fill="#d4cfb9" opacity="0.2"/>
-        <path d="M982 1184 C1092 1134 1168 1190 1176 1308 C1060 1350 994 1298 982 1184Z" fill="#879789" opacity="0.18"/>
-        <path d="M420 1668 H1080" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.22"/>
-        <path d="M506 1712 H994" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+        <path d="M170 792 C332 690 512 724 662 646 C804 572 972 554 1158 604 L1264 1476 C1048 1534 890 1518 724 1592 C550 1668 342 1640 188 1738 Z" fill="#0b1714" opacity="0.32" filter="url(#sympathyCutShadow)"/>
+        <path d="M206 748 C376 650 548 690 704 612 C866 532 1012 546 1186 590 L1246 1438 C1032 1502 878 1488 712 1568 C536 1652 348 1612 196 1708 Z" fill="url(#sympathyPaperFace)" opacity="0.26"/>
+        <rect x="256" y="818" width="468" height="746" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.88" filter="url(#sympathyThresholdSoft)"/>
+        <path d="M286 848 V1536 H1024" fill="none" stroke="#ead9aa" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.52"/>
+        <path d="M340 904 V1470 H952" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
+        <path d="M226 1584 C436 1502 658 1542 866 1462 C1046 1392 1194 1404 1320 1324" fill="none" stroke="#ead9aa" stroke-width="10" stroke-linecap="round" opacity="0.34"/>
+        <path d="M920 630 C850 842 880 1066 982 1248 C1058 1386 1038 1512 950 1642" fill="none" stroke="#cfd3bf" stroke-width="9" stroke-linecap="round" opacity="0.22"/>
+        <path d="M946 840 C842 794 762 856 756 980 C866 1018 940 958 946 840Z" fill="#cfd3bf" opacity="0.22"/>
+        <path d="M918 1188 C1040 1138 1130 1204 1132 1342 C1004 1380 926 1316 918 1188Z" fill="#7d8f7f" opacity="0.19"/>
+        <path d="M362 1738 H1062" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.24"/>
+        <path d="M468 1784 H912" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
       </g>
     `;
   }
@@ -1404,29 +1419,34 @@ function sympathyThresholdHero(panelId) {
     const mirrored = panelId === "inside-right";
     const stripX = mirrored ? 1344 : 0;
     const lineX = mirrored ? 1280 : 220;
-    const doorX = mirrored ? 106 : 1040;
+    const doorX = mirrored ? 92 : 1054;
+    const paperPath = mirrored
+      ? "M152 1440 C338 1360 528 1396 694 1328 C858 1260 990 1286 1160 1226 L1242 1660 C1050 1708 884 1686 714 1754 C524 1830 340 1786 160 1868 Z"
+      : "M1348 1440 C1162 1360 972 1396 806 1328 C642 1260 510 1286 340 1226 L258 1660 C450 1708 616 1686 786 1754 C976 1830 1160 1786 1340 1868 Z";
     return `
       <g data-customcard-hero="sympathy-threshold-interior-${panelId}">
-        <rect x="${stripX}" y="0" width="156" height="2100" fill="#17241f" opacity="0.055"/>
+        <rect x="${stripX}" y="0" width="156" height="2100" fill="#101c18" opacity="0.065"/>
+        <path d="${paperPath}" fill="url(#sympathyPaperFace)" opacity="0.32" filter="url(#sympathyCutShadow)"/>
         <path d="M${lineX} 260 C${mirrored ? "1208 572 1238 890 1300 1190 C1342 1392 1294 1554 1196 1712" : "292 572 262 890 200 1190 C158 1392 206 1554 304 1712"}" fill="none" stroke="#53685f" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
-        <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
-        <rect x="${doorX}" y="1456" width="354" height="210" rx="10" fill="#ddc998" opacity="0.1" filter="url(#sympathyThresholdSoft)"/>
-        <path d="M${doorX + 38} 1482 V1640 H${doorX + 316}" fill="none" stroke="#b49b69" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+        <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+        <rect x="${doorX}" y="1468" width="354" height="216" rx="10" fill="#d9bd7f" opacity="0.12" filter="url(#sympathyThresholdSoft)"/>
+        <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
         <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
-        <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#b49b69" stroke-width="6" stroke-linecap="round" opacity="0.16"/>
-        <path d="M${mirrored ? "1168 536 C1088 496 1024 542 1016 642 C1102 678 1162 630 1168 536Z" : "332 536 C412 496 476 542 484 642 C398 678 338 630 332 536Z"}" fill="#879789" opacity="0.16"/>
-        <path d="M${mirrored ? "1194 1264 C1104 1218 1032 1268 1024 1378 C1118 1424 1188 1372 1194 1264Z" : "306 1264 C396 1218 468 1268 476 1378 C382 1424 312 1372 306 1264Z"}" fill="#879789" opacity="0.12"/>
+        <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" opacity="0.17"/>
+        <path d="M${mirrored ? "1168 536 C1088 496 1024 542 1016 642 C1102 678 1162 630 1168 536Z" : "332 536 C412 496 476 542 484 642 C398 678 338 630 332 536Z"}" fill="#7d8f7f" opacity="0.16"/>
+        <path d="M${mirrored ? "1194 1264 C1104 1218 1032 1268 1024 1378 C1118 1424 1188 1372 1194 1264Z" : "306 1264 C396 1218 468 1268 476 1378 C382 1424 312 1372 306 1264Z"}" fill="#7d8f7f" opacity="0.13"/>
       </g>
     `;
   }
   return `
     <g data-customcard-hero="sympathy-threshold-back">
-      <rect x="278" y="1260" width="944" height="430" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.42" filter="url(#sympathyThresholdSoft)"/>
-      <path d="M384 1326 V1648 H1116" fill="none" stroke="#ead7a9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
-      <path d="M448 1384 V1594 H1052" fill="none" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.16"/>
-      <path d="M280 1744 C456 1678 650 1718 840 1662 C1030 1606 1186 1624 1320 1558" fill="none" stroke="#ead7a9" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
-      <path d="M488 1812 H1012" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
-      <path d="M604 1854 H896" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+      <path d="M184 1244 C374 1156 570 1194 758 1118 C958 1038 1116 1060 1312 998 L1390 1640 C1164 1698 990 1678 800 1754 C610 1832 394 1794 186 1886 Z" fill="url(#sympathyPaperFace)" opacity="0.2" filter="url(#sympathyCutShadow)"/>
+      <rect x="294" y="1308" width="748" height="360" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.5" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M384 1340 V1660 H1116" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.34"/>
+      <path d="M450 1398 V1602 H1052" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.17"/>
+      <path d="M278 1748 C456 1678 650 1718 842 1662 C1032 1606 1188 1624 1326 1554" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
+      <path d="M488 1816 H1012" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      <path d="M604 1858 H896" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
     </g>
   `;
 }

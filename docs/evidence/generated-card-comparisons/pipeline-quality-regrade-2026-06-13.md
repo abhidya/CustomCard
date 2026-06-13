@@ -30,6 +30,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` DeepAI v13 | `image-deepai-text2img` -> fallback `browser-svg-renderer` | 12 | 68 | F fallback only; DeepAI 400 | [contact sheet](./pipeline-quality-sympathy-deterministic-deepai-v13-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/contact-sheet.png) |
 | `text-deterministic-support` atelier SVG v27 | `image-browser-svg-renderer` | 66 | 98 | C+ rough candidate; clean minimal local art, not premium | [manual grade](./pipeline-quality-sympathy-atelier-svg-v27-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` threshold SVG v30 | `image-browser-svg-renderer` | 70 | 98 | C+/B- rough proof; clearer, still not premium | [manual grade](./pipeline-quality-sympathy-threshold-svg-v30-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v32 | `image-browser-svg-renderer` | 76 | 98 | B- promising proof; strongest local art so far | [manual grade](./pipeline-quality-sympathy-papercut-svg-v32-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -53,6 +54,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - DeepAI v13 failed with a provider 400 under the stricter prompt and fell back to local SVG. Grade it as route failure/fallback only, not DeepAI visual quality.
 - Atelier SVG v27 is the best latest controllable local route at product `66/100`, contract `98/100`. It replaces crude literal SVG support objects with abstract dark/ivory washes and subtle support-object marks, and disables synthetic preview text plates for local SVG so the contact sheet no longer looks boxed. This is a real improvement over the user-calibrated `8/100` SVG controls, but still not premium: interiors remain minimal/template-adjacent.
 - Threshold SVG v30 is the new best latest controllable local route at product `70/100`, contract `98/100`. It removes car-like object ambiguity, uses a clearer dark threshold-light motif, switches the back to calmer serif typography, and enlarges contact sheets for visual review. It is still not top-band: the art remains deterministic, abstract, and template-adjacent rather than premium/bespoke.
+- Paper-cut SVG v32 is the new best latest controllable local route at product `76/100`, contract `98/100`. It makes the front/back feel like layered paper-cut threshold art instead of flat stationery marks. The score still stays below top-band because interiors remain generic and the route is still deterministic vector art, not a premium bespoke illustration.
 
 ## Improvement Loop
 
@@ -91,6 +93,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | DeepAI v13 | Product 12 fallback, contract 68 | Stricter prompt hit DeepAI 400 and local fallback rendered. DeepAI route remains unreliable under this prompt. |
 | Atelier SVG v26-v27 | Product 66, contract 98 on v27 | Replacing crude literal SVG objects with an abstract atelier art system and removing local-SVG preview plates raised the controllable route to the best latest score. Still capped: clean minimal stationery, not a premium bespoke card. |
 | Threshold SVG v28-v30 | Product 70, contract 98 on v30 | Replacing object marks with threshold-light SVG art removes car ambiguity and improves readability/evidence display. Still capped by deterministic/template-like visual craft. |
+| Paper-cut SVG v31-v32 | Product 76, contract 98 on v32 | Layered paper-cut threshold scene improves visible craft and front/back hook. Still not enough for premium/top-band because interiors remain generic and deterministic. |
 
 ## Prompt/Skill Changes Applied
 
@@ -121,6 +124,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added deterministic preview text fields for pipeline-quality contact sheets, tuned interior body wrapping, and made sympathy negative prompts input-aware for scenic/clutter failures. These are contract/readability improvements, not product-quality proof.
 - Added a new local `sympathy-atelier` deterministic SVG theme with abstract dark/ivory washes, subtle support-object marks, and local-SVG preview behavior that avoids synthetic text plates. This improves the controllable route without external provider cost.
 - Replaced the latest sympathy local SVG route with a `sympathy-threshold` art system that removes crude support-object marks, uses a dark threshold-light motif, restores calmer serif back typography, tightens interior wrapping, and enlarges contact sheets.
+- Reworked the latest local sympathy renderer into `sympathy-papercut`: layered paper-cut threshold composition, stronger dark cover/back depth, paired interior paper layers, and explicit evidence metadata.
 
 ## Commands
 
@@ -165,4 +169,6 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-browser-svg-renderer --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-atelier-svg-v27-2026-06-13 --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-threshold-svg-v30-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-threshold-svg-v30-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v32-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v32-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 ```
