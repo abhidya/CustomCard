@@ -1410,6 +1410,15 @@ function sympathyThresholdHero(panelId) {
         <path d="M920 630 C850 842 880 1066 982 1248 C1058 1386 1038 1512 950 1642" fill="none" stroke="#cfd3bf" stroke-width="9" stroke-linecap="round" opacity="0.22"/>
         <path d="M946 840 C842 794 762 856 756 980 C866 1018 940 958 946 840Z" fill="#cfd3bf" opacity="0.22"/>
         <path d="M918 1188 C1040 1138 1130 1204 1132 1342 C1004 1380 926 1316 918 1188Z" fill="#7d8f7f" opacity="0.19"/>
+        <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.33">
+          <path d="M394 1314 C438 1290 500 1290 548 1314 C540 1374 410 1374 394 1314Z" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round"/>
+          <path d="M432 1280 H510" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.62"/>
+          <path d="M624 1336 C690 1292 760 1376 828 1322" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="910" cy="1326" r="48" fill="none" stroke="#ead9aa" stroke-width="7" opacity="0.72"/>
+          <path d="M886 1298 C912 1276 946 1288 958 1320" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.58"/>
+          <path d="M1028 1278 H1140 V1390 H1028 Z" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linejoin="round" opacity="0.58"/>
+          <path d="M1056 1308 H1112 V1364 H1056 Z" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linejoin="round" opacity="0.34"/>
+        </g>
         <path d="M362 1738 H1062" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.24"/>
         <path d="M468 1784 H912" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
       </g>
@@ -1438,10 +1447,19 @@ function sympathyThresholdHero(panelId) {
         <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
         <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
         <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" opacity="0.17"/>
-        <g opacity="0.16">
-          <path d="M${mirrored ? "930 1538 C1016 1514 1104 1520 1190 1552" : "310 1538 C396 1514 484 1520 570 1552"}" fill="none" stroke="#53685f" stroke-width="6" stroke-linecap="round"/>
-          <path d="M${mirrored ? "906 1600 H1168" : "332 1600 H594"}" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round"/>
-          <path d="M${mirrored ? "982 1662 H1110" : "390 1662 H518"}" stroke="#53685f" stroke-width="4" stroke-linecap="round"/>
+        <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.18">
+          ${mirrored ? `
+            <path d="M884 1534 C950 1490 1018 1574 1086 1520 C1134 1480 1180 1498 1218 1530" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="966" cy="1620" r="42" fill="none" stroke="#d9bd7f" stroke-width="6"/>
+            <path d="M946 1598 C970 1578 1000 1590 1010 1618" fill="none" stroke="#53685f" stroke-width="4" stroke-linecap="round"/>
+            <path d="M1070 1570 H1180 V1680 H1070 Z" fill="none" stroke="#53685f" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M1098 1598 H1152 V1652 H1098 Z" fill="none" stroke="#d9bd7f" stroke-width="3" stroke-linejoin="round"/>
+          ` : `
+            <path d="M312 1536 C362 1508 440 1510 490 1538 C474 1604 330 1604 312 1536Z" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round"/>
+            <path d="M350 1498 H450" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round"/>
+            <path d="M544 1540 C610 1500 686 1584 754 1534" fill="none" stroke="#53685f" stroke-width="6" stroke-linecap="round"/>
+            <path d="M612 1604 H796" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round"/>
+          `}
         </g>
         <path d="M${mirrored ? "1168 536 C1088 496 1024 542 1016 642 C1102 678 1162 630 1168 536Z" : "332 536 C412 496 476 542 484 642 C398 678 338 630 332 536Z"}" fill="#7d8f7f" opacity="0.16"/>
         <path d="M${mirrored ? "1194 1264 C1104 1218 1032 1268 1024 1378 C1118 1424 1188 1372 1194 1264Z" : "306 1264 C396 1218 468 1268 476 1378 C382 1424 312 1372 306 1264Z"}" fill="#7d8f7f" opacity="0.13"/>
@@ -1454,6 +1472,12 @@ function sympathyThresholdHero(panelId) {
       <rect x="476" y="1374" width="548" height="304" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.5" filter="url(#sympathyThresholdSoft)"/>
       <path d="M540 1418 V1628 H958" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
       <path d="M592 1468 V1584 H922" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.17"/>
+      <g data-customcard-support-relief="back-care-row" opacity="0.24">
+        <path d="M596 1514 C626 1498 672 1498 704 1516 C696 1556 606 1556 596 1514Z" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round"/>
+        <path d="M748 1538 C790 1508 838 1566 882 1528" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="926" cy="1528" r="28" fill="none" stroke="#ead9aa" stroke-width="5"/>
+        <path d="M972 1500 H1030 V1558 H972 Z" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linejoin="round"/>
+      </g>
       <path d="M360 1748 C526 1684 676 1718 842 1662 C1014 1604 1148 1624 1284 1562" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
       <path d="M548 1798 H952" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
       <path d="M642 1840 H858" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
