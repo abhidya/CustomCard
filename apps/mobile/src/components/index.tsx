@@ -161,6 +161,16 @@ export function Card({
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
+/** A card title with optional trailing content (commonly a status Pill). */
+export function CardRow({ title, trailing }: { title: string; trailing?: React.ReactNode }) {
+  return (
+    <View style={styles.cardRow}>
+      <Text style={styles.cardRowTitle}>{title}</Text>
+      {trailing ?? null}
+    </View>
+  );
+}
+
 export function SectionHeading({ title, detail }: { title: string; detail?: string }) {
   return (
     <View style={styles.sectionHeading} accessibilityRole="header">
@@ -253,6 +263,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   sectionHeading: { gap: spacing.xs, marginTop: spacing.lg, marginBottom: spacing.sm },
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: spacing.sm
+  },
+  cardRowTitle: { ...typography.heading, fontSize: 16, flexShrink: 1 },
   pill: {
     alignSelf: "flex-start",
     overflow: "hidden",
