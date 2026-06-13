@@ -284,6 +284,109 @@ function sourceAssetDataUrl(fileName, contentType = "image/png") {
   return `data:${contentType};base64,${readFileSync(filePath).toString("base64")}`;
 }
 
+function museumCareDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="museumMute" color-interpolation-filters="sRGB">
+        <feColorMatrix type="saturate" values="${dark ? 0.52 : 0.42}"/>
+        <feComponentTransfer>
+          <feFuncR type="gamma" amplitude="${dark ? 0.78 : 0.98}" exponent="1.03"/>
+          <feFuncG type="gamma" amplitude="${dark ? 0.82 : 0.98}" exponent="1.02"/>
+          <feFuncB type="gamma" amplitude="${dark ? 0.72 : 0.9}" exponent="1.05"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="museumSoft" x="-10%" y="-10%" width="120%" height="120%">
+        <feGaussianBlur stdDeviation="1.6"/>
+      </filter>
+      <clipPath id="museumLowerCareClip">
+        <path d="M-110 1128 C210 1036 518 1086 824 1018 C1108 954 1338 992 1610 900 V2140 H-110 Z"/>
+      </clipPath>
+      <clipPath id="museumInteriorCareClip">
+        <path d="M-90 1218 C220 1118 540 1180 838 1096 C1100 1022 1330 1050 1598 948 V2130 H-90 Z"/>
+      </clipPath>
+      <linearGradient id="museumDarkVeil" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#06100d" stop-opacity="${dark ? 0.72 : 0.08}"/>
+        <stop offset="0.4" stop-color="#06100d" stop-opacity="${dark ? 0.2 : 0.04}"/>
+        <stop offset="1" stop-color="#06100d" stop-opacity="${dark ? 0.56 : 0.1}"/>
+      </linearGradient>
+      <linearGradient id="museumIvoryVeil" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff9ea" stop-opacity="0.68"/>
+        <stop offset="0.52" stop-color="#fff3d8" stop-opacity="0.36"/>
+        <stop offset="1" stop-color="#ead4a1" stop-opacity="0.16"/>
+      </linearGradient>
+      <linearGradient id="museumTextVeil" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="${dark ? "#07120f" : "#fff9ea"}" stop-opacity="${dark ? 0.76 : 0.72}"/>
+        <stop offset="0.55" stop-color="${dark ? "#07120f" : "#fff9ea"}" stop-opacity="${dark ? 0.36 : 0.58}"/>
+        <stop offset="1" stop-color="${dark ? "#07120f" : "#fff9ea"}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  `;
+}
+
+function museumImage({ fileName, contentType = "image/jpeg", x, y, imageWidth, imageHeight, opacity = 1, soft = false }) {
+  const href = sourceAssetDataUrl(fileName, contentType);
+  if (!href) return "";
+  const filter = soft ? ` filter="url(#museumMute) url(#museumSoft)"` : ` filter="url(#museumMute)"`;
+  return `<image href="${href}" x="${x}" y="${y}" width="${imageWidth}" height="${imageHeight}" preserveAspectRatio="xMidYMid slice" opacity="${opacity}"${filter}/>`;
+}
+
+function museumCarePanelSvg(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const botanical = museumImage({
+    fileName: "aic-sargent-thistles.jpg",
+    x: dark ? -720 : -620,
+    y: dark ? -120 : -70,
+    imageWidth: dark ? 2700 : 2640,
+    imageHeight: dark ? 2040 : 1988,
+    opacity: dark ? 0.26 : 0.5,
+    soft: true
+  });
+  const lowerStillLife = museumImage({
+    fileName: "aic-pieter-claesz-still-life.jpg",
+    x: dark ? -980 : -860,
+    y: dark ? 780 : 978,
+    imageWidth: dark ? 3480 : 3220,
+    imageHeight: dark ? 2040 : 1888,
+    opacity: dark ? 0.72 : 0.44,
+    soft: false
+  });
+  const careClip = inside ? "museumInteriorCareClip" : "museumLowerCareClip";
+  const fullStillLife = dark
+    ? museumImage({
+        fileName: "aic-pieter-claesz-still-life.jpg",
+        x: -1080,
+        y: 600,
+        imageWidth: 3700,
+        imageHeight: 2170,
+        opacity: panelId === "front" ? 0.52 : 0.42,
+        soft: false
+      })
+    : "";
+  const interiorGuard = inside
+    ? `<path d="M-80 0 H1580 V1050 C1240 992 1018 1048 724 1010 C422 970 186 1030 -80 942 Z" fill="url(#museumTextVeil)"/>
+       <ellipse cx="742" cy="610" rx="690" ry="486" fill="#fff9ea" opacity="0.18"/>`
+    : "";
+  const topTextVeil = dark
+    ? `<path d="M-80 0 H1580 V878 C1240 804 1026 866 728 824 C430 782 192 842 -80 760 Z" fill="url(#museumTextVeil)"/>`
+    : "";
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${gouacheDefs({ dark })}
+  ${museumCareDefs({ dark })}
+  <rect width="${width}" height="${height}" fill="${dark ? "#07120f" : "#f9efd8"}"/>
+  ${fullStillLife}
+  ${botanical}
+  <g clip-path="url(#${careClip})">
+    ${lowerStillLife}
+    <rect width="${width}" height="${height}" fill="${dark ? "url(#museumDarkVeil)" : "url(#museumIvoryVeil)"}"/>
+  </g>
+  ${topTextVeil}
+  ${interiorGuard}
+  ${dark ? `<rect width="${width}" height="${height}" fill="#06100d" opacity="${panelId === "back" ? 0.12 : 0.05}"/>` : ""}
+</svg>`;
+}
+
 function licensedPhotoDefs({ dark = false } = {}) {
   return `
     <defs>
@@ -1052,6 +1155,11 @@ function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_BLOCKPRINT_PRACTICAL_CARE_ASSETS === "enabled") {
     return monotypePanelSvg(panelId);
   }
+  if (process.env.CUSTOMCARD_GOUACHE_PRACTICAL_CARE_ASSETS === "enabled") {
+    return gouachePanelSvg(panelId);
+  }
+  const museum = museumCarePanelSvg(panelId);
+  if (museum) return museum;
   const gouache = gouachePanelSvg(panelId);
   if (gouache) return gouache;
   const monotype = monotypePanelSvg(panelId);

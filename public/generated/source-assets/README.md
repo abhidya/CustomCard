@@ -65,3 +65,29 @@
 - Download URL used: `https://upload.wikimedia.org/wikipedia/commons/5/55/Food_package.jpg`
 - Render copy: `commons-cc0-food-package.png`, converted locally from JPG with Sharp for inspection.
 - Use: reserve source for future delivery/meal package composition; not used in v100 output.
+
+## `aic-pieter-claesz-still-life.jpg`
+
+- Source: Art Institute of Chicago public API / IIIF image service
+- Title: `Still Life`
+- Creator: Pieter Claesz
+- Date: c. 1625
+- Artwork ID: `21682`
+- Image ID: `574695d5-6bf3-fe58-a1d5-e6cbb5e10c77`
+- License/status: public-domain artwork image; AIC API metadata is CC0 except descriptions.
+- AIC source URL: `https://www.artic.edu/artworks/21682/still-life`
+- Download URL used: `https://www.artic.edu/iiif/2/574695d5-6bf3-fe58-a1d5-e6cbb5e10c77/full/1800,/0/default.jpg`
+- Use: v113 museum-care route for dark front/back still-life texture and practical meal/table source imagery.
+
+## `aic-sargent-thistles.jpg`
+
+- Source: Art Institute of Chicago public API / IIIF image service
+- Title: `Thistles`
+- Creator: John Singer Sargent
+- Date: 1883-89
+- Artwork ID: `145807`
+- Image ID: `79b94ddd-e208-1993-01ab-98f75174fe88`
+- License/status: public-domain artwork image; AIC API metadata is CC0 except descriptions.
+- AIC source URL: `https://www.artic.edu/artworks/145807/thistles`
+- Download URL used: `https://www.artic.edu/iiif/2/79b94ddd-e208-1993-01ab-98f75174fe88/full/1800,/0/default.jpg`
+- Use: v113 museum-care route for repeated thistle texture across front, interiors, and back.
