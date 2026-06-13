@@ -484,7 +484,16 @@ function isAiEnvKey(key) {
 async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
   const adapterId = flow.primaryAdapterId;
   if (adapterId === "deterministic-customer-chat") {
-    throw new Error("Deterministic chat is a local fallback, not a live provider.");
+    let parsedPrompt = null;
+    try {
+      parsedPrompt = parseJsonFromText(userPrompt);
+    } catch {
+      parsedPrompt = null;
+    }
+    if (parsedPrompt?.required_schema?.theme_guide || parsedPrompt?.task?.includes("folded 5x7 greeting card")) {
+      return JSON.stringify(buildFallbackCardCopy(normalizeCardInput(parsedPrompt.input ?? {})));
+    }
+    return "I can help draft a grounded card from the approved details.";
   }
 
   if (adapterId === "cloudflare-workers-ai-chat") {
@@ -1030,11 +1039,10 @@ function sympathyGalleryTexture(panelId) {
   const back = panelId === "back";
   const stroke = cover ? "#d8c7a1" : "#596c5e";
   return `
-    <g data-customcard-texture="sympathy-gallery-wash" opacity="${cover ? 0.18 : back ? 0.16 : 0.13}">
-      <path d="M-80 420 C260 260 610 346 940 238 C1190 156 1400 184 1580 112" fill="none" stroke="${stroke}" stroke-width="54" stroke-linecap="round"/>
-      <path d="M-120 1850 C250 1688 560 1804 922 1650 C1150 1554 1370 1568 1600 1458" fill="none" stroke="${stroke}" stroke-width="42" stroke-linecap="round"/>
-      <circle cx="${cover ? 1160 : 1090}" cy="${cover ? 310 : 350}" r="${cover ? 220 : 170}" fill="#d8c7a1" opacity="${cover ? 0.36 : 0.22}"/>
-      <circle cx="${cover ? 1245 : 1180}" cy="${cover ? 430 : 500}" r="${cover ? 94 : 72}" fill="#596c5e" opacity="0.12"/>
+    <g data-customcard-texture="sympathy-gallery-wash" opacity="${cover ? 0.15 : back ? 0.12 : 0.1}">
+      <path d="M-110 1810 C250 1690 560 1790 930 1648 C1170 1556 1390 1568 1610 1468" fill="none" stroke="${stroke}" stroke-width="46" stroke-linecap="round"/>
+      <path d="M-80 ${cover ? 520 : 340} C250 ${cover ? 420 : 300} 590 ${cover ? 460 : 338} 930 ${cover ? 354 : 300} C1170 ${cover ? 280 : 260} 1390 ${cover ? 288 : 278} 1600 ${cover ? 220 : 236}" fill="none" stroke="${stroke}" stroke-width="${cover ? 34 : 16}" stroke-linecap="round"/>
+      <circle cx="${cover ? 1110 : 1116}" cy="${cover ? 325 : 330}" r="${cover ? 190 : 120}" fill="#d8c7a1" opacity="${cover ? 0.24 : 0.14}"/>
     </g>
   `;
 }
@@ -1043,44 +1051,48 @@ function sympathyGalleryHero(panelId) {
   if (panelId === "front") {
     return `
       <g data-customcard-hero="sympathy-gallery-front">
-        <rect x="0" y="0" width="390" height="2100" fill="#253a33" opacity="0.94"/>
-        <path d="M390 0 C510 330 500 630 392 930 C300 1182 318 1440 468 2100 H0 V0Z" fill="#33483f" opacity="0.58"/>
-        <path d="M126 246 C230 514 238 822 144 1132 C72 1376 90 1650 194 1918" fill="none" stroke="#d8c7a1" stroke-width="14" stroke-linecap="round" opacity="0.72"/>
-        <path d="M160 480 C258 438 326 488 344 584 C260 640 188 606 160 480Z" fill="#c5cbb8" opacity="0.64"/>
-        <path d="M122 806 C236 740 326 790 350 906 C246 974 154 926 122 806Z" fill="#8da08e" opacity="0.54"/>
-        <path d="M162 1178 C270 1118 354 1166 372 1282 C270 1340 184 1298 162 1178Z" fill="#c5cbb8" opacity="0.48"/>
-        <path d="M518 1372 C680 1310 878 1368 1056 1288 C1202 1222 1298 1118 1386 958" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.34"/>
-        <path d="M520 1518 C690 1470 860 1514 1034 1462 C1180 1418 1294 1412 1386 1352" fill="none" stroke="#596c5e" stroke-width="5" stroke-linecap="round" opacity="0.2"/>
-        <path d="M982 420 C1110 340 1268 372 1344 502 C1248 630 1088 600 982 420Z" fill="#596c5e" opacity="0.16"/>
-        <path d="M1024 656 C1168 574 1318 628 1374 774 C1246 874 1098 818 1024 656Z" fill="#8da08e" opacity="0.13"/>
+        <rect x="86" y="178" width="286" height="640" rx="6" fill="#edf0df" stroke="#596c5e" stroke-width="18" opacity="0.48"/>
+        <line x1="229" y1="178" x2="229" y2="818" stroke="#596c5e" stroke-width="12" opacity="0.35"/>
+        <line x1="86" y1="500" x2="372" y2="500" stroke="#596c5e" stroke-width="12" opacity="0.35"/>
+        <path d="M-60 1660 C250 1502 560 1646 852 1508 C1040 1418 1218 1398 1560 1324 V2100 H-60Z" fill="#d8c7a1" opacity="0.18"/>
+        <path d="M-60 1770 C260 1608 560 1716 860 1588 C1054 1506 1230 1496 1560 1434 V2100 H-60Z" fill="#596c5e" opacity="0.12"/>
+        <path d="M1160 560 C1240 760 1236 1018 1170 1248 C1118 1430 1134 1608 1216 1782" fill="none" stroke="#4b3727" stroke-width="12" stroke-linecap="round" opacity="0.64"/>
+        <path d="M1184 820 C1088 772 1014 818 998 928 C1100 974 1168 930 1184 820Z" fill="#596c5e" opacity="0.34"/>
+        <path d="M1158 1114 C1264 1044 1356 1090 1378 1216 C1264 1278 1182 1230 1158 1114Z" fill="#8da08e" opacity="0.28"/>
+        <ellipse cx="338" cy="1576" rx="102" ry="46" fill="#596c5e" opacity="0.16"/>
+        <path d="M248 1560 C300 1622 376 1626 430 1564" fill="none" stroke="#596c5e" stroke-width="9" opacity="0.28"/>
+        <path d="M474 1510 C548 1466 618 1468 686 1518" fill="none" stroke="#b59f76" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
       </g>
     `;
   }
   if (panelId === "inside-left" || panelId === "inside-right") {
     const mirrored = panelId === "inside-right";
-    const edgeX = mirrored ? 1328 : 172;
-    const sign = mirrored ? -1 : 1;
-    const lowerX = mirrored ? 1070 : 430;
+    const bowlX = mirrored ? 1048 : 408;
+    const edgeX = mirrored ? 1260 : 240;
     return `
       <g data-customcard-hero="sympathy-gallery-interior-${panelId}">
-        <path d="M${edgeX} 260 C${edgeX - sign * 112} 560 ${edgeX - sign * 88} 908 ${edgeX - sign * 180} 1250 C${edgeX - sign * 238} 1460 ${edgeX - sign * 192} 1660 ${edgeX - sign * 88} 1840" fill="none" stroke="#596c5e" stroke-width="12" stroke-linecap="round" opacity="0.2"/>
-        <path d="M${edgeX - sign * 56} 474 C${edgeX - sign * 162} 406 ${edgeX - sign * 260} 466 ${edgeX - sign * 276} 604 C${edgeX - sign * 160} 666 ${edgeX - sign * 72} 602 ${edgeX - sign * 56} 474Z" fill="#596c5e" opacity="0.22"/>
-        <path d="M${edgeX - sign * 34} 872 C${edgeX - sign * 148} 810 ${edgeX - sign * 248} 872 ${edgeX - sign * 258} 1012 C${edgeX - sign * 144} 1068 ${edgeX - sign * 54} 1008 ${edgeX - sign * 34} 872Z" fill="#8da08e" opacity="0.2"/>
-        <path d="M${lowerX - 230} 1586 C${lowerX - 80} 1518 ${lowerX + 70} 1540 ${lowerX + 250} 1464" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.18"/>
-        <ellipse cx="${lowerX}" cy="1514" rx="44" ry="138" fill="#596c5e" opacity="0.14" transform="rotate(${mirrored ? -54 : 54} ${lowerX} 1514)"/>
-        <ellipse cx="${lowerX + (mirrored ? -132 : 132)}" cy="1614" rx="34" ry="112" fill="#8da08e" opacity="0.12" transform="rotate(${mirrored ? -42 : 42} ${lowerX + (mirrored ? -132 : 132)} 1614)"/>
-        <circle cx="${mirrored ? 260 : 1240}" cy="338" r="112" fill="#d8c7a1" opacity="0.12"/>
+        <path d="M-60 1660 C260 1518 552 1610 832 1508 C1068 1422 1248 1442 1560 1368 V2100 H-60Z" fill="#d8c7a1" opacity="0.13"/>
+        <path d="M-80 1788 C260 1628 580 1738 908 1596 C1110 1510 1300 1514 1580 1450 V2100 H-80Z" fill="#596c5e" opacity="0.09"/>
+        ${mirrored
+          ? `<path d="M420 1618 C540 1544 682 1558 796 1636" fill="none" stroke="#b59f76" stroke-width="12" stroke-linecap="round" opacity="0.24"/>
+             <circle cx="900" cy="1544" r="38" fill="none" stroke="#596c5e" stroke-width="9" opacity="0.22"/>
+             <path d="M902 1506 V1458 M874 1572 L840 1608" stroke="#596c5e" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+             <path d="M1060 1580 C1112 1552 1168 1572 1192 1624 C1146 1664 1090 1648 1060 1580Z" fill="#8da08e" opacity="0.16"/>`
+          : `<ellipse cx="${bowlX}" cy="1588" rx="116" ry="48" fill="#596c5e" opacity="0.16"/>
+             <path d="M${bowlX - 104} 1570 C${bowlX - 48} 1644 ${bowlX + 54} 1640 ${bowlX + 108} 1572" fill="none" stroke="#596c5e" stroke-width="10" opacity="0.26"/>
+             <path d="M${bowlX + 164} 1512 C${bowlX + 244} 1470 ${bowlX + 316} 1478 ${bowlX + 390} 1530" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.26"/>`}
+        <path d="M${edgeX} 1510 C${mirrored ? edgeX - 70 : edgeX + 70} 1390 ${mirrored ? edgeX - 44 : edgeX + 44} 1276 ${edgeX} 1164" fill="none" stroke="#596c5e" stroke-width="8" stroke-linecap="round" opacity="0.14"/>
       </g>
     `;
   }
   return `
     <g data-customcard-hero="sympathy-gallery-back">
-      <path d="M300 1020 C448 940 598 978 760 884 C930 784 1032 634 1120 420" fill="none" stroke="#596c5e" stroke-width="22" stroke-linecap="round" opacity="0.1"/>
-      <circle cx="750" cy="760" r="178" fill="#d8c7a1" opacity="0.22"/>
-      <path d="M598 760 C690 628 854 632 934 770 C844 902 684 894 598 760Z" fill="#596c5e" opacity="0.2"/>
-      <ellipse cx="808" cy="884" rx="34" ry="116" fill="#8da08e" opacity="0.18" transform="rotate(42 808 884)"/>
-      <path d="M520 1096 C670 1040 838 1078 1010 1018" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.26"/>
-      <path d="M306 1512 C488 1460 650 1498 824 1442 C986 1390 1122 1404 1250 1338" fill="none" stroke="#596c5e" stroke-width="6" stroke-linecap="round" opacity="0.14"/>
+      <path d="M-80 1760 C260 1590 580 1716 910 1580 C1122 1492 1300 1498 1580 1424 V2100 H-80Z" fill="#596c5e" opacity="0.08"/>
+      <ellipse cx="420" cy="1628" rx="94" ry="40" fill="#596c5e" opacity="0.16"/>
+      <path d="M340 1616 C386 1672 456 1670 502 1618" fill="none" stroke="#596c5e" stroke-width="8" opacity="0.24"/>
+      <path d="M618 1568 C774 1482 920 1512 1070 1610" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
+      <circle cx="1120" cy="1548" r="30" fill="none" stroke="#596c5e" stroke-width="7" opacity="0.18"/>
+      <path d="M1190 1594 C1262 1546 1330 1570 1366 1642 C1292 1688 1222 1660 1190 1594Z" fill="#8da08e" opacity="0.14"/>
     </g>
   `;
 }
@@ -1606,13 +1618,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = (isSympathy
     ? {
         front:
-          "Full-bleed flat 2D gallery artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with one deep moss side wash, abstract window light, one branch silhouette, quiet horizon mark, and integrated clean upper/lower text-safe areas.",
+          "Full-bleed flat 2D gallery artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, one deep moss side wash, one right-edge branch silhouette, lower soft horizon kept below text, and integrated clean upper/lower text-safe areas.",
         "inside-left":
-          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, edge-only branch silhouette, muted gray-green wash, quiet blank center, clean text-safe area, generous safe margins.",
+          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, low muted hills, small meal bowl and spoon in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins.",
         "inside-right":
-          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, sparse edge branch, low taupe horizon mark, quiet blank center, clean text-safe area, generous safe margins.",
+          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, low route line, muted phone dot, tiny key mark near lower edge, quiet blank center, clean text-safe area, generous safe margins.",
         back:
-          "Full-bleed flat 2D gallery artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one abstract branch-and-horizon lower mark, no caption plaque."
+          "Full-bleed flat 2D gallery artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal-bowl, route-line, and branch echo in the lower band, no caption plaque."
       }
     : {
         front:
@@ -1674,7 +1686,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
   }
   if (isSympathyInput(input)) {
-    guardrails.push("Sympathy art must be flat gallery artwork with warm ivory open field, deep moss or muted gray-green edge wash, abstract window light, one branch silhouette, and no blank-message template or closed frame.");
+    guardrails.push("Sympathy art must be flat gallery artwork with warm ivory open field, quiet window light, meal bowl, route line, muted phone dot, one branch silhouette, and no blank-message template or closed frame.");
   }
   if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
     guardrails.push(
@@ -1864,7 +1876,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; abstract window light, quiet horizon line, and one branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template.";
+    return "Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, route line, muted phone dot, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -2005,7 +2017,7 @@ function buildThemeGuide(input) {
     return themeGuide({
       title: "Quietly With You",
       palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
-      motifs: ["abstract window light", "quiet horizon line", "single branch silhouette", "soft open field"],
+      motifs: ["quiet window light", "meal bowl", "route line", "muted phone dot", "single branch silhouette", "soft open field"],
       border: "open-edge gallery composition with no closed frame and generous natural negative space"
     });
   }
@@ -2150,10 +2162,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Flat gallery-style sympathy cover with warm ivory open field, deep moss side wash, abstract window light, one branch silhouette, and a quiet horizon line; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
-      "inside-left": "Soft left interior artwork with warm ivory open field, edge-only branch silhouette, muted gray-green wash, and wide center-left text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
-      "inside-right": "Matching right interior artwork with calm open message field, abstract low taupe horizon mark, sparse edge branch, and generous negative space; avoid blank-message template, closed layout, and framed blank page.",
-      back: "Minimal back cover with one abstract branch-and-horizon mark on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card."
+      front: "Flat gallery-style sympathy cover with warm ivory open field, quiet window light, one deep moss side wash, a single branch silhouette on the right edge, and lower soft horizon kept below text; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
+      "inside-left": "Soft left interior artwork with warm ivory open field, low muted hills, small meal bowl and spoon in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
+      "inside-right": "Matching right interior artwork with calm open message field, low route line, muted phone dot, tiny key mark near the lower edge, and generous negative space; avoid blank-message template, closed layout, and framed blank page.",
+      back: "Minimal back cover with one small meal-bowl, route-line, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card."
     };
     return cues[panelId];
   }
@@ -2320,7 +2332,7 @@ function panelTextLayoutFallback(panelId, input) {
     const layouts = {
       front: {
         headline_zone: "upper",
-        body_zone: "lower",
+        body_zone: "upper",
         alignment: "center",
         font_pairing: "soft-serif",
         color_mode: "dark-ink",

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-gallery">
+<rect width="1500" height="2100" fill="#f7f2e8"/>
+
+    <g data-customcard-texture="sympathy-gallery-wash" opacity="0.15">
+      <path d="M-110 1810 C250 1690 560 1790 930 1648 C1170 1556 1390 1568 1610 1468" fill="none" stroke="#d8c7a1" stroke-width="46" stroke-linecap="round"/>
+      <path d="M-80 520 C250 420 590 460 930 354 C1170 280 1390 288 1600 220" fill="none" stroke="#d8c7a1" stroke-width="34" stroke-linecap="round"/>
+      <circle cx="1110" cy="325" r="190" fill="#d8c7a1" opacity="0.24"/>
+    </g>
+  
+
+      <g data-customcard-hero="sympathy-gallery-front">
+        <rect x="86" y="178" width="286" height="640" rx="6" fill="#edf0df" stroke="#596c5e" stroke-width="18" opacity="0.48"/>
+        <line x1="229" y1="178" x2="229" y2="818" stroke="#596c5e" stroke-width="12" opacity="0.35"/>
+        <line x1="86" y1="500" x2="372" y2="500" stroke="#596c5e" stroke-width="12" opacity="0.35"/>
+        <path d="M-60 1660 C250 1502 560 1646 852 1508 C1040 1418 1218 1398 1560 1324 V2100 H-60Z" fill="#d8c7a1" opacity="0.18"/>
+        <path d="M-60 1770 C260 1608 560 1716 860 1588 C1054 1506 1230 1496 1560 1434 V2100 H-60Z" fill="#596c5e" opacity="0.12"/>
+        <path d="M1160 560 C1240 760 1236 1018 1170 1248 C1118 1430 1134 1608 1216 1782" fill="none" stroke="#4b3727" stroke-width="12" stroke-linecap="round" opacity="0.64"/>
+        <path d="M1184 820 C1088 772 1014 818 998 928 C1100 974 1168 930 1184 820Z" fill="#596c5e" opacity="0.34"/>
+        <path d="M1158 1114 C1264 1044 1356 1090 1378 1216 C1264 1278 1182 1230 1158 1114Z" fill="#8da08e" opacity="0.28"/>
+        <ellipse cx="338" cy="1576" rx="102" ry="46" fill="#596c5e" opacity="0.16"/>
+        <path d="M248 1560 C300 1622 376 1626 430 1564" fill="none" stroke="#596c5e" stroke-width="9" opacity="0.28"/>
+        <path d="M474 1510 C548 1466 618 1468 686 1518" fill="none" stroke="#b59f76" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
+      </g>
+    
+
+
+<path d="M104 1964 H1390" stroke="#d8c7a1" stroke-width="4" stroke-linecap="round" opacity="0.24"/>
+</svg>

@@ -450,6 +450,13 @@ export const stories = {
 
 const textCandidates = [
   {
+    id: "text-deterministic-support",
+    label: "Deterministic support copy baseline",
+    adapterId: "deterministic-customer-chat",
+    model: "deterministic-support-copy",
+    requiredEnv: []
+  },
+  {
     id: "text-cloudflare-baseline",
     label: "Current Cloudflare text baseline",
     adapterId: "cloudflare-workers-ai-chat",
@@ -762,7 +769,7 @@ export function typographyExperimentRuns(candidates) {
 
 export function pipelineQualityRuns(candidates) {
   const story = stories[pipelineQualityStoryId];
-  const textIds = new Set(["text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
+  const textIds = new Set(["text-deterministic-support", "text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
   const imageIds = new Set(["image-deepai-text2img", "image-browser-svg-renderer", "image-cloudflare-flux-schnell"]);
   const texts = (candidates.text || []).filter((candidate) => candidate.configured && textIds.has(candidate.id));
   const selectedTexts = texts.length > 0 ? texts : [

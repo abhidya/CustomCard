@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-gallery">
+<rect width="1500" height="2100" fill="#f0eadf"/>
+
+    <g data-customcard-texture="sympathy-gallery-wash" opacity="0.12">
+      <path d="M-110 1810 C250 1690 560 1790 930 1648 C1170 1556 1390 1568 1610 1468" fill="none" stroke="#596c5e" stroke-width="46" stroke-linecap="round"/>
+      <path d="M-80 340 C250 300 590 338 930 300 C1170 260 1390 278 1600 236" fill="none" stroke="#596c5e" stroke-width="16" stroke-linecap="round"/>
+      <circle cx="1116" cy="330" r="120" fill="#d8c7a1" opacity="0.14"/>
+    </g>
+  
+
+    <g data-customcard-hero="sympathy-gallery-back">
+      <path d="M-80 1760 C260 1590 580 1716 910 1580 C1122 1492 1300 1498 1580 1424 V2100 H-80Z" fill="#596c5e" opacity="0.08"/>
+      <ellipse cx="420" cy="1628" rx="94" ry="40" fill="#596c5e" opacity="0.16"/>
+      <path d="M340 1616 C386 1672 456 1670 502 1618" fill="none" stroke="#596c5e" stroke-width="8" opacity="0.24"/>
+      <path d="M618 1568 C774 1482 920 1512 1070 1610" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
+      <circle cx="1120" cy="1548" r="30" fill="none" stroke="#596c5e" stroke-width="7" opacity="0.18"/>
+      <path d="M1190 1594 C1262 1546 1330 1570 1366 1642 C1292 1688 1222 1660 1190 1594Z" fill="#8da08e" opacity="0.14"/>
+    </g>
+  
+
+
+<path d="M292 1856 H1208" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.16"/>
+</svg>

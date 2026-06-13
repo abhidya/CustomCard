@@ -17,6 +17,8 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-cloudflare-baseline` gallery SVG v17 | `image-browser-svg-renderer` | 43 | 72 | D/C- clean but generic gallery draft; text route 429 fallback | [contact sheet](./pipeline-quality-sympathy-svg-v17-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/contact-sheet.png) |
 | `text-cloudflare-baseline` gallery DeepAI v10 | `image-deepai-text2img` | 52 | 74 | C- rough draft; text route 429 fallback | [contact sheet](./pipeline-quality-sympathy-deepai-v10-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/contact-sheet.png) |
 | `text-hf-qwen3-235b-a22b` gallery DeepAI v1 | `image-deepai-text2img` | 58 | 74 | C rough-draft candidate; text route 402 fallback | [manual grade](./pipeline-quality-sympathy-hf-qwen-deepai-v1-2026-06-13/pipeline-quality/sympathy-quiet-support__text-hf-qwen3-235b-a22b__image-deepai-text2img/manual-grade.md) |
+| `text-deterministic-support` support-object DeepAI v12 | `image-deepai-text2img` | 8 | 76 | F visible product; text/art collision | [manual grade](./pipeline-quality-sympathy-deterministic-deepai-v12-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/manual-grade.md) |
+| `text-deterministic-support` support-object SVG v20 | `image-browser-svg-renderer` | 10 | 98 | F visible product; contract-only control | [manual grade](./pipeline-quality-sympathy-deterministic-svg-v20-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -30,6 +32,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - SVG v10 is the latest best route at product `91/100`, contract `97/100`. It improves v4/v8 with richer deterministic edge artwork, larger readable back layout, fixed front headline zone, and clean exact-fact coverage. It still does not reach 100 because the rendered card remains close to premium stationery templates rather than a highly bespoke art direction.
 - SVG v12 was initially overgraded at product `94/100`. User calibration and visible re-audit correct the product score to `5/100` while keeping contract score `98/100`. It fixes the self-focused cover headline and required facts, but the rendered result still looks like low-effort generic stationery with leaf marks. This route is a contract-only improvement and should not be treated as a product winner.
 - Gallery-art prompt repair improved the visible product from the user-calibrated `5/100` SVG stationery to `58/100` on the best latest DeepAI run. This is real progress, but still not customer-ready: watercolor branches are generic, one branch crowds the inside-left headline, and live text providers returned 429/402 so fallback copy was used.
+- Deterministic support-copy controls isolate visual quality from failing live text routes. The v20 SVG control passes contract checks at `98/100`, but product score is only `10/100` because the visible card still looks like low-effort generic stationery. The v12 DeepAI support-object retry is worse at `8/100` because inside-left text collides with landscape art.
 
 ## Improvement Loop
 
@@ -55,6 +58,8 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Cloudflare FLUX v2 | Product 0, contract 20 | Cloudflare image route returned 429 and produced no panels. Do not grade as visual product. |
 | DeepAI gallery v7-v10 | Product up to 52 with Cloudflare fallback; product 58 with HF/Qwen fallback run | Gallery prompts beat bordered stationery, and upper/center back layout fixes back collision. DeepAI still ignores some text-safe intent and places branches near headlines. |
 | HF/Qwen + DeepAI gallery v1 | Product 58, contract 74 | Best latest visible artifact. Text route still failed with 402 and fell back; product remains a rough draft, not near 100. |
+| Deterministic support-copy SVG v18-v20 | Product 10, contract 98 on v20 | Deterministic text removes provider noise and proves copy/contract can be clean. Product still fails: concrete support objects are literal marks, not premium art direction. |
+| Deterministic support-copy DeepAI v11-v12 | Product 8, contract 76 on v12 | Moving front body text upward helped the cover, but DeepAI still placed landscape art through inside text and produced generic bowl/branch imagery. |
 
 ## Prompt/Skill Changes Applied
 
@@ -72,6 +77,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added `sympathy-gallery` deterministic SVG branch and changed benchmark preview composition so open-gallery panels are not wrapped in a false template frame.
 - Added contrast stroke to benchmark overlay typography and moved sympathy back copy to upper/center fields to reduce art/text collisions.
 - Updated benchmark skill/lesson guidance to require latest/baseline/in-between evidence and to keep caveman-style concise reporting.
+- Added `text-deterministic-support` as a pipeline-quality text candidate so visual prompt work can be graded without live text-provider 429/402 noise.
+- Changed sympathy gallery prompts and deterministic SVG motifs from branch-only stationery toward concrete support objects: quiet window light, meal bowl, route line, muted phone dot, key mark, and lower horizon.
+- Moved sympathy front body text to an upper safe zone for the deterministic fallback layout.
+- Recalibrated support-object SVG/DeepAI outputs to user-visible rejection scores instead of treating contract success as product quality.
 
 ## Commands
 
@@ -88,4 +97,6 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-cloudflare-baseline --image image-cloudflare-flux-schnell --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-image-v2-2026-06-13 --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-cloudflare-baseline --image image-deepai-text2img --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v10-2026-06-13 --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-hf-qwen3-235b-a22b --image image-deepai-text2img --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-hf-qwen-deepai-v1-2026-06-13 --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-browser-svg-renderer --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-svg-v20-2026-06-13 --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-deepai-text2img --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v12-2026-06-13 --live true
 ```

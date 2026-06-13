@@ -1,0 +1,279 @@
+{
+  "phase": "pipeline-quality",
+  "phaseDir": "pipeline-quality",
+  "createdAtIso": "2026-06-13T06:46:46.437Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img",
+      "startedAt": "2026-06-13T06:46:46.439Z",
+      "finishedAt": "2026-06-13T06:46:53.218Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "deterministic-support-copy",
+      "providerFailures": {
+        "text": "Deterministic chat is a local fallback, not a live provider."
+      },
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D gallery artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, one deep moss side wash, one right-edge branch silhouette, lower soft horizon kept below text, and integrated clean upper/lower text-safe areas. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, route line, muted phone dot, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Flat gallery-style sympathy cover with warm ivory open field, quiet window light, one deep moss side wash, a single branch silhouette on the right edge, and lower soft horizon kept below text; avoid blank-message template, closed frame, physical paper card, and religious symbol. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-inside-left.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, low muted hills, small meal bowl and spoon in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, route line, muted phone dot, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Soft left interior artwork with warm ivory open field, low muted hills, small meal bowl and spoon in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-inside-right.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, low route line, muted phone dot, tiny key mark near lower edge, quiet blank center, clean text-safe area, generous safe margins. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, route line, muted phone dot, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Matching right interior artwork with calm open message field, low route line, muted phone dot, tiny key mark near the lower edge, and generous negative space; avoid blank-message template, closed layout, and framed blank page. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-back.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D gallery artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal-bowl, route-line, and branch echo in the lower band, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, route line, muted phone dot, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template. Use this panel-specific composition: Minimal back cover with one small meal-bowl, route-line, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes,",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v11-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 8,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": false,
+          "mustIncludeCovered": true,
+          "mustAvoidClean": true,
+          "providerCalls": 8
+        },
+        "missingMustInclude": [],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "b2f0bb54-aeeb-47af-8538-dd0ef5bafe1e",
+          "output_url": "https://api.deepai.org/job-view-file/b2f0bb54-aeeb-47af-8538-dd0ef5bafe1e/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/9276d2fc8a8447d4b35425e9b211f366/full-bleed-flat-2d-gallery-artwork-layer-for-the-fron.jpg",
+          "backend_request_id": "a360c1e4-5ecc-4ca9-989b-2722fe4daefd"
+        }
+      },
+      "durationMs": 1413
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/b2f0bb54-aeeb-47af-8538-dd0ef5bafe1e/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 21087
+      },
+      "durationMs": 174
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "db42db12-c262-45c4-af96-720cdedba171",
+          "output_url": "https://api.deepai.org/job-view-file/db42db12-c262-45c4-af96-720cdedba171/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/507f37ab82ca488e8e21d142830316b5/full-bleed-flat-2d-gallery-artwork-layer-for-a-vertic.jpg",
+          "backend_request_id": "574504e3-35c4-46a9-a94b-234282dc9a37"
+        }
+      },
+      "durationMs": 1285
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/db42db12-c262-45c4-af96-720cdedba171/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 15308
+      },
+      "durationMs": 90
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "2662a400-11e0-4d82-8e76-2182439c9d2e",
+          "output_url": "https://api.deepai.org/job-view-file/2662a400-11e0-4d82-8e76-2182439c9d2e/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/632de14cb5d64c0da4a3a5fac6977fb2/full-bleed-flat-2d-gallery-artwork-layer-for-a-vertic.jpg",
+          "backend_request_id": "2ab8e2b3-e38a-4166-96dd-1f3405c13702"
+        }
+      },
+      "durationMs": 1036
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/2662a400-11e0-4d82-8e76-2182439c9d2e/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 9097
+      },
+      "durationMs": 90
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "99ee556d-de9d-4ab7-8128-c2e207a288c5",
+          "output_url": "https://api.deepai.org/job-view-file/99ee556d-de9d-4ab7-8128-c2e207a288c5/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/d22ae310b78749d09fa72d07b8e14485/full-bleed-flat-2d-gallery-artwork-layer-for-a-minima.jpg",
+          "backend_request_id": "79c516ca-4e45-4db0-baf7-d18c5bba4735"
+        }
+      },
+      "durationMs": 1035
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/99ee556d-de9d-4ab7-8128-c2e207a288c5/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 9307
+      },
+      "durationMs": 89
+    }
+  ]
+}
