@@ -1,0 +1,17 @@
+{
+  "phase": "pipeline-quality",
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell"
+    }
+  ]
+}

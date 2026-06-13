@@ -2090,15 +2090,17 @@ function seededRange(seed, index, min, max) {
 }
 
 function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
+  const providerPrompt = buildCloudflareImagePrompt({ panelId, prompt });
+  const providerNegativePrompt = buildCloudflareNegativePrompt({ negativePrompt, prompt });
   if (isCloudflareFluxModel(flow.model)) {
     return {
-      prompt: truncate(prompt, 2048),
+      prompt: truncate(providerPrompt, 1600),
       steps: 8
     };
   }
   return {
-    prompt,
-    negative_prompt: negativePrompt,
+    prompt: providerPrompt,
+    negative_prompt: providerNegativePrompt,
     width: 1464,
     height: 2048,
     guidance: 3.5,
@@ -2114,6 +2116,44 @@ function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt
       }
     }
   };
+}
+
+function buildCloudflareImagePrompt({ panelId, prompt }) {
+  if (!isQuietCarePrompt(prompt)) return prompt;
+  const role = panelId === "front"
+    ? "front cover"
+    : panelId === "back"
+      ? "back cover"
+      : `${panelId} interior`;
+  const shared =
+    "Premium flat 2D vertical 5x7 greeting-card panel artwork, print-ready digital illustration, no camera, no physical paper mockup, no tabletop scene, no people, no hands, no faces, no readable text, no letters, no tiny glyphs, no logos, no watermark.";
+  if (panelId === "front") {
+    return [
+      shared,
+      `${role}: dark moss green wall with warm doorway light at left, flat cut-paper editorial care vignette in lower third, folded ivory blanket, plain lidded ceramic bowl, small brass key, face-down simple phone silhouette with no screen details, thin branch sprig, large calm open title area in upper middle, sophisticated negative space, no waves, no road, no landscape.`
+    ].join(" ");
+  }
+  if (panelId === "back") {
+    return [
+      shared,
+      `${role}: mostly dark moss green negative space, tiny lower-corner flat cut-paper care bundle with folded ivory blanket, plain lidded bowl, small brass key, simple phone silhouette, thin branch sprig, subtle paper grain, premium stationery finish, open center with no decoration, no waves or landscape.`
+    ].join(" ");
+  }
+  return [
+    shared,
+    `${role}: warm ivory interior, soft vellum-like central negative space for later typography, tiny lower-edge flat cut-paper care marks only, folded blanket curve, plain lidded bowl arc, small key shape, quiet phone silhouette, thin branch sprig, muted moss line accents near outer edge, low-contrast layered paper texture, generous margins, calm paired interior spread, no waves or landscape.`
+  ].join(" ");
+}
+
+function buildCloudflareNegativePrompt({ negativePrompt, prompt }) {
+  const base = isQuietCarePrompt(prompt)
+    ? "readable text, fake text, letters, words, handwriting, calligraphy, signature, label, logo, watermark, tiny glyphs, small symbols, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, wall floor corner, envelope, tabletop scene, desk, product photo, frame, QR code, busy background, car, vehicle, road, highway, lane line, landscape, horizon, hills, mountains, river, ocean, waves, sunset, food, fruit, cans, jars, package labels, hospital, religious symbols"
+    : negativePrompt;
+  return truncate(base || negativePrompt || "", 700);
+}
+
+function isQuietCarePrompt(prompt) {
+  return /\b(sympathy|condolence|grieving|grief|quiet[- ]support|quiet care|father'?s loss|losing (?:a|his|her|their) father|threshold-light|care-package)\b/i.test(String(prompt || ""));
 }
 
 function isCloudflareFluxModel(model) {

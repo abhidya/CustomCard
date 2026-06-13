@@ -1473,7 +1473,7 @@ async function renderPanelPreview({ imageBuffer, panelId, panelCopy, contentType
   const overlay = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
       <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${frameOpacity}"/>
-      ${previewTextFieldSvg(layout, contentType)}
+      ${previewTextFieldSvg(layout, contentType, panelCopy)}
       <text x="${layout.x}" y="${layout.headlineY}" text-anchor="${layout.anchor}" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700" paint-order="stroke fill" stroke="${layout.headlineStroke}" stroke-width="${layout.headlineStrokeWidth}">
         ${headline.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
       </text>
@@ -1502,10 +1502,23 @@ function previewFrameOpacity(panelCopy, layout) {
   return layout.frameOpacity ?? 0.72;
 }
 
-function previewTextFieldSvg(layout, contentType = "image/png") {
+function previewTextFieldSvg(layout, contentType = "image/png", panelCopy = {}) {
   if (/svg/i.test(contentType)) return "";
+  if (previewPromptForbidsTextField(panelCopy)) return "";
   if (!layout.fieldOpacity) return "";
   return `<rect x="${layout.fieldX}" y="${layout.fieldY}" width="${layout.fieldWidth}" height="${layout.fieldHeight}" rx="${layout.fieldRadius}" fill="${layout.fieldFill}" opacity="${layout.fieldOpacity}" stroke="${layout.fieldStroke}" stroke-width="${layout.fieldStrokeWidth}"/>`;
+}
+
+function previewPromptForbidsTextField(panelCopy = {}) {
+  const source = [
+    panelCopy?.art_direction,
+    panelCopy?.artDirection,
+    panelCopy?.visual_cue,
+    panelCopy?.visualCue,
+    panelCopy?.image_prompt,
+    panelCopy?.imagePrompt
+  ].join(" ");
+  return /\b(?:no caption plaque|no text box|no inner card rectangle|no blank tag|no label)\b/i.test(source);
 }
 
 async function renderTypographyPreview({ imageBuffer, overlayText, panelCopy, modeId }) {
@@ -1683,6 +1696,7 @@ function applyPreviewTextLayout(base, rawTextLayout, panelId, hasBody) {
   const headlineColor = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#fff8dc" : layout.color_mode === "accent-ink" ? base.frameColor : base.headlineColor;
   const bodyColor = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#f4e6b0" : base.bodyColor;
   const lightInk = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast";
+  const integratedRasterText = lightInk && (panelId === "front" || panelId === "back");
   return withPreviewTextField({
     ...shared,
     x: layout.alignment === "left" ? 260 : layout.alignment === "right" ? 1240 : 750,
@@ -1699,8 +1713,8 @@ function applyPreviewTextLayout(base, rawTextLayout, panelId, hasBody) {
     bodyColor,
     headlineStroke: lightInk ? "#1e2f2a" : "#fffaf0",
     bodyStroke: lightInk ? "#1e2f2a" : "#fffaf0",
-    headlineStrokeWidth: lightInk ? 5 : 3,
-    bodyStrokeWidth: lightInk ? 3 : 2
+    headlineStrokeWidth: integratedRasterText ? 4 : lightInk ? 5 : 3,
+    bodyStrokeWidth: integratedRasterText ? 2 : lightInk ? 3 : 2
   }, layout, panelId, hasBody);
 }
 
