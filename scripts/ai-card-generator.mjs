@@ -1420,12 +1420,17 @@ function sympathyThresholdHero(panelId) {
     const stripX = mirrored ? 1344 : 0;
     const lineX = mirrored ? 1280 : 220;
     const doorX = mirrored ? 92 : 1054;
+    const messagePanel = mirrored
+      ? "M334 610 C500 548 720 584 900 534 C1052 494 1166 522 1244 586 V1282 C1078 1352 870 1328 704 1388 C546 1446 420 1428 332 1364 Z"
+      : "M1166 610 C1000 548 780 584 600 534 C448 494 334 522 256 586 V1282 C422 1352 630 1328 796 1388 C954 1446 1080 1428 1168 1364 Z";
     const paperPath = mirrored
       ? "M152 1440 C338 1360 528 1396 694 1328 C858 1260 990 1286 1160 1226 L1242 1660 C1050 1708 884 1686 714 1754 C524 1830 340 1786 160 1868 Z"
       : "M1348 1440 C1162 1360 972 1396 806 1328 C642 1260 510 1286 340 1226 L258 1660 C450 1708 616 1686 786 1754 C976 1830 1160 1786 1340 1868 Z";
     return `
       <g data-customcard-hero="sympathy-threshold-interior-${panelId}">
         <rect x="${stripX}" y="0" width="156" height="2100" fill="#101c18" opacity="0.065"/>
+        <path d="${messagePanel}" fill="#fffaf1" opacity="0.42" filter="url(#sympathyCutShadow)"/>
+        <path d="${messagePanel}" fill="none" stroke="#d9bd7f" stroke-width="3" opacity="0.16"/>
         <path d="${paperPath}" fill="url(#sympathyPaperFace)" opacity="0.32" filter="url(#sympathyCutShadow)"/>
         <path d="M${lineX} 260 C${mirrored ? "1208 572 1238 890 1300 1190 C1342 1392 1294 1554 1196 1712" : "292 572 262 890 200 1190 C158 1392 206 1554 304 1712"}" fill="none" stroke="#53685f" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
         <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
@@ -1433,6 +1438,11 @@ function sympathyThresholdHero(panelId) {
         <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
         <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
         <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" opacity="0.17"/>
+        <g opacity="0.16">
+          <path d="M${mirrored ? "930 1538 C1016 1514 1104 1520 1190 1552" : "310 1538 C396 1514 484 1520 570 1552"}" fill="none" stroke="#53685f" stroke-width="6" stroke-linecap="round"/>
+          <path d="M${mirrored ? "906 1600 H1168" : "332 1600 H594"}" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round"/>
+          <path d="M${mirrored ? "982 1662 H1110" : "390 1662 H518"}" stroke="#53685f" stroke-width="4" stroke-linecap="round"/>
+        </g>
         <path d="M${mirrored ? "1168 536 C1088 496 1024 542 1016 642 C1102 678 1162 630 1168 536Z" : "332 536 C412 496 476 542 484 642 C398 678 338 630 332 536Z"}" fill="#7d8f7f" opacity="0.16"/>
         <path d="M${mirrored ? "1194 1264 C1104 1218 1032 1268 1024 1378 C1118 1424 1188 1372 1194 1264Z" : "306 1264 C396 1218 468 1268 476 1378 C382 1424 312 1372 306 1264Z"}" fill="#7d8f7f" opacity="0.13"/>
       </g>
