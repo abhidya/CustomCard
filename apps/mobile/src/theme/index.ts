@@ -49,5 +49,23 @@ export const typography = {
   }
 } as const;
 
+/** Cross-platform elevation (iOS shadow + Android elevation) for surfaces. */
+export const elevation = {
+  card: {
+    shadowColor: "#0d1f1c",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2
+  },
+  raised: {
+    shadowColor: "#0d1f1c",
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6
+  }
+} as const;
+
 /** Minimum accessible touch target size (iOS HIG 44pt / Android 48dp). */
 export const minTouchTarget = 44;

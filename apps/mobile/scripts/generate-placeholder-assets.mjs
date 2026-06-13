@@ -1,6 +1,9 @@
-// Generates valid placeholder PNG assets (solid brand color) for the Expo app
-// icon, Android adaptive icon, and splash image. Replace with real brand
-// artwork before store submission — see STORE_RELEASE_CHECKLIST.md.
+// Generates the app icon, Android adaptive icon, and splash image as valid PNGs:
+// a deep-green brand field with a centered mint "card" tile carrying a
+// deep-green heart — a recognizable greeting-card mark. Drawn with pure pixel
+// math (no native image libs, which this environment can't install). Replace
+// with final brand artwork before store submission — see
+// STORE_RELEASE_CHECKLIST.md.
 import { deflateSync } from "node:zlib";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -9,32 +12,63 @@ import { fileURLToPath } from "node:url";
 const assetsDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 mkdirSync(assetsDir, { recursive: true });
 
-const brand = [0x17, 0x29, 0x27]; // #172927
-const accent = [0xcd, 0xe9, 0xdf]; // #cde9df
+const brand = [0x17, 0x29, 0x27]; // #172927 deep green
+const card = [0xcd, 0xe9, 0xdf]; // #cde9df mint
+const heart = [0x17, 0x29, 0x27]; // deep green on the card
 
-writeFileSync(resolve(assetsDir, "icon.png"), buildPng(1024, 1024, brand, accent));
-writeFileSync(resolve(assetsDir, "adaptive-icon.png"), buildPng(1024, 1024, brand, accent));
-writeFileSync(resolve(assetsDir, "splash-icon.png"), buildPng(512, 512, brand, accent));
-console.log(`Wrote placeholder PNG assets to ${assetsDir}`);
+writeFileSync(resolve(assetsDir, "icon.png"), buildMark(1024, 1024, { bleed: false }));
+writeFileSync(resolve(assetsDir, "adaptive-icon.png"), buildMark(1024, 1024, { bleed: true }));
+writeFileSync(resolve(assetsDir, "splash-icon.png"), buildMark(512, 512, { bleed: false }));
+console.log(`Wrote brand-mark PNG assets to ${assetsDir}`);
 
-function buildPng(width, height, bg, fg) {
-  // Solid background with a centered square so the placeholder is visibly an
-  // intentional mark rather than a blank tile.
+function buildMark(width, height, { bleed }) {
   const raw = Buffer.alloc(height * (1 + width * 3));
-  const inset = Math.floor(width / 4);
+  const cx = width / 2;
+  const cy = height / 2;
+  // Android adaptive icons get cropped to a circle/squircle, so keep the card
+  // smaller (more safe-zone padding) when bleed is requested.
+  const cardHalf = (bleed ? 0.30 : 0.36) * width;
+  const cardRadius = width * 0.07;
+  const heartR = cardHalf * 0.62;
+
   for (let y = 0; y < height; y += 1) {
     const rowStart = y * (1 + width * 3);
     raw[rowStart] = 0; // filter: none
     for (let x = 0; x < width; x += 1) {
-      const inMark = x >= inset && x < width - inset && y >= inset && y < height - inset;
-      const [r, g, b] = inMark ? fg : bg;
+      let rgb = brand;
+      if (insideRoundedSquare(x, y, cx, cy, cardHalf, cardRadius)) {
+        rgb = insideHeart(x, y, cx, cy - height * 0.01, heartR) ? heart : card;
+      }
       const px = rowStart + 1 + x * 3;
-      raw[px] = r;
-      raw[px + 1] = g;
-      raw[px + 2] = b;
+      raw[px] = rgb[0];
+      raw[px + 1] = rgb[1];
+      raw[px + 2] = rgb[2];
     }
   }
 
+  return encodePng(width, height, raw);
+}
+
+function insideRoundedSquare(x, y, cx, cy, half, radius) {
+  const dx = Math.abs(x - cx);
+  const dy = Math.abs(y - cy);
+  if (dx > half || dy > half) return false;
+  const inner = half - radius;
+  if (dx <= inner || dy <= inner) return true;
+  const ddx = dx - inner;
+  const ddy = dy - inner;
+  return ddx * ddx + ddy * ddy <= radius * radius;
+}
+
+function insideHeart(x, y, cx, cy, r) {
+  // Implicit heart curve (y flipped because image space grows downward).
+  const nx = (x - cx) / r;
+  const ny = (cy - y) / r;
+  const a = nx * nx + ny * ny - 1;
+  return a * a * a - nx * nx * ny * ny * ny <= 0;
+}
+
+function encodePng(width, height, raw) {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
   ihdr.writeUInt32BE(height, 4);

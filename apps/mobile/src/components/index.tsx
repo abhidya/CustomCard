@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { userMessageForError } from "../lib/api/errors";
-import { colors, minTouchTarget, radius, spacing, typography } from "../theme";
+import { colors, elevation, minTouchTarget, radius, spacing, typography } from "../theme";
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
@@ -256,11 +256,12 @@ const styles = StyleSheet.create({
   fieldError: { fontSize: 13, color: colors.danger },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.lg,
-    gap: spacing.sm
+    gap: spacing.sm,
+    ...elevation.card
   },
   sectionHeading: { gap: spacing.xs, marginTop: spacing.lg, marginBottom: spacing.sm },
   cardRow: {
