@@ -13,7 +13,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-cloudflare-baseline` improved prompts v6 | `image-deepai-text2img` | 45 | 86 | D visible product; contract improved | [manual grade](./pipeline-quality-sympathy-cloudflare-improved-v6-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/manual-grade.md) |
 | `text-cloudflare-baseline` improved route v4 | `image-browser-svg-renderer` | 88 | 96 | A- prior best; not 100 | [manual grade](./pipeline-quality-sympathy-svg-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/manual-grade.md) |
 | `text-cloudflare-baseline` improved route v10 | `image-browser-svg-renderer` | 91 | 97 | A- latest best; still not 100 | [manual grade](./pipeline-quality-sympathy-svg-v10-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/manual-grade.md) |
-| `text-cloudflare-baseline` improved route v12 | `image-browser-svg-renderer` | 94 | 98 | A latest best; still below top-end/109 target | [manual grade](./pipeline-quality-sympathy-svg-v12-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/manual-grade.md) |
+| `text-cloudflare-baseline` improved route v12 | `image-browser-svg-renderer` | 5 | 98 | F visible product; contract-only improvement | [manual grade](./pipeline-quality-sympathy-svg-v12-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -25,7 +25,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - The original v6 product grade of 79 was too generous because it over-weighted contract success. Re-audit caps the product score at 45.
 - SVG v4 is the current best route. It reaches customer-usable quality (`88/100`) by using deterministic vector artwork, readable overlay typography, richer sympathy motifs, and no image-model fake text/mockup risk. It still does not reach 100 because the art remains somewhat template-like and the back panel is plain.
 - SVG v10 is the latest best route at product `91/100`, contract `97/100`. It improves v4/v8 with richer deterministic edge artwork, larger readable back layout, fixed front headline zone, and clean exact-fact coverage. It still does not reach 100 because the rendered card remains close to premium stationery templates rather than a highly bespoke art direction.
-- SVG v12 is the latest best route at product `94/100`, contract `98/100`. It fixes the self-focused cover headline, adds pressed-leaf/thread artwork on front/back, and adds coordinated interior marks. It remains below the `95-100` top band because the visible result is still deterministic premium stationery, not exceptional bespoke illustration. The active `109` target is impossible under the current 0-100 rubric without changing the rubric or inflating scores.
+- SVG v12 was initially overgraded at product `94/100`. User calibration and visible re-audit correct the product score to `5/100` while keeping contract score `98/100`. It fixes the self-focused cover headline and required facts, but the rendered result still looks like low-effort generic stationery with leaf marks. This route is a contract-only improvement and should not be treated as a product winner.
 
 ## Improvement Loop
 
@@ -46,7 +46,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | SVG v9 | Auto checks passed, but live text chose `headline_zone: top`, making cover feel high/empty | Repair should force sympathy front headline zone, not accept provider layout choice. |
 | SVG v10 | Product 91, contract 97 | Latest best. Sendable/proofable, but grade stays below 100 because art still reads as restrained stationery template. |
 | SVG v11 | Product-quality improvement over v10 with cleaner `For Eli` cover and richer front/back art | Cover/back became more bespoke; interiors still too plain for top-band grading. |
-| SVG v12 | Product 94, contract 98 | Latest best. Interior spread now more coordinated, but still not 95-100 because deterministic stationery art is not bespoke enough. |
+| SVG v12 | Product 5, contract 98 after re-audit | Contract improved, but user-visible product failed. Do not promote deterministic SVG stationery as a winner; replace the art system or provider. |
 
 ## Prompt/Skill Changes Applied
 
@@ -58,7 +58,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added deterministic browser SVG as an explicit `pipeline-quality` image candidate and included Cloudflare FLUX in route comparison.
 - Added richer sympathy vector artwork for the browser SVG route and enlarged benchmark contact sheets for visual review.
 - Forced sympathy front headline layout away from `top`, enlarged back layout for contact-sheet readability, and enriched deterministic SVG front/back motifs.
-- Forced self-focused sympathy cover headlines such as `Eli, I'm here for you` to repair to `For Eli`; added pressed-leaf/thread SVG motifs to front, interiors, and back.
+- Forced self-focused sympathy cover headlines such as `Eli, I'm here for you` to repair to `For Eli`; added pressed-leaf/thread SVG motifs to front, interiors, and back. Re-audit shows this was not enough: generic deterministic stationery remains a product failure.
 - Updated benchmark skill/lesson guidance to require latest/baseline/in-between evidence and to keep caveman-style concise reporting.
 
 ## Commands
