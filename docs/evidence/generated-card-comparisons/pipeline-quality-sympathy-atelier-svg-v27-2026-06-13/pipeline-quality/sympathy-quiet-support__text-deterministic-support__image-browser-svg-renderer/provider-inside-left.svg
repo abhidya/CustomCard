@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-atelier">
+<rect width="1500" height="2100" fill="#f7f2e8"/>
+
+    <defs>
+      <filter id="sympathyPaperGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.026" numOctaves="4" seed="23"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.16"/>
+        </feComponentTransfer>
+      </filter>
+      <linearGradient id="sympathyAtelierLight" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#d8c7a1" stop-opacity="0.36"/>
+        <stop offset="0.54" stop-color="#d8c7a1" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#d8c7a1" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="sympathyAtelierPool" cx="50%" cy="42%" r="58%">
+        <stop offset="0" stop-color="#d8c7a1" stop-opacity="0.34"/>
+        <stop offset="1" stop-color="#d8c7a1" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#f7f2e8" filter="url(#sympathyPaperGrain)" opacity="0.2"/>
+    <path d="M-120 120 C260 210 544 122 832 196 C1116 118 1336 160 1620 92 V700 C1260 640 968 610 650 668 C374 720 148 690 -120 760 Z" fill="url(#sympathyAtelierLight)"/>
+    <ellipse cx="760" cy="760" rx="560" ry="430" fill="url(#sympathyAtelierPool)"/>
+    <path d="M-80 1834 C270 1686 594 1768 898 1652 C1140 1560 1320 1582 1600 1492" fill="none" stroke="#596c5e" stroke-width="16" stroke-linecap="round" opacity="0.13"/>
+    <path d="M-80 1918 C300 1768 604 1874 946 1748 C1180 1662 1360 1678 1580 1604" fill="none" stroke="#596c5e" stroke-width="6" stroke-linecap="round" opacity="0.18"/>
+  
+
+      <g data-customcard-hero="sympathy-atelier-interior-inside-left">
+        <path d="M260 312 C478 270 650 326 860 292 C1034 264 1162 292 1260 262" fill="none" stroke="#d8c7a1" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+        <path d="M180 260 C310 570 262 918 174 1220 C120 1410 174 1558 290 1708" fill="none" stroke="#596c5e" stroke-width="10" stroke-linecap="round" opacity="0.22"/>
+        <path d="M180 292 C260 610 234 910 198 1168 C170 1364 218 1512 306 1668" fill="none" stroke="#d8c7a1" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
+        <ellipse cx="304" cy="560" rx="28" ry="96" fill="#8da08e" opacity="0.2" transform="rotate(36 304 560)"/>
+        <ellipse cx="252" cy="870" rx="24" ry="82" fill="#596c5e" opacity="0.16" transform="rotate(-30 252 870)"/>
+        <ellipse cx="304" cy="1228" rx="26" ry="88" fill="#8da08e" opacity="0.14" transform="rotate(32 304 1228)"/>
+        <path d="M250 1788 C448 1722 640 1790 838 1740 C1038 1690 1176 1730 1264 1668" fill="none" stroke="#b59f76" stroke-width="7" stroke-linecap="round" opacity="0.18"/>
+        <ellipse cx="1172" cy="1604" rx="118" ry="42" fill="#b59f76" opacity="0.12"/>
+        <path d="M1064 1586 C1124 1644 1210 1644 1274 1588" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.22"/>
+        <rect x="438" y="1534" width="214" height="108" rx="28" fill="#596c5e" opacity="0.08"/>
+        <circle cx="546" cy="1602" r="11" fill="#596c5e" opacity="0.18"/>
+      </g>
+    
+
+
+
+    <path d="M220 210 H1280" stroke="#596c5e" stroke-width="3" stroke-linecap="round" opacity="0.12"/>
+    <path d="M300 1866 H1200" stroke="#596c5e" stroke-width="3" stroke-linecap="round" opacity="0.1"/>
+  
+</svg>

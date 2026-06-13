@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-atelier">
+<rect width="1500" height="2100" fill="#21362f"/>
+
+    <defs>
+      <filter id="sympathyPaperGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.026" numOctaves="4" seed="23"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.16"/>
+        </feComponentTransfer>
+      </filter>
+      <linearGradient id="sympathyAtelierLight" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f7f2e8" stop-opacity="0.28"/>
+        <stop offset="0.54" stop-color="#f7f2e8" stop-opacity="0.08"/>
+        <stop offset="1" stop-color="#f7f2e8" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="sympathyAtelierPool" cx="50%" cy="42%" r="58%">
+        <stop offset="0" stop-color="#f7f2e8" stop-opacity="0.16"/>
+        <stop offset="1" stop-color="#f7f2e8" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#21362f" filter="url(#sympathyPaperGrain)" opacity="0.32"/>
+    <path d="M-120 240 C260 100 544 210 832 130 C1116 54 1336 120 1620 28 V1040 C1260 910 968 962 650 1040 C374 1090 148 1058 -120 1180 Z" fill="url(#sympathyAtelierLight)"/>
+    <ellipse cx="1010" cy="690" rx="500" ry="360" fill="url(#sympathyAtelierPool)"/>
+    <path d="M-80 1834 C270 1686 594 1768 898 1652 C1140 1560 1320 1582 1600 1492" fill="none" stroke="#d8c7a1" stroke-width="26" stroke-linecap="round" opacity="0.16"/>
+    <path d="M-80 1918 C300 1768 604 1874 946 1748 C1180 1662 1360 1678 1580 1604" fill="none" stroke="#d8c7a1" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
+  
+
+    <g data-customcard-hero="sympathy-atelier-back">
+      <path d="M230 510 C430 390 628 432 834 340 C1028 254 1190 270 1338 186" fill="none" stroke="#d8c7a1" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
+      <path d="M292 1570 C450 1480 628 1518 752 1630" fill="none" stroke="#d8c7a1" stroke-width="11" stroke-linecap="round" opacity="0.22"/>
+      <ellipse cx="438" cy="1628" rx="118" ry="42" fill="#d8c7a1" opacity="0.13"/>
+      <rect x="744" y="1568" width="220" height="108" rx="28" fill="#c5cbb8" opacity="0.12"/>
+      <circle cx="854" cy="1638" r="10" fill="#d8c7a1" opacity="0.26"/>
+      <circle cx="1090" cy="1582" r="36" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.22"/>
+      <path d="M1122 1612 L1182 1672 M1156 1648 L1186 1618" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.2"/>
+      <path d="M1214 1562 C1282 1516 1356 1544 1382 1626 C1304 1672 1240 1642 1214 1562Z" fill="#8da08e" opacity="0.14"/>
+    </g>
+  
+
+
+
+      <path d="M280 1868 H1220" stroke="#d8c7a1" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      <path d="M494 1910 H1006" stroke="#d8c7a1" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+    
+</svg>

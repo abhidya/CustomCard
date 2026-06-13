@@ -28,6 +28,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` Cloudflare SDXL v3/v4 | `image-cloudflare-sdxl-lightning` | 22-28 | 84 | D/F regression; scenic/tree terms caused line-art landscape failures | [v4 contact sheet](./pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/contact-sheet.png) |
 | `text-deterministic-support` Cloudflare SDXL v5 | `image-cloudflare-sdxl-lightning` | 55 | 88 | C-/D+ rough draft; final code-state readable but generic landscape | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v5-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 | `text-deterministic-support` DeepAI v13 | `image-deepai-text2img` -> fallback `browser-svg-renderer` | 12 | 68 | F fallback only; DeepAI 400 | [contact sheet](./pipeline-quality-sympathy-deterministic-deepai-v13-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/contact-sheet.png) |
+| `text-deterministic-support` atelier SVG v27 | `image-browser-svg-renderer` | 66 | 98 | C+ rough candidate; clean minimal local art, not premium | [manual grade](./pipeline-quality-sympathy-atelier-svg-v27-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -49,6 +50,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Cloudflare SDXL Lightning is executable in the full pipeline and returned four real PNG panels, but product score is only `30/100`. The front is a usable rough cover, while inside-left, inside-right, and back put small deterministic text over busy fruit/floral/line-art compositions. This proves richer raster art alone does not solve product quality; text-safe composition is the blocking issue.
 - Adding deterministic text fields improved SDXL readability from product `30/100` to a best SDXL score of `58/100`, but it did not solve product quality. SDXL repeatedly rendered scenic wheat/sunset/tree landscapes instead of quiet support-object art. V3/v4 showed that repeating forbidden scenic terms in positive prompts can make the model render those terms anyway; moving them to `negative_prompt` helped contract hygiene but did not make the art premium.
 - DeepAI v13 failed with a provider 400 under the stricter prompt and fell back to local SVG. Grade it as route failure/fallback only, not DeepAI visual quality.
+- Atelier SVG v27 is the best latest controllable local route at product `66/100`, contract `98/100`. It replaces crude literal SVG support objects with abstract dark/ivory washes and subtle support-object marks, and disables synthetic preview text plates for local SVG so the contact sheet no longer looks boxed. This is a real improvement over the user-calibrated `8/100` SVG controls, but still not premium: interiors remain minimal/template-adjacent.
 
 ## Improvement Loop
 
@@ -85,6 +87,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Cloudflare SDXL v3/v4 | Product 22-28, contract 84 | Putting explicit forbidden scenic terms in the positive prompt backfired: SDXL rendered trees/thickets/landscapes. Negative terms belong in provider `negative_prompt`, not repeated in the main prompt. |
 | Cloudflare SDXL v5 | Product 55, contract 88 | Final code-state keeps text fields and input-aware negative prompts. It remains worse than v2 because the cover has an empty dark plate and the art is still stock landscape. |
 | DeepAI v13 | Product 12 fallback, contract 68 | Stricter prompt hit DeepAI 400 and local fallback rendered. DeepAI route remains unreliable under this prompt. |
+| Atelier SVG v26-v27 | Product 66, contract 98 on v27 | Replacing crude literal SVG objects with an abstract atelier art system and removing local-SVG preview plates raised the controllable route to the best latest score. Still capped: clean minimal stationery, not a premium bespoke card. |
 
 ## Prompt/Skill Changes Applied
 
@@ -113,6 +116,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added a Hugging Face image adapter for Inference Providers, promoted HF FLUX/Qwen/Z-Image benchmark candidates, and repaired image-provider fallback so a live provider failure can still return four local fallback panels.
 - Added Cloudflare SDXL Lightning to the full `pipeline-quality` image comparison list and raised normalized image prompt length to avoid cutting prompts mid-instruction. The first live SDXL grade shows prompt length alone is not enough; prompts need shorter, earlier text-safe constraints.
 - Added deterministic preview text fields for pipeline-quality contact sheets, tuned interior body wrapping, and made sympathy negative prompts input-aware for scenic/clutter failures. These are contract/readability improvements, not product-quality proof.
+- Added a new local `sympathy-atelier` deterministic SVG theme with abstract dark/ivory washes, subtle support-object marks, and local-SVG preview behavior that avoids synthetic text plates. This improves the controllable route without external provider cost.
 
 ## Commands
 
@@ -151,4 +155,8 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-deepai-text2img --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deterministic-deepai-v13-2026-06-13 --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-cloudflare-sdxl-lightning --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v5-dryrun-2026-06-13
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-cloudflare-sdxl-lightning --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v5-2026-06-13 --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-browser-svg-renderer --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-atelier-svg-v26-dryrun-2026-06-13
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-browser-svg-renderer --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-atelier-svg-v26-2026-06-13 --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-browser-svg-renderer --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-atelier-svg-v27-dryrun-2026-06-13
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --story sympathy-quiet-support --text text-deterministic-support --image image-browser-svg-renderer --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-atelier-svg-v27-2026-06-13 --live true
 ```

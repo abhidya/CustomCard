@@ -884,14 +884,14 @@ function themeForPrompt(prompt) {
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
     return {
-      kind: "sympathy-gallery",
+      kind: "sympathy-atelier",
       background: (panelId) => panelId === "front" || panelId === "back" ? "#21362f" : "#f7f2e8",
       accent: (panelId) => panelId.startsWith("inside") ? "#596c5e" : "#d8c7a1",
       count: 0,
-      texture: (panelId) => sympathyGalleryTexture(panelId),
-      hero: (panelId) => sympathyGalleryHero(panelId),
+      texture: (panelId) => sympathyAtelierTexture(panelId),
+      hero: (panelId) => sympathyAtelierHero(panelId),
       overlay: () => "",
-      border: (panelId) => sympathyGalleryBorder(panelId),
+      border: (panelId) => sympathyAtelierBorder(panelId),
       motif: () => ""
     };
   }
@@ -1240,6 +1240,112 @@ function sympathyGalleryBorder(panelId) {
     return `<path d="M292 1856 H1208" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.16"/>`;
   }
   return `<path d="M210 190 H1290" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.12"/>`;
+}
+
+function sympathyAtelierTexture(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const paper = dark ? "#d8c7a1" : "#596c5e";
+  const wash = dark ? "#f7f2e8" : "#d8c7a1";
+  return `
+    <defs>
+      <filter id="sympathyPaperGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.026" numOctaves="4" seed="23"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.16"/>
+        </feComponentTransfer>
+      </filter>
+      <linearGradient id="sympathyAtelierLight" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="${wash}" stop-opacity="${dark ? 0.28 : 0.36}"/>
+        <stop offset="0.54" stop-color="${wash}" stop-opacity="${dark ? 0.08 : 0.18}"/>
+        <stop offset="1" stop-color="${wash}" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="sympathyAtelierPool" cx="50%" cy="42%" r="58%">
+        <stop offset="0" stop-color="${wash}" stop-opacity="${dark ? 0.16 : 0.34}"/>
+        <stop offset="1" stop-color="${wash}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="${dark ? "#21362f" : "#f7f2e8"}" filter="url(#sympathyPaperGrain)" opacity="${dark ? 0.32 : 0.2}"/>
+    <path d="M-120 ${dark ? 240 : 120} C260 ${dark ? 100 : 210} 544 ${dark ? 210 : 122} 832 ${dark ? 130 : 196} C1116 ${dark ? 54 : 118} 1336 ${dark ? 120 : 160} 1620 ${dark ? 28 : 92} V${dark ? 1040 : 700} C1260 ${dark ? 910 : 640} 968 ${dark ? 962 : 610} 650 ${dark ? 1040 : 668} C374 ${dark ? 1090 : 720} 148 ${dark ? 1058 : 690} -120 ${dark ? 1180 : 760} Z" fill="url(#sympathyAtelierLight)"/>
+    <ellipse cx="${dark ? 1010 : 760}" cy="${dark ? 690 : 760}" rx="${dark ? 500 : 560}" ry="${dark ? 360 : 430}" fill="url(#sympathyAtelierPool)"/>
+    <path d="M-80 1834 C270 1686 594 1768 898 1652 C1140 1560 1320 1582 1600 1492" fill="none" stroke="${paper}" stroke-width="${dark ? 26 : 16}" stroke-linecap="round" opacity="${dark ? 0.16 : 0.13}"/>
+    <path d="M-80 1918 C300 1768 604 1874 946 1748 C1180 1662 1360 1678 1580 1604" fill="none" stroke="${paper}" stroke-width="${dark ? 8 : 6}" stroke-linecap="round" opacity="${dark ? 0.2 : 0.18}"/>
+  `;
+}
+
+function sympathyAtelierHero(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const mirrored = panelId === "inside-right";
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="sympathy-atelier-front">
+        <path d="M188 460 C338 312 548 274 742 356 C952 444 1108 384 1308 254" fill="none" stroke="#d8c7a1" stroke-width="13" stroke-linecap="round" opacity="0.32"/>
+        <path d="M230 1524 C424 1406 632 1450 844 1356 C1034 1272 1196 1286 1344 1198" fill="none" stroke="#d8c7a1" stroke-width="9" stroke-linecap="round" opacity="0.22"/>
+        <path d="M1060 388 C970 650 994 904 1104 1126 C1190 1298 1176 1468 1064 1648" fill="none" stroke="#d8c7a1" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
+        <path d="M1086 690 C988 642 910 690 890 802 C994 852 1066 800 1086 690Z" fill="#c5cbb8" opacity="0.24"/>
+        <path d="M1044 1070 C1162 1004 1256 1058 1278 1182 C1158 1240 1070 1182 1044 1070Z" fill="#8da08e" opacity="0.2"/>
+        <ellipse cx="374" cy="1640" rx="142" ry="52" fill="#d8c7a1" opacity="0.16"/>
+        <path d="M258 1618 C326 1690 430 1692 500 1622" fill="none" stroke="#d8c7a1" stroke-width="13" stroke-linecap="round" opacity="0.28"/>
+        <rect x="860" y="1574" width="244" height="126" rx="30" fill="#c5cbb8" opacity="0.12"/>
+        <circle cx="982" cy="1654" r="12" fill="#d8c7a1" opacity="0.32"/>
+        <circle cx="1214" cy="1594" r="34" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.24"/>
+        <path d="M1246 1624 L1308 1686 M1280 1658 L1310 1628" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+      </g>
+    `;
+  }
+  if (inside) {
+    const side = mirrored ? 1320 : 180;
+    const leafA = mirrored ? 1196 : 304;
+    const leafB = mirrored ? 1248 : 252;
+    const lowerA = mirrored ? 328 : 1172;
+    return `
+      <g data-customcard-hero="sympathy-atelier-interior-${panelId}">
+        <path d="M260 312 C478 270 650 326 860 292 C1034 264 1162 292 1260 262" fill="none" stroke="#d8c7a1" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+        <path d="M${side} 260 C${mirrored ? "1190 570 1238 918 1326 1220 C1380 1410 1326 1558 1210 1708" : "310 570 262 918 174 1220 C120 1410 174 1558 290 1708"}" fill="none" stroke="#596c5e" stroke-width="10" stroke-linecap="round" opacity="0.22"/>
+        <path d="M${side} 292 C${mirrored ? "1240 610 1266 910 1302 1168 C1330 1364 1282 1512 1194 1668" : "260 610 234 910 198 1168 C170 1364 218 1512 306 1668"}" fill="none" stroke="#d8c7a1" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
+        <ellipse cx="${leafA}" cy="560" rx="28" ry="96" fill="#8da08e" opacity="0.2" transform="rotate(${mirrored ? -36 : 36} ${leafA} 560)"/>
+        <ellipse cx="${leafB}" cy="870" rx="24" ry="82" fill="#596c5e" opacity="0.16" transform="rotate(${mirrored ? 30 : -30} ${leafB} 870)"/>
+        <ellipse cx="${leafA}" cy="1228" rx="26" ry="88" fill="#8da08e" opacity="0.14" transform="rotate(${mirrored ? -32 : 32} ${leafA} 1228)"/>
+        <path d="M250 1788 C448 1722 640 1790 838 1740 C1038 1690 1176 1730 1264 1668" fill="none" stroke="#b59f76" stroke-width="7" stroke-linecap="round" opacity="0.18"/>
+        <ellipse cx="${lowerA}" cy="1604" rx="118" ry="42" fill="#b59f76" opacity="0.12"/>
+        <path d="M${mirrored ? "226 1586 C286 1644 372 1644 436 1588" : "1064 1586 C1124 1644 1210 1644 1274 1588"}" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.22"/>
+        <rect x="${mirrored ? 820 : 438}" y="1534" width="214" height="108" rx="28" fill="#596c5e" opacity="0.08"/>
+        <circle cx="${mirrored ? 928 : 546}" cy="1602" r="11" fill="#596c5e" opacity="0.18"/>
+      </g>
+    `;
+  }
+  return `
+    <g data-customcard-hero="sympathy-atelier-back">
+      <path d="M230 510 C430 390 628 432 834 340 C1028 254 1190 270 1338 186" fill="none" stroke="#d8c7a1" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
+      <path d="M292 1570 C450 1480 628 1518 752 1630" fill="none" stroke="#d8c7a1" stroke-width="11" stroke-linecap="round" opacity="0.22"/>
+      <ellipse cx="438" cy="1628" rx="118" ry="42" fill="#d8c7a1" opacity="0.13"/>
+      <rect x="744" y="1568" width="220" height="108" rx="28" fill="#c5cbb8" opacity="0.12"/>
+      <circle cx="854" cy="1638" r="10" fill="#d8c7a1" opacity="0.26"/>
+      <circle cx="1090" cy="1582" r="36" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.22"/>
+      <path d="M1122 1612 L1182 1672 M1156 1648 L1186 1618" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.2"/>
+      <path d="M1214 1562 C1282 1516 1356 1544 1382 1626 C1304 1672 1240 1642 1214 1562Z" fill="#8da08e" opacity="0.14"/>
+    </g>
+  `;
+}
+
+function sympathyAtelierBorder(panelId) {
+  if (panelId === "front") {
+    return `
+      <path d="M122 1900 H1378" stroke="#d8c7a1" stroke-width="3" stroke-linecap="round" opacity="0.24"/>
+      <path d="M122 1946 H640" stroke="#d8c7a1" stroke-width="2" stroke-linecap="round" opacity="0.16"/>
+    `;
+  }
+  if (panelId === "back") {
+    return `
+      <path d="M280 1868 H1220" stroke="#d8c7a1" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      <path d="M494 1910 H1006" stroke="#d8c7a1" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+    `;
+  }
+  return `
+    <path d="M220 210 H1280" stroke="#596c5e" stroke-width="3" stroke-linecap="round" opacity="0.12"/>
+    <path d="M300 1866 H1200" stroke="#596c5e" stroke-width="3" stroke-linecap="round" opacity="0.1"/>
+  `;
 }
 
 function photoNoteHero(panelId) {

@@ -1413,7 +1413,7 @@ async function materializePanels({ runDir, payload, fetchImpl, env }) {
     const file = resolve(runDir, `provider-${panelId}${decoded.ext}`);
     writeFileSync(file, decoded.buffer);
     const panelCopy = (payload.card_copy?.panels || []).find((panel) => panel.id === panelId) || {};
-    const previewBuffer = await renderPanelPreview({ imageBuffer: decoded.buffer, panelId, panelCopy });
+    const previewBuffer = await renderPanelPreview({ imageBuffer: decoded.buffer, panelId, panelCopy, contentType: decoded.contentType });
     const previewFile = resolve(runDir, `preview-${panelId}.png`);
     writeFileSync(previewFile, previewBuffer);
     panelFiles.push({
@@ -1465,7 +1465,7 @@ function extForContentType(contentType) {
   return ".png";
 }
 
-async function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
+async function renderPanelPreview({ imageBuffer, panelId, panelCopy, contentType = "image/png" }) {
   const layout = previewLayout(panelId, panelCopy.text_layout || panelCopy.textLayout, Boolean(String(panelCopy.body || "").trim()));
   const frameOpacity = previewFrameOpacity(panelCopy, layout);
   const headline = wrapText(panelCopy.headline || "", layout.headlineChars).slice(0, 3);
@@ -1473,7 +1473,7 @@ async function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
   const overlay = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
       <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${frameOpacity}"/>
-      ${previewTextFieldSvg(layout)}
+      ${previewTextFieldSvg(layout, contentType)}
       <text x="${layout.x}" y="${layout.headlineY}" text-anchor="${layout.anchor}" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700" paint-order="stroke fill" stroke="${layout.headlineStroke}" stroke-width="${layout.headlineStrokeWidth}">
         ${headline.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
       </text>
@@ -1502,7 +1502,8 @@ function previewFrameOpacity(panelCopy, layout) {
   return layout.frameOpacity ?? 0.72;
 }
 
-function previewTextFieldSvg(layout) {
+function previewTextFieldSvg(layout, contentType = "image/png") {
+  if (/svg/i.test(contentType)) return "";
   if (!layout.fieldOpacity) return "";
   return `<rect x="${layout.fieldX}" y="${layout.fieldY}" width="${layout.fieldWidth}" height="${layout.fieldHeight}" rx="${layout.fieldRadius}" fill="${layout.fieldFill}" opacity="${layout.fieldOpacity}" stroke="${layout.fieldStroke}" stroke-width="${layout.fieldStrokeWidth}"/>`;
 }
@@ -1708,7 +1709,7 @@ function withPreviewTextField(layout, rawLayout, panelId, hasBody) {
   const lightField = rawLayout.color_mode === "light-ink" || rawLayout.color_mode === "high-contrast";
   const field = (() => {
     if (panelId === "front") {
-      return hasBody ? { x: 150, y: 270, width: 1200, height: 590 } : { x: 215, y: 560, width: 1070, height: 360 };
+      return hasBody ? { x: 150, y: 270, width: 1200, height: 590 } : { x: 300, y: 335, width: 900, height: 250 };
     }
     if (panelId === "back") {
       return { x: 150, y: 300, width: 1200, height: 900 };
