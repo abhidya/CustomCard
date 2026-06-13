@@ -797,7 +797,7 @@ function themeForPrompt(prompt) {
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
     return {
       kind: "sympathy-gallery",
-      background: (panelId) => panelId === "back" ? "#f0eadf" : "#f7f2e8",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#21362f" : "#f7f2e8",
       accent: (panelId) => panelId.startsWith("inside") ? "#596c5e" : "#d8c7a1",
       count: 0,
       texture: (panelId) => sympathyGalleryTexture(panelId),
@@ -1037,12 +1037,13 @@ function boldTypeHero(panelId) {
 function sympathyGalleryTexture(panelId) {
   const cover = panelId === "front";
   const back = panelId === "back";
-  const stroke = cover ? "#d8c7a1" : "#596c5e";
+  const darkPanel = cover || back;
+  const stroke = darkPanel ? "#d8c7a1" : "#596c5e";
   return `
-    <g data-customcard-texture="sympathy-gallery-wash" opacity="${cover ? 0.15 : back ? 0.12 : 0.1}">
-      <path d="M-110 1810 C250 1690 560 1790 930 1648 C1170 1556 1390 1568 1610 1468" fill="none" stroke="${stroke}" stroke-width="46" stroke-linecap="round"/>
-      <path d="M-80 ${cover ? 520 : 340} C250 ${cover ? 420 : 300} 590 ${cover ? 460 : 338} 930 ${cover ? 354 : 300} C1170 ${cover ? 280 : 260} 1390 ${cover ? 288 : 278} 1600 ${cover ? 220 : 236}" fill="none" stroke="${stroke}" stroke-width="${cover ? 34 : 16}" stroke-linecap="round"/>
-      <circle cx="${cover ? 1110 : 1116}" cy="${cover ? 325 : 330}" r="${cover ? 190 : 120}" fill="#d8c7a1" opacity="${cover ? 0.24 : 0.14}"/>
+    <g data-customcard-texture="sympathy-still-life-wash" opacity="${cover ? 0.18 : back ? 0.16 : 0.09}">
+      <path d="M-100 1846 C248 1718 596 1810 952 1666 C1198 1568 1384 1584 1604 1486" fill="none" stroke="${stroke}" stroke-width="${cover ? 52 : 36}" stroke-linecap="round"/>
+      <path d="M-80 ${cover ? 1150 : 310} C260 ${cover ? 1030 : 286} 598 ${cover ? 1078 : 330} 930 ${cover ? 990 : 292} C1170 ${cover ? 926 : 258} 1398 ${cover ? 936 : 274} 1600 ${cover ? 884 : 238}" fill="none" stroke="${stroke}" stroke-width="${cover ? 22 : 12}" stroke-linecap="round"/>
+      <circle cx="${cover ? 1110 : 1130}" cy="${cover ? 360 : 332}" r="${cover ? 210 : 118}" fill="#d8c7a1" opacity="${cover ? 0.12 : darkPanel ? 0.1 : 0.13}"/>
     </g>
   `;
 }
@@ -1050,49 +1051,61 @@ function sympathyGalleryTexture(panelId) {
 function sympathyGalleryHero(panelId) {
   if (panelId === "front") {
     return `
-      <g data-customcard-hero="sympathy-gallery-front">
-        <rect x="86" y="178" width="286" height="640" rx="6" fill="#edf0df" stroke="#596c5e" stroke-width="18" opacity="0.48"/>
-        <line x1="229" y1="178" x2="229" y2="818" stroke="#596c5e" stroke-width="12" opacity="0.35"/>
-        <line x1="86" y1="500" x2="372" y2="500" stroke="#596c5e" stroke-width="12" opacity="0.35"/>
-        <path d="M-60 1660 C250 1502 560 1646 852 1508 C1040 1418 1218 1398 1560 1324 V2100 H-60Z" fill="#d8c7a1" opacity="0.18"/>
-        <path d="M-60 1770 C260 1608 560 1716 860 1588 C1054 1506 1230 1496 1560 1434 V2100 H-60Z" fill="#596c5e" opacity="0.12"/>
-        <path d="M1160 560 C1240 760 1236 1018 1170 1248 C1118 1430 1134 1608 1216 1782" fill="none" stroke="#4b3727" stroke-width="12" stroke-linecap="round" opacity="0.64"/>
-        <path d="M1184 820 C1088 772 1014 818 998 928 C1100 974 1168 930 1184 820Z" fill="#596c5e" opacity="0.34"/>
-        <path d="M1158 1114 C1264 1044 1356 1090 1378 1216 C1264 1278 1182 1230 1158 1114Z" fill="#8da08e" opacity="0.28"/>
-        <ellipse cx="338" cy="1576" rx="102" ry="46" fill="#596c5e" opacity="0.16"/>
-        <path d="M248 1560 C300 1622 376 1626 430 1564" fill="none" stroke="#596c5e" stroke-width="9" opacity="0.28"/>
-        <path d="M474 1510 C548 1466 618 1468 686 1518" fill="none" stroke="#b59f76" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
+      <g data-customcard-hero="sympathy-support-still-life-front">
+        <ellipse cx="750" cy="585" rx="530" ry="320" fill="#f7f2e8" opacity="0.08"/>
+        <rect x="82" y="150" width="380" height="710" rx="10" fill="#dfe7d7" stroke="#d8c7a1" stroke-width="16" opacity="0.72"/>
+        <rect x="120" y="190" width="304" height="630" rx="6" fill="#f7f2e8" opacity="0.55"/>
+        <line x1="272" y1="162" x2="272" y2="846" stroke="#21362f" stroke-width="10" opacity="0.42"/>
+        <line x1="96" y1="506" x2="448" y2="506" stroke="#21362f" stroke-width="10" opacity="0.36"/>
+        <path d="M120 786 C222 710 340 708 426 780" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.26"/>
+        <path d="M-70 1510 C250 1368 556 1460 892 1348 C1110 1276 1320 1284 1590 1208 V2100 H-70Z" fill="#d8c7a1" opacity="0.16"/>
+        <path d="M-80 1654 C290 1502 626 1600 930 1480 C1164 1388 1342 1392 1600 1326 V2100 H-80Z" fill="#0f211d" opacity="0.3"/>
+        <path d="M1040 390 C1122 642 1120 914 1046 1138 C1002 1272 1014 1392 1086 1536" fill="none" stroke="#d8c7a1" stroke-width="14" stroke-linecap="round" opacity="0.46"/>
+        <path d="M1058 670 C958 620 876 666 858 784 C962 834 1038 790 1058 670Z" fill="#c5cbb8" opacity="0.36"/>
+        <path d="M1030 944 C1138 874 1232 922 1256 1046 C1142 1110 1056 1062 1030 944Z" fill="#8da08e" opacity="0.3"/>
+        <ellipse cx="436" cy="1536" rx="166" ry="62" fill="#d8c7a1" opacity="0.22"/>
+        <path d="M292 1508 C368 1604 504 1608 594 1514" fill="none" stroke="#d8c7a1" stroke-width="18" stroke-linecap="round" opacity="0.3"/>
+        <ellipse cx="1020" cy="1584" rx="154" ry="52" fill="#d8c7a1" opacity="0.12"/>
+        <rect x="920" y="1492" width="218" height="116" rx="24" fill="#c5cbb8" opacity="0.18"/>
+        <circle cx="1030" cy="1570" r="12" fill="#d8c7a1" opacity="0.28"/>
+        <path d="M1200 1518 C1234 1486 1284 1498 1292 1542 C1298 1576 1270 1600 1238 1594" fill="none" stroke="#d8c7a1" stroke-width="10" stroke-linecap="round" opacity="0.36"/>
+        <circle cx="1210" cy="1512" r="24" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.32"/>
+        <path d="M1266 1594 L1326 1644 M1304 1620 L1328 1594" stroke="#d8c7a1" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
       </g>
     `;
   }
   if (panelId === "inside-left" || panelId === "inside-right") {
     const mirrored = panelId === "inside-right";
-    const bowlX = mirrored ? 1048 : 408;
-    const edgeX = mirrored ? 1260 : 240;
     return `
-      <g data-customcard-hero="sympathy-gallery-interior-${panelId}">
-        <path d="M-60 1660 C260 1518 552 1610 832 1508 C1068 1422 1248 1442 1560 1368 V2100 H-60Z" fill="#d8c7a1" opacity="0.13"/>
-        <path d="M-80 1788 C260 1628 580 1738 908 1596 C1110 1510 1300 1514 1580 1450 V2100 H-80Z" fill="#596c5e" opacity="0.09"/>
+      <g data-customcard-hero="sympathy-support-still-life-interior-${panelId}">
+        <ellipse cx="750" cy="790" rx="560" ry="460" fill="#fffaf0" opacity="0.5"/>
+        <path d="M-60 1690 C260 1532 552 1620 832 1518 C1068 1432 1248 1452 1560 1376 V2100 H-60Z" fill="#d8c7a1" opacity="0.12"/>
+        <path d="M-80 1820 C260 1660 580 1754 908 1610 C1110 1526 1300 1526 1580 1458 V2100 H-80Z" fill="#596c5e" opacity="0.08"/>
         ${mirrored
-          ? `<path d="M420 1618 C540 1544 682 1558 796 1636" fill="none" stroke="#b59f76" stroke-width="12" stroke-linecap="round" opacity="0.24"/>
-             <circle cx="900" cy="1544" r="38" fill="none" stroke="#596c5e" stroke-width="9" opacity="0.22"/>
-             <path d="M902 1506 V1458 M874 1572 L840 1608" stroke="#596c5e" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
-             <path d="M1060 1580 C1112 1552 1168 1572 1192 1624 C1146 1664 1090 1648 1060 1580Z" fill="#8da08e" opacity="0.16"/>`
-          : `<ellipse cx="${bowlX}" cy="1588" rx="116" ry="48" fill="#596c5e" opacity="0.16"/>
-             <path d="M${bowlX - 104} 1570 C${bowlX - 48} 1644 ${bowlX + 54} 1640 ${bowlX + 108} 1572" fill="none" stroke="#596c5e" stroke-width="10" opacity="0.26"/>
-             <path d="M${bowlX + 164} 1512 C${bowlX + 244} 1470 ${bowlX + 316} 1478 ${bowlX + 390} 1530" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.26"/>`}
-        <path d="M${edgeX} 1510 C${mirrored ? edgeX - 70 : edgeX + 70} 1390 ${mirrored ? edgeX - 44 : edgeX + 44} 1276 ${edgeX} 1164" fill="none" stroke="#596c5e" stroke-width="8" stroke-linecap="round" opacity="0.14"/>
+          ? `<rect x="250" y="1510" width="246" height="126" rx="28" fill="#596c5e" opacity="0.13"/>
+             <circle cx="372" cy="1584" r="14" fill="#4f3726" opacity="0.22"/>
+             <circle cx="930" cy="1570" r="42" fill="none" stroke="#b59f76" stroke-width="10" opacity="0.22"/>
+             <path d="M930 1528 V1476 M900 1598 L860 1640" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.22"/>
+             <path d="M1110 1520 C1170 1482 1236 1510 1258 1576 C1192 1622 1132 1592 1110 1520Z" fill="#8da08e" opacity="0.15"/>`
+          : `<ellipse cx="402" cy="1584" rx="140" ry="54" fill="#4f3726" opacity="0.18"/>
+             <path d="M282 1558 C354 1642 468 1646 546 1562" fill="none" stroke="#4f3726" stroke-width="14" stroke-linecap="round" opacity="0.22"/>
+             <path d="M640 1514 C706 1480 768 1490 832 1538" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.24"/>
+             <path d="M1044 1488 C1130 1428 1208 1464 1234 1552 C1146 1608 1070 1574 1044 1488Z" fill="#8da08e" opacity="0.14"/>`}
+        <path d="M${mirrored ? 1282 : 218} 1500 C${mirrored ? "1210 1366 1236 1236 1290 1116" : "290 1366 264 1236 210 1116"}" fill="none" stroke="#596c5e" stroke-width="8" stroke-linecap="round" opacity="0.1"/>
       </g>
     `;
   }
   return `
-    <g data-customcard-hero="sympathy-gallery-back">
-      <path d="M-80 1760 C260 1590 580 1716 910 1580 C1122 1492 1300 1498 1580 1424 V2100 H-80Z" fill="#596c5e" opacity="0.08"/>
-      <ellipse cx="420" cy="1628" rx="94" ry="40" fill="#596c5e" opacity="0.16"/>
-      <path d="M340 1616 C386 1672 456 1670 502 1618" fill="none" stroke="#596c5e" stroke-width="8" opacity="0.24"/>
-      <path d="M618 1568 C774 1482 920 1512 1070 1610" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
-      <circle cx="1120" cy="1548" r="30" fill="none" stroke="#596c5e" stroke-width="7" opacity="0.18"/>
-      <path d="M1190 1594 C1262 1546 1330 1570 1366 1642 C1292 1688 1222 1660 1190 1594Z" fill="#8da08e" opacity="0.14"/>
+    <g data-customcard-hero="sympathy-support-still-life-back">
+      <ellipse cx="750" cy="720" rx="470" ry="300" fill="#f7f2e8" opacity="0.07"/>
+      <path d="M-80 1788 C260 1620 580 1732 910 1596 C1122 1508 1300 1514 1580 1440 V2100 H-80Z" fill="#d8c7a1" opacity="0.1"/>
+      <ellipse cx="436" cy="1628" rx="106" ry="42" fill="#d8c7a1" opacity="0.18"/>
+      <path d="M346 1612 C394 1674 474 1672 522 1614" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.26"/>
+      <rect x="724" y="1578" width="202" height="92" rx="22" fill="#c5cbb8" opacity="0.14"/>
+      <circle cx="826" cy="1636" r="10" fill="#d8c7a1" opacity="0.24"/>
+      <circle cx="1058" cy="1586" r="34" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.22"/>
+      <path d="M1092 1612 L1144 1662 M1122 1640 L1148 1616" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+      <path d="M1188 1582 C1254 1538 1320 1560 1354 1632 C1288 1678 1222 1650 1188 1582Z" fill="#8da08e" opacity="0.16"/>
     </g>
   `;
 }
@@ -1616,15 +1629,15 @@ function isSympathyInput(input) {
 function buildPanelImagePrompt(input, panelId, panel) {
   const isSympathy = isSympathyInput(input);
   const panelInstruction = (isSympathy
-    ? {
+      ? {
         front:
-          "Full-bleed flat 2D gallery artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, one deep moss side wash, one right-edge branch silhouette, lower soft horizon kept below text, and integrated clean upper/lower text-safe areas.",
+          "Full-bleed flat 2D quiet-support still-life artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, lower table plane, meal bowl, folded cloth, phone, key, and one right-edge branch silhouette; integrated clean upper/center text-safe area.",
         "inside-left":
-          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, low muted hills, small meal bowl and spoon in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins.",
+          "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, small meal bowl and folded cloth in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins.",
         "inside-right":
-          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, low route line, muted phone dot, tiny key mark near lower edge, quiet blank center, clean text-safe area, generous safe margins.",
+          "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, muted phone and small key near lower edge, quiet blank center, clean text-safe area, generous safe margins.",
         back:
-          "Full-bleed flat 2D gallery artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal-bowl, route-line, and branch echo in the lower band, no caption plaque."
+          "Full-bleed flat 2D quiet-support still-life artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal bowl, phone, key, and branch echo in the lower band, no caption plaque."
       }
     : {
         front:
@@ -1686,7 +1699,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
   }
   if (isSympathyInput(input)) {
-    guardrails.push("Sympathy art must be flat gallery artwork with warm ivory open field, quiet window light, meal bowl, route line, muted phone dot, one branch silhouette, and no blank-message template or closed frame.");
+    guardrails.push("Sympathy art must be flat quiet-support still-life artwork with warm ivory open field, quiet window light, meal bowl, folded cloth, muted phone, small key, one branch silhouette, and no blank-message template or closed frame.");
   }
   if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
     guardrails.push(
@@ -1876,7 +1889,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, route line, muted phone dot, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template.";
+    return "Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -2017,7 +2030,7 @@ function buildThemeGuide(input) {
     return themeGuide({
       title: "Quietly With You",
       palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
-      motifs: ["quiet window light", "meal bowl", "route line", "muted phone dot", "single branch silhouette", "soft open field"],
+      motifs: ["quiet window light", "meal bowl", "folded cloth", "muted phone", "small key", "single branch silhouette", "soft open field"],
       border: "open-edge gallery composition with no closed frame and generous natural negative space"
     });
   }
@@ -2162,10 +2175,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Flat gallery-style sympathy cover with warm ivory open field, quiet window light, one deep moss side wash, a single branch silhouette on the right edge, and lower soft horizon kept below text; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
-      "inside-left": "Soft left interior artwork with warm ivory open field, low muted hills, small meal bowl and spoon in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
-      "inside-right": "Matching right interior artwork with calm open message field, low route line, muted phone dot, tiny key mark near the lower edge, and generous negative space; avoid blank-message template, closed layout, and framed blank page.",
-      back: "Minimal back cover with one small meal-bowl, route-line, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card."
+      front: "Flat quiet-support still-life sympathy cover with warm ivory open field, quiet window light, lower table plane, meal bowl, folded cloth, muted phone, small key, and a single branch silhouette at the right edge; keep upper/center text-safe space clear; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
+      "inside-left": "Soft left interior artwork with warm ivory open field, small meal bowl and folded cloth in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
+      "inside-right": "Matching right interior artwork with calm open message field, muted phone and small key near the lower edge, and generous negative space; avoid route lines, cars, blank-message template, closed layout, and framed blank page.",
+      back: "Minimal back cover with one small meal bowl, muted phone, small key, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card."
     };
     return cues[panelId];
   }
@@ -2276,7 +2289,7 @@ function normalizeTextLayout(value, panelId, input) {
         headline_zone: fallback.headline_zone,
         body_zone: fallback.body_zone,
         font_pairing: fallback.font_pairing,
-        color_mode: "dark-ink",
+        color_mode: fallback.color_mode,
         scale: "large"
       };
     }
@@ -2335,7 +2348,7 @@ function panelTextLayoutFallback(panelId, input) {
         body_zone: "upper",
         alignment: "center",
         font_pairing: "soft-serif",
-        color_mode: "dark-ink",
+        color_mode: "light-ink",
         scale: "standard"
       },
       "inside-left": {
@@ -2359,7 +2372,7 @@ function panelTextLayoutFallback(panelId, input) {
         body_zone: "center",
         alignment: "center",
         font_pairing: "minimal-sans",
-        color_mode: "dark-ink",
+        color_mode: "light-ink",
         scale: "large"
       }
     };

@@ -834,10 +834,10 @@ describe("AI card generator service", () => {
     const imagePrompts = payload.card_copy.panels.map((panel) => panel.image_prompt).join("\n");
     expect(imagePrompts).toMatch(/flat 2D gallery artwork|warm ivory open field|branch silhouette/i);
     expect(imagePrompts).not.toMatch(/photo-note|note-sheet|border-first|stationery design|paper field|thin refined frame/i);
-    expect(front?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "upper", body_zone: "upper", scale: "large" });
+    expect(front?.text_layout).toMatchObject({ color_mode: "light-ink", headline_zone: "upper", body_zone: "upper", scale: "large" });
     expect(insideLeft?.text_layout).toMatchObject({ color_mode: "dark-ink", font_pairing: "soft-serif", scale: "large" });
     expect(insideRight?.text_layout).toMatchObject({ color_mode: "dark-ink", font_pairing: "soft-serif", scale: "large" });
-    expect(back?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "upper", body_zone: "center", scale: "large" });
+    expect(back?.text_layout).toMatchObject({ color_mode: "light-ink", headline_zone: "upper", body_zone: "center", scale: "large" });
   });
 
   it("honors a trusted admin live-provider off toggle even when credentials exist", async () => {
