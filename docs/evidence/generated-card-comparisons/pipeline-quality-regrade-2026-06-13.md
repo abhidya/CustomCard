@@ -46,6 +46,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` paper-cut SVG v46 | `image-browser-svg-renderer` | 89 | 98 | B+ latest local route; no production-candidate claim | [manual grade](./pipeline-quality-sympathy-papercut-svg-v46-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` Cloudflare SDXL v47 | `image-cloudflare-sdxl-lightning` | 60 | 90 | C rough raster draft; provider works, concept wrong | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v47-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v48 | `image-browser-svg-renderer` | 90 | 98 | A- production-candidate with human proofing; latest local winner | [manual grade](./pipeline-quality-sympathy-papercut-svg-v48-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v49 | `image-browser-svg-renderer` | 91 | 98 | A- production-candidate; improved interior material detail | [manual grade](./pipeline-quality-sympathy-papercut-svg-v49-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -85,6 +86,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Paper-cut SVG v46 is latest local route at product `89/100`, contract `98/100`. It reduces squiggle clutter and emphasizes a single doorstep-care relief, but it is still deterministic SVG and does not cross into production-candidate quality.
 - Cloudflare SDXL v47 is product `60/100`, contract `90/100`: four real raster panels and readable deterministic text plates, but the art is generic wheat/field landscape instead of practical quiet support. Major concept/art redo still required.
 - Paper-cut SVG v48 is the latest local winner at product `90/100`, contract `98/100`. Replacing stacked small marks with a single bespoke doorstep-practical-care vignette makes meals/rides/calls/silence visibly legible enough for an A- proof. Still do not call it top-band: deterministic SVG and restrained interiors remain blockers.
+- Paper-cut SVG v49 is the latest local winner at product `91/100`, contract `98/100`. Handmade vellum/deckle stitching improves the two interior panels without text collision. It is production-candidate evidence, not top-band evidence.
 
 ## Improvement Loop
 
@@ -139,6 +141,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Paper-cut SVG v46 | Product 89, contract 98 | Squiggle-opacity cleanup made v43 cleaner but did not create a score lift. |
 | Cloudflare SDXL v47 | Product 60, contract 90 | Real raster run worked, but SDXL ignored practical-support object constraints and rendered generic landscape art. |
 | Paper-cut SVG v48 | Product 90, contract 98 | One stronger bespoke doorstep-care vignette beats tiny-mark tuning and crosses into proofable production-candidate quality. |
+| Paper-cut SVG v49 | Product 91, contract 98 | Interior vellum/deckle material detail fixes v48's weakest panels without hurting readability. |
 
 ## Prompt/Skill Changes Applied
 
@@ -183,6 +186,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Cleaned the paper-cut front doorway and reduced older squiggle/support-mark opacity so v46 favors one stronger doorstep-care relief.
 - Probed HF Z Image Turbo and Cloudflare SDXL Lightning with the full card pipeline after deterministic text controls; HF failed with 402, SDXL rendered generic wheat/field art.
 - Added a bespoke doorstep-practical-care SVG vignette with doorway light, covered meal, folded cloth, muted phone/key, and ride-line marks; used it as the main lower scene on front/interiors/back.
+- Added interior vellum/deckle stitching around message fields and strengthened the lower care vignette for the paper-cut sympathy route.
 
 ## Commands
 
@@ -259,4 +263,6 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --outpu
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v47-2026-06-13 --text text-deterministic-support --image image-cloudflare-sdxl-lightning --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v48-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v48-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v49-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v49-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 ```

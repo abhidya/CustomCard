@@ -1533,6 +1533,41 @@ function sympathyDoorstepVignette({ x, y, scale = 1, dark = false, mirrored = fa
   `;
 }
 
+function sympathyInteriorVellumDetail({ mirrored = false, opacity = 1 }) {
+  const leftPath = `
+    <path d="M286 650 C454 598 650 620 812 578 C972 536 1090 560 1166 614" fill="none" stroke="#d9bd7f" stroke-width="10" stroke-linecap="round" opacity="0.18"/>
+    <path d="M302 724 C276 914 294 1116 254 1296" fill="none" stroke="#53685f" stroke-width="5" stroke-linecap="round" opacity="0.14"/>
+    <path d="M1160 698 C1128 914 1150 1120 1110 1324" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.13"/>
+    <path d="M342 1296 C504 1360 654 1328 804 1378 C942 1424 1066 1418 1152 1360" fill="none" stroke="#d9bd7f" stroke-width="8" stroke-linecap="round" opacity="0.16"/>
+    <path d="M354 694 C416 668 494 676 548 710" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.2"/>
+    <path d="M998 666 C1064 642 1130 658 1174 704" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.17"/>
+  `;
+  const rightPath = `
+    <path d="M1214 650 C1046 598 850 620 688 578 C528 536 410 560 334 614" fill="none" stroke="#d9bd7f" stroke-width="10" stroke-linecap="round" opacity="0.18"/>
+    <path d="M1198 724 C1224 914 1206 1116 1246 1296" fill="none" stroke="#53685f" stroke-width="5" stroke-linecap="round" opacity="0.14"/>
+    <path d="M340 698 C372 914 350 1120 390 1324" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.13"/>
+    <path d="M1158 1296 C996 1360 846 1328 696 1378 C558 1424 434 1418 348 1360" fill="none" stroke="#d9bd7f" stroke-width="8" stroke-linecap="round" opacity="0.16"/>
+    <path d="M1146 694 C1084 668 1006 676 952 710" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.2"/>
+    <path d="M502 666 C436 642 370 658 326 704" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.17"/>
+  `;
+  const stitchX = mirrored ? [408, 456, 1110, 1158] : [342, 390, 1044, 1092];
+  const stitches = stitchX
+    .flatMap((x, xIndex) =>
+      [752, 846, 940, 1034, 1128, 1222].map((y, yIndex) => {
+        const r = xIndex < 2 ? 3 : 2.5;
+        const fill = (xIndex + yIndex) % 2 === 0 ? "#ad9160" : "#53685f";
+        return `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" opacity="${opacity * 0.12}"/>`;
+      })
+    )
+    .join("");
+  return `
+    <g data-customcard-material-detail="vellum-deckle-stitching" opacity="${opacity}">
+      ${mirrored ? rightPath : leftPath}
+      ${stitches}
+    </g>
+  `;
+}
+
 function sympathyThresholdHero(panelId) {
   if (panelId === "front") {
     return `
@@ -1596,6 +1631,7 @@ function sympathyThresholdHero(panelId) {
         <rect x="${stripX}" y="0" width="156" height="2100" fill="#101c18" opacity="0.065"/>
         <path d="${messagePanel}" fill="#fffaf1" opacity="0.42" filter="url(#sympathyCutShadow)"/>
         <path d="${messagePanel}" fill="none" stroke="#d9bd7f" stroke-width="3" opacity="0.16"/>
+        ${sympathyInteriorVellumDetail({ mirrored, opacity: 1 })}
         <path d="${paperPath}" fill="url(#sympathyPaperFace)" opacity="0.32" filter="url(#sympathyCutShadow)"/>
         <path d="M${lineX} 260 C${mirrored ? "1208 572 1238 890 1300 1190 C1342 1392 1294 1554 1196 1712" : "292 572 262 890 200 1190 C158 1392 206 1554 304 1712"}" fill="none" stroke="#53685f" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
         <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
@@ -1611,7 +1647,7 @@ function sympathyThresholdHero(panelId) {
           <path d="M${mirrored ? "642 1698 C812 1648 988 1682 1218 1608" : "858 1698 C688 1648 512 1682 282 1608"}" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
         </g>
         ${sympathyReliefStage({ x: mirrored ? 1270 : 230, y: 1362, scale: 0.64, mirrored, opacity: 0.16 })}
-        ${sympathyDoorstepVignette({ x: mirrored ? 1218 : 282, y: 1402, scale: 0.52, mirrored, opacity: 0.36 })}
+        ${sympathyDoorstepVignette({ x: mirrored ? 1218 : 282, y: 1402, scale: 0.52, mirrored, opacity: 0.46 })}
         <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.04">
           ${mirrored ? `
             <path d="M860 1538 C926 1488 996 1578 1066 1520 C1120 1474 1176 1492 1228 1534" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round"/>
