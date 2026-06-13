@@ -369,13 +369,181 @@ function licensedPhotoPanelSvg(panelId) {
 </svg>`;
 }
 
+function bespokeCareDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="bespokeCareGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.46 0.9" numOctaves="3" seed="${dark ? 611 : 719}"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.055"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="bespokeCareFiber" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018 0.04" numOctaves="5" seed="${dark ? 331 : 467}"/>
+        <feDisplacementMap in="SourceGraphic" scale="10"/>
+      </filter>
+      <filter id="bespokeCareShadow" x="-24%" y="-24%" width="148%" height="148%">
+        <feDropShadow dx="0" dy="28" stdDeviation="24" flood-color="#06100d" flood-opacity="${dark ? 0.46 : 0.18}"/>
+      </filter>
+      <filter id="bespokeCareSoft" x="-24%" y="-24%" width="148%" height="148%">
+        <feGaussianBlur stdDeviation="30"/>
+      </filter>
+      <linearGradient id="bespokeCareDark" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#192e27"/>
+        <stop offset="0.56" stop-color="#0a1714"/>
+        <stop offset="1" stop-color="#050b09"/>
+      </linearGradient>
+      <linearGradient id="bespokeCareIvory" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff8e8"/>
+        <stop offset="0.58" stop-color="#f4e4c4"/>
+        <stop offset="1" stop-color="#d8bd84"/>
+      </linearGradient>
+      <linearGradient id="bespokeCareMoss" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#899a83"/>
+        <stop offset="0.55" stop-color="#4f675c"/>
+        <stop offset="1" stop-color="#172a24"/>
+      </linearGradient>
+      <linearGradient id="bespokeCareWarm" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f8e9c6"/>
+        <stop offset="0.62" stop-color="#d7b779"/>
+        <stop offset="1" stop-color="#9e7f45"/>
+      </linearGradient>
+      <linearGradient id="bespokeCarePhone" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#5c6b62"/>
+        <stop offset="1" stop-color="#17221f"/>
+      </linearGradient>
+      <radialGradient id="bespokeCareGlow" cx="${dark ? "42%" : "54%"}" cy="${dark ? "30%" : "38%"}" r="76%">
+        <stop offset="0" stop-color="#f9e9c2" stop-opacity="${dark ? 0.38 : 0.32}"/>
+        <stop offset="0.58" stop-color="#d0ad69" stop-opacity="${dark ? 0.12 : 0.1}"/>
+        <stop offset="1" stop-color="${dark ? "#07100d" : "#fbf1df"}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  `;
+}
+
+function bespokeCareBackground(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const base = dark ? "url(#bespokeCareDark)" : "#fbf1df";
+  const ink = dark ? "#06100d" : "#52675d";
+  const warm = dark ? "#ecd7a5" : "#c6a261";
+  const topBand = dark
+    ? "M-180 242 C186 70 530 242 846 118 C1118 10 1320 124 1660 46 V820 C1270 720 980 808 624 912 C302 1006 90 904 -180 1102 Z"
+    : "M-180 166 C242 250 488 92 834 196 C1100 276 1326 128 1660 202 V620 C1278 584 1020 696 660 740 C332 780 94 702 -180 842 Z";
+  return `
+    <rect width="${width}" height="${height}" fill="${base}"/>
+    <rect width="${width}" height="${height}" fill="${dark ? "#e4cea0" : "#6f6144"}" filter="url(#bespokeCareGrain)" opacity="${dark ? 0.34 : 0.15}"/>
+    <ellipse cx="${dark ? 620 : 780}" cy="${dark ? 560 : 650}" rx="${dark ? 810 : 680}" ry="${dark ? 560 : 460}" fill="url(#bespokeCareGlow)"/>
+    <path d="${topBand}" fill="${dark ? "#f4e1b7" : "#fff8e8"}" opacity="${dark ? 0.16 : 0.42}" filter="url(#bespokeCareFiber)"/>
+    <path d="M-120 1810 C242 1676 542 1760 858 1634 C1134 1526 1332 1560 1624 1434" fill="none" stroke="${warm}" stroke-width="${dark ? 24 : 12}" stroke-linecap="round" opacity="${dark ? 0.13 : 0.1}"/>
+    <path d="M-80 1914 C266 1786 584 1870 914 1740 C1170 1640 1366 1674 1600 1578" fill="none" stroke="${ink}" stroke-width="${dark ? 7 : 4}" stroke-linecap="round" opacity="${dark ? 0.2 : 0.11}"/>
+  `;
+}
+
+function bespokeCoveredMeal({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)">
+      <ellipse cx="226" cy="230" rx="218" ry="74" fill="${dark ? "#020604" : "#b6a073"}" opacity="${dark ? 0.36 : 0.16}" filter="url(#bespokeCareSoft)"/>
+      <path d="M26 204 C48 92 150 24 278 38 C390 50 468 122 484 230 C356 298 154 290 26 204Z" fill="#f6e8c8"/>
+      <path d="M72 200 C122 128 346 132 438 220" fill="none" stroke="#b89a5d" stroke-width="13" stroke-linecap="round" opacity="0.34"/>
+      <path d="M176 70 C210 40 272 42 306 76" fill="none" stroke="#4e675d" stroke-width="9" stroke-linecap="round" opacity="0.28"/>
+      <path d="M66 250 C178 292 338 286 452 230" fill="none" stroke="#fff7df" stroke-width="10" stroke-linecap="round" opacity="0.46"/>
+    </g>
+  `;
+}
+
+function bespokeFoldedBag({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)">
+      <path d="M62 100 C116 42 238 40 294 104" fill="none" stroke="#b4955c" stroke-width="18" stroke-linecap="round" opacity="0.5"/>
+      <path d="M18 116 L326 82 L378 430 C250 500 122 468 -24 534 Z" fill="url(#bespokeCareIvory)" filter="url(#bespokeCareFiber)" opacity="${dark ? 0.92 : 0.96}"/>
+      <path d="M78 142 C154 112 262 104 330 126" fill="none" stroke="#d2b06f" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+      <path d="M42 272 C148 234 266 232 360 260" fill="none" stroke="#52675d" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+      <path d="M28 390 C146 342 266 352 374 398" fill="none" stroke="#d2b06f" stroke-width="6" stroke-linecap="round" opacity="0.18"/>
+    </g>
+  `;
+}
+
+function bespokePhone({ x = 0, y = 0, scale = 1, rotate = 0, opacity = 1 }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)" opacity="${opacity}">
+      <rect x="0" y="0" width="126" height="216" rx="38" fill="url(#bespokeCarePhone)"/>
+      <path d="M34 44 H92" stroke="#f8e7c6" stroke-width="5" stroke-linecap="round" opacity="0.42"/>
+      <path d="M44 152 H84" stroke="#f8e7c6" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+    </g>
+  `;
+}
+
+function bespokeBlankNote({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)">
+      <path d="M0 0 H288 V196 C204 236 98 222 -16 274 Z" fill="#fff9ea" opacity="${dark ? 0.84 : 0.95}" filter="url(#bespokeCareFiber)"/>
+      <path d="M42 66 H240" stroke="#c4a76d" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+      <path d="M42 124 H202" stroke="#52675d" stroke-width="4" stroke-linecap="round" opacity="0.12"/>
+    </g>
+  `;
+}
+
+function bespokeRouteThread({ x = 0, y = 0, scale = 1, mirrored = false, dark = false, opacity = 1 }) {
+  const sx = mirrored ? -scale : scale;
+  return `
+    <g transform="translate(${x} ${y}) scale(${sx} ${scale})" opacity="${opacity}">
+      <path d="M0 184 C128 86 284 132 426 52 C568 -28 748 14 902 116" fill="none" stroke="${dark ? "#f6e1ad" : "#52675d"}" stroke-width="8" stroke-linecap="round" opacity="${dark ? 0.28 : 0.16}"/>
+      <circle cx="34" cy="160" r="12" fill="${dark ? "#f6e1ad" : "#52675d"}" opacity="${dark ? 0.28 : 0.18}"/>
+      <circle cx="874" cy="106" r="12" fill="${dark ? "#f6e1ad" : "#52675d"}" opacity="${dark ? 0.24 : 0.16}"/>
+    </g>
+  `;
+}
+
+function bespokeCareTableau({ panelId, x = 0, y = 0, scale = 1, mirrored = false, opacity = 1, compact = false }) {
+  const dark = panelId === "front" || panelId === "back";
+  const sx = mirrored ? -scale : scale;
+  const shelfY = compact ? 460 : 620;
+  return `
+    <g transform="translate(${x} ${y}) scale(${sx} ${scale})" opacity="${opacity}">
+      <ellipse cx="560" cy="${shelfY + 116}" rx="${compact ? 520 : 680}" ry="${compact ? 118 : 170}" fill="${dark ? "#020604" : "#b6a073"}" filter="url(#bespokeCareSoft)" opacity="${dark ? 0.48 : 0.18}"/>
+      <path d="M-66 ${compact ? 334 : 454} C126 ${compact ? 250 : 342} 328 ${compact ? 286 : 398} 530 ${compact ? 214 : 306} C736 ${compact ? 126 : 218} 932 ${compact ? 178 : 300} 1104 ${compact ? 292 : 408} L1042 ${compact ? 502 : 690} C814 ${compact ? 720 : 902} 590 ${compact ? 612 : 784} 378 ${compact ? 732 : 958} C196 ${compact ? 836 : 1060} 34 ${compact ? 710 : 910} -112 ${compact ? 874 : 1090} Z" fill="${dark ? "#e8d5a3" : "#7f927f"}" opacity="${dark ? 0.3 : 0.2}" filter="url(#bespokeCareFiber)"/>
+      <path d="M-18 ${compact ? 390 : 530} C180 ${compact ? 304 : 424} 356 ${compact ? 346 : 494} 558 ${compact ? 270 : 390} C744 ${compact ? 210 : 314} 906 ${compact ? 244 : 376} 1038 ${compact ? 334 : 490}" fill="none" stroke="${dark ? "#f4e0ae" : "#52675d"}" stroke-width="${compact ? 7 : 10}" stroke-linecap="round" opacity="${dark ? 0.24 : 0.16}"/>
+      ${bespokeFoldedBag({ x: compact ? 122 : 132, y: compact ? 214 : 314, scale: compact ? 0.64 : 0.82, rotate: -4, dark })}
+      ${bespokeCoveredMeal({ x: compact ? 356 : 410, y: compact ? 186 : 274, scale: compact ? 0.56 : 0.76, rotate: 3, dark })}
+      ${bespokeBlankNote({ x: compact ? 658 : 780, y: compact ? 176 : 262, scale: compact ? 0.54 : 0.66, rotate: compact ? -6 : -4, dark })}
+      ${bespokePhone({ x: compact ? 858 : 1002, y: compact ? 308 : 446, scale: compact ? 0.48 : 0.58, rotate: compact ? 4 : 2, opacity: dark ? 0.7 : 0.58 })}
+      ${bespokeRouteThread({ x: compact ? 100 : 76, y: compact ? 654 : 816, scale: compact ? 0.72 : 0.96, dark, opacity: dark ? 0.46 : 0.34 })}
+    </g>
+  `;
+}
+
+function bespokeCarePanelSvg(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const mirrored = panelId === "inside-right" || panelId === "back";
+  const tableau = panelId === "front"
+    ? bespokeCareTableau({ panelId, x: 84, y: 1036, scale: 1.16, opacity: 0.98 })
+    : panelId === "back"
+      ? bespokeCareTableau({ panelId, x: 1228, y: 1194, scale: 0.68, mirrored: true, opacity: 0.72, compact: true })
+      : bespokeCareTableau({ panelId, x: mirrored ? 1294 : 168, y: 1328, scale: 0.58, mirrored, opacity: 0.68, compact: true });
+  const sideRelief = inside
+    ? `<path d="M238 252 C486 204 684 244 926 200 C1104 168 1236 184 1308 150" fill="none" stroke="#8c9a84" stroke-width="4" stroke-linecap="round" opacity="0.09"/>`
+    : "";
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${bespokeCareDefs({ dark })}
+  ${bespokeCareBackground(panelId)}
+  ${sideRelief}
+  ${tableau}
+  ${dark ? `<rect width="${width}" height="${height}" fill="#06100d" opacity="${panelId === "back" ? 0.18 : 0.1}"/>` : ""}
+</svg>`;
+}
+
 function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
     return legacyPanelSvg(panelId);
   }
-  const licensed = licensedPhotoPanelSvg(panelId);
-  if (licensed) return licensed;
-  return premiumPanelSvg(panelId);
+  if (process.env.CUSTOMCARD_LICENSED_PRACTICAL_CARE_ASSETS === "enabled") {
+    const licensed = licensedPhotoPanelSvg(panelId);
+    if (licensed) return licensed;
+  }
+  return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
 }
 
 function legacyPanelSvg(panelId) {
