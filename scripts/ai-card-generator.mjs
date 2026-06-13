@@ -869,7 +869,8 @@ function themeForPrompt(prompt) {
       motif: (index, panelId) => toolMotif(index, panelId)
     };
   }
-  if (/\b(bold[- ]type|editorial|poster|sprint|project-management|project management)\b/.test(text)) {
+  if (!/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
+    /\b(bold[- ]type|editorial|poster|sprint|project-management|project management)\b/.test(text)) {
     return {
       kind: "bold-type",
       background: (panelId) => panelId.startsWith("inside") ? "#fffaf0" : "#15181d",
@@ -883,7 +884,7 @@ function themeForPrompt(prompt) {
     };
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
-    /\b(support-object|meal bowl|folded cloth|muted phone|small key|practical support|paper-cut|papercut|threshold relief|care tableau|practical-care|doorstep care)\b/.test(text)) {
+    /\b(support-object|meal bowl|folded cloth|muted phone|small key|practical support|paper-cut|papercut|threshold relief|care tableau|practical-care|doorstep care|quiet threshold|editorial relief)\b/.test(text)) {
     return {
       kind: "sympathy-premium-still-life",
       background: (panelId) => panelId === "front" || panelId === "back" ? "#10211c" : "#fff8ea",
@@ -1512,25 +1513,20 @@ function premiumPaperCutCareRelief({ x, y, scale = 1, dark = false, mirrored = f
   const wash = dark ? "#ead9aa" : "#53685f";
   const shade = dark ? "#07120f" : "#d7c08f";
   return `
-    <g data-customcard-illustration="paper-cut-practical-care-relief" transform="translate(${x} ${y}) scale(${xScale} ${scale})" opacity="${opacity}">
-      <ellipse cx="470" cy="620" rx="500" ry="86" fill="${shade}" opacity="${dark ? 0.28 : 0.12}"/>
-      <path d="M-20 414 C142 318 306 352 494 272 C660 202 794 226 928 298 L894 532 C708 608 556 560 384 628 C206 700 72 642 -54 736 Z" fill="${dark ? "#0d1a16" : "#ead9aa"}" opacity="${dark ? 0.5 : 0.2}" filter="url(#premiumStillLifeSoft)"/>
-      <path d="M38 396 C188 316 340 344 516 270 C668 206 780 228 884 288 L850 468 C684 530 548 500 394 560 C234 624 112 584 14 650 Z" fill="${cream}" opacity="${dark ? 0.76 : 0.68}" filter="url(#premiumStillLifeShadow)"/>
-      <path d="M74 424 C218 362 352 388 514 324 C650 270 758 286 842 330" fill="none" stroke="${ink}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.28 : 0.18}"/>
-      <path d="M86 540 C230 496 362 520 518 468 C654 422 762 434 842 396" fill="none" stroke="${wash}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.42 : 0.24}"/>
+    <g data-customcard-illustration="editorial-threshold-relief" transform="translate(${x} ${y}) scale(${xScale} ${scale})" opacity="${opacity}">
+      <path d="M-44 598 C142 500 326 544 506 468 C672 398 810 418 952 500 L902 694 C724 764 560 724 380 788 C206 850 70 806 -70 878 Z" fill="${shade}" opacity="${dark ? 0.28 : 0.1}" filter="url(#premiumStillLifeSoft)"/>
+      <path d="M28 370 C198 286 354 326 536 246 C694 176 824 202 936 274 L906 454 C730 524 566 490 392 556 C222 620 96 574 -18 652 Z" fill="${cream}" opacity="${dark ? 0.72 : 0.56}" filter="url(#premiumStillLifeShadow)"/>
+      <path d="M74 416 C236 342 384 376 548 308 C684 252 794 262 886 312" fill="none" stroke="${ink}" stroke-width="9" stroke-linecap="round" opacity="${dark ? 0.24 : 0.14}"/>
+      <path d="M54 512 C224 454 376 494 548 430 C694 376 804 388 896 344" fill="none" stroke="${wash}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.38 : 0.2}"/>
 
-      <path d="M112 346 C200 286 330 286 430 356 C346 432 200 434 112 346Z" fill="${moss}" opacity="${dark ? 0.28 : 0.18}"/>
-      <path d="M150 356 C226 326 330 332 398 368" fill="none" stroke="${gold}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.6 : 0.38}"/>
+      <path d="M82 470 C232 392 394 432 560 362 C710 300 830 326 918 400 L884 526 C730 574 586 552 426 608 C264 666 146 626 48 690 Z" fill="${gold}" opacity="${dark ? 0.48 : 0.28}"/>
+      <path d="M118 494 C262 440 404 466 560 410 C700 360 804 372 876 420" fill="none" stroke="${cream}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.52 : 0.42}"/>
+      <path d="M134 616 C284 568 430 596 592 540 C720 496 810 506 886 548" fill="none" stroke="${ink}" stroke-width="9" stroke-linecap="round" opacity="${dark ? 0.46 : 0.28}"/>
+      <path d="M174 696 C316 654 456 676 608 628 C744 584 830 596 900 630" fill="none" stroke="${wash}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.3 : 0.18}"/>
 
-      <path d="M386 368 C486 292 626 294 748 372 C610 438 496 430 386 368Z" fill="${gold}" opacity="${dark ? 0.74 : 0.48}"/>
-      <path d="M420 376 C514 336 624 344 706 386" fill="none" stroke="${cream}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.5 : 0.58}"/>
-      <path d="M438 436 C548 408 652 420 752 466" fill="none" stroke="${wash}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.34 : 0.22}"/>
-
-      <path d="M218 512 C338 438 474 558 622 462 C716 402 802 426 870 492" fill="none" stroke="${ink}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.58 : 0.34}"/>
-      <path d="M248 594 C366 560 474 588 594 538 C710 490 798 506 868 542" fill="none" stroke="${wash}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.36 : 0.22}"/>
-      <path d="M686 302 C754 258 834 286 868 364 C790 410 718 382 686 302Z" fill="${moss}" opacity="${dark ? 0.18 : 0.12}"/>
-      <path d="M724 326 C778 308 824 322 850 358" fill="none" stroke="${gold}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.44 : 0.3}"/>
-      <path d="M668 596 C734 574 804 594 858 646 C772 688 704 666 668 596Z" fill="${dark ? "#ead9aa" : "#53685f"}" opacity="${dark ? 0.11 : 0.08}"/>
+      <path d="M250 276 C382 220 520 238 664 186 C784 142 872 154 936 196" fill="none" stroke="${gold}" stroke-width="12" stroke-linecap="round" opacity="${dark ? 0.24 : 0.16}"/>
+      <path d="M640 270 C728 230 824 252 896 326 C796 374 704 356 640 270Z" fill="${moss}" opacity="${dark ? 0.16 : 0.1}"/>
+      <path d="M-26 742 C142 662 314 710 484 642 C640 580 780 594 946 658" fill="none" stroke="${dark ? "#ead9aa" : "#ad9160"}" stroke-width="4" stroke-linecap="round" opacity="${dark ? 0.2 : 0.12}"/>
     </g>
   `;
 }
@@ -2690,13 +2686,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = (isSympathy
       ? {
         front:
-          "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower paper-cut threshold relief that reads as practical care without clipart.",
+          "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief that reads as practical support without clipart.",
         "inside-left":
-          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and integrated lower/outer-edge paper-cut practical-care relief.",
+          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief.",
         "inside-right":
-          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and integrated lower/outer-edge paper-cut practical-care relief.",
+          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief.",
         back:
-          "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower paper-cut care-relief echo."
+          "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower editorial-relief echo."
       }
     : {
         front:
@@ -2734,8 +2730,8 @@ function buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, te
     panelInstruction,
     "Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card.",
     `Text contract: keep the ${textSafeCue} empty, plain, low-contrast, and free of objects; no marks behind app-rendered text.`,
-    "Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief.",
-    "No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
+    "Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief.",
+    "No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
     "No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene.",
     visualBrief,
     `Panel cue: ${visualCue}`,
@@ -2997,7 +2993,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
+    return "Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -3138,7 +3134,7 @@ function buildThemeGuide(input) {
     return themeGuide({
       title: "Quietly With You",
       palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
-      motifs: ["threshold light", "folded cloth arc", "covered meal form", "quiet call curve", "ride threshold line", "silence open-space shape", "soft open field"],
+      motifs: ["threshold light", "layered paper ribbon", "quiet path curve", "warm open-space shape", "shadowed cut-paper edge", "silence field", "soft open field"],
       border: "open-edge paper-cut composition with no closed frame and generous natural negative space"
     });
   }
@@ -3283,10 +3279,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower paper-cut practical-care tableau; folded cloth arc, covered meal form, quiet call curve, ride threshold line, and silence/open-space shape are integrated as abstract relief, not clipart.",
-      "inside-left": "Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left paper-cut relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons.",
-      "inside-right": "Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right paper-cut relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons.",
-      back: "Minimal deep moss back cover with readable upper/center text-safe area and one composed lower paper-cut care-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons."
+      front: "Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief; layered paper ribbons, quiet path curve, warm open-space shape, and soft shadows are integrated as abstract care, not clipart.",
+      "inside-left": "Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left editorial relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons.",
+      "inside-right": "Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right editorial relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons.",
+      back: "Minimal deep moss back cover with readable upper/center text-safe area and one composed lower editorial-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons."
     };
     return cues[panelId];
   }
@@ -3429,7 +3425,8 @@ function textLayoutValue(raw, key, camelKey = key) {
 
 function panelTextLayoutFallback(panelId, input) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")}`.toLowerCase();
-  if (/\b(bold type|bold-type|poster|editorial)\b/.test(source)) {
+  if (!/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source) &&
+    /\b(bold type|bold-type|poster|editorial)\b/.test(source)) {
     return {
       headline_zone: panelId === "back" ? "lower" : "upper",
       body_zone: panelId === "front" ? "lower" : panelId === "back" ? "bottom" : "center",

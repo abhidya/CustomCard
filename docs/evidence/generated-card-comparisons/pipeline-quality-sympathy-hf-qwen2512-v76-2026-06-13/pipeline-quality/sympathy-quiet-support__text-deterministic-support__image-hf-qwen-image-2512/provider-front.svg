@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-premium-still-life">
+<rect width="1500" height="2100" fill="#10211c"/>
+
+    <defs>
+      <filter id="premiumStillLifeGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.024" numOctaves="5" seed="89"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.18"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="premiumStillLifeShadow" x="-18%" y="-18%" width="136%" height="136%">
+        <feDropShadow dx="0" dy="26" stdDeviation="24" flood-color="#06100d" flood-opacity="0.42"/>
+      </filter>
+      <filter id="premiumStillLifeSoft" x="-12%" y="-12%" width="124%" height="124%">
+        <feGaussianBlur stdDeviation="18"/>
+      </filter>
+      <filter id="premiumStillLifeDeckle" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018 0.044" numOctaves="3" seed="131"/>
+        <feDisplacementMap in="SourceGraphic" scale="16"/>
+      </filter>
+      <linearGradient id="premiumStillLifeBeam" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#ead9aa" stop-opacity="0.42"/>
+        <stop offset="0.46" stop-color="#ead9aa" stop-opacity="0.16"/>
+        <stop offset="1" stop-color="#10211c" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="premiumStillLifePaper" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff7dd"/>
+        <stop offset="1" stop-color="#d9bd7f"/>
+      </linearGradient>
+      <linearGradient id="premiumStillLifeMossPaper" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#8da08e"/>
+        <stop offset="1" stop-color="#314b42"/>
+      </linearGradient>
+      <radialGradient id="premiumStillLifePool" cx="46%" cy="38%" r="64%">
+        <stop offset="0" stop-color="#ead9aa" stop-opacity="0.25"/>
+        <stop offset="0.7" stop-color="#ead9aa" stop-opacity="0.08"/>
+        <stop offset="1" stop-color="#10211c" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#10211c"/>
+    <rect width="1500" height="2100" fill="#ead9aa" filter="url(#premiumStillLifeGrain)" opacity="0.24"/>
+    <ellipse cx="690" cy="575" rx="720" ry="510" fill="url(#premiumStillLifePool)"/>
+    <path d="M-180 206 C226 88 520 218 834 126 C1090 52 1324 140 1660 26 V830 C1270 738 982 820 650 904 C342 982 108 900 -180 1038 Z" fill="url(#premiumStillLifeBeam)"/>
+    <path d="M-130 1816 C246 1688 590 1778 900 1660 C1152 1564 1346 1588 1608 1492" fill="none" stroke="#ead9aa" stroke-width="28" stroke-linecap="round" opacity="0.14"/>
+    <path d="M-90 1900 C282 1760 620 1870 954 1742 C1194 1650 1372 1672 1588 1592" fill="none" stroke="#07120f" stroke-width="8" stroke-linecap="round" opacity="0.18"/>
+  
+
+      <g data-customcard-hero="premium-still-life-front">
+        <path d="M96 894 C268 740 518 742 752 642 C970 548 1192 590 1380 468 L1350 1276 C1110 1368 892 1296 650 1390 C418 1480 240 1402 104 1502 Z" fill="#ead9aa" opacity="0.08" filter="url(#premiumStillLifeDeckle)"/>
+        <path d="M214 300 C428 238 630 290 858 238 C1048 194 1204 228 1320 184" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round" opacity="0.2"/>
+        <path d="M202 994 V1618 H410" fill="none" stroke="#ead9aa" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+        <path d="M256 1060 V1554 H390" fill="none" stroke="#f7f0d8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+        
+    <g data-customcard-illustration="paper-cut-practical-care-relief" transform="translate(214 1046) scale(1.18 1.18)" opacity="0.96">
+      <ellipse cx="470" cy="620" rx="500" ry="86" fill="#07120f" opacity="0.28"/>
+      <path d="M-20 414 C142 318 306 352 494 272 C660 202 794 226 928 298 L894 532 C708 608 556 560 384 628 C206 700 72 642 -54 736 Z" fill="#0d1a16" opacity="0.5" filter="url(#premiumStillLifeSoft)"/>
+      <path d="M38 396 C188 316 340 344 516 270 C668 206 780 228 884 288 L850 468 C684 530 548 500 394 560 C234 624 112 584 14 650 Z" fill="#fff7dd" opacity="0.76" filter="url(#premiumStillLifeShadow)"/>
+      <path d="M74 424 C218 362 352 388 514 324 C650 270 758 286 842 330" fill="none" stroke="#10211c" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
+      <path d="M86 540 C230 496 362 520 518 468 C654 422 762 434 842 396" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
+
+      <path d="M112 346 C200 286 330 286 430 356 C346 432 200 434 112 346Z" fill="url(#premiumStillLifeMossPaper)" opacity="0.28"/>
+      <path d="M150 356 C226 326 330 332 398 368" fill="none" stroke="url(#premiumStillLifePaper)" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
+
+      <path d="M386 368 C486 292 626 294 748 372 C610 438 496 430 386 368Z" fill="url(#premiumStillLifePaper)" opacity="0.74"/>
+      <path d="M420 376 C514 336 624 344 706 386" fill="none" stroke="#fff7dd" stroke-width="7" stroke-linecap="round" opacity="0.5"/>
+      <path d="M438 436 C548 408 652 420 752 466" fill="none" stroke="#ead9aa" stroke-width="6" stroke-linecap="round" opacity="0.34"/>
+
+      <path d="M218 512 C338 438 474 558 622 462 C716 402 802 426 870 492" fill="none" stroke="#10211c" stroke-width="10" stroke-linecap="round" opacity="0.58"/>
+      <path d="M248 594 C366 560 474 588 594 538 C710 490 798 506 868 542" fill="none" stroke="#ead9aa" stroke-width="6" stroke-linecap="round" opacity="0.36"/>
+      <path d="M686 302 C754 258 834 286 868 364 C790 410 718 382 686 302Z" fill="url(#premiumStillLifeMossPaper)" opacity="0.18"/>
+      <path d="M724 326 C778 308 824 322 850 358" fill="none" stroke="url(#premiumStillLifePaper)" stroke-width="5" stroke-linecap="round" opacity="0.44"/>
+      <path d="M668 596 C734 574 804 594 858 646 C772 688 704 666 668 596Z" fill="#ead9aa" opacity="0.11"/>
+    </g>
+  
+        <path d="M244 1838 C486 1760 704 1806 940 1732 C1144 1668 1298 1690 1400 1642" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+      </g>
+    
+
+
+
+      <path d="M210 1886 C446 1820 662 1852 896 1792 C1110 1738 1268 1756 1370 1710" stroke="#ead9aa" stroke-width="4" stroke-linecap="round" opacity="0.2" fill="none"/>
+      <path d="M292 1940 H1120" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+    
+</svg>

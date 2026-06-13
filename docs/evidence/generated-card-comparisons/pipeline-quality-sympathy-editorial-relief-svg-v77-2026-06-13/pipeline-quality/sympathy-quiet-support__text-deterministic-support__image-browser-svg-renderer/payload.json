@@ -1,0 +1,271 @@
+{
+  "draft_id": "ai-mqcexprw-eli",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Quietly With You",
+      "palette": [
+        "warm ivory",
+        "muted gray-green",
+        "deep moss",
+        "soft taupe"
+      ],
+      "motifs": [
+        "threshold light",
+        "layered paper ribbon",
+        "quiet path curve",
+        "warm open-space shape",
+        "shadowed cut-paper edge",
+        "silence field",
+        "soft open field"
+      ],
+      "border_style": "open-edge paper-cut composition with no closed frame and generous natural negative space",
+      "front_back_pairing": "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
+      "interior_pairing": "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "For Eli",
+        "body": "",
+        "art_direction": "Quietly With You front cover with open-edge paper-cut composition with no closed frame and generous natural negative space, clear title area, generous safe margins, warm ivory, muted gray-green, deep moss, soft taupe palette, and motifs that echo on the back panel.",
+        "visual_cue": "Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief; layered paper ribbons, quiet path curve, warm open-space shape, and soft shadows are integrated as abstract care, not clipart.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "upper",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief that reads as practical support without clipart. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief; layered paper ribbons, quiet path curve, warm open-space shape, and soft shadows are integrated as abstract care, not clipart. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy,",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      },
+      {
+        "id": "inside-left",
+        "headline": "With You In This",
+        "body": "I am so sorry about your father. I will not try to explain the loss or cover the quiet with easy words; I am here beside you, at whatever pace the day allows.",
+        "art_direction": "Quietly With You inside-left panel with open-edge paper-cut composition with no closed frame and generous natural negative space, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.",
+        "visual_cue": "Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left editorial relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left editorial relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark.",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Jordan",
+        "body": "Meals can be left at your door. Rides can be quiet. Calls can be answered or missed. Silence counts too. You do not have to manage this alone. With sympathy and friendship, Jordan.",
+        "art_direction": "Quietly With You inside-right message panel with matching open-edge paper-cut composition with no closed frame and generous natural negative space, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.",
+        "visual_cue": "Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right editorial relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right editorial relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      },
+      {
+        "id": "back",
+        "headline": "With Steady Care",
+        "body": "For practical help, quiet support, and steady care on days words cannot hold.",
+        "art_direction": "Quietly With You back panel with mostly negative space, subtle lower ornamentation, open-edge paper-cut composition with no closed frame and generous natural negative space, and border details that visually pair with the front cover.",
+        "visual_cue": "Minimal deep moss back cover with readable upper/center text-safe area and one composed lower editorial-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower editorial-relief echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal deep moss back cover with readable upper/center text-safe area and one composed lower editorial-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo"
+      }
+    ],
+    "memory_citations": [
+      "Eli lost his father.",
+      "Jordan wants to offer practical support: meals, rides, calls, and silence."
+    ]
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJib2xkLXR5cGUiPgo8cmVjdCB3aWR0aD0iMTUwMCIgaGVpZ2h0PSIyMTAwIiBmaWxsPSIjMTUxODFkIi8+CgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJib2xkLXR5cGUiIG9wYWNpdHk9IjAuOSI+CiAgICAgIDxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjY1MCIgZmlsbD0iI2YyYjg0YiIvPgogICAgICA8cmVjdCB4PSIxNjAiIHk9IjczMCIgd2lkdGg9IjUwMCIgaGVpZ2h0PSIzNCIgZmlsbD0iI2ZmZmFmMCIvPgogICAgICA8Y2lyY2xlIGN4PSIxMTgwIiBjeT0iODQwIiByPSI1NiIgZmlsbD0iI2YyYjg0YiIvPgogICAgICA8cGF0aCBkPSJNMTEyOCA4NDAgTDEyMzIgODQwIEwxMTgwIDkwMFoiIGZpbGw9IiMxNTE4MWQiIG9wYWNpdHk9IjAuNzIiLz4KICAgIDwvZz4KICAKCgo8cmVjdCB4PSIxMDAiIHk9IjEwMCIgd2lkdGg9IjEzMDAiIGhlaWdodD0iMTkwMCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2YyYjg0YiIgc3Ryb2tlLXdpZHRoPSI0IiBvcGFjaXR5PSIwLjI4Ii8+Cjwvc3ZnPg==",
+      "revised_prompt": "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief that reads as practical support without clipart. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief; layered paper ribbons, quiet path curve, warm open-space shape, and soft shadows are integrated as abstract care, not clipart. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy,",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJib2xkLXR5cGUiPgo8cmVjdCB3aWR0aD0iMTUwMCIgaGVpZ2h0PSIyMTAwIiBmaWxsPSIjZmZmYWYwIi8+CgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJib2xkLXR5cGUiIG9wYWNpdHk9IjAuMjIiPgogICAgICA8cmVjdCB4PSIxOTAiIHk9IjE1NzAiIHdpZHRoPSIxMTIwIiBoZWlnaHQ9IjE4IiBmaWxsPSIjZjJiODRiIi8+CiAgICAgIDxyZWN0IHg9IjI1MCIgeT0iMTY0MCIgd2lkdGg9IjUyMCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzJmNGY1ZiIvPgogICAgICA8Y2lyY2xlIGN4PSIxMTEwIiBjeT0iMTY4NCIgcj0iMzAiIGZpbGw9IiNmMmI4NGIiLz4KICAgICAgPHBhdGggZD0iTTEwODIgMTY4NCBMMTEzOCAxNjg0IEwxMTEwIDE3MThaIiBmaWxsPSIjZmZmYWYwIiBvcGFjaXR5PSIwLjcyIi8+CiAgICA8L2c+CiAgCgoKPHJlY3QgeD0iMTAwIiB5PSIxMDAiIHdpZHRoPSIxMzAwIiBoZWlnaHQ9IjE5MDAiIHJ4PSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiMyZjRmNWYiIHN0cm9rZS13aWR0aD0iNCIgb3BhY2l0eT0iMC4yOCIvPgo8L3N2Zz4=",
+      "revised_prompt": "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left editorial relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark.",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJib2xkLXR5cGUiPgo8cmVjdCB3aWR0aD0iMTUwMCIgaGVpZ2h0PSIyMTAwIiBmaWxsPSIjZmZmYWYwIi8+CgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJib2xkLXR5cGUiIG9wYWNpdHk9IjAuMjIiPgogICAgICA8cmVjdCB4PSIxOTAiIHk9IjE1NzAiIHdpZHRoPSIxMTIwIiBoZWlnaHQ9IjE4IiBmaWxsPSIjZjJiODRiIi8+CiAgICAgIDxyZWN0IHg9IjI1MCIgeT0iMTY0MCIgd2lkdGg9IjUyMCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzJmNGY1ZiIvPgogICAgICA8Y2lyY2xlIGN4PSIxMTEwIiBjeT0iMTY4NCIgcj0iMzAiIGZpbGw9IiNmMmI4NGIiLz4KICAgICAgPHBhdGggZD0iTTEwODIgMTY4NCBMMTEzOCAxNjg0IEwxMTEwIDE3MThaIiBmaWxsPSIjZmZmYWYwIiBvcGFjaXR5PSIwLjcyIi8+CiAgICA8L2c+CiAgCgoKPHJlY3QgeD0iMTAwIiB5PSIxMDAiIHdpZHRoPSIxMzAwIiBoZWlnaHQ9IjE5MDAiIHJ4PSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiMyZjRmNWYiIHN0cm9rZS13aWR0aD0iNCIgb3BhY2l0eT0iMC4yOCIvPgo8L3N2Zz4=",
+      "revised_prompt": "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right editorial relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJib2xkLXR5cGUiPgo8cmVjdCB3aWR0aD0iMTUwMCIgaGVpZ2h0PSIyMTAwIiBmaWxsPSIjMTUxODFkIi8+CgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJib2xkLXR5cGUiIG9wYWNpdHk9IjAuNCI+CiAgICAgIDxyZWN0IHg9IjE5MCIgeT0iMTQ0MCIgd2lkdGg9IjExMjAiIGhlaWdodD0iMTgiIGZpbGw9IiNmMmI4NGIiLz4KICAgICAgPHJlY3QgeD0iMjUwIiB5PSIxNTEwIiB3aWR0aD0iNTIwIiBoZWlnaHQ9IjEyIiBmaWxsPSIjMmY0ZjVmIi8+CiAgICAgIDxjaXJjbGUgY3g9IjExMTAiIGN5PSIxNTU0IiByPSIzMCIgZmlsbD0iI2YyYjg0YiIvPgogICAgICA8cGF0aCBkPSJNMTA4MiAxNTU0IEwxMTM4IDE1NTQgTDExMTAgMTU4OFoiIGZpbGw9IiNmZmZhZjAiIG9wYWNpdHk9IjAuNzIiLz4KICAgIDwvZz4KICAKCgo8cmVjdCB4PSIxMDAiIHk9IjEwMCIgd2lkdGg9IjEzMDAiIGhlaWdodD0iMTkwMCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2YyYjg0YiIgc3Ryb2tlLXdpZHRoPSI0IiBvcGFjaXR5PSIwLjI4Ii8+Cjwvc3ZnPg==",
+      "revised_prompt": "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower editorial-relief echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief. No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal deep moss back cover with readable upper/center text-safe area and one composed lower editorial-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "primary_adapter_id": "deterministic-customer-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "deterministic-support-copy",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "deterministic-svg",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-69b90c32",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer-1781358632616",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "provider": "CustomCard deterministic",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T13:50:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "deterministic-customer-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": true,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-87ee75ed",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer-1781358632616",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "provider": "CustomCard deterministic",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T13:50:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "deterministic-customer-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": true,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-bee7145a",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer-1781358632616",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "provider": "CustomCard renderer",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T13:50:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "browser-svg-renderer",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": true,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-dd0d5e85",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer-1781358632616",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "provider": "CustomCard renderer",
+      "capability": "image-generation",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T13:50:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "browser-svg-renderer",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": true,
+        "costGateEvent": true,
+        "generatedPanelCount": 4
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 0,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": false,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": false
+}

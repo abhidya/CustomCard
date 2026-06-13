@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="bold-type">
+<rect width="1500" height="2100" fill="#15181d"/>
+
+
+    <g data-customcard-hero="bold-type" opacity="0.9">
+      <rect x="0" y="0" width="1500" height="650" fill="#f2b84b"/>
+      <rect x="160" y="730" width="500" height="34" fill="#fffaf0"/>
+      <circle cx="1180" cy="840" r="56" fill="#f2b84b"/>
+      <path d="M1128 840 L1232 840 L1180 900Z" fill="#15181d" opacity="0.72"/>
+    </g>
+  
+
+
+<rect x="100" y="100" width="1300" height="1900" rx="8" fill="none" stroke="#f2b84b" stroke-width="4" opacity="0.28"/>
+</svg>

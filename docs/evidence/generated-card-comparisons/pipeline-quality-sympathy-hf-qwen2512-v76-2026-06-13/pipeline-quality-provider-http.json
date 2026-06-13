@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://router.huggingface.co/fal-ai/fal-ai/qwen-image-2512",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "[redacted]",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower paper-cut threshold relief that reads as practical care without clipart. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief. No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower paper-cut practical-care tableau; folded cloth arc, covered meal form, quiet call curve, ride threshold line, and silence/open-space shape are integrated as abstract relief, not clipart. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy,",
+        "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon,",
+        "image_size": {
+          "width": 1024,
+          "height": 1536
+        },
+        "num_inference_steps": 8,
+        "seed": 644723160
+      }
+    },
+    "response": {
+      "status": 402,
+      "ok": false,
+      "contentType": "application/json; charset=utf-8",
+      "byteLength": 189,
+      "body": {
+        "error": "You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+      }
+    },
+    "durationMs": 229
+  }
+]
