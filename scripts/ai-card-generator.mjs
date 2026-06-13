@@ -884,6 +884,20 @@ function themeForPrompt(prompt) {
     };
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
+    /\b(memorial atelier|atelier plate|quiet plate|single-plate|quiet-light plate)\b/.test(text)) {
+    return {
+      kind: "sympathy-memorial-atelier",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#0b1714" : "#fbf2dd",
+      accent: (panelId) => panelId.startsWith("inside") ? "#51675d" : "#e7d29c",
+      count: 0,
+      texture: (panelId) => sympathyMemorialAtelierTexture(panelId),
+      hero: (panelId) => sympathyMemorialAtelierHero(panelId),
+      overlay: () => "",
+      border: (panelId) => sympathyMemorialAtelierBorder(panelId),
+      motif: () => ""
+    };
+  }
+  if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
     /\b(support-object|meal bowl|folded cloth|muted phone|small key|practical support|paper-cut|papercut|threshold relief|care tableau|practical-care|doorstep care|quiet threshold|editorial relief)\b/.test(text)) {
     return {
       kind: "sympathy-premium-still-life",
@@ -1547,6 +1561,133 @@ function sympathyPremiumStillLifeBorder(panelId) {
   return `
     <path d="M238 220 C448 174 646 220 858 178 C1048 140 1182 166 1272 132" stroke="#d9bd7f" stroke-width="3" stroke-linecap="round" opacity="0.14" fill="none"/>
     <path d="M286 1880 H1214" stroke="#53685f" stroke-width="3" stroke-linecap="round" opacity="0.08"/>
+  `;
+}
+
+function sympathyMemorialAtelierTexture(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const base = dark ? "#0b1714" : "#fbf2dd";
+  const ink = dark ? "#06100d" : "#465a50";
+  const warm = dark ? "#e7d29c" : "#d0ad69";
+  const vellum = dark ? "#f8edd0" : "#fffaf0";
+  return `
+    <defs>
+      <filter id="memorialAtelierGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.007 0.021" numOctaves="5" seed="211"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.2"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="memorialAtelierDeckle" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02 0.052" numOctaves="4" seed="307"/>
+        <feDisplacementMap in="SourceGraphic" scale="18"/>
+      </filter>
+      <filter id="memorialAtelierShadow" x="-18%" y="-18%" width="136%" height="136%">
+        <feDropShadow dx="0" dy="30" stdDeviation="28" flood-color="#06100d" flood-opacity="${dark ? 0.46 : 0.14}"/>
+      </filter>
+      <filter id="memorialAtelierSoft" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="34"/>
+      </filter>
+      <linearGradient id="memorialAtelierLight" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="${vellum}" stop-opacity="${dark ? 0.54 : 0.72}"/>
+        <stop offset="0.42" stop-color="${warm}" stop-opacity="${dark ? 0.2 : 0.24}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="memorialAtelierMoss" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#6f8679"/>
+        <stop offset="1" stop-color="#162b25"/>
+      </linearGradient>
+      <radialGradient id="memorialAtelierGlow" cx="${dark ? "42%" : "55%"}" cy="${dark ? "34%" : "42%"}" r="68%">
+        <stop offset="0" stop-color="${warm}" stop-opacity="${dark ? 0.24 : 0.28}"/>
+        <stop offset="0.58" stop-color="${warm}" stop-opacity="${dark ? 0.08 : 0.12}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="${base}"/>
+    <rect width="1500" height="2100" fill="${dark ? "#e7d29c" : ink}" filter="url(#memorialAtelierGrain)" opacity="${dark ? 0.25 : 0.1}"/>
+    <ellipse cx="${dark ? 615 : 780}" cy="${dark ? 565 : 690}" rx="${dark ? 760 : 630}" ry="${dark ? 580 : 420}" fill="url(#memorialAtelierGlow)"/>
+    <path d="M-180 ${dark ? 248 : 170} C240 ${dark ? 88 : 240} 568 ${dark ? 230 : 150} 902 ${dark ? 112 : 226} C1160 ${dark ? 30 : 136} 1368 ${dark ? 128 : 168} 1660 ${dark ? 36 : 110} V${dark ? 908 : 610} C1266 ${dark ? 770 : 562} 960 ${dark ? 872 : 670} 614 ${dark ? 960 : 752} C290 ${dark ? 1036 : 812} 86 ${dark ? 930 : 772} -180 ${dark ? 1106 : 890} Z" fill="url(#memorialAtelierLight)" opacity="${dark ? 0.78 : 0.58}"/>
+    <path d="M-140 1810 C240 1684 548 1772 874 1640 C1142 1530 1336 1554 1618 1442" fill="none" stroke="${warm}" stroke-width="${dark ? 30 : 16}" stroke-linecap="round" opacity="${dark ? 0.12 : 0.1}"/>
+    <path d="M-82 1914 C280 1764 606 1874 936 1742 C1188 1642 1378 1668 1588 1588" fill="none" stroke="${ink}" stroke-width="${dark ? 7 : 4}" stroke-linecap="round" opacity="${dark ? 0.18 : 0.12}"/>
+  `;
+}
+
+function sympathyMemorialAtelierHero(panelId) {
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="memorial-atelier-front">
+        <path d="M156 574 C318 444 514 470 674 338 C836 204 1054 224 1254 118 L1334 1508 C1078 1636 848 1546 606 1676 C384 1794 246 1704 132 1824 Z" fill="#e7d29c" opacity="0.06" filter="url(#memorialAtelierDeckle)"/>
+        <path d="M308 680 C470 536 616 540 764 420 C912 302 1088 292 1264 204 L1240 1386 C1018 1484 846 1438 646 1546 C458 1646 336 1608 236 1702 Z" fill="#f8edd0" opacity="0.16" filter="url(#memorialAtelierShadow)"/>
+        <path d="M404 728 C536 614 660 620 784 528 C926 422 1078 412 1200 350 L1168 1164 C982 1244 812 1220 650 1312 C500 1398 390 1370 314 1442 Z" fill="url(#memorialAtelierMoss)" opacity="0.34"/>
+        <path d="M458 795 C604 706 724 724 858 638 C970 566 1074 552 1160 504" fill="none" stroke="#f8edd0" stroke-width="10" stroke-linecap="round" opacity="0.32"/>
+        <path d="M420 1210 C592 1118 746 1144 900 1058 C1018 992 1118 994 1200 946" fill="none" stroke="#e7d29c" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+        <path d="M184 1660 C390 1552 572 1608 768 1514 C948 1428 1104 1450 1288 1362" fill="none" stroke="#f8edd0" stroke-width="18" stroke-linecap="round" opacity="0.12"/>
+        ${memorialAtelierEtching({ x: 214, y: 1200, scale: 1.05, dark: true })}
+      </g>
+    `;
+  }
+  if (panelId === "inside-left" || panelId === "inside-right") {
+    const mirrored = panelId === "inside-right";
+    const bandPath = mirrored
+      ? "M1048 118 C1198 328 1168 610 1288 860 C1410 1114 1374 1390 1246 1718 L1510 1718 V0 H1138 Z"
+      : "M452 118 C302 328 332 610 212 860 C90 1114 126 1390 254 1718 L-10 1718 V0 H362 Z";
+    const edgeX = mirrored ? 1120 : 380;
+    const sign = mirrored ? -1 : 1;
+    return `
+      <g data-customcard-hero="memorial-atelier-interior-${panelId}">
+        <path d="${bandPath}" fill="url(#memorialAtelierLight)" opacity="0.36" filter="url(#memorialAtelierDeckle)"/>
+        <path d="M${edgeX} 256 C${edgeX + sign * -94} 470 ${edgeX + sign * -70} 704 ${edgeX + sign * -142} 930 C${edgeX + sign * -212} 1146 ${edgeX + sign * -156} 1366 ${edgeX + sign * -58} 1588" fill="none" stroke="#51675d" stroke-width="12" stroke-linecap="round" opacity="0.18"/>
+        <path d="M${edgeX + sign * -28} 338 C${edgeX + sign * -90} 578 ${edgeX + sign * -80} 824 ${edgeX + sign * -138} 1058 C${edgeX + sign * -190} 1266 ${edgeX + sign * -146} 1442 ${edgeX + sign * -72} 1634" fill="none" stroke="#d0ad69" stroke-width="5" stroke-linecap="round" opacity="0.22"/>
+        <path d="M236 332 C448 270 642 330 864 282 C1042 244 1198 264 1302 224" fill="none" stroke="#d0ad69" stroke-width="4" stroke-linecap="round" opacity="0.16"/>
+        ${memorialAtelierEtching({ x: mirrored ? 1128 : 112, y: 1438, scale: 0.44, dark: false, mirrored, opacity: 0.42 })}
+        <path d="M260 1860 C466 1794 670 1846 886 1784 C1072 1732 1212 1750 1324 1688" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.15"/>
+      </g>
+    `;
+  }
+  return `
+    <g data-customcard-hero="memorial-atelier-back">
+      <path d="M278 1054 C470 944 678 1000 886 902 C1066 816 1216 852 1330 944 L1284 1690 C1072 1792 866 1728 668 1812 C494 1886 354 1834 246 1744 Z" fill="#f8edd0" opacity="0.1" filter="url(#memorialAtelierDeckle)"/>
+      <path d="M430 1118 C578 1032 718 1064 878 996 C1012 940 1118 954 1206 1008 L1178 1468 C1028 1534 884 1504 740 1568 C608 1626 510 1592 426 1654 Z" fill="url(#memorialAtelierMoss)" opacity="0.3" filter="url(#memorialAtelierShadow)"/>
+      ${memorialAtelierEtching({ x: 390, y: 1254, scale: 0.68, dark: true, opacity: 0.64 })}
+      <path d="M346 1836 C532 1776 708 1818 896 1764 C1058 1718 1186 1734 1278 1688" stroke="#e7d29c" stroke-width="5" stroke-linecap="round" opacity="0.18" fill="none"/>
+    </g>
+  `;
+}
+
+function memorialAtelierEtching({ x, y, scale = 1, dark = false, mirrored = false, opacity = 1 }) {
+  const xScale = mirrored ? -scale : scale;
+  const line = dark ? "#f8edd0" : "#51675d";
+  const warm = dark ? "#e7d29c" : "#d0ad69";
+  const fill = dark ? "#0b1714" : "#fbf2dd";
+  return `
+    <g data-customcard-illustration="memorial-atelier-etching" transform="translate(${x} ${y}) scale(${xScale} ${scale})" opacity="${opacity}">
+      <path d="M4 288 C142 202 286 236 434 166 C568 104 694 128 818 214 L774 420 C630 494 482 452 332 526 C184 598 72 554 -28 632 Z" fill="${fill}" opacity="${dark ? 0.38 : 0.24}" filter="url(#memorialAtelierShadow)"/>
+      <path d="M64 260 C190 194 320 218 452 158 C576 102 688 126 784 188" fill="none" stroke="${line}" stroke-width="8" stroke-linecap="round" opacity="${dark ? 0.34 : 0.2}"/>
+      <path d="M40 366 C194 298 328 336 488 270 C628 212 720 232 794 284" fill="none" stroke="${warm}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.38 : 0.28}"/>
+      <path d="M96 472 C246 412 382 440 536 378 C664 326 738 338 808 386" fill="none" stroke="${line}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.24 : 0.16}"/>
+      <path d="M188 154 C300 112 414 124 536 82 C638 48 720 58 792 94" fill="none" stroke="${warm}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.24 : 0.18}"/>
+      <path d="M-20 548 C148 474 314 518 484 452 C638 392 752 410 846 462" fill="none" stroke="${line}" stroke-width="4" stroke-linecap="round" opacity="${dark ? 0.22 : 0.14}"/>
+    </g>
+  `;
+}
+
+function sympathyMemorialAtelierBorder(panelId) {
+  if (panelId === "front") {
+    return `
+      <path d="M260 1868 C484 1802 700 1836 918 1774 C1114 1718 1260 1732 1372 1684" stroke="#e7d29c" stroke-width="3" stroke-linecap="round" opacity="0.18" fill="none"/>
+      <path d="M382 1938 H1118" stroke="#e7d29c" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+    `;
+  }
+  if (panelId === "back") {
+    return `
+      <path d="M356 1868 H1144" stroke="#e7d29c" stroke-width="3" stroke-linecap="round" opacity="0.14"/>
+      <path d="M536 1926 H964" stroke="#e7d29c" stroke-width="2" stroke-linecap="round" opacity="0.1"/>
+    `;
+  }
+  return `
+    <path d="M250 206 C450 164 650 206 858 166 C1040 130 1178 152 1280 118" stroke="#d0ad69" stroke-width="3" stroke-linecap="round" opacity="0.16" fill="none"/>
+    <path d="M260 1886 H1240" stroke="#51675d" stroke-width="3" stroke-linecap="round" opacity="0.08"/>
   `;
 }
 
@@ -2686,13 +2827,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = (isSympathy
       ? {
         front:
-          "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief that reads as practical support without clipart.",
+          "Full-bleed flat 2D quiet-support memorial atelier plate for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm title-safe quiet-light plane, and one asymmetric abstract print composition with no object glyphs.",
         "inside-left":
-          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief.",
+          "Full-bleed flat 2D quiet-support memorial atelier plate for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and one asymmetric side-band print composition with no object glyphs.",
         "inside-right":
-          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and integrated lower/outer-edge editorial threshold relief.",
+          "Full-bleed flat 2D quiet-support memorial atelier plate for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and one mirrored asymmetric side-band print composition with no object glyphs.",
         back:
-          "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower editorial-relief echo."
+          "Full-bleed flat 2D quiet-support memorial atelier plate for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one quiet lower atelier-plate echo."
       }
     : {
         front:
@@ -2730,8 +2871,8 @@ function buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, te
     panelInstruction,
     "Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card.",
     `Text contract: keep the ${textSafeCue} empty, plain, low-contrast, and free of objects; no marks behind app-rendered text.`,
-    "Use one composed lower editorial-relief tableau: layered threshold ribbons, quiet path curve, warm open-space shape, and soft cut-paper shadows integrated into one abstract relief.",
-    "No bowls, keys, phones, bags, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
+    "Use one memorial atelier plate language: asymmetric quiet-light planes, deckled paper edges, etched contour lines, and one calm abstract print composition; no literal support objects.",
+    "No bowls, keys, phones, bags, cars, isolated icons, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
     "No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene.",
     visualBrief,
     `Panel cue: ${visualCue}`,
@@ -2993,7 +3134,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower editorial threshold tableau, no literal objects or icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
+    return "Reverent quiet-support memorial atelier plate: deep moss front/back, warm ivory interiors, quiet-light planes, deckled paper edges, etched contour lines, and large calm text fields; no literal objects, icons, fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -3134,8 +3275,8 @@ function buildThemeGuide(input) {
     return themeGuide({
       title: "Quietly With You",
       palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
-      motifs: ["threshold light", "layered paper ribbon", "quiet path curve", "warm open-space shape", "shadowed cut-paper edge", "silence field", "soft open field"],
-      border: "open-edge paper-cut composition with no closed frame and generous natural negative space"
+      motifs: ["memorial atelier plate", "quiet-light plane", "deckled paper edge", "etched contour line", "silence field", "soft open field"],
+      border: "open-edge atelier print composition with no closed frame and generous natural negative space"
     });
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
@@ -3279,10 +3420,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower editorial threshold relief; layered paper ribbons, quiet path curve, warm open-space shape, and soft shadows are integrated as abstract care, not clipart.",
-      "inside-left": "Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left editorial relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons.",
-      "inside-right": "Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right editorial relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons.",
-      back: "Minimal deep moss back cover with readable upper/center text-safe area and one composed lower editorial-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons."
+      front: "Premium quiet-support sympathy cover as a memorial atelier plate: deep moss field, warm upper title-safe glow, asymmetric quiet-light plane, deckled paper edges, and etched contour lines; no clipart, objects, cars, or literal icons.",
+      "inside-left": "Soft left interior as a warm ivory memorial atelier plate with empty plain center text-safe space and one asymmetric left-edge quiet-light band; no fruit, flowers, table setting, closed layout, framed blank page, car-like marks, or isolated icons.",
+      "inside-right": "Matching right interior as a mirrored warm ivory atelier plate with empty plain center text-safe space and one right-edge quiet-light band; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons.",
+      back: "Minimal deep moss back cover with readable upper/center text-safe area and one lower atelier-plate echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, car-like marks, or isolated icons."
     };
     return cues[panelId];
   }
