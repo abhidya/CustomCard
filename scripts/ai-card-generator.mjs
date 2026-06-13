@@ -1100,7 +1100,19 @@ function sympathyGalleryHero(panelId) {
         <ellipse cx="750" cy="790" rx="560" ry="460" fill="#fffaf0" opacity="0.58"/>
         <path d="M-60 1690 C260 1532 552 1620 832 1518 C1068 1432 1248 1452 1560 1376 V2100 H-60Z" fill="#d8c7a1" opacity="0.16"/>
         <path d="M-80 1820 C260 1660 580 1754 908 1610 C1110 1526 1300 1526 1580 1458 V2100 H-80Z" fill="#596c5e" opacity="0.1"/>
-        <path d="${mirrored ? "M1418" : "M82"} 280 C${mirrored ? "1328 540 1340 862 1422 1152 C1472 1330 1410 1500 1296 1654" : "172 540 160 862 78 1152 C28 1330 90 1500 204 1654"}" fill="none" stroke="#596c5e" stroke-width="13" stroke-linecap="round" opacity="0.16"/>
+        <path d="${mirrored ? "M1418" : "M82"} 280 C${mirrored ? "1328 540 1340 862 1422 1152 C1472 1330 1410 1500 1296 1654" : "172 540 160 862 78 1152 C28 1330 90 1500 204 1654"}" fill="none" stroke="#596c5e" stroke-width="16" stroke-linecap="round" opacity="0.22"/>
+        <path d="${mirrored ? "M1392" : "M108"} 330 C${mirrored ? "1320 598 1348 900 1402 1140 C1446 1338 1390 1488 1286 1628" : "180 598 152 900 98 1140 C54 1338 110 1488 214 1628"}" fill="none" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.24"/>
+        ${mirrored
+          ? `<path d="M1324 518 C1248 478 1184 520 1170 612 C1250 650 1312 610 1324 518Z" fill="#8da08e" opacity="0.22"/>
+             <path d="M1366 824 C1282 770 1202 816 1188 926 C1280 976 1348 922 1366 824Z" fill="#596c5e" opacity="0.18"/>
+             <path d="M1348 1210 C1264 1156 1190 1196 1174 1300 C1264 1350 1332 1300 1348 1210Z" fill="#8da08e" opacity="0.16"/>
+             <path d="M1272 1600 C1188 1548 1120 1588 1104 1688 C1192 1734 1256 1688 1272 1600Z" fill="#596c5e" opacity="0.14"/>`
+          : `<path d="M176 518 C252 478 316 520 330 612 C250 650 188 610 176 518Z" fill="#8da08e" opacity="0.22"/>
+             <path d="M134 824 C218 770 298 816 312 926 C220 976 152 922 134 824Z" fill="#596c5e" opacity="0.18"/>
+             <path d="M152 1210 C236 1156 310 1196 326 1300 C236 1350 168 1300 152 1210Z" fill="#8da08e" opacity="0.16"/>
+             <path d="M228 1600 C312 1548 380 1588 396 1688 C308 1734 244 1688 228 1600Z" fill="#596c5e" opacity="0.14"/>`}
+        <path d="M270 350 C448 310 626 354 836 318 C1038 284 1180 308 1288 282" fill="none" stroke="#d8c7a1" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+        <path d="M262 1844 C460 1778 650 1840 846 1796 C1038 1754 1180 1788 1290 1734" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.18"/>
         ${mirrored
           ? `<rect x="228" y="1492" width="276" height="148" rx="32" fill="#596c5e" opacity="0.16"/>
              <rect x="262" y="1518" width="208" height="96" rx="22" fill="#f7f2e8" opacity="0.22"/>
