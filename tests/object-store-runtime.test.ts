@@ -133,7 +133,7 @@ describe("object store runtime", () => {
     expect(downloaded.body.toString("utf8")).toContain("Hello");
 
     const bucket = await runtime.listBucketArtifacts({
-      query: new URLSearchParams({ prefix: "projects/project-test", limit: "10" })
+      query: new URLSearchParams({ prefix: "projects/project-test", limit: "10", sort: "key", order: "asc" })
     });
 
     expect(bucket.statusCode).toBe(200);
@@ -296,7 +296,7 @@ describe("object store runtime", () => {
     });
 
     const bucket = await runtime.listBucketArtifacts({
-      query: new URLSearchParams({ prefix: "projects/project-dedupe", limit: "10" })
+      query: new URLSearchParams({ prefix: "projects/project-dedupe", limit: "10", sort: "key", order: "asc" })
     });
     expect(bucket.payload).toMatchObject({
       objectCount: 2,
@@ -366,6 +366,63 @@ describe("object store runtime", () => {
     });
   });
 
+  it("defaults bucket listings to the five newest objects", async () => {
+    let tick = Date.parse("2026-06-11T12:00:00.000Z");
+    const runtime = createObjectStoreRuntime({
+      env: objectStoreEnv,
+      now: () => {
+        tick += 60_000;
+        return new Date(tick);
+      }
+    });
+
+    for (let index = 1; index <= 6; index += 1) {
+      await runtime.persistRenderPacketArtifacts({
+        record: {
+          id: `render-packet-newest-${index}`,
+          projectId: `project-newest-${index}`,
+          kind: "validated_print_packet",
+          locale: "en-US",
+          direction: "ltr",
+          safeZonePassed: true,
+          textOverflow: false,
+          checksum: `cc_newest_${index}`,
+          artifactManifest: { persistenceStatus: "pending", blockers: [] }
+        },
+        bodyText: JSON.stringify({
+          artifacts: [
+            {
+              kind: "panel-svg",
+              fileName: "front.svg",
+              mimeType: "image/svg+xml",
+              text: `<svg>newest ${index}</svg>`,
+              panelId: "front"
+            }
+          ]
+        })
+      });
+    }
+
+    const bucket = await runtime.listBucketArtifacts({
+      query: new URLSearchParams({ prefix: "projects/project-newest-" })
+    });
+
+    expect(bucket.payload).toMatchObject({
+      limit: 5,
+      sort: "lastModified",
+      order: "desc",
+      objectCount: 5,
+      truncated: true
+    });
+    expect(bucket.payload.objects.map((object) => object.objectKey).slice(0, 4)).toEqual([
+      "projects/project-newest-6/render-packets/render-packet-newest-6/artifact-handoff-manifest.json",
+      "projects/project-newest-6/render-packets/render-packet-newest-6/front.svg",
+      "projects/project-newest-5/render-packets/render-packet-newest-5/artifact-handoff-manifest.json",
+      "projects/project-newest-5/render-packets/render-packet-newest-5/front.svg"
+    ]);
+    expect(bucket.payload.objects.some((object) => object.objectKey.includes("project-newest-1/"))).toBe(false);
+  });
+
   it("paginates bucket listings with a continuation cursor", async () => {
     const runtime = createObjectStoreRuntime({
       env: objectStoreEnv,
@@ -411,7 +468,7 @@ describe("object store runtime", () => {
     });
 
     const firstPage = await runtime.listBucketArtifacts({
-      query: new URLSearchParams({ prefix: "projects/project-page", limit: "1" })
+      query: new URLSearchParams({ prefix: "projects/project-page", limit: "1", sort: "key", order: "asc" })
     });
     expect(firstPage.payload).toMatchObject({
       objectCount: 1,
@@ -423,6 +480,8 @@ describe("object store runtime", () => {
       query: new URLSearchParams({
         prefix: "projects/project-page",
         limit: "2",
+        sort: "key",
+        order: "asc",
         cursor: firstPage.payload.nextCursor
       })
     });

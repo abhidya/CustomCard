@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, ExternalLink, FileJson, Image, Info, RefreshCw, Users } from "lucide-react";
+import { Activity, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, FileJson, Image, Info, RefreshCw, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AiFlowAdminConfig, AiFlowConfigSummary } from "../../src/aiFlowConfig";
 import type { AiGenerationJobEvidence } from "../../src/aiGenerationJobs";
@@ -61,6 +61,9 @@ interface BucketViewerPayload {
     liveNetworkCalls?: boolean;
   };
   prefix?: string;
+  limit?: number;
+  sort?: BucketSort;
+  order?: BucketOrder;
   objectCount?: number;
   truncated?: boolean;
   nextCursor?: string | null;
@@ -75,6 +78,11 @@ interface BucketJsonPreview {
   data?: unknown;
   message?: string;
 }
+
+type BucketSort = "lastModified" | "key";
+type BucketOrder = "asc" | "desc";
+
+const defaultBucketPageSize = 5;
 
 function buildProbeTargets(): ProbeTarget[] {
   const { legacyBaseUrl: cardGenUrl } = resolveCardGenerationEndpoint(import.meta.env);
@@ -146,13 +154,23 @@ export function AdminView({
   const latestAiJob = latestAiJobs[0];
   const generatedPanels = aiGenerationJobs.reduce((total, job) => total + job.imageCount, 0);
   const [bucketPrefix, setBucketPrefix] = useState("projects/");
+  const [bucketSort, setBucketSort] = useState<BucketSort>("lastModified");
+  const [bucketOrder, setBucketOrder] = useState<BucketOrder>("desc");
+  const [bucketPageSize, setBucketPageSize] = useState(defaultBucketPageSize);
+  const [bucketPageIndex, setBucketPageIndex] = useState(0);
+  const [bucketCursorHistory, setBucketCursorHistory] = useState<string[]>([""]);
   const [bucketPayload, setBucketPayload] = useState<BucketViewerPayload | null>(null);
   const [bucketLoading, setBucketLoading] = useState(false);
   const [bucketError, setBucketError] = useState("");
   const [bucketJsonPreviews, setBucketJsonPreviews] = useState<Record<string, BucketJsonPreview>>({});
 
-  const loadBucketObjects = useCallback((cursor?: string) => {
-    const params = new URLSearchParams({ prefix: bucketPrefix, limit: "20" });
+  const loadBucketObjects = useCallback((cursor = "", pageIndex = 0, cursorHistory: string[] = [""]) => {
+    const params = new URLSearchParams({
+      prefix: bucketPrefix,
+      limit: String(bucketPageSize),
+      sort: bucketSort,
+      order: bucketOrder
+    });
     if (cursor) params.set("cursor", cursor);
     setBucketLoading(true);
     setBucketError("");
@@ -165,23 +183,54 @@ export function AdminView({
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(payload.status || `Bucket viewer returned HTTP ${response.status}`);
-        setBucketPayload((current) => mergeBucketPayload(current, payload as BucketViewerPayload, Boolean(cursor)));
+        setBucketPayload(payload as BucketViewerPayload);
+        setBucketPageIndex(pageIndex);
+        setBucketCursorHistory(cursorHistory);
       })
       .catch((error: unknown) => {
-        if (!cursor) setBucketPayload(null);
+        if (pageIndex === 0) setBucketPayload(null);
         setBucketError(error instanceof Error ? error.message : "Bucket viewer is unavailable.");
       })
       .finally(() => setBucketLoading(false));
-  }, [bucketPrefix, getAdminApiToken]);
+  }, [bucketOrder, bucketPageSize, bucketPrefix, bucketSort, getAdminApiToken]);
 
   useEffect(() => {
-    loadBucketObjects();
+    loadBucketObjects("", 0, [""]);
   }, [loadBucketObjects]);
 
   const renderPacketGroups = useMemo(
-    () => bucketPayload?.renderPackets?.length ? bucketPayload.renderPackets : groupBucketObjects(bucketPayload?.objects ?? []),
-    [bucketPayload]
+    () => sortBucketRenderPacketGroups(
+      bucketPayload?.renderPackets?.length ? bucketPayload.renderPackets : groupBucketObjects(bucketPayload?.objects ?? []),
+      bucketSort,
+      bucketOrder
+    ),
+    [bucketOrder, bucketPayload, bucketSort]
   );
+  const sortedBucketObjects = useMemo(
+    () => sortBucketObjects(bucketPayload?.objects ?? [], bucketSort, bucketOrder),
+    [bucketOrder, bucketPayload?.objects, bucketSort]
+  );
+  const bucketSortLabel = bucketSort === "lastModified"
+    ? bucketOrder === "desc" ? "newest first" : "oldest first"
+    : bucketOrder === "desc" ? "key Z-A" : "key A-Z";
+  const bucketPageHasPrevious = bucketPageIndex > 0;
+  const bucketPageHasNext = Boolean(bucketPayload?.truncated && bucketPayload.nextCursor);
+  const bucketPageObjectCount = bucketPayload?.objectCount ?? 0;
+  const bucketPageRangeStart = bucketPageObjectCount > 0 ? bucketPageIndex * bucketPageSize + 1 : 0;
+  const bucketPageRangeEnd = bucketPageIndex * bucketPageSize + bucketPageObjectCount;
+
+  const loadPreviousBucketPage = useCallback(() => {
+    const previousIndex = Math.max(0, bucketPageIndex - 1);
+    loadBucketObjects(bucketCursorHistory[previousIndex] ?? "", previousIndex, bucketCursorHistory);
+  }, [bucketCursorHistory, bucketPageIndex, loadBucketObjects]);
+
+  const loadNextBucketPage = useCallback(() => {
+    const nextCursor = bucketPayload?.nextCursor;
+    if (!nextCursor) return;
+    const nextIndex = bucketPageIndex + 1;
+    const nextHistory = [...bucketCursorHistory.slice(0, nextIndex), nextCursor];
+    loadBucketObjects(nextCursor, nextIndex, nextHistory);
+  }, [bucketCursorHistory, bucketPageIndex, bucketPayload?.nextCursor, loadBucketObjects]);
 
   const loadBucketJsonPreview = useCallback((artifact: BucketObject) => {
     const url = artifact.signedDownload?.url;
@@ -415,6 +464,33 @@ export function AdminView({
                 value={bucketPrefix}
               />
             </label>
+            <label>
+              Sort
+              <select
+                onChange={(event) => {
+                  const [sort, order] = event.target.value.split(":") as [BucketSort, BucketOrder];
+                  setBucketSort(sort);
+                  setBucketOrder(order);
+                }}
+                value={`${bucketSort}:${bucketOrder}`}
+              >
+                <option value="lastModified:desc">Newest</option>
+                <option value="lastModified:asc">Oldest</option>
+                <option value="key:asc">Key A-Z</option>
+                <option value="key:desc">Key Z-A</option>
+              </select>
+            </label>
+            <label>
+              Page size
+              <select
+                onChange={(event) => setBucketPageSize(Number.parseInt(event.target.value, 10) || defaultBucketPageSize)}
+                value={String(bucketPageSize)}
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </label>
             <button className="btn btn-ghost btn-sm" onClick={() => loadBucketObjects()} type="button">
               <RefreshCw size={14} />
               Refresh
@@ -431,7 +507,7 @@ export function AdminView({
               <strong>{bucketPayload?.objectStore?.bucket ?? "Not configured"}</strong>
             </li>
             <li>
-              <span>Objects</span>
+              <span>Page objects</span>
               <strong>{bucketPayload?.objectCount ?? 0}{bucketPayload?.truncated ? "+" : ""}</strong>
             </li>
             <li>
@@ -457,14 +533,42 @@ export function AdminView({
             </div>
           ) : null}
 
+          {bucketPayload ? (
+            <div className="opsBucketPagination" aria-label="Bucket pagination">
+              <button
+                className="btn btn-ghost btn-sm"
+                disabled={!bucketPageHasPrevious || bucketLoading}
+                onClick={loadPreviousBucketPage}
+                type="button"
+              >
+                <ChevronLeft size={14} />
+                Previous
+              </button>
+              <span>
+                Page {bucketPageIndex + 1}
+                {bucketPageObjectCount > 0 ? ` · ${bucketPageRangeStart}-${bucketPageRangeEnd}` : ""}
+                {` · ${bucketPageSize} per page · ${bucketSortLabel}`}
+              </span>
+              <button
+                className="btn btn-ghost btn-sm"
+                disabled={!bucketPageHasNext || bucketLoading}
+                onClick={loadNextBucketPage}
+                type="button"
+              >
+                Next
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          ) : null}
+
           {renderPacketGroups.length ? (
             <div className="opsBucketPackets" aria-label="Object-store render packets">
               {renderPacketGroups.map((group) => (
                 <BucketRenderPacketCard group={group} jsonPreviews={bucketJsonPreviews} key={`${group.projectId}-${group.renderPacketId}`} />
               ))}
             </div>
-          ) : bucketPayload?.objects?.length ? (
-            <BucketRawObjectList objects={bucketPayload.objects} />
+          ) : sortedBucketObjects.length ? (
+            <BucketRawObjectList objects={sortedBucketObjects} />
           ) : !bucketLoading && !bucketError ? (
             <div className="opsEmpty">
               <Info size={16} />
@@ -474,14 +578,8 @@ export function AdminView({
           {bucketPayload?.objects?.length && renderPacketGroups.length ? (
             <details className="opsBucketRaw">
               <summary>Raw object list</summary>
-              <BucketRawObjectList objects={bucketPayload.objects} />
+              <BucketRawObjectList objects={sortedBucketObjects} />
             </details>
-          ) : null}
-          {bucketPayload?.truncated && bucketPayload.nextCursor ? (
-            <button className="btn btn-ghost btn-sm" disabled={bucketLoading} onClick={() => loadBucketObjects(bucketPayload.nextCursor ?? undefined)} type="button">
-              <RefreshCw size={14} />
-              Load more
-            </button>
           ) : null}
         </section>
 
@@ -600,18 +698,6 @@ function formatBytes(value: number): string {
   if (value < 1024) return `${value} B`;
   if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function mergeBucketPayload(current: BucketViewerPayload | null, next: BucketViewerPayload, append: boolean): BucketViewerPayload {
-  if (!append || !current?.objects?.length) return next;
-  const objects = [...current.objects, ...(next.objects ?? [])];
-  const renderPackets = groupBucketObjects(objects);
-  return {
-    ...next,
-    objectCount: objects.length,
-    renderPackets,
-    objects
-  };
 }
 
 function BucketRenderPacketCard({
@@ -897,6 +983,36 @@ function groupBucketObjects(objects: BucketObject[]): BucketRenderPacketGroup[] 
     groups.set(key, group);
   }
   return Array.from(groups.values()).sort((first, second) => (second.lastModifiedIso ?? "").localeCompare(first.lastModifiedIso ?? ""));
+}
+
+function sortBucketRenderPacketGroups(groups: BucketRenderPacketGroup[], sort: BucketSort, order: BucketOrder): BucketRenderPacketGroup[] {
+  return [...groups].sort((first, second) => compareBucketDisplayItems(
+    { key: first.objectPrefix, lastModifiedIso: first.lastModifiedIso },
+    { key: second.objectPrefix, lastModifiedIso: second.lastModifiedIso },
+    sort,
+    order
+  ));
+}
+
+function sortBucketObjects(objects: BucketObject[], sort: BucketSort, order: BucketOrder): BucketObject[] {
+  return [...objects].sort((first, second) => compareBucketDisplayItems(
+    { key: first.objectKey, lastModifiedIso: first.lastModifiedIso },
+    { key: second.objectKey, lastModifiedIso: second.lastModifiedIso },
+    sort,
+    order
+  ));
+}
+
+function compareBucketDisplayItems(
+  first: { key: string; lastModifiedIso?: string },
+  second: { key: string; lastModifiedIso?: string },
+  sort: BucketSort,
+  order: BucketOrder
+): number {
+  const compared = sort === "lastModified"
+    ? (first.lastModifiedIso ?? "").localeCompare(second.lastModifiedIso ?? "") || first.key.localeCompare(second.key)
+    : first.key.localeCompare(second.key);
+  return order === "desc" ? -compared : compared;
 }
 
 function isPromptArtifact(object: BucketObject): boolean {

@@ -1,0 +1,784 @@
+{
+  "phase": "typography",
+  "phaseDir": "typography",
+  "createdAtIso": "2026-06-12T16:58:18.917Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-a-current-overlay",
+      "typographyModeLabel": "Mode A - current overlay",
+      "typographyStrategy": "artwork-only-plus-deterministic-overlay"
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-b-full-ai-typography",
+      "typographyModeLabel": "Mode B - full AI typography",
+      "typographyStrategy": "single-generation-final-panel"
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-c-hybrid-reserved-layout",
+      "typographyModeLabel": "Mode C - hybrid reserved layout",
+      "typographyStrategy": "reserved-layout-plus-deterministic-overlay"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-a-current-overlay",
+      "typographyModeLabel": "Mode A - current overlay",
+      "typographyStrategy": "artwork-only-plus-deterministic-overlay",
+      "runDir": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img",
+      "startedAt": "2026-06-12T16:58:18.919Z",
+      "finishedAt": "2026-06-12T16:58:26.852Z",
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/preview-front.png",
+          "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nReserve calm central negative space for deterministic app-rendered typography.\nPanel-specific composition: deep charcoal field, warm gold radial sunburst, ivory accent details, generous margins, front-cover hierarchy.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": true,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/provider-inside-left.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/preview-inside-left.png",
+          "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread\nNo card copy belongs on this panel.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, sparse sunburst echo along outer edge, quiet center, paired with inside-right.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/provider-inside-right.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/preview-inside-right.png",
+          "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread\nNo card copy belongs on this panel.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: matching warm ivory note-sheet field, thin gold border, sparse sunburst echo mirrored from inside-left, quiet center, paired with inside-left.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/provider-back.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/preview-back.png",
+          "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nUse mostly negative space plus one small coordinating back mark.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small gold sunburst mark near lower edge, no card copy.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 8,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "panelIds": [
+            "front",
+            "inside-left",
+            "inside-right",
+            "back"
+          ],
+          "providerCalls": 8,
+          "materializedImages": 4,
+          "allPanelsMaterialized": true,
+          "deterministicTextOverlayPanels": [
+            "front"
+          ],
+          "frontExactTextInPrompt": false,
+          "frontTextSuppressedInPrompt": true,
+          "backHasNoTextContract": true,
+          "insideSpreadCohesionPrompted": true,
+          "nonFrontPromptsSuppressText": true
+        },
+        "note": "Automated checks only prove prompt contract and image materialization. Front typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+      }
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-b-full-ai-typography",
+      "typographyModeLabel": "Mode B - full AI typography",
+      "typographyStrategy": "single-generation-final-panel",
+      "runDir": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img",
+      "startedAt": "2026-06-12T16:58:26.858Z",
+      "finishedAt": "2026-06-12T16:58:33.320Z",
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/preview-front.png",
+          "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\nAll typography must be intentionally designed and correctly integrated into the composition.\nAll text must be spelled exactly as provided.\nDo not invent substitute text.\nDo not invent placeholder text.\nDo not generate lorem ipsum.\nDo not generate extra words.\nDo not generate decorative fake lettering.\nThe provided text is the source of truth.\n\nCARD SPECIFICATION\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\n\nTEXT TO RENDER\nHeadline:\nFor Moments That Matter\nBody:\nWishing you strength and peace on your day.\n\nTYPOGRAPHY REQUIREMENTS\nThe headline must be the primary visual element.\nThe body must be clearly readable.\nTypography should be professionally typeset.\nMaintain generous margins.\nAvoid text collisions with artwork.\nArtwork should support the typography rather than compete with it.\n\nCOMPOSITION REQUIREMENTS\nCreate a unified composition where typography and illustration are designed together.\nThe text should feel intentionally placed.\nPanel-specific composition: deep charcoal field, warm gold radial sunburst, ivory accent details, generous margins, front-cover hierarchy.\nNo separate text boxes.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready front cover design with all typography already rendered into the artwork.",
+          "negativePrompt": "lorem ipsum, placeholder text, extra words, fake lettering, misspelled text, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/provider-inside-left.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/preview-inside-left.png",
+          "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\n\nCARD SPECIFICATION\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread\n\nTEXT TO RENDER\nNo card copy belongs on this panel.\nDo not render typography.\nDo not render words.\nDo not render letters.\nDo not render numbers.\n\nCOMPOSITION REQUIREMENTS\nPanel-specific composition: warm ivory note-sheet field, thin gold border, sparse sunburst echo along outer edge, quiet center, paired with inside-right.\nThe panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.\nInside-left and inside-right should read as two halves of one opened interior spread.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready greeting card panel with no rendered text.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/provider-inside-right.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/preview-inside-right.png",
+          "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\n\nCARD SPECIFICATION\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread\n\nTEXT TO RENDER\nNo card copy belongs on this panel.\nDo not render typography.\nDo not render words.\nDo not render letters.\nDo not render numbers.\n\nCOMPOSITION REQUIREMENTS\nPanel-specific composition: matching warm ivory note-sheet field, thin gold border, sparse sunburst echo mirrored from inside-left, quiet center, paired with inside-left.\nThe panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.\nInside-left and inside-right should read as two halves of one opened interior spread.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready greeting card panel with no rendered text.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/provider-back.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/preview-back.png",
+          "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\n\nCARD SPECIFICATION\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\n\nTEXT TO RENDER\nNo card copy belongs on this panel.\nDo not render typography.\nDo not render words.\nDo not render letters.\nDo not render numbers.\n\nCOMPOSITION REQUIREMENTS\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small gold sunburst mark near lower edge, no card copy.\nThe panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.\nThe back cover should be mostly negative space with one small coordinating sunburst mark or border echo.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready greeting card panel with no rendered text.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 8,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "panelIds": [
+            "front",
+            "inside-left",
+            "inside-right",
+            "back"
+          ],
+          "providerCalls": 8,
+          "materializedImages": 4,
+          "allPanelsMaterialized": true,
+          "deterministicTextOverlayPanels": [],
+          "frontExactTextInPrompt": true,
+          "frontTextSuppressedInPrompt": false,
+          "backHasNoTextContract": true,
+          "insideSpreadCohesionPrompted": true,
+          "nonFrontPromptsSuppressText": true
+        },
+        "note": "Automated checks only prove prompt contract and image materialization. Front typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+      }
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-c-hybrid-reserved-layout",
+      "typographyModeLabel": "Mode C - hybrid reserved layout",
+      "typographyStrategy": "reserved-layout-plus-deterministic-overlay",
+      "runDir": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img",
+      "startedAt": "2026-06-12T16:58:33.327Z",
+      "finishedAt": "2026-06-12T16:58:40.733Z",
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-front.png",
+          "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly.\nThe artwork should be designed around a large headline area and a smaller readable body area.\nPanel-specific composition: deep charcoal field, warm gold radial sunburst, ivory accent details, generous margins, front-cover hierarchy.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": true,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-inside-left.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-inside-left.png",
+          "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, sparse sunburst echo along outer edge, quiet center, paired with inside-right.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-inside-right.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-inside-right.png",
+          "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: matching warm ivory note-sheet field, thin gold border, sparse sunburst echo mirrored from inside-left, quiet center, paired with inside-left.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-back.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-back.png",
+          "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small gold sunburst mark near lower edge, no card copy.\nUse the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo",
+          "renderTextDeterministically": false,
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/typography-card-level-live-2026-06-12/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 8,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "panelIds": [
+            "front",
+            "inside-left",
+            "inside-right",
+            "back"
+          ],
+          "providerCalls": 8,
+          "materializedImages": 4,
+          "allPanelsMaterialized": true,
+          "deterministicTextOverlayPanels": [
+            "front"
+          ],
+          "frontExactTextInPrompt": false,
+          "frontTextSuppressedInPrompt": true,
+          "backHasNoTextContract": true,
+          "insideSpreadCohesionPrompted": true,
+          "nonFrontPromptsSuppressText": true
+        },
+        "note": "Automated checks only prove prompt contract and image materialization. Front typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "3cafe9da-b3b4-4df9-ab26-59979ed690e2",
+          "output_url": "https://api.deepai.org/job-view-file/3cafe9da-b3b4-4df9-ab26-59979ed690e2/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/95bb816b896e402daec0c4b250398906/create-one-artwork-only-5x7-portrait-front-cover-pane.jpg",
+          "backend_request_id": "a9461b8f-9f91-43e7-964e-b5f99074f30d"
+        }
+      },
+      "durationMs": 1488
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/3cafe9da-b3b4-4df9-ab26-59979ed690e2/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 42865
+      },
+      "durationMs": 260
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "aba777df-3713-451c-b4f3-a3b6422e5c82",
+          "output_url": "https://api.deepai.org/job-view-file/aba777df-3713-451c-b4f3-a3b6422e5c82/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/6f78752b0b074d5196c110082fddd243/create-one-artwork-only-5x7-portrait-inside-left-pane.jpg",
+          "backend_request_id": "617d94c3-26fd-47bd-a633-bdbe3cb211ac"
+        }
+      },
+      "durationMs": 1315
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/aba777df-3713-451c-b4f3-a3b6422e5c82/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 21189
+      },
+      "durationMs": 92
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "592e5b1b-34e4-459a-be47-fa9c330bf132",
+          "output_url": "https://api.deepai.org/job-view-file/592e5b1b-34e4-459a-be47-fa9c330bf132/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/0eece79e72b74a858c862416ef58559a/create-one-artwork-only-5x7-portrait-inside-right-pan.jpg",
+          "backend_request_id": "ad206f70-a44b-4cd4-b097-c6e9afb7c036"
+        }
+      },
+      "durationMs": 1058
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/592e5b1b-34e4-459a-be47-fa9c330bf132/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 39969
+      },
+      "durationMs": 732
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "0db511b9-9174-4086-ba5c-c9406aba3210",
+          "output_url": "https://api.deepai.org/job-view-file/0db511b9-9174-4086-ba5c-c9406aba3210/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/88b5af9584704b36b04b94700f8fc54b/create-one-artwork-only-5x7-portrait-back-cover-panel.jpg",
+          "backend_request_id": "ae7e55b6-0360-4080-a67e-d984920abb83"
+        }
+      },
+      "durationMs": 1201
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/0db511b9-9174-4086-ba5c-c9406aba3210/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 32219
+      },
+      "durationMs": 91
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "d78b77fa-9b97-43a7-b7b6-e8e1ab5097d7",
+          "output_url": "https://api.deepai.org/job-view-file/d78b77fa-9b97-43a7-b7b6-e8e1ab5097d7/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/1819ad8cd74940ed88adf022feab3c9f/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+          "backend_request_id": "0b04d10b-9393-49a0-bdcb-1230452a468b"
+        }
+      },
+      "durationMs": 942
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/d78b77fa-9b97-43a7-b7b6-e8e1ab5097d7/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 52383
+      },
+      "durationMs": 92
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "b9d8a347-7314-4538-8cfb-6a5fee3b3152",
+          "output_url": "https://api.deepai.org/job-view-file/b9d8a347-7314-4538-8cfb-6a5fee3b3152/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/5bafa465f0ee4913b26dc47b6ca6d46d/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+          "backend_request_id": "bb430200-a047-4b68-b4c8-eec0b1d85b97"
+        }
+      },
+      "durationMs": 1242
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/b9d8a347-7314-4538-8cfb-6a5fee3b3152/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 25072
+      },
+      "durationMs": 95
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "108ec6c3-853f-464b-a69e-97f055cbd5d4",
+          "output_url": "https://api.deepai.org/job-view-file/108ec6c3-853f-464b-a69e-97f055cbd5d4/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/a09765208be8448c9dcace3ad82273af/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+          "backend_request_id": "b2bd2c6a-1a15-4e02-967b-9bab8577a279"
+        }
+      },
+      "durationMs": 1597
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/108ec6c3-853f-464b-a69e-97f055cbd5d4/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 23903
+      },
+      "durationMs": 94
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "d856c854-caa0-4076-8c1b-f7fbac55c178",
+          "output_url": "https://api.deepai.org/job-view-file/d856c854-caa0-4076-8c1b-f7fbac55c178/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/d86040f1719a42839c454e39421ee841/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+          "backend_request_id": "cd7e9421-f762-4979-be18-488482df736f"
+        }
+      },
+      "durationMs": 1343
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/d856c854-caa0-4076-8c1b-f7fbac55c178/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 11275
+      },
+      "durationMs": 92
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "0efd654b-0826-4b74-aae9-53b96f7a1687",
+          "output_url": "https://api.deepai.org/job-view-file/0efd654b-0826-4b74-aae9-53b96f7a1687/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/fc844e9ad0544144b61866bbff4226e5/create-one-artwork-only-5x7-portrait-front-cover-pane.jpg",
+          "backend_request_id": "759997f9-f9ea-43b9-b9e8-343aed7c6a23"
+        }
+      },
+      "durationMs": 889
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/0efd654b-0826-4b74-aae9-53b96f7a1687/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 41581
+      },
+      "durationMs": 92
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "0fdf024b-4a58-4988-b8e9-1030130b68d9",
+          "output_url": "https://api.deepai.org/job-view-file/0fdf024b-4a58-4988-b8e9-1030130b68d9/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/9034e809f21d4b7d8887b7f39bc0f38f/create-one-artwork-only-5x7-portrait-inside-left-pane.jpg",
+          "backend_request_id": "63070012-0335-4981-a7db-543def6e33e4"
+        }
+      },
+      "durationMs": 1920
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/0fdf024b-4a58-4988-b8e9-1030130b68d9/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 58543
+      },
+      "durationMs": 94
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "cc80ef14-17aa-4e44-ba43-de9069eaea67",
+          "output_url": "https://api.deepai.org/job-view-file/cc80ef14-17aa-4e44-ba43-de9069eaea67/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/303456798f2345a8910f6441aa1d6773/create-one-artwork-only-5x7-portrait-inside-right-pan.jpg",
+          "backend_request_id": "6161d495-2e05-4c74-b57f-4ddcbdd78513"
+        }
+      },
+      "durationMs": 1542
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/cc80ef14-17aa-4e44-ba43-de9069eaea67/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 16801
+      },
+      "durationMs": 91
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "b123ef0f-fae6-45cf-8f62-6c7988203fe6",
+          "output_url": "https://api.deepai.org/job-view-file/b123ef0f-fae6-45cf-8f62-6c7988203fe6/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/c37935aa90af4683b35c88a17ad30407/create-one-artwork-only-5x7-portrait-back-cover-panel.jpg",
+          "backend_request_id": "bdb3eb84-4aee-448f-b9e6-a8ed6828319a"
+        }
+      },
+      "durationMs": 1213
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/b123ef0f-fae6-45cf-8f62-6c7988203fe6/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 15799
+      },
+      "durationMs": 91
+    }
+  ]
+}

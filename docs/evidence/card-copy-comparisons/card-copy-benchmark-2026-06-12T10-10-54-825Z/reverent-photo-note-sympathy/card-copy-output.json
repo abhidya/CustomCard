@@ -1,0 +1,148 @@
+{
+  "draft_id": "ai-mqarnf5g-elena",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Quietly With You",
+      "palette": [
+        "soft ivory",
+        "muted gray-green",
+        "warm taupe"
+      ],
+      "motifs": [
+        "photo-note frame",
+        "single quiet leaf",
+        "soft paper field",
+        "thin rule"
+      ],
+      "border_style": "restrained photo-note border with a quiet frame motif and generous open space",
+      "front_back_pairing": "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
+      "interior_pairing": "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "For Elena",
+        "body": "A quiet note for the days that ask for steadiness, space, and care.",
+        "art_direction": "Quietly With You front cover with restrained photo-note border with a quiet frame motif and generous open space, clear title area, generous safe margins, soft ivory, muted gray-green, warm taupe palette, and motifs that echo on the back panel.",
+        "visual_cue": "Quiet sympathy cover with a restrained photo-note frame motif, soft ivory paper, muted gray-green leaf, warm taupe rule, and a clean central text-safe field; no portrait or religious symbol.",
+        "text_layout": {
+          "headline_zone": "lower",
+          "body_zone": "bottom",
+          "alignment": "left",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: Quiet sympathy cover with a restrained photo-note frame motif, soft ivory paper, muted gray-green leaf, warm taupe rule, and a clean central text-safe field; no portrait or religious symbol. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "With You In This",
+        "body": "I am so sorry for the loss your family is carrying. I will not try to explain it away or fill the silence with easy words; I just want you to know you are not alone.",
+        "art_direction": "Quietly With You inside-left panel with restrained photo-note border with a quiet frame motif and generous open space, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.",
+        "visual_cue": "Soft left interior with a thin photo-note border, one small quiet leaf, warm paper texture, and wide center-left text-safe space for grounded support.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "lower",
+          "alignment": "left",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: Soft left interior with a thin photo-note border, one small quiet leaf, warm paper texture, and wide center-left text-safe space for grounded support. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Manny",
+        "body": "I am here for the practical things, the quiet check-ins, and the days when talking is too much. May you have room to grieve at your own pace, with steady care around you. With sympathy and friendship, Manny.",
+        "art_direction": "Quietly With You inside-right message panel with matching restrained photo-note border with a quiet frame motif and generous open space, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.",
+        "visual_cue": "Matching right interior with a calm open message field, low-contrast frame edge, and subtle taupe rule near the bottom; no actual photograph or face.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "lower",
+          "alignment": "left",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: Matching right interior with a calm open message field, low-contrast frame edge, and subtle taupe rule near the bottom; no actual photograph or face. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "back",
+        "headline": "With Steady Care",
+        "body": "A quiet support note, made with room for what words cannot hold.",
+        "art_direction": "Quietly With You back panel with mostly negative space, subtle lower ornamentation, restrained photo-note border with a quiet frame motif and generous open space, and border details that visually pair with the front cover.",
+        "visual_cue": "Minimal back cover with one small leaf and fine rule on soft ivory, mostly negative space.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "lower",
+          "alignment": "left",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "compact"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: Minimal back cover with one small leaf and fine rule on soft ivory, mostly negative space. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      }
+    ],
+    "memory_citations": [
+      "Elena is grieving a family loss.",
+      "The sender wants steady support without cliches."
+    ]
+  },
+  "images": [],
+  "generated_by": "ai-text-only",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "primary_adapter_id": "huggingface-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-copy."
+      ],
+      "provider_failure": "Live provider calls disabled for card-copy."
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "deepai-text2img-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "text2img",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-image."
+      ],
+      "provider_failure": "Live provider calls disabled for card-image."
+    }
+  },
+  "provider_call_events": [],
+  "ai_cost_gate": {
+    "event_count": 0,
+    "reserved_or_spent_cents": 0,
+    "actual_spend_cents": 0,
+    "request_units": 0,
+    "live_network_calls": false,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": false,
+  "fallback_queued": true,
+  "external_network_calls": false
+}

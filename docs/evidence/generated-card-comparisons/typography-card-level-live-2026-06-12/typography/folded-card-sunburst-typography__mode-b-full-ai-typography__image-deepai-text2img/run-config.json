@@ -1,0 +1,44 @@
+{
+  "phase": "typography",
+  "focus": "typography",
+  "storyId": "folded-card-sunburst-typography",
+  "textCandidateId": "text-none-direct-image-test",
+  "textAdapterId": "none",
+  "textModel": "",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "typographyModeId": "mode-b-full-ai-typography",
+  "typographyModeLabel": "Mode B - full AI typography",
+  "typographyStrategy": "single-generation-final-panel",
+  "promptPlans": [
+    {
+      "modeId": "mode-b-full-ai-typography",
+      "panelId": "front",
+      "renderTextDeterministically": false,
+      "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\nAll typography must be intentionally designed and correctly integrated into the composition.\nAll text must be spelled exactly as provided.\nDo not invent substitute text.\nDo not invent placeholder text.\nDo not generate lorem ipsum.\nDo not generate extra words.\nDo not generate decorative fake lettering.\nThe provided text is the source of truth.\n\nCARD SPECIFICATION\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\n\nTEXT TO RENDER\nHeadline:\nFor Moments That Matter\nBody:\nWishing you strength and peace on your day.\n\nTYPOGRAPHY REQUIREMENTS\nThe headline must be the primary visual element.\nThe body must be clearly readable.\nTypography should be professionally typeset.\nMaintain generous margins.\nAvoid text collisions with artwork.\nArtwork should support the typography rather than compete with it.\n\nCOMPOSITION REQUIREMENTS\nCreate a unified composition where typography and illustration are designed together.\nThe text should feel intentionally placed.\nPanel-specific composition: deep charcoal field, warm gold radial sunburst, ivory accent details, generous margins, front-cover hierarchy.\nNo separate text boxes.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready front cover design with all typography already rendered into the artwork.",
+      "negativePrompt": "lorem ipsum, placeholder text, extra words, fake lettering, misspelled text, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+    },
+    {
+      "modeId": "mode-b-full-ai-typography",
+      "panelId": "inside-left",
+      "renderTextDeterministically": false,
+      "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\n\nCARD SPECIFICATION\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread\n\nTEXT TO RENDER\nNo card copy belongs on this panel.\nDo not render typography.\nDo not render words.\nDo not render letters.\nDo not render numbers.\n\nCOMPOSITION REQUIREMENTS\nPanel-specific composition: warm ivory note-sheet field, thin gold border, sparse sunburst echo along outer edge, quiet center, paired with inside-right.\nThe panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.\nInside-left and inside-right should read as two halves of one opened interior spread.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready greeting card panel with no rendered text.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+    },
+    {
+      "modeId": "mode-b-full-ai-typography",
+      "panelId": "inside-right",
+      "renderTextDeterministically": false,
+      "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\n\nCARD SPECIFICATION\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread\n\nTEXT TO RENDER\nNo card copy belongs on this panel.\nDo not render typography.\nDo not render words.\nDo not render letters.\nDo not render numbers.\n\nCOMPOSITION REQUIREMENTS\nPanel-specific composition: matching warm ivory note-sheet field, thin gold border, sparse sunburst echo mirrored from inside-left, quiet center, paired with inside-left.\nThe panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.\nInside-left and inside-right should read as two halves of one opened interior spread.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready greeting card panel with no rendered text.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+    },
+    {
+      "modeId": "mode-b-full-ai-typography",
+      "panelId": "back",
+      "renderTextDeterministically": false,
+      "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\n\nCARD SPECIFICATION\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\n\nTEXT TO RENDER\nNo card copy belongs on this panel.\nDo not render typography.\nDo not render words.\nDo not render letters.\nDo not render numbers.\n\nCOMPOSITION REQUIREMENTS\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small gold sunburst mark near lower edge, no card copy.\nThe panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.\nThe back cover should be mostly negative space with one small coordinating sunburst mark or border echo.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final production-ready greeting card panel with no rendered text.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+    }
+  ]
+}

@@ -1,0 +1,326 @@
+{
+  "runId": "card-copy-benchmark-2026-06-12T09-22-06-677Z",
+  "createdAtIso": "2026-06-12T09:22:06.679Z",
+  "liveProviderCallsEnabled": false,
+  "fixtureIds": [
+    "small-business-thank-you",
+    "medical-graduation",
+    "dad-fix-anything",
+    "botanical-birthday"
+  ],
+  "outputDir": "docs/evidence/card-copy-comparisons/card-copy-benchmark-2026-06-12T09-22-06-677Z",
+  "referencePromptSha256": "b683868c6b9b79ed6fccebb5a78666a8f7277d43f93ab8dc6c34a8327a3cd699",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED"
+    ],
+    "secretsRedacted": "<redacted>"
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "huggingface-chat",
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "huggingface-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "liveProviderCallsEnabled": false,
+      "readyForLiveCalls": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "huggingface-chat",
+        "cloudflare-workers-ai-chat",
+        "deterministic-customer-chat"
+      ],
+      "blockedReasons": [
+        "Live provider calls disabled for card-copy."
+      ]
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "text2img",
+      "liveProviderCallsEnabled": false,
+      "readyForLiveCalls": false,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": true,
+      "configuredAdapterIds": [
+        "deepai-text2img-image",
+        "cloudflare-workers-ai-image",
+        "huggingface-image",
+        "browser-svg-renderer"
+      ],
+      "blockedReasons": [
+        "Live provider calls disabled for card-image."
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "small-business-thank-you",
+      "category": "Small business thank-you AI card",
+      "competitorPrompt": "thanks for supporting our small business",
+      "statusCode": 200,
+      "generatedBy": "ai-text-only",
+      "outputDir": "docs/evidence/card-copy-comparisons/card-copy-benchmark-2026-06-12T09-22-06-677Z/small-business-thank-you",
+      "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "providerFailure": "Live provider calls disabled for card-copy.",
+      "evaluation": {
+        "passed": true,
+        "score": 98,
+        "subScores": {
+          "schema": 15,
+          "copyRichness": 18,
+          "layoutDirection": 20,
+          "imagePrompt": 20,
+          "safety": 10,
+          "memoryGrounding": 10,
+          "coordination": 5
+        },
+        "blockers": [],
+        "warnings": [],
+        "panelStats": [
+          {
+            "panelId": "front",
+            "headlineChars": 28,
+            "bodyChars": 71,
+            "bodyWords": 11,
+            "artDirectionChars": 232,
+            "imagePromptChars": 1072
+          },
+          {
+            "panelId": "inside-left",
+            "headlineChars": 20,
+            "bodyChars": 170,
+            "bodyWords": 29,
+            "artDirectionChars": 244,
+            "imagePromptChars": 1115
+          },
+          {
+            "panelId": "inside-right",
+            "headlineChars": 19,
+            "bodyChars": 189,
+            "bodyWords": 33,
+            "artDirectionChars": 244,
+            "imagePromptChars": 1125
+          },
+          {
+            "panelId": "back",
+            "headlineChars": 11,
+            "bodyChars": 51,
+            "bodyWords": 8,
+            "artDirectionChars": 204,
+            "imagePromptChars": 987
+          }
+        ]
+      }
+    },
+    {
+      "id": "medical-graduation",
+      "category": "Medical school graduation folded card",
+      "competitorPrompt": "graduation milestone card",
+      "statusCode": 200,
+      "generatedBy": "ai-text-only",
+      "outputDir": "docs/evidence/card-copy-comparisons/card-copy-benchmark-2026-06-12T09-22-06-677Z/medical-graduation",
+      "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "providerFailure": "Live provider calls disabled for card-copy.",
+      "evaluation": {
+        "passed": true,
+        "score": 98,
+        "subScores": {
+          "schema": 15,
+          "copyRichness": 18,
+          "layoutDirection": 20,
+          "imagePrompt": 20,
+          "safety": 10,
+          "memoryGrounding": 10,
+          "coordination": 5
+        },
+        "blockers": [],
+        "warnings": [],
+        "panelStats": [
+          {
+            "panelId": "front",
+            "headlineChars": 20,
+            "bodyChars": 76,
+            "bodyWords": 13,
+            "artDirectionChars": 240,
+            "imagePromptChars": 1109
+          },
+          {
+            "panelId": "inside-left",
+            "headlineChars": 19,
+            "bodyChars": 177,
+            "bodyWords": 30,
+            "artDirectionChars": 261,
+            "imagePromptChars": 1152
+          },
+          {
+            "panelId": "inside-right",
+            "headlineChars": 18,
+            "bodyChars": 217,
+            "bodyWords": 40,
+            "artDirectionChars": 261,
+            "imagePromptChars": 1162
+          },
+          {
+            "panelId": "back",
+            "headlineChars": 20,
+            "bodyChars": 79,
+            "bodyWords": 15,
+            "artDirectionChars": 221,
+            "imagePromptChars": 1024
+          }
+        ]
+      }
+    },
+    {
+      "id": "dad-fix-anything",
+      "category": "Father's Day repair-themed card",
+      "competitorPrompt": "dad who can fix anything",
+      "statusCode": 200,
+      "generatedBy": "ai-text-only",
+      "outputDir": "docs/evidence/card-copy-comparisons/card-copy-benchmark-2026-06-12T09-22-06-677Z/dad-fix-anything",
+      "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "providerFailure": "Live provider calls disabled for card-copy.",
+      "evaluation": {
+        "passed": true,
+        "score": 98,
+        "subScores": {
+          "schema": 15,
+          "copyRichness": 18,
+          "layoutDirection": 20,
+          "imagePrompt": 20,
+          "safety": 10,
+          "memoryGrounding": 10,
+          "coordination": 5
+        },
+        "blockers": [],
+        "warnings": [],
+        "panelStats": [
+          {
+            "panelId": "front",
+            "headlineChars": 7,
+            "bodyChars": 89,
+            "bodyWords": 15,
+            "artDirectionChars": 231,
+            "imagePromptChars": 1055
+          },
+          {
+            "panelId": "inside-left",
+            "headlineChars": 12,
+            "bodyChars": 139,
+            "bodyWords": 25,
+            "artDirectionChars": 245,
+            "imagePromptChars": 1098
+          },
+          {
+            "panelId": "inside-right",
+            "headlineChars": 10,
+            "bodyChars": 194,
+            "bodyWords": 33,
+            "artDirectionChars": 245,
+            "imagePromptChars": 1108
+          },
+          {
+            "panelId": "back",
+            "headlineChars": 15,
+            "bodyChars": 70,
+            "bodyWords": 13,
+            "artDirectionChars": 205,
+            "imagePromptChars": 970
+          }
+        ]
+      }
+    },
+    {
+      "id": "botanical-birthday",
+      "category": "Personalized botanical birthday card",
+      "competitorPrompt": "custom birthday card",
+      "statusCode": 200,
+      "generatedBy": "ai-text-only",
+      "outputDir": "docs/evidence/card-copy-comparisons/card-copy-benchmark-2026-06-12T09-22-06-677Z/botanical-birthday",
+      "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "providerFailure": "Live provider calls disabled for card-copy.",
+      "evaluation": {
+        "passed": false,
+        "score": 90,
+        "subScores": {
+          "schema": 15,
+          "copyRichness": 10,
+          "layoutDirection": 20,
+          "imagePrompt": 20,
+          "safety": 10,
+          "memoryGrounding": 10,
+          "coordination": 5
+        },
+        "blockers": [
+          "inside-right: body is terse (177 chars)."
+        ],
+        "warnings": [],
+        "panelStats": [
+          {
+            "panelId": "front",
+            "headlineChars": 19,
+            "bodyChars": 83,
+            "bodyWords": 17,
+            "artDirectionChars": 212,
+            "imagePromptChars": 1018
+          },
+          {
+            "panelId": "inside-left",
+            "headlineChars": 17,
+            "bodyChars": 148,
+            "bodyWords": 26,
+            "artDirectionChars": 235,
+            "imagePromptChars": 1061
+          },
+          {
+            "panelId": "inside-right",
+            "headlineChars": 10,
+            "bodyChars": 177,
+            "bodyWords": 33,
+            "artDirectionChars": 235,
+            "imagePromptChars": 1071
+          },
+          {
+            "panelId": "back",
+            "headlineChars": 22,
+            "bodyChars": 77,
+            "bodyWords": 14,
+            "artDirectionChars": 195,
+            "imagePromptChars": 933
+          }
+        ]
+      }
+    }
+  ],
+  "providerHttp": []
+}

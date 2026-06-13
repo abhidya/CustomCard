@@ -1,0 +1,12 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "oneFrontPanel": true,
+    "providerCalls": 2,
+    "materializedImage": true,
+    "deterministicTextOverlay": false,
+    "exactTextInPrompt": true,
+    "textSuppressedInPrompt": true
+  },
+  "note": "Automated checks only prove prompt contract and image materialization. Final typography spelling/layout grades require visual inspection."
+}

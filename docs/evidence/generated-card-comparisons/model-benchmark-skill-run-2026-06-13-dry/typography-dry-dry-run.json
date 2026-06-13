@@ -1,0 +1,48 @@
+{
+  "phase": "typography",
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-a-current-overlay",
+      "typographyModeLabel": "Mode A - current overlay",
+      "typographyStrategy": "artwork-only-plus-deterministic-overlay"
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-b-full-ai-typography",
+      "typographyModeLabel": "Mode B - full AI typography",
+      "typographyStrategy": "single-generation-final-panel"
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "folded-card-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-c-hybrid-reserved-layout",
+      "typographyModeLabel": "Mode C - hybrid reserved layout",
+      "typographyStrategy": "reserved-layout-plus-deterministic-overlay"
+    }
+  ]
+}

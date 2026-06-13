@@ -1,0 +1,39 @@
+[
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "e378508d-e996-4a49-b030-9a2f5bd9227b",
+        "output_url": "https://api.deepai.org/job-view-file/e378508d-e996-4a49-b030-9a2f5bd9227b/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/3fb48dde40ff4365956dd87c2f163b63/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "f8182660-6b90-4fa3-8655-10c7c9d6f40a"
+      }
+    },
+    "durationMs": 1222
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/e378508d-e996-4a49-b030-9a2f5bd9227b/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 40515
+    },
+    "durationMs": 89
+  }
+]

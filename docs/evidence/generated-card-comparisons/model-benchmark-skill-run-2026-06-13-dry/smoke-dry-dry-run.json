@@ -1,0 +1,83 @@
+{
+  "phase": "smoke",
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-deepseek-v4-flash",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "deepseek-ai/DeepSeek-V4-Flash",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "text",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-hf-gpt-oss-20b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "openai/gpt-oss-20b",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": ""
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-cloudflare-sdxl-lightning",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
+    }
+  ]
+}

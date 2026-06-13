@@ -1,0 +1,42 @@
+{
+  "phase": "typography",
+  "focus": "typography",
+  "storyId": "front-cover-sunburst-typography",
+  "textCandidateId": "text-none-direct-image-test",
+  "textAdapterId": "none",
+  "textModel": "",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "typographyModeId": "mode-c-hybrid-reserved-layout",
+  "typographyModeLabel": "Mode C - hybrid reserved layout",
+  "typographyStrategy": "reserved-layout-plus-deterministic-overlay",
+  "runDir": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img",
+  "startedAt": "2026-06-12T16:20:52.426Z",
+  "finishedAt": "2026-06-12T16:20:54.036Z",
+  "panelCount": 1,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-front.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-front.png",
+      "prompt": "Create one artwork-only 5x7 portrait front cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly.\nThe artwork should be designed around a large headline area and a smaller readable body area.\nUse a deep charcoal field, warm gold radial sunburst, and small ivory accent details.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/contact-sheet.png",
+  "providerCallCount": 2,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "oneFrontPanel": true,
+      "providerCalls": 2,
+      "materializedImage": true,
+      "deterministicTextOverlay": true,
+      "exactTextInPrompt": false,
+      "textSuppressedInPrompt": true
+    },
+    "note": "Automated checks only prove prompt contract and image materialization. Final typography spelling/layout grades require visual inspection."
+  }
+}

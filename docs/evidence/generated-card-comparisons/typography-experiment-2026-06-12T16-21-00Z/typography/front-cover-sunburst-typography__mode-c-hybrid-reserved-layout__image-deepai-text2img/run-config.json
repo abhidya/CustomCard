@@ -1,0 +1,20 @@
+{
+  "phase": "typography",
+  "focus": "typography",
+  "storyId": "front-cover-sunburst-typography",
+  "textCandidateId": "text-none-direct-image-test",
+  "textAdapterId": "none",
+  "textModel": "",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "typographyModeId": "mode-c-hybrid-reserved-layout",
+  "typographyModeLabel": "Mode C - hybrid reserved layout",
+  "typographyStrategy": "reserved-layout-plus-deterministic-overlay",
+  "promptPlan": {
+    "modeId": "mode-c-hybrid-reserved-layout",
+    "renderTextDeterministically": true,
+    "prompt": "Create one artwork-only 5x7 portrait front cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly.\nThe artwork should be designed around a large headline area and a smaller readable body area.\nUse a deep charcoal field, warm gold radial sunburst, and small ivory accent details.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+    "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+  }
+}

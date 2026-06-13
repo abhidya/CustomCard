@@ -10,8 +10,151 @@ const defaultOutputDir = resolve(
   "docs/evidence/generated-card-comparisons/model-benchmark-20260612-011913"
 );
 const panelIds = ["front", "inside-left", "inside-right", "back"];
+const commonNonSecretEnvValues = new Set([
+  "development",
+  "production",
+  "staging",
+  "test",
+  "localhost",
+  "127.0.0.1",
+  "enabled",
+  "disabled"
+]);
 
-const stories = {
+export const typographyExperimentSpec = {
+  id: "folded-card-sunburst-typography",
+  panelType: "Front Cover",
+  size: "5x7 portrait",
+  output: "Flat 2D print artwork",
+  style: "Premium greeting card",
+  palette: "Deep charcoal, warm gold, ivory accents",
+  motif: "Elegant radial sunburst",
+  mood: "Respectful, warm, sophisticated",
+  headline: "For Moments That Matter",
+  body: "Wishing you strength and peace on your day.",
+  headlineWordCount: 4,
+  bodySentenceCount: 1,
+  panels: {
+    front: {
+      id: "front",
+      panelType: "Front Cover",
+      role: "primary typography measurement panel",
+      headline: "For Moments That Matter",
+      body: "Wishing you strength and peace on your day.",
+      composition:
+        "deep charcoal field, warm gold radial sunburst, ivory accent details, generous margins, front-cover hierarchy",
+      modeCHint:
+        "Place a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field."
+    },
+    "inside-left": {
+      id: "inside-left",
+      panelType: "Inside Left",
+      role: "left half of a coordinated interior spread with opening message text",
+      headline: "A Quiet Honor",
+      body: "May this space hold steadiness, light, and the care surrounding you today.",
+      composition:
+        "warm ivory note-sheet field, thin gold border, sparse sunburst echo along outer edge, quiet center, paired with inside-right",
+      modeCHint:
+        "Make this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field."
+    },
+    "inside-right": {
+      id: "inside-right",
+      panelType: "Inside Right",
+      role: "right half of a coordinated interior spread with main message text",
+      headline: "With Respect and Warmth",
+      body: "For the moments that ask for courage, may you feel supported, seen, and held in peace.",
+      composition:
+        "matching warm ivory note-sheet field, thin gold border, sparse sunburst echo mirrored from inside-left, quiet center, paired with inside-left",
+      modeCHint:
+        "Make this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field."
+    },
+    back: {
+      id: "back",
+      panelType: "Back Cover",
+      role: "coordinating no-text back panel",
+      composition:
+        "mostly deep charcoal negative space, thin gold border echo, one small gold sunburst mark near lower edge, no card copy",
+      modeCHint:
+        "Back cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks."
+    }
+  }
+};
+
+const typographyModes = [
+  {
+    id: "mode-a-current-overlay",
+    label: "Mode A - current overlay",
+    strategy: "artwork-only-plus-deterministic-overlay"
+  },
+  {
+    id: "mode-b-full-ai-typography",
+    label: "Mode B - full AI typography",
+    strategy: "single-generation-final-panel"
+  },
+  {
+    id: "mode-c-hybrid-reserved-layout",
+    label: "Mode C - hybrid reserved layout",
+    strategy: "reserved-layout-plus-deterministic-overlay"
+  }
+];
+
+const typographyPanelOrder = ["front", "inside-left", "inside-right", "back"];
+const typographyTextPanels = {
+  front: {
+    id: "front",
+    headline: typographyExperimentSpec.headline,
+    body: typographyExperimentSpec.body,
+    text_layout: {
+      headline_zone: "center",
+      body_zone: "lower",
+      alignment: "center",
+      font_pairing: "bold-editorial",
+      color_mode: "light-ink",
+      scale: "large"
+    }
+  },
+  "inside-left": {
+    id: "inside-left",
+    headline: typographyExperimentSpec.panels["inside-left"].headline,
+    body: typographyExperimentSpec.panels["inside-left"].body,
+    text_layout: {
+      headline_zone: "upper",
+      body_zone: "center",
+      alignment: "center",
+      font_pairing: "soft-serif",
+      color_mode: "dark-ink",
+      scale: "standard"
+    }
+  },
+  "inside-right": {
+    id: "inside-right",
+    headline: typographyExperimentSpec.panels["inside-right"].headline,
+    body: typographyExperimentSpec.panels["inside-right"].body,
+    text_layout: {
+      headline_zone: "upper",
+      body_zone: "center",
+      alignment: "center",
+      font_pairing: "soft-serif",
+      color_mode: "dark-ink",
+      scale: "standard"
+    }
+  },
+  back: {
+    id: "back",
+    headline: "",
+    body: "",
+    text_layout: {
+      headline_zone: "lower",
+      body_zone: "bottom",
+      alignment: "center",
+      font_pairing: "minimal-sans",
+      color_mode: "light-ink",
+      scale: "compact"
+    }
+  }
+};
+
+export const stories = {
   "first-time-user-birthday": {
     id: "first-time-user-birthday",
     customer_type: "first-time consumer",
@@ -133,6 +276,174 @@ const stories = {
     },
     must_include: ["Noura", "graduation", "navy", "gold", "stethoscope"],
     must_avoid: ["fake diploma", "hospital room", "patients", "anatomy gore"]
+  },
+  "small-business-thank-you": {
+    id: "small-business-thank-you",
+    customer_type: "small business / ecommerce retention",
+    occasion: "thank-you after purchase",
+    memory_load: "medium",
+    request: {
+      sender: "CustomCard",
+      recipient: "loyal customers",
+      relationship: "small business to repeat customer",
+      occasion: "thank-you for supporting a small business",
+      tone: "warm, sincere, polished, grateful, not salesy",
+      style:
+        "premium small-business editorial stationery with warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+      language: "English",
+      personal_note:
+        "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+      memory_notes: [
+        "The customer chose an independent small business instead of a large marketplace.",
+        "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+        "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+      ]
+    },
+    must_include: ["support", "independent", "customer", "gratitude", "small"],
+    must_avoid: ["sales pitch", "discount", "order confirmation", "marketplace", "generic loyalty"]
+  },
+  "dad-fix-anything": {
+    id: "dad-fix-anything",
+    customer_type: "family/frequent sender",
+    occasion: "Father's Day",
+    memory_load: "medium",
+    request: {
+      sender: "Manny",
+      recipient: "Dad",
+      relationship: "child to father",
+      occasion: "Father's Day",
+      tone: "warm, funny, sincere, practical love",
+      style: "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+      language: "English",
+      personal_note:
+        "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+      memory_notes: [
+        "Dad shows love by fixing the small things before anyone asks.",
+        "The card should feel printable, cheerful, and original.",
+        "Use tools as symbols, not a cluttered hardware-store scene."
+      ]
+    },
+    must_include: ["Dad", "fixes", "small things", "practical love", "tools"],
+    must_avoid: ["best dad", "hardware-store clutter", "copied joke", "mean sarcasm"]
+  },
+  "botanical-birthday": {
+    id: "botanical-birthday",
+    customer_type: "returning consumer",
+    occasion: "personalized birthday",
+    memory_load: "medium",
+    request: {
+      sender: "Manny",
+      recipient: "Sara",
+      relationship: "friend",
+      occasion: "birthday",
+      tone: "warm, grateful, relaxed, quietly joyful",
+      style: "botanical watercolor, morning light, cream paper, deep green accents",
+      language: "English",
+      personal_note: "She loves morning hikes, coffee, and the fern by her kitchen window.",
+      memory_notes: [
+        "Sara keeps a fern by the kitchen window.",
+        "Sara loves morning hikes and tiny trail flowers.",
+        "The birthday card should feel personal without feeling overly sentimental."
+      ]
+    },
+    must_include: ["Sara", "birthday", "fern", "morning", "coffee"],
+    must_avoid: ["generic flowers", "fake travel memories", "romantic tone", "stock balloons"]
+  },
+  "funny-bold-type-birthday": {
+    id: "funny-bold-type-birthday",
+    customer_type: "family/frequent sender",
+    occasion: "funny birthday",
+    memory_load: "medium",
+    request: {
+      sender: "Manny",
+      recipient: "Aisha",
+      relationship: "younger sibling to older sister",
+      occasion: "birthday",
+      tone: "funny, affectionate, sharp, not mean",
+      style: "bold editorial typography, crisp color blocking, uncluttered, print-safe",
+      language: "English",
+      personal_note:
+        "Make it witty but affectionate for an older sister who pretends birthdays are project-management milestones. Avoid mean age jokes.",
+      memory_notes: [
+        "Aisha calls every family plan a sprint.",
+        "She loves clean editorial design and hates clutter.",
+        "The joke should be affectionate, not sarcastic."
+      ]
+    },
+    must_include: ["Aisha", "birthday", "sprint", "milestone", "affection"],
+    must_avoid: ["age joke", "mean sarcasm", "clutter", "illegible novelty type"]
+  },
+  "simple-minimal-thank-you": {
+    id: "simple-minimal-thank-you",
+    customer_type: "casual sender",
+    occasion: "thank-you",
+    memory_load: "low",
+    request: {
+      sender: "Manny",
+      recipient: "Nora",
+      relationship: "neighbor",
+      occasion: "thank-you",
+      tone: "simple, direct, useful, grateful",
+      style: "minimal stationery, one small plant mark, quiet whitespace, no floral pattern",
+      language: "English",
+      personal_note:
+        "Thank Nora for watering the plants while I was away. Keep it plain, useful, and not flowery.",
+      memory_notes: [
+        "Nora watered the plants while Manny was away.",
+        "The card should feel direct and grateful.",
+        "Use one small plant-related mark, not a floral pattern."
+      ]
+    },
+    must_include: ["Nora", "thank", "plants", "away", "plain"],
+    must_avoid: ["flowery", "long poem", "floral pattern", "overly emotional"]
+  },
+  "sympathy-quiet-support": {
+    id: "sympathy-quiet-support",
+    customer_type: "returning consumer",
+    occasion: "sympathy/support",
+    memory_load: "medium",
+    request: {
+      sender: "Jordan",
+      recipient: "Eli",
+      relationship: "friend",
+      occasion: "sympathy after losing a parent",
+      tone: "quiet, grounded, deeply respectful, practical, not cliched",
+      style: "restrained sympathy stationery, soft gray, warm ivory, one small line-art branch, generous whitespace",
+      language: "English",
+      personal_note:
+        "A quiet card for Eli after losing his father. Mention that I am here for the practical stuff too: meals, rides, calls, silence. No cliches.",
+      memory_notes: [
+        "Eli lost his father.",
+        "Jordan wants to offer practical support: meals, rides, calls, and silence.",
+        "The card should avoid platitudes and religious claims unless requested."
+      ]
+    },
+    must_include: ["Eli", "father", "meals", "rides", "silence"],
+    must_avoid: ["religious claims", "platitudes", "bright celebration", "overdesigned ornament"]
+  },
+  "sentimental-botanical-anniversary": {
+    id: "sentimental-botanical-anniversary",
+    customer_type: "romantic partner",
+    occasion: "anniversary",
+    memory_load: "high",
+    request: {
+      sender: "Manny",
+      recipient: "Leah",
+      relationship: "spouse",
+      occasion: "anniversary",
+      tone: "sentimental, tender, specific, not melodramatic",
+      style: "botanical anniversary stationery, soft green, cream, restrained gold, intimate but modern",
+      language: "English",
+      personal_note:
+        "Make it tender and specific without sounding like a wedding vow. Mention the small balcony basil plant and Sunday morning walks.",
+      memory_notes: [
+        "Leah and Manny keep a small balcony basil plant.",
+        "They take Sunday morning walks together.",
+        "The message should feel intimate but not overly dramatic."
+      ]
+    },
+    must_include: ["Leah", "anniversary", "basil", "Sunday morning walks", "tender"],
+    must_avoid: ["wedding vow", "overly dramatic", "generic soulmate", "fake memories"]
   }
 };
 
@@ -288,7 +599,11 @@ async function main() {
   };
 
   for (const run of plannedRuns) {
-    summary.runs.push(await runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fetchImpl }));
+    summary.runs.push(
+      run.phase === "typography"
+        ? await runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, fetchImpl })
+        : await runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fetchImpl })
+    );
     writeJson(resolve(outputDir, `${phaseDirName}-summary.json`), sanitize(summary, env));
   }
 
@@ -325,6 +640,7 @@ function withAvailability(candidate, env) {
 function plannedRunsForPhase(phase, candidates) {
   if (phase === "smoke") return smokeRuns(candidates);
   if (phase === "full") return fullRuns(candidates);
+  if (phase === "typography") return typographyExperimentRuns(candidates);
   if (phase === "all") return [...smokeRuns(candidates), ...fullRuns(candidates)];
   throw new Error(`Unknown benchmark phase: ${phase}`);
 }
@@ -335,8 +651,22 @@ function applyRunFilters(runs, args) {
     if (args.text && run.text.id !== args.text) return false;
     if (args.image && run.image.id !== args.image) return false;
     if (args.focus && run.focus !== args.focus) return false;
+    if (args["typography-mode"] && !matchesTypographyMode(run, args["typography-mode"])) return false;
     return true;
   });
+}
+
+function matchesTypographyMode(run, value) {
+  if (!run.typographyMode) return false;
+  const wanted = String(value || "").trim().toLowerCase();
+  const aliases = new Set([
+    run.typographyMode.id,
+    run.typographyMode.label,
+    run.typographyMode.strategy,
+    run.typographyMode.id.replace(/^mode-/, ""),
+    run.typographyMode.id.replace(/^mode-[abc]-/, "")
+  ].map((entry) => String(entry || "").trim().toLowerCase()));
+  return aliases.has(wanted);
 }
 
 function smokeRuns(candidates) {
@@ -390,6 +720,35 @@ function fullRuns(candidates) {
       }))
     )
   );
+}
+
+export function typographyExperimentRuns(candidates) {
+  const image = firstConfigured(candidates.image, "image-deepai-text2img") || {
+    id: "image-browser-svg-renderer",
+    label: "Browser SVG renderer",
+    adapterId: "browser-svg-renderer",
+    model: "",
+    configured: true,
+    missingEnv: []
+  };
+  return typographyModes.map((mode) => ({
+    phase: "typography",
+    focus: "typography",
+    storyId: typographyExperimentSpec.id,
+    story: {
+      id: typographyExperimentSpec.id,
+      must_include: [typographyExperimentSpec.headline, typographyExperimentSpec.body],
+      must_avoid: ["lorem ipsum", "placeholder", "extra words", "fake lettering", "mockup"]
+    },
+    text: {
+      id: "text-none-direct-image-test",
+      label: "Direct image typography test",
+      adapterId: "none",
+      model: ""
+    },
+    image,
+    typographyMode: mode
+  }));
 }
 
 function firstConfigured(candidates, preferredId) {
@@ -472,6 +831,95 @@ async function runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fet
   }
 }
 
+async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, fetchImpl }) {
+  const runId = `${run.storyId}__${run.typographyMode.id}__${run.image.id}`;
+  const runDir = resolve(phaseDir, runId);
+  mkdirSync(runDir, { recursive: true });
+  const startedAt = new Date().toISOString();
+  const providerStartIndex = providerHttp.length;
+  const promptPlans = typographyPanelOrder.map((panelId) =>
+    buildTypographyExperimentPrompt(run.typographyMode.id, typographyExperimentSpec, panelId)
+  );
+  writeJson(resolve(runDir, "run-config.json"), sanitize({ ...plannedRunSummary(run), promptPlans }, env));
+  for (const promptPlan of promptPlans) {
+    writeMarkdown(resolve(runDir, `prompt-${promptPlan.panelId}.md`), promptPlan.prompt);
+  }
+
+  try {
+    const panelFiles = [];
+    const decodedFiles = [];
+    for (const promptPlan of promptPlans) {
+      const imageUrl = await executeTypographyImageProvider({
+        image: run.image,
+        panelId: promptPlan.panelId,
+        prompt: promptPlan.prompt,
+        negativePrompt: promptPlan.negativePrompt,
+        env,
+        fetchImpl
+      });
+      const decoded = await decodeImageUrl(imageUrl, fetchImpl, env);
+      decodedFiles.push(decoded);
+      const providerFile = resolve(runDir, `provider-${promptPlan.panelId}${decoded.ext}`);
+      writeFileSync(providerFile, decoded.buffer);
+      const previewBuffer = await renderTypographyPreview({
+        imageBuffer: decoded.buffer,
+        overlayText: promptPlan.renderTextDeterministically,
+        panelCopy: typographyTextPanels[promptPlan.panelId],
+        modeId: promptPlan.modeId
+      });
+      const previewFile = resolve(runDir, `preview-${promptPlan.panelId}.png`);
+      writeFileSync(previewFile, previewBuffer);
+      panelFiles.push({
+        panelId: promptPlan.panelId,
+        path: providerFile,
+        previewPath: previewFile,
+        prompt: promptPlan.prompt,
+        negativePrompt: promptPlan.negativePrompt,
+        renderTextDeterministically: promptPlan.renderTextDeterministically,
+        sourceKind: decoded.sourceKind,
+        contentType: decoded.contentType
+      });
+    }
+    const providerCalls = providerHttp.slice(providerStartIndex);
+    const contactSheet = await renderContactSheet({ runDir, run, panelFiles });
+    const autoChecks = typographyAutoChecks({ promptPlans, providerCalls, decodedFiles });
+    const runResult = {
+      ...plannedRunSummary(run),
+      runDir: relativePath(runDir),
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      panelCount: panelFiles.length,
+      panelFiles: panelFiles.map((file) => ({
+        ...file,
+        path: relativePath(file.path),
+        previewPath: relativePath(file.previewPath)
+      })),
+      contactSheet: contactSheet ? relativePath(contactSheet) : undefined,
+      providerCallCount: providerCalls.length,
+      autoChecks
+    };
+    writeJson(resolve(runDir, "auto-checks.json"), autoChecks);
+    writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
+    writeJson(resolve(runDir, "run-result.json"), sanitize(runResult, env));
+    writeMarkdown(resolve(runDir, "manual-grade-template.md"), buildTypographyManualGradeTemplate(runResult, run, promptPlans));
+    return sanitize(runResult, env);
+  } catch (error) {
+    const providerCalls = providerHttp.slice(providerStartIndex);
+    const failure = {
+      ...plannedRunSummary(run),
+      runDir: relativePath(runDir),
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      status: "failed",
+      error: error instanceof Error ? error.message : String(error),
+      providerCallCount: providerCalls.length
+    };
+    writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
+    writeJson(resolve(runDir, "error.json"), sanitize(failure, env));
+    return sanitize(failure, env);
+  }
+}
+
 function buildRunAiFlowConfig(run) {
   return [
     {
@@ -513,6 +961,359 @@ function buildRunAiFlowConfig(run) {
       temperature: 0
     }
   ];
+}
+
+export function buildTypographyExperimentPrompt(modeId, spec = typographyExperimentSpec, panelId = "front") {
+  const panel = spec.panels?.[panelId] ?? spec.panels?.front ?? {
+    id: "front",
+    panelType: spec.panelType,
+    headline: spec.headline,
+    body: spec.body,
+    composition: `${spec.palette}; ${spec.motif}`
+  };
+  const hasPanelText = Boolean(panel.headline && panel.body);
+  const motif = typographyMotifRequirement(modeId, panel, spec, hasPanelText);
+  const palette = typographyPaletteRequirement(modeId, panel, spec, hasPanelText);
+  const sharedSpec = [
+    `Panel Type: ${panel.panelType || spec.panelType}`,
+    `Size: ${spec.size}`,
+    `Output: ${spec.output}`,
+    `Style: ${spec.style}`,
+    `Palette: ${palette}`,
+    `Motif: ${motif}`,
+    `Mood: ${spec.mood}`,
+    `Panel Role: ${panel.role || "single greeting-card panel"}`
+  ].join("\n");
+
+  if (modeId === "mode-b-full-ai-typography") {
+    if (!hasPanelText) {
+      return {
+        modeId,
+        panelId: panel.id,
+        renderTextDeterministically: false,
+        prompt: [
+          "You are generating a FINAL PRINT-READY GREETING CARD PANEL.",
+          "This is NOT an artwork layer.",
+          "This is NOT a background layer.",
+          "Render the finished panel exactly as it should appear when printed.",
+          "",
+          "CARD SPECIFICATION",
+          sharedSpec,
+          "",
+          "TEXT TO RENDER",
+          "No card copy belongs on this panel.",
+          "Do not render typography.",
+          "Do not render words.",
+          "Do not render letters.",
+          "Do not render numbers.",
+          "",
+          "COMPOSITION REQUIREMENTS",
+          panelCompositionRequirement(panel),
+          "The panel must visually coordinate with the same deep charcoal, warm gold, ivory sunburst card system.",
+          panel.id === "back"
+            ? "The back cover should be mostly negative space with one small coordinating sunburst mark or border echo."
+            : "Inside-left and inside-right should read as two halves of one opened interior spread.",
+          "No labels.",
+          "No captions.",
+          "No stickers.",
+          "No mockups.",
+          "No folded card renderings.",
+          "No physical paper textures.",
+          "No stock-photo appearance.",
+          "",
+          "OUTPUT",
+          "Return a final production-ready greeting card panel with no rendered text."
+        ].join("\n"),
+        negativePrompt:
+          "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake lettering, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+      };
+    }
+    return {
+      modeId,
+      panelId: panel.id,
+      renderTextDeterministically: false,
+      prompt: [
+        "You are generating a FINAL PRINT-READY GREETING CARD PANEL.",
+        "This is NOT an artwork layer.",
+        "This is NOT a background layer.",
+        "Render the finished panel exactly as it should appear when printed.",
+        "All typography must be intentionally designed and correctly integrated into the composition.",
+        "All text must be spelled exactly as provided.",
+        "Do not invent substitute text.",
+        "Do not invent placeholder text.",
+        "Do not generate lorem ipsum.",
+        "Do not generate extra words.",
+        "Do not generate decorative fake lettering.",
+        "The provided text is the source of truth.",
+        "",
+        "CARD SPECIFICATION",
+        sharedSpec,
+        "",
+        "TEXT TO RENDER",
+        "Headline:",
+        panel.headline,
+        "Body:",
+        panel.body,
+        "",
+        "TYPOGRAPHY REQUIREMENTS",
+        "The headline must be the primary visual element.",
+        "The body must be clearly readable.",
+        "Typography should be professionally typeset.",
+        "Maintain generous margins.",
+        "Avoid text collisions with artwork.",
+        "Artwork should support the typography rather than compete with it.",
+        "",
+        "COMPOSITION REQUIREMENTS",
+        "Create a unified composition where typography and illustration are designed together.",
+        "The text should feel intentionally placed.",
+        panelCompositionRequirement(panel),
+        panelPairingInstruction(panel),
+        "No separate text boxes.",
+        "No labels.",
+        "No captions.",
+        "No stickers.",
+        "No mockups.",
+        "No folded card renderings.",
+        "No physical paper textures.",
+        "No stock-photo appearance.",
+        "",
+        "OUTPUT",
+        "Return a final production-ready front cover design with all typography already rendered into the artwork."
+      ].join("\n"),
+      negativePrompt:
+        "lorem ipsum, placeholder text, extra words, fake lettering, misspelled text, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo"
+    };
+  }
+
+  const reserveInstruction =
+    modeId === "mode-c-hybrid-reserved-layout" && hasPanelText
+      ? [
+          `Headline length: ${panel.headline.split(/\s+/).filter(Boolean).length} words.`,
+          `Body length: ${countSentences(panel.body)} short sentence.`,
+          "Reserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.",
+          "Text-safe field requirement: create one continuous opaque plain field for deterministic app typography.",
+          "The field must read as solid matte paper or ink, with edge-only ornaments around it.",
+          "Do not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.",
+          "For this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.",
+          panel.modeCHint,
+          panelPairingInstruction(panel)
+        ].join("\n")
+      : modeId === "mode-c-hybrid-reserved-layout"
+        ? [
+            "No card copy belongs on this panel.",
+            "Reserve hierarchy for visual coordination only.",
+            panel.id === "back"
+              ? "Use mostly negative space plus one small coordinating back mark."
+              : "Keep inside-left and inside-right visually paired as a cohesive opened spread.",
+            panel.modeCHint || ""
+          ].join("\n")
+        : hasPanelText
+          ? "Reserve calm central negative space for deterministic app-rendered typography."
+          : [
+              "No card copy belongs on this panel.",
+              panel.id === "back"
+                ? "Use mostly negative space plus one small coordinating back mark."
+                : "Keep inside-left and inside-right visually paired as a cohesive opened spread."
+            ].join("\n");
+
+  return {
+    modeId,
+    panelId: panel.id,
+    renderTextDeterministically: hasPanelText,
+    prompt: [
+      `Create one artwork-only 5x7 portrait ${panel.panelType || "greeting card"} panel for a premium greeting card.`,
+      "This is an artwork layer, not a finished panel.",
+      sharedSpec,
+      reserveInstruction,
+      panelCompositionRequirement(panel, modeId),
+      modeId === "mode-a-current-overlay" && hasPanelText ? panelPairingInstruction(panel) : "",
+      typographySystemInstruction(modeId, panel, hasPanelText),
+      "Keep generous safe margins and a clear, uncluttered type-safe area.",
+      "Do not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.",
+      "No mockups, no folded card rendering, no physical paper texture, no stock-photo appearance."
+    ].join("\n"),
+    negativePrompt: typographyNegativePrompt(modeId, panel)
+  };
+}
+
+function typographyMotifRequirement(modeId, panel, spec, hasPanelText) {
+  if (modeId !== "mode-c-hybrid-reserved-layout") return spec.motif;
+  if (hasPanelText && panel?.id === "front") {
+    return "edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy";
+  }
+  if (hasPanelText && (panel?.id === "inside-left" || panel?.id === "inside-right")) {
+    return "quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion";
+  }
+  if (panel?.id === "back") {
+    return "mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst";
+  }
+  return "edge-only warm-gold accents; no centered radial burst";
+}
+
+function typographyPaletteRequirement(modeId, panel, spec, hasPanelText) {
+  if (modeId !== "mode-c-hybrid-reserved-layout") return spec.palette;
+  if (hasPanelText && panel?.id === "front") {
+    return "deep charcoal main field with warm gold and ivory accents kept outside the central text field";
+  }
+  if (hasPanelText && (panel?.id === "inside-left" || panel?.id === "inside-right")) {
+    return "warm ivory main sheet with thin warm-gold border and tiny deep-charcoal outer-edge accents only; no full-width dark bands";
+  }
+  if (panel?.id === "back") {
+    return "deep charcoal main field with one tiny warm-gold lower-edge mark only; no ivory panel, no cream wave, no large light area";
+  }
+  return spec.palette;
+}
+
+function typographySystemInstruction(modeId, panel, hasPanelText) {
+  if (modeId === "mode-c-hybrid-reserved-layout" && hasPanelText) {
+    return "Use the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.";
+  }
+  if (modeId === "mode-c-hybrid-reserved-layout" && panel?.id === "back") {
+    return "Use the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.";
+  }
+  return "Use the same deep charcoal, warm gold, ivory-accent sunburst card system across the folded card.";
+}
+
+function typographyNegativePrompt(modeId, panel) {
+  const base =
+    "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo";
+  if (modeId !== "mode-c-hybrid-reserved-layout") return base;
+  const shared =
+    "central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center";
+  if (panel?.id === "back") {
+    return `${base}, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover, ivory wave, cream lower half, large cream area, white panel`;
+  }
+  if (panel?.id === "inside-left" || panel?.id === "inside-right") {
+    return `${base}, ${shared}, circle medallion under body copy, large motif behind headline, black top band, black bottom band, full-width dark band, split color-blocked interior`;
+  }
+  return `${base}, ${shared}, circle medallion under body copy, large motif behind headline`;
+}
+
+function panelCompositionRequirement(panel, modeId) {
+  if (modeId === "mode-c-hybrid-reserved-layout") {
+    if (panel?.id === "front") {
+      return "Panel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.";
+    }
+    if (panel?.id === "inside-left") {
+      return "Panel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.";
+    }
+    if (panel?.id === "inside-right") {
+      return "Panel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.";
+    }
+    if (panel?.id === "back") {
+      return "Panel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.";
+    }
+  }
+  return `Panel-specific composition: ${panel.composition || "coordinated premium greeting-card stationery"}.`;
+}
+
+function panelPairingInstruction(panel) {
+  if (panel.id !== "inside-left" && panel.id !== "inside-right") return "";
+  return "Keep inside-left and inside-right visually paired as a cohesive opened spread.";
+}
+
+function countSentences(value) {
+  return Math.max(1, String(value || "").split(/[.!?]+/).filter((part) => part.trim()).length);
+}
+
+async function executeTypographyImageProvider({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
+  if (image.adapterId === "browser-svg-renderer") {
+    return buildTypographyPlaceholderSvgDataUrl({
+      panelId,
+      prompt,
+      renderText: !negativePrompt.includes("readable text")
+    });
+  }
+
+  if (image.adapterId === "deepai-text2img-image") {
+    const body = new FormData();
+    body.set("text", truncateText(negativePrompt ? `${prompt}\n\nAvoid: ${negativePrompt}.` : prompt, 2048));
+    const response = await fetchWithProviderBackoff(
+      fetchImpl,
+      "https://api.deepai.org/api/text2img",
+      {
+        method: "POST",
+        headers: { "api-key": requiredEnv(env, "DEEPAI_API_KEY") },
+        body
+      },
+      { retries: 1, baseDelayMs: 1500, maxDelayMs: 5000 }
+    );
+    const contentType = response.headers?.get?.("content-type") ?? "";
+    const data = await response.json().catch(() => undefined);
+    if (!response.ok) {
+      throw new Error(`DeepAI image provider returned ${response.status}: ${data?.err || data?.status || "request failed"}.`);
+    }
+    return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl);
+  }
+
+  if (image.adapterId === "cloudflare-workers-ai-image") {
+    const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
+    const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
+    const body = isCloudflareFluxModel(image.model)
+      ? { prompt: truncateText(prompt, 2048), steps: 8 }
+      : {
+          prompt,
+          negative_prompt: negativePrompt,
+          width: 1464,
+          height: 2048,
+          guidance: 3.5,
+          num_steps: 8,
+          metadata: {
+            customcard: {
+              prompt_contract: "typography-experiment-folded-card-v2",
+              panel_id: panelId,
+              target_width: 1500,
+              target_height: 2100,
+              target_dpi: 300
+            }
+          }
+        };
+    const response = await fetchWithProviderBackoff(
+      fetchImpl,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${image.model}`,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(body)
+      },
+      { retries: 1, baseDelayMs: 1500, maxDelayMs: 5000 }
+    );
+    if (!response.ok) throw new Error(`Cloudflare image provider returned ${response.status}.`);
+    const contentType = response.headers?.get?.("content-type") ?? "";
+    if (contentType.startsWith("image/")) {
+      const buffer = Buffer.from(await response.arrayBuffer());
+      return `data:${contentType};base64,${buffer.toString("base64")}`;
+    }
+    return materializeGeneratedImageUrl(extractImageUrl(await response.json(), contentType), fetchImpl);
+  }
+
+  if (image.adapterId === "openai-images") {
+    const data = await postJson(fetchImpl, "https://api.openai.com/v1/images/generations", {
+      headers: { authorization: `Bearer ${requiredEnv(env, "OPENAI_API_KEY")}` },
+      body: { model: image.model, prompt, size: "1024x1536", n: 1 }
+    });
+    return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
+  }
+
+  if (image.adapterId === "google-gemini-image") {
+    const model = encodeURIComponent(image.model);
+    const data = await postJson(fetchImpl, `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`, {
+      headers: { "x-goog-api-key": requiredEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY") },
+      body: {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ["Image"],
+          responseFormat: { image: { aspectRatio: "3:4", imageSize: "2K" } }
+        }
+      }
+    });
+    return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
+  }
+
+  throw new Error(`Image adapter ${image.adapterId} is configured but not executable in typography experiment yet.`);
 }
 
 async function materializePanels({ runDir, payload, fetchImpl, env }) {
@@ -597,6 +1398,113 @@ async function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
     .composite([{ input: overlay }])
     .png()
     .toBuffer();
+}
+
+async function renderTypographyPreview({ imageBuffer, overlayText, panelCopy, modeId }) {
+  const base = sharp(imageBuffer).resize(1500, 2100, { fit: "cover" });
+  if (!overlayText) return base.png().toBuffer();
+  if (modeId === "mode-c-hybrid-reserved-layout") {
+    return base.composite([{ input: buildModeCTypographyOverlay(panelCopy) }]).png().toBuffer();
+  }
+  return base.composite([{ input: buildDefaultTypographyOverlay(panelCopy) }]).png().toBuffer();
+}
+
+function buildDefaultTypographyOverlay(panelCopy) {
+  const headline = wrapText(panelCopy.headline, 18).slice(0, 3);
+  const body = wrapText(panelCopy.body, 42).slice(0, 3);
+  return Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
+      <rect x="92" y="92" width="1316" height="1916" rx="24" fill="none" stroke="#d6aa45" stroke-width="8" opacity="0.62"/>
+      <rect x="170" y="690" width="1160" height="590" rx="0" fill="#171717" opacity="0.18"/>
+      <text x="750" y="850" text-anchor="middle" font-family="Georgia, Times New Roman, serif" fill="#f9edcf" font-size="124" font-weight="700">
+        ${headline.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : 134}">${escapeXml(line)}</tspan>`).join("")}
+      </text>
+      <text x="750" y="${930 + headline.length * 118}" text-anchor="middle" font-family="Inter, Arial, sans-serif" fill="#f5d889" font-size="42" font-weight="500">
+        ${body.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : 54}">${escapeXml(line)}</tspan>`).join("")}
+      </text>
+    </svg>
+  `);
+}
+
+function buildModeCTypographyOverlay(panelCopy) {
+  const layout = modeCTypographyOverlayLayout(panelCopy.id);
+  const headline = wrapText(panelCopy.headline, layout.headlineChars).slice(0, layout.headlineLines);
+  const body = wrapText(panelCopy.body, layout.bodyChars).slice(0, layout.bodyLines);
+  return Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
+      <rect x="92" y="92" width="1316" height="1916" rx="24" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${layout.frameOpacity}"/>
+      <rect x="${layout.fieldX}" y="${layout.fieldY}" width="${layout.fieldWidth}" height="${layout.fieldHeight}" rx="${layout.fieldRadius}" fill="${layout.fieldFill}" opacity="${layout.fieldOpacity}"/>
+      <text x="750" y="${layout.headlineY}" text-anchor="middle" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700" paint-order="stroke fill" stroke="${layout.headlineStroke}" stroke-width="${layout.headlineStrokeWidth}">
+        ${headline.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : layout.headlineDy}">${escapeXml(line)}</tspan>`).join("")}
+      </text>
+      <text x="750" y="${layout.bodyY}" text-anchor="middle" font-family="${layout.bodyFont}" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="500" paint-order="stroke fill" stroke="${layout.bodyStroke}" stroke-width="${layout.bodyStrokeWidth}">
+        ${body.map((line, index) => `<tspan x="750" dy="${index === 0 ? 0 : layout.bodyDy}">${escapeXml(line)}</tspan>`).join("")}
+      </text>
+    </svg>
+  `);
+}
+
+function modeCTypographyOverlayLayout(panelId) {
+  if (panelId === "front") {
+    return {
+      fieldX: 120,
+      fieldY: 610,
+      fieldWidth: 1260,
+      fieldHeight: 690,
+      fieldRadius: 0,
+      fieldFill: "#111715",
+      fieldOpacity: 1,
+      frameColor: "#d6aa45",
+      frameOpacity: 0.72,
+      headlineY: 830,
+      headlineSize: 112,
+      headlineDy: 124,
+      headlineChars: 18,
+      headlineLines: 3,
+      headlineFont: "Georgia, Times New Roman, serif",
+      headlineColor: "#fff7df",
+      headlineStroke: "#111715",
+      headlineStrokeWidth: 6,
+      bodyY: 1080,
+      bodySize: 44,
+      bodyDy: 58,
+      bodyChars: 42,
+      bodyLines: 3,
+      bodyFont: "Inter, Arial, sans-serif",
+      bodyColor: "#f4d77d",
+      bodyStroke: "#111715",
+      bodyStrokeWidth: 3
+    };
+  }
+  return {
+    fieldX: 120,
+    fieldY: panelId === "inside-right" ? 390 : 430,
+    fieldWidth: 1260,
+    fieldHeight: panelId === "inside-right" ? 880 : 800,
+    fieldRadius: 0,
+    fieldFill: "#fff6df",
+    fieldOpacity: 1,
+    frameColor: "#d6aa45",
+    frameOpacity: 0.68,
+    headlineY: panelId === "inside-right" ? 650 : 680,
+    headlineSize: panelId === "inside-right" ? 84 : 96,
+    headlineDy: panelId === "inside-right" ? 96 : 106,
+    headlineChars: panelId === "inside-right" ? 22 : 24,
+    headlineLines: 3,
+    headlineFont: "Georgia, Times New Roman, serif",
+    headlineColor: "#282923",
+    headlineStroke: "#fff6df",
+    headlineStrokeWidth: 2,
+    bodyY: panelId === "inside-right" ? 900 : 900,
+    bodySize: panelId === "inside-right" ? 42 : 42,
+    bodyDy: 56,
+    bodyChars: panelId === "inside-right" ? 48 : 44,
+    bodyLines: 4,
+    bodyFont: "Inter, Arial, sans-serif",
+    bodyColor: "#4f432a",
+    bodyStroke: "#fff6df",
+    bodyStrokeWidth: 1
+  };
 }
 
 function previewLayout(panelId, rawTextLayout) {
@@ -745,6 +1653,64 @@ function autoGrade({ run, payload, panelFiles, providerCalls }) {
   };
 }
 
+function typographyAutoChecks({ promptPlans, providerCalls, decodedFiles }) {
+  const plans = Array.isArray(promptPlans) ? promptPlans : [];
+  const decoded = Array.isArray(decodedFiles) ? decodedFiles : [];
+  const backPlan = plans.find((plan) => plan.panelId === "back");
+  const insideLeftPlan = plans.find((plan) => plan.panelId === "inside-left");
+  const insideRightPlan = plans.find((plan) => plan.panelId === "inside-right");
+  const copyPlans = plans.filter((plan) => panelHasBenchmarkCopy(plan.panelId));
+  const copyPlansExactTextInPrompt = copyPlans.every((plan) => promptContainsPanelCopy(plan));
+  const copyPlansSuppressExactText = copyPlans.every((plan) => !promptContainsPanelCopy(plan));
+  const backSuppressesAllCopy = Boolean(backPlan) &&
+    typographyBenchmarkCopyPanels().every((panel) => !promptContainsCopy(backPlan.prompt, panel)) &&
+    /No card copy belongs on this panel/i.test(backPlan.prompt);
+  return {
+    advisoryOnly: true,
+    checks: {
+      fourPanels: plans.length === 4 && decoded.length === 4,
+      panelIds: plans.map((plan) => plan.panelId),
+      providerCalls: providerCalls.length,
+      materializedImages: decoded.length,
+      allPanelsMaterialized: decoded.length === 4 && decoded.every((file) => Boolean(file?.buffer?.length)),
+      deterministicTextOverlayPanels: plans
+        .filter((plan) => plan.renderTextDeterministically)
+        .map((plan) => plan.panelId),
+      copyPanelIds: copyPlans.map((plan) => plan.panelId),
+      copyPanelsExactTextInPrompt: copyPlansExactTextInPrompt,
+      copyPanelsTextSuppressedInPrompt: copyPlansSuppressExactText,
+      backHasNoTextContract: backSuppressesAllCopy,
+      insideSpreadCohesionPrompted:
+        Boolean(insideLeftPlan && insideRightPlan) &&
+        /cohesive opened spread|paired as a cohesive opened spread|two halves of one opened interior spread/i.test(insideLeftPlan.prompt) &&
+        /cohesive opened spread|paired as a cohesive opened spread|two halves of one opened interior spread/i.test(insideRightPlan.prompt),
+      noTextPanelsSuppressText: [backPlan].filter(Boolean).every((plan) => backSuppressesAllCopy && plan.negativePrompt.includes("readable text"))
+    },
+    note:
+      "Automated checks only prove prompt contract and image materialization. Front/interior typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+  };
+}
+
+function panelHasBenchmarkCopy(panelId) {
+  const panel = typographyExperimentSpec.panels?.[panelId];
+  return Boolean(panel?.headline && panel?.body);
+}
+
+function typographyBenchmarkCopyPanels() {
+  return typographyPanelOrder
+    .map((panelId) => typographyExperimentSpec.panels?.[panelId])
+    .filter((panel) => panel?.headline && panel?.body);
+}
+
+function promptContainsPanelCopy(promptPlan) {
+  const panel = typographyExperimentSpec.panels?.[promptPlan.panelId];
+  return promptContainsCopy(promptPlan.prompt, panel);
+}
+
+function promptContainsCopy(prompt, panel) {
+  return Boolean(panel?.headline && panel?.body && prompt.includes(panel.headline) && prompt.includes(panel.body));
+}
+
 function plannedRunSummary(run) {
   return {
     phase: run.phase,
@@ -755,7 +1721,10 @@ function plannedRunSummary(run) {
     textModel: run.text.model,
     imageCandidateId: run.image.id,
     imageAdapterId: run.image.adapterId,
-    imageModel: run.image.model
+    imageModel: run.image.model,
+    typographyModeId: run.typographyMode?.id,
+    typographyModeLabel: run.typographyMode?.label,
+    typographyStrategy: run.typographyMode?.strategy
   };
 }
 
@@ -785,6 +1754,39 @@ function buildManualGradeTemplate(result, run) {
   ].join("\n");
 }
 
+function buildTypographyManualGradeTemplate(result, run, promptPlans) {
+  const deterministicPanels = (Array.isArray(promptPlans) ? promptPlans : [])
+    .filter((plan) => plan.renderTextDeterministically)
+    .map((plan) => plan.panelId);
+  return [
+    `# Manual Grade: ${run.typographyMode.label}`,
+    "",
+    `- Image: ${run.image.label} (${run.image.model || run.image.adapterId})`,
+    `- Strategy: ${run.typographyMode.strategy}`,
+    `- Panels: ${result.panelCount}`,
+    `- Text rendered deterministically on: ${deterministicPanels.join(", ") || "none"}`,
+    `- Contact sheet: ${result.contactSheet ? `[open](./${basename(result.contactSheet)})` : "missing"}`,
+    "",
+    "## Rubric",
+    "",
+    "- Total score /100:",
+    "- Tier:",
+    "- Four-panel prompt adherence and panel contract /10:",
+    "- Front exact text and typography /20:",
+    "- Inside-left/right exact text and readability /20:",
+    "- Inside-left/right visual cohesion as an opened spread /15:",
+    "- Back no-text discipline and coordinating mark /10:",
+    "- Overall folded-card theme coherence /10:",
+    "- Print readiness and margins /15:",
+    "- Blocking failures:",
+    "- Smallest prompt/config fix:",
+    "- Production recommendation:",
+    "",
+    "## Notes",
+    ""
+  ].join("\n");
+}
+
 function buildCandidateCatalogMarkdown(catalog) {
   const lines = ["# Model Benchmark Candidate Catalog", "", "## Text Candidates", ""];
   lines.push("| Candidate | Adapter | Model | Configured | Missing env |", "| --- | --- | --- | --- | --- |");
@@ -805,15 +1807,37 @@ function buildCandidateCatalogMarkdown(catalog) {
   return lines.join("\n");
 }
 
-function buildPhaseReadme(summary) {
+export function buildPhaseReadme(summary) {
   const lines = [`# Model Benchmark ${summary.phase}`, "", `Created: ${summary.createdAtIso}`, "", "| Run | Status | Panels | Contact sheet |", "| --- | --- | --- | --- |"];
   for (const run of summary.runs) {
-    const status = run.status || (run.statusCode === 200 ? "ok" : `status ${run.statusCode}`);
-    const contact = run.contactSheet ? `[open](${run.contactSheet.replace(`${summary.phase}/`, "")})` : "n/a";
-    lines.push(`| ${run.storyId} / ${run.textCandidateId} / ${run.imageCandidateId} | ${status} | ${run.panelCount || 0} | ${contact} |`);
+    const status = benchmarkRunStatus(run);
+    const contact = run.contactSheet ? `[open](${relativeEvidenceLink(run.contactSheet, summary.outputDir)})` : "n/a";
+    lines.push(`| ${benchmarkRunLabel(run)} | ${status} | ${run.panelCount || 0} | ${contact} |`);
   }
   lines.push("");
   return lines.join("\n");
+}
+
+function benchmarkRunStatus(run) {
+  if (run.status) return run.status;
+  if (run.error) return "failed";
+  if (run.statusCode !== undefined) return run.statusCode === 200 ? "ok" : `status ${run.statusCode}`;
+  if ((run.panelCount || 0) > 0) return "ok";
+  return "unknown";
+}
+
+function benchmarkRunLabel(run) {
+  if (run.typographyModeLabel) return `${run.storyId} / ${run.typographyModeLabel} / ${run.imageCandidateId}`;
+  return `${run.storyId} / ${run.textCandidateId} / ${run.imageCandidateId}`;
+}
+
+function relativeEvidenceLink(filePath, outputDir) {
+  const normalizedPath = String(filePath || "").replaceAll("\\", "/");
+  const normalizedOutputDir = String(outputDir || "").replaceAll("\\", "/").replace(/\/$/, "");
+  if (normalizedOutputDir && normalizedPath.startsWith(`${normalizedOutputDir}/`)) {
+    return normalizedPath.slice(normalizedOutputDir.length + 1);
+  }
+  return normalizedPath;
 }
 
 function loadBenchmarkEnv() {
@@ -855,6 +1879,141 @@ function createLoggingFetch(logs, env) {
     });
     return new Response(buffer, { status: response.status, statusText: response.statusText, headers: response.headers });
   };
+}
+
+async function postJson(fetchImpl, url, { headers = {}, body }) {
+  const response = await fetchImpl(url, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...headers
+    },
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) throw new Error(`AI provider returned ${response.status}.`);
+  const data = await response.json();
+  if (data?.success === false) throw new Error(data?.errors?.[0]?.message || "AI provider rejected the request.");
+  return data;
+}
+
+async function fetchWithProviderBackoff(fetchImpl, url, options, { retries = 0, baseDelayMs = 1000, maxDelayMs = 5000 } = {}) {
+  const retryCount = Math.max(0, Number(retries) || 0);
+  let response;
+  for (let attempt = 0; attempt <= retryCount; attempt += 1) {
+    response = await fetchImpl(url, options);
+    if (!isRetryableProviderStatus(response.status) || attempt >= retryCount) return response;
+    await sleep(providerBackoffDelayMs(response, attempt, baseDelayMs, maxDelayMs));
+  }
+  return response;
+}
+
+function isRetryableProviderStatus(status) {
+  return status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+function providerBackoffDelayMs(response, attempt, baseDelayMs, maxDelayMs) {
+  const retryAfter = response.headers?.get?.("retry-after");
+  const retryAfterSeconds = retryAfter === undefined || retryAfter === null ? NaN : Number(retryAfter);
+  const retryAfterMs =
+    Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0 ? retryAfterSeconds * 1000 : undefined;
+  const fallbackMs = Math.max(0, Number(baseDelayMs) || 0) * 2 ** Math.max(0, attempt);
+  return Math.min(Math.max(0, Number(maxDelayMs) || 0), retryAfterMs ?? fallbackMs);
+}
+
+function sleep(ms) {
+  return new Promise((resolveSleep) => setTimeout(resolveSleep, Math.max(0, Number(ms) || 0)));
+}
+
+function extractImageUrl(data, contentType) {
+  const inlineImage = extractInlineImage(data);
+  const image =
+    data?.result?.image_url ??
+    data?.result?.url ??
+    data?.output_url ??
+    data?.image_url ??
+    data?.url ??
+    data?.data?.[0]?.url ??
+    data?.data?.[0]?.b64_json ??
+    data?.output?.[0] ??
+    data?.result?.image ??
+    data?.image ??
+    inlineImage?.data;
+  if (!image) throw new Error("AI image provider response did not contain an image.");
+  if (String(image).startsWith("http") || String(image).startsWith("data:")) return String(image);
+  return `data:${inferImageContentType(image, inlineImage?.mimeType || contentType)};base64,${image}`;
+}
+
+async function materializeGeneratedImageUrl(imageUrl, fetchImpl) {
+  const value = String(imageUrl);
+  if (!/^https?:\/\//i.test(value)) return value;
+  const response = await fetchImpl(value, { method: "GET" });
+  if (!response.ok) throw new Error(`Generated image URL fetch failed with ${response.status}.`);
+  const contentType = response.headers?.get?.("content-type") || "image/png";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
+function extractInlineImage(data) {
+  const parts = data?.candidates?.[0]?.content?.parts ?? data?.parts ?? [];
+  const part = parts.find((candidate) => candidate?.inlineData?.data || candidate?.inline_data?.data);
+  const inline = part?.inlineData ?? part?.inline_data;
+  if (!inline?.data) return undefined;
+  return {
+    data: inline.data,
+    mimeType: inline.mimeType || inline.mime_type
+  };
+}
+
+function inferImageContentType(image, contentType) {
+  if (contentType && contentType.startsWith("image/")) return contentType;
+  const text = String(image);
+  if (text.startsWith("/9j/")) return "image/jpeg";
+  if (text.startsWith("iVBOR")) return "image/png";
+  if (text.startsWith("UklGR")) return "image/webp";
+  return "image/png";
+}
+
+function requiredEnv(env, key) {
+  const value = env[key];
+  if (!value || ["disabled", "example", "replace-me", "changeme", "dummy", "fake"].includes(String(value).trim().toLowerCase())) {
+    throw new Error(`Missing required provider env: ${key}`);
+  }
+  return String(value).trim();
+}
+
+function isCloudflareFluxModel(model) {
+  return String(model || "").includes("/flux-1-schnell");
+}
+
+function buildTypographyPlaceholderSvgDataUrl({ panelId = "front", prompt, renderText }) {
+  const showText = panelId === "front" && renderText && prompt.includes(typographyExperimentSpec.headline);
+  const text = showText
+    ? `<text x="750" y="900" text-anchor="middle" font-family="Georgia" font-size="112" fill="#f9edcf">${escapeXml(typographyExperimentSpec.headline)}</text>
+       <text x="750" y="1035" text-anchor="middle" font-family="Arial" font-size="44" fill="#f5d889">${escapeXml(typographyExperimentSpec.body)}</text>`
+    : "";
+  const background = panelId.startsWith("inside") ? "#fff9ec" : "#171717";
+  const borderColor = panelId.startsWith("inside") ? "#caa24f" : "#d6aa45";
+  const mark = panelId === "back"
+    ? '<g opacity="0.9"><circle cx="750" cy="1570" r="54" fill="#e0aa35"/><path d="M750 1490 V1650 M670 1570 H830 M694 1514 L806 1626 M806 1514 L694 1626" stroke="#fff4d7" stroke-width="8"/></g>'
+    : panelId.startsWith("inside")
+      ? `<g opacity="0.55"><path d="${panelId === "inside-left" ? "M80 350 C260 460 300 690 120 860" : "M1420 350 C1240 460 1200 690 1380 860"}" fill="none" stroke="#d6aa45" stroke-width="18"/><circle cx="${panelId === "inside-left" ? 160 : 1340}" cy="420" r="46" fill="#e0aa35"/></g>`
+      : "";
+  const rays = Array.from({ length: 40 }, (_, index) => {
+    const angle = (Math.PI * 2 * index) / 40;
+    const x = 750 + Math.cos(angle) * 760;
+    const y = 1050 + Math.sin(angle) * 760;
+    return `<line x1="750" y1="1050" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#d6aa45" stroke-width="18" opacity="0.18"/>`;
+  }).join("");
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
+      <rect width="1500" height="2100" fill="${background}"/>
+      ${panelId === "front" ? rays : ""}
+      ${panelId === "front" ? '<circle cx="750" cy="1050" r="560" fill="none" stroke="#d6aa45" stroke-width="10" opacity="0.42"/>' : mark}
+      <rect x="92" y="92" width="1316" height="1916" rx="24" fill="none" stroke="${borderColor}" stroke-width="8" opacity="0.62"/>
+      ${text}
+    </svg>
+  `;
+  return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
 }
 
 function missingEnvGroups(groups, env) {
@@ -908,15 +2067,18 @@ function parseJson(text) {
   }
 }
 
-function sanitize(value, env) {
+export function sanitizeBenchmarkValue(value, env) {
   if (value === undefined) return undefined;
   let serialized = JSON.stringify(value, null, 2);
   if (serialized === undefined) return undefined;
-  for (const secret of Object.values(env || {})) {
-    if (typeof secret !== "string" || secret.length < 8) continue;
+  for (const secret of redactionSecretsFromEnv(env)) {
     serialized = serialized.split(secret).join("[redacted]");
   }
   return JSON.parse(serialized);
+}
+
+function sanitize(value, env) {
+  return sanitizeBenchmarkValue(value, env);
 }
 
 function redactHeaders(headers, env) {
@@ -933,11 +2095,35 @@ function redactUrl(url, env) {
 
 function redactValue(value, env) {
   let redacted = String(value || "");
-  for (const secret of Object.values(env || {})) {
-    if (typeof secret === "string" && secret.length >= 8) redacted = redacted.split(secret).join("[redacted]");
+  for (const secret of redactionSecretsFromEnv(env)) {
+    redacted = redacted.split(secret).join("[redacted]");
   }
   return redacted;
 }
+
+function redactionSecretsFromEnv(env) {
+  return Object.entries(env || {})
+    .filter(([key, value]) => isRedactableEnvKey(key) && isRedactableEnvValue(value))
+    .map(([, value]) => String(value));
+}
+
+function isRedactableEnvKey(key) {
+  const normalized = String(key || "").toUpperCase();
+  return (
+    normalized === "CLOUDFLARE_ACCOUNT_ID" ||
+    /(API[_-]?KEY|TOKEN|SECRET|PASSWORD|PRIVATE|ACCESS[_-]?KEY|AUTHORIZATION|SESSION|COOKIE|CREDENTIAL|CLIENT_SECRET|WEBHOOK_SECRET|SIGNING_SECRET)$/.test(
+      normalized
+    )
+  );
+}
+
+function isRedactableEnvValue(value) {
+  if (typeof value !== "string") return false;
+  const normalized = value.trim();
+  if (normalized.length < 8) return false;
+  return !commonNonSecretEnvValues.has(normalized.toLowerCase());
+}
+
 
 function isSafeConfiguredKey(key) {
   return /^(CUSTOMCARD_AI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|DEEPAI_|OPENAI_|ANTHROPIC_)/.test(key);
@@ -945,6 +2131,14 @@ function isSafeConfiguredKey(key) {
 
 function textContains(value, term) {
   return String(value || "").toLowerCase().includes(String(term || "").toLowerCase());
+}
+
+function truncateText(value, maxLength) {
+  const text = String(value ?? "");
+  if (text.length <= maxLength) return text;
+  const clipped = text.slice(0, maxLength);
+  const wordSafe = clipped.replace(/\s+\S*$/, "").trimEnd();
+  return wordSafe.length >= Math.floor(maxLength * 0.82) ? wordSafe : clipped;
 }
 
 function wrapText(value, maxChars) {

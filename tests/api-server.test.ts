@@ -2536,7 +2536,7 @@ describe("api server wrapper", () => {
 
       const bucket = await getJson(
         port,
-        "/api/admin/artifacts/bucket?prefix=projects/project-r2-api&limit=10",
+        "/api/admin/artifacts/bucket?prefix=projects/project-r2-api&limit=10&sort=key&order=asc",
         bearer(adminToken)
       );
       expect(bucket).toMatchObject({

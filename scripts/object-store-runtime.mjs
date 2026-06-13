@@ -4,12 +4,13 @@ const maxSignedUrlMinutes = 60;
 const defaultSignedUrlMinutes = 15;
 const maxArtifactCount = 12;
 const maxArtifactBytes = 8_000_000;
+const defaultBucketListLimit = 5;
 const maxBucketListObjects = 50;
 const memoryStores = new Map();
 
 export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...args) => globalThis.fetch(...args), now = () => new Date() } = {}) {
   const config = resolveObjectStoreConfig(env);
-  const client = config.configured ? createObjectStoreClient({ config, fetchImpl }) : undefined;
+  const client = config.configured ? createObjectStoreClient({ config, fetchImpl, now }) : undefined;
 
   return {
     describe() {
@@ -181,6 +182,8 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
     async listBucketArtifacts({ query } = {}) {
       const prefix = safeListPrefix(query?.get?.("prefix") ?? query?.prefix ?? "projects/");
       const limit = clampBucketListLimit(query?.get?.("limit") ?? query?.limit);
+      const sort = safeBucketListSort(query?.get?.("sort") ?? query?.get?.("sortBy") ?? query?.sort ?? query?.sortBy);
+      const order = safeBucketListOrder(query?.get?.("order") ?? query?.get?.("sortOrder") ?? query?.order ?? query?.sortOrder);
       const cursor = safeContinuationToken(query?.get?.("cursor") ?? query?.get?.("continuationToken") ?? query?.cursor ?? query?.continuationToken);
       const objectStore = buildObjectStoreDescription(config);
       if (!config.configured || !client) {
@@ -191,17 +194,24 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
             objectStore,
             prefix,
             limit,
+            sort,
+            order,
             cursor,
+            objectCount: 0,
+            truncated: false,
+            nextCursor: null,
             objects: [],
             renderPackets: [],
             blockers: config.blockers.length ? config.blockers : ["Object store persistence is not configured."]
           }
         };
       }
-      const listed = await client.listObjects({ prefix, limit, cursor });
+      const listed = await client.listObjects({ prefix, limit, cursor, sort, order });
       const expiresAtIso = signedUrlExpiry(config.expiresInMinutes, now());
-      const objects = listed.objects.map((object) => buildBucketObjectSummary({ object, config, expiresAtIso }));
-      const renderPackets = buildBucketRenderPacketGroups(objects);
+      const objects = listed.objects
+        .map((object) => buildBucketObjectSummary({ object, config, expiresAtIso }))
+        .sort((first, second) => compareBucketObjectListItems(first, second, sort, order));
+      const renderPackets = buildBucketRenderPacketGroups(objects, { sort, order });
       return {
         statusCode: 200,
         payload: {
@@ -209,6 +219,8 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
           objectStore,
           prefix,
           limit,
+          sort,
+          order,
           cursor,
           objectCount: objects.length,
           truncated: Boolean(listed.truncated),
@@ -351,12 +363,12 @@ function resolveObjectStoreConfig(env) {
   };
 }
 
-function createObjectStoreClient({ config, fetchImpl }) {
-  if (config.endpoint.startsWith("memory://")) return createMemoryObjectStoreClient(config);
+function createObjectStoreClient({ config, fetchImpl, now }) {
+  if (config.endpoint.startsWith("memory://")) return createMemoryObjectStoreClient(config, { now });
   return createSigV4ObjectStoreClient({ config, fetchImpl });
 }
 
-function createMemoryObjectStoreClient(config) {
+function createMemoryObjectStoreClient(config, { now }) {
   const storeKey = `${config.endpoint}/${config.bucket}`;
   const store = memoryStores.get(storeKey) ?? new Map();
   memoryStores.set(storeKey, store);
@@ -366,7 +378,7 @@ function createMemoryObjectStoreClient(config) {
         body: Buffer.from(input.body),
         contentType: input.contentType,
         metadata: { ...input.metadata },
-        lastModifiedIso: new Date().toISOString()
+        lastModifiedIso: now().toISOString()
       });
     },
     async getObject(input) {
@@ -383,12 +395,12 @@ function createMemoryObjectStoreClient(config) {
       if (!object) throw new Error(`Object not found: ${input.key}`);
       return summarizeStoredObject(input.key, object);
     },
-    async listObjects({ prefix, limit, cursor }) {
+    async listObjects({ prefix, limit, cursor, sort, order }) {
       const matching = Array.from(store.entries())
         .filter(([key]) => key.startsWith(prefix))
-        .sort(([first], [second]) => first.localeCompare(second));
-      const cursorIndex = cursor ? matching.findIndex(([key]) => key > cursor) : 0;
-      const startIndex = cursor ? (cursorIndex >= 0 ? cursorIndex : matching.length) : 0;
+        .sort((first, second) => compareStoredEntries(first, second, sort, order));
+      const cursorIndex = cursor ? matching.findIndex(([key]) => key === cursor) : -1;
+      const startIndex = cursor ? (cursorIndex >= 0 ? cursorIndex + 1 : matching.length) : 0;
       const entries = matching
         .slice(startIndex, startIndex + limit)
         .map(([key, object]) => summarizeStoredObject(key, object));
@@ -476,7 +488,7 @@ function createSigV4ObjectStoreClient({ config, fetchImpl }) {
         metadata: metadataFromResponseHeaders(response.headers)
       };
     },
-    async listObjects({ prefix, limit, cursor }) {
+    async listObjects({ prefix, limit, cursor, sort, order }) {
       const readConfig = config.readCredentialsConfigured
         ? {
             ...config,
@@ -509,7 +521,11 @@ function createSigV4ObjectStoreClient({ config, fetchImpl }) {
           }
         })
       );
-      return { objects, truncated: listed.truncated, nextCursor: listed.nextCursor };
+      return {
+        objects: objects.sort((first, second) => compareStoredObjectSummaries(first, second, sort, order)),
+        truncated: listed.truncated,
+        nextCursor: listed.nextCursor
+      };
     }
   };
 }
@@ -607,7 +623,7 @@ function buildBucketObjectSummary({ object, config, expiresAtIso }) {
   };
 }
 
-function buildBucketRenderPacketGroups(objects) {
+function buildBucketRenderPacketGroups(objects, { sort = "lastModified", order = "desc" } = {}) {
   const groups = new Map();
   for (const object of objects) {
     const parsed = renderPacketPathParts(object);
@@ -643,7 +659,7 @@ function buildBucketRenderPacketGroups(objects) {
       panelImages: group.panelImages.sort(comparePanelArtifacts),
       promptArtifacts: group.promptArtifacts.sort(comparePromptArtifacts)
     }))
-    .sort((first, second) => second.lastModifiedIso.localeCompare(first.lastModifiedIso));
+    .sort((first, second) => compareBucketRenderPacketGroups(first, second, sort, order));
 }
 
 function renderPacketPathParts(object) {
@@ -679,6 +695,48 @@ function latestIso(first = "", second = "") {
   if (!first) return second || "";
   if (!second) return first;
   return second.localeCompare(first) > 0 ? second : first;
+}
+
+function compareStoredEntries(first, second, sort, order) {
+  return compareStoredObjectSummaries(
+    { key: first[0], ...first[1] },
+    { key: second[0], ...second[1] },
+    sort,
+    order
+  );
+}
+
+function compareStoredObjectSummaries(first, second, sort, order) {
+  const compared = sort === "lastModified"
+    ? compareLastModified(first, second) || compareObjectKeys(first.key, second.key)
+    : compareObjectKeys(first.key, second.key);
+  return applyBucketListOrder(compared, order);
+}
+
+function compareBucketObjectListItems(first, second, sort, order) {
+  const compared = sort === "lastModified"
+    ? compareLastModified(first, second) || compareObjectKeys(first.objectKey, second.objectKey)
+    : compareObjectKeys(first.objectKey, second.objectKey);
+  return applyBucketListOrder(compared, order);
+}
+
+function compareBucketRenderPacketGroups(first, second, sort, order) {
+  const compared = sort === "lastModified"
+    ? compareLastModified(first, second) || compareObjectKeys(first.objectPrefix, second.objectPrefix)
+    : compareObjectKeys(first.objectPrefix, second.objectPrefix);
+  return applyBucketListOrder(compared, order);
+}
+
+function compareLastModified(first, second) {
+  return String(first.lastModifiedIso ?? "").localeCompare(String(second.lastModifiedIso ?? ""));
+}
+
+function compareObjectKeys(first = "", second = "") {
+  return String(first).localeCompare(String(second));
+}
+
+function applyBucketListOrder(compared, order) {
+  return order === "desc" ? -compared : compared;
 }
 
 function compareBucketObjects(first, second) {
@@ -1119,9 +1177,19 @@ function safeContinuationToken(value) {
   return text;
 }
 
+function safeBucketListSort(value) {
+  const text = String(value ?? "lastModified").trim();
+  return text === "key" || text === "lastModified" ? text : "lastModified";
+}
+
+function safeBucketListOrder(value) {
+  const text = String(value ?? "desc").trim().toLowerCase();
+  return text === "asc" || text === "desc" ? text : "desc";
+}
+
 function clampBucketListLimit(value) {
-  const parsed = Number(value ?? 20);
-  if (!Number.isInteger(parsed)) return 20;
+  const parsed = Number(value ?? defaultBucketListLimit);
+  if (!Number.isInteger(parsed)) return defaultBucketListLimit;
   return Math.max(1, Math.min(maxBucketListObjects, parsed));
 }
 

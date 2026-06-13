@@ -1,0 +1,321 @@
+{
+  "phase": "typography",
+  "phaseDir": "typography",
+  "createdAtIso": "2026-06-12T16:20:46.017Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "front-cover-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-a-current-overlay",
+      "typographyModeLabel": "Mode A - current overlay",
+      "typographyStrategy": "artwork-only-plus-deterministic-overlay"
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "front-cover-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-b-full-ai-typography",
+      "typographyModeLabel": "Mode B - full AI typography",
+      "typographyStrategy": "single-generation-final-panel"
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "front-cover-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-c-hybrid-reserved-layout",
+      "typographyModeLabel": "Mode C - hybrid reserved layout",
+      "typographyStrategy": "reserved-layout-plus-deterministic-overlay"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "front-cover-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-a-current-overlay",
+      "typographyModeLabel": "Mode A - current overlay",
+      "typographyStrategy": "artwork-only-plus-deterministic-overlay",
+      "runDir": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-a-current-overlay__image-deepai-text2img",
+      "startedAt": "2026-06-12T16:20:46.018Z",
+      "finishedAt": "2026-06-12T16:20:50.816Z",
+      "panelCount": 1,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/preview-front.png",
+          "prompt": "Create one artwork-only 5x7 portrait front cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nReserve calm central negative space for deterministic app-rendered typography.\nUse a deep charcoal field, warm gold radial sunburst, and small ivory accent details.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 2,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "oneFrontPanel": true,
+          "providerCalls": 2,
+          "materializedImage": true,
+          "deterministicTextOverlay": true,
+          "exactTextInPrompt": false,
+          "textSuppressedInPrompt": true
+        },
+        "note": "Automated checks only prove prompt contract and image materialization. Final typography spelling/layout grades require visual inspection."
+      }
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "front-cover-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-b-full-ai-typography",
+      "typographyModeLabel": "Mode B - full AI typography",
+      "typographyStrategy": "single-generation-final-panel",
+      "runDir": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img",
+      "startedAt": "2026-06-12T16:20:50.820Z",
+      "finishedAt": "2026-06-12T16:20:52.422Z",
+      "panelCount": 1,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/preview-front.png",
+          "prompt": "You are generating a FINAL PRINT-READY GREETING CARD PANEL.\nThis is NOT an artwork layer.\nThis is NOT a background layer.\nRender the finished panel exactly as it should appear when printed.\nAll typography must be intentionally designed and correctly integrated into the composition.\nAll text must be spelled exactly as provided.\nDo not invent substitute text.\nDo not invent placeholder text.\nDo not generate lorem ipsum.\nDo not generate extra words.\nDo not generate decorative fake lettering.\nThe provided text is the source of truth.\n\nCARD SPECIFICATION\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\n\nTEXT TO RENDER\nHeadline: For Moments That Matter\nBody: Wishing you strength and peace on your day.\n\nTYPOGRAPHY REQUIREMENTS\nThe headline must be the primary visual element.\nThe body must be clearly readable.\nTypography should be professionally typeset.\nMaintain generous margins.\nAvoid text collisions with artwork.\nArtwork should support the typography rather than compete with it.\n\nCOMPOSITION REQUIREMENTS\nCreate a unified composition where typography and illustration are designed together.\nThe text should feel intentionally placed.\nNo separate text boxes.\nNo labels.\nNo captions.\nNo stickers.\nNo mockups.\nNo folded card renderings.\nNo physical paper textures.\nNo stock-photo appearance.\n\nOUTPUT\nReturn a final [redacted]-ready front cover design with all typography already rendered into the artwork.",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 2,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "oneFrontPanel": true,
+          "providerCalls": 2,
+          "materializedImage": true,
+          "deterministicTextOverlay": false,
+          "exactTextInPrompt": true,
+          "textSuppressedInPrompt": true
+        },
+        "note": "Automated checks only prove prompt contract and image materialization. Final typography spelling/layout grades require visual inspection."
+      }
+    },
+    {
+      "phase": "typography",
+      "focus": "typography",
+      "storyId": "front-cover-sunburst-typography",
+      "textCandidateId": "text-none-direct-image-test",
+      "textAdapterId": "none",
+      "textModel": "",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "typographyModeId": "mode-c-hybrid-reserved-layout",
+      "typographyModeLabel": "Mode C - hybrid reserved layout",
+      "typographyStrategy": "reserved-layout-plus-deterministic-overlay",
+      "runDir": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img",
+      "startedAt": "2026-06-12T16:20:52.426Z",
+      "finishedAt": "2026-06-12T16:20:54.036Z",
+      "panelCount": 1,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-front.png",
+          "prompt": "Create one artwork-only 5x7 portrait front cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: Elegant radial sunburst\nMood: Respectful, warm, sophisticated\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly.\nThe artwork should be designed around a large headline area and a smaller readable body area.\nUse a deep charcoal field, warm gold radial sunburst, and small ivory accent details.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/typography-experiment-2026-06-12T16-21-00Z/typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 2,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "oneFrontPanel": true,
+          "providerCalls": 2,
+          "materializedImage": true,
+          "deterministicTextOverlay": true,
+          "exactTextInPrompt": false,
+          "textSuppressedInPrompt": true
+        },
+        "note": "Automated checks only prove prompt contract and image materialization. Final typography spelling/layout grades require visual inspection."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "196b31a3-c075-4224-998d-a6ba14043b09",
+          "output_url": "https://api.deepai.org/job-view-file/196b31a3-c075-4224-998d-a6ba14043b09/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/a6291a8c1ad148028d6d8293de8ca31b/create-one-artwork-only-5x7-portrait-front-cover-pane.jpg",
+          "backend_request_id": "b6fe11d3-854f-43be-90b1-52e68bf902a5"
+        }
+      },
+      "durationMs": 3980
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/196b31a3-c075-4224-998d-a6ba14043b09/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 31706
+      },
+      "durationMs": 172
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "e378508d-e996-4a49-b030-9a2f5bd9227b",
+          "output_url": "https://api.deepai.org/job-view-file/e378508d-e996-4a49-b030-9a2f5bd9227b/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/3fb48dde40ff4365956dd87c2f163b63/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+          "backend_request_id": "f8182660-6b90-4fa3-8655-10c7c9d6f40a"
+        }
+      },
+      "durationMs": 1222
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/e378508d-e996-4a49-b030-9a2f5bd9227b/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 40515
+      },
+      "durationMs": 89
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "4d524dcd-b39e-4a1c-b117-6dd6e8c4bb6b",
+          "output_url": "https://api.deepai.org/job-view-file/4d524dcd-b39e-4a1c-b117-6dd6e8c4bb6b/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/cb072895421148d0a1e24d6932b5e782/create-one-artwork-only-5x7-portrait-front-cover-pane.jpg",
+          "backend_request_id": "ba2a233b-4f70-4a6c-b448-26f12961f999"
+        }
+      },
+      "durationMs": 1048
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/4d524dcd-b39e-4a1c-b117-6dd6e8c4bb6b/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 23348
+      },
+      "durationMs": 87
+    }
+  ]
+}

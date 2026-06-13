@@ -1,0 +1,446 @@
+[
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "f30fff14-8c1d-4a46-b3ea-9da0532187b3",
+        "output_url": "https://api.deepai.org/job-view-file/f30fff14-8c1d-4a46-b3ea-9da0532187b3/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/f8634cc5add04ccc996f272a2193c382/create-one-artwork-only-5x7-portrait-front-cover-pane.jpg",
+        "backend_request_id": "d68525e5-de29-4f83-b524-0c791da1c308"
+      }
+    },
+    "durationMs": 1448
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/f30fff14-8c1d-4a46-b3ea-9da0532187b3/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 43233
+    },
+    "durationMs": 265
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "972ccaca-ac1b-43e0-b451-b15941ff191b",
+        "output_url": "https://api.deepai.org/job-view-file/972ccaca-ac1b-43e0-b451-b15941ff191b/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/5a1c875e84264be7bcf4e5ec517380c5/create-one-artwork-only-5x7-portrait-inside-left-pane.jpg",
+        "backend_request_id": "26c86222-fdf8-483f-9e48-96b4c836669a"
+      }
+    },
+    "durationMs": 1348
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/972ccaca-ac1b-43e0-b451-b15941ff191b/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 50254
+    },
+    "durationMs": 103
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "af442c64-101e-43a6-a33a-ea7051299cb3",
+        "output_url": "https://api.deepai.org/job-view-file/af442c64-101e-43a6-a33a-ea7051299cb3/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/245d940f7c4c43349c0196f1782d7e16/create-one-artwork-only-5x7-portrait-inside-right-pan.jpg",
+        "backend_request_id": "16fda21f-3b8b-4785-8f45-10d54a9b0c6f"
+      }
+    },
+    "durationMs": 2723
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/af442c64-101e-43a6-a33a-ea7051299cb3/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 33933
+    },
+    "durationMs": 95
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "743d827a-0c8d-476a-b6a2-67576abbc7cf",
+        "output_url": "https://api.deepai.org/job-view-file/743d827a-0c8d-476a-b6a2-67576abbc7cf/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/4a45e353e3e04594b2dd9728055e21f1/create-one-artwork-only-5x7-portrait-back-cover-panel.jpg",
+        "backend_request_id": "ac9b9a86-4c42-4aed-a316-c74d6f9ef2f0"
+      }
+    },
+    "durationMs": 1272
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/743d827a-0c8d-476a-b6a2-67576abbc7cf/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 11326
+    },
+    "durationMs": 95
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "2e0be16a-a31d-49fe-9f65-85671169d0d6",
+        "output_url": "https://api.deepai.org/job-view-file/2e0be16a-a31d-49fe-9f65-85671169d0d6/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/0a3bba28da6a425eb00aa9b62cd2586a/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "8d9c42a2-1440-404e-9ec0-646ed73ff9af"
+      }
+    },
+    "durationMs": 1213
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/2e0be16a-a31d-49fe-9f65-85671169d0d6/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 40295
+    },
+    "durationMs": 93
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "9cdf9909-d248-499b-a9f2-fba62e46adab",
+        "output_url": "https://api.deepai.org/job-view-file/9cdf9909-d248-499b-a9f2-fba62e46adab/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/b12fcd02cb0b4beab04af60409e8f328/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "32ae145a-3afb-4a5c-91a7-b00bb6176264"
+      }
+    },
+    "durationMs": 1401
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/9cdf9909-d248-499b-a9f2-fba62e46adab/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 28566
+    },
+    "durationMs": 95
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "3d4108dd-b63a-48bf-a842-ecc6cd66c06c",
+        "output_url": "https://api.deepai.org/job-view-file/3d4108dd-b63a-48bf-a842-ecc6cd66c06c/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/820a714550f446bb8403b60d84fdc8ed/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "c04bfa18-1114-4644-b536-c9cc2a9e290f"
+      }
+    },
+    "durationMs": 1163
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/3d4108dd-b63a-48bf-a842-ecc6cd66c06c/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 37503
+    },
+    "durationMs": 94
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "7555a3f1-447e-4797-aaa9-bb52a126fef7",
+        "output_url": "https://api.deepai.org/job-view-file/7555a3f1-447e-4797-aaa9-bb52a126fef7/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/099a43449f3a44bb8a61a42b100ec520/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "733ed3a2-b773-48bc-a49b-66f406e69ae0"
+      }
+    },
+    "durationMs": 1339
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/7555a3f1-447e-4797-aaa9-bb52a126fef7/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 10411
+    },
+    "durationMs": 93
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "b34e7c37-5ac5-4a57-adb0-87e1bd29f33c",
+        "output_url": "https://api.deepai.org/job-view-file/b34e7c37-5ac5-4a57-adb0-87e1bd29f33c/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/41a29bfa65a84e68a23661b70e9ed96a/create-one-artwork-only-5x7-portrait-front-cover-pane.jpg",
+        "backend_request_id": "98b569c8-a398-400b-a62a-16da8c95a028"
+      }
+    },
+    "durationMs": 1547
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/b34e7c37-5ac5-4a57-adb0-87e1bd29f33c/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 38188
+    },
+    "durationMs": 94
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "1e519500-ca09-4ac9-923c-ee538c343f5a",
+        "output_url": "https://api.deepai.org/job-view-file/1e519500-ca09-4ac9-923c-ee538c343f5a/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/d25cbb4b81264c098dae81ae919c9d12/create-one-artwork-only-5x7-portrait-inside-left-pane.jpg",
+        "backend_request_id": "74aad46c-3005-41db-b536-b72d590ff446"
+      }
+    },
+    "durationMs": 1103
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/1e519500-ca09-4ac9-923c-ee538c343f5a/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 53419
+    },
+    "durationMs": 95
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "0e7871cf-3cd0-4cd0-ac23-cda1d132bef9",
+        "output_url": "https://api.deepai.org/job-view-file/0e7871cf-3cd0-4cd0-ac23-cda1d132bef9/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/0c9a039f95074720a259408937827b07/create-one-artwork-only-5x7-portrait-inside-right-pan.jpg",
+        "backend_request_id": "5580319e-efe5-40bd-ad5d-46848c9abe8e"
+      }
+    },
+    "durationMs": 1145
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/0e7871cf-3cd0-4cd0-ac23-cda1d132bef9/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 35733
+    },
+    "durationMs": 93
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "10f86d57-909b-4c90-a100-9339f9366072",
+        "output_url": "https://api.deepai.org/job-view-file/10f86d57-909b-4c90-a100-9339f9366072/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/480d8886430641d5924a50694fb23f9d/create-one-artwork-only-5x7-portrait-back-cover-panel.jpg",
+        "backend_request_id": "81b478d1-ab22-4ffb-bd2c-ecebfa4c3d37"
+      }
+    },
+    "durationMs": 966
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/10f86d57-909b-4c90-a100-9339f9366072/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 8608
+    },
+    "durationMs": 92
+  }
+]

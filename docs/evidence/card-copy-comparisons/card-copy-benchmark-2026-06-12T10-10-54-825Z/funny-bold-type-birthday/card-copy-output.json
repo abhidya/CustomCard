@@ -1,0 +1,148 @@
+{
+  "draft_id": "ai-mqarnf4v-aisha",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Sprint Complete",
+      "palette": [
+        "warm white",
+        "ink black",
+        "bright accent"
+      ],
+      "motifs": [
+        "offset editorial block",
+        "tiny milestone dot",
+        "clean rule",
+        "cake-slice mark"
+      ],
+      "border_style": "bold editorial spacing with clean rules and no clutter",
+      "front_back_pairing": "Front carries the strongest motif and title area; back repeats the same border language with mostly negative space.",
+      "interior_pairing": "Inside-left and inside-right use the same decorative border/frame, sparse edge motifs, quiet blank center, and generous text-safe margins."
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Happy Birthday Aisha",
+        "body": "Another successful trip around the sun, completed on schedule and with only minor stakeholder feedback.",
+        "art_direction": "Sprint Complete front cover with bold editorial spacing with clean rules and no clutter, clear title area, generous safe margins, warm white, ink black, bright accent palette, and motifs that echo on the back panel.",
+        "visual_cue": "Funny bold-type birthday cover using abstract editorial blocks, a tiny cake-slice mark, lively offset rhythm, warm accent color, and a clean central text-safe area; no rendered letters.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "lower",
+          "alignment": "center",
+          "font_pairing": "bold-editorial",
+          "color_mode": "high-contrast",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery. Use this panel-specific composition: Funny bold-type birthday cover using abstract editorial blocks, a tiny cake-slice mark, lively offset rhythm, warm accent color, and a clean central text-safe area; no rendered letters. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "inside-left",
+        "headline": "Sprint Complete",
+        "body": "You somehow turn family plans into sprint planning and still make everyone feel taken care of. Today, the only deliverable is enjoying yourself with zero action items.",
+        "art_direction": "Sprint Complete inside-left panel with bold editorial spacing with clean rules and no clutter, quiet blank low-contrast center for opening copy, sparse edge/corner motifs, generous margins, and ornaments that match the inside-right panel.",
+        "visual_cue": "Left interior with sparse editorial rules, one small milestone dot, bright accent corner, and open message field for the affectionate setup.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "bold-editorial",
+          "color_mode": "high-contrast",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery. Use this panel-specific composition: Left interior with sparse editorial rules, one small milestone dot, bright accent corner, and open message field for the affectionate setup. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Manny",
+        "body": "Happy birthday to the person who could probably run a retrospective on cake. I hope this year brings clean timelines, excellent snacks, and the kind of affection that does not require a status update. With love, Manny.",
+        "art_direction": "Sprint Complete inside-right message panel with matching bold editorial spacing with clean rules and no clutter, quiet blank low-contrast center for the main message, sparse edge/corner motifs, generous margins, and natural sign-off zone.",
+        "visual_cue": "Right interior with matching bold-rule structure, offset accent block near the lower edge, and generous text-safe area for the punchline and sign-off.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "bold-editorial",
+          "color_mode": "high-contrast",
+          "scale": "large"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery. Use this panel-specific composition: Right interior with matching bold-rule structure, offset accent block near the lower edge, and generous text-safe area for the punchline and sign-off. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      },
+      {
+        "id": "back",
+        "headline": "No Action Items",
+        "body": "Just love, cake, and one very official birthday milestone.",
+        "art_direction": "Sprint Complete back panel with mostly negative space, subtle lower ornamentation, bold editorial spacing with clean rules and no clutter, and border details that visually pair with the front cover.",
+        "visual_cue": "Minimal back cover with a tiny cake-slice mark and one clean editorial rule, mostly blank.",
+        "text_layout": {
+          "headline_zone": "lower",
+          "body_zone": "bottom",
+          "alignment": "center",
+          "font_pairing": "bold-editorial",
+          "color_mode": "high-contrast",
+          "scale": "compact"
+        },
+        "image_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery. Use this panel-specific composition: Minimal back cover with a tiny cake-slice mark and one clean editorial rule, mostly blank. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper",
+        "image_negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene"
+      }
+    ],
+    "memory_citations": [
+      "Aisha calls every family plan a sprint.",
+      "She loves clean editorial design and hates clutter."
+    ]
+  },
+  "images": [],
+  "generated_by": "ai-text-only",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "deterministic-customer-chat",
+      "primary_adapter_id": "huggingface-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-copy."
+      ],
+      "provider_failure": "Live provider calls disabled for card-copy."
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "deepai-text2img-image",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "text2img",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": true,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "Live provider calls disabled for card-image."
+      ],
+      "provider_failure": "Live provider calls disabled for card-image."
+    }
+  },
+  "provider_call_events": [],
+  "ai_cost_gate": {
+    "event_count": 0,
+    "reserved_or_spent_cents": 0,
+    "actual_spend_cents": 0,
+    "request_units": 0,
+    "live_network_calls": false,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": false,
+  "fallback_queued": true,
+  "external_network_calls": false
+}

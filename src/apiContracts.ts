@@ -357,6 +357,9 @@ export function resolveApiContractResponse(path: string) {
         credentialMode: "unconfigured"
       },
       prefix: "projects/",
+      limit: 5,
+      sort: "lastModified",
+      order: "desc",
       objectCount: 0,
       truncated: false,
       nextCursor: null,

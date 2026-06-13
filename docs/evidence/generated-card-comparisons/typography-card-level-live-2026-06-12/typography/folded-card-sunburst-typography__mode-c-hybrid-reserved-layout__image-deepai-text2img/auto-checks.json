@@ -1,0 +1,24 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "panelIds": [
+      "front",
+      "inside-left",
+      "inside-right",
+      "back"
+    ],
+    "providerCalls": 8,
+    "materializedImages": 4,
+    "allPanelsMaterialized": true,
+    "deterministicTextOverlayPanels": [
+      "front"
+    ],
+    "frontExactTextInPrompt": false,
+    "frontTextSuppressedInPrompt": true,
+    "backHasNoTextContract": true,
+    "insideSpreadCohesionPrompted": true,
+    "nonFrontPromptsSuppressText": true
+  },
+  "note": "Automated checks only prove prompt contract and image materialization. Front typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+}

@@ -1,0 +1,150 @@
+[
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "2e0be16a-a31d-49fe-9f65-85671169d0d6",
+        "output_url": "https://api.deepai.org/job-view-file/2e0be16a-a31d-49fe-9f65-85671169d0d6/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/0a3bba28da6a425eb00aa9b62cd2586a/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "8d9c42a2-1440-404e-9ec0-646ed73ff9af"
+      }
+    },
+    "durationMs": 1213
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/2e0be16a-a31d-49fe-9f65-85671169d0d6/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 40295
+    },
+    "durationMs": 93
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "9cdf9909-d248-499b-a9f2-fba62e46adab",
+        "output_url": "https://api.deepai.org/job-view-file/9cdf9909-d248-499b-a9f2-fba62e46adab/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/b12fcd02cb0b4beab04af60409e8f328/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "32ae145a-3afb-4a5c-91a7-b00bb6176264"
+      }
+    },
+    "durationMs": 1401
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/9cdf9909-d248-499b-a9f2-fba62e46adab/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 28566
+    },
+    "durationMs": 95
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "3d4108dd-b63a-48bf-a842-ecc6cd66c06c",
+        "output_url": "https://api.deepai.org/job-view-file/3d4108dd-b63a-48bf-a842-ecc6cd66c06c/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/820a714550f446bb8403b60d84fdc8ed/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "c04bfa18-1114-4644-b536-c9cc2a9e290f"
+      }
+    },
+    "durationMs": 1163
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/3d4108dd-b63a-48bf-a842-ecc6cd66c06c/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 37503
+    },
+    "durationMs": 94
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "7555a3f1-447e-4797-aaa9-bb52a126fef7",
+        "output_url": "https://api.deepai.org/job-view-file/7555a3f1-447e-4797-aaa9-bb52a126fef7/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/099a43449f3a44bb8a61a42b100ec520/you-are-generating-a-final-print-ready-greeting-card-.jpg",
+        "backend_request_id": "733ed3a2-b773-48bc-a49b-66f406e69ae0"
+      }
+    },
+    "durationMs": 1339
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/7555a3f1-447e-4797-aaa9-bb52a126fef7/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 10411
+    },
+    "durationMs": 93
+  }
+]

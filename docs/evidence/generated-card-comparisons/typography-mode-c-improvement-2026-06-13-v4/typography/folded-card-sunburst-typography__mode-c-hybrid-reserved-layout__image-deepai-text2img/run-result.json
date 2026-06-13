@@ -1,0 +1,93 @@
+{
+  "phase": "typography",
+  "focus": "typography",
+  "storyId": "folded-card-sunburst-typography",
+  "textCandidateId": "text-none-direct-image-test",
+  "textAdapterId": "none",
+  "textModel": "",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "typographyModeId": "mode-c-hybrid-reserved-layout",
+  "typographyModeLabel": "Mode C - hybrid reserved layout",
+  "typographyStrategy": "reserved-layout-plus-deterministic-overlay",
+  "runDir": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img",
+  "startedAt": "2026-06-13T01:51:16.986Z",
+  "finishedAt": "2026-06-13T01:51:26.817Z",
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-front.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-front.png",
+      "prompt": "Create one artwork-only 5x7 portrait Front Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Front Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: edge-only warm-gold corner rays and thin border accents; no central radial sunburst, no halo, no medallion, no rays behind copy\nMood: Respectful, warm, sophisticated\nPanel Role: primary typography measurement panel\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for deterministic app typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nPlace a broad opaque plain deep-charcoal text-safe field in the central 60% of the panel. Treat this field as a real solid print area, not transparent negative space. Keep all rays, ornaments, bright marks, fake glyphs, and high-contrast details outside it. Put sunburst detail only as edge-only corner or margin ornaments; do not use a centered radial burst, halo, medallion, or rays crossing behind the field.\n\nPanel-specific composition: deep charcoal field, thin warm-gold border, small edge or corner rays only, and a plain central text-safe field; no central radial burst.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+      "renderTextDeterministically": true,
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-inside-left.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-inside-left.png",
+      "prompt": "Create one artwork-only 5x7 portrait Inside Left panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Left\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: left half of a coordinated interior spread with opening message text\nHeadline length: 3 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for deterministic app typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this an interior writing panel, not another cover. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-left edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-left edge accent only, quiet plain center, paired with inside-right.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+      "renderTextDeterministically": true,
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-inside-right.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-inside-right.png",
+      "prompt": "Create one artwork-only 5x7 portrait Inside Right panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Inside Right\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: quiet ivory interior stationery with thin gold border and tiny outer-edge sunburst echoes only; no central radial motif, no halo, no medallion\nMood: Respectful, warm, sophisticated\nPanel Role: right half of a coordinated interior spread with main message text\nHeadline length: 4 words.\nBody length: 1 short sentence.\nReserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.\nText-safe field requirement: create one continuous opaque plain field for deterministic app typography.\nThe field must read as solid matte paper or ink, with edge-only ornaments around it.\nDo not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.\nFor this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.\nMake this the matching interior message panel. Leave a large opaque plain warm-ivory text-safe field through the upper-middle and center. Keep sunburst detail tiny and sparse along the outer-right edge only, outside the field. Do not draw a radial sunburst, halo, medallion, circle, or rays behind the field.\nKeep inside-left and inside-right visually paired as a cohesive opened spread.\nPanel-specific composition: warm ivory note-sheet field, thin gold border, tiny outer-right edge accent only, quiet plain center, paired with inside-left.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with sunburst echoes only on outer edges or corners; keep every text field plain.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo, central starburst behind text, sunburst rays behind text, busy center, dense ornament in text area, high contrast marks in text-safe field, full-page radial burst, centered radial burst, halo behind text, medallion behind text, ornament under typography, pattern under text-safe field, rays crossing center, circle medallion under body copy, large motif behind headline",
+      "renderTextDeterministically": true,
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/provider-back.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-back.png",
+      "prompt": "Create one artwork-only 5x7 portrait Back Cover panel for a premium greeting card.\nThis is an artwork layer, not a finished panel.\nPanel Type: Back Cover\nSize: 5x7 portrait\nOutput: Flat 2D print artwork\nStyle: Premium greeting card\nPalette: Deep charcoal, warm gold, ivory accents\nMotif: mostly plain deep-charcoal back cover with one tiny lower-edge gold sun mark; no centered or full-panel radial burst\nMood: Respectful, warm, sophisticated\nPanel Role: coordinating no-text back panel\nNo card copy belongs on this panel.\nReserve hierarchy for visual coordination only.\nUse mostly negative space plus one small coordinating back mark.\nBack cover must be at least 85% plain deep charcoal. Use only one tiny warm-gold sun mark near the lower third. Do not create a large radial halo, full-panel burst, centered sunburst, decorative typography, or any text-like marks.\nPanel-specific composition: mostly deep charcoal negative space, thin gold border echo, one small lower-edge sun mark, no card copy.\n\nUse the same deep charcoal, warm gold, ivory-accent card system with only one small lower-edge sun mark on the back cover.\nKeep generous safe margins and a clear, uncluttered type-safe area.\nDo not render any words, letters, numbers, handwriting, calligraphy, labels, captions, logos, or fake decorative text.\nNo mockups, no folded card rendering, no physical paper texture, no stock-photo appearance.",
+      "negativePrompt": "readable text, words, letters, numbers, typography, handwriting, calligraphy, fake text, lorem ipsum, logo, watermark, labels, captions, stickers, mockups, folded card renderings, physical paper texture, stock photo, large sunburst, full radial halo, full-page radial burst, rays across the whole panel, centered halo, busy back cover",
+      "renderTextDeterministically": false,
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/typography-mode-c-improvement-2026-06-13-v4/typography/folded-card-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/contact-sheet.png",
+  "providerCallCount": 8,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "panelIds": [
+        "front",
+        "inside-left",
+        "inside-right",
+        "back"
+      ],
+      "providerCalls": 8,
+      "materializedImages": 4,
+      "allPanelsMaterialized": true,
+      "deterministicTextOverlayPanels": [
+        "front",
+        "inside-left",
+        "inside-right"
+      ],
+      "copyPanelIds": [
+        "front",
+        "inside-left",
+        "inside-right"
+      ],
+      "copyPanelsExactTextInPrompt": false,
+      "copyPanelsTextSuppressedInPrompt": true,
+      "backHasNoTextContract": true,
+      "insideSpreadCohesionPrompted": true,
+      "noTextPanelsSuppressText": true
+    },
+    "note": "Automated checks only prove prompt contract and image materialization. Front/interior typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+  }
+}

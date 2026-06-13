@@ -1,0 +1,51 @@
+{
+  "passed": false,
+  "score": 90,
+  "subScores": {
+    "schema": 15,
+    "copyRichness": 10,
+    "layoutDirection": 20,
+    "imagePrompt": 20,
+    "safety": 10,
+    "memoryGrounding": 10,
+    "coordination": 5
+  },
+  "blockers": [
+    "inside-right: body is terse (177 chars)."
+  ],
+  "warnings": [],
+  "panelStats": [
+    {
+      "panelId": "front",
+      "headlineChars": 19,
+      "bodyChars": 83,
+      "bodyWords": 17,
+      "artDirectionChars": 212,
+      "imagePromptChars": 1018
+    },
+    {
+      "panelId": "inside-left",
+      "headlineChars": 17,
+      "bodyChars": 148,
+      "bodyWords": 26,
+      "artDirectionChars": 235,
+      "imagePromptChars": 1061
+    },
+    {
+      "panelId": "inside-right",
+      "headlineChars": 10,
+      "bodyChars": 177,
+      "bodyWords": 33,
+      "artDirectionChars": 235,
+      "imagePromptChars": 1071
+    },
+    {
+      "panelId": "back",
+      "headlineChars": 22,
+      "bodyChars": 77,
+      "bodyWords": 14,
+      "artDirectionChars": 195,
+      "imagePromptChars": 933
+    }
+  ]
+}

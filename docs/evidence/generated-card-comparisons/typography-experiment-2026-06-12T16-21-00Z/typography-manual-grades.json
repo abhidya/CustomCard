@@ -1,0 +1,98 @@
+{
+  "gradedAtIso": "2026-06-12T16:30:00.000Z",
+  "rubric": "model-benchmark-loop/references/grading-rubric.md",
+  "experiment": {
+    "phase": "typography",
+    "storyId": "front-cover-sunburst-typography",
+    "provider": "image-deepai-text2img",
+    "model": "text2img",
+    "headline": "For Moments That Matter",
+    "body": "Wishing you strength and peace on your day."
+  },
+  "grades": [
+    {
+      "modeId": "mode-a-current-overlay",
+      "label": "Mode A - current overlay",
+      "tier": "B",
+      "score": 82,
+      "dimensionScores": {
+        "promptAdherenceAndPanelContract": 13,
+        "occasionAndUserStoryFit": 11,
+        "copyQualityAndEmotionalCalibration": 13,
+        "visualCompositionAndPrintReadiness": 12,
+        "themeCoherenceAcrossPanels": 9,
+        "textNameFidelityStrategy": 7,
+        "domainCulturalSensitivity": 10,
+        "commercialUsefulness": 3,
+        "originalityAndTaste": 4
+      },
+      "preview": "typography/front-cover-sunburst-typography__mode-a-current-overlay__image-deepai-text2img/preview-front.png",
+      "bestPanel": "Front cover has exact deterministic headline/body and a strong charcoal/gold premium look.",
+      "worstPanel": "The background model output includes fake readable lettering under the overlay, visible as LAVE.",
+      "blockingFailures": [
+        "Background fake text makes the design unsafe for direct production without retouching."
+      ],
+      "promptChange": "Strengthen the artwork-only negative prompt and reserve a larger no-lettering central text field.",
+      "modelChange": "This is partly model capability: DeepAI still introduced fake letters despite no-text instructions.",
+      "costQualityCall": "Acceptable as a fallback, but Mode C gives a cleaner result at the same provider cost."
+    },
+    {
+      "modeId": "mode-b-full-ai-typography",
+      "label": "Mode B - full AI typography",
+      "tier": "D",
+      "score": 55,
+      "hardFailureCap": "Cap at 55 because generated text is prominent and materially misspelled.",
+      "dimensionScores": {
+        "promptAdherenceAndPanelContract": 13,
+        "occasionAndUserStoryFit": 10,
+        "copyQualityAndEmotionalCalibration": 5,
+        "visualCompositionAndPrintReadiness": 11,
+        "themeCoherenceAcrossPanels": 9,
+        "textNameFidelityStrategy": 1,
+        "domainCulturalSensitivity": 10,
+        "commercialUsefulness": 2,
+        "originalityAndTaste": 4
+      },
+      "preview": "typography/front-cover-sunburst-typography__mode-b-full-ai-typography__image-deepai-text2img/preview-front.png",
+      "bestPanel": "The model selected a coherent sunburst/card composition with a usable broad hierarchy.",
+      "worstPanel": "The requested headline/body were corrupted into misspelled text, including Fo'r ments and incorrect body wording.",
+      "blockingFailures": [
+        "Prominent text is not exact.",
+        "Body copy changes meaning and contains misspellings."
+      ],
+      "promptChange": "Do not use full AI typography for final customer panels with required copy.",
+      "modelChange": "This is a model capability failure for exact typographic rendering, not just prompt wording.",
+      "costQualityCall": "Not worth the same provider call for production output; keep only for exploratory concept art if needed."
+    },
+    {
+      "modeId": "mode-c-hybrid-reserved-layout",
+      "label": "Mode C - hybrid reserved layout",
+      "tier": "A",
+      "score": 91,
+      "dimensionScores": {
+        "promptAdherenceAndPanelContract": 14,
+        "occasionAndUserStoryFit": 12,
+        "copyQualityAndEmotionalCalibration": 14,
+        "visualCompositionAndPrintReadiness": 14,
+        "themeCoherenceAcrossPanels": 9,
+        "textNameFidelityStrategy": 10,
+        "domainCulturalSensitivity": 10,
+        "commercialUsefulness": 4,
+        "originalityAndTaste": 4
+      },
+      "preview": "typography/front-cover-sunburst-typography__mode-c-hybrid-reserved-layout__image-deepai-text2img/preview-front.png",
+      "bestPanel": "The generated artwork reserves clean central space and the deterministic renderer keeps all copy exact.",
+      "worstPanel": "The composition is polished but still generic; a customer-specific motif would raise usefulness.",
+      "blockingFailures": [],
+      "promptChange": "Make the hybrid reserved-layout contract the default for card panels that contain required text.",
+      "modelChange": "No model change required for this provider path; the app renderer should continue owning exact typography.",
+      "costQualityCall": "Best quality per call in this experiment because it avoids retouching and preserves exact copy."
+    }
+  ],
+  "ranking": [
+    "mode-c-hybrid-reserved-layout",
+    "mode-a-current-overlay",
+    "mode-b-full-ai-typography"
+  ],
+  "productionRecommendation": "Adopt Mode C for final card panels with required text. Keep Mode A as a fallback only if the generated artwork is screened for fake lettering. Exclude Mode B from production generation unless a future image model passes exact typography tests."
+}
