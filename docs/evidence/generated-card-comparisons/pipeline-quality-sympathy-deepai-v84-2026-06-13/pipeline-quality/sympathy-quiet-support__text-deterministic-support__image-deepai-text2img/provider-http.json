@@ -1,0 +1,97 @@
+[
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "0461f583-45d0-46f3-9115-544296fffbaf",
+        "output_url": "https://api.deepai.org/job-view-file/0461f583-45d0-46f3-9115-544296fffbaf/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/7912f4c142824187886c7e37bcbe1079/full-bleed-flat-2d-quiet-support-memorial-atelier-pla.jpg",
+        "backend_request_id": "a0771302-9f0a-4d0b-87e1-c15ca62b4521"
+      }
+    },
+    "durationMs": 1588
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/0461f583-45d0-46f3-9115-544296fffbaf/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 41491
+    },
+    "durationMs": 179
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "d8fa8509-37cc-4faf-bc9a-b3f6d41e7dd3",
+        "output_url": "https://api.deepai.org/job-view-file/d8fa8509-37cc-4faf-bc9a-b3f6d41e7dd3/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/85761b6615fd4ad7a813d201a557eafc/full-bleed-flat-2d-quiet-support-memorial-atelier-pla.jpg",
+        "backend_request_id": "ff643901-4821-4069-9c6d-56cdfdaa57ba"
+      }
+    },
+    "durationMs": 1289
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/d8fa8509-37cc-4faf-bc9a-b3f6d41e7dd3/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 14715
+    },
+    "durationMs": 91
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 400,
+      "ok": false,
+      "contentType": "application/json",
+      "byteLength": 125,
+      "body": {
+        "err": "The system detected potentially unsafe content. Please try again or adjust the prompt.",
+        "backend_request_id": null
+      }
+    },
+    "durationMs": 1236
+  }
+]

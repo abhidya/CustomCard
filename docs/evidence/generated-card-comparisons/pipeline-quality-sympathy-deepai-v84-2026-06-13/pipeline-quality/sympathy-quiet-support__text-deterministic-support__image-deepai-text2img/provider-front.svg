@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-memorial-atelier">
+<rect width="1500" height="2100" fill="#0b1714"/>
+
+    <defs>
+      <filter id="memorialAtelierGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.007 0.021" numOctaves="5" seed="211"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.2"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="memorialAtelierDeckle" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02 0.052" numOctaves="4" seed="307"/>
+        <feDisplacementMap in="SourceGraphic" scale="18"/>
+      </filter>
+      <filter id="memorialAtelierShadow" x="-18%" y="-18%" width="136%" height="136%">
+        <feDropShadow dx="0" dy="30" stdDeviation="28" flood-color="#06100d" flood-opacity="0.46"/>
+      </filter>
+      <filter id="memorialAtelierSoft" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="34"/>
+      </filter>
+      <linearGradient id="memorialAtelierLight" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f8edd0" stop-opacity="0.54"/>
+        <stop offset="0.42" stop-color="#e7d29c" stop-opacity="0.2"/>
+        <stop offset="1" stop-color="#0b1714" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="memorialAtelierMoss" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#6f8679"/>
+        <stop offset="1" stop-color="#162b25"/>
+      </linearGradient>
+      <radialGradient id="memorialAtelierGlow" cx="42%" cy="34%" r="68%">
+        <stop offset="0" stop-color="#e7d29c" stop-opacity="0.24"/>
+        <stop offset="0.58" stop-color="#e7d29c" stop-opacity="0.08"/>
+        <stop offset="1" stop-color="#0b1714" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#0b1714"/>
+    <rect width="1500" height="2100" fill="#e7d29c" filter="url(#memorialAtelierGrain)" opacity="0.25"/>
+    <ellipse cx="615" cy="565" rx="760" ry="580" fill="url(#memorialAtelierGlow)"/>
+    <path d="M-180 248 C240 88 568 230 902 112 C1160 30 1368 128 1660 36 V908 C1266 770 960 872 614 960 C290 1036 86 930 -180 1106 Z" fill="url(#memorialAtelierLight)" opacity="0.78"/>
+    <path d="M-140 1810 C240 1684 548 1772 874 1640 C1142 1530 1336 1554 1618 1442" fill="none" stroke="#e7d29c" stroke-width="30" stroke-linecap="round" opacity="0.12"/>
+    <path d="M-82 1914 C280 1764 606 1874 936 1742 C1188 1642 1378 1668 1588 1588" fill="none" stroke="#06100d" stroke-width="7" stroke-linecap="round" opacity="0.18"/>
+
+
+      <g data-customcard-hero="memorial-atelier-front">
+        <path d="M156 574 C318 444 514 470 674 338 C836 204 1054 224 1254 118 L1334 1508 C1078 1636 848 1546 606 1676 C384 1794 246 1704 132 1824 Z" fill="#e7d29c" opacity="0.06" filter="url(#memorialAtelierDeckle)"/>
+        <path d="M308 680 C470 536 616 540 764 420 C912 302 1088 292 1264 204 L1240 1386 C1018 1484 846 1438 646 1546 C458 1646 336 1608 236 1702 Z" fill="#f8edd0" opacity="0.16" filter="url(#memorialAtelierShadow)"/>
+        <path d="M404 728 C536 614 660 620 784 528 C926 422 1078 412 1200 350 L1168 1164 C982 1244 812 1220 650 1312 C500 1398 390 1370 314 1442 Z" fill="url(#memorialAtelierMoss)" opacity="0.34"/>
+        <path d="M458 795 C604 706 724 724 858 638 C970 566 1074 552 1160 504" fill="none" stroke="#f8edd0" stroke-width="10" stroke-linecap="round" opacity="0.32"/>
+        <path d="M420 1210 C592 1118 746 1144 900 1058 C1018 992 1118 994 1200 946" fill="none" stroke="#e7d29c" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+        <path d="M184 1660 C390 1552 572 1608 768 1514 C948 1428 1104 1450 1288 1362" fill="none" stroke="#f8edd0" stroke-width="18" stroke-linecap="round" opacity="0.12"/>
+
+    <g data-customcard-illustration="memorial-atelier-etching" transform="translate(214 1200) scale(1.05 1.05)" opacity="1">
+      <path d="M4 288 C142 202 286 236 434 166 C568 104 694 128 818 214 L774 420 C630 494 482 452 332 526 C184 598 72 554 -28 632 Z" fill="#0b1714" opacity="0.38" filter="url(#memorialAtelierShadow)"/>
+      <path d="M64 260 C190 194 320 218 452 158 C576 102 688 126 784 188" fill="none" stroke="#f8edd0" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
+      <path d="M40 366 C194 298 328 336 488 270 C628 212 720 232 794 284" fill="none" stroke="#e7d29c" stroke-width="10" stroke-linecap="round" opacity="0.38"/>
+      <path d="M96 472 C246 412 382 440 536 378 C664 326 738 338 808 386" fill="none" stroke="#f8edd0" stroke-width="6" stroke-linecap="round" opacity="0.24"/>
+      <path d="M188 154 C300 112 414 124 536 82 C638 48 720 58 792 94" fill="none" stroke="#e7d29c" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
+      <path d="M-20 548 C148 474 314 518 484 452 C638 392 752 410 846 462" fill="none" stroke="#f8edd0" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+    </g>
+
+      </g>
+
+
+
+
+      <path d="M260 1868 C484 1802 700 1836 918 1774 C1114 1718 1260 1732 1372 1684" stroke="#e7d29c" stroke-width="3" stroke-linecap="round" opacity="0.18" fill="none"/>
+      <path d="M382 1938 H1118" stroke="#e7d29c" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+
+</svg>

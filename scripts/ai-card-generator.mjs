@@ -18,6 +18,7 @@ const textLayoutEnums = {
   color_mode: ["dark-ink", "light-ink", "accent-ink", "high-contrast"],
   scale: ["compact", "standard", "large"]
 };
+const embeddedAssetDataUrlCache = new Map();
 const cardCopyJsonSchema = {
   type: "object",
   additionalProperties: false,
@@ -886,14 +887,14 @@ function themeForPrompt(prompt) {
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
     /\b(memorial atelier|atelier plate|quiet plate|single-plate|quiet-light plate)\b/.test(text)) {
     return {
-      kind: "sympathy-memorial-atelier",
-      background: (panelId) => panelId === "front" || panelId === "back" ? "#0b1714" : "#fbf2dd",
+      kind: "sympathy-botanical-asset",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#0b1714" : "#f7f1e5",
       accent: (panelId) => panelId.startsWith("inside") ? "#51675d" : "#e7d29c",
       count: 0,
-      texture: (panelId) => sympathyMemorialAtelierTexture(panelId),
-      hero: (panelId) => sympathyMemorialAtelierHero(panelId),
+      texture: (panelId) => sympathyBotanicalAssetTexture(panelId),
+      hero: (panelId) => sympathyBotanicalAssetHero(panelId),
       overlay: () => "",
-      border: (panelId) => sympathyMemorialAtelierBorder(panelId),
+      border: (panelId) => sympathyBotanicalAssetBorder(panelId),
       motif: () => ""
     };
   }
@@ -1561,6 +1562,98 @@ function sympathyPremiumStillLifeBorder(panelId) {
   return `
     <path d="M238 220 C448 174 646 220 858 178 C1048 140 1182 166 1272 132" stroke="#d9bd7f" stroke-width="3" stroke-linecap="round" opacity="0.14" fill="none"/>
     <path d="M286 1880 H1214" stroke="#53685f" stroke-width="3" stroke-linecap="round" opacity="0.08"/>
+  `;
+}
+
+function embeddedAssetDataUrl(relativePath, contentType) {
+  const normalizedPath = String(relativePath || "").replace(/^\/+/, "");
+  const cacheKey = `${contentType}:${normalizedPath}`;
+  if (embeddedAssetDataUrlCache.has(cacheKey)) return embeddedAssetDataUrlCache.get(cacheKey);
+  const assetUrl = new URL(`../${normalizedPath}`, import.meta.url);
+  if (!existsSync(assetUrl)) {
+    embeddedAssetDataUrlCache.set(cacheKey, "");
+    return "";
+  }
+  const dataUrl = `data:${contentType};base64,${readFileSync(assetUrl).toString("base64")}`;
+  embeddedAssetDataUrlCache.set(cacheKey, dataUrl);
+  return dataUrl;
+}
+
+function sympathyBotanicalAssetTexture(panelId) {
+  const href = embeddedAssetDataUrl("public/generated/card-sympathy.png", "image/png");
+  if (!href) return sympathyMemorialAtelierTexture(panelId);
+  const dark = panelId === "front" || panelId === "back";
+  const mirrored = panelId === "inside-right" || panelId === "back";
+  const imageTransform = mirrored ? ' transform="translate(1500 0) scale(-1 1)"' : "";
+  const imageOpacity = dark ? 0.92 : 1;
+  return `
+    <defs>
+      <filter id="botanicalAssetPaperLift" x="-8%" y="-8%" width="116%" height="116%">
+        <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#06100d" flood-opacity="${dark ? 0.2 : 0.08}"/>
+      </filter>
+      <filter id="botanicalAssetSoft" x="-16%" y="-16%" width="132%" height="132%">
+        <feGaussianBlur stdDeviation="20"/>
+      </filter>
+      <radialGradient id="botanicalAssetLight" cx="${dark ? "44%" : "50%"}" cy="${dark ? "30%" : "46%"}" r="${dark ? "70%" : "64%"}">
+        <stop offset="0" stop-color="${dark ? "#f4e7c7" : "#fffaf0"}" stop-opacity="${dark ? 0.26 : 0.42}"/>
+        <stop offset="0.58" stop-color="${dark ? "#d3ba83" : "#efe0bc"}" stop-opacity="${dark ? 0.1 : 0.16}"/>
+        <stop offset="1" stop-color="${dark ? "#0b1714" : "#f7f1e5"}" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="botanicalAssetShade" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="${dark ? "#07120f" : "#fffaf0"}" stop-opacity="${dark ? 0.42 : 0.18}"/>
+        <stop offset="0.42" stop-color="${dark ? "#07120f" : "#fffaf0"}" stop-opacity="${dark ? 0.08 : 0.06}"/>
+        <stop offset="1" stop-color="${dark ? "#07120f" : "#f1dfb6"}" stop-opacity="${dark ? 0.24 : 0.12}"/>
+      </linearGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="${dark ? "#0b1714" : "#f7f1e5"}"/>
+    <g${imageTransform}>
+      <image href="${href}" x="0" y="0" width="1500" height="2100" preserveAspectRatio="none" opacity="${imageOpacity}"/>
+    </g>
+    <rect width="1500" height="2100" fill="${dark ? "#0b1714" : "#fffaf0"}" opacity="${dark ? 0.22 : 0.06}"/>
+    <ellipse cx="${dark ? 650 : 748}" cy="${dark ? 610 : 760}" rx="${dark ? 760 : 620}" ry="${dark ? 520 : 440}" fill="url(#botanicalAssetLight)"/>
+    <rect width="1500" height="2100" fill="url(#botanicalAssetShade)"/>
+  `;
+}
+
+function sympathyBotanicalAssetHero(panelId) {
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="sympathy-botanical-asset-front">
+        <path d="M176 1610 C374 1504 590 1558 804 1468 C1010 1382 1194 1398 1362 1308" fill="none" stroke="#f4e7c7" stroke-width="10" stroke-linecap="round" opacity="0.2"/>
+        <path d="M230 1718 C434 1608 622 1668 824 1584 C1022 1502 1164 1514 1304 1448" fill="none" stroke="#d3ba83" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+      </g>
+    `;
+  }
+  if (panelId === "inside-left" || panelId === "inside-right") {
+    const mirrored = panelId === "inside-right";
+    const x1 = mirrored ? 1030 : 470;
+    const x2 = mirrored ? 1220 : 280;
+    return `
+      <g data-customcard-hero="sympathy-botanical-asset-interior-${panelId}">
+        <path d="M238 222 C456 178 650 220 874 176 C1062 140 1204 164 1304 122" fill="none" stroke="#a8b39c" stroke-width="4" stroke-linecap="round" opacity="0.16"/>
+        <path d="M${x1} 156 C${x2} 474 ${x2} 816 ${x1} 1150 C${mirrored ? 1138 : 362} 1372 ${mirrored ? 1102 : 398} 1548 ${mirrored ? 1036 : 464} 1710" fill="none" stroke="#80907f" stroke-width="5" stroke-linecap="round" opacity="0.12"/>
+        <path d="M260 1854 C468 1790 662 1838 878 1778 C1070 1726 1210 1742 1314 1688" fill="none" stroke="#b9a26e" stroke-width="5" stroke-linecap="round" opacity="0.12"/>
+      </g>
+    `;
+  }
+  return `
+    <g data-customcard-hero="sympathy-botanical-asset-back">
+      <path d="M310 1688 C516 1598 710 1642 914 1564 C1098 1494 1228 1510 1338 1452" fill="none" stroke="#f4e7c7" stroke-width="7" stroke-linecap="round" opacity="0.18"/>
+      <path d="M428 1818 H1072" stroke="#f4e7c7" stroke-width="3" stroke-linecap="round" opacity="0.16" fill="none"/>
+    </g>
+  `;
+}
+
+function sympathyBotanicalAssetBorder(panelId) {
+  if (panelId === "front") {
+    return `<path d="M280 1908 H1220" stroke="#f4e7c7" stroke-width="2" stroke-linecap="round" opacity="0.12" fill="none"/>`;
+  }
+  if (panelId === "back") {
+    return `<path d="M420 1886 H1080" stroke="#f4e7c7" stroke-width="2" stroke-linecap="round" opacity="0.12" fill="none"/>`;
+  }
+  return `
+    <path d="M252 190 H1248" stroke="#a8b39c" stroke-width="2" stroke-linecap="round" opacity="0.1" fill="none"/>
+    <path d="M300 1902 H1200" stroke="#a8b39c" stroke-width="2" stroke-linecap="round" opacity="0.1" fill="none"/>
   `;
 }
 

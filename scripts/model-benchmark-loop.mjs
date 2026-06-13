@@ -797,6 +797,8 @@ export function pipelineQualityRuns(candidates) {
   const imageIds = new Set([
     "image-cloudflare-sdxl-lightning",
     "image-deepai-text2img",
+    "image-openai-gpt-image-2",
+    "image-gemini-supported",
     "image-browser-svg-renderer",
     "image-cloudflare-flux-schnell",
     "image-hf-flux-schnell",
