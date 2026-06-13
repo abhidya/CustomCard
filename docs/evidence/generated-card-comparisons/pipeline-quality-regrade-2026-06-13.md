@@ -34,6 +34,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` paper-cut SVG v34 | `image-browser-svg-renderer` | 79 | 98 | B promising proof; better interiors, still not premium | [manual grade](./pipeline-quality-sympathy-papercut-svg-v34-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v35 | `image-browser-svg-renderer` | 81 | 98 | B promising proof; best latest local route | [manual grade](./pipeline-quality-sympathy-papercut-svg-v35-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v36 | `image-browser-svg-renderer` | 83 | 98 | B promising proof; best latest local route | [manual grade](./pipeline-quality-sympathy-papercut-svg-v36-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v37 | `image-browser-svg-renderer` | 84 | 98 | B promising proof; best latest local route | [manual grade](./pipeline-quality-sympathy-papercut-svg-v37-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -61,6 +62,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Paper-cut SVG v34 is the new best latest controllable local route at product `79/100`, contract `98/100`. It fixes the v32 interior weakness with integrated vellum/deckle message fields and removes a v33 lower-mark artifact that could read like a sad face. It remains below 80+ promotion quality because the back and edge ornaments still feel deterministic.
 - Paper-cut SVG v35 is the new best latest controllable local route at product `81/100`, contract `98/100`. It shrinks the back panel's large lower paper block into a smaller closing seal, improving balance. It remains below premium/top-band because the motif is deterministic and practical support is still mostly carried by copy.
 - Paper-cut SVG v36 is the new best latest controllable local route at product `83/100`, contract `98/100`. It adds subtle paper-cut practical-care relief for meals, rides, calls, and silence, so support is visible instead of copy-only. It remains below premium/top-band because the glyph craft is simple and deterministic.
+- Paper-cut SVG v37 is the new best latest controllable local route at product `84/100`, contract `98/100`. It replaces simple circle/square care glyphs with more organic cut-paper relief. It remains below premium/top-band because the scene is still deterministic paper-cut stationery, not bespoke art.
 
 ## Improvement Loop
 
@@ -103,6 +105,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Paper-cut SVG v33-v34 | Product 79, contract 98 on v34 | V33 interior support marks created a possible sad-face read; v34 removes that artifact and keeps the improved vellum/deckle interior message fields. Still not premium. |
 | Paper-cut SVG v35 | Product 81, contract 98 | Smaller back seal improves the weakest panel; diminishing returns from local SVG tuning remain. |
 | Paper-cut SVG v36 | Product 83, contract 98 | Practical-care relief makes meals/rides/calls/silence visible across panels; gains are real but small because glyphs remain geometric/deterministic. |
+| Paper-cut SVG v37 | Product 84, contract 98 | Organic cut-paper relief removes the worst UI-mark feel from v36; more tiny glyph edits are now low-leverage. |
 
 ## Prompt/Skill Changes Applied
 
@@ -137,6 +140,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added integrated vellum/deckle interior message fields for the paper-cut sympathy route and removed lower support-token marks after v33 showed a possible sad-face artifact.
 - Tuned the paper-cut back panel from a large lower slab to a smaller closing seal so the back reads as intentional, not unused space.
 - Added subtle paper-cut practical-care relief for meals, rides, calls, and silence across the sympathy panels so the support concept is visible, not copy-only.
+- Replaced simple circle/square practical-care glyphs with more organic cut-paper relief to reduce UI-mark feel.
 
 ## Commands
 
@@ -189,4 +193,6 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --outpu
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v35-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v36-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v36-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v37-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v37-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 ```
