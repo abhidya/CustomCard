@@ -119,7 +119,172 @@ function basePanel({ dark = false, panelId }) {
   `;
 }
 
+function premiumDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="premiumPaperGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.75 0.95" numOctaves="2" seed="${dark ? 883 : 947}"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.05"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="premiumSoftShadow" x="-24%" y="-24%" width="148%" height="148%">
+        <feDropShadow dx="0" dy="34" stdDeviation="30" flood-color="#06100d" flood-opacity="${dark ? 0.48 : 0.16}"/>
+      </filter>
+      <filter id="premiumContactShadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="34"/>
+      </filter>
+      <linearGradient id="premiumMoss" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#172a23"/>
+        <stop offset="0.55" stop-color="#0c1814"/>
+        <stop offset="1" stop-color="#06100d"/>
+      </linearGradient>
+      <linearGradient id="premiumIvory" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff9ea"/>
+        <stop offset="0.58" stop-color="#f6ead0"/>
+        <stop offset="1" stop-color="#e2c991"/>
+      </linearGradient>
+      <linearGradient id="premiumLinen" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f8ecd2"/>
+        <stop offset="0.52" stop-color="#d6c18e"/>
+        <stop offset="1" stop-color="#99875f"/>
+      </linearGradient>
+      <linearGradient id="premiumPhone" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#506057"/>
+        <stop offset="1" stop-color="#17231f"/>
+      </linearGradient>
+      <radialGradient id="premiumLight" cx="${dark ? "42%" : "52%"}" cy="${dark ? "31%" : "40%"}" r="72%">
+        <stop offset="0" stop-color="#f8e9c6" stop-opacity="${dark ? 0.38 : 0.26}"/>
+        <stop offset="0.58" stop-color="#c5a86c" stop-opacity="${dark ? 0.09 : 0.07}"/>
+        <stop offset="1" stop-color="${dark ? "#07110e" : "#f7edd8"}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  `;
+}
+
+function premiumPanelBackground({ dark = false, panelId }) {
+  const fill = dark ? "url(#premiumMoss)" : "#fbf2df";
+  const vignette = dark ? "#020604" : "#dfc58e";
+  return `
+    <rect width="${width}" height="${height}" fill="${fill}"/>
+    <rect width="${width}" height="${height}" fill="${dark ? "#d8c28f" : "#846f48"}" filter="url(#premiumPaperGrain)" opacity="${dark ? 0.36 : 0.18}"/>
+    <ellipse cx="${dark ? 620 : 762}" cy="${dark ? 520 : 620}" rx="${dark ? 810 : 650}" ry="${dark ? 520 : 430}" fill="url(#premiumLight)"/>
+    <path d="M-120 ${dark ? 168 : 152} C170 ${dark ? 66 : 220} 460 ${dark ? 210 : 132} 812 ${dark ? 128 : 206} C1080 ${dark ? 74 : 146} 1306 ${dark ? 118 : 170} 1620 ${dark ? 48 : 102} V${dark ? 660 : 560} C1260 ${dark ? 636 : 532} 996 ${dark ? 710 : 638} 662 ${dark ? 806 : 728} C374 ${dark ? 888 : 806} 120 ${dark ? 836 : 748} -120 ${dark ? 980 : 838} Z" fill="${dark ? "#f0dbac" : "#fff8e7"}" opacity="${dark ? 0.16 : 0.34}"/>
+    <rect width="${width}" height="${height}" fill="${vignette}" opacity="${dark ? 0.18 : 0.03}"/>
+    ${panelId.startsWith("inside") ? `<path d="M248 238 C486 192 676 232 912 188 C1098 154 1228 176 1300 134" fill="none" stroke="#b09c6c" stroke-width="3" stroke-linecap="round" opacity="0.13"/>` : ""}
+  `;
+}
+
+function premiumLeafShadow({ x = 0, y = 0, scale = 1, mirrored = false, dark = false, opacity = 1 }) {
+  const transform = `translate(${x} ${y}) scale(${mirrored ? -scale : scale} ${scale})`;
+  const stroke = dark ? "#d7c08a" : "#7b876f";
+  const fill = dark ? "#b8bf9f" : "#7f8d79";
+  return `
+    <g transform="${transform}" opacity="${opacity}">
+      <path d="M0 390 C128 272 282 178 474 44" fill="none" stroke="${stroke}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.28 : 0.22}"/>
+      ${[0, 1, 2, 3, 4, 5].map((index) => {
+        const px = 64 + index * 68;
+        const py = 340 - index * 50;
+        const side = index % 2 === 0 ? 1 : -1;
+        return `<path d="M${px} ${py} C${px + side * 112} ${py - 72} ${px + side * 214} ${py - 38} ${px + side * 248} ${py + 40} C${px + side * 134} ${py + 76} ${px + side * 48} ${py + 46} ${px} ${py}Z" fill="${fill}" opacity="${0.22 - index * 0.012}"/>`;
+      }).join("")}
+      <circle cx="410" cy="86" r="8" fill="#f1dfb5" opacity="${dark ? 0.34 : 0.28}"/>
+      <circle cx="446" cy="62" r="6" fill="#f1dfb5" opacity="${dark ? 0.3 : 0.24}"/>
+      <circle cx="470" cy="108" r="7" fill="#f1dfb5" opacity="${dark ? 0.26 : 0.22}"/>
+    </g>
+  `;
+}
+
+function premiumBowl({ x = 0, y = 0, scale = 1, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) scale(${scale})" filter="url(#premiumSoftShadow)">
+      <path d="M8 148 C30 52 124 -4 254 14 C370 30 438 96 450 184 C338 236 142 232 8 148Z" fill="#f6e7c7" opacity="${dark ? 0.92 : 0.98}"/>
+      <path d="M52 142 C104 82 306 84 398 160" fill="none" stroke="#bba370" stroke-width="11" stroke-linecap="round" opacity="0.34"/>
+      <path d="M146 48 C184 22 248 24 286 58" fill="none" stroke="#5d6b5e" stroke-width="8" stroke-linecap="round" opacity="0.22"/>
+      <path d="M62 188 C166 222 302 220 408 184" fill="none" stroke="#fff7df" stroke-width="8" stroke-linecap="round" opacity="0.42"/>
+    </g>
+  `;
+}
+
+function premiumFoldedCloth({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#premiumSoftShadow)">
+      <path d="M0 54 C120 8 238 18 340 84 L314 254 C202 298 86 270 -34 322 Z" fill="url(#premiumLinen)" opacity="${dark ? 0.78 : 0.86}"/>
+      <path d="M44 92 C132 58 228 66 304 116" fill="none" stroke="#fff5dc" stroke-width="7" stroke-linecap="round" opacity="0.46"/>
+      <path d="M26 176 C124 134 230 146 294 190" fill="none" stroke="#71684e" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
+    </g>
+  `;
+}
+
+function premiumNote({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#premiumSoftShadow)">
+      <path d="M0 0 H246 V174 C176 202 90 190 0 228 Z" fill="#fff8e7" opacity="${dark ? 0.82 : 0.96}"/>
+      <path d="M36 54 H204" stroke="#c2aa75" stroke-width="5" stroke-linecap="round" opacity="0.22"/>
+      <path d="M36 104 H168" stroke="#5d6b5e" stroke-width="4" stroke-linecap="round" opacity="0.16"/>
+    </g>
+  `;
+}
+
+function premiumPhone({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#premiumSoftShadow)" opacity="${dark ? 0.78 : 0.66}">
+      <rect x="0" y="0" width="128" height="206" rx="40" fill="url(#premiumPhone)"/>
+      <path d="M34 42 H94" stroke="#f8e7c6" stroke-width="5" stroke-linecap="round" opacity="0.42"/>
+      <path d="M46 152 H82" stroke="#f8e7c6" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+    </g>
+  `;
+}
+
+function premiumCareTableau({ dark = false, x = 0, y = 0, scale = 1, mirrored = false, opacity = 1, compact = false }) {
+  const transform = `translate(${x} ${y}) scale(${mirrored ? -scale : scale} ${scale})`;
+  const shadow = dark ? "#020604" : "#b4a47e";
+  const shelf = dark ? "#e9d8aa" : "#8a9a82";
+  const line = dark ? "#f2e1b9" : "#53685f";
+  return `
+    <g transform="${transform}" opacity="${opacity}">
+      <ellipse cx="520" cy="${compact ? 442 : 520}" rx="${compact ? 530 : 650}" ry="${compact ? 130 : 168}" fill="${shadow}" filter="url(#premiumContactShadow)" opacity="${dark ? 0.5 : 0.18}"/>
+      <path d="M-60 ${compact ? 330 : 410} C120 ${compact ? 256 : 314} 302 ${compact ? 286 : 356} 498 ${compact ? 220 : 276} C694 ${compact ? 156 : 214} 900 ${compact ? 190 : 242} 1090 ${compact ? 288 : 350} L1040 ${compact ? 478 : 610} C816 ${compact ? 690 : 802} 604 ${compact ? 600 : 718} 386 ${compact ? 704 : 848} C202 ${compact ? 812 : 934} 52 ${compact ? 710 : 826} -92 ${compact ? 862 : 1000} Z" fill="${shelf}" opacity="${dark ? 0.34 : 0.24}"/>
+      <path d="M-18 ${compact ? 384 : 470} C180 ${compact ? 312 : 384} 342 ${compact ? 340 : 424} 540 ${compact ? 274 : 342} C720 ${compact ? 222 : 286} 886 ${compact ? 238 : 326} 1028 ${compact ? 320 : 404}" fill="none" stroke="${line}" stroke-width="${compact ? 7 : 9}" stroke-linecap="round" opacity="${dark ? 0.26 : 0.18}"/>
+      ${premiumBowl({ x: compact ? 210 : 236, y: compact ? 170 : 242, scale: compact ? 0.72 : 0.86, dark })}
+      ${premiumFoldedCloth({ x: compact ? 544 : 596, y: compact ? 210 : 292, scale: compact ? 0.62 : 0.75, rotate: -5, dark })}
+      ${premiumNote({ x: compact ? 640 : 730, y: compact ? 116 : 180, scale: compact ? 0.58 : 0.66, rotate: -4, dark })}
+      ${premiumPhone({ x: compact ? 808 : 922, y: compact ? 252 : 354, scale: compact ? 0.54 : 0.64, rotate: compact ? -3 : 2, dark })}
+      <path d="M-54 ${compact ? 610 : 748} C128 ${compact ? 542 : 680} 332 ${compact ? 580 : 730} 520 ${compact ? 516 : 650} C710 ${compact ? 454 : 580} 888 ${compact ? 494 : 626} 1096 ${compact ? 560 : 710}" fill="none" stroke="${dark ? "#efe1bd" : "#887a57"}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.18 : 0.1}"/>
+    </g>
+  `;
+}
+
+function premiumPanelSvg(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const mirrored = panelId === "inside-right" || panelId === "back";
+  const tableau = panelId === "front"
+    ? premiumCareTableau({ dark, x: 132, y: 1230, scale: 1.1, opacity: 0.94 })
+    : panelId === "back"
+      ? premiumCareTableau({ dark, x: 390, y: 1438, scale: 0.58, mirrored: true, opacity: 0.64, compact: true })
+      : premiumCareTableau({ dark, x: mirrored ? 1160 : 214, y: 1510, scale: 0.52, mirrored, opacity: 0.46, compact: true });
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${premiumDefs({ dark })}
+  ${premiumPanelBackground({ dark, panelId })}
+  ${panelId === "front" ? premiumLeafShadow({ x: 1260, y: 88, scale: 0.46, mirrored: false, dark, opacity: 0.55 }) : ""}
+  ${panelId === "back" ? premiumLeafShadow({ x: 1320, y: 98, scale: 0.42, mirrored: true, dark, opacity: 0.42 }) : ""}
+  ${inside ? premiumLeafShadow({ x: mirrored ? 1450 : 48, y: 1496, scale: 0.56, mirrored, dark, opacity: 0.28 }) : ""}
+  ${tableau}
+  ${dark ? `<rect width="${width}" height="${height}" fill="#06100d" opacity="0.1"/>` : ""}
+</svg>`;
+}
+
 function panelSvg(panelId) {
+  if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
+    return legacyPanelSvg(panelId);
+  }
+  return premiumPanelSvg(panelId);
+}
+
+function legacyPanelSvg(panelId) {
   const dark = panelId === "front" || panelId === "back";
   const interior = panelId.startsWith("inside");
   const mirrored = panelId === "inside-right" || panelId === "back";
