@@ -11,6 +11,7 @@ import {
   type MobileRenderSection
 } from "./customerExperience";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ToastProvider } from "./components/Toast";
 import { resolveAppConfig, ConfigError } from "./config/env";
 import { ApiProvider } from "./lib/api/ApiProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
@@ -41,14 +42,16 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
-        <AuthProvider>
-          <QueryClientProvider client={queryClient}>
-            <ApiProvider>
-              <StatusBar style="dark" />
-              <RootNavigator WorkflowGuideScreen={WorkflowOverviewScreen} />
-            </ApiProvider>
-          </QueryClientProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <QueryClientProvider client={queryClient}>
+              <ApiProvider>
+                <StatusBar style="dark" />
+                <RootNavigator WorkflowGuideScreen={WorkflowOverviewScreen} />
+              </ApiProvider>
+            </QueryClientProvider>
+          </AuthProvider>
+        </ToastProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
   );

@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, StyleSheet, Text, View } from "react-native";
 
 import { AppButton, Card, FormField, InlineNotice, Pill, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
+import { useToast } from "../../components/Toast";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { MemoryReviewRequest, MemoryReviewResponse } from "../../lib/api/types";
@@ -19,6 +20,7 @@ type Field = "recipientName" | "text";
 export function MemoriesScreen() {
   const api = useApi();
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const [recipientName, setRecipientName] = useState("");
   const [text, setText] = useState("");
@@ -35,9 +37,16 @@ export function MemoriesScreen() {
     onSuccess: (response) => {
       setLastResult(response);
       setText("");
+      toast.show(response.approved ? "Memory approved" : "Memory forgotten", "success");
       void queryClient.invalidateQueries({ queryKey: ["mobile-bootstrap"] });
-    }
+    },
+    onError: (error) => toast.show(userMessageForError(error), "error")
   });
+
+  function run(decision: "approve" | "forget") {
+    setLastResult(null);
+    review.mutate({ recipientName: recipientName.trim(), text: text.trim(), decision });
+  }
 
   function submit(decision: "approve" | "forget") {
     const errors: FieldErrors<Field> = {
@@ -46,8 +55,19 @@ export function MemoriesScreen() {
     };
     setFieldErrors(errors);
     if (hasErrors(errors)) return;
-    setLastResult(null);
-    review.mutate({ recipientName: recipientName.trim(), text: text.trim(), decision });
+    if (decision === "forget") {
+      // Forgetting is irreversible — confirm before tombstoning the note.
+      Alert.alert(
+        "Forget this memory?",
+        `"${text.trim()}" will never be used on a card. This can't be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Forget", style: "destructive", onPress: () => run("forget") }
+        ]
+      );
+      return;
+    }
+    run("approve");
   }
 
   const pendingItems =

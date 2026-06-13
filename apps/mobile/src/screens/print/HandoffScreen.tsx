@@ -7,6 +7,7 @@ import { StyleSheet, Switch, Text, View } from "react-native";
 import { AppButton, Card, InlineNotice, Pill, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
 import { SelectableOption } from "../../components/SelectableOption";
+import { useToast } from "../../components/Toast";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { VendorHandoffResponse } from "../../lib/api/types";
@@ -26,6 +27,7 @@ const VENDORS = [
  */
 export function HandoffScreen() {
   const api = useApi();
+  const toast = useToast();
   const route = useRoute<RouteProp<RootStackParamList, "Handoff">>();
   const { projectId, renderPacketId } = route.params;
 
@@ -41,7 +43,16 @@ export function HandoffScreen() {
         vendorId,
         externalShareApproval: shareApproved
       }),
-    onSuccess: (response) => setResult(response)
+    onSuccess: (response) => {
+      setResult(response);
+      toast.show(
+        response.handoffStatus === "vendor_handoff_ready"
+          ? "Handoff package ready"
+          : "Handoff is blocked — check the details",
+        response.handoffStatus === "vendor_handoff_ready" ? "success" : "error"
+      );
+    },
+    onError: (error) => toast.show(userMessageForError(error), "error")
   });
 
   return (

@@ -1,10 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, StyleSheet, Switch, Text, View } from "react-native";
 
 import { AppButton, Card, InlineNotice, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
 import { SelectableOption } from "../../components/SelectableOption";
+import { useToast } from "../../components/Toast";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { DataRequestRequest, DataRequestResponse } from "../../lib/api/types";
@@ -20,6 +21,7 @@ const REGIONS = [
 /** Privacy controls: audited export/delete requests plus a data inventory. */
 export function PrivacyScreen() {
   const api = useApi();
+  const toast = useToast();
 
   const [region, setRegion] = useState(REGIONS[0]?.id ?? "us-ca");
   const [consentGranted, setConsentGranted] = useState(false);
@@ -27,12 +29,34 @@ export function PrivacyScreen() {
 
   const submitRequest = useMutation({
     mutationFn: (body: DataRequestRequest) => api.submitDataRequest(body),
-    onSuccess: (response) => setResult(response)
+    onSuccess: (response) => {
+      setResult(response);
+      toast.show(
+        response.requestType === "delete" ? "Deletion request received" : "Export request received",
+        "success"
+      );
+    },
+    onError: (error) => toast.show(userMessageForError(error), "error")
   });
 
-  function submit(requestType: "export" | "delete") {
+  function run(requestType: "export" | "delete") {
     setResult(null);
     submitRequest.mutate({ requestType, region, consentGranted });
+  }
+
+  function submit(requestType: "export" | "delete") {
+    if (requestType === "delete") {
+      Alert.alert(
+        "Request account deletion?",
+        "This starts a verified deletion of your CustomCard data. You can cancel before it's confirmed.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Request deletion", style: "destructive", onPress: () => run("delete") }
+        ]
+      );
+      return;
+    }
+    run("export");
   }
 
   return (

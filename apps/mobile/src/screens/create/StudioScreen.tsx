@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppButton, Card, FormField, InlineNotice, Pill, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
+import { useToast } from "../../components/Toast";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { CardGenerateRequest, CardGenerateResponse } from "../../lib/api/types";
@@ -26,6 +27,7 @@ type Field = "sender" | "recipient" | "relationship" | "personalNote";
 export function StudioScreen() {
   const api = useApi();
   const navigation = useNavigation();
+  const toast = useToast();
 
   const [sender, setSender] = useState("");
   const [recipient, setRecipient] = useState("");
@@ -78,7 +80,11 @@ export function StudioScreen() {
 
   const generate = useMutation({
     mutationFn: (body: CardGenerateRequest) => api.generateCard(body),
-    onSuccess: (response) => setResult(response)
+    onSuccess: (response) => {
+      setResult(response);
+      toast.show("Draft ready to review", "success");
+    },
+    onError: (error) => toast.show(userMessageForError(error), "error")
   });
 
   function submit() {

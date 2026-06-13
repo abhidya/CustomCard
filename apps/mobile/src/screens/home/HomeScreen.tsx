@@ -9,11 +9,11 @@ import {
   EmptyState,
   ErrorState,
   InlineNotice,
-  LoadingState,
   Pill,
   SectionHeading
 } from "../../components";
 import { Screen } from "../../components/Screen";
+import { SkeletonCard } from "../../components/Skeleton";
 import { useApi } from "../../lib/api/ApiProvider";
 import { formatShortDate, humanizeStatus } from "../../lib/format";
 import { colors, spacing, typography } from "../../theme";
@@ -30,7 +30,15 @@ export function HomeScreen() {
   if (bootstrap.isPending) {
     return (
       <Screen scroll={false}>
-        <LoadingState label="Loading your cards…" />
+        <View
+          accessibilityRole="progressbar"
+          accessibilityLabel="Loading your cards…"
+          style={styles.skeletonGroup}
+        >
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={3} />
+          <SkeletonCard lines={2} />
+        </View>
       </Screen>
     );
   }
@@ -165,6 +173,7 @@ const styles = StyleSheet.create({
   todayTitle: { ...typography.title, fontSize: 22 },
   queueTitle: { ...typography.heading, fontSize: 16, flexShrink: 1 },
   cardPressed: { opacity: 0.85 },
+  skeletonGroup: { gap: spacing.md },
   row: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
   rowBetween: {
     flexDirection: "row",

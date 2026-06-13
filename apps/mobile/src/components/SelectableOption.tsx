@@ -40,6 +40,8 @@ export function SelectableOption({
         {detail ? <Text style={styles.detail}>{detail}</Text> : null}
       </View>
       <Ionicons
+        accessibilityElementsHidden
+        importantForAccessibility="no"
         name={selected ? "checkmark-circle" : "ellipse-outline"}
         size={22}
         color={selected ? colors.brand : colors.inkSubtle}
