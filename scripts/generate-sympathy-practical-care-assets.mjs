@@ -333,36 +333,117 @@ function museumImage({ fileName, contentType = "image/jpeg", x, y, imageWidth, i
 function museumCarePanelSvg(panelId) {
   const dark = panelId === "front" || panelId === "back";
   const inside = panelId.startsWith("inside");
-  const botanical = museumImage({
-    fileName: "aic-sargent-thistles.jpg",
-    x: dark ? -720 : -620,
-    y: dark ? -120 : -70,
-    imageWidth: dark ? 2700 : 2640,
-    imageHeight: dark ? 2040 : 1988,
-    opacity: dark ? 0.26 : 0.5,
-    soft: true
-  });
-  const lowerStillLife = museumImage({
-    fileName: "aic-pieter-claesz-still-life.jpg",
-    x: dark ? -980 : -860,
-    y: dark ? 780 : 978,
-    imageWidth: dark ? 3480 : 3220,
-    imageHeight: dark ? 2040 : 1888,
-    opacity: dark ? 0.72 : 0.44,
-    soft: false
-  });
-  const careClip = inside ? "museumInteriorCareClip" : "museumLowerCareClip";
-  const fullStillLife = dark
-    ? museumImage({
+  const panelSources = {
+    front: {
+      backdrop: {
+        fileName: "aic-sargent-thistles.jpg",
+        x: -720,
+        y: -120,
+        imageWidth: 2700,
+        imageHeight: 2040,
+        opacity: 0.26,
+        soft: true
+      },
+      lower: {
+        fileName: "aic-pieter-claesz-still-life.jpg",
+        x: -980,
+        y: 780,
+        imageWidth: 3480,
+        imageHeight: 2040,
+        opacity: 0.72,
+        soft: false
+      },
+      full: {
         fileName: "aic-pieter-claesz-still-life.jpg",
         x: -1080,
         y: 600,
         imageWidth: 3700,
         imageHeight: 2170,
-        opacity: panelId === "front" ? 0.52 : 0.42,
+        opacity: 0.52,
         soft: false
-      })
-    : "";
+      }
+    },
+    "inside-left": {
+      backdrop: {
+        fileName: "aic-sargent-thistles.jpg",
+        x: -620,
+        y: -70,
+        imageWidth: 2640,
+        imageHeight: 1988,
+        opacity: 0.44,
+        soft: true
+      },
+      lower: {
+        fileName: "aic-pieter-claesz-still-life.jpg",
+        x: -760,
+        y: 956,
+        imageWidth: 3180,
+        imageHeight: 1864,
+        opacity: 0.52,
+        soft: false
+      }
+    },
+    "inside-right": {
+      backdrop: {
+        fileName: "aic-sargent-thistles.jpg",
+        x: -620,
+        y: -70,
+        imageWidth: 2640,
+        imageHeight: 1988,
+        opacity: 0.32,
+        soft: true
+      },
+      lower: {
+        fileName: "aic-cezanne-basket-apples.jpg",
+        x: -740,
+        y: 930,
+        imageWidth: 3200,
+        imageHeight: 1880,
+        opacity: 0.48,
+        soft: false
+      }
+    },
+    back: {
+      backdrop: {
+        fileName: "aic-sargent-thistles.jpg",
+        x: -720,
+        y: -120,
+        imageWidth: 2700,
+        imageHeight: 2040,
+        opacity: 0.26,
+        soft: true
+      },
+      lower: {
+        fileName: "aic-pieter-claesz-still-life.jpg",
+        x: -980,
+        y: 780,
+        imageWidth: 3480,
+        imageHeight: 2040,
+        opacity: 0.72,
+        soft: false
+      },
+      full: {
+        fileName: "aic-pieter-claesz-still-life.jpg",
+        x: -1080,
+        y: 600,
+        imageWidth: 3700,
+        imageHeight: 2170,
+        opacity: 0.42,
+        soft: false
+      }
+    }
+  };
+  const source = panelSources[panelId] || panelSources.front;
+  const botanical = museumImage({
+    contentType: "image/jpeg",
+    ...source.backdrop
+  });
+  const lowerStillLife = museumImage({
+    contentType: "image/jpeg",
+    ...source.lower
+  });
+  const careClip = inside ? "museumInteriorCareClip" : "museumLowerCareClip";
+  const fullStillLife = source.full ? museumImage({ contentType: "image/jpeg", ...source.full }) : "";
   const interiorGuard = inside
     ? `<path d="M-80 0 H1580 V1050 C1240 992 1018 1048 724 1010 C422 970 186 1030 -80 942 Z" fill="url(#museumTextVeil)"/>
        <ellipse cx="742" cy="610" rx="690" ry="486" fill="#fff9ea" opacity="0.18"/>`

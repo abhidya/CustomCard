@@ -77,7 +77,7 @@
 - License/status: public-domain artwork image; AIC API metadata is CC0 except descriptions.
 - AIC source URL: `https://www.artic.edu/artworks/21682/still-life`
 - Download URL used: `https://www.artic.edu/iiif/2/574695d5-6bf3-fe58-a1d5-e6cbb5e10c77/full/1800,/0/default.jpg`
-- Use: v113 museum-care route for dark front/back still-life texture and practical meal/table source imagery.
+- Use: v113/v114 museum-care route for dark front/back still-life texture and practical meal/table source imagery.
 
 ## `aic-sargent-thistles.jpg`
 
@@ -90,4 +90,17 @@
 - License/status: public-domain artwork image; AIC API metadata is CC0 except descriptions.
 - AIC source URL: `https://www.artic.edu/artworks/145807/thistles`
 - Download URL used: `https://www.artic.edu/iiif/2/79b94ddd-e208-1993-01ab-98f75174fe88/full/1800,/0/default.jpg`
-- Use: v113 museum-care route for repeated thistle texture across front, interiors, and back.
+- Use: v113/v114 museum-care route for thistle texture across front, interiors, and back.
+
+## `aic-cezanne-basket-apples.jpg`
+
+- Source: Art Institute of Chicago public API / IIIF image service
+- Title: `The Basket of Apples`
+- Creator: Paul Cezanne
+- Date: c. 1893
+- Artwork ID: `111436`
+- Image ID: `52ac8996-3460-cf71-cb42-5c4d0aa29b74`
+- License/status: public-domain artwork image; AIC API metadata is CC0 except descriptions.
+- AIC source URL: `https://www.artic.edu/artworks/111436/the-basket-of-apples`
+- Download URL used: `https://www.artic.edu/iiif/2/52ac8996-3460-cf71-cb42-5c4d0aa29b74/full/1800,/0/default.jpg`
+- Use: v114 panel-specific museum route for inside-right practical meal/table source texture, cropped to avoid the visible signature area.
