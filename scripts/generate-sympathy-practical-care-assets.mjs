@@ -312,18 +312,46 @@ function licensedPhotoDefs({ dark = false } = {}) {
 }
 
 function licensedPhotoPanelSvg(panelId) {
-  const href = sourceAssetDataUrl("rawpixel-cc0-leaves-note.png");
+  const sourceByPanel = {
+    front: {
+      fileName: "rawpixel-cc0-leaves-note.png",
+      fullBleed: true,
+      photoX: -820,
+      photoOpacity: 0.76
+    },
+    "inside-left": {
+      fileName: "rawpixel-cc0-leaves-note.png",
+      photoX: -70,
+      photoY: 1210,
+      photoHeight: 760,
+      photoOpacity: 0.58
+    },
+    "inside-right": {
+      fileName: "commons-cc0-phone-notes-table.jpg",
+      contentType: "image/jpeg",
+      photoX: 360,
+      photoY: 1186,
+      photoHeight: 820,
+      photoOpacity: 0.5
+    },
+    back: {
+      fileName: "rawpixel-cc0-leaves-note.png",
+      fullBleed: true,
+      photoX: -820,
+      photoOpacity: 0.76
+    }
+  };
+  const source = sourceByPanel[panelId] ?? {};
+  const href = sourceAssetDataUrl(source.fileName || "rawpixel-cc0-leaves-note.png", source.contentType || "image/png");
   if (!href) return "";
   const dark = panelId === "front" || panelId === "back";
   const inside = panelId.startsWith("inside");
   const mirrored = panelId === "inside-right" || panelId === "back";
-  const photoOpacity = dark ? 0.76 : 0.58;
-  const photoY = dark ? 0 : 1210;
-  const photoHeight = dark ? height : 760;
+  const photoOpacity = source.photoOpacity ?? (dark ? 0.76 : 0.58);
+  const photoY = source.photoY ?? (source.fullBleed ? 0 : 1210);
+  const photoHeight = source.photoHeight ?? (source.fullBleed ? height : 760);
   const photoWidth = Math.round(photoHeight * 1.5);
-  const photoX = inside
-    ? mirrored ? 430 : -70
-    : -820;
+  const photoX = source.photoX ?? (inside ? mirrored ? 430 : -70 : -820);
   const flip = mirrored ? ` transform="translate(1500 0) scale(-1 1)"` : "";
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">

@@ -1,0 +1,17 @@
+{
+  "phase": "pipeline-quality",
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-hf-flux-schnell",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "black-forest-labs/FLUX.1-schnell"
+    }
+  ]
+}
