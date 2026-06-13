@@ -3345,15 +3345,15 @@ function buildCopyRepairPlan(input, themeGuide) {
       },
       "inside-left": {
         headline: "With You In This",
-        body: "I am so sorry about your father. I will not try to explain the loss or fill the silence with easy words; I just want you to know you are not alone."
+        body: "I am so sorry about your father. I will not try to explain the loss or cover the quiet with easy words; I am here beside you, at whatever pace the day allows."
       },
       "inside-right": {
         headline: `From ${sender}`,
-        body: `I am here for the practical things too: meals, rides, calls, and silence when talking is too much. May you have room to grieve at your own pace, with steady care nearby. With sympathy and friendship, ${sender}.`
+        body: `Meals can be left at your door. Rides can be quiet. Calls can be answered or missed. Silence counts too. You do not have to manage this alone. With sympathy and friendship, ${sender}.`
       },
       back: {
         headline: "With Steady Care",
-        body: "For grief, practical help, and quiet support when words cannot hold enough."
+        body: "For practical help, quiet support, and steady care on days words cannot hold."
       }
     };
   }
