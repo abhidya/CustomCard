@@ -1448,6 +1448,43 @@ function sympathyReliefStage({ x, y, scale = 1, dark = false, mirrored = false, 
   `;
 }
 
+function sympathyDoorstepCareRelief({ x, y, scale = 1, dark = false, mirrored = false, opacity = 1 }) {
+  const paper = dark ? "#ead9aa" : "#53685f";
+  const warm = dark ? "#f1dfad" : "#d9bd7f";
+  const muted = dark ? "#cfd3bf" : "#8da08e";
+  const base = dark ? "#0b1714" : "#fffaf0";
+  const xScale = mirrored ? -scale : scale;
+  return `
+    <g data-customcard-bespoke-relief="doorstep-care-bundle" transform="translate(${x} ${y}) scale(${xScale} ${scale})" opacity="${opacity}">
+      <path d="M-62 320 C82 228 246 250 396 194 C548 136 680 158 802 228 L782 458 C622 522 476 490 318 548 C160 606 24 566 -84 634 Z" fill="${base}" opacity="${dark ? 0.2 : 0.44}" filter="url(#sympathyCutShadow)"/>
+      <path d="M6 352 C144 292 290 312 438 252 C570 198 682 214 760 258" fill="none" stroke="${warm}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.34 : 0.26}"/>
+      <path d="M40 494 C188 452 328 474 474 424 C604 380 704 396 790 432" fill="none" stroke="${paper}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.28 : 0.22}"/>
+      <g data-customcard-care-object="covered-meal" transform="translate(86 256)">
+        <ellipse cx="96" cy="128" rx="102" ry="34" fill="${warm}" opacity="${dark ? 0.17 : 0.26}"/>
+        <path d="M12 118 C62 52 142 46 194 118 C148 154 58 154 12 118Z" fill="${base}" opacity="${dark ? 0.42 : 0.58}"/>
+        <path d="M22 118 C70 76 136 74 184 118" fill="none" stroke="${paper}" stroke-width="8" stroke-linecap="round"/>
+        <path d="M80 66 C104 50 136 54 156 76" fill="none" stroke="${muted}" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
+      </g>
+      <g data-customcard-care-object="quiet-phone" transform="translate(380 238) rotate(-8)">
+        <rect x="0" y="0" width="92" height="158" rx="24" fill="${base}" opacity="${dark ? 0.26 : 0.42}" stroke="${paper}" stroke-width="5"/>
+        <path d="M24 46 C48 34 68 38 80 58 C68 78 42 78 24 62" fill="none" stroke="${warm}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.56 : 0.42}"/>
+        <path d="M32 120 H62" stroke="${muted}" stroke-width="4" stroke-linecap="round" opacity="0.48"/>
+      </g>
+      <g data-customcard-care-object="quiet-ride-path" transform="translate(526 300)">
+        <path d="M10 86 C68 32 134 126 206 72 C258 34 320 52 364 98" fill="none" stroke="${paper}" stroke-width="8" stroke-linecap="round" opacity="${dark ? 0.68 : 0.46}"/>
+        <path d="M48 154 C128 112 238 124 330 170" fill="none" stroke="${muted}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.42 : 0.3}"/>
+        <ellipse cx="168" cy="88" rx="26" ry="16" fill="${warm}" opacity="${dark ? 0.2 : 0.24}"/>
+        <ellipse cx="250" cy="112" rx="18" ry="12" fill="${warm}" opacity="${dark ? 0.16 : 0.18}"/>
+      </g>
+      <g data-customcard-care-object="folded-cloth-silence" transform="translate(240 426)">
+        <path d="M0 70 C58 22 148 28 210 72 C152 128 62 126 0 70Z" fill="${muted}" opacity="${dark ? 0.13 : 0.2}"/>
+        <path d="M32 72 C82 48 138 52 184 78" fill="none" stroke="${paper}" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 124 C92 104 164 112 232 144" fill="none" stroke="${warm}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.38 : 0.28}"/>
+      </g>
+    </g>
+  `;
+}
+
 function sympathyThresholdHero(panelId) {
   if (panelId === "front") {
     return `
@@ -1476,8 +1513,9 @@ function sympathyThresholdHero(panelId) {
           <path d="M430 1566 C572 1530 724 1556 884 1512 C1030 1472 1160 1484 1240 1452" fill="none" stroke="#cfd3bf" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
         </g>
         ${sympathyReliefStage({ x: 272, y: 1110, scale: 0.88, dark: true, opacity: 0.58 })}
-        ${sympathyCareKit({ x: 360, y: 1218, scale: 0.86, dark: true, opacity: 0.58 })}
-        <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.35">
+        ${sympathyCareKit({ x: 360, y: 1218, scale: 0.86, dark: true, opacity: 0.34 })}
+        ${sympathyDoorstepCareRelief({ x: 330, y: 1258, scale: 0.78, dark: true, opacity: 0.64 })}
+        <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.14">
           <path d="M376 1316 C420 1274 514 1280 568 1322 C552 1378 420 1394 374 1332 Z" fill="#ead9aa" opacity="0.16"/>
           <path d="M394 1318 C446 1296 506 1300 548 1322 C526 1364 422 1364 394 1318Z" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round"/>
           <path d="M438 1286 C468 1272 504 1278 528 1296" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.58"/>
@@ -1522,8 +1560,9 @@ function sympathyThresholdHero(panelId) {
           <path d="M${mirrored ? "642 1698 C812 1648 988 1682 1218 1608" : "858 1698 C688 1648 512 1682 282 1608"}" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
         </g>
         ${sympathyReliefStage({ x: mirrored ? 1270 : 230, y: 1362, scale: 0.64, mirrored, opacity: 0.3 })}
-        ${sympathyCareKit({ x: mirrored ? 1204 : 296, y: 1476, scale: 0.62, mirrored, opacity: 0.42 })}
-        <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.19">
+        ${sympathyCareKit({ x: mirrored ? 1204 : 296, y: 1476, scale: 0.62, mirrored, opacity: 0.24 })}
+        ${sympathyDoorstepCareRelief({ x: mirrored ? 1176 : 324, y: 1502, scale: 0.52, mirrored, opacity: 0.32 })}
+        <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.08">
           ${mirrored ? `
             <path d="M860 1538 C926 1488 996 1578 1066 1520 C1120 1474 1176 1492 1228 1534" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round"/>
             <path d="M936 1582 C984 1548 1048 1572 1064 1626 C1024 1674 950 1666 924 1608 C948 1602 992 1592 1034 1588" fill="none" stroke="#d9bd7f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1553,14 +1592,15 @@ function sympathyThresholdHero(panelId) {
         <path d="M584 1604 C682 1570 778 1592 884 1558 C980 1528 1048 1538 1090 1506" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.26"/>
         <path d="M708 1428 C766 1404 850 1420 898 1464 C846 1510 748 1514 696 1464 Z" fill="#ead9aa" opacity="0.16"/>
       </g>
-      <g data-customcard-support-relief="back-care-row" opacity="0.26">
+      <g data-customcard-support-relief="back-care-row" opacity="0.12">
         <path d="M584 1514 C626 1488 684 1494 718 1520 C704 1560 608 1564 584 1514Z" fill="#ead9aa" opacity="0.16"/>
         <path d="M598 1516 C636 1498 680 1500 708 1520 C692 1548 616 1548 598 1516Z" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round"/>
         <path d="M750 1538 C794 1504 838 1568 888 1530 C926 1500 960 1514 984 1540" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round"/>
         <path d="M946 1496 C984 1478 1028 1502 1036 1540 C1006 1574 956 1570 938 1530 C956 1524 986 1518 1012 1520" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
       ${sympathyReliefStage({ x: 452, y: 1302, scale: 0.6, dark: true, opacity: 0.52 })}
-      ${sympathyCareKit({ x: 522, y: 1398, scale: 0.58, dark: true, opacity: 0.56 })}
+      ${sympathyCareKit({ x: 522, y: 1398, scale: 0.58, dark: true, opacity: 0.3 })}
+      ${sympathyDoorstepCareRelief({ x: 520, y: 1426, scale: 0.5, dark: true, opacity: 0.58 })}
       <path d="M360 1748 C526 1684 676 1718 842 1662 C1014 1604 1148 1624 1284 1562" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
       <path d="M548 1798 H952" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
       <path d="M642 1840 H858" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12"/>

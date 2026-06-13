@@ -1,0 +1,263 @@
+{
+  "text": [
+    {
+      "id": "text-deterministic-support",
+      "label": "Deterministic support copy baseline",
+      "adapterId": "deterministic-customer-chat",
+      "model": "deterministic-support-copy",
+      "requiredEnv": [],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "text-cloudflare-baseline",
+      "label": "Current Cloudflare text baseline",
+      "adapterId": "cloudflare-workers-ai-chat",
+      "modelFromEnv": "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "requiredEnv": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        [
+          "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+          "CLOUDFLARE_API_TOKEN"
+        ]
+      ],
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "text-hf-qwen3-235b-a22b",
+      "label": "Hugging Face Qwen3 235B A22B Instruct 2507",
+      "adapterId": "huggingface-chat",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "text-hf-deepseek-v4-flash",
+      "label": "Hugging Face DeepSeek V4 Flash",
+      "adapterId": "huggingface-chat",
+      "model": "deepseek-ai/DeepSeek-V4-Flash",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "text-hf-gpt-oss-20b",
+      "label": "Hugging Face gpt-oss-20b",
+      "adapterId": "huggingface-chat",
+      "model": "openai/gpt-oss-20b",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "text-openai-baseline",
+      "label": "OpenAI local premium baseline",
+      "adapterId": "openai-responses-chat",
+      "model": "gpt-4o-mini",
+      "requiredEnv": [
+        "OPENAI_API_KEY"
+      ],
+      "configured": false,
+      "missingEnv": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "id": "text-gemini-baseline",
+      "label": "Gemini local premium baseline",
+      "adapterId": "google-gemini-chat",
+      "model": "gemini-1.5-flash",
+      "requiredEnv": [
+        "GOOGLE_GENERATIVE_AI_API_KEY"
+      ],
+      "configured": false,
+      "missingEnv": [
+        "GOOGLE_GENERATIVE_AI_API_KEY"
+      ]
+    },
+    {
+      "id": "text-claude-baseline",
+      "label": "Claude local premium baseline",
+      "adapterId": "anthropic-messages-chat",
+      "model": "claude-3-5-haiku-latest",
+      "requiredEnv": [
+        "ANTHROPIC_API_KEY"
+      ],
+      "configured": false,
+      "missingEnv": [
+        "ANTHROPIC_API_KEY"
+      ]
+    }
+  ],
+  "image": [
+    {
+      "id": "image-cloudflare-sdxl-lightning",
+      "label": "Current Cloudflare SDXL Lightning baseline",
+      "adapterId": "cloudflare-workers-ai-image",
+      "modelFromEnv": "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "requiredEnv": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        [
+          "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+          "CLOUDFLARE_API_TOKEN"
+        ]
+      ],
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-cloudflare-flux-schnell",
+      "label": "Cloudflare FLUX.1 Schnell",
+      "adapterId": "cloudflare-workers-ai-image",
+      "model": "@cf/black-forest-labs/flux-1-schnell",
+      "requiredEnv": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        [
+          "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+          "CLOUDFLARE_API_TOKEN"
+        ]
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-deepai-text2img",
+      "label": "DeepAI text2img",
+      "adapterId": "deepai-text2img-image",
+      "model": "text2img",
+      "requiredEnv": [
+        "DEEPAI_API_KEY"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-openai-gpt-image-2",
+      "label": "OpenAI image model currently supported",
+      "adapterId": "openai-images",
+      "model": "gpt-image-2",
+      "requiredEnv": [
+        "OPENAI_API_KEY"
+      ],
+      "configured": false,
+      "missingEnv": [
+        "OPENAI_API_KEY"
+      ]
+    },
+    {
+      "id": "image-gemini-supported",
+      "label": "Gemini image model currently supported",
+      "adapterId": "google-gemini-image",
+      "model": "gemini-3.1-flash-image",
+      "requiredEnv": [
+        "GOOGLE_GENERATIVE_AI_API_KEY"
+      ],
+      "configured": false,
+      "missingEnv": [
+        "GOOGLE_GENERATIVE_AI_API_KEY"
+      ]
+    },
+    {
+      "id": "image-hf-flux-schnell",
+      "label": "Hugging Face FLUX.1 Schnell via Inference Providers",
+      "adapterId": "huggingface-image",
+      "model": "black-forest-labs/FLUX.1-schnell",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-hf-qwen-image",
+      "label": "Hugging Face Qwen Image via Inference Providers",
+      "adapterId": "huggingface-image",
+      "model": "Qwen/Qwen-Image",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-hf-qwen-image-2512",
+      "label": "Hugging Face Qwen Image 2512 via Inference Providers",
+      "adapterId": "huggingface-image",
+      "model": "Qwen/Qwen-Image-2512",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-hf-z-image-turbo",
+      "label": "Hugging Face Z-Image Turbo via Inference Providers",
+      "adapterId": "huggingface-image",
+      "model": "Tongyi-MAI/Z-Image-Turbo",
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    },
+    {
+      "id": "image-browser-svg-renderer",
+      "label": "Deterministic browser SVG renderer",
+      "adapterId": "browser-svg-renderer",
+      "model": "deterministic-svg",
+      "requiredEnv": [],
+      "configured": true,
+      "missingEnv": []
+    }
+  ],
+  "blockedImageCandidates": [
+    {
+      "id": "image-fal-flux",
+      "adapterId": "fal-image",
+      "model": "fal-ai/flux/schnell",
+      "blockedReason": "FAL_KEY missing and generator has no fal-image executor."
+    },
+    {
+      "id": "image-together-flux",
+      "adapterId": "together-image",
+      "model": "black-forest-labs/FLUX.1-schnell-Free",
+      "blockedReason": "TOGETHER_API_KEY missing and generator has no together-image executor."
+    },
+    {
+      "id": "image-replicate-flux",
+      "adapterId": "replicate-image",
+      "model": "black-forest-labs/flux-schnell",
+      "blockedReason": "REPLICATE_API_TOKEN missing and generator has no replicate-image executor."
+    }
+  ],
+  "executableAdapters": {
+    "text": [
+      "deterministic-customer-chat",
+      "cloudflare-workers-ai-chat",
+      "huggingface-chat",
+      "huggingface-chat",
+      "huggingface-chat"
+    ],
+    "image": [
+      "cloudflare-workers-ai-image",
+      "cloudflare-workers-ai-image",
+      "deepai-text2img-image",
+      "huggingface-image",
+      "huggingface-image",
+      "huggingface-image",
+      "huggingface-image",
+      "browser-svg-renderer"
+    ]
+  }
+}
