@@ -50,6 +50,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` care-package SVG v50 | `image-browser-svg-renderer` | 37 | 98 | D+ concept repair; still clipart/template | [manual grade](./pipeline-quality-sympathy-care-package-svg-v50-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` care-package SVG v51 | `image-browser-svg-renderer` | 40 | 98 | D+ clearer still-life; remaining ambiguity | [manual grade](./pipeline-quality-sympathy-care-package-svg-v51-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` care-package SVG v52 | `image-browser-svg-renderer` | 41 | 98 | D+ ambiguity cleanup; local SVG ceiling | [manual grade](./pipeline-quality-sympathy-care-package-svg-v52-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` Cloudflare SDXL v53 | `image-cloudflare-sdxl-lightning` | 20 | 86 | D/F raster regression; food/table artifacts | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v53-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
+| `text-deterministic-support` Cloudflare SDXL v54 | `image-cloudflare-sdxl-lightning` | 15 | 80 | F/D raster regression; fake labels/box clutter | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
+| `text-deterministic-support` Cloudflare FLUX v55 | `image-cloudflare-flux-schnell` -> fallback `browser-svg-renderer` | 8 | 58 | F route failure; provider 400 after first panel | [manual grade](./pipeline-quality-sympathy-cloudflare-flux-v55-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/manual-grade.md) |
+| `text-deterministic-support` Cloudflare SDXL v56 | `image-cloudflare-sdxl-lightning` | 12 | 78 | F raster regression; prompt compression failed | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v56-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 
 ## Findings
 
@@ -92,6 +96,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Care-package SVG v50 repairs the specific visible ambiguity: the image now reads as a bag, meal, muted phone, key, and practical support instead of vague marks. Product rises to `37/100`, contract stays `98/100`, but it remains a D+ because the visible style is still local SVG clipart on a card template.
 - Care-package SVG v51 improves fill/material and reduces card-inside-card boxes, reaching product `40/100`, contract `98/100`. It is still not customer-ready, and the small dark key/phone cluster can read as unintended clutter at thumbnail size.
 - Care-package SVG v52 reduces the remaining dark key ambiguity and lands at product `41/100`, contract `98/100`. This is likely the useful ceiling for the current local-SVG care-kit direction; further progress needs a better art source or a fundamentally stronger editorial illustration system.
+- Cloudflare SDXL v53 regresses to product `20/100`, contract `86/100`: `still-life` plus `covered meal dish` language caused fruit/table spreads, ornate frames, and fake script artifacts. Do not use visible-food/still-life terms in SDXL sympathy prompts.
+- Cloudflare SDXL v54 regresses further to product `15/100`, contract `80/100`: replacing meal language with sealed containers produced cartons/cans, fake labels, and box clutter. Stop tuning SDXL object wording for this story unless the provider can enforce no-label/no-text object rendering.
+- Cloudflare FLUX v55 is route-failure evidence, product `8/100`, contract `58/100`: it returned one native panel then hit provider 400 and fell back to generic SVG templates. The long repeated prompt is a likely brittleness factor.
+- Cloudflare SDXL v56 proves prompt compression did not solve the route, product `12/100`, contract `78/100`: fake label grids, package clutter, scenery, flowers, and jar/can back art returned. Revert the compressed prompt patch; do not deploy it.
 
 ## Improvement Loop
 
@@ -150,6 +158,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Care-package SVG v50 | Product 37, contract 98 | Replacing abstract doorstep marks with explicit care-package objects fixes legibility but still looks like clipart, not customer-ready card art. |
 | Care-package SVG v51 | Product 40, contract 98 | Filled still-life shapes help, but remaining dark accessory clutter keeps it in D+ territory. |
 | Care-package SVG v52 | Product 41, contract 98 | Pale key cleanup removes most car-like ambiguity; score barely moves because local SVG remains the visible-product ceiling. |
+| Cloudflare SDXL v53 | Product 20, contract 86 | Object-first prompt backfired: SDXL rendered fruit/table/ornate-frame artifacts. Next prompt should use sealed-container/care-package language, not meal/still-life wording. |
+| Cloudflare SDXL v54 | Product 15, contract 80 | Sealed-container wording made SDXL render carton/can clutter with fake labels; abandon SDXL for this story unless no-label object control improves. |
+| Cloudflare FLUX v55 | Product 8, contract 58 | Provider 400 after first panel; fallback template only. Compress image prompts before another provider run. |
+| Cloudflare SDXL v56 | Product 12, contract 78 | Prompt compression reduced repetition but still produced fake labels, package clutter, scenery, and overlay collisions; revert prompt patch and keep evidence only. |
 
 ## Prompt/Skill Changes Applied
 

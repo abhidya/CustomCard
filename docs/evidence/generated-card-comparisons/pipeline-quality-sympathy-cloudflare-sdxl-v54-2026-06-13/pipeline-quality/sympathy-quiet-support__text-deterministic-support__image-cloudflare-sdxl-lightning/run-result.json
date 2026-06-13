@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-deterministic-support",
+  "textAdapterId": "deterministic-customer-chat",
+  "textModel": "deterministic-support-copy",
+  "imageCandidateId": "image-cloudflare-sdxl-lightning",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning",
+  "startedAt": "2026-06-13T11:50:44.924Z",
+  "finishedAt": "2026-06-13T11:51:32.451Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "deterministic-support-copy",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-front.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support care-package artwork for the front of a premium vertical 5x7 sympathy print panel; plain upper text-safe area and one large lower object group: paper grocery bag, sealed meal container, folded cloth, muted phone, and house key. Artwork layer only, flat 2D editorial illustration with a plain abstract background. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one concrete practical-care object group, not decoration: paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key. Keep objects grouped in the lower third or lower corner; make them large enough to understand at thumbnail size; keep upper/center area plain. Object-only practical-care composition; no decorative plants, no scenery, no memorial objects, no busy pattern, no closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D care-package illustration: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text-safe area; lower-third practical-care object group with paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key; object-only composition, plain abstract background, no memorial-object mood or decorative plant motif. Panel cue: Flat quiet-support sympathy cover with a plain upper text-safe area and a large lower-third care-package object group: paper grocery bag, sealed meal container, folded cloth, muted phone, and house key; object-only, unframed, plain abstract background. Palette: warm ivory, muted",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-inside-left.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support care-package artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast plain center for text and one small lower-left object echo: sealed meal container and folded cloth. Artwork layer only, flat 2D editorial illustration with a plain abstract background. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one concrete practical-care object group, not decoration: paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key. Keep objects grouped in the lower third or lower corner; make them large enough to understand at thumbnail size; keep upper/center area plain. Object-only practical-care composition; no decorative plants, no scenery, no memorial objects, no busy pattern, no closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D care-package illustration: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text-safe area; lower-third practical-care object group with paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key; object-only composition, plain abstract background, no memorial-object mood or decorative plant motif. Panel cue: Soft left interior with warm ivory plain center text-safe space and one small lower-left object echo: sealed meal container and folded cloth; object-only, unframed, plain abstract background. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-inside-right.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support care-package artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast plain center for text and one small lower-right object echo: muted phone, house key, and folded cloth. Artwork layer only, flat 2D editorial illustration with a plain abstract background. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one concrete practical-care object group, not decoration: paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key. Keep objects grouped in the lower third or lower corner; make them large enough to understand at thumbnail size; keep upper/center area plain. Object-only practical-care composition; no decorative plants, no scenery, no memorial objects, no busy pattern, no closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D care-package illustration: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text-safe area; lower-third practical-care object group with paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key; object-only composition, plain abstract background, no memorial-object mood or decorative plant motif. Panel cue: Matching right interior with warm ivory plain center text-safe space and one small lower-right object echo: muted phone, house key, and folded cloth; object-only, unframed, plain abstract background. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-back.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support care-package artwork for a minimal vertical 5x7 back sympathy print panel; mostly plain upper area with one small lower object echo: bag, sealed meal container, muted phone, and key. Artwork layer only, flat 2D editorial illustration with a plain abstract background. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one concrete practical-care object group, not decoration: paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key. Keep objects grouped in the lower third or lower corner; make them large enough to understand at thumbnail size; keep upper/center area plain. Object-only practical-care composition; no decorative plants, no scenery, no memorial objects, no busy pattern, no closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D care-package illustration: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text-safe area; lower-third practical-care object group with paper grocery bag, sealed meal container with lid closed, folded cloth, muted phone with no screen text, and house key; object-only composition, plain abstract background, no memorial-object mood or decorative plant motif. Panel cue: Minimal back cover with mostly plain upper area and one small lower object echo of grocery bag, sealed meal container, muted phone, and key; object-only, unframed, plain abstract background. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words,",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/contact-sheet.png",
+  "providerCallCount": 4,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 4
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}
