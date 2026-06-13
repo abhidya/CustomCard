@@ -8,7 +8,7 @@
 
 ## Rubric
 
-- Product quality score /100: 30
+- Product quality score /100: 5
 - Prompt/pipeline contract score /100: 98
 - Tier: D
 - Dimension raw sum before visible-artifact cap: 76/100
@@ -22,7 +22,7 @@
   - Domain/cultural sensitivity /10: 6
   - Commercial usefulness /5: 0
   - Originality and taste /5: 2
-- Hard failure caps triggered: generic stock-stationery cap; no bespoke practical-support visual system; still not saleable without design/art replacement.
+- Hard failure caps triggered: user-calibrated visible rejection near 5/100; generic stock-stationery cap; no bespoke practical-support visual system; still not saleable without design/art replacement.
 - Best panel: inside-right; readable and calm, with visible botanical edge art that does not fight body copy.
 - Worst panel: back; body contrast is weaker than the interiors and the panel still reads like a tinted blank template.
 - Blocking failures: generic botanical sympathy look, weak front/back originality, no visual expression of meals/rides/calls/silence, and low premium feel.
@@ -32,4 +32,4 @@
 
 ## Notes
 
-Current best in this turn, but still far below target. It beats v79-v83 because the visible artifact now has real raster botanical texture and readable full-pipeline copy.
+Corrected after user-visible calibration: real raster botanical texture and readable copy do not lift this above 5/100 because the artifact still reads like low-effort generic sympathy stationery.

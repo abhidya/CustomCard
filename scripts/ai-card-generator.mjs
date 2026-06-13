@@ -884,6 +884,20 @@ function themeForPrompt(prompt) {
       motif: () => ""
     };
   }
+  if (/\b(sympathy|condolence|grieving|grief|quiet[- ]support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
+    /\b(quiet[- ]support|practical[- ]care|practical sympathy|practical support|doorstep care|meals|rides|calls|silence|steady care)\b/.test(text)) {
+    return {
+      kind: "sympathy-practical-care-asset",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#0a1714" : "#fbf3e4",
+      accent: (panelId) => panelId.startsWith("inside") ? "#51675d" : "#ead9aa",
+      count: 0,
+      texture: (panelId) => sympathyPracticalCareAssetTexture(panelId),
+      hero: () => "",
+      overlay: () => "",
+      border: (panelId) => sympathyPracticalCareAssetBorder(panelId),
+      motif: () => ""
+    };
+  }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
     /\b(memorial atelier|atelier plate|quiet plate|single-plate|quiet-light plate)\b/.test(text)) {
     return {
@@ -1654,6 +1668,55 @@ function sympathyBotanicalAssetBorder(panelId) {
   return `
     <path d="M252 190 H1248" stroke="#a8b39c" stroke-width="2" stroke-linecap="round" opacity="0.1" fill="none"/>
     <path d="M300 1902 H1200" stroke="#a8b39c" stroke-width="2" stroke-linecap="round" opacity="0.1" fill="none"/>
+  `;
+}
+
+function sympathyPracticalCareAssetTexture(panelId) {
+  const assetName = {
+    front: "front",
+    "inside-left": "inside-left",
+    "inside-right": "inside-right",
+    back: "back"
+  }[panelId] || "front";
+  const href = embeddedAssetDataUrl(`public/generated/sympathy-practical-care-${assetName}.png`, "image/png");
+  if (!href) return sympathyBotanicalAssetTexture(panelId);
+  const dark = panelId === "front" || panelId === "back";
+  return `
+    <defs>
+      <radialGradient id="practicalCareTextGlow" cx="${dark ? "46%" : "50%"}" cy="${dark ? "36%" : "44%"}" r="${dark ? "58%" : "52%"}">
+        <stop offset="0" stop-color="${dark ? "#f4e7c7" : "#fffaf0"}" stop-opacity="${dark ? 0.22 : 0.28}"/>
+        <stop offset="0.68" stop-color="${dark ? "#ead9aa" : "#efe0bc"}" stop-opacity="${dark ? 0.07 : 0.08}"/>
+        <stop offset="1" stop-color="${dark ? "#0a1714" : "#fbf3e4"}" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="practicalCareReadabilityShade" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="${dark ? "#06100d" : "#fffaf0"}" stop-opacity="${dark ? 0.2 : 0.08}"/>
+        <stop offset="0.45" stop-color="${dark ? "#06100d" : "#fffaf0"}" stop-opacity="${dark ? 0.04 : 0.03}"/>
+        <stop offset="1" stop-color="${dark ? "#06100d" : "#f1dfb6"}" stop-opacity="${dark ? 0.18 : 0.08}"/>
+      </linearGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="${dark ? "#0a1714" : "#fbf3e4"}"/>
+    <image href="${href}" x="0" y="0" width="1500" height="2100" preserveAspectRatio="none"/>
+    <ellipse cx="${dark ? 650 : 750}" cy="${dark ? 600 : 760}" rx="${dark ? 720 : 610}" ry="${dark ? 500 : 420}" fill="url(#practicalCareTextGlow)"/>
+    <rect width="1500" height="2100" fill="url(#practicalCareReadabilityShade)"/>
+  `;
+}
+
+function sympathyPracticalCareAssetBorder(panelId) {
+  if (panelId === "front") {
+    return `
+      <path d="M248 1858 C468 1786 676 1820 904 1758 C1118 1700 1264 1722 1352 1668" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18" fill="none"/>
+      <path d="M322 1918 H1168" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12" fill="none"/>
+    `;
+  }
+  if (panelId === "back") {
+    return `
+      <path d="M330 1848 H1170" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.14" fill="none"/>
+      <path d="M506 1904 H994" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.1" fill="none"/>
+    `;
+  }
+  return `
+    <path d="M252 190 H1248" stroke="#b9a26e" stroke-width="2" stroke-linecap="round" opacity="0.11" fill="none"/>
+    <path d="M300 1902 H1200" stroke="#53685f" stroke-width="2" stroke-linecap="round" opacity="0.08" fill="none"/>
   `;
 }
 
