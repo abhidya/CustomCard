@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-deterministic-support",
+  "textAdapterId": "deterministic-customer-chat",
+  "textModel": "deterministic-support-copy",
+  "imageCandidateId": "image-browser-svg-renderer",
+  "imageAdapterId": "browser-svg-renderer",
+  "imageModel": "deterministic-svg",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer",
+  "startedAt": "2026-06-13T13:24:07.099Z",
+  "finishedAt": "2026-06-13T13:24:50.246Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "deterministic-support-copy",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-front.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower paper-cut threshold relief that reads as practical care without clipart. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief. No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower paper-cut practical-care tableau; folded cloth arc, covered meal form, quiet call curve, ride threshold line, and silence/open-space shape are integrated as abstract relief, not clipart. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy,",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-inside-left.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory paper field, generous center text area, and integrated lower/outer-edge paper-cut practical-care relief. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief. No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with warm ivory paper field, empty plain center text-safe space, and an integrated lower-left paper-cut relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-inside-right.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory paper field, generous center text area, and integrated lower/outer-edge paper-cut practical-care relief. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief. No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with warm ivory paper field, empty plain center text-safe space, and an integrated lower/right paper-cut relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark.",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-back.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower paper-cut care-relief echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief. No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal deep moss back cover with readable upper/center text-safe area and one composed lower paper-cut care-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-relief-svg-v70-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/contact-sheet.png",
+  "providerCallCount": 0,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 0
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

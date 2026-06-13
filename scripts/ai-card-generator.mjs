@@ -883,7 +883,7 @@ function themeForPrompt(prompt) {
     };
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
-    /\b(support-object|meal bowl|folded cloth|muted phone|small key|practical support)\b/.test(text)) {
+    /\b(support-object|meal bowl|folded cloth|muted phone|small key|practical support|paper-cut|papercut|threshold relief|care tableau|practical-care|doorstep care)\b/.test(text)) {
     return {
       kind: "sympathy-premium-still-life",
       background: (panelId) => panelId === "front" || panelId === "back" ? "#10211c" : "#fff8ea",
@@ -1419,38 +1419,47 @@ function sympathyPremiumStillLifeTexture(panelId) {
   return `
     <defs>
       <filter id="premiumStillLifeGrain" x="-8%" y="-8%" width="116%" height="116%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.013 0.031" numOctaves="4" seed="89"/>
+        <feTurbulence type="fractalNoise" baseFrequency="0.009 0.024" numOctaves="5" seed="89"/>
         <feColorMatrix type="saturate" values="0"/>
         <feComponentTransfer>
-          <feFuncA type="table" tableValues="0 0.14"/>
+          <feFuncA type="table" tableValues="0 0.18"/>
         </feComponentTransfer>
       </filter>
       <filter id="premiumStillLifeShadow" x="-18%" y="-18%" width="136%" height="136%">
-        <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#06100d" flood-opacity="${dark ? 0.38 : 0.14}"/>
+        <feDropShadow dx="0" dy="26" stdDeviation="24" flood-color="#06100d" flood-opacity="${dark ? 0.42 : 0.16}"/>
       </filter>
       <filter id="premiumStillLifeSoft" x="-12%" y="-12%" width="124%" height="124%">
         <feGaussianBlur stdDeviation="18"/>
       </filter>
+      <filter id="premiumStillLifeDeckle" x="-10%" y="-10%" width="120%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018 0.044" numOctaves="3" seed="131"/>
+        <feDisplacementMap in="SourceGraphic" scale="16"/>
+      </filter>
       <linearGradient id="premiumStillLifeBeam" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.34 : 0.24}"/>
-        <stop offset="0.46" stop-color="${glow}" stop-opacity="${dark ? 0.12 : 0.1}"/>
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.42 : 0.3}"/>
+        <stop offset="0.46" stop-color="${glow}" stop-opacity="${dark ? 0.16 : 0.13}"/>
         <stop offset="1" stop-color="${base}" stop-opacity="0"/>
       </linearGradient>
       <linearGradient id="premiumStillLifePaper" x1="0" x2="1" y1="0" y2="1">
         <stop offset="0" stop-color="#fff7dd"/>
         <stop offset="1" stop-color="#d9bd7f"/>
       </linearGradient>
+      <linearGradient id="premiumStillLifeMossPaper" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#8da08e"/>
+        <stop offset="1" stop-color="#314b42"/>
+      </linearGradient>
       <radialGradient id="premiumStillLifePool" cx="46%" cy="38%" r="64%">
-        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.18 : 0.24}"/>
-        <stop offset="0.7" stop-color="${glow}" stop-opacity="${dark ? 0.05 : 0.08}"/>
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.25 : 0.3}"/>
+        <stop offset="0.7" stop-color="${glow}" stop-opacity="${dark ? 0.08 : 0.1}"/>
         <stop offset="1" stop-color="${base}" stop-opacity="0"/>
       </radialGradient>
     </defs>
     <rect width="1500" height="2100" fill="${base}"/>
-    <rect width="1500" height="2100" fill="${dark ? "#ead9aa" : ink}" filter="url(#premiumStillLifeGrain)" opacity="${dark ? 0.26 : 0.08}"/>
-    <ellipse cx="${dark ? 610 : 760}" cy="${dark ? 620 : 650}" rx="${dark ? 660 : 560}" ry="${dark ? 470 : 380}" fill="url(#premiumStillLifePool)"/>
-    <path d="M-160 ${dark ? 230 : 150} C252 ${dark ? 130 : 224} 540 ${dark ? 224 : 160} 834 ${dark ? 142 : 224} C1082 ${dark ? 74 : 146} 1310 ${dark ? 150 : 182} 1640 ${dark ? 42 : 126} V${dark ? 760 : 520} C1250 ${dark ? 710 : 504} 972 ${dark ? 774 : 588} 650 ${dark ? 850 : 654} C352 ${dark ? 916 : 712} 126 ${dark ? 840 : 694} -160 ${dark ? 966 : 760} Z" fill="url(#premiumStillLifeBeam)"/>
-    <path d="M-120 1858 C260 1710 594 1796 906 1682 C1152 1592 1340 1614 1600 1522" fill="none" stroke="${glow}" stroke-width="${dark ? 22 : 13}" stroke-linecap="round" opacity="${dark ? 0.13 : 0.1}"/>
+    <rect width="1500" height="2100" fill="${dark ? "#ead9aa" : ink}" filter="url(#premiumStillLifeGrain)" opacity="${dark ? 0.24 : 0.09}"/>
+    <ellipse cx="${dark ? 690 : 760}" cy="${dark ? 575 : 630}" rx="${dark ? 720 : 620}" ry="${dark ? 510 : 420}" fill="url(#premiumStillLifePool)"/>
+    <path d="M-180 ${dark ? 206 : 132} C226 ${dark ? 88 : 214} 520 ${dark ? 218 : 146} 834 ${dark ? 126 : 214} C1090 ${dark ? 52 : 132} 1324 ${dark ? 140 : 164} 1660 ${dark ? 26 : 108} V${dark ? 830 : 560} C1270 ${dark ? 738 : 520} 982 ${dark ? 820 : 616} 650 ${dark ? 904 : 690} C342 ${dark ? 982 : 742} 108 ${dark ? 900 : 704} -180 ${dark ? 1038 : 800} Z" fill="url(#premiumStillLifeBeam)"/>
+    <path d="M-130 1816 C246 1688 590 1778 900 1660 C1152 1564 1346 1588 1608 1492" fill="none" stroke="${glow}" stroke-width="${dark ? 28 : 15}" stroke-linecap="round" opacity="${dark ? 0.14 : 0.11}"/>
+    <path d="M-90 1900 C282 1760 620 1870 954 1742 C1194 1650 1372 1672 1588 1592" fill="none" stroke="${ink}" stroke-width="${dark ? 8 : 5}" stroke-linecap="round" opacity="${dark ? 0.18 : 0.11}"/>
   `;
 }
 
@@ -1458,68 +1467,91 @@ function sympathyPremiumStillLifeHero(panelId) {
   if (panelId === "front") {
     return `
       <g data-customcard-hero="premium-still-life-front">
-        <path d="M0 168 V1226 C264 1060 518 1136 800 1018 C1040 916 1240 932 1500 850 V0 H0Z" fill="#ead9aa" opacity="0.07"/>
-        <path d="M166 350 V1522 H366" fill="none" stroke="#ead9aa" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="0.36"/>
-        <path d="M224 424 V1450 H336" fill="none" stroke="#f7f0d8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
-        <path d="M226 1330 C426 1238 628 1274 836 1198 C1038 1124 1196 1134 1332 1068" fill="none" stroke="#ead9aa" stroke-width="11" stroke-linecap="round" opacity="0.22"/>
-        <g filter="url(#premiumStillLifeShadow)" transform="translate(364 1252)">
-          <ellipse cx="412" cy="430" rx="410" ry="70" fill="#07120f" opacity="0.32"/>
-          <path d="M46 302 C176 214 356 238 492 174 C630 110 752 136 850 208 C734 328 582 342 420 412 C248 486 126 430 18 498 Z" fill="#fff7dd" opacity="0.68"/>
-          <path d="M84 318 C218 264 348 286 490 230 C616 180 722 196 814 244" fill="none" stroke="#53685f" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
-          <path d="M120 456 C270 412 420 438 586 382 C720 336 816 350 886 318" fill="none" stroke="#d9bd7f" stroke-width="8" stroke-linecap="round" opacity="0.32"/>
-          <path d="M496 278 C564 166 738 150 820 278 C758 344 566 346 496 278Z" fill="url(#premiumStillLifePaper)" stroke="#10211c" stroke-width="9" stroke-linejoin="round" opacity="0.92"/>
-          <path d="M542 278 C610 222 714 222 780 278" fill="none" stroke="#fff7dd" stroke-width="8" stroke-linecap="round" opacity="0.64"/>
-          <path d="M620 170 C660 136 724 146 754 186" fill="none" stroke="#10211c" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
-          <path d="M208 250 C282 196 386 210 456 276 C392 346 268 348 198 282Z" fill="#8da08e" opacity="0.24"/>
-          <path d="M232 274 C296 240 380 246 430 286" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
-        </g>
-        <path d="M292 1806 C514 1748 720 1784 934 1724 C1138 1668 1282 1688 1392 1648" fill="none" stroke="#ead9aa" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+        <path d="M96 894 C268 740 518 742 752 642 C970 548 1192 590 1380 468 L1350 1276 C1110 1368 892 1296 650 1390 C418 1480 240 1402 104 1502 Z" fill="#ead9aa" opacity="0.08" filter="url(#premiumStillLifeDeckle)"/>
+        <path d="M214 300 C428 238 630 290 858 238 C1048 194 1204 228 1320 184" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round" opacity="0.2"/>
+        <path d="M202 994 V1618 H410" fill="none" stroke="#ead9aa" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+        <path d="M256 1060 V1554 H390" fill="none" stroke="#f7f0d8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+        ${premiumPaperCutCareRelief({ x: 214, y: 1046, scale: 1.18, dark: true, opacity: 0.96 })}
+        <path d="M244 1838 C486 1760 704 1806 940 1732 C1144 1668 1298 1690 1400 1642" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
       </g>
     `;
   }
   if (panelId === "inside-left" || panelId === "inside-right") {
     const mirrored = panelId === "inside-right";
     const sideX = mirrored ? 1322 : 178;
-    const lowerX = mirrored ? 1042 : 210;
+    const lowerX = mirrored ? 1156 : 168;
     return `
       <g data-customcard-hero="premium-still-life-interior-${panelId}">
-        <path d="M250 250 C464 206 656 258 862 214 C1046 176 1178 204 1268 174" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.14"/>
-        <path d="M${sideX} 270 C${mirrored ? "1190 570 1232 900 1312 1210 C1368 1424 1304 1580 1188 1718" : "310 570 268 900 188 1210 C132 1424 196 1580 312 1718"}" fill="none" stroke="#53685f" stroke-width="10" stroke-linecap="round" opacity="0.16"/>
-        <path d="M${sideX} 314 C${mirrored ? "1230 620 1250 910 1280 1168 C1302 1360 1254 1510 1168 1674" : "270 620 250 910 220 1168 C198 1360 246 1510 332 1674"}" fill="none" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
-        <path d="M${mirrored ? "1182 520 C1094 480 1018 524 1008 630 C1100 670 1170 620 1182 520Z" : "318 520 C406 480 482 524 492 630 C400 670 330 620 318 520Z"}" fill="#8da08e" opacity="0.12"/>
-        <path d="M${mirrored ? "1198 1224 C1106 1178 1030 1230 1022 1340 C1118 1384 1190 1330 1198 1224Z" : "302 1224 C394 1178 470 1230 478 1340 C382 1384 310 1330 302 1224Z"}" fill="#8da08e" opacity="0.1"/>
-        <g transform="translate(${lowerX} 1548) scale(${mirrored ? -0.48 : 0.48} 0.48)" opacity="0.38">
-          <ellipse cx="412" cy="430" rx="410" ry="70" fill="#d9bd7f" opacity="0.12"/>
-          <path d="M46 302 C176 214 356 238 492 174 C630 110 752 136 850 208 C734 328 582 342 420 412 C248 486 126 430 18 498 Z" fill="#fffdf6" opacity="0.72"/>
-          <path d="M84 318 C218 264 348 286 490 230 C616 180 722 196 814 244" fill="none" stroke="#53685f" stroke-width="10" stroke-linecap="round" opacity="0.26"/>
-          <path d="M496 278 C564 166 738 150 820 278 C758 344 566 346 496 278Z" fill="#d9bd7f" stroke="#53685f" stroke-width="9" stroke-linejoin="round" opacity="0.7"/>
-        </g>
-        <path d="M250 1828 C450 1764 642 1826 844 1778 C1040 1732 1180 1764 1268 1706" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.14"/>
+        <path d="M220 270 C456 224 656 282 882 238 C1060 204 1194 232 1294 194" fill="none" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+        <path d="M286 360 C470 314 642 352 844 316 C1028 282 1162 302 1264 268 L1254 1400 C1038 1452 860 1412 668 1468 C496 1518 354 1474 246 1536 Z" fill="#fffdf6" opacity="0.28" filter="url(#premiumStillLifeDeckle)"/>
+        <path d="M${sideX} 270 C${mirrored ? "1190 570 1232 900 1312 1210 C1368 1424 1304 1580 1188 1718" : "310 570 268 900 188 1210 C132 1424 196 1580 312 1718"}" fill="none" stroke="#53685f" stroke-width="12" stroke-linecap="round" opacity="0.18"/>
+        <path d="M${sideX} 314 C${mirrored ? "1230 620 1250 910 1280 1168 C1302 1360 1254 1510 1168 1674" : "270 620 250 910 220 1168 C198 1360 246 1510 332 1674"}" fill="none" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+        <path d="M${mirrored ? "1182 520 C1094 480 1018 524 1008 630 C1100 670 1170 620 1182 520Z" : "318 520 C406 480 482 524 492 630 C400 670 330 620 318 520Z"}" fill="#8da08e" opacity="0.13"/>
+        <path d="M${mirrored ? "1198 1224 C1106 1178 1030 1230 1022 1340 C1118 1384 1190 1330 1198 1224Z" : "302 1224 C394 1178 470 1230 478 1340 C382 1384 310 1330 302 1224Z"}" fill="#8da08e" opacity="0.11"/>
+        ${premiumPaperCutCareRelief({ x: lowerX, y: 1416, scale: 0.47, dark: false, mirrored, opacity: 0.46 })}
+        <path d="M234 1840 C450 1768 648 1828 862 1772 C1056 1722 1184 1756 1274 1696" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" opacity="0.16"/>
       </g>
     `;
   }
   return `
     <g data-customcard-hero="premium-still-life-back">
-      <path d="M260 1376 C458 1288 672 1330 850 1264 C1026 1200 1180 1222 1296 1292 L1268 1668 C1080 1742 910 1698 730 1760 C550 1820 382 1778 262 1698 Z" fill="#ead9aa" opacity="0.06" filter="url(#premiumStillLifeShadow)"/>
-      <g transform="translate(454 1398) scale(0.62)" opacity="0.62">
-        <ellipse cx="412" cy="430" rx="410" ry="70" fill="#07120f" opacity="0.26"/>
-        <path d="M46 302 C176 214 356 238 492 174 C630 110 752 136 850 208 C734 328 582 342 420 412 C248 486 126 430 18 498 Z" fill="#fff7dd" opacity="0.42"/>
-        <path d="M84 318 C218 264 348 286 490 230 C616 180 722 196 814 244" fill="none" stroke="#ead9aa" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
-        <path d="M496 278 C564 166 738 150 820 278 C758 344 566 346 496 278Z" fill="url(#premiumStillLifePaper)" stroke="#10211c" stroke-width="9" stroke-linejoin="round" opacity="0.76"/>
-      </g>
-      <path d="M430 1850 H1070" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
+      <path d="M236 1250 C438 1158 670 1208 872 1126 C1052 1052 1200 1082 1316 1164 L1274 1698 C1076 1782 884 1728 700 1786 C520 1842 370 1788 250 1720 Z" fill="#ead9aa" opacity="0.07" filter="url(#premiumStillLifeDeckle)"/>
+      ${premiumPaperCutCareRelief({ x: 340, y: 1274, scale: 0.76, dark: true, opacity: 0.72 })}
+      <path d="M344 1834 C518 1782 700 1814 884 1762 C1046 1718 1172 1736 1266 1692" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.18" fill="none"/>
+      <path d="M430 1904 H1070" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.14"/>
+    </g>
+  `;
+}
+
+function premiumPaperCutCareRelief({ x, y, scale = 1, dark = false, mirrored = false, opacity = 1 }) {
+  const xScale = mirrored ? -scale : scale;
+  const ink = dark ? "#10211c" : "#354941";
+  const cream = dark ? "#fff7dd" : "#fffdf6";
+  const gold = dark ? "url(#premiumStillLifePaper)" : "#d9bd7f";
+  const moss = dark ? "url(#premiumStillLifeMossPaper)" : "#8da08e";
+  const wash = dark ? "#ead9aa" : "#53685f";
+  const shade = dark ? "#07120f" : "#d7c08f";
+  return `
+    <g data-customcard-illustration="paper-cut-practical-care-relief" transform="translate(${x} ${y}) scale(${xScale} ${scale})" opacity="${opacity}">
+      <ellipse cx="470" cy="620" rx="500" ry="86" fill="${shade}" opacity="${dark ? 0.28 : 0.12}"/>
+      <path d="M-20 414 C142 318 306 352 494 272 C660 202 794 226 928 298 L894 532 C708 608 556 560 384 628 C206 700 72 642 -54 736 Z" fill="${dark ? "#0d1a16" : "#ead9aa"}" opacity="${dark ? 0.5 : 0.2}" filter="url(#premiumStillLifeSoft)"/>
+      <path d="M38 396 C188 316 340 344 516 270 C668 206 780 228 884 288 L850 468 C684 530 548 500 394 560 C234 624 112 584 14 650 Z" fill="${cream}" opacity="${dark ? 0.76 : 0.68}" filter="url(#premiumStillLifeShadow)"/>
+      <path d="M74 424 C218 362 352 388 514 324 C650 270 758 286 842 330" fill="none" stroke="${ink}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.28 : 0.18}"/>
+      <path d="M86 540 C230 496 362 520 518 468 C654 422 762 434 842 396" fill="none" stroke="${wash}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.42 : 0.24}"/>
+
+      <path d="M112 346 C200 286 330 286 430 356 C346 432 200 434 112 346Z" fill="${moss}" opacity="${dark ? 0.28 : 0.18}"/>
+      <path d="M150 356 C226 326 330 332 398 368" fill="none" stroke="${gold}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.6 : 0.38}"/>
+
+      <path d="M386 368 C486 292 626 294 748 372 C610 438 496 430 386 368Z" fill="${gold}" opacity="${dark ? 0.74 : 0.48}"/>
+      <path d="M420 376 C514 336 624 344 706 386" fill="none" stroke="${cream}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.5 : 0.58}"/>
+      <path d="M438 436 C548 408 652 420 752 466" fill="none" stroke="${wash}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.34 : 0.22}"/>
+
+      <path d="M218 512 C338 438 474 558 622 462 C716 402 802 426 870 492" fill="none" stroke="${ink}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.58 : 0.34}"/>
+      <path d="M248 594 C366 560 474 588 594 538 C710 490 798 506 868 542" fill="none" stroke="${wash}" stroke-width="6" stroke-linecap="round" opacity="${dark ? 0.36 : 0.22}"/>
+      <path d="M686 302 C754 258 834 286 868 364 C790 410 718 382 686 302Z" fill="${moss}" opacity="${dark ? 0.18 : 0.12}"/>
+      <path d="M724 326 C778 308 824 322 850 358" fill="none" stroke="${gold}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.44 : 0.3}"/>
+      <path d="M668 596 C734 574 804 594 858 646 C772 688 704 666 668 596Z" fill="${dark ? "#ead9aa" : "#53685f"}" opacity="${dark ? 0.11 : 0.08}"/>
     </g>
   `;
 }
 
 function sympathyPremiumStillLifeBorder(panelId) {
   if (panelId === "front") {
-    return `<path d="M250 1888 H1238" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.16"/>`;
+    return `
+      <path d="M210 1886 C446 1820 662 1852 896 1792 C1110 1738 1268 1756 1370 1710" stroke="#ead9aa" stroke-width="4" stroke-linecap="round" opacity="0.2" fill="none"/>
+      <path d="M292 1940 H1120" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+    `;
   }
   if (panelId === "back") {
-    return `<path d="M350 1888 H1150" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.14"/>`;
+    return `
+      <path d="M330 1868 H1170" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
+      <path d="M510 1918 H990" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.1"/>
+    `;
   }
-  return `<path d="M260 220 H1240" stroke="#d9bd7f" stroke-width="3" stroke-linecap="round" opacity="0.12"/>`;
+  return `
+    <path d="M238 220 C448 174 646 220 858 178 C1048 140 1182 166 1272 132" stroke="#d9bd7f" stroke-width="3" stroke-linecap="round" opacity="0.14" fill="none"/>
+    <path d="M286 1880 H1214" stroke="#53685f" stroke-width="3" stroke-linecap="round" opacity="0.08"/>
+  `;
 }
 
 function sympathyCarePackageTexture(panelId) {
@@ -2251,28 +2283,28 @@ function buildCloudflareImagePrompt({ panelId, prompt }) {
       ? "back cover"
       : `${panelId} interior`;
   const shared =
-    "Premium flat 2D vertical 5x7 greeting-card panel artwork, print-ready digital illustration, no camera, no physical paper mockup, no tabletop scene, no people, no hands, no faces, no readable text, no letters, no tiny glyphs, no logos, no watermark.";
+    "Premium flat 2D vertical 5x7 greeting-card panel artwork, print-ready digital paper-cut illustration, vector-poster flatness, no camera, no physical paper mockup, no tabletop scene, no open book, no page seam, no real room, no floor, no wall, no objects, no people, no hands, no faces, no readable text, no letters, no tiny glyphs, no logos, no watermark.";
   if (panelId === "front") {
     return [
       shared,
-      `${role}: dark moss green wall with warm doorway light at left, flat cut-paper editorial care vignette in lower third, folded ivory blanket, plain lidded ceramic bowl, small brass key, face-down simple phone silhouette with no screen details, thin branch sprig, large calm open title area in upper middle, sophisticated negative space, no waves, no road, no landscape.`
+      `${role}: deep moss field, warm title-safe glow in upper middle, layered ivory and taupe abstract threshold relief across lower third, one quiet open-space shape, restrained moss and soft gold paper layers, sophisticated negative space, no literal support objects, no door, no table, no room, no waves, no road, no landscape.`
     ].join(" ");
   }
   if (panelId === "back") {
     return [
       shared,
-      `${role}: mostly dark moss green negative space, tiny lower-corner flat cut-paper care bundle with folded ivory blanket, plain lidded bowl, small brass key, simple phone silhouette, thin branch sprig, subtle paper grain, premium stationery finish, open center with no decoration, no waves or landscape.`
+      `${role}: mostly deep moss negative space, small lower-corner abstract ivory/taupe paper-cut relief echo, subtle paper grain, premium stationery finish, open center with no decoration, no literal objects, no door, no table, no room, no waves or landscape.`
     ].join(" ");
   }
   return [
     shared,
-    `${role}: warm ivory interior, soft vellum-like central negative space for later typography, tiny lower-edge flat cut-paper care marks only, folded blanket curve, plain lidded bowl arc, small key shape, quiet phone silhouette, thin branch sprig, muted moss line accents near outer edge, low-contrast layered paper texture, generous margins, calm paired interior spread, no waves or landscape.`
+    `${role}: warm ivory interior, soft central negative space for later typography, low-contrast abstract paper-cut relief only on far outer edge and lower band, muted moss line accents, soft taupe paper layers, generous margins, calm paired interior spread, no literal objects, no open book, no page seam, no waves or landscape.`
   ].join(" ");
 }
 
 function buildCloudflareNegativePrompt({ negativePrompt, prompt }) {
   const base = isQuietCarePrompt(prompt)
-    ? "readable text, fake text, letters, words, handwriting, calligraphy, signature, label, logo, watermark, tiny glyphs, small symbols, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, wall floor corner, envelope, tabletop scene, desk, product photo, frame, QR code, busy background, car, vehicle, road, highway, lane line, landscape, horizon, hills, mountains, river, ocean, waves, sunset, food, fruit, cans, jars, package labels, hospital, religious symbols"
+    ? "readable text, fake text, letters, words, handwriting, calligraphy, signature, label, logo, watermark, tiny glyphs, small symbols, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, book, paper fold, crease line, page seam, wall floor corner, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, vehicle, road, highway, lane line, landscape, horizon, hills, mountains, river, ocean, waves, sunset, blanket, cloth, cup, bowl, dish, pot, key, phone, food, fruit, cans, jars, package labels, hospital, religious symbols"
     : negativePrompt;
   return truncate(base || negativePrompt || "", 700);
 }
@@ -2658,13 +2690,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = (isSympathy
       ? {
         front:
-          "Full-bleed flat 2D quiet-support gallery artwork for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field, plain upper/center text-safe area, and one sparse lower-edge support-object strip.",
+          "Full-bleed flat 2D quiet-support artwork for the front of a premium vertical 5x7 sympathy print panel; deep moss field, warm upper title-safe glow, and one large lower paper-cut threshold relief that reads as practical care without clipart.",
         "inside-left":
-          "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, empty plain center for text, and tiny lower-left support-object marks only.",
+          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory open field, generous center text area, and integrated lower/outer-edge paper-cut practical-care relief.",
         "inside-right":
-          "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, empty plain center for text, and tiny lower-edge support-object marks only.",
+          "Full-bleed flat 2D quiet-support artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory open field, generous center text area, and integrated lower/outer-edge paper-cut practical-care relief.",
         back:
-          "Full-bleed flat 2D quiet-support gallery artwork for a minimal vertical 5x7 back sympathy print panel; mostly empty warm ivory field with one small lower-band support-object echo."
+          "Full-bleed flat 2D quiet-support artwork for a minimal vertical 5x7 back sympathy print panel; deep moss field, readable upper/center text-safe area, and one composed lower paper-cut care-relief echo."
       }
     : {
         front:
@@ -2702,8 +2734,8 @@ function buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, te
     panelInstruction,
     "Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card.",
     `Text contract: keep the ${textSafeCue} empty, plain, low-contrast, and free of objects; no marks behind app-rendered text.`,
-    "Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette.",
-    "No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
+    "Use one composed lower paper-cut care tableau: folded cloth arc, covered meal form, quiet call curve, ride/threshold line, and silence/open-space shape integrated into one relief.",
+    "No isolated bag/key/phone icons, no fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
     "No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene.",
     visualBrief,
     `Panel cue: ${visualCue}`,
@@ -2965,7 +2997,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
+    return "Reverent quiet-support flat 2D paper-cut artwork: deep moss front/back, warm ivory interiors, muted gray-green relief, and soft taupe highlights; wide plain text field; one integrated lower practical-care tableau, not separate icons; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -3106,8 +3138,8 @@ function buildThemeGuide(input) {
     return themeGuide({
       title: "Quietly With You",
       palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
-      motifs: ["quiet window light", "meal bowl", "folded cloth", "muted phone", "small key", "single branch silhouette", "soft open field"],
-      border: "open-edge gallery composition with no closed frame and generous natural negative space"
+      motifs: ["threshold light", "folded cloth arc", "covered meal form", "quiet call curve", "ride threshold line", "silence open-space shape", "soft open field"],
+      border: "open-edge paper-cut composition with no closed frame and generous natural negative space"
     });
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
@@ -3251,10 +3283,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Flat quiet-support sympathy cover with warm ivory open field, empty upper/center text-safe space, and a sparse lower-edge strip with meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, table setting, ornate frame, or religious symbol.",
-      "inside-left": "Soft left interior with warm ivory open field, empty plain center text-safe space, and tiny meal bowl/folded cloth marks only along the lower-left edge; no fruit, flowers, table setting, closed layout, or framed blank page.",
-      "inside-right": "Matching right interior with warm ivory open field, empty plain center text-safe space, and tiny muted phone/key marks only near the lower edge; no fruit, flowers, route lines, cars, closed layout, or framed blank page.",
-      back: "Minimal back cover with mostly empty warm ivory field and one small lower-band echo of bowl, phone, key, and thin branch; no urn, vase, fruit, flowers, table setting, line-art thicket, or physical paper card."
+      front: "Premium quiet-support sympathy cover with deep moss field, warm upper title-safe glow, and one large lower paper-cut practical-care tableau; folded cloth arc, covered meal form, quiet call curve, ride threshold line, and silence/open-space shape are integrated as abstract relief, not clipart.",
+      "inside-left": "Soft left interior with warm ivory open field, empty plain center text-safe space, and an integrated lower-left paper-cut relief echo; no fruit, flowers, table setting, closed layout, framed blank page, or isolated icons.",
+      "inside-right": "Matching right interior with warm ivory open field, empty plain center text-safe space, and an integrated lower/right paper-cut relief echo; no fruit, flowers, route lines, cars, closed layout, framed blank page, or isolated icons.",
+      back: "Minimal deep moss back cover with readable upper/center text-safe area and one composed lower paper-cut care-relief echo; no urn, vase, fruit, flowers, table setting, line-art thicket, physical paper card, or isolated icons."
     };
     return cues[panelId];
   }

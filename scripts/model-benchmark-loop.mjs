@@ -409,7 +409,7 @@ export const stories = {
       relationship: "friend",
       occasion: "sympathy after losing a parent",
       tone: "quiet, grounded, deeply respectful, practical, not cliched",
-      style: "restrained sympathy stationery, soft gray, warm ivory, one small line-art branch, generous whitespace",
+      style: "premium quiet-support print: deep moss front/back, warm ivory interiors, layered paper-cut threshold relief, practical-care forms integrated as one lower tableau, no clipart",
       language: "English",
       personal_note:
         "A quiet card for Eli after losing his father. Mention that I am here for the practical stuff too: meals, rides, calls, silence. No cliches.",
@@ -1518,6 +1518,7 @@ function previewPromptForbidsTextField(panelCopy = {}) {
     panelCopy?.image_prompt,
     panelCopy?.imagePrompt
   ].join(" ");
+  if (/\b(?:sympathy|quiet support|quiet-support|paper-cut|papercut|open-edge)\b/i.test(source)) return true;
   return /\b(?:no caption plaque|no text box|no inner card rectangle|no blank tag|no label)\b/i.test(source);
 }
 
