@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPhaseReadme,
   buildTypographyExperimentPrompt,
+  pipelineQualityRuns,
   sanitizeBenchmarkValue,
   stories as benchmarkStories,
   typographyExperimentRuns,
@@ -160,6 +161,14 @@ describe("model benchmark typography experiment", () => {
           model: "text2img",
           configured: true,
           missingEnv: []
+        },
+        {
+          id: "image-browser-svg-renderer",
+          label: "Deterministic browser SVG renderer",
+          adapterId: "browser-svg-renderer",
+          model: "deterministic-svg",
+          configured: true,
+          missingEnv: []
         }
       ],
       text: []
@@ -171,6 +180,69 @@ describe("model benchmark typography experiment", () => {
       "mode-c-hybrid-reserved-layout"
     ]);
     expect(new Set(runs.map((run) => run.image.id))).toEqual(new Set(["image-deepai-text2img"]));
+  });
+
+  it("plans product-quality benchmarks through the full card generation pipeline with deterministic story input", () => {
+    const runs = pipelineQualityRuns({
+      image: [
+        {
+          id: "image-cloudflare-flux-schnell",
+          label: "Cloudflare FLUX.1 Schnell",
+          adapterId: "cloudflare-workers-ai-image",
+          model: "@cf/black-forest-labs/flux-1-schnell",
+          configured: true,
+          missingEnv: []
+        },
+        {
+          id: "image-deepai-text2img",
+          label: "DeepAI text2img",
+          adapterId: "deepai-text2img-image",
+          model: "text2img",
+          configured: true,
+          missingEnv: []
+        },
+        {
+          id: "image-browser-svg-renderer",
+          label: "Deterministic browser SVG renderer",
+          adapterId: "browser-svg-renderer",
+          model: "deterministic-svg",
+          configured: true,
+          missingEnv: []
+        }
+      ],
+      text: [
+        {
+          id: "text-cloudflare-baseline",
+          label: "Current Cloudflare text baseline",
+          adapterId: "cloudflare-workers-ai-chat",
+          configured: true,
+          missingEnv: []
+        },
+        {
+          id: "text-hf-qwen3-235b-a22b",
+          label: "Hugging Face Qwen3 235B A22B Instruct 2507",
+          adapterId: "huggingface-chat",
+          model: "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          configured: true,
+          missingEnv: []
+        }
+      ]
+    });
+
+    expect(runs).toHaveLength(6);
+    expect(new Set(runs.map((run) => run.text.id))).toEqual(
+      new Set(["text-cloudflare-baseline", "text-hf-qwen3-235b-a22b"])
+    );
+    expect(new Set(runs.map((run) => run.image.id))).toEqual(
+      new Set(["image-cloudflare-flux-schnell", "image-deepai-text2img", "image-browser-svg-renderer"])
+    );
+    for (const run of runs) {
+      expect(run.phase).toBe("pipeline-quality");
+      expect(run.focus).toBe("full-card-quality");
+      expect(run.storyId).toBe("sympathy-quiet-support");
+      expect(run.story.request.personal_note).toContain("Eli");
+      expect(run).not.toHaveProperty("typographyMode");
+    }
   });
 
   it("summarizes typography run status and links relative to the evidence root", () => {

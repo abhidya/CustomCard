@@ -1,0 +1,36 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-improved-v5-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img",
+  "startedAt": "2026-06-13T05:15:42.278Z",
+  "finishedAt": "2026-06-13T05:15:52.535Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-only",
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {
+    "image": "DeepAI image provider returned 400: An error occurred processing this request. Please check your inputs and try again.."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 2,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 2
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

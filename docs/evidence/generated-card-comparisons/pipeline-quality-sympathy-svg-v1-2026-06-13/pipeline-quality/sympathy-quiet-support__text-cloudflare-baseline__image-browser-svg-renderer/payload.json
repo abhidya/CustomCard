@@ -1,0 +1,263 @@
+{
+  "draft_id": "ai-mqbxe3f4-eli",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "restrained sympathy stationery",
+      "palette": [
+        "soft gray",
+        "warm ivory",
+        "light ivory/cream low-contrast interior"
+      ],
+      "motifs": [
+        "line-art branch",
+        "warm ivory",
+        "soft gray"
+      ],
+      "border_style": "thin refined frame",
+      "front_back_pairing": "coordinating line-art branch",
+      "interior_pairing": "border-first stationery design"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "Eli, I'm here for you.",
+        "body": "A quiet note after your father's loss, with room for grief, silence, and steady care.",
+        "art_direction": "Cinematic single-object cover with a clean lower text-safe area, using the restrained sympathy stationery style.",
+        "visual_cue": "A clean lower text-safe area for the app overlay, with a single line-art branch in warm ivory on the left side.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "lower",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A soft gray 5x7 panel with a single line-art branch in warm ivory on the left side, leaving a clean lower text-safe area for the app overlay. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "With You In This",
+        "body": "I am so sorry about your father. I will not try to explain the loss or fill the silence with easy words; I just want you to know you are not alone.",
+        "art_direction": "Border-first stationery design with a calm blank center reserved for app-rendered text.",
+        "visual_cue": "A border-first stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "minimal-sans",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A border-first stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Jordan",
+        "body": "I am here for the practical things too: meals, rides, calls, and silence when talking is too much. May you have room to grieve at your own pace, with steady care nearby. With sympathy and friendship, Jordan.",
+        "art_direction": "Border-first stationery design with a calm blank center reserved for app-rendered text.",
+        "visual_cue": "A border-first stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "minimal-sans",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A border-first stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Steady Care",
+        "body": "For grief, practical help, and quiet support when words cannot hold enough.",
+        "art_direction": "A mostly negative space panel with a small coordinating lower mark or border echo.",
+        "visual_cue": "A mostly negative space panel with a small warm ivory line-art branch in the lower corner, echoing the single line-art branch on the front.",
+        "text_layout": {
+          "headline_zone": "lower",
+          "body_zone": "bottom",
+          "alignment": "center",
+          "font_pairing": "minimal-sans",
+          "color_mode": "dark-ink",
+          "scale": "standard"
+        },
+        "image_prompt": "A mostly negative space panel with a small warm ivory line-art branch in the lower corner, echoing the single line-art branch on the front. 5x7 vertical print panel. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [
+    {
+      "panel_id": "front",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJwaG90by1ub3RlIj4KPHJlY3Qgd2lkdGg9IjE1MDAiIGhlaWdodD0iMjEwMCIgZmlsbD0iI2ZiZjdlZiIvPgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC10ZXh0dXJlPSJwYXBlci1ncmFpbiIgb3BhY2l0eT0iMC4wOSI+CiAgICAgIDxwYXRoIGQ9Ik0yNDAgNDIwIEM0MzAgMzkwIDYxMCA0NDAgODIwIDQwMiBDMTAzMCAzNjQgMTE2MCA0MTIgMTI5MCAzODgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdkOGI3MiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNjAgMTcxMCBDNDcwIDE2NjAgNjMwIDE3MzAgODMwIDE2ODYgQzEwMTAgMTY0NiAxMTQwIDE2OTAgMTI2MCAxNjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiM3ZDhiNzIiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPC9nPgogIAoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJwaG90by1ub3RlIiBvcGFjaXR5PSIwLjQ4Ij4KICAgICAgPHJlY3QgeD0iMjEwIiB5PSIzMDAiIHdpZHRoPSIxMDgwIiBoZWlnaHQ9Ijc2MCIgcng9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM5YWE1OGQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWRhc2hhcnJheT0iMzIgMjAiLz4KICAgICAgPHJlY3QgeD0iMjUwIiB5PSIzNDAiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjY4MCIgcng9IjEwIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjIyIi8+CiAgICAgIDxwYXRoIGQ9Ik0zMDAgMTIyMCBIMTE4MCIgc3Ryb2tlPSIjYTk4ZjY4IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC4zNCIvPgogICAgICA8ZWxsaXBzZSBjeD0iMTEzNSIgY3k9IjExNjgiIHJ4PSIzNCIgcnk9IjkwIiBmaWxsPSIjN2Q4YjcyIiB0cmFuc2Zvcm09InJvdGF0ZSg0MiAxMTM1IDExNjgpIi8+CiAgICA8L2c+CiAgCgoKCiAgICA8cmVjdCB4PSI5MiIgeT0iOTIiIHdpZHRoPSIxMzE2IiBoZWlnaHQ9IjE5MTYiIHJ4PSIxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2Q4YjcyIiBzdHJva2Utd2lkdGg9IjUiIG9wYWNpdHk9IjAuNDIiLz4KICAgIDxyZWN0IHg9IjEyOCIgeT0iMTI4IiB3aWR0aD0iMTI0NCIgaGVpZ2h0PSIxODQ0IiByeD0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2E5OGY2OCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjI0Ii8+CiAgCjwvc3ZnPg==",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A clean lower text-safe area for the app overlay, with a single line-art branch in warm ivory on the left side. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-left",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJwaG90by1ub3RlIj4KPHJlY3Qgd2lkdGg9IjE1MDAiIGhlaWdodD0iMjEwMCIgZmlsbD0iI2ZiZjdlZiIvPgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC10ZXh0dXJlPSJwYXBlci1ncmFpbiIgb3BhY2l0eT0iMC4wOSI+CiAgICAgIDxwYXRoIGQ9Ik0yNDAgNDIwIEM0MzAgMzkwIDYxMCA0NDAgODIwIDQwMiBDMTAzMCAzNjQgMTE2MCA0MTIgMTI5MCAzODgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdkOGI3MiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNjAgMTcxMCBDNDcwIDE2NjAgNjMwIDE3MzAgODMwIDE2ODYgQzEwMTAgMTY0NiAxMTQwIDE2OTAgMTI2MCAxNjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiM3ZDhiNzIiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPC9nPgogIAoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJwaG90by1ub3RlIiBvcGFjaXR5PSIwLjM2Ij4KICAgICAgPHJlY3QgeD0iMjEwIiB5PSIyODAiIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjUyMCIgcng9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM5YWE1OGQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWRhc2hhcnJheT0iMzIgMjAiLz4KICAgICAgPHJlY3QgeD0iMjUwIiB5PSIzMjAiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjQ0MCIgcng9IjEwIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjIyIi8+CiAgICAgIDxwYXRoIGQ9Ik0zMDAgOTYwIEgxMTgwIiBzdHJva2U9IiNhOThmNjgiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM0Ii8+CiAgICAgIDxlbGxpcHNlIGN4PSIxMTM1IiBjeT0iOTA4IiByeD0iMzQiIHJ5PSI5MCIgZmlsbD0iIzdkOGI3MiIgdHJhbnNmb3JtPSJyb3RhdGUoNDIgMTEzNSA5MDgpIi8+CiAgICA8L2c+CiAgCgoKCiAgICA8cmVjdCB4PSI5MiIgeT0iOTIiIHdpZHRoPSIxMzE2IiBoZWlnaHQ9IjE5MTYiIHJ4PSIxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOWFhNThkIiBzdHJva2Utd2lkdGg9IjUiIG9wYWNpdHk9IjAuNDIiLz4KICAgIDxyZWN0IHg9IjEyOCIgeT0iMTI4IiB3aWR0aD0iMTI0NCIgaGVpZ2h0PSIxODQ0IiByeD0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2E5OGY2OCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjI0Ii8+CiAgCjwvc3ZnPg==",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A border-first stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "inside-right",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJwaG90by1ub3RlIj4KPHJlY3Qgd2lkdGg9IjE1MDAiIGhlaWdodD0iMjEwMCIgZmlsbD0iI2ZiZjdlZiIvPgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC10ZXh0dXJlPSJwYXBlci1ncmFpbiIgb3BhY2l0eT0iMC4wOSI+CiAgICAgIDxwYXRoIGQ9Ik0yNDAgNDIwIEM0MzAgMzkwIDYxMCA0NDAgODIwIDQwMiBDMTAzMCAzNjQgMTE2MCA0MTIgMTI5MCAzODgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdkOGI3MiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNjAgMTcxMCBDNDcwIDE2NjAgNjMwIDE3MzAgODMwIDE2ODYgQzEwMTAgMTY0NiAxMTQwIDE2OTAgMTI2MCAxNjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiM3ZDhiNzIiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPC9nPgogIAoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJwaG90by1ub3RlIiBvcGFjaXR5PSIwLjM2Ij4KICAgICAgPHJlY3QgeD0iMjEwIiB5PSIyODAiIHdpZHRoPSIxMDgwIiBoZWlnaHQ9IjUyMCIgcng9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM5YWE1OGQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWRhc2hhcnJheT0iMzIgMjAiLz4KICAgICAgPHJlY3QgeD0iMjUwIiB5PSIzMjAiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjQ0MCIgcng9IjEwIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjIyIi8+CiAgICAgIDxwYXRoIGQ9Ik0zMDAgOTYwIEgxMTgwIiBzdHJva2U9IiNhOThmNjgiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM0Ii8+CiAgICAgIDxlbGxpcHNlIGN4PSIxMTM1IiBjeT0iOTA4IiByeD0iMzQiIHJ5PSI5MCIgZmlsbD0iIzdkOGI3MiIgdHJhbnNmb3JtPSJyb3RhdGUoNDIgMTEzNSA5MDgpIi8+CiAgICA8L2c+CiAgCgoKCiAgICA8cmVjdCB4PSI5MiIgeT0iOTIiIHdpZHRoPSIxMzE2IiBoZWlnaHQ9IjE5MTYiIHJ4PSIxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOWFhNThkIiBzdHJva2Utd2lkdGg9IjUiIG9wYWNpdHk9IjAuNDIiLz4KICAgIDxyZWN0IHg9IjEyOCIgeT0iMTI4IiB3aWR0aD0iMTI0NCIgaGVpZ2h0PSIxODQ0IiByeD0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2E5OGY2OCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjI0Ii8+CiAgCjwvc3ZnPg==",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A border-first stationery design with a thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no",
+      "width": 1500,
+      "height": 2100
+    },
+    {
+      "panel_id": "back",
+      "image_url": "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAwIiBoZWlnaHQ9IjIxMDAiIHZpZXdCb3g9IjAgMCAxNTAwIDIxMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iQ3VzdG9tQ2FyZCBnZW5lcmF0ZWQgYXJ0d29yayBsYXllciIgZGF0YS1jdXN0b21jYXJkLXRoZW1lPSJwaG90by1ub3RlIj4KPHJlY3Qgd2lkdGg9IjE1MDAiIGhlaWdodD0iMjEwMCIgZmlsbD0iI2ZiZjdlZiIvPgoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC10ZXh0dXJlPSJwYXBlci1ncmFpbiIgb3BhY2l0eT0iMC4wOSI+CiAgICAgIDxwYXRoIGQ9Ik0yNDAgNDIwIEM0MzAgMzkwIDYxMCA0NDAgODIwIDQwMiBDMTAzMCAzNjQgMTE2MCA0MTIgMTI5MCAzODgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzdkOGI3MiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNjAgMTcxMCBDNDcwIDE2NjAgNjMwIDE3MzAgODMwIDE2ODYgQzEwMTAgMTY0NiAxMTQwIDE2OTAgMTI2MCAxNjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiM3ZDhiNzIiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPC9nPgogIAoKICAgIDxnIGRhdGEtY3VzdG9tY2FyZC1oZXJvPSJwaG90by1ub3RlIiBvcGFjaXR5PSIwLjQ4Ij4KICAgICAgPHJlY3QgeD0iMjEwIiB5PSIxMjkwIiB3aWR0aD0iMTA4MCIgaGVpZ2h0PSIyODAiIHJ4PSIxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOWFhNThkIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1kYXNoYXJyYXk9IjMyIDIwIi8+CiAgICAgIDxyZWN0IHg9IjI1MCIgeT0iMTMzMCIgd2lkdGg9IjEwMDAiIGhlaWdodD0iMjAwIiByeD0iMTAiIGZpbGw9IiNmZmZmZmYiIG9wYWNpdHk9IjAuMjIiLz4KICAgICAgPHBhdGggZD0iTTMwMCAxNzMwIEgxMTgwIiBzdHJva2U9IiNhOThmNjgiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM0Ii8+CiAgICAgIDxlbGxpcHNlIGN4PSIxMTM1IiBjeT0iMTY3OCIgcng9IjM0IiByeT0iOTAiIGZpbGw9IiM3ZDhiNzIiIHRyYW5zZm9ybT0icm90YXRlKDQyIDExMzUgMTY3OCkiLz4KICAgIDwvZz4KICAKCgoKICAgIDxyZWN0IHg9IjkyIiB5PSI5MiIgd2lkdGg9IjEzMTYiIGhlaWdodD0iMTkxNiIgcng9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM3ZDhiNzIiIHN0cm9rZS13aWR0aD0iNSIgb3BhY2l0eT0iMC40MiIvPgogICAgPHJlY3QgeD0iMTI4IiB5PSIxMjgiIHdpZHRoPSIxMjQ0IiBoZWlnaHQ9IjE4NDQiIHJ4PSIxMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTk4ZjY4IiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMjQiLz4KICAKPC9zdmc+",
+      "revised_prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A mostly negative space panel with a small warm ivory line-art branch in the lower corner, echoing the single line-art branch on the front. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter,",
+      "width": 1500,
+      "height": 2100
+    }
+  ],
+  "generated_by": "ai-text-and-image",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "deterministic-customer-chat",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "primary_adapter_id": "browser-svg-renderer",
+      "fallback_adapter_id": "browser-svg-renderer",
+      "model": "deterministic-svg",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": false,
+      "fallback_queue_enabled": true,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-364d3f64",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer-1781329154748",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-13T05:39:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-9ae7f3e7",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer-1781329154748",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-13T05:39:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "deterministic-customer-chat",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-5a23461a",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer-1781329154748",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "provider": "CustomCard renderer",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T05:39:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "browser-svg-renderer",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": true,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-7487a345",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer-1781329154748",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "browser-svg-renderer",
+      "provider": "CustomCard renderer",
+      "capability": "image-generation",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 0,
+      "rate_limit_window_start": "2026-06-13T05:39:00.000Z",
+      "live_network_call": false,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "browser-svg-renderer",
+        "fallbackAdapterId": "browser-svg-renderer",
+        "localAdapter": true,
+        "costGateEvent": true,
+        "generatedPanelCount": 4
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 5,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

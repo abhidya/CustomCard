@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-browser-svg-renderer",
+  "imageAdapterId": "browser-svg-renderer",
+  "imageModel": "deterministic-svg",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer",
+  "startedAt": "2026-06-13T05:45:08.077Z",
+  "finishedAt": "2026-06-13T05:45:15.633Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/provider-front.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A quiet, flat 5x7 vertical print panel artwork with a soft gray and warm ivory palette, a small line-art branch on the lower edge, and a clean text-safe area for the app overlay. Keep natural negative space for app-rendered typography in the upper and lower fields; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/provider-inside-left.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A calm, flat 5x7 vertical print panel artwork with a light ivory/cream palette, a thin refined frame, quiet center, clean text-safe area, generous margins, and sparse edge/corner or lower-edge motifs. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table,",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/provider-inside-right.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A calm, flat 5x7 vertical print panel artwork with a light ivory/cream palette, a thin refined frame, quiet center, clean text-safe area, generous margins, and sparse edge/corner or lower-edge motifs. Keep natural negative space for app-rendered typography in the upper-to-center field; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame,",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/provider-back.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque. Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup. Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches. Use this panel-specific composition: A mostly flat 5x7 vertical print panel artwork with a soft gray and warm ivory palette, a small coordinating lower mark, and mostly negative space. Keep natural negative space for app-rendered typography in the lower half; do not draw words, labels, or handwriting. Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-svg-v3-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-browser-svg-renderer/contact-sheet.png",
+  "providerCallCount": 1,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 1
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

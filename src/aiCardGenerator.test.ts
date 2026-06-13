@@ -101,6 +101,7 @@ describe("AI card generator service", () => {
     );
     expect(userPrompt.copy_requirements).toEqual(
       expect.arrayContaining([
+        "Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.",
         "inside-right body should be 180-420 characters and carry the main personal message plus a natural sign-off when appropriate.",
         "Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like."
       ])
@@ -719,6 +720,121 @@ describe("AI card generator service", () => {
     expect(weddingCopy).toMatch(/blessing/i);
     expect(weddingCopy).toMatch(/handwritten|handwriting/i);
     expect(weddingCopy).not.toMatch(/God bless|close family|soulmate|perfect/i);
+  });
+
+  it("repairs quiet sympathy copy into literal practical support and readable layout", async () => {
+    const weakSympathyResponse = {
+      theme_guide: {
+        theme_title: "Quiet Sympathy",
+        palette: ["soft gray", "warm ivory", "palette"],
+        motifs: ["line-art branch", "sparse lower-edge motifs", "palette", "style"],
+        border_style: "thin refined frame",
+        front_back_pairing: "restrained stationery",
+        interior_pairing: "border-first stationery"
+      },
+      panels: cardCopyResponse.panels.map((panel) => ({
+        ...panel,
+        headline:
+          panel.id === "front"
+            ? "Sympathy for Eli"
+            : panel.id === "inside-left"
+                ? "A friend's support"
+                : panel.id === "inside-right"
+                  ? "A friend's support"
+                  : "Gratitude for Eli",
+        body:
+          panel.id === "front"
+            ? "A quiet note for the days that ask for steadiness, space, and care."
+            : panel.id === "inside-left"
+              ? "I am so sorry for the loss your family is carrying. I will not try to explain it away or fill the silence with easy words; I just want you to know you are not alone."
+              : panel.id === "inside-right"
+                ? "I am here for the practical things, the quiet check-ins, and the days when talking is too much. May you have room to grieve at your own pace, with steady care around you. With sympathy and friendship, Jordan."
+                : "A quiet support note, made with room for what words cannot hold.",
+        text_layout: {
+          headline_zone: "center",
+          body_zone: "lower",
+          alignment: "right",
+          font_pairing: "minimal-sans",
+          color_mode: "light-ink",
+          scale: "standard"
+        },
+        art_direction: "Simple sympathy stationery.",
+        image_prompt: "A simple border-first stationery design with a quiet center.",
+        image_negative_prompt: "readable text"
+      })),
+      memory_citations: [
+        "Eli lost his father.",
+        "Jordan wants to offer practical support: meals, rides, calls, and silence."
+      ]
+    };
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ result: { response: weakSympathyResponse } }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      })
+    );
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(
+      {
+        ...cardRequest,
+        sender: "Jordan",
+        recipient: "Eli",
+        relationship: "friend",
+        occasion: "sympathy after losing a parent",
+        tone: "quiet, grounded, deeply respectful, practical, not cliched",
+        style: "restrained sympathy stationery, soft gray, warm ivory, one small line-art branch, generous whitespace",
+        personal_note:
+          "A quiet card for Eli after losing his father. Mention that I am here for the practical stuff too: meals, rides, calls, silence. No cliches.",
+        memory_notes: [
+          "Eli lost his father.",
+          "Jordan wants to offer practical support: meals, rides, calls, and silence.",
+          "The card should avoid platitudes and religious claims unless requested."
+        ]
+      },
+      { rateKey: "test-sympathy-literal-support-repair" }
+    );
+    const payload = result.payload as {
+      card_copy: {
+        theme_guide: { palette: string[]; motifs: string[] };
+        panels: Array<{ id: string; headline: string; body: string; image_prompt?: string; text_layout?: Record<string, string> }>;
+      };
+    };
+    const copy = JSON.stringify(payload.card_copy);
+    const front = payload.card_copy.panels.find((panel) => panel.id === "front");
+    const insideLeft = payload.card_copy.panels.find((panel) => panel.id === "inside-left");
+    const insideRight = payload.card_copy.panels.find((panel) => panel.id === "inside-right");
+    const back = payload.card_copy.panels.find((panel) => panel.id === "back");
+
+    expect(copy).toContain("Eli");
+    expect(copy).toContain("father");
+    expect(copy).toContain("meals");
+    expect(copy).toContain("rides");
+    expect(copy).toContain("calls");
+    expect(copy).toContain("silence");
+    expect(copy).not.toMatch(/everything happens for a reason|thoughts and prayers|better place/i);
+    expect(front?.headline).toBe("For Eli");
+    expect(insideLeft?.headline).toBe("With You In This");
+    expect(insideRight?.headline).toBe("From Jordan");
+    expect(back?.headline).toBe("With Steady Care");
+    expect(back?.body).toContain("practical help");
+    expect(back?.body).toContain("quiet support");
+    expect(back?.body).not.toMatch(/thank you for being a part of our lives|in memory/i);
+    expect(payload.card_copy.theme_guide.palette).not.toContain("palette");
+    expect(payload.card_copy.theme_guide.motifs).not.toContain("style");
+    expect(payload.card_copy.panels.map((panel) => panel.image_prompt).join("\n")).not.toMatch(/recipient.?s? name|card copy|headline|body/i);
+    expect(front?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "upper", body_zone: "lower", scale: "large" });
+    expect(insideLeft?.text_layout).toMatchObject({ color_mode: "dark-ink", font_pairing: "soft-serif", scale: "large" });
+    expect(insideRight?.text_layout).toMatchObject({ color_mode: "dark-ink", font_pairing: "soft-serif", scale: "large" });
+    expect(back?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "lower", body_zone: "bottom", scale: "large" });
   });
 
   it("honors a trusted admin live-provider off toggle even when credentials exist", async () => {

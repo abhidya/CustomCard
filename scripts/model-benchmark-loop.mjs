@@ -98,6 +98,7 @@ const typographyModes = [
   }
 ];
 
+const pipelineQualityStoryId = "sympathy-quiet-support";
 const typographyPanelOrder = ["front", "inside-left", "inside-right", "back"];
 const typographyTextPanels = {
   front: {
@@ -534,6 +535,13 @@ const imageCandidates = [
     adapterId: "google-gemini-image",
     model: "gemini-3.1-flash-image",
     requiredEnv: ["GOOGLE_GENERATIVE_AI_API_KEY"]
+  },
+  {
+    id: "image-browser-svg-renderer",
+    label: "Deterministic browser SVG renderer",
+    adapterId: "browser-svg-renderer",
+    model: "deterministic-svg",
+    requiredEnv: []
   }
 ];
 
@@ -641,6 +649,7 @@ function plannedRunsForPhase(phase, candidates) {
   if (phase === "smoke") return smokeRuns(candidates);
   if (phase === "full") return fullRuns(candidates);
   if (phase === "typography") return typographyExperimentRuns(candidates);
+  if (phase === "pipeline-quality" || phase === "quality") return pipelineQualityRuns(candidates);
   if (phase === "all") return [...smokeRuns(candidates), ...fullRuns(candidates)];
   throw new Error(`Unknown benchmark phase: ${phase}`);
 }
@@ -749,6 +758,44 @@ export function typographyExperimentRuns(candidates) {
     image,
     typographyMode: mode
   }));
+}
+
+export function pipelineQualityRuns(candidates) {
+  const story = stories[pipelineQualityStoryId];
+  const textIds = new Set(["text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
+  const imageIds = new Set(["image-deepai-text2img", "image-browser-svg-renderer", "image-cloudflare-flux-schnell"]);
+  const texts = (candidates.text || []).filter((candidate) => candidate.configured && textIds.has(candidate.id));
+  const selectedTexts = texts.length > 0 ? texts : [
+    {
+      id: "text-deterministic-fallback",
+      label: "Deterministic fallback copy",
+      adapterId: "deterministic-customer-chat",
+      model: "",
+      configured: true,
+      missingEnv: []
+    }
+  ];
+  const images = (candidates.image || []).filter((candidate) => candidate.configured && imageIds.has(candidate.id));
+  const selectedImages = images.length > 0 ? images : [
+    {
+      id: "image-browser-svg-renderer",
+      label: "Browser SVG renderer",
+      adapterId: "browser-svg-renderer",
+      model: "deterministic-svg",
+      configured: true,
+      missingEnv: []
+    }
+  ];
+  return selectedTexts.flatMap((text) =>
+    selectedImages.map((image) => ({
+      phase: "pipeline-quality",
+      focus: "full-card-quality",
+      storyId: story.id,
+      story,
+      text,
+      image
+    }))
+  );
 }
 
 function firstConfigured(candidates, preferredId) {
@@ -1562,12 +1609,12 @@ function applyPreviewTextLayout(base, rawTextLayout) {
   if (!layout) return shared;
   const scale = layout.scale === "compact" ? 0.86 : layout.scale === "large" ? 1.14 : 1;
   const font = layout.font_pairing === "bold-editorial"
-    ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 116, bodySize: 42, headlineChars: 16, bodyChars: 34 }
+    ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 124, bodySize: 48, headlineChars: 16, bodyChars: 32 }
     : layout.font_pairing === "minimal-sans"
-      ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 70, bodySize: 34, headlineChars: 28, bodyChars: 48 }
+      ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 78, bodySize: 42, headlineChars: 28, bodyChars: 42 }
       : layout.font_pairing === "soft-serif"
-        ? { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Georgia, Times New Roman, serif", headlineSize: 76, bodySize: 36, headlineChars: 26, bodyChars: 42 }
-        : { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 82, bodySize: 38, headlineChars: 24, bodyChars: 44 };
+        ? { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Georgia, Times New Roman, serif", headlineSize: 90, bodySize: 48, headlineChars: 24, bodyChars: 34 }
+        : { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 92, bodySize: 46, headlineChars: 24, bodyChars: 36 };
   return {
     ...shared,
     x: layout.alignment === "left" ? 260 : layout.alignment === "right" ? 1240 : 750,
@@ -1605,10 +1652,10 @@ function cleanLayoutEnum(value, allowed) {
 
 async function renderContactSheet({ runDir, run, panelFiles }) {
   if (panelFiles.length === 0) return undefined;
-  const thumbWidth = 300;
-  const thumbHeight = 420;
-  const labelHeight = 84;
-  const gap = 24;
+  const thumbWidth = 420;
+  const thumbHeight = 588;
+  const labelHeight = 92;
+  const gap = 28;
   const width = gap + panelFiles.length * (thumbWidth + gap);
   const height = labelHeight + thumbHeight + gap * 2;
   const base = sharp({ create: { width, height, channels: 4, background: "#f7f3ea" } });
@@ -1734,13 +1781,34 @@ function buildManualGradeTemplate(result, run) {
     "",
     `- Text: ${run.text.label} (${run.text.model || run.text.adapterId})`,
     `- Image: ${run.image.label} (${run.image.model || run.image.adapterId})`,
+    `- Pipeline: full card generation service (${run.phase})`,
+    `- User story: ${run.story.customer_type}; ${run.story.occasion}; memory load ${run.story.memory_load}`,
     `- Contact sheet: ${result.contactSheet ? `[open](./${basename(result.contactSheet)})` : "missing"}`,
+    "",
+    "## User Input",
+    "",
+    `- Sender: ${run.story.request.sender}`,
+    `- Recipient: ${run.story.request.recipient}`,
+    `- Relationship: ${run.story.request.relationship}`,
+    `- Brief: ${run.story.request.personal_note}`,
+    `- Must include: ${run.story.must_include.join(", ")}`,
+    `- Must avoid: ${run.story.must_avoid.join(", ")}`,
     "",
     "## Rubric",
     "",
-    "- Total score /100:",
+    "- Product quality score /100:",
+    "- Prompt/pipeline contract score /100:",
     "- Tier:",
     "- Dimension scores:",
+    "  - Prompt adherence and panel contract /15:",
+    "  - Occasion and user-story fit /15:",
+    "  - Copy quality and emotional calibration /15:",
+    "  - Visual composition and print readiness /15:",
+    "  - Theme coherence across panels /10:",
+    "  - Text/name fidelity strategy /10:",
+    "  - Domain/cultural sensitivity /10:",
+    "  - Commercial usefulness /5:",
+    "  - Originality and taste /5:",
     "- Hard failure caps triggered:",
     "- Best panel:",
     "- Worst panel:",

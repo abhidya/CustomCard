@@ -1013,15 +1013,65 @@ function boldTypeHero(panelId) {
 }
 
 function photoNoteHero(panelId) {
-  const inside = panelId.startsWith("inside");
-  const y = inside ? 280 : panelId === "back" ? 1290 : 300;
-  const h = inside ? 520 : panelId === "back" ? 280 : 760;
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="sympathy-front">
+        <rect x="156" y="156" width="1188" height="1788" rx="30" fill="#fffaf2" opacity="0.46"/>
+        <path d="M214 238 C456 186 666 246 892 212 C1068 186 1200 214 1296 190" fill="none" stroke="#d7cbb7" stroke-width="5" stroke-linecap="round" opacity="0.36"/>
+        <path d="M178 1788 C372 1736 568 1782 756 1740 C980 1690 1136 1728 1322 1642" fill="none" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
+        <path d="M148 258 C242 358 278 538 252 764 C228 960 190 1118 218 1288" fill="none" stroke="#7d8b72" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
+        <path d="M210 300 C236 480 220 688 160 912 C122 1060 126 1198 180 1328" fill="none" stroke="#586b5c" stroke-width="18" stroke-linecap="round" opacity="0.48"/>
+        <path d="M278 294 C236 520 214 796 228 1086" fill="none" stroke="#c8cec0" stroke-width="11" stroke-linecap="round" opacity="0.52"/>
+        <ellipse cx="250" cy="428" rx="46" ry="132" fill="#7d8b72" opacity="0.58" transform="rotate(34 250 428)"/>
+        <ellipse cx="164" cy="628" rx="38" ry="104" fill="#9aa58d" opacity="0.54" transform="rotate(-30 164 628)"/>
+        <ellipse cx="232" cy="852" rx="42" ry="120" fill="#7d8b72" opacity="0.5" transform="rotate(30 232 852)"/>
+        <ellipse cx="184" cy="1110" rx="28" ry="92" fill="#c8cec0" opacity="0.42" transform="rotate(-24 184 1110)"/>
+        <circle cx="1228" cy="314" r="118" fill="#efe4d2" opacity="0.52"/>
+        <circle cx="1288" cy="260" r="42" fill="#c8b899" opacity="0.3"/>
+        <path d="M1062 258 C1148 158 1292 164 1356 272 C1288 392 1138 384 1062 258Z" fill="#7d8b72" opacity="0.31"/>
+        <path d="M1038 1834 C1134 1738 1288 1744 1370 1854 C1280 1960 1130 1954 1038 1834Z" fill="#9aa58d" opacity="0.4"/>
+        <path d="M926 1912 C990 1852 1082 1854 1144 1914" fill="none" stroke="#7d8b72" stroke-width="9" stroke-linecap="round" opacity="0.18"/>
+        <circle cx="230" cy="1806" r="8" fill="#a98f68" opacity="0.42"/>
+        <circle cx="272" cy="1794" r="5" fill="#a98f68" opacity="0.34"/>
+      </g>
+    `;
+  }
+  if (panelId === "inside-left" || panelId === "inside-right") {
+    const mirrored = panelId === "inside-right";
+    const sideX = mirrored ? 1294 : 206;
+    const leafSign = mirrored ? -1 : 1;
+    const pathStart = mirrored ? "M1310" : "M190";
+    const curve = mirrored
+      ? "1200 510 1236 790 1312 1030 C1368 1210 1328 1438 1208 1646"
+      : "300 510 264 790 188 1030 C132 1210 172 1438 292 1646";
+    return `
+      <g data-customcard-hero="sympathy-interior-${panelId}">
+        <rect x="142" y="142" width="1216" height="1816" rx="22" fill="#fffdf8" opacity="0.52"/>
+        <path d="M280 312 C484 270 642 324 850 292 C1030 264 1166 286 1242 270" fill="none" stroke="#d7cbb7" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+        <path d="${pathStart} 270 C${curve}" fill="none" stroke="#7d8b72" stroke-width="9" stroke-linecap="round" opacity="0.24"/>
+        <path d="M250 1710 C430 1662 620 1712 798 1668 C998 1620 1130 1652 1250 1608" fill="none" stroke="#a98f68" stroke-width="5" stroke-linecap="round" opacity="0.22"/>
+        <ellipse cx="${sideX}" cy="520" rx="28" ry="86" fill="#7d8b72" opacity="0.36" transform="rotate(${leafSign * 34} ${sideX} 520)"/>
+        <ellipse cx="${sideX - leafSign * 70}" cy="760" rx="24" ry="76" fill="#9aa58d" opacity="0.32" transform="rotate(${leafSign * -30} ${sideX - leafSign * 70} 760)"/>
+        <ellipse cx="${sideX}" cy="1020" rx="28" ry="86" fill="#7d8b72" opacity="0.28" transform="rotate(${leafSign * 32} ${sideX} 1020)"/>
+        <circle cx="${mirrored ? 260 : 1240}" cy="330" r="76" fill="#efe4d2" opacity="0.32"/>
+        <circle cx="${mirrored ? 302 : 1198}" cy="292" r="28" fill="#c8b899" opacity="0.24"/>
+      </g>
+    `;
+  }
   return `
-    <g data-customcard-hero="photo-note" opacity="${inside ? 0.36 : 0.48}">
-      <rect x="210" y="${y}" width="1080" height="${h}" rx="18" fill="none" stroke="#9aa58d" stroke-width="8" stroke-dasharray="32 20"/>
-      <rect x="250" y="${y + 40}" width="1000" height="${Math.max(80, h - 80)}" rx="10" fill="#ffffff" opacity="0.22"/>
-      <path d="M300 ${y + h + 160} H1180" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
-      <ellipse cx="1135" cy="${y + h + 108}" rx="34" ry="90" fill="#7d8b72" transform="rotate(42 1135 ${y + h + 108})"/>
+    <g data-customcard-hero="sympathy-back">
+      <rect x="166" y="166" width="1168" height="1768" rx="28" fill="#fffaf2" opacity="0.34"/>
+      <g opacity="0.48">
+        <circle cx="750" cy="720" r="162" fill="#efe4d2"/>
+        <path d="M608 718 C690 612 836 614 902 724 C832 838 688 834 608 718Z" fill="#7d8b72" opacity="0.44"/>
+        <ellipse cx="790" cy="812" rx="30" ry="98" fill="#9aa58d" opacity="0.34" transform="rotate(38 790 812)"/>
+        <path d="M578 906 C674 874 792 896 926 858" fill="none" stroke="#a98f68" stroke-width="6" stroke-linecap="round" opacity="0.44"/>
+      </g>
+      <path d="M292 1396 C444 1348 610 1386 760 1352 C962 1306 1102 1338 1236 1278" fill="none" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+      <path d="M1024 1856 C1116 1760 1278 1762 1354 1868 C1266 1970 1118 1964 1024 1856Z" fill="#7d8b72" opacity="0.32"/>
+      <ellipse cx="1148" cy="1920" rx="22" ry="70" fill="#9aa58d" opacity="0.28" transform="rotate(42 1148 1920)"/>
+      <circle cx="292" cy="414" r="90" fill="#efe4d2" opacity="0.34"/>
+      <path d="M244 418 C442 386 620 426 836 392 C1024 362 1134 388 1260 356" fill="none" stroke="#d7cbb7" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
     </g>
   `;
 }
@@ -1047,8 +1097,8 @@ function minimalEditorialBorder(panelId) {
 function photoNoteBorder(panelId) {
   const stroke = panelId.startsWith("inside") ? "#9aa58d" : "#7d8b72";
   return `
-    <rect x="92" y="92" width="1316" height="1916" rx="18" fill="none" stroke="${stroke}" stroke-width="5" opacity="0.42"/>
-    <rect x="128" y="128" width="1244" height="1844" rx="12" fill="none" stroke="#a98f68" stroke-width="2" opacity="0.24"/>
+    <rect x="82" y="82" width="1336" height="1936" rx="22" fill="none" stroke="${stroke}" stroke-width="7" opacity="0.52"/>
+    <rect x="126" y="126" width="1248" height="1848" rx="14" fill="none" stroke="#a98f68" stroke-width="3" opacity="0.24"/>
   `;
 }
 
@@ -1319,6 +1369,7 @@ function buildCardCopyPrompt(input) {
         "Exactly four panels.",
         "Use each panel id exactly once in this order: front, inside-left, inside-right, back.",
         "Use only provided memory_notes.",
+        "Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.",
         "No order/payment claims.",
         "Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.",
         "Do not produce generic one-line cards unless the input is extremely thin.",
@@ -1758,8 +1809,12 @@ function normalizeChatInput(body) {
 function normalizeThemeGuide(rawThemeGuide, input) {
   const fallback = buildThemeGuide(input);
   const raw = rawThemeGuide && typeof rawThemeGuide === "object" ? rawThemeGuide : {};
-  const palette = Array.isArray(raw.palette) ? raw.palette.map(cleanText).filter(Boolean).slice(0, 6) : [];
-  const motifs = Array.isArray(raw.motifs) ? raw.motifs.map(cleanText).filter(Boolean).filter(isSafeThemeMotif).slice(0, 8) : [];
+  const palette = Array.isArray(raw.palette)
+    ? raw.palette.map(cleanText).filter(isSafeThemePaletteValue).slice(0, 6)
+    : [];
+  const motifs = Array.isArray(raw.motifs)
+    ? raw.motifs.map(cleanText).filter(isSafeThemeMotif).slice(0, 8)
+    : [];
   return {
     theme_title: truncate(cleanText(raw.theme_title || raw.themeTitle || fallback.theme_title), 120),
     palette: palette.length >= 3 ? palette : fallback.palette,
@@ -1771,7 +1826,14 @@ function normalizeThemeGuide(rawThemeGuide, input) {
 }
 
 function isSafeThemeMotif(value) {
-  return !/\b(?:face|smile|smiling|person|people|hands?|signature|handwriting|lettering|text|logo|watermark)\b/i.test(value);
+  return Boolean(cleanText(value)) &&
+    !/^(?:palette|style|tone|occasion|relationship|recipient|sender|language|copy|text layout|art direction)$/i.test(value) &&
+    !/\b(?:face|smile|smiling|person|people|hands?|signature|handwriting|lettering|text|logo|watermark)\b/i.test(value);
+}
+
+function isSafeThemePaletteValue(value) {
+  return Boolean(cleanText(value)) &&
+    !/^(?:palette|style|tone|occasion|relationship|recipient|sender|language|motif|motifs)$/i.test(value);
 }
 
 function buildThemeGuide(input) {
@@ -1901,6 +1963,9 @@ function visualCueTooGenericForSource(value, input) {
 
 function visualCueNeedsRepair(value) {
   const text = String(value || "").toLowerCase();
+  if (/\b(?:recipient['’]?s?\s+name|headline|body|card copy|exact text|quote|blessing|verse|poem|short message|personal message|main message|scene-setting message|message about)\b/i.test(value)) {
+    return true;
+  }
   if (/\b(?:readable text|fake text|letters|logo|watermark|qr code|caption plaque|text box|tabletop|mockup|product photo)\b/.test(text)) {
     return !/\b(?:no|without|avoid|not)\b.{0,40}\b(?:readable text|fake text|letters|logo|watermark|qr code|caption plaque|text box|tabletop|mockup|product photo)\b/.test(text);
   }
@@ -2050,6 +2115,35 @@ function normalizeTextLayout(value, panelId, input) {
   ) {
     return { ...layout, alignment: fallback.alignment };
   }
+  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
+    if (panelId === "inside-left" || panelId === "inside-right") {
+      return {
+        ...layout,
+        headline_zone: fallback.headline_zone,
+        body_zone: fallback.body_zone,
+        alignment: fallback.alignment,
+        font_pairing: fallback.font_pairing,
+        color_mode: "dark-ink",
+        scale: "large"
+      };
+    }
+    if (panelId === "front") {
+      return {
+        ...layout,
+        headline_zone: fallback.headline_zone,
+        body_zone: fallback.body_zone,
+        font_pairing: fallback.font_pairing,
+        color_mode: "dark-ink",
+        scale: "large"
+      };
+    }
+    if (panelId === "back") {
+      return {
+        ...fallback,
+        scale: "large"
+      };
+    }
+  }
   return layout;
 }
 
@@ -2090,6 +2184,43 @@ function panelTextLayoutFallback(panelId, input) {
       color_mode: "dark-ink",
       scale: panelId === "back" ? "compact" : "standard"
     };
+  }
+  if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
+    const layouts = {
+      front: {
+        headline_zone: "upper",
+        body_zone: "lower",
+        alignment: "center",
+        font_pairing: "soft-serif",
+        color_mode: "dark-ink",
+        scale: "standard"
+      },
+      "inside-left": {
+        headline_zone: "upper",
+        body_zone: "center",
+        alignment: "center",
+        font_pairing: "soft-serif",
+        color_mode: "dark-ink",
+        scale: "large"
+      },
+      "inside-right": {
+        headline_zone: "upper",
+        body_zone: "center",
+        alignment: "center",
+        font_pairing: "soft-serif",
+        color_mode: "dark-ink",
+        scale: "large"
+      },
+      back: {
+        headline_zone: "lower",
+        body_zone: "bottom",
+        alignment: "center",
+        font_pairing: "minimal-sans",
+        color_mode: "dark-ink",
+        scale: "large"
+      }
+    };
+    return layouts[panelId];
   }
   if (/\b(med|medical|doctor|physician|md|residen(?:cy|t)|white[- ]coat|stethoscope)\b/.test(source)) {
     const layouts = {
@@ -2134,6 +2265,13 @@ function panelTextLayoutFallback(panelId, input) {
 function enumTextValue(value, allowed, fallback) {
   const normalized = cleanText(value || "").toLowerCase();
   return allowed.includes(normalized) ? normalized : fallback;
+}
+
+function textContains(value, term) {
+  const haystack = cleanText(value).toLowerCase();
+  const needle = cleanText(term).toLowerCase();
+  if (!needle) return true;
+  return haystack.includes(needle);
 }
 
 function textSafeCueForLayout(layout) {
@@ -2273,6 +2411,7 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   const isGetWell = /\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source);
   const isB2B = /\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source);
   const isWedding = /\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source);
+  const isSympathy = /\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source);
   const isSmallBusiness = /\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source);
   const isDad = /\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source);
   if (!value) return true;
@@ -2286,6 +2425,17 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   if (isGetWell && /^(?:thinking of you|get well soon|feel better soon|from the heart|sending healing thoughts)$/i.test(value)) return true;
   if (isB2B && /^(?:thank you|happy anniversary|for you|valued customer|your loyalty|renew today|limited time)$/i.test(value)) return true;
   if (isWedding && /^(?:congratulations|best wishes|thinking of you|from the heart|for this moment)$/i.test(value)) return true;
+  if (isSympathy) {
+    if (panelId === "front" && (!textContains(value, input.recipient) || /^(?:sympathy for .+|with deepest sympathy|thinking of you|for your loss)$/i.test(value))) return true;
+    if (
+      panelId === "inside-left" &&
+      (!/\b(?:with you|not alone|beside you)\b/i.test(value) ||
+        /^(?:a friend'?s support|thinking of you|with sympathy|for this moment|practical support|support for .+|a memory of .+)$/i.test(value))
+    ) return true;
+    if (panelId === "inside-right" && (!textContains(value, input.sender) || /^(?:a friend'?s support|thinking of you|with sympathy)$/i.test(value))) return true;
+    if (panelId === "back" && !/\bcare\b/i.test(value)) return true;
+    if (panelId === "back" && /^(?:gratitude for .+|support for .+|for .+)$/i.test(value)) return true;
+  }
   if (isSmallBusiness && /^(?:you matter|you'?re the best!?|thanks again!?|the customcard team|thank you for choosing us|a big thank you|a heartfelt thank you|a sincere thank you|until next time|our small business|wishing you continued.*)$/i.test(value)) return true;
   if ((isSmallBusiness || isDad) && /^(?:thinking of you|from the heart)$/i.test(value)) return true;
   if (isDad && /^(?:with love and appreciation|a love that's always fixing|love from the heart|a handy dad's love|to an amazing dad|fixing everything with love|thanks for being the best dad|wishing you a wonderful day)$/i.test(value)) return true;
@@ -2300,6 +2450,7 @@ function panelBodyNeedsRepair(body, panelId, input) {
   const isGetWell = /\b(get well|surgery|recover|recovery|hospital socks|tiny walks|basil|soup)\b/.test(source);
   const isB2B = /\b(warranty|renewal|account manager|qr|clinic|dental|sterilizer|customer success|purchase anniversary)\b/.test(source);
   const isWedding = /\b(wedding|marriage|fianc|fiance|blessing|handwrite|handwritten|distant cousin)\b/.test(source);
+  const isSympathy = /\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source);
   const isSmallBusiness = /\b(small business|independent|local shop|customer|purchase|supporting)\b/.test(source);
   const isDad = /\b(father|dad|fix|repair|tool|workshop|handy)\b/.test(source);
   if (!value) return true;
@@ -2320,6 +2471,13 @@ function panelBodyNeedsRepair(body, panelId, input) {
   if (isWedding && overfamiliarWeddingCopy.test(value) && !/\b(?:god|lord|christ|muslim|islam|jewish|hindu|religious)\b/i.test(source)) return true;
   if (isWedding && panelId === "inside-left" && !/\b(?:blessing|patience|kindness|wishing)\b/i.test(value)) return true;
   if (isWedding && panelId === "inside-right" && /\bhandwrit|handwritten|handwrite\b/i.test(source) && !/\bhandwrit|handwritten|handwrite\b/i.test(value)) return true;
+  if (isSympathy && /\b(?:everything happens for a reason|this too shall pass|god|lord|heaven|angel|better place|thoughts and prayers)\b/i.test(value)) return true;
+  if (isSympathy && panelId === "inside-left" && !/\bfather\b/i.test(value)) return true;
+  if (isSympathy && panelId === "inside-right" && !/\b(?:meals?|rides?|calls?|silence)\b/i.test(value)) return true;
+  if (isSympathy && panelId === "inside-right" && ["meals", "rides", "calls", "silence"].some((term) => !textContains(value, term))) return true;
+  if (isSympathy && panelId === "back" && /\b(?:thank you for being part of our lives|thank you for being a part of our lives|in memory)\b/i.test(value)) return true;
+  if (isSympathy && panelId === "back" && !/\bpractical\b/i.test(value)) return true;
+  if (isSympathy && panelId === "back" && !/\b(?:grief|practical|quiet support|steady care|words cannot hold enough)\b/i.test(value)) return true;
   const genericSmallBusinessCopy = /\b(?:thank you for supporting our small business|customers like you|valued customer|look forward to serving|continue to support us|loyalty means the world|opportunity to serve you|loyalty and trust mean everything|thank you again for your loyalty and support|continued success and happiness|all your endeavors)\b/i;
   if (isSmallBusiness && genericSmallBusinessCopy.test(value)) return true;
   if (isSmallBusiness && panelId === "front" && !/\b(?:support|supporting|independent|local)\b/i.test(value)) return true;
@@ -2428,19 +2586,19 @@ function buildCopyRepairPlan(input, themeGuide) {
     return {
       front: {
         headline: `For ${recipient}`,
-        body: "A quiet note for the days that ask for steadiness, space, and care."
+        body: "A quiet note after your father's loss, with room for grief, silence, and steady care."
       },
       "inside-left": {
         headline: "With You In This",
-        body: "I am so sorry for the loss your family is carrying. I will not try to explain it away or fill the silence with easy words; I just want you to know you are not alone."
+        body: "I am so sorry about your father. I will not try to explain the loss or fill the silence with easy words; I just want you to know you are not alone."
       },
       "inside-right": {
         headline: `From ${sender}`,
-        body: `I am here for the practical things, the quiet check-ins, and the days when talking is too much. May you have room to grieve at your own pace, with steady care around you. With sympathy and friendship, ${sender}.`
+        body: `I am here for the practical things too: meals, rides, calls, and silence when talking is too much. May you have room to grieve at your own pace, with steady care nearby. With sympathy and friendship, ${sender}.`
       },
       back: {
         headline: "With Steady Care",
-        body: "A quiet support note, made with room for what words cannot hold."
+        body: "For grief, practical help, and quiet support when words cannot hold enough."
       }
     };
   }

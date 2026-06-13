@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="photo-note">
+<rect width="1500" height="2100" fill="#fbf7ef"/>
+
+    <g data-customcard-texture="paper-grain" opacity="0.09">
+      <path d="M240 420 C430 390 610 440 820 402 C1030 364 1160 412 1290 388" fill="none" stroke="#7d8b72" stroke-width="3"/>
+      <path d="M260 1710 C470 1660 630 1730 830 1686 C1010 1646 1140 1690 1260 1660" fill="none" stroke="#7d8b72" stroke-width="3"/>
+    </g>
+  
+
+      <g data-customcard-hero="sympathy-interior-inside-left">
+        <rect x="142" y="142" width="1216" height="1816" rx="22" fill="#fffdf8" opacity="0.52"/>
+        <path d="M280 312 C484 270 642 324 850 292 C1030 264 1166 286 1242 270" fill="none" stroke="#d7cbb7" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+        <path d="M190 270 C300 510 264 790 188 1030 C132 1210 172 1438 292 1646" fill="none" stroke="#7d8b72" stroke-width="9" stroke-linecap="round" opacity="0.24"/>
+        <path d="M250 1710 C430 1662 620 1712 798 1668 C998 1620 1130 1652 1250 1608" fill="none" stroke="#a98f68" stroke-width="5" stroke-linecap="round" opacity="0.22"/>
+        <ellipse cx="206" cy="520" rx="28" ry="86" fill="#7d8b72" opacity="0.36" transform="rotate(34 206 520)"/>
+        <ellipse cx="136" cy="760" rx="24" ry="76" fill="#9aa58d" opacity="0.32" transform="rotate(-30 136 760)"/>
+        <ellipse cx="206" cy="1020" rx="28" ry="86" fill="#7d8b72" opacity="0.28" transform="rotate(32 206 1020)"/>
+        <circle cx="1240" cy="330" r="76" fill="#efe4d2" opacity="0.32"/>
+        <circle cx="1198" cy="292" r="28" fill="#c8b899" opacity="0.24"/>
+      </g>
+    
+
+
+
+    <rect x="82" y="82" width="1336" height="1936" rx="22" fill="none" stroke="#9aa58d" stroke-width="7" opacity="0.52"/>
+    <rect x="126" y="126" width="1248" height="1848" rx="14" fill="none" stroke="#a98f68" stroke-width="3" opacity="0.24"/>
+  
+</svg>

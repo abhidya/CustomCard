@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="photo-note">
+<rect width="1500" height="2100" fill="#fbf7ef"/>
+
+    <g data-customcard-texture="paper-grain" opacity="0.09">
+      <path d="M240 420 C430 390 610 440 820 402 C1030 364 1160 412 1290 388" fill="none" stroke="#7d8b72" stroke-width="3"/>
+      <path d="M260 1710 C470 1660 630 1730 830 1686 C1010 1646 1140 1690 1260 1660" fill="none" stroke="#7d8b72" stroke-width="3"/>
+    </g>
+  
+
+    <g data-customcard-hero="photo-note" opacity="0.36">
+      <rect x="210" y="280" width="1080" height="520" rx="18" fill="none" stroke="#9aa58d" stroke-width="8" stroke-dasharray="32 20"/>
+      <rect x="250" y="320" width="1000" height="440" rx="10" fill="#ffffff" opacity="0.22"/>
+      <path d="M300 960 H1180" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
+      <ellipse cx="1135" cy="908" rx="34" ry="90" fill="#7d8b72" transform="rotate(42 1135 908)"/>
+    </g>
+  
+
+
+
+    <rect x="92" y="92" width="1316" height="1916" rx="18" fill="none" stroke="#9aa58d" stroke-width="5" opacity="0.42"/>
+    <rect x="128" y="128" width="1244" height="1844" rx="12" fill="none" stroke="#a98f68" stroke-width="2" opacity="0.24"/>
+  
+</svg>

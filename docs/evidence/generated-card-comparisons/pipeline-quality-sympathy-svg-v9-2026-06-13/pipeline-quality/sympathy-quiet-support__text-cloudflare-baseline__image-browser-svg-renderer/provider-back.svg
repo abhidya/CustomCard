@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="photo-note">
+<rect width="1500" height="2100" fill="#fbf7ef"/>
+
+    <g data-customcard-texture="paper-grain" opacity="0.09">
+      <path d="M240 420 C430 390 610 440 820 402 C1030 364 1160 412 1290 388" fill="none" stroke="#7d8b72" stroke-width="3"/>
+      <path d="M260 1710 C470 1660 630 1730 830 1686 C1010 1646 1140 1690 1260 1660" fill="none" stroke="#7d8b72" stroke-width="3"/>
+    </g>
+  
+
+    <g data-customcard-hero="sympathy-back">
+      <rect x="166" y="166" width="1168" height="1768" rx="28" fill="#fffaf2" opacity="0.34"/>
+      <g opacity="0.48">
+        <circle cx="750" cy="720" r="162" fill="#efe4d2"/>
+        <path d="M608 718 C690 612 836 614 902 724 C832 838 688 834 608 718Z" fill="#7d8b72" opacity="0.44"/>
+        <ellipse cx="790" cy="812" rx="30" ry="98" fill="#9aa58d" opacity="0.34" transform="rotate(38 790 812)"/>
+        <path d="M578 906 C674 874 792 896 926 858" fill="none" stroke="#a98f68" stroke-width="6" stroke-linecap="round" opacity="0.44"/>
+      </g>
+      <path d="M292 1396 C444 1348 610 1386 760 1352 C962 1306 1102 1338 1236 1278" fill="none" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+      <path d="M1024 1856 C1116 1760 1278 1762 1354 1868 C1266 1970 1118 1964 1024 1856Z" fill="#7d8b72" opacity="0.32"/>
+      <ellipse cx="1148" cy="1920" rx="22" ry="70" fill="#9aa58d" opacity="0.28" transform="rotate(42 1148 1920)"/>
+      <circle cx="292" cy="414" r="90" fill="#efe4d2" opacity="0.34"/>
+      <path d="M244 418 C442 386 620 426 836 392 C1024 362 1134 388 1260 356" fill="none" stroke="#d7cbb7" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
+    </g>
+  
+
+
+
+    <rect x="82" y="82" width="1336" height="1936" rx="22" fill="none" stroke="#7d8b72" stroke-width="7" opacity="0.52"/>
+    <rect x="126" y="126" width="1248" height="1848" rx="14" fill="none" stroke="#a98f68" stroke-width="3" opacity="0.24"/>
+  
+</svg>

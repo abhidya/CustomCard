@@ -22,6 +22,15 @@ export interface TypographyExperimentRun {
   typographyMode: TypographyMode;
 }
 
+export interface PipelineQualityRun {
+  phase: "pipeline-quality";
+  focus: "full-card-quality";
+  storyId: string;
+  story: BenchmarkStory;
+  text: BenchmarkCandidate;
+  image: BenchmarkCandidate;
+}
+
 export interface BenchmarkStory {
   id: string;
   customer_type: string;
@@ -107,6 +116,11 @@ export function typographyExperimentRuns(candidates: {
   image: BenchmarkCandidate[];
   text?: BenchmarkCandidate[];
 }): TypographyExperimentRun[];
+
+export function pipelineQualityRuns(candidates: {
+  image?: BenchmarkCandidate[];
+  text?: BenchmarkCandidate[];
+}): PipelineQualityRun[];
 
 export function buildPhaseReadme(summary: BenchmarkPhaseReadmeSummary): string;
 
