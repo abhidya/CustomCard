@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-threshold">
+<rect width="1500" height="2100" fill="#17241f"/>
+
+    <defs>
+      <filter id="sympathyThresholdGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.017 0.031" numOctaves="4" seed="41"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.14"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="sympathyThresholdSoft" x="-12%" y="-12%" width="124%" height="124%">
+        <feGaussianBlur stdDeviation="18"/>
+      </filter>
+      <linearGradient id="sympathyThresholdWash" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#ead7a9" stop-opacity="0.3"/>
+        <stop offset="0.5" stop-color="#ead7a9" stop-opacity="0.1"/>
+        <stop offset="1" stop-color="#17241f" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="sympathyThresholdDoor" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#ead7a9" stop-opacity="0.38"/>
+        <stop offset="0.34" stop-color="#ead7a9" stop-opacity="0.16"/>
+        <stop offset="1" stop-color="#17241f" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#17241f"/>
+    <rect width="1500" height="2100" fill="#ead7a9" filter="url(#sympathyThresholdGrain)" opacity="0.24"/>
+    <path d="M-160 250 C230 150 540 240 820 158 C1060 96 1288 164 1660 54 V760 C1250 710 970 780 650 850 C350 918 130 850 -160 960 Z" fill="url(#sympathyThresholdWash)"/>
+    <path d="M-120 1840 C250 1694 590 1788 890 1668 C1134 1570 1334 1594 1600 1510" fill="none" stroke="#ead7a9" stroke-width="22" stroke-linecap="round" opacity="0.12"/>
+    <path d="M-80 1930 C278 1794 628 1894 938 1778 C1170 1692 1368 1710 1588 1640" fill="none" stroke="#0f1a16" stroke-width="8" stroke-linecap="round" opacity="0.16"/>
+  
+
+    <g data-customcard-hero="sympathy-threshold-back">
+      <rect x="278" y="1260" width="944" height="430" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.42" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M384 1326 V1648 H1116" fill="none" stroke="#ead7a9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+      <path d="M448 1384 V1594 H1052" fill="none" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.16"/>
+      <path d="M280 1744 C456 1678 650 1718 840 1662 C1030 1606 1186 1624 1320 1558" fill="none" stroke="#ead7a9" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+      <path d="M488 1812 H1012" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      <path d="M604 1854 H896" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+    </g>
+  
+
+
+
+      <path d="M304 1880 H1196" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
+      <path d="M534 1924 H966" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.1"/>
+    
+</svg>

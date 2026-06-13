@@ -1720,11 +1720,11 @@ function withPreviewTextField(layout, rawLayout, panelId, hasBody) {
     ? {
         ...layout,
         headlineY: Math.min(layout.headlineY, 520),
-        headlineSize: Math.min(layout.headlineSize, 86),
+        headlineSize: Math.min(layout.headlineSize, 96),
         headlineChars: Math.max(layout.headlineChars, 24),
         bodyY: Math.min(layout.bodyY, 850),
-        bodySize: Math.min(layout.bodySize, 44),
-        bodyChars: Math.max(layout.bodyChars, 38),
+        bodySize: Math.min(layout.bodySize, 52),
+        bodyChars: Math.min(Math.max(layout.bodyChars, 32), 36),
         bodyStrokeWidth: Math.min(layout.bodyStrokeWidth, 1)
       }
     : layout;
@@ -1762,8 +1762,8 @@ function cleanLayoutEnum(value, allowed) {
 
 async function renderContactSheet({ runDir, run, panelFiles }) {
   if (panelFiles.length === 0) return undefined;
-  const thumbWidth = 420;
-  const thumbHeight = 588;
+  const thumbWidth = 560;
+  const thumbHeight = 784;
   const labelHeight = 92;
   const gap = 28;
   const width = gap + panelFiles.length * (thumbWidth + gap);

@@ -884,14 +884,14 @@ function themeForPrompt(prompt) {
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
     return {
-      kind: "sympathy-atelier",
-      background: (panelId) => panelId === "front" || panelId === "back" ? "#21362f" : "#f7f2e8",
-      accent: (panelId) => panelId.startsWith("inside") ? "#596c5e" : "#d8c7a1",
+      kind: "sympathy-threshold",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#17241f" : "#fbf5e9",
+      accent: (panelId) => panelId.startsWith("inside") ? "#53685f" : "#ddc998",
       count: 0,
-      texture: (panelId) => sympathyAtelierTexture(panelId),
-      hero: (panelId) => sympathyAtelierHero(panelId),
+      texture: (panelId) => sympathyThresholdTexture(panelId),
+      hero: (panelId) => sympathyThresholdHero(panelId),
       overlay: () => "",
-      border: (panelId) => sympathyAtelierBorder(panelId),
+      border: (panelId) => sympathyThresholdBorder(panelId),
       motif: () => ""
     };
   }
@@ -1345,6 +1345,108 @@ function sympathyAtelierBorder(panelId) {
   return `
     <path d="M220 210 H1280" stroke="#596c5e" stroke-width="3" stroke-linecap="round" opacity="0.12"/>
     <path d="M300 1866 H1200" stroke="#596c5e" stroke-width="3" stroke-linecap="round" opacity="0.1"/>
+  `;
+}
+
+function sympathyThresholdTexture(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const base = dark ? "#17241f" : "#fbf5e9";
+  const glow = dark ? "#ead7a9" : "#ddc998";
+  const ink = dark ? "#0f1a16" : "#53685f";
+  return `
+    <defs>
+      <filter id="sympathyThresholdGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.017 0.031" numOctaves="4" seed="41"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.14"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="sympathyThresholdSoft" x="-12%" y="-12%" width="124%" height="124%">
+        <feGaussianBlur stdDeviation="18"/>
+      </filter>
+      <linearGradient id="sympathyThresholdWash" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.3 : 0.34}"/>
+        <stop offset="0.5" stop-color="${glow}" stop-opacity="${dark ? 0.1 : 0.16}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="sympathyThresholdDoor" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.38 : 0.22}"/>
+        <stop offset="0.34" stop-color="${glow}" stop-opacity="${dark ? 0.16 : 0.1}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="${base}"/>
+    <rect width="1500" height="2100" fill="${dark ? "#ead7a9" : ink}" filter="url(#sympathyThresholdGrain)" opacity="${dark ? 0.24 : 0.12}"/>
+    <path d="M-160 ${dark ? 250 : 180} C230 ${dark ? 150 : 250} 540 ${dark ? 240 : 170} 820 ${dark ? 158 : 230} C1060 ${dark ? 96 : 164} 1288 ${dark ? 164 : 190} 1660 ${dark ? 54 : 134} V${dark ? 760 : 560} C1250 ${dark ? 710 : 540} 970 ${dark ? 780 : 620} 650 ${dark ? 850 : 692} C350 ${dark ? 918 : 740} 130 ${dark ? 850 : 704} -160 ${dark ? 960 : 800} Z" fill="url(#sympathyThresholdWash)"/>
+    <path d="M-120 1840 C250 1694 590 1788 890 1668 C1134 1570 1334 1594 1600 1510" fill="none" stroke="${glow}" stroke-width="${dark ? 22 : 13}" stroke-linecap="round" opacity="${dark ? 0.12 : 0.1}"/>
+    <path d="M-80 1930 C278 1794 628 1894 938 1778 C1170 1692 1368 1710 1588 1640" fill="none" stroke="${ink}" stroke-width="${dark ? 8 : 5}" stroke-linecap="round" opacity="${dark ? 0.16 : 0.1}"/>
+  `;
+}
+
+function sympathyThresholdHero(panelId) {
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="sympathy-threshold-front">
+        <rect x="216" y="690" width="1068" height="780" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.7" filter="url(#sympathyThresholdSoft)"/>
+        <path d="M282 720 V1470 H1208" fill="none" stroke="#ead7a9" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.42"/>
+        <path d="M330 770 V1410 H1138" fill="none" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+        <path d="M248 1548 C438 1490 638 1528 842 1458 C1028 1394 1172 1398 1308 1326" fill="none" stroke="#ead7a9" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+        <path d="M994 628 C928 820 938 1004 1020 1180 C1080 1308 1068 1426 1008 1540" fill="none" stroke="#d4cfb9" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
+        <path d="M1012 834 C918 794 850 842 842 948 C944 984 1008 936 1012 834Z" fill="#d4cfb9" opacity="0.2"/>
+        <path d="M982 1184 C1092 1134 1168 1190 1176 1308 C1060 1350 994 1298 982 1184Z" fill="#879789" opacity="0.18"/>
+        <path d="M420 1668 H1080" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.22"/>
+        <path d="M506 1712 H994" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.14"/>
+      </g>
+    `;
+  }
+  if (panelId === "inside-left" || panelId === "inside-right") {
+    const mirrored = panelId === "inside-right";
+    const stripX = mirrored ? 1344 : 0;
+    const lineX = mirrored ? 1280 : 220;
+    const doorX = mirrored ? 106 : 1040;
+    return `
+      <g data-customcard-hero="sympathy-threshold-interior-${panelId}">
+        <rect x="${stripX}" y="0" width="156" height="2100" fill="#17241f" opacity="0.055"/>
+        <path d="M${lineX} 260 C${mirrored ? "1208 572 1238 890 1300 1190 C1342 1392 1294 1554 1196 1712" : "292 572 262 890 200 1190 C158 1392 206 1554 304 1712"}" fill="none" stroke="#53685f" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
+        <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
+        <rect x="${doorX}" y="1456" width="354" height="210" rx="10" fill="#ddc998" opacity="0.1" filter="url(#sympathyThresholdSoft)"/>
+        <path d="M${doorX + 38} 1482 V1640 H${doorX + 316}" fill="none" stroke="#b49b69" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
+        <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+        <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#b49b69" stroke-width="6" stroke-linecap="round" opacity="0.16"/>
+        <path d="M${mirrored ? "1168 536 C1088 496 1024 542 1016 642 C1102 678 1162 630 1168 536Z" : "332 536 C412 496 476 542 484 642 C398 678 338 630 332 536Z"}" fill="#879789" opacity="0.16"/>
+        <path d="M${mirrored ? "1194 1264 C1104 1218 1032 1268 1024 1378 C1118 1424 1188 1372 1194 1264Z" : "306 1264 C396 1218 468 1268 476 1378 C382 1424 312 1372 306 1264Z"}" fill="#879789" opacity="0.12"/>
+      </g>
+    `;
+  }
+  return `
+    <g data-customcard-hero="sympathy-threshold-back">
+      <rect x="278" y="1260" width="944" height="430" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.42" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M384 1326 V1648 H1116" fill="none" stroke="#ead7a9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+      <path d="M448 1384 V1594 H1052" fill="none" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.16"/>
+      <path d="M280 1744 C456 1678 650 1718 840 1662 C1030 1606 1186 1624 1320 1558" fill="none" stroke="#ead7a9" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
+      <path d="M488 1812 H1012" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      <path d="M604 1854 H896" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+    </g>
+  `;
+}
+
+function sympathyThresholdBorder(panelId) {
+  if (panelId === "front") {
+    return `
+      <path d="M138 1888 H1362" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.22"/>
+      <path d="M214 1932 H786" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.13"/>
+    `;
+  }
+  if (panelId === "back") {
+    return `
+      <path d="M304 1880 H1196" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
+      <path d="M534 1924 H966" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.1"/>
+    `;
+  }
+  return `
+    <path d="M236 206 H1264" stroke="#53685f" stroke-width="3" stroke-linecap="round" opacity="0.1"/>
+    <path d="M320 1870 H1180" stroke="#53685f" stroke-width="3" stroke-linecap="round" opacity="0.08"/>
   `;
 }
 
@@ -2726,9 +2828,9 @@ function panelTextLayoutFallback(panelId, input) {
         headline_zone: "upper",
         body_zone: "center",
         alignment: "center",
-        font_pairing: "minimal-sans",
+        font_pairing: "soft-serif",
         color_mode: "light-ink",
-        scale: "large"
+        scale: "standard"
       }
     };
     return layouts[panelId];
