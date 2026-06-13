@@ -1450,13 +1450,13 @@ function sympathyThresholdHero(panelId) {
   }
   return `
     <g data-customcard-hero="sympathy-threshold-back">
-      <path d="M184 1244 C374 1156 570 1194 758 1118 C958 1038 1116 1060 1312 998 L1390 1640 C1164 1698 990 1678 800 1754 C610 1832 394 1794 186 1886 Z" fill="url(#sympathyPaperFace)" opacity="0.2" filter="url(#sympathyCutShadow)"/>
-      <rect x="294" y="1308" width="748" height="360" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.5" filter="url(#sympathyThresholdSoft)"/>
-      <path d="M384 1340 V1660 H1116" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.34"/>
-      <path d="M450 1398 V1602 H1052" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.17"/>
-      <path d="M278 1748 C456 1678 650 1718 842 1662 C1032 1606 1188 1624 1326 1554" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
-      <path d="M488 1816 H1012" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
-      <path d="M604 1858 H896" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
+      <path d="M386 1304 C514 1238 668 1256 794 1204 C926 1150 1050 1168 1172 1218 L1230 1650 C1080 1702 944 1678 810 1732 C676 1786 526 1760 392 1834 Z" fill="url(#sympathyPaperFace)" opacity="0.22" filter="url(#sympathyCutShadow)"/>
+      <rect x="476" y="1374" width="548" height="304" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.5" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M540 1418 V1628 H958" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+      <path d="M592 1468 V1584 H922" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.17"/>
+      <path d="M360 1748 C526 1684 676 1718 842 1662 C1014 1604 1148 1624 1284 1562" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
+      <path d="M548 1798 H952" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+      <path d="M642 1840 H858" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12"/>
     </g>
   `;
 }

@@ -32,6 +32,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` threshold SVG v30 | `image-browser-svg-renderer` | 70 | 98 | C+/B- rough proof; clearer, still not premium | [manual grade](./pipeline-quality-sympathy-threshold-svg-v30-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v32 | `image-browser-svg-renderer` | 76 | 98 | B- promising proof; strongest local art so far | [manual grade](./pipeline-quality-sympathy-papercut-svg-v32-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v34 | `image-browser-svg-renderer` | 79 | 98 | B promising proof; better interiors, still not premium | [manual grade](./pipeline-quality-sympathy-papercut-svg-v34-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v35 | `image-browser-svg-renderer` | 81 | 98 | B promising proof; best latest local route | [manual grade](./pipeline-quality-sympathy-papercut-svg-v35-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -57,6 +58,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Threshold SVG v30 is the new best latest controllable local route at product `70/100`, contract `98/100`. It removes car-like object ambiguity, uses a clearer dark threshold-light motif, switches the back to calmer serif typography, and enlarges contact sheets for visual review. It is still not top-band: the art remains deterministic, abstract, and template-adjacent rather than premium/bespoke.
 - Paper-cut SVG v32 is the new best latest controllable local route at product `76/100`, contract `98/100`. It makes the front/back feel like layered paper-cut threshold art instead of flat stationery marks. The score still stays below top-band because interiors remain generic and the route is still deterministic vector art, not a premium bespoke illustration.
 - Paper-cut SVG v34 is the new best latest controllable local route at product `79/100`, contract `98/100`. It fixes the v32 interior weakness with integrated vellum/deckle message fields and removes a v33 lower-mark artifact that could read like a sad face. It remains below 80+ promotion quality because the back and edge ornaments still feel deterministic.
+- Paper-cut SVG v35 is the new best latest controllable local route at product `81/100`, contract `98/100`. It shrinks the back panel's large lower paper block into a smaller closing seal, improving balance. It remains below premium/top-band because the motif is deterministic and practical support is still mostly carried by copy.
 
 ## Improvement Loop
 
@@ -97,6 +99,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Threshold SVG v28-v30 | Product 70, contract 98 on v30 | Replacing object marks with threshold-light SVG art removes car ambiguity and improves readability/evidence display. Still capped by deterministic/template-like visual craft. |
 | Paper-cut SVG v31-v32 | Product 76, contract 98 on v32 | Layered paper-cut threshold scene improves visible craft and front/back hook. Still not enough for premium/top-band because interiors remain generic and deterministic. |
 | Paper-cut SVG v33-v34 | Product 79, contract 98 on v34 | V33 interior support marks created a possible sad-face read; v34 removes that artifact and keeps the improved vellum/deckle interior message fields. Still not premium. |
+| Paper-cut SVG v35 | Product 81, contract 98 | Smaller back seal improves the weakest panel; diminishing returns from local SVG tuning remain. |
 
 ## Prompt/Skill Changes Applied
 
@@ -129,6 +132,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Replaced the latest sympathy local SVG route with a `sympathy-threshold` art system that removes crude support-object marks, uses a dark threshold-light motif, restores calmer serif back typography, tightens interior wrapping, and enlarges contact sheets.
 - Reworked the latest local sympathy renderer into `sympathy-papercut`: layered paper-cut threshold composition, stronger dark cover/back depth, paired interior paper layers, and explicit evidence metadata.
 - Added integrated vellum/deckle interior message fields for the paper-cut sympathy route and removed lower support-token marks after v33 showed a possible sad-face artifact.
+- Tuned the paper-cut back panel from a large lower slab to a smaller closing seal so the back reads as intentional, not unused space.
 
 ## Commands
 
@@ -177,4 +181,6 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --outpu
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v32-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v34-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v34-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v35-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v35-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 ```
