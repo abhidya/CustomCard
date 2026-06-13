@@ -1427,15 +1427,16 @@ function extForContentType(contentType) {
 
 async function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
   const layout = previewLayout(panelId, panelCopy.text_layout || panelCopy.textLayout);
+  const frameOpacity = previewFrameOpacity(panelCopy, layout);
   const headline = wrapText(panelCopy.headline || "", layout.headlineChars).slice(0, 3);
   const body = wrapText(panelCopy.body || "", layout.bodyChars).slice(0, panelId.startsWith("inside") ? 8 : 4);
   const overlay = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
-      <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="0.72"/>
-      <text x="${layout.x}" y="${layout.headlineY}" text-anchor="${layout.anchor}" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700">
+      <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${frameOpacity}"/>
+      <text x="${layout.x}" y="${layout.headlineY}" text-anchor="${layout.anchor}" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700" paint-order="stroke fill" stroke="${layout.headlineStroke}" stroke-width="${layout.headlineStrokeWidth}">
         ${headline.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
       </text>
-      <text x="${layout.x}" y="${layout.bodyY}" text-anchor="${layout.anchor}" font-family="${layout.bodyFont}" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="500">
+      <text x="${layout.x}" y="${layout.bodyY}" text-anchor="${layout.anchor}" font-family="${layout.bodyFont}" fill="${layout.bodyColor}" font-size="${layout.bodySize}" font-weight="500" paint-order="stroke fill" stroke="${layout.bodyStroke}" stroke-width="${layout.bodyStrokeWidth}">
         ${body.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.bodySize * 1.25}">${escapeXml(line)}</tspan>`).join("")}
       </text>
     </svg>
@@ -1445,6 +1446,19 @@ async function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
     .composite([{ input: overlay }])
     .png()
     .toBuffer();
+}
+
+function previewFrameOpacity(panelCopy, layout) {
+  const source = [
+    panelCopy?.art_direction,
+    panelCopy?.artDirection,
+    panelCopy?.visual_cue,
+    panelCopy?.visualCue,
+    panelCopy?.image_prompt,
+    panelCopy?.imagePrompt
+  ].join(" ");
+  if (/\b(?:sympathy|quiet support|open-edge gallery|flat gallery-style)\b/i.test(source)) return 0;
+  return layout.frameOpacity ?? 0.72;
 }
 
 async function renderTypographyPreview({ imageBuffer, overlayText, panelCopy, modeId }) {
@@ -1604,7 +1618,11 @@ function applyPreviewTextLayout(base, rawTextLayout) {
     x: 750,
     anchor: "middle",
     headlineFont: "Georgia, Times New Roman, serif",
-    bodyFont: "Inter, Arial, sans-serif"
+    bodyFont: "Inter, Arial, sans-serif",
+    headlineStroke: "#f7f3ea",
+    bodyStroke: "#f7f3ea",
+    headlineStrokeWidth: 0,
+    bodyStrokeWidth: 0
   };
   if (!layout) return shared;
   const scale = layout.scale === "compact" ? 0.86 : layout.scale === "large" ? 1.14 : 1;
@@ -1615,6 +1633,9 @@ function applyPreviewTextLayout(base, rawTextLayout) {
       : layout.font_pairing === "soft-serif"
         ? { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Georgia, Times New Roman, serif", headlineSize: 90, bodySize: 48, headlineChars: 24, bodyChars: 34 }
         : { headlineFont: "Georgia, Times New Roman, serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 92, bodySize: 46, headlineChars: 24, bodyChars: 36 };
+  const headlineColor = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#fff8dc" : layout.color_mode === "accent-ink" ? base.frameColor : base.headlineColor;
+  const bodyColor = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#f4e6b0" : base.bodyColor;
+  const lightInk = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast";
   return {
     ...shared,
     x: layout.alignment === "left" ? 260 : layout.alignment === "right" ? 1240 : 750,
@@ -1627,8 +1648,12 @@ function applyPreviewTextLayout(base, rawTextLayout) {
     bodyChars: layout.scale === "large" ? Math.max(28, font.bodyChars - 6) : layout.scale === "compact" ? font.bodyChars + 6 : font.bodyChars,
     headlineFont: font.headlineFont,
     bodyFont: font.bodyFont,
-    headlineColor: layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#fff8dc" : layout.color_mode === "accent-ink" ? base.frameColor : base.headlineColor,
-    bodyColor: layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#f4e6b0" : base.bodyColor
+    headlineColor,
+    bodyColor,
+    headlineStroke: lightInk ? "#1e2f2a" : "#fffaf0",
+    bodyStroke: lightInk ? "#1e2f2a" : "#fffaf0",
+    headlineStrokeWidth: lightInk ? 5 : 3,
+    bodyStrokeWidth: lightInk ? 3 : 2
   };
 }
 

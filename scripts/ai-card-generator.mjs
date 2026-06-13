@@ -785,7 +785,20 @@ function themeForPrompt(prompt) {
       motif: () => ""
     };
   }
-  if (/\b(photo[- ]note|sympathy|condolence|grieving|quiet support)\b/.test(text)) {
+  if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
+    return {
+      kind: "sympathy-gallery",
+      background: (panelId) => panelId === "back" ? "#f0eadf" : "#f7f2e8",
+      accent: (panelId) => panelId.startsWith("inside") ? "#596c5e" : "#d8c7a1",
+      count: 0,
+      texture: (panelId) => sympathyGalleryTexture(panelId),
+      hero: (panelId) => sympathyGalleryHero(panelId),
+      overlay: () => "",
+      border: (panelId) => sympathyGalleryBorder(panelId),
+      motif: () => ""
+    };
+  }
+  if (/\b(photo[- ]note)\b/.test(text)) {
     return {
       kind: "photo-note",
       background: "#fbf7ef",
@@ -1010,6 +1023,76 @@ function boldTypeHero(panelId) {
       <path d="M${cover ? 1128 : 1082} ${cover ? 840 : y + 44} L${cover ? 1232 : 1138} ${cover ? 840 : y + 44} L${cover ? 1180 : 1110} ${cover ? 900 : y + 78}Z" fill="${cover ? "#15181d" : "#fffaf0"}" opacity="0.72"/>
     </g>
   `;
+}
+
+function sympathyGalleryTexture(panelId) {
+  const cover = panelId === "front";
+  const back = panelId === "back";
+  const stroke = cover ? "#d8c7a1" : "#596c5e";
+  return `
+    <g data-customcard-texture="sympathy-gallery-wash" opacity="${cover ? 0.18 : back ? 0.16 : 0.13}">
+      <path d="M-80 420 C260 260 610 346 940 238 C1190 156 1400 184 1580 112" fill="none" stroke="${stroke}" stroke-width="54" stroke-linecap="round"/>
+      <path d="M-120 1850 C250 1688 560 1804 922 1650 C1150 1554 1370 1568 1600 1458" fill="none" stroke="${stroke}" stroke-width="42" stroke-linecap="round"/>
+      <circle cx="${cover ? 1160 : 1090}" cy="${cover ? 310 : 350}" r="${cover ? 220 : 170}" fill="#d8c7a1" opacity="${cover ? 0.36 : 0.22}"/>
+      <circle cx="${cover ? 1245 : 1180}" cy="${cover ? 430 : 500}" r="${cover ? 94 : 72}" fill="#596c5e" opacity="0.12"/>
+    </g>
+  `;
+}
+
+function sympathyGalleryHero(panelId) {
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="sympathy-gallery-front">
+        <rect x="0" y="0" width="390" height="2100" fill="#253a33" opacity="0.94"/>
+        <path d="M390 0 C510 330 500 630 392 930 C300 1182 318 1440 468 2100 H0 V0Z" fill="#33483f" opacity="0.58"/>
+        <path d="M126 246 C230 514 238 822 144 1132 C72 1376 90 1650 194 1918" fill="none" stroke="#d8c7a1" stroke-width="14" stroke-linecap="round" opacity="0.72"/>
+        <path d="M160 480 C258 438 326 488 344 584 C260 640 188 606 160 480Z" fill="#c5cbb8" opacity="0.64"/>
+        <path d="M122 806 C236 740 326 790 350 906 C246 974 154 926 122 806Z" fill="#8da08e" opacity="0.54"/>
+        <path d="M162 1178 C270 1118 354 1166 372 1282 C270 1340 184 1298 162 1178Z" fill="#c5cbb8" opacity="0.48"/>
+        <path d="M518 1372 C680 1310 878 1368 1056 1288 C1202 1222 1298 1118 1386 958" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.34"/>
+        <path d="M520 1518 C690 1470 860 1514 1034 1462 C1180 1418 1294 1412 1386 1352" fill="none" stroke="#596c5e" stroke-width="5" stroke-linecap="round" opacity="0.2"/>
+        <path d="M982 420 C1110 340 1268 372 1344 502 C1248 630 1088 600 982 420Z" fill="#596c5e" opacity="0.16"/>
+        <path d="M1024 656 C1168 574 1318 628 1374 774 C1246 874 1098 818 1024 656Z" fill="#8da08e" opacity="0.13"/>
+      </g>
+    `;
+  }
+  if (panelId === "inside-left" || panelId === "inside-right") {
+    const mirrored = panelId === "inside-right";
+    const edgeX = mirrored ? 1328 : 172;
+    const sign = mirrored ? -1 : 1;
+    const lowerX = mirrored ? 1070 : 430;
+    return `
+      <g data-customcard-hero="sympathy-gallery-interior-${panelId}">
+        <path d="M${edgeX} 260 C${edgeX - sign * 112} 560 ${edgeX - sign * 88} 908 ${edgeX - sign * 180} 1250 C${edgeX - sign * 238} 1460 ${edgeX - sign * 192} 1660 ${edgeX - sign * 88} 1840" fill="none" stroke="#596c5e" stroke-width="12" stroke-linecap="round" opacity="0.2"/>
+        <path d="M${edgeX - sign * 56} 474 C${edgeX - sign * 162} 406 ${edgeX - sign * 260} 466 ${edgeX - sign * 276} 604 C${edgeX - sign * 160} 666 ${edgeX - sign * 72} 602 ${edgeX - sign * 56} 474Z" fill="#596c5e" opacity="0.22"/>
+        <path d="M${edgeX - sign * 34} 872 C${edgeX - sign * 148} 810 ${edgeX - sign * 248} 872 ${edgeX - sign * 258} 1012 C${edgeX - sign * 144} 1068 ${edgeX - sign * 54} 1008 ${edgeX - sign * 34} 872Z" fill="#8da08e" opacity="0.2"/>
+        <path d="M${lowerX - 230} 1586 C${lowerX - 80} 1518 ${lowerX + 70} 1540 ${lowerX + 250} 1464" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.18"/>
+        <ellipse cx="${lowerX}" cy="1514" rx="44" ry="138" fill="#596c5e" opacity="0.14" transform="rotate(${mirrored ? -54 : 54} ${lowerX} 1514)"/>
+        <ellipse cx="${lowerX + (mirrored ? -132 : 132)}" cy="1614" rx="34" ry="112" fill="#8da08e" opacity="0.12" transform="rotate(${mirrored ? -42 : 42} ${lowerX + (mirrored ? -132 : 132)} 1614)"/>
+        <circle cx="${mirrored ? 260 : 1240}" cy="338" r="112" fill="#d8c7a1" opacity="0.12"/>
+      </g>
+    `;
+  }
+  return `
+    <g data-customcard-hero="sympathy-gallery-back">
+      <path d="M300 1020 C448 940 598 978 760 884 C930 784 1032 634 1120 420" fill="none" stroke="#596c5e" stroke-width="22" stroke-linecap="round" opacity="0.1"/>
+      <circle cx="750" cy="760" r="178" fill="#d8c7a1" opacity="0.22"/>
+      <path d="M598 760 C690 628 854 632 934 770 C844 902 684 894 598 760Z" fill="#596c5e" opacity="0.2"/>
+      <ellipse cx="808" cy="884" rx="34" ry="116" fill="#8da08e" opacity="0.18" transform="rotate(42 808 884)"/>
+      <path d="M520 1096 C670 1040 838 1078 1010 1018" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.26"/>
+      <path d="M306 1512 C488 1460 650 1498 824 1442 C986 1390 1122 1404 1250 1338" fill="none" stroke="#596c5e" stroke-width="6" stroke-linecap="round" opacity="0.14"/>
+    </g>
+  `;
+}
+
+function sympathyGalleryBorder(panelId) {
+  if (panelId === "front") {
+    return `<path d="M104 1964 H1390" stroke="#d8c7a1" stroke-width="4" stroke-linecap="round" opacity="0.24"/>`;
+  }
+  if (panelId === "back") {
+    return `<path d="M292 1856 H1208" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.16"/>`;
+  }
+  return `<path d="M210 190 H1290" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.12"/>`;
 }
 
 function photoNoteHero(panelId) {
@@ -1402,7 +1485,7 @@ function buildCardCopyPrompt(input) {
         "High-memory get-well or recovery cards: weave only approved inside jokes into tender support, avoid medical advice, diagnosis, miracle-cure language, pity, or clownish meme overload.",
         "B2B lifecycle or warranty cards: preserve exact customer, business, date, product, and CTA facts; make the CTA clear but calm; never invent discounts, legal terms, shipment status, or order/payment claims.",
         "Wedding or distant-family cards: be respectful and warm without overclaiming closeness; use a short non-denominational blessing unless a religion is explicitly specified, and reserve handwriting space when requested.",
-        "Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, and overdesigned ornament."
+        "Sympathy or quiet-support cards: keep language grounded and practical; avoid cliches, religious claims unless requested, bright celebration language, overdesigned ornament, and generic note-template stationery."
       ],
       layout_requirements: [
         "theme_guide is binding, but reuse motifs with restraint: a panel should have one dominant composition idea, not a scattered wallpaper of every motif.",
@@ -1413,11 +1496,11 @@ function buildCardCopyPrompt(input) {
         "text_layout must use only these values: headline_zone top/upper/center/lower; body_zone upper/center/lower/bottom; alignment left/center/right; font_pairing serif-sans/bold-editorial/minimal-sans/soft-serif; color_mode dark-ink/light-ink/accent-ink/high-contrast; scale compact/standard/large.",
         "front and back should visually match each other; the front carries the strongest hero idea and the back repeats a small quiet echo.",
         "inside-left and inside-right should visually match each other and feel like the opened interior spread.",
-        "inside-left and inside-right must be border-first stationery designs with a calm blank/low-contrast center reserved for app-rendered text.",
+        "inside-left and inside-right must keep a calm blank/low-contrast center reserved for app-rendered text; use edge-led artwork, not a generic note-template.",
         "Interior panels should usually be lighter, warmer, and more paper-like than the front/back covers; avoid using the same dark cover field on all four panels.",
         "Interior art must keep motifs on edges, corners, borders, or low-density background texture; do not fill the message area with busy all-over decoration.",
         "Never rely on a large opaque caption plaque, text box, label, banner, or card-within-card; text-safe space means natural negative space in the artwork.",
-        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.",
+        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.",
         "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
         "Use the requested style/culture/aesthetic as design direction, but keep sensitive cultural or religious text exact and conservative."
       ],
@@ -1429,15 +1512,16 @@ function buildCardCopyPrompt(input) {
         "Do not ask the image model to render the headline or body. The app overlays typography after generation.",
         "Reserve clean text-safe space for the app overlay where the panel copy belongs.",
         "Do not describe the app overlay as a recipient name, headline, body, quote, blessing, verse, poem, short message, personal message, or scene-setting message; say only clean text-safe area.",
-        "Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, paper field, or quiet blank center.",
+        "Do not create a caption plaque, inner card rectangle, blank label, sticky note, banner, or text box; text-safe must be integrated negative space, soft open field, or quiet blank center.",
         "image_prompt must stay visual: concrete motifs, palette, border/frame treatment, background texture, ornament density, composition archetype, and hierarchy only.",
         "For the front, explicitly choose one dominant hero composition or sparse line-art composition with a clean lower or central text-safe area.",
-        "For inside-left and inside-right, explicitly include: border-first stationery layout, thin refined frame, quiet center, clean text-safe area, generous margins, light ivory/cream low-contrast interior, and sparse edge/corner or lower-edge motifs.",
+        "For inside-left and inside-right, explicitly include: quiet center, clean text-safe area, generous margins, light low-contrast interior, and sparse edge/corner or lower-edge artwork.",
         "For the back, explicitly include mostly negative space and one small coordinating lower mark or border echo.",
         "Use symbolic objects, patterns, backgrounds, flat 2D illustration, and print design details.",
         "Coordinate palette, border style, motifs, and spacing across all four image_prompt values.",
         "For B2B CTA cards, reserve a clean app-overlay area for any QR code or account-manager CTA; do not ask the image model to draw QR codes, labels, or interface elements.",
         "For cards requesting handwriting space, reserve an open note area but do not ask the image model to create handwriting, signatures, script, or fake personal notes.",
+        "For sympathy image_prompt values, avoid generic blank-message templates entirely: no framed blank page, no ruled sheet, no card-within-card, and no physical mockup.",
         "For each image_prompt include: premium 5x7 vertical flat print panel artwork, the panel role, specific visual motifs, palette, style, composition, full-bleed 2D digital illustration quality, no people/no hands, no physical mockup, and no logos/no watermark/no readable text."
       ],
       safety_requirements: [
@@ -1512,17 +1596,34 @@ function buildImagePromptPlan(input, cardCopy) {
   });
 }
 
+function isSympathyInput(input) {
+  const source = `${input?.occasion || ""} ${input?.tone || ""} ${input?.style || ""} ${input?.personal_note || ""} ${(input?.memory_notes || []).join(" ")}`.toLowerCase();
+  return /\b(sympathy|condolence|loss|grieving|grief|quiet support|losing (?:a|his|her|their) father|father'?s loss)\b/.test(source);
+}
+
 function buildPanelImagePrompt(input, panelId, panel) {
-  const panelInstruction = {
-    front:
-      "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper.",
-    "inside-left":
-      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
-    "inside-right":
-      "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
-    back:
-      "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
-  }[panelId];
+  const isSympathy = isSympathyInput(input);
+  const panelInstruction = (isSympathy
+    ? {
+        front:
+          "Full-bleed flat 2D gallery artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with one deep moss side wash, abstract window light, one branch silhouette, quiet horizon mark, and integrated clean upper/lower text-safe areas.",
+        "inside-left":
+          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, edge-only branch silhouette, muted gray-green wash, quiet blank center, clean text-safe area, generous safe margins.",
+        "inside-right":
+          "Full-bleed flat 2D gallery artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, sparse edge branch, low taupe horizon mark, quiet blank center, clean text-safe area, generous safe margins.",
+        back:
+          "Full-bleed flat 2D gallery artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one abstract branch-and-horizon lower mark, no caption plaque."
+      }
+    : {
+        front:
+          "Full-bleed flat 2D artwork layer for the front of a premium vertical 5x7 print panel; choose one dominant hero visual or sparse line-art composition, keep an integrated clean lower or central text-safe area, no caption plaque, and avoid all-over motif wallpaper.",
+        "inside-left":
+          "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-left print panel; light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
+        "inside-right":
+          "Full-bleed flat 2D artwork layer for a vertical 5x7 inside-right print panel; matching light ivory or cream low-contrast note-sheet field, border-first stationery layout, thin refined frame, sparse edge/corner or lower-edge motifs, quiet blank center, clean text-safe area, generous safe margins, no inner text box.",
+        back:
+          "Full-bleed flat 2D artwork layer for a minimal vertical 5x7 back print panel; use mostly negative space with one small coordinating lower mark or border echo, no caption plaque."
+      })[panelId];
   const visualBrief = buildVisualBrief(input, panel);
   const visualCue = normalizeVisualCue(panel.visual_cue || panel.visualCue, panelId, input);
   const textLayout = normalizeTextLayout(panel.text_layout || panel.textLayout, panelId, input);
@@ -1534,7 +1635,9 @@ function buildPanelImagePrompt(input, panelId, panel) {
     visualBrief,
     `Use this panel-specific composition: ${visualCue}`,
     `Keep natural negative space for app-rendered typography in the ${textSafeCue}; do not draw words, labels, or handwriting.`,
-    "Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+    isSympathy
+      ? "Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+      : "Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
   ].join(" ");
 }
 
@@ -1570,8 +1673,15 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
   if (!/\bno (?:caption plaque|text box|inner card rectangle|blank tag|label)\b/i.test(base)) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
   }
+  if (isSympathyInput(input)) {
+    guardrails.push("Sympathy art must be flat gallery artwork with warm ivory open field, deep moss or muted gray-green edge wash, abstract window light, one branch silhouette, and no blank-message template or closed frame.");
+  }
   if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
-    guardrails.push("Use a light ivory or cream low-contrast note-sheet field for the interior unless the user explicitly requested a dark interior.");
+    guardrails.push(
+      isSympathyInput(input)
+        ? "Use a light warm-ivory low-contrast open field for the interior; keep artwork on edges and preserve a quiet blank center."
+        : "Use a light ivory or cream low-contrast note-sheet field for the interior unless the user explicitly requested a dark interior."
+    );
   }
   if (!/\bnot (?:a )?(?:physical|photographed|mockup|photo)\b/i.test(base)) {
     guardrails.push("Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.");
@@ -1582,8 +1692,14 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
 function imagePromptNeedsRepair(prompt, panelId, input, panel) {
   return imagePromptHasUnsafeSubject(prompt) ||
     imagePromptLeaksAppCopy(prompt) ||
+    sympathyImagePromptNeedsRepair(prompt, input) ||
     imagePromptConflictsWithPanelRole(prompt, panelId) ||
     imagePromptIsUnderspecified(prompt, panelId, input, panel);
+}
+
+function sympathyImagePromptNeedsRepair(prompt, input) {
+  if (!isSympathyInput(input)) return false;
+  return /\b(?:photo[- ]note|note[- ]sheet|border[- ]first|stationery design|framed blank page|blank page|ruled paper|paper field|paper texture|thin refined frame|frame motif|closed frame)\b/i.test(prompt);
 }
 
 function imagePromptHasUnsafeSubject(prompt) {
@@ -1748,7 +1864,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support stationery: soft ivory, muted gray-green, warm taupe, photo-note frame motif without an actual portrait, wide quiet paper field, restrained border, no religious symbols unless requested, no cliches.";
+    return "Reverent quiet-support gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; abstract window light, quiet horizon line, and one branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -1888,9 +2004,9 @@ function buildThemeGuide(input) {
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     return themeGuide({
       title: "Quietly With You",
-      palette: ["soft ivory", "muted gray-green", "warm taupe"],
-      motifs: ["photo-note frame", "single quiet leaf", "soft paper field", "thin rule"],
-      border: "restrained photo-note border with a quiet frame motif and generous open space"
+      palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
+      motifs: ["abstract window light", "quiet horizon line", "single branch silhouette", "soft open field"],
+      border: "open-edge gallery composition with no closed frame and generous natural negative space"
     });
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
@@ -2034,10 +2150,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Quiet sympathy cover with a restrained photo-note frame motif, soft ivory paper, muted gray-green leaf, warm taupe rule, and a clean central text-safe field; no portrait or religious symbol.",
-      "inside-left": "Soft left interior with a thin photo-note border, one small quiet leaf, warm paper texture, and wide center-left text-safe space for grounded support.",
-      "inside-right": "Matching right interior with a calm open message field, low-contrast frame edge, and subtle taupe rule near the bottom; no actual photograph or face.",
-      back: "Minimal back cover with one small leaf and fine rule on soft ivory, mostly negative space."
+      front: "Flat gallery-style sympathy cover with warm ivory open field, deep moss side wash, abstract window light, one branch silhouette, and a quiet horizon line; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
+      "inside-left": "Soft left interior artwork with warm ivory open field, edge-only branch silhouette, muted gray-green wash, and wide center-left text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
+      "inside-right": "Matching right interior artwork with calm open message field, abstract low taupe horizon mark, sparse edge branch, and generous negative space; avoid blank-message template, closed layout, and framed blank page.",
+      back: "Minimal back cover with one abstract branch-and-horizon mark on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card."
     };
     return cues[panelId];
   }
@@ -2227,8 +2343,8 @@ function panelTextLayoutFallback(panelId, input) {
         scale: "large"
       },
       back: {
-        headline_zone: "lower",
-        body_zone: "bottom",
+        headline_zone: "upper",
+        body_zone: "center",
         alignment: "center",
         font_pairing: "minimal-sans",
         color_mode: "dark-ink",

@@ -1,0 +1,37 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-cloudflare-flux-schnell",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/black-forest-labs/flux-1-schnell",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-image-v2-2026-06-13/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-flux-schnell",
+  "startedAt": "2026-06-13T06:31:45.133Z",
+  "finishedAt": "2026-06-13T06:31:47.075Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-only",
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {
+    "text": "AI provider returned 429.",
+    "image": "Cloudflare image provider returned 429."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 3,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 3
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

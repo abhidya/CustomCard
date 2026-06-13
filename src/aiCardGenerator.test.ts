@@ -121,7 +121,7 @@ describe("AI card generator service", () => {
     );
     expect(userPrompt.layout_requirements).toEqual(
       expect.arrayContaining([
-        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, ornate border-first note sheet, lower-corner object cluster, or mostly blank back mark.",
+        "Prefer one of these composition archetypes per panel: cinematic single-object cover, sparse line-art cover, edge-led gallery illustration, lower-corner object cluster, or mostly blank back mark.",
         "Do not use all-over repeating motif patterns unless the user explicitly requests wallpaper, wrapping paper, or dense pattern.",
         "visual_cue is binding for the image prompt: make front, inside-left, inside-right, and back visually distinct while still coordinated.",
         "text_layout controls app-rendered typography only. Choose zones that match the clean text-safe area in visual_cue; never ask the image model to draw the text."
@@ -831,10 +831,13 @@ describe("AI card generator service", () => {
     expect(payload.card_copy.theme_guide.palette).not.toContain("palette");
     expect(payload.card_copy.theme_guide.motifs).not.toContain("style");
     expect(payload.card_copy.panels.map((panel) => panel.image_prompt).join("\n")).not.toMatch(/recipient.?s? name|card copy|headline|body/i);
+    const imagePrompts = payload.card_copy.panels.map((panel) => panel.image_prompt).join("\n");
+    expect(imagePrompts).toMatch(/flat 2D gallery artwork|warm ivory open field|branch silhouette/i);
+    expect(imagePrompts).not.toMatch(/photo-note|note-sheet|border-first|stationery design|paper field|thin refined frame/i);
     expect(front?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "upper", body_zone: "lower", scale: "large" });
     expect(insideLeft?.text_layout).toMatchObject({ color_mode: "dark-ink", font_pairing: "soft-serif", scale: "large" });
     expect(insideRight?.text_layout).toMatchObject({ color_mode: "dark-ink", font_pairing: "soft-serif", scale: "large" });
-    expect(back?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "lower", body_zone: "bottom", scale: "large" });
+    expect(back?.text_layout).toMatchObject({ color_mode: "dark-ink", headline_zone: "upper", body_zone: "center", scale: "large" });
   });
 
   it("honors a trusted admin live-provider off toggle even when credentials exist", async () => {

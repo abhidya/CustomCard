@@ -1,0 +1,17 @@
+{
+  "phase": "pipeline-quality",
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-browser-svg-renderer",
+      "imageAdapterId": "browser-svg-renderer",
+      "imageModel": "deterministic-svg"
+    }
+  ]
+}
