@@ -736,7 +736,7 @@ describe("AI card generator service", () => {
         ...panel,
         headline:
           panel.id === "front"
-            ? "Sympathy for Eli"
+            ? "Eli, I'm here for you."
             : panel.id === "inside-left"
                 ? "A friend's support"
                 : panel.id === "inside-right"

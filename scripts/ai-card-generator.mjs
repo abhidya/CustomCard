@@ -1017,6 +1017,11 @@ function photoNoteHero(panelId) {
     return `
       <g data-customcard-hero="sympathy-front">
         <rect x="156" y="156" width="1188" height="1788" rx="30" fill="#fffaf2" opacity="0.46"/>
+        <path d="M1198 374 C1024 470 936 658 974 866 C1012 1070 1168 1190 1320 1306" fill="none" stroke="#c8cec0" stroke-width="34" stroke-linecap="round" opacity="0.14"/>
+        <path d="M980 454 C1118 384 1268 410 1358 528 C1268 650 1110 642 980 454Z" fill="#7d8b72" opacity="0.14"/>
+        <path d="M972 812 C1110 732 1266 764 1352 894 C1256 1014 1098 994 972 812Z" fill="#9aa58d" opacity="0.13"/>
+        <path d="M960 1172 C1098 1092 1258 1128 1340 1254 C1244 1368 1088 1352 960 1172Z" fill="#7d8b72" opacity="0.12"/>
+        <path d="M248 1418 C470 1328 694 1378 878 1288 C1038 1210 1162 1078 1258 902" fill="none" stroke="#a98f68" stroke-width="7" stroke-linecap="round" opacity="0.18"/>
         <path d="M214 238 C456 186 666 246 892 212 C1068 186 1200 214 1296 190" fill="none" stroke="#d7cbb7" stroke-width="5" stroke-linecap="round" opacity="0.36"/>
         <path d="M178 1788 C372 1736 568 1782 756 1740 C980 1690 1136 1728 1322 1642" fill="none" stroke="#a98f68" stroke-width="8" stroke-linecap="round" opacity="0.34"/>
         <path d="M148 258 C242 358 278 538 252 764 C228 960 190 1118 218 1288" fill="none" stroke="#7d8b72" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
@@ -1040,6 +1045,9 @@ function photoNoteHero(panelId) {
     const mirrored = panelId === "inside-right";
     const sideX = mirrored ? 1294 : 206;
     const leafSign = mirrored ? -1 : 1;
+    const lowerLeafX = mirrored ? 458 : 1042;
+    const lowerLineStart = mirrored ? 268 : 514;
+    const lowerLineEnd = mirrored ? 926 : 1232;
     const pathStart = mirrored ? "M1310" : "M190";
     const curve = mirrored
       ? "1200 510 1236 790 1312 1030 C1368 1210 1328 1438 1208 1646"
@@ -1053,6 +1061,10 @@ function photoNoteHero(panelId) {
         <ellipse cx="${sideX}" cy="520" rx="28" ry="86" fill="#7d8b72" opacity="0.36" transform="rotate(${leafSign * 34} ${sideX} 520)"/>
         <ellipse cx="${sideX - leafSign * 70}" cy="760" rx="24" ry="76" fill="#9aa58d" opacity="0.32" transform="rotate(${leafSign * -30} ${sideX - leafSign * 70} 760)"/>
         <ellipse cx="${sideX}" cy="1020" rx="28" ry="86" fill="#7d8b72" opacity="0.28" transform="rotate(${leafSign * 32} ${sideX} 1020)"/>
+        <path d="M${lowerLineStart} 1548 C${mirrored ? "456 1490 630 1496 774 1446" : "700 1490 874 1496 1018 1446"}" fill="none" stroke="#c8cec0" stroke-width="16" stroke-linecap="round" opacity="0.12"/>
+        <ellipse cx="${lowerLeafX}" cy="1510" rx="40" ry="118" fill="#7d8b72" opacity="0.18" transform="rotate(${mirrored ? -58 : 58} ${lowerLeafX} 1510)"/>
+        <ellipse cx="${lowerLeafX + (mirrored ? -116 : 116)}" cy="1598" rx="34" ry="98" fill="#9aa58d" opacity="0.16" transform="rotate(${mirrored ? -42 : 42} ${lowerLeafX + (mirrored ? -116 : 116)} 1598)"/>
+        <path d="M${lowerLineEnd} 340 C${mirrored ? "1044 390 936 390 792 346" : "992 390 1100 390 1244 346"}" fill="none" stroke="#a98f68" stroke-width="4" stroke-linecap="round" opacity="0.14"/>
         <circle cx="${mirrored ? 260 : 1240}" cy="330" r="76" fill="#efe4d2" opacity="0.32"/>
         <circle cx="${mirrored ? 302 : 1198}" cy="292" r="28" fill="#c8b899" opacity="0.24"/>
       </g>
@@ -1061,6 +1073,9 @@ function photoNoteHero(panelId) {
   return `
     <g data-customcard-hero="sympathy-back">
       <rect x="166" y="166" width="1168" height="1768" rx="28" fill="#fffaf2" opacity="0.34"/>
+      <path d="M338 1212 C520 1138 690 1188 846 1092 C998 998 1110 836 1196 602" fill="none" stroke="#c8cec0" stroke-width="26" stroke-linecap="round" opacity="0.1"/>
+      <path d="M1014 540 C1130 482 1268 510 1330 620 C1248 720 1114 704 1014 540Z" fill="#7d8b72" opacity="0.12"/>
+      <path d="M912 902 C1034 832 1176 864 1248 984 C1160 1092 1018 1064 912 902Z" fill="#9aa58d" opacity="0.11"/>
       <g opacity="0.48">
         <circle cx="750" cy="720" r="162" fill="#efe4d2"/>
         <path d="M608 718 C690 612 836 614 902 724 C832 838 688 834 608 718Z" fill="#7d8b72" opacity="0.44"/>
@@ -2426,7 +2441,12 @@ function panelHeadlineNeedsRepair(headline, panelId, input) {
   if (isB2B && /^(?:thank you|happy anniversary|for you|valued customer|your loyalty|renew today|limited time)$/i.test(value)) return true;
   if (isWedding && /^(?:congratulations|best wishes|thinking of you|from the heart|for this moment)$/i.test(value)) return true;
   if (isSympathy) {
-    if (panelId === "front" && (!textContains(value, input.recipient) || /^(?:sympathy for .+|with deepest sympathy|thinking of you|for your loss)$/i.test(value))) return true;
+    if (
+      panelId === "front" &&
+      (!textContains(value, input.recipient) ||
+        /^(?:sympathy for .+|with deepest sympathy|thinking of you|for your loss)$/i.test(value) ||
+        /\b(?:i'?m|i am|we are)\s+here\b/i.test(value))
+    ) return true;
     if (
       panelId === "inside-left" &&
       (!/\b(?:with you|not alone|beside you)\b/i.test(value) ||
