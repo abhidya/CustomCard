@@ -1410,6 +1410,13 @@ function sympathyThresholdHero(panelId) {
         <path d="M920 630 C850 842 880 1066 982 1248 C1058 1386 1038 1512 950 1642" fill="none" stroke="#cfd3bf" stroke-width="9" stroke-linecap="round" opacity="0.22"/>
         <path d="M946 840 C842 794 762 856 756 980 C866 1018 940 958 946 840Z" fill="#cfd3bf" opacity="0.22"/>
         <path d="M918 1188 C1040 1138 1130 1204 1132 1342 C1004 1380 926 1316 918 1188Z" fill="#7d8f7f" opacity="0.19"/>
+        <g data-customcard-care-tableau="threshold-care-front" opacity="0.42">
+          <path d="M314 1214 C454 1150 636 1186 790 1132 C958 1074 1110 1090 1226 1148 L1238 1450 C1080 1498 926 1466 774 1518 C606 1574 448 1540 308 1602 Z" fill="#ead9aa" opacity="0.08" filter="url(#sympathyThresholdSoft)"/>
+          <path d="M324 1438 C474 1382 628 1416 786 1362 C954 1306 1100 1322 1214 1374" fill="none" stroke="#ead9aa" stroke-width="13" stroke-linecap="round" opacity="0.18"/>
+          <path d="M456 1198 C534 1160 640 1174 702 1226 C666 1304 500 1308 454 1220 Z" fill="#ead9aa" opacity="0.1"/>
+          <path d="M804 1176 C900 1142 1018 1176 1084 1242 C1014 1306 872 1308 794 1236 Z" fill="#cfd3bf" opacity="0.1"/>
+          <path d="M870 1240 C918 1210 990 1224 1034 1268" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.34"/>
+        </g>
         <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.35">
           <path d="M376 1316 C420 1274 514 1280 568 1322 C552 1378 420 1394 374 1332 Z" fill="#ead9aa" opacity="0.16"/>
           <path d="M394 1318 C446 1296 506 1300 548 1322 C526 1364 422 1364 394 1318Z" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round"/>
@@ -1447,6 +1454,11 @@ function sympathyThresholdHero(panelId) {
         <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
         <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
         <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" opacity="0.17"/>
+        <g data-customcard-care-tableau="interior-care-${panelId}" opacity="0.12">
+          <path d="M${mirrored ? "782 1438 C900 1380 1042 1416 1226 1362 L1270 1608 C1116 1650 984 1626 850 1670 C742 1706 642 1692 560 1654" : "718 1438 C600 1380 458 1416 274 1362 L230 1608 C384 1650 516 1626 650 1670 C758 1706 858 1692 940 1654"}" fill="#53685f" opacity="0.2"/>
+          <path d="M${mirrored ? "698 1582 C842 1528 996 1566 1192 1498" : "802 1582 C658 1528 504 1566 308 1498"}" fill="none" stroke="#ad9160" stroke-width="11" stroke-linecap="round"/>
+          <path d="M${mirrored ? "894 1468 C966 1438 1066 1452 1128 1504 C1074 1560 944 1564 884 1508 Z" : "606 1468 C534 1438 434 1452 372 1504 C426 1560 556 1564 616 1508 Z"}" fill="#d9bd7f" opacity="0.32"/>
+        </g>
         <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.19">
           ${mirrored ? `
             <path d="M860 1538 C926 1488 996 1578 1066 1520 C1120 1474 1176 1492 1228 1534" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round"/>
@@ -1471,6 +1483,11 @@ function sympathyThresholdHero(panelId) {
       <rect x="476" y="1374" width="548" height="304" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.5" filter="url(#sympathyThresholdSoft)"/>
       <path d="M540 1418 V1628 H958" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
       <path d="M592 1468 V1584 H922" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.17"/>
+      <g data-customcard-care-tableau="back-closing-care" opacity="0.3">
+        <path d="M548 1458 C632 1416 744 1432 832 1398 C924 1362 1014 1372 1090 1410 L1108 1596 C1018 1634 930 1618 836 1654 C734 1694 630 1668 540 1618 Z" fill="#ead9aa" opacity="0.12" filter="url(#sympathyThresholdSoft)"/>
+        <path d="M584 1604 C682 1570 778 1592 884 1558 C980 1528 1048 1538 1090 1506" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.26"/>
+        <path d="M708 1428 C766 1404 850 1420 898 1464 C846 1510 748 1514 696 1464 Z" fill="#ead9aa" opacity="0.16"/>
+      </g>
       <g data-customcard-support-relief="back-care-row" opacity="0.26">
         <path d="M584 1514 C626 1488 684 1494 718 1520 C704 1560 608 1564 584 1514Z" fill="#ead9aa" opacity="0.16"/>
         <path d="M598 1516 C636 1498 680 1500 708 1520 C692 1548 616 1548 598 1516Z" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round"/>
