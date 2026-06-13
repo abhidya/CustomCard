@@ -16,6 +16,11 @@ open. Each is the safest reasonable default for the existing backend.
   JWT (the backend verifies it offline against `CLERK_JWT_KEY` and bridges it to
   a durable `auth_sessions` row). The app therefore uses Clerk's hosted identity
   (`@clerk/clerk-expo`) and sends the Clerk session token as the bearer.
+- **Configured dev Clerk instance:** `model-bluejay-21`. The publishable key
+  (`pk_test_…`, public) is wired via `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` so the
+  app performs real email-code sign-in. The instance's JWKS PEM and issuer are
+  backend deployment config; the Clerk secret key is never used by or stored in
+  the mobile app.
 - **Sign-in method:** email one-time-code (`email_code`) via Clerk, with
   automatic fall-through to sign-up when the email is unknown — one form covers
   both. No password is collected on device. OAuth/OIDC social providers can be

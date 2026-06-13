@@ -49,6 +49,23 @@ development build pointed at `development`, the app offers a dev-only sign-in
 that accepts the local API's `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`. Release builds
 require Clerk and never expose that path.
 
+#### Configured Clerk instance
+
+This project's development Clerk instance is `model-bluejay-21`. The **publishable
+key** (public by design) enables real email-code sign-in in the app:
+
+```
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bW9kZWwtYmx1ZWpheS0yMS5jbGVyay5hY2NvdW50cy5kZXYk
+```
+
+The matching **backend** values are deployment config for the CustomCard API
+(not the mobile app): `CLERK_ISSUER=https://model-bluejay-21.clerk.accounts.dev`
+and `CLERK_JWT_KEY` set to the instance's JWKS public PEM (public verification
+material). The Clerk **secret key** (`sk_...`) is a true secret — it is never
+needed by this mobile app, must never be committed, and belongs only in the
+API's server-side environment. Production uses its own separate Clerk instance
+and keys.
+
 ## Run
 
 Start a CustomCard API first. The quickest is the in-memory runtime from the
