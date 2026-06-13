@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-gallery">
+<rect width="1500" height="2100" fill="#f7f2e8"/>
+
+    <g data-customcard-texture="sympathy-still-life-wash" opacity="0.09">
+      <path d="M-100 1846 C248 1718 596 1810 952 1666 C1198 1568 1384 1584 1604 1486" fill="none" stroke="#596c5e" stroke-width="36" stroke-linecap="round"/>
+      <path d="M-80 310 C260 286 598 330 930 292 C1170 258 1398 274 1600 238" fill="none" stroke="#596c5e" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="1130" cy="332" r="118" fill="#d8c7a1" opacity="0.13"/>
+    </g>
+  
+
+      <g data-customcard-hero="sympathy-support-still-life-interior-inside-left">
+        <ellipse cx="750" cy="790" rx="560" ry="460" fill="#fffaf0" opacity="0.58"/>
+        <path d="M-60 1690 C260 1532 552 1620 832 1518 C1068 1432 1248 1452 1560 1376 V2100 H-60Z" fill="#d8c7a1" opacity="0.16"/>
+        <path d="M-80 1820 C260 1660 580 1754 908 1610 C1110 1526 1300 1526 1580 1458 V2100 H-80Z" fill="#596c5e" opacity="0.1"/>
+        <path d="M82 280 C172 540 160 862 78 1152 C28 1330 90 1500 204 1654" fill="none" stroke="#596c5e" stroke-width="16" stroke-linecap="round" opacity="0.22"/>
+        <path d="M108 330 C180 598 152 900 98 1140 C54 1338 110 1488 214 1628" fill="none" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.24"/>
+        <path d="M176 518 C252 478 316 520 330 612 C250 650 188 610 176 518Z" fill="#8da08e" opacity="0.22"/>
+             <path d="M134 824 C218 770 298 816 312 926 C220 976 152 922 134 824Z" fill="#596c5e" opacity="0.18"/>
+             <path d="M152 1210 C236 1156 310 1196 326 1300 C236 1350 168 1300 152 1210Z" fill="#8da08e" opacity="0.16"/>
+             <path d="M228 1600 C312 1548 380 1588 396 1688 C308 1734 244 1688 228 1600Z" fill="#596c5e" opacity="0.14"/>
+        <path d="M270 350 C448 310 626 354 836 318 C1038 284 1180 308 1288 282" fill="none" stroke="#d8c7a1" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+        <path d="M262 1844 C460 1778 650 1840 846 1796 C1038 1754 1180 1788 1290 1734" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.18"/>
+        <ellipse cx="392" cy="1588" rx="168" ry="62" fill="#4f3726" opacity="0.2"/>
+             <path d="M244 1558 C342 1660 486 1664 584 1562" fill="none" stroke="#4f3726" stroke-width="16" stroke-linecap="round" opacity="0.28"/>
+             <ellipse cx="392" cy="1556" rx="130" ry="38" fill="#fffaf0" opacity="0.3"/>
+             <path d="M638 1512 C712 1468 788 1484 858 1540" fill="none" stroke="#b59f76" stroke-width="9" stroke-linecap="round" opacity="0.3"/>
+             <path d="M1036 1468 C1136 1404 1222 1452 1252 1554 C1152 1620 1068 1578 1036 1468Z" fill="#8da08e" opacity="0.17"/>
+      </g>
+    
+
+
+<path d="M210 190 H1290" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.12"/>
+</svg>

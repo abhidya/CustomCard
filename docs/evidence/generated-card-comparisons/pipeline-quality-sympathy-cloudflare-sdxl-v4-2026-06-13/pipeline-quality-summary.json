@@ -1,0 +1,269 @@
+{
+  "phase": "pipeline-quality",
+  "phaseDir": "pipeline-quality",
+  "createdAtIso": "2026-06-13T07:54:11.124Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-cloudflare-sdxl-lightning",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-cloudflare-sdxl-lightning",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning",
+      "startedAt": "2026-06-13T07:54:11.126Z",
+      "finishedAt": "2026-06-13T07:54:58.709Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "deterministic-support-copy",
+      "providerFailures": {},
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-front.png",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for the front of a premium vertical 5x7 sympathy print panel; plain warm-ivory color wash, plain upper/center text-safe area, and one sparse lower-edge support-object strip. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Flat quiet-support sympathy cover with plain warm-ivory color wash, empty upper/center text-safe space, and a sparse lower-edge strip with meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-inside-left.png",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-left sympathy print panel; plain warm-ivory low-contrast color wash, empty plain center for text, and tiny lower-left support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with plain warm-ivory color wash, empty plain center text-safe space, and tiny meal bowl/folded cloth marks only along the lower-left edge; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge support objects; keep it non-scenic,",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-inside-right.png",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-right sympathy print panel; matching plain warm-ivory low-contrast color wash, empty plain center for text, and tiny lower-edge support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with plain warm-ivory color wash, empty plain center text-safe space, and tiny muted phone/key marks only near the lower edge; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge support objects; keep it non-scenic,",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/provider-back.png",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a minimal vertical 5x7 back sympathy print panel; mostly empty warm-ivory color wash with one small lower-band support-object echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal back cover with mostly empty warm-ivory color wash and one small lower-band echo of bowl, phone, key, and thin branch; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge support objects; keep it non-scenic, sparse, and free of detailed background illustration.",
+          "sourceKind": "data-url",
+          "contentType": "image/png"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v4-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/contact-sheet.png",
+      "providerCallCount": 4,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": true,
+          "mustIncludeCovered": true,
+          "mustAvoidClean": true,
+          "providerCalls": 4
+        },
+        "missingMustInclude": [],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "[redacted]",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for the front of a premium vertical 5x7 sympathy print panel; plain warm-ivory color wash, plain upper/center text-safe area, and one sparse lower-edge support-object strip. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Flat quiet-support sympathy cover with plain warm-ivory color wash, empty upper/center text-safe space, and a sparse lower-edge strip with meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use",
+          "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, trees, artist signature",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "front",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 483144
+      },
+      "durationMs": 11193
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "[redacted]",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-left sympathy print panel; plain warm-ivory low-contrast color wash, empty plain center for text, and tiny lower-left support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with plain warm-ivory color wash, empty plain center text-safe space, and tiny meal bowl/folded cloth marks only along the lower-left edge; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge support objects; keep it non-scenic,",
+          "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, trees, artist signature",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-left",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 623499
+      },
+      "durationMs": 11672
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "[redacted]",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-right sympathy print panel; matching plain warm-ivory low-contrast color wash, empty plain center for text, and tiny lower-edge support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with plain warm-ivory color wash, empty plain center text-safe space, and tiny muted phone/key marks only near the lower edge; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge support objects; keep it non-scenic,",
+          "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, trees, artist signature",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "inside-right",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 258185
+      },
+      "durationMs": 11461
+    },
+    {
+      "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "authorization": "[redacted]",
+          "content-type": "application/json"
+        },
+        "body": {
+          "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a minimal vertical 5x7 back sympathy print panel; mostly empty warm-ivory color wash with one small lower-band support-object echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. Composition must stay non-scenic, sparse, object-led, and free of detailed background illustration. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; non-scenic background; no religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal back cover with mostly empty warm-ivory color wash and one small lower-band echo of bowl, phone, key, and thin branch; object-led and non-scenic. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge support objects; keep it non-scenic, sparse, and free of detailed background illustration.",
+          "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene, fruit, flowers, vase, urn, table setting, window bars, ornate frame, dense line art, line-art thicket, landscape, wheat field, grassland, horizon, sunset, sun, trees, artist signature",
+          "width": 1464,
+          "height": 2048,
+          "guidance": 3.5,
+          "num_steps": 8,
+          "metadata": {
+            "customcard": {
+              "prompt_contract": "folded-card-four-panel-v1",
+              "generation_strategy": "one-provider-request-per-panel",
+              "panel_id": "back",
+              "target_width": 1500,
+              "target_height": 2100,
+              "target_dpi": 300
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/png",
+        "byteLength": 291325
+      },
+      "durationMs": 10841
+    }
+  ]
+}

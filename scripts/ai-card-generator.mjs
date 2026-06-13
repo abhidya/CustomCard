@@ -1816,7 +1816,7 @@ function buildImagePromptPlan(input, cardCopy) {
     return {
       panel_id: panelId,
       prompt: normalizeImagePrompt(panel.image_prompt || buildPanelImagePrompt(input, panelId, panel), panelId, input, panel),
-      negative_prompt: normalizeImageNegativePrompt(panel.image_negative_prompt)
+      negative_prompt: normalizePanelImageNegativePrompt(panel.image_negative_prompt, input)
     };
   });
 }
@@ -1831,13 +1831,13 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = (isSympathy
       ? {
         front:
-          "Full-bleed flat 2D quiet-support still-life artwork layer for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field with quiet window light, lower table plane, meal bowl, folded cloth, phone, key, and one right-edge branch silhouette; integrated clean upper/center text-safe area.",
+          "Full-bleed flat 2D quiet-support gallery artwork for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field, plain upper/center text-safe area, and one sparse lower-edge support-object strip.",
         "inside-left":
-          "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, small meal bowl and folded cloth in the lower-left edge, quiet blank center, clean text-safe area, generous safe margins.",
+          "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, empty plain center for text, and tiny lower-left support-object marks only.",
         "inside-right":
-          "Full-bleed flat 2D quiet-support still-life artwork layer for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, muted phone and small key near lower edge, quiet blank center, clean text-safe area, generous safe margins.",
+          "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, empty plain center for text, and tiny lower-edge support-object marks only.",
         back:
-          "Full-bleed flat 2D quiet-support still-life artwork layer for a minimal vertical 5x7 back sympathy print panel; mostly negative space with one small meal bowl, phone, key, and branch echo in the lower band, no caption plaque."
+          "Full-bleed flat 2D quiet-support gallery artwork for a minimal vertical 5x7 back sympathy print panel; mostly empty warm ivory field with one small lower-band support-object echo."
       }
     : {
         front:
@@ -1854,6 +1854,10 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const textLayout = normalizeTextLayout(panel.text_layout || panel.textLayout, panelId, input);
   const textSafeCue = textSafeCueForLayout(textLayout);
 
+  if (isSympathy) {
+    return buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, textSafeCue });
+  }
+
   return [
     panelInstruction,
     "Safety constraints: no readable text, no words, no letters, no numbers, no handwriting, no labels, No people, No hands, no logos, no watermark, no physical card mockup.",
@@ -1863,6 +1867,20 @@ function buildPanelImagePrompt(input, panelId, panel) {
     isSympathy
       ? "Artwork layer only, not a photographed object. Avoid blank-message templates, ruled sheets, closed frames, card-within-card layouts, mockup frames, tables, envelopes, labels, signs, blank tags, text boxes, and shadowed sheets. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
       : "Artwork layer only, not a physical card or photographed paper. No caption plaque, no inner card rectangle, no mockup frame, no table, no envelope, no label, no sign, no blank tag, no text box, no shadowed paper sheet. Decorative print borders are allowed. Premium print-ready flat artwork, full-bleed 2D composition, minimal clutter, disciplined negative space, no all-over repeating wallpaper pattern, generous safe margins, no readable text, no words, no letters, no numbers, no handwriting, no calligraphy, no faux script, no fake text, no logos, no watermark."
+  ].join(" ");
+}
+
+function buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, textSafeCue }) {
+  return [
+    panelInstruction,
+    "Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card.",
+    `Text contract: keep the ${textSafeCue} empty, plain, low-contrast, and free of objects; no marks behind app-rendered text.`,
+    "Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette.",
+    "No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template.",
+    "No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene.",
+    visualBrief,
+    `Panel cue: ${visualCue}`,
+    "Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested."
   ].join(" ");
 }
 
@@ -1899,7 +1917,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
   }
   if (isSympathyInput(input)) {
-    guardrails.push("Sympathy art must be flat quiet-support still-life artwork with warm ivory open field, quiet window light, meal bowl, folded cloth, muted phone, small key, one branch silhouette, and no blank-message template or closed frame.");
+    guardrails.push("Sympathy art must keep a plain text field and use only sparse lower-edge support objects; no fruit, flowers, vases, urns, table settings, window bars, ornate frames, or line-art thickets.");
   }
   if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
     guardrails.push(
@@ -2074,6 +2092,37 @@ function normalizeImageNegativePrompt(value) {
   ).join(", ");
 }
 
+function normalizePanelImageNegativePrompt(value, input) {
+  const base = normalizeImageNegativePrompt(value);
+  if (!isSympathyInput(input)) return base;
+  return Array.from(
+    new Set(
+      [
+        ...base.split(","),
+        "fruit",
+        "flowers",
+        "vase",
+        "urn",
+        "table setting",
+        "window bars",
+        "ornate frame",
+        "dense line art",
+        "line-art thicket",
+        "landscape",
+        "wheat field",
+        "grassland",
+        "horizon",
+        "sunset",
+        "sun",
+        "trees",
+        "artist signature"
+      ]
+        .map((item) => cleanText(item).toLowerCase())
+        .filter(Boolean)
+    )
+  ).join(", ");
+}
+
 function buildVisualBrief(input, panel) {
   const source = `${input.occasion} ${input.tone} ${input.style} ${input.personal_note} ${input.memory_notes.join(" ")} ${panel.art_direction} ${panel.visual_cue || panel.visualCue || ""}`.toLowerCase();
   if (/\b(med|medical|doctor|physician|md|white[- ]coat|stethoscope)\b/.test(source)) {
@@ -2089,7 +2138,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent quiet-support still-life artwork: warm ivory, muted gray-green, deep moss, and soft taupe; quiet window light, meal bowl, folded cloth, muted phone, small key, and single branch silhouette; wide natural negative space; no religious symbols unless requested, no cliches, no blank-message template.";
+    return "Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -2375,10 +2424,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Flat quiet-support still-life sympathy cover with warm ivory open field, quiet window light, lower table plane, meal bowl, folded cloth, muted phone, small key, and a single branch silhouette at the right edge; keep upper/center text-safe space clear; avoid blank-message template, closed frame, physical paper card, and religious symbol.",
-      "inside-left": "Soft left interior artwork with warm ivory open field, small meal bowl and folded cloth in the lower-left edge, and wide center text-safe space for grounded support; avoid blank-message template, closed layout, and framed blank page.",
-      "inside-right": "Matching right interior artwork with calm open message field, muted phone and small key near the lower edge, and generous negative space; avoid route lines, cars, blank-message template, closed layout, and framed blank page.",
-      back: "Minimal back cover with one small meal bowl, muted phone, small key, and branch echo in the lower band on warm ivory open field, mostly negative space; avoid blank-message template and physical paper card."
+      front: "Flat quiet-support sympathy cover with warm ivory open field, empty upper/center text-safe space, and a sparse lower-edge strip with meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, table setting, ornate frame, or religious symbol.",
+      "inside-left": "Soft left interior with warm ivory open field, empty plain center text-safe space, and tiny meal bowl/folded cloth marks only along the lower-left edge; no fruit, flowers, table setting, closed layout, or framed blank page.",
+      "inside-right": "Matching right interior with warm ivory open field, empty plain center text-safe space, and tiny muted phone/key marks only near the lower edge; no fruit, flowers, route lines, cars, closed layout, or framed blank page.",
+      back: "Minimal back cover with mostly empty warm ivory field and one small lower-band echo of bowl, phone, key, and thin branch; no urn, vase, fruit, flowers, table setting, line-art thicket, or physical paper card."
     };
     return cues[panelId];
   }
@@ -2693,7 +2742,7 @@ function normalizeCardCopy(parsed, input) {
         1800
       ),
       image_negative_prompt: truncate(
-        normalizeImageNegativePrompt(raw.image_negative_prompt || raw.imageNegativePrompt || defaults.image_negative_prompt),
+        normalizePanelImageNegativePrompt(raw.image_negative_prompt || raw.imageNegativePrompt || defaults.image_negative_prompt, input),
         500
       ).replace(/,\s*$/, "")
     };

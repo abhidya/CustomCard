@@ -1466,13 +1466,14 @@ function extForContentType(contentType) {
 }
 
 async function renderPanelPreview({ imageBuffer, panelId, panelCopy }) {
-  const layout = previewLayout(panelId, panelCopy.text_layout || panelCopy.textLayout);
+  const layout = previewLayout(panelId, panelCopy.text_layout || panelCopy.textLayout, Boolean(String(panelCopy.body || "").trim()));
   const frameOpacity = previewFrameOpacity(panelCopy, layout);
   const headline = wrapText(panelCopy.headline || "", layout.headlineChars).slice(0, 3);
   const body = wrapText(panelCopy.body || "", layout.bodyChars).slice(0, panelId.startsWith("inside") ? 8 : 4);
   const overlay = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
       <rect x="88" y="88" width="1324" height="1924" rx="32" fill="none" stroke="${layout.frameColor}" stroke-width="8" opacity="${frameOpacity}"/>
+      ${previewTextFieldSvg(layout)}
       <text x="${layout.x}" y="${layout.headlineY}" text-anchor="${layout.anchor}" font-family="${layout.headlineFont}" fill="${layout.headlineColor}" font-size="${layout.headlineSize}" font-weight="700" paint-order="stroke fill" stroke="${layout.headlineStroke}" stroke-width="${layout.headlineStrokeWidth}">
         ${headline.map((line, index) => `<tspan x="${layout.x}" dy="${index === 0 ? 0 : layout.headlineSize * 1.08}">${escapeXml(line)}</tspan>`).join("")}
       </text>
@@ -1499,6 +1500,11 @@ function previewFrameOpacity(panelCopy, layout) {
   ].join(" ");
   if (/\b(?:sympathy|quiet support|open-edge gallery|flat gallery-style)\b/i.test(source)) return 0;
   return layout.frameOpacity ?? 0.72;
+}
+
+function previewTextFieldSvg(layout) {
+  if (!layout.fieldOpacity) return "";
+  return `<rect x="${layout.fieldX}" y="${layout.fieldY}" width="${layout.fieldWidth}" height="${layout.fieldHeight}" rx="${layout.fieldRadius}" fill="${layout.fieldFill}" opacity="${layout.fieldOpacity}" stroke="${layout.fieldStroke}" stroke-width="${layout.fieldStrokeWidth}"/>`;
 }
 
 async function renderTypographyPreview({ imageBuffer, overlayText, panelCopy, modeId }) {
@@ -1608,7 +1614,7 @@ function modeCTypographyOverlayLayout(panelId) {
   };
 }
 
-function previewLayout(panelId, rawTextLayout) {
+function previewLayout(panelId, rawTextLayout, hasBody = true) {
   const base = (() => {
     if (panelId === "front") {
       return {
@@ -1648,10 +1654,10 @@ function previewLayout(panelId, rawTextLayout) {
     frameColor: "#c49b42"
     };
   })();
-  return applyPreviewTextLayout(base, rawTextLayout);
+  return applyPreviewTextLayout(base, rawTextLayout, panelId, hasBody);
 }
 
-function applyPreviewTextLayout(base, rawTextLayout) {
+function applyPreviewTextLayout(base, rawTextLayout, panelId, hasBody) {
   const layout = normalizePreviewTextLayout(rawTextLayout);
   const shared = {
     ...base,
@@ -1664,7 +1670,7 @@ function applyPreviewTextLayout(base, rawTextLayout) {
     headlineStrokeWidth: 0,
     bodyStrokeWidth: 0
   };
-  if (!layout) return shared;
+  if (!layout) return withPreviewTextField(shared, undefined, panelId, hasBody);
   const scale = layout.scale === "compact" ? 0.86 : layout.scale === "large" ? 1.14 : 1;
   const font = layout.font_pairing === "bold-editorial"
     ? { headlineFont: "Inter, Arial, sans-serif", bodyFont: "Inter, Arial, sans-serif", headlineSize: 124, bodySize: 48, headlineChars: 16, bodyChars: 32 }
@@ -1676,7 +1682,7 @@ function applyPreviewTextLayout(base, rawTextLayout) {
   const headlineColor = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#fff8dc" : layout.color_mode === "accent-ink" ? base.frameColor : base.headlineColor;
   const bodyColor = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast" ? "#f4e6b0" : base.bodyColor;
   const lightInk = layout.color_mode === "light-ink" || layout.color_mode === "high-contrast";
-  return {
+  return withPreviewTextField({
     ...shared,
     x: layout.alignment === "left" ? 260 : layout.alignment === "right" ? 1240 : 750,
     anchor: layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle",
@@ -1694,6 +1700,44 @@ function applyPreviewTextLayout(base, rawTextLayout) {
     bodyStroke: lightInk ? "#1e2f2a" : "#fffaf0",
     headlineStrokeWidth: lightInk ? 5 : 3,
     bodyStrokeWidth: lightInk ? 3 : 2
+  }, layout, panelId, hasBody);
+}
+
+function withPreviewTextField(layout, rawLayout, panelId, hasBody) {
+  if (!rawLayout) return layout;
+  const lightField = rawLayout.color_mode === "light-ink" || rawLayout.color_mode === "high-contrast";
+  const field = (() => {
+    if (panelId === "front") {
+      return hasBody ? { x: 150, y: 270, width: 1200, height: 590 } : { x: 215, y: 560, width: 1070, height: 360 };
+    }
+    if (panelId === "back") {
+      return { x: 150, y: 300, width: 1200, height: 900 };
+    }
+    return { x: 150, y: 260, width: 1200, height: 1230 };
+  })();
+  const tunedLayout = panelId.startsWith("inside")
+    ? {
+        ...layout,
+        headlineY: Math.min(layout.headlineY, 520),
+        headlineSize: Math.min(layout.headlineSize, 86),
+        headlineChars: Math.max(layout.headlineChars, 24),
+        bodyY: Math.min(layout.bodyY, 850),
+        bodySize: Math.min(layout.bodySize, 44),
+        bodyChars: Math.max(layout.bodyChars, 38),
+        bodyStrokeWidth: Math.min(layout.bodyStrokeWidth, 1)
+      }
+    : layout;
+  return {
+    ...tunedLayout,
+    fieldX: field.x,
+    fieldY: field.y,
+    fieldWidth: field.width,
+    fieldHeight: field.height,
+    fieldRadius: 22,
+    fieldFill: lightField ? "#17211d" : "#fff7e8",
+    fieldOpacity: lightField ? 0.84 : 0.9,
+    fieldStroke: lightField ? "#d6c07b" : "#e1cfaa",
+    fieldStrokeWidth: 2
   };
 }
 

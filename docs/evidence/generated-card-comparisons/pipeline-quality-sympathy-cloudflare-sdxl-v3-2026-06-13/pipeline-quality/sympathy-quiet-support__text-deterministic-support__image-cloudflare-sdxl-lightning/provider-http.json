@@ -1,0 +1,142 @@
+[
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "[redacted]",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "Full-bleed flat 2D quiet-support gallery artwork for the front of a premium vertical 5x7 sympathy print panel; plain warm-ivory color wash, plain upper/center text-safe area, and one sparse lower-edge support-object strip. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, landscape, wheat, grassland, horizon, sunset, sun, trees, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, landscapes, wheat, horizons, sunsets, suns, trees, religious symbols unless requested, cliches, or blank-message template. Panel cue: Flat quiet-support sympathy cover with plain warm-ivory color wash, empty upper/center text-safe space, and a sparse lower-edge strip with meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, table setting, landscape, horizon, ornate frame, or religious symbol. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No",
+        "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "front",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 631621
+    },
+    "durationMs": 11703
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "[redacted]",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-left sympathy print panel; plain warm-ivory low-contrast color wash, empty plain center for text, and tiny lower-left support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, landscape, wheat, grassland, horizon, sunset, sun, trees, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, landscapes, wheat, horizons, sunsets, suns, trees, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with plain warm-ivory color wash, empty plain center text-safe space, and tiny meal bowl/folded cloth marks only along the lower-left edge; no fruit, flowers, table setting, landscape, horizon, closed layout, or framed blank page. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels,",
+        "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-left",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 472692
+    },
+    "durationMs": 11774
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "[redacted]",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-right sympathy print panel; matching plain warm-ivory low-contrast color wash, empty plain center for text, and tiny lower-edge support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, landscape, wheat, grassland, horizon, sunset, sun, trees, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, landscapes, wheat, horizons, sunsets, suns, trees, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with plain warm-ivory color wash, empty plain center text-safe space, and tiny muted phone/key marks only near the lower edge; no fruit, flowers, route lines, cars, landscape, horizon, closed layout, or framed blank page. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels,",
+        "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "inside-right",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 601594
+    },
+    "durationMs": 11725
+  },
+  {
+    "url": "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "authorization": "[redacted]",
+        "content-type": "application/json"
+      },
+      "body": {
+        "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a minimal vertical 5x7 back sympathy print panel; mostly empty warm-ivory color wash with one small lower-band support-object echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, landscape, wheat, grassland, horizon, sunset, sun, trees, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain matte color-wash text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, landscapes, wheat, horizons, sunsets, suns, trees, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal back cover with mostly empty warm-ivory color wash and one small lower-band echo of bowl, phone, key, and thin branch; no urn, vase, fruit, flowers, table setting, line-art thicket, landscape, horizon, or physical paper card. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No",
+        "negative_prompt": "readable text, misspelled text, logo, watermark, qr code, folded card mockup, tabletop scene, hands, people, face, portrait, fake text, pseudo text, gibberish text, letters, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, tiny unreadable lettering, crop marks, physical card mockup, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box, product photo, photorealistic mockup, envelope, drop shadow, desk scene",
+        "width": 1464,
+        "height": 2048,
+        "guidance": 3.5,
+        "num_steps": 8,
+        "metadata": {
+          "customcard": {
+            "prompt_contract": "folded-card-four-panel-v1",
+            "generation_strategy": "one-provider-request-per-panel",
+            "panel_id": "back",
+            "target_width": 1500,
+            "target_height": 2100,
+            "target_dpi": 300
+          }
+        }
+      }
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/png",
+      "byteLength": 243520
+    },
+    "durationMs": 10988
+  }
+]

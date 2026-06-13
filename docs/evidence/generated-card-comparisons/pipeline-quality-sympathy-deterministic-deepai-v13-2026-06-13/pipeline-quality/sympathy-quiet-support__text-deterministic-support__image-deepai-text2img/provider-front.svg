@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-gallery">
+<rect width="1500" height="2100" fill="#21362f"/>
+
+    <g data-customcard-texture="sympathy-still-life-wash" opacity="0.18">
+      <path d="M-100 1846 C248 1718 596 1810 952 1666 C1198 1568 1384 1584 1604 1486" fill="none" stroke="#d8c7a1" stroke-width="52" stroke-linecap="round"/>
+      <path d="M-80 1150 C260 1030 598 1078 930 990 C1170 926 1398 936 1600 884" fill="none" stroke="#d8c7a1" stroke-width="22" stroke-linecap="round"/>
+      <circle cx="1110" cy="360" r="210" fill="#d8c7a1" opacity="0.12"/>
+    </g>
+  
+
+      <g data-customcard-hero="sympathy-support-still-life-front">
+        <defs>
+          <linearGradient id="supportFrontBeam" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#f7f2e8" stop-opacity="0.24"/>
+            <stop offset="0.58" stop-color="#d8c7a1" stop-opacity="0.08"/>
+            <stop offset="1" stop-color="#21362f" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="supportSoftShadowFront" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#07110f" flood-opacity="0.34"/>
+          </filter>
+        </defs>
+        <path d="M-80 240 C260 118 584 178 872 110 C1120 52 1340 94 1580 26 V1130 C1300 1012 1030 1042 756 1116 C448 1198 186 1164 -80 1250Z" fill="url(#supportFrontBeam)"/>
+        <ellipse cx="750" cy="604" rx="552" ry="330" fill="#f7f2e8" opacity="0.07"/>
+        <g filter="url(#supportSoftShadowFront)">
+          <rect x="76" y="142" width="396" height="746" rx="14" fill="#dfe7d7" stroke="#d8c7a1" stroke-width="18" opacity="0.86"/>
+          <rect x="116" y="184" width="316" height="660" rx="8" fill="#f7f2e8" opacity="0.64"/>
+          <rect x="136" y="204" width="276" height="620" rx="6" fill="#dfe7d7" opacity="0.18"/>
+          <line x1="274" y1="156" x2="274" y2="870" stroke="#21362f" stroke-width="11" opacity="0.44"/>
+          <line x1="94" y1="512" x2="452" y2="512" stroke="#21362f" stroke-width="11" opacity="0.36"/>
+          <path d="M116 796 C210 718 352 712 442 788" fill="none" stroke="#b59f76" stroke-width="11" stroke-linecap="round" opacity="0.34"/>
+        </g>
+        <path d="M-70 1494 C238 1344 560 1458 892 1334 C1118 1250 1328 1250 1600 1186 V2100 H-70Z" fill="#d8c7a1" opacity="0.2"/>
+        <path d="M-80 1658 C292 1494 638 1588 954 1470 C1186 1384 1358 1392 1600 1322 V2100 H-80Z" fill="#0f211d" opacity="0.38"/>
+        <path d="M-40 1848 C288 1722 606 1792 944 1690 C1190 1616 1376 1632 1540 1570" fill="none" stroke="#d8c7a1" stroke-width="24" stroke-linecap="round" opacity="0.18"/>
+        <path d="M1048 360 C1140 646 1120 928 1042 1146 C994 1284 1014 1418 1100 1588" fill="none" stroke="#d8c7a1" stroke-width="18" stroke-linecap="round" opacity="0.58"/>
+        <path d="M1066 662 C952 604 862 660 840 790 C960 848 1042 794 1066 662Z" fill="#c5cbb8" opacity="0.48"/>
+        <path d="M1032 944 C1158 868 1256 930 1284 1064 C1148 1136 1056 1078 1032 944Z" fill="#8da08e" opacity="0.36"/>
+        <g filter="url(#supportSoftShadowFront)">
+          <ellipse cx="408" cy="1552" rx="214" ry="78" fill="#b59f76" opacity="0.3"/>
+          <path d="M218 1516 C320 1644 494 1650 612 1524" fill="none" stroke="#d8c7a1" stroke-width="26" stroke-linecap="round" opacity="0.62"/>
+          <ellipse cx="404" cy="1514" rx="162" ry="50" fill="#f7f2e8" opacity="0.24"/>
+          <path d="M592 1494 C672 1450 758 1464 834 1532" fill="none" stroke="#d8c7a1" stroke-width="13" stroke-linecap="round" opacity="0.42"/>
+          <rect x="902" y="1472" width="260" height="144" rx="28" fill="#c5cbb8" opacity="0.25"/>
+          <rect x="936" y="1496" width="192" height="96" rx="20" fill="#21362f" opacity="0.28"/>
+          <circle cx="1032" cy="1580" r="14" fill="#d8c7a1" opacity="0.56"/>
+          <circle cx="1226" cy="1518" r="32" fill="none" stroke="#d8c7a1" stroke-width="10" opacity="0.52"/>
+          <path d="M1260 1548 C1296 1508 1350 1520 1362 1568 C1370 1606 1336 1632 1298 1626" fill="none" stroke="#d8c7a1" stroke-width="11" stroke-linecap="round" opacity="0.46"/>
+          <path d="M1306 1626 L1368 1688 M1340 1660 L1372 1628" stroke="#d8c7a1" stroke-width="9" stroke-linecap="round" opacity="0.42"/>
+        </g>
+      </g>
+    
+
+
+<path d="M104 1964 H1390" stroke="#d8c7a1" stroke-width="4" stroke-linecap="round" opacity="0.24"/>
+</svg>

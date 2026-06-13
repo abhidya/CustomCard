@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 400,
+      "ok": false,
+      "contentType": "application/json",
+      "byteLength": 93,
+      "body": {
+        "err": "An error occurred processing this request. Please check your inputs and try again."
+      }
+    },
+    "durationMs": 1907
+  }
+]

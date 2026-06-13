@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-gallery">
+<rect width="1500" height="2100" fill="#21362f"/>
+
+    <g data-customcard-texture="sympathy-still-life-wash" opacity="0.16">
+      <path d="M-100 1846 C248 1718 596 1810 952 1666 C1198 1568 1384 1584 1604 1486" fill="none" stroke="#d8c7a1" stroke-width="36" stroke-linecap="round"/>
+      <path d="M-80 310 C260 286 598 330 930 292 C1170 258 1398 274 1600 238" fill="none" stroke="#d8c7a1" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="1130" cy="332" r="118" fill="#d8c7a1" opacity="0.1"/>
+    </g>
+  
+
+    <g data-customcard-hero="sympathy-support-still-life-back">
+      <ellipse cx="750" cy="720" rx="470" ry="300" fill="#f7f2e8" opacity="0.08"/>
+      <path d="M-80 1788 C260 1620 580 1732 910 1596 C1122 1508 1300 1514 1580 1440 V2100 H-80Z" fill="#d8c7a1" opacity="0.12"/>
+      <path d="M300 1578 C454 1490 622 1518 740 1628" fill="none" stroke="#d8c7a1" stroke-width="13" stroke-linecap="round" opacity="0.26"/>
+      <ellipse cx="444" cy="1630" rx="118" ry="44" fill="#d8c7a1" opacity="0.2"/>
+      <path d="M346 1612 C398 1678 482 1676 534 1614" fill="none" stroke="#d8c7a1" stroke-width="9" opacity="0.32"/>
+      <rect x="724" y="1570" width="220" height="104" rx="24" fill="#c5cbb8" opacity="0.18"/>
+      <circle cx="834" cy="1638" r="11" fill="#d8c7a1" opacity="0.36"/>
+      <circle cx="1076" cy="1582" r="38" fill="none" stroke="#d8c7a1" stroke-width="9" opacity="0.3"/>
+      <path d="M1110 1612 L1170 1672 M1144 1648 L1176 1616" stroke="#d8c7a1" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+      <path d="M1200 1568 C1272 1518 1342 1544 1378 1624 C1304 1676 1232 1646 1200 1568Z" fill="#8da08e" opacity="0.18"/>
+    </g>
+  
+
+
+<path d="M292 1856 H1208" stroke="#596c5e" stroke-width="4" stroke-linecap="round" opacity="0.16"/>
+</svg>
