@@ -55,6 +55,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` Cloudflare FLUX v55 | `image-cloudflare-flux-schnell` -> fallback `browser-svg-renderer` | 8 | 58 | F route failure; provider 400 after first panel | [manual grade](./pipeline-quality-sympathy-cloudflare-flux-v55-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/manual-grade.md) |
 | `text-deterministic-support` Cloudflare SDXL v56 | `image-cloudflare-sdxl-lightning` | 12 | 78 | F raster regression; prompt compression failed | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v56-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 | `text-deterministic-support` premium-care SVG v57 | `image-browser-svg-renderer` | 5 | 98 | F visible product; user-calibrated rejection | [manual grade](./pipeline-quality-sympathy-premium-care-svg-v57-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` quiet-light SVG v60 | `image-browser-svg-renderer` | 35 | 98 | D local renderer recovery; still not saleable | [manual grade](./pipeline-quality-sympathy-quiet-light-svg-v60-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -102,6 +103,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Cloudflare FLUX v55 is route-failure evidence, product `8/100`, contract `58/100`: it returned one native panel then hit provider 400 and fell back to generic SVG templates. The long repeated prompt is a likely brittleness factor.
 - Cloudflare SDXL v56 proves prompt compression did not solve the route, product `12/100`, contract `78/100`: fake label grids, package clutter, scenery, flowers, and jar/can back art returned. Revert the compressed prompt patch; do not deploy it.
 - Premium-care SVG v57 is corrected to product `5/100`, contract `98/100` after user-visible calibration. Removing frame-template styling and reducing object clutter does not matter enough because the artifact still reads as cheap deterministic SVG clipart with faint/empty interiors. Treat it as contract-only failure evidence, not a renderer-floor lift.
+- Quiet-light SVG v60 recovers product quality to `35/100`, contract `98/100`, by replacing literal bag/phone/key care-kit clipart with an abstract threshold-light relief. This removes the car-like/object confusion, but it is still only D quality because the output remains deterministic abstract stationery with faint interiors.
 
 ## Improvement Loop
 
@@ -165,6 +167,8 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Cloudflare FLUX v55 | Product 8, contract 58 | Provider 400 after first panel; fallback template only. Compress image prompts before another provider run. |
 | Cloudflare SDXL v56 | Product 12, contract 78 | Prompt compression reduced repetition but still produced fake labels, package clutter, scenery, and overlay collisions; revert prompt patch and keep evidence only. |
 | Premium-care SVG v57 | Product 5, contract 98 | User calibration rejects the visible product; frame removal did not fix generic SVG stationery/clipart feel. Keep evidence as failure; next gain needs a richer art source or deeper relief/bitmap system. |
+| Threshold SVG v58 | Observed intermediate, not promoted | Swapping away from care-package icons helped mood but still left a phone/line cluster that could read as nonsense. |
+| Quiet-light SVG v59/v60 | Product 35, contract 98 | Removing literal icons fixes ambiguity and lifts the local fallback from rejection to rough proof, but deterministic SVG still caps product quality. Next gain needs real assets/provider output. |
 
 ## Prompt/Skill Changes Applied
 

@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-deterministic-support",
+  "textAdapterId": "deterministic-customer-chat",
+  "textModel": "deterministic-support-copy",
+  "imageCandidateId": "image-browser-svg-renderer",
+  "imageAdapterId": "browser-svg-renderer",
+  "imageModel": "deterministic-svg",
+  "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer",
+  "startedAt": "2026-06-13T12:24:21.107Z",
+  "finishedAt": "2026-06-13T12:24:47.453Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "deterministic-support-copy",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-front.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support gallery artwork for the front of a premium vertical 5x7 sympathy print panel; warm ivory open field, plain upper/center text-safe area, and one sparse lower-edge support-object strip. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Flat quiet-support sympathy cover with warm ivory open field, empty upper/center text-safe space, and a sparse lower-edge strip with meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, table setting, ornate frame, or religious symbol. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-inside-left.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-left sympathy print panel; warm ivory low-contrast open field, empty plain center for text, and tiny lower-left support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with warm ivory open field, empty plain center text-safe space, and tiny meal bowl/folded cloth marks only along the lower-left edge; no fruit, flowers, table setting, closed layout, or framed blank page. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-inside-right.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a vertical 5x7 inside-right sympathy print panel; matching warm ivory low-contrast open field, empty plain center for text, and tiny lower-edge support-object marks only. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with warm ivory open field, empty plain center text-safe space, and tiny muted phone/key marks only near the lower edge; no fruit, flowers, route lines, cars, closed layout, or framed blank page. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/provider-back.svg",
+      "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D quiet-support gallery artwork for a minimal vertical 5x7 back sympathy print panel; mostly empty warm ivory field with one small lower-band support-object echo. Artwork layer only, flat 2D gallery artwork, not a photo and not a physical card. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; no marks behind app-rendered text. Put decoration only on the far edges or lower band: small meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette. No fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent quiet-support flat 2D gallery artwork: warm ivory, muted gray-green, deep moss, and soft taupe; wide plain text field; sparse lower-edge meal bowl, folded cloth, muted phone, small key, and one thin branch silhouette; no fruit, flowers, vases, urns, table settings, window bars, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal back cover with mostly empty warm ivory field and one small lower-band echo of bowl, phone, key, and thin branch; no urn, vase, fruit, flowers, table setting, line-art thicket, or physical paper card. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse",
+      "sourceKind": "data-url",
+      "contentType": "image/svg+xml"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-quiet-light-svg-v59-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/contact-sheet.png",
+  "providerCallCount": 0,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 0
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

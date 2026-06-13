@@ -884,14 +884,14 @@ function themeForPrompt(prompt) {
   }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
     return {
-      kind: "sympathy-premium-care-tableau",
-      background: (panelId) => panelId === "front" || panelId === "back" ? "#1d312b" : "#fff7e8",
-      accent: (panelId) => panelId.startsWith("inside") ? "#53685f" : "#ddc998",
+      kind: "sympathy-threshold-light",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#101c18" : "#fbf4e6",
+      accent: (panelId) => panelId.startsWith("inside") ? "#53685f" : "#ead9aa",
       count: 0,
-      texture: (panelId) => sympathyCarePackageTexture(panelId),
-      hero: (panelId) => sympathyCarePackageHero(panelId),
+      texture: (panelId) => sympathyThresholdTexture(panelId),
+      hero: (panelId) => sympathyThresholdHero(panelId),
       overlay: () => "",
-      border: (panelId) => sympathyCarePackageBorder(panelId),
+      border: (panelId) => sympathyThresholdBorder(panelId),
       motif: () => ""
     };
   }
@@ -1697,6 +1697,34 @@ function sympathyDoorstepVignette({ x, y, scale = 1, dark = false, mirrored = fa
   `;
 }
 
+function sympathyQuietLightRelief({ x, y, scale = 1, dark = false, mirrored = false, opacity = 1 }) {
+  const paper = dark ? "#ead9aa" : "#fffaf0";
+  const warm = dark ? "#f1dfad" : "#d9bd7f";
+  const ink = dark ? "#cfd3bf" : "#53685f";
+  const shade = dark ? "#07100e" : "#ad9160";
+  const base = dark ? "#0b1714" : "#fffdf6";
+  const xScale = mirrored ? -scale : scale;
+  return `
+    <g data-customcard-bespoke-relief="quiet-light-threshold" transform="translate(${x} ${y}) scale(${xScale} ${scale})" opacity="${opacity}">
+      <path d="M-86 356 C104 238 304 270 488 188 C654 114 814 132 968 222 L938 612 C736 692 552 644 370 722 C170 808 -6 754 -132 850 Z" fill="${base}" opacity="${dark ? 0.2 : 0.48}" filter="url(#sympathyCutShadow)"/>
+      <path d="M-36 404 C148 314 318 344 498 270 C660 204 788 220 910 286 L886 560 C706 628 540 590 374 656 C194 730 48 692 -70 760 Z" fill="${paper}" opacity="${dark ? 0.07 : 0.2}" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M26 372 C186 304 354 336 518 276 C674 218 796 236 894 292" fill="none" stroke="${warm}" stroke-width="16" stroke-linecap="round" opacity="${dark ? 0.28 : 0.24}"/>
+      <path d="M-4 628 C166 560 338 600 522 530 C704 462 840 500 968 560" fill="none" stroke="${ink}" stroke-width="9" stroke-linecap="round" opacity="${dark ? 0.28 : 0.18}"/>
+      <path d="M88 210 V696 H318" fill="none" stroke="${warm}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="${dark ? 0.6 : 0.28}"/>
+      <path d="M132 278 V646 H288" fill="none" stroke="${paper}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="${dark ? 0.28 : 0.18}"/>
+      <path d="M168 236 C292 194 438 226 540 318 C420 424 260 406 168 236Z" fill="${warm}" opacity="${dark ? 0.08 : 0.12}"/>
+      <path d="M274 586 C386 538 504 554 616 610 C510 684 360 674 274 586Z" fill="${ink}" opacity="${dark ? 0.1 : 0.12}"/>
+      <path d="M570 248 C676 198 814 230 894 330 C792 420 642 406 570 248Z" fill="${shade}" opacity="${dark ? 0.13 : 0.09}"/>
+      <path d="M378 452 C482 376 596 516 718 420 C806 350 908 386 980 464" fill="none" stroke="${warm}" stroke-width="10" stroke-linecap="round" opacity="${dark ? 0.38 : 0.24}"/>
+      <path d="M206 536 C300 500 404 518 492 570" fill="none" stroke="${ink}" stroke-width="7" stroke-linecap="round" opacity="${dark ? 0.34 : 0.2}"/>
+      <path d="M624 586 C726 570 826 594 918 650" fill="none" stroke="${paper}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.22 : 0.14}"/>
+      <circle cx="204" cy="706" r="7" fill="${warm}" opacity="${dark ? 0.34 : 0.16}"/>
+      <circle cx="274" cy="694" r="5" fill="${ink}" opacity="${dark ? 0.28 : 0.14}"/>
+      <circle cx="822" cy="612" r="6" fill="${warm}" opacity="${dark ? 0.22 : 0.12}"/>
+    </g>
+  `;
+}
+
 function sympathyInteriorVellumDetail({ mirrored = false, opacity = 1 }) {
   const leftPath = `
     <path d="M286 650 C454 598 650 620 812 578 C972 536 1090 560 1166 614" fill="none" stroke="#d9bd7f" stroke-width="10" stroke-linecap="round" opacity="0.18"/>
@@ -1764,7 +1792,7 @@ function sympathyThresholdHero(panelId) {
           <path d="M430 1566 C572 1530 724 1556 884 1512 C1030 1472 1160 1484 1240 1452" fill="none" stroke="#cfd3bf" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
         </g>
         ${sympathyReliefStage({ x: 272, y: 1110, scale: 0.88, dark: true, opacity: 0.24 })}
-        ${sympathyDoorstepVignette({ x: 300, y: 1128, scale: 0.86, dark: true, opacity: 0.92 })}
+        ${sympathyQuietLightRelief({ x: 300, y: 1128, scale: 0.86, dark: true, opacity: 0.92 })}
         <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.04">
           <path d="M376 1316 C420 1274 514 1280 568 1322 C552 1378 420 1394 374 1332 Z" fill="#ead9aa" opacity="0.16"/>
           <path d="M394 1318 C446 1296 506 1300 548 1322 C526 1364 422 1364 394 1318Z" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round"/>
@@ -1793,15 +1821,15 @@ function sympathyThresholdHero(panelId) {
     return `
       <g data-customcard-hero="sympathy-threshold-interior-${panelId}">
         <rect x="${stripX}" y="0" width="156" height="2100" fill="#101c18" opacity="0.065"/>
-        <path d="${messagePanel}" fill="#fffaf1" opacity="0.42" filter="url(#sympathyCutShadow)"/>
-        <path d="${messagePanel}" fill="none" stroke="#d9bd7f" stroke-width="3" opacity="0.16"/>
+        <path d="${messagePanel}" fill="#fffaf1" opacity="0.62" filter="url(#sympathyCutShadow)"/>
+        <path d="${messagePanel}" fill="none" stroke="#d9bd7f" stroke-width="4" opacity="0.26"/>
         ${sympathyInteriorVellumDetail({ mirrored, opacity: 1 })}
         <path d="${paperPath}" fill="url(#sympathyPaperFace)" opacity="0.32" filter="url(#sympathyCutShadow)"/>
         <path d="M${lineX} 260 C${mirrored ? "1208 572 1238 890 1300 1190 C1342 1392 1294 1554 1196 1712" : "292 572 262 890 200 1190 C158 1392 206 1554 304 1712"}" fill="none" stroke="#53685f" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
         <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
-        <path d="M${mirrored ? "1188 430 C1080 388 948 414 828 380 C682 338 548 360 444 414" : "312 430 C420 388 552 414 672 380 C818 338 952 360 1056 414"}" fill="none" stroke="#ddc998" stroke-width="7" stroke-linecap="round" opacity="0.1"/>
-        <rect x="${doorX}" y="1468" width="354" height="216" rx="10" fill="#d9bd7f" opacity="0.12" filter="url(#sympathyThresholdSoft)"/>
-        <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
+        <path d="M${mirrored ? "1188 430 C1080 388 948 414 828 380 C682 338 548 360 444 414" : "312 430 C420 388 552 414 672 380 C818 338 952 360 1056 414"}" fill="none" stroke="#ddc998" stroke-width="8" stroke-linecap="round" opacity="0.16"/>
+        <rect x="${doorX}" y="1468" width="354" height="216" rx="10" fill="#d9bd7f" opacity="0.16" filter="url(#sympathyThresholdSoft)"/>
+        <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
         <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
         <path d="M250 1812 C450 1748 642 1814 842 1766 C1038 1718 1184 1752 1262 1690" fill="none" stroke="#ad9160" stroke-width="6" stroke-linecap="round" opacity="0.17"/>
         <g data-customcard-care-tableau="interior-care-${panelId}" opacity="0.12">
@@ -1810,8 +1838,8 @@ function sympathyThresholdHero(panelId) {
           <path d="M${mirrored ? "894 1468 C966 1438 1066 1452 1128 1504 C1074 1560 944 1564 884 1508 Z" : "606 1468 C534 1438 434 1452 372 1504 C426 1560 556 1564 616 1508 Z"}" fill="#d9bd7f" opacity="0.32"/>
           <path d="M${mirrored ? "642 1698 C812 1648 988 1682 1218 1608" : "858 1698 C688 1648 512 1682 282 1608"}" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
         </g>
-        ${sympathyReliefStage({ x: mirrored ? 1270 : 230, y: 1362, scale: 0.64, mirrored, opacity: 0.16 })}
-        ${sympathyDoorstepVignette({ x: mirrored ? 1218 : 282, y: 1402, scale: 0.52, mirrored, opacity: 0.46 })}
+        ${sympathyReliefStage({ x: mirrored ? 1270 : 230, y: 1362, scale: 0.64, mirrored, opacity: 0.2 })}
+        ${sympathyQuietLightRelief({ x: mirrored ? 1218 : 282, y: 1402, scale: 0.52, mirrored, opacity: 0.5 })}
         <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.04">
           ${mirrored ? `
             <path d="M860 1538 C926 1488 996 1578 1066 1520 C1120 1474 1176 1492 1228 1534" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round"/>
@@ -1849,7 +1877,7 @@ function sympathyThresholdHero(panelId) {
         <path d="M946 1496 C984 1478 1028 1502 1036 1540 C1006 1574 956 1570 938 1530 C956 1524 986 1518 1012 1520" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
       ${sympathyReliefStage({ x: 452, y: 1302, scale: 0.6, dark: true, opacity: 0.24 })}
-      ${sympathyDoorstepVignette({ x: 470, y: 1338, scale: 0.52, dark: true, opacity: 0.84 })}
+      ${sympathyQuietLightRelief({ x: 470, y: 1338, scale: 0.52, dark: true, opacity: 0.84 })}
       <path d="M360 1748 C526 1684 676 1718 842 1662 C1014 1604 1148 1624 1284 1562" fill="none" stroke="#ead9aa" stroke-width="8" stroke-linecap="round" opacity="0.25"/>
       <path d="M548 1798 H952" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
       <path d="M642 1840 H858" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.12"/>

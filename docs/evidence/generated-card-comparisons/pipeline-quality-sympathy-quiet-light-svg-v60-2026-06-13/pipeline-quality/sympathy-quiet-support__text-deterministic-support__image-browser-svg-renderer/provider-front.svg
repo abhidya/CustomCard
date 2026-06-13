@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-threshold-light">
+<rect width="1500" height="2100" fill="#101c18"/>
+
+    <defs>
+      <filter id="sympathyThresholdGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.034" numOctaves="4" seed="47"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.16"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="sympathyThresholdSoft" x="-12%" y="-12%" width="124%" height="124%">
+        <feGaussianBlur stdDeviation="22"/>
+      </filter>
+      <filter id="sympathyCutShadow" x="-18%" y="-18%" width="136%" height="136%">
+        <feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#07100d" flood-opacity="0.34"/>
+      </filter>
+      <linearGradient id="sympathyThresholdWash" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#ead9aa" stop-opacity="0.36"/>
+        <stop offset="0.48" stop-color="#ead9aa" stop-opacity="0.12"/>
+        <stop offset="1" stop-color="#101c18" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="sympathyThresholdDoor" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#ead9aa" stop-opacity="0.52"/>
+        <stop offset="0.35" stop-color="#ead9aa" stop-opacity="0.2"/>
+        <stop offset="1" stop-color="#101c18" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="sympathyPaperFace" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fffaf0" stop-opacity="0.28"/>
+        <stop offset="1" stop-color="#d9bd7f" stop-opacity="0.08"/>
+      </linearGradient>
+      <radialGradient id="sympathyQuietGlow" cx="42%" cy="34%" r="62%">
+        <stop offset="0" stop-color="#ead9aa" stop-opacity="0.2"/>
+        <stop offset="0.55" stop-color="#ead9aa" stop-opacity="0.07"/>
+        <stop offset="1" stop-color="#101c18" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#101c18"/>
+    <rect width="1500" height="2100" fill="#ead9aa" filter="url(#sympathyThresholdGrain)" opacity="0.26"/>
+    <ellipse cx="610" cy="620" rx="650" ry="470" fill="url(#sympathyQuietGlow)"/>
+    <path d="M-160 236 C250 140 548 244 822 152 C1070 86 1304 160 1660 48 V760 C1250 705 970 784 650 852 C350 920 130 856 -160 968 Z" fill="url(#sympathyThresholdWash)"/>
+    <path d="M-120 1840 C250 1694 590 1788 890 1668 C1134 1570 1334 1594 1600 1510" fill="none" stroke="#ead9aa" stroke-width="26" stroke-linecap="round" opacity="0.13"/>
+    <path d="M-80 1930 C278 1794 628 1894 938 1778 C1170 1692 1368 1710 1588 1640" fill="none" stroke="#0a1411" stroke-width="8" stroke-linecap="round" opacity="0.17"/>
+
+
+      <g data-customcard-hero="sympathy-threshold-front">
+        <path d="M170 792 C332 690 512 724 662 646 C804 572 972 554 1158 604 L1264 1476 C1048 1534 890 1518 724 1592 C550 1668 342 1640 188 1738 Z" fill="#0b1714" opacity="0.32" filter="url(#sympathyCutShadow)"/>
+        <path d="M206 748 C376 650 548 690 704 612 C866 532 1012 546 1186 590 L1246 1438 C1032 1502 878 1488 712 1568 C536 1652 348 1612 196 1708 Z" fill="url(#sympathyPaperFace)" opacity="0.26"/>
+        <rect x="256" y="818" width="468" height="746" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.88" filter="url(#sympathyThresholdSoft)"/>
+        <g data-customcard-bespoke-depth="front-title-threshold" opacity="0.46">
+          <path d="M318 350 C500 286 690 332 878 286 C1050 244 1186 270 1282 332 L1282 622 C1108 664 956 632 790 678 C610 728 456 688 318 748 Z" fill="#ead9aa" opacity="0.08" filter="url(#sympathyThresholdSoft)"/>
+          <path d="M264 702 C430 636 608 670 776 612 C944 554 1104 574 1232 632" fill="none" stroke="#ead9aa" stroke-width="11" stroke-linecap="round" opacity="0.14"/>
+          <path d="M348 786 C500 734 676 754 852 696 C1018 642 1156 666 1268 720" fill="none" stroke="#cfd3bf" stroke-width="6" stroke-linecap="round" opacity="0.12"/>
+        </g>
+        <path d="M286 848 V1536 H1024" fill="none" stroke="#ead9aa" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.52"/>
+        <path d="M340 904 V1470 H952" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
+        <path d="M226 1584 C436 1502 658 1542 866 1462 C1046 1392 1194 1404 1320 1324" fill="none" stroke="#ead9aa" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
+        <g data-customcard-quiet-threshold="front-doorway" opacity="0.42">
+          <path d="M1018 672 C982 862 1000 1110 1068 1320 C1108 1446 1094 1550 1018 1660" fill="none" stroke="#cfd3bf" stroke-width="7" stroke-linecap="round" opacity="0.2"/>
+          <path d="M1064 740 V1516" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+          <path d="M1034 714 C1118 680 1202 704 1264 762 C1188 820 1092 814 1034 714Z" fill="#ead9aa" opacity="0.07"/>
+          <path d="M1040 1270 C1130 1232 1228 1268 1282 1346 C1190 1404 1094 1384 1040 1270Z" fill="#cfd3bf" opacity="0.08"/>
+          <path d="M930 1540 C1028 1504 1140 1518 1240 1572" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+        </g>
+        <g data-customcard-care-tableau="threshold-care-front" opacity="0.42">
+          <path d="M314 1214 C454 1150 636 1186 790 1132 C958 1074 1110 1090 1226 1148 L1238 1450 C1080 1498 926 1466 774 1518 C606 1574 448 1540 308 1602 Z" fill="#ead9aa" opacity="0.08" filter="url(#sympathyThresholdSoft)"/>
+          <path d="M324 1438 C474 1382 628 1416 786 1362 C954 1306 1100 1322 1214 1374" fill="none" stroke="#ead9aa" stroke-width="13" stroke-linecap="round" opacity="0.18"/>
+          <path d="M456 1198 C534 1160 640 1174 702 1226 C666 1304 500 1308 454 1220 Z" fill="#ead9aa" opacity="0.1"/>
+          <path d="M804 1176 C900 1142 1018 1176 1084 1242 C1014 1306 872 1308 794 1236 Z" fill="#cfd3bf" opacity="0.1"/>
+          <path d="M870 1240 C918 1210 990 1224 1034 1268" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.34"/>
+          <path d="M384 1518 C530 1474 690 1508 862 1456 C1030 1406 1162 1426 1276 1384" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.28"/>
+          <path d="M430 1566 C572 1530 724 1556 884 1512 C1030 1472 1160 1484 1240 1452" fill="none" stroke="#cfd3bf" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
+        </g>
+
+    <g data-customcard-bespoke-relief="paper-stage" transform="translate(272 1110) scale(0.88 0.88)" opacity="0.24">
+      <path d="M-88 372 C100 258 302 304 488 220 C648 146 798 160 934 238 L916 546 C726 612 548 570 374 646 C170 734 2 668 -118 758 Z" fill="#0b1714" opacity="0.22" filter="url(#sympathyCutShadow)"/>
+      <path d="M-36 418 C142 326 320 362 502 286 C650 224 776 236 884 292 L870 510 C704 562 550 530 388 592 C208 664 54 612 -58 678 Z" fill="#ead9aa" opacity="0.09" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M34 392 C190 334 338 362 486 306 C628 252 746 270 836 318" fill="none" stroke="#ead9aa" stroke-width="14" stroke-linecap="round" opacity="0.2"/>
+      <path d="M-18 590 C156 536 314 574 482 506 C646 438 774 468 904 524" fill="none" stroke="#cfd3bf" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
+      <path d="M126 292 C218 246 356 262 438 336 C368 410 194 414 116 342 Z" fill="#cfd3bf" opacity="0.12"/>
+      <path d="M560 282 C674 240 806 278 874 360 C784 430 620 424 548 350 Z" fill="#07100e" opacity="0.18"/>
+      <path d="M382 448 C470 388 580 510 684 420 C760 356 846 390 906 456" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" opacity="0.34"/>
+      <path d="M226 514 C308 488 390 504 472 544" fill="none" stroke="#cfd3bf" stroke-width="6" stroke-linecap="round" opacity="0.28"/>
+      <path d="M650 536 C734 528 814 548 886 588" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.22"/>
+    </g>
+
+
+    <g data-customcard-bespoke-relief="quiet-light-threshold" transform="translate(300 1128) scale(0.86 0.86)" opacity="0.92">
+      <path d="M-86 356 C104 238 304 270 488 188 C654 114 814 132 968 222 L938 612 C736 692 552 644 370 722 C170 808 -6 754 -132 850 Z" fill="#0b1714" opacity="0.2" filter="url(#sympathyCutShadow)"/>
+      <path d="M-36 404 C148 314 318 344 498 270 C660 204 788 220 910 286 L886 560 C706 628 540 590 374 656 C194 730 48 692 -70 760 Z" fill="#ead9aa" opacity="0.07" filter="url(#sympathyThresholdSoft)"/>
+      <path d="M26 372 C186 304 354 336 518 276 C674 218 796 236 894 292" fill="none" stroke="#f1dfad" stroke-width="16" stroke-linecap="round" opacity="0.28"/>
+      <path d="M-4 628 C166 560 338 600 522 530 C704 462 840 500 968 560" fill="none" stroke="#cfd3bf" stroke-width="9" stroke-linecap="round" opacity="0.28"/>
+      <path d="M88 210 V696 H318" fill="none" stroke="#f1dfad" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+      <path d="M132 278 V646 H288" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.28"/>
+      <path d="M168 236 C292 194 438 226 540 318 C420 424 260 406 168 236Z" fill="#f1dfad" opacity="0.08"/>
+      <path d="M274 586 C386 538 504 554 616 610 C510 684 360 674 274 586Z" fill="#cfd3bf" opacity="0.1"/>
+      <path d="M570 248 C676 198 814 230 894 330 C792 420 642 406 570 248Z" fill="#07100e" opacity="0.13"/>
+      <path d="M378 452 C482 376 596 516 718 420 C806 350 908 386 980 464" fill="none" stroke="#f1dfad" stroke-width="10" stroke-linecap="round" opacity="0.38"/>
+      <path d="M206 536 C300 500 404 518 492 570" fill="none" stroke="#cfd3bf" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
+      <path d="M624 586 C726 570 826 594 918 650" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.22"/>
+      <circle cx="204" cy="706" r="7" fill="#f1dfad" opacity="0.34"/>
+      <circle cx="274" cy="694" r="5" fill="#cfd3bf" opacity="0.28"/>
+      <circle cx="822" cy="612" r="6" fill="#f1dfad" opacity="0.22"/>
+    </g>
+
+        <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.04">
+          <path d="M376 1316 C420 1274 514 1280 568 1322 C552 1378 420 1394 374 1332 Z" fill="#ead9aa" opacity="0.16"/>
+          <path d="M394 1318 C446 1296 506 1300 548 1322 C526 1364 422 1364 394 1318Z" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round"/>
+          <path d="M438 1286 C468 1272 504 1278 528 1296" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.58"/>
+          <path d="M622 1338 C676 1290 740 1376 808 1326 C854 1292 906 1306 938 1344" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round"/>
+          <path d="M872 1288 C920 1262 976 1286 992 1338 C958 1384 890 1378 864 1324 C884 1318 914 1310 946 1304" fill="none" stroke="#ead9aa" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+          <path d="M1032 1292 C1086 1268 1142 1298 1150 1352 C1110 1392 1046 1382 1024 1332 C1054 1322 1092 1320 1122 1332" fill="none" stroke="#ead9aa" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.58"/>
+          <path d="M1070 1372 C1108 1378 1136 1390 1162 1410" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.34"/>
+        </g>
+        <path d="M362 1738 H1062" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.24"/>
+        <path d="M468 1784 H912" stroke="#ead9aa" stroke-width="2" stroke-linecap="round" opacity="0.15"/>
+      </g>
+
+
+
+
+      <path d="M138 1888 H1362" stroke="#ead7a9" stroke-width="3" stroke-linecap="round" opacity="0.22"/>
+      <path d="M214 1932 H786" stroke="#ead7a9" stroke-width="2" stroke-linecap="round" opacity="0.13"/>
+
+</svg>
