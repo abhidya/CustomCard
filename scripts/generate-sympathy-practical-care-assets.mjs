@@ -909,6 +909,9 @@ function gouacheDefs({ dark = false } = {}) {
         <stop offset="0.62" stop-color="#cda668" stop-opacity="${dark ? 0.1 : 0.08}"/>
         <stop offset="1" stop-color="${dark ? "#07110e" : "#fbf1df"}" stop-opacity="0"/>
       </radialGradient>
+      ${imageTexturePattern({ id: "gouachePaperTexture", fileName: "rawpixel-cc0-leaves-note.png", opacity: dark ? 0.07 : 0.045 })}
+      ${imageTexturePattern({ id: "gouacheDeskTexture", fileName: "commons-cc0-phone-notes-table.jpg", contentType: "image/jpeg", opacity: dark ? 0.12 : 0.075, width: 960, height: 640 })}
+      ${imageTexturePattern({ id: "gouacheMealTexture", fileName: "commons-cc0-food-package.jpg", contentType: "image/jpeg", opacity: dark ? 0.11 : 0.07, width: 1000, height: 667 })}
     </defs>
   `;
 }
@@ -941,6 +944,7 @@ function gouacheCoveredDish({ x = 0, y = 0, scale = 1, rotate = 0, dark = false 
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)">
       <ellipse cx="262" cy="244" rx="252" ry="82" fill="${dark ? "#020604" : "#bca878"}" opacity="${dark ? 0.34 : 0.16}" filter="url(#gouacheSoft)"/>
       <path d="M36 210 C66 82 188 16 334 42 C462 66 546 146 560 266 C410 334 176 316 36 210Z" fill="url(#gouacheIvory)" filter="url(#gouacheBleed)"/>
+      <path d="M36 210 C66 82 188 16 334 42 C462 66 546 146 560 266 C410 334 176 316 36 210Z" fill="url(#gouacheMealTexture)" opacity="${dark ? 0.22 : 0.15}" filter="url(#gouacheBleed)"/>
       <path d="M98 206 C164 120 406 126 508 238" fill="none" stroke="#b9924e" stroke-width="15" stroke-linecap="round" opacity="0.34"/>
       <path d="M216 74 C256 38 326 42 366 82" fill="none" stroke="#52685d" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
       <path d="M88 276 C224 322 418 310 546 252" fill="none" stroke="#fff6dd" stroke-width="12" stroke-linecap="round" opacity="0.48"/>
@@ -953,6 +957,7 @@ function gouacheBag({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)">
       <path d="M88 104 C142 42 274 40 334 108" fill="none" stroke="#b59456" stroke-width="20" stroke-linecap="round" opacity="0.44"/>
       <path d="M16 122 L388 78 L456 500 C300 582 132 542 -34 630 Z" fill="url(#gouacheIvory)" filter="url(#gouacheBleed)" opacity="${dark ? 0.86 : 0.94}"/>
+      <path d="M16 122 L388 78 L456 500 C300 582 132 542 -34 630 Z" fill="url(#gouachePaperTexture)" opacity="${dark ? 0.2 : 0.14}" filter="url(#gouacheBleed)"/>
       <path d="M78 172 C176 136 310 126 406 152" fill="none" stroke="#cfaa68" stroke-width="9" stroke-linecap="round" opacity="0.3"/>
       <path d="M52 346 C180 296 326 294 438 330" fill="none" stroke="#52685d" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
     </g>
@@ -963,6 +968,7 @@ function gouacheBlankNote({ x = 0, y = 0, scale = 1, rotate = 0, dark = false })
   return `
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)">
       <path d="M0 0 H330 V218 C232 268 106 250 -20 314 Z" fill="#fff9ea" opacity="${dark ? 0.8 : 0.92}" filter="url(#gouacheBleed)"/>
+      <path d="M0 0 H330 V218 C232 268 106 250 -20 314 Z" fill="url(#gouacheDeskTexture)" opacity="${dark ? 0.18 : 0.11}" filter="url(#gouacheBleed)"/>
       <path d="M48 76 H270" stroke="#bd9a58" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
       <path d="M48 140 H232" stroke="#52685d" stroke-width="4" stroke-linecap="round" opacity="0.11"/>
     </g>
@@ -974,6 +980,7 @@ function gouachePhone({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)" opacity="${dark ? 0.72 : 0.52}">
       <rect x="0" y="0" width="148" height="250" rx="46" fill="url(#gouachePhone)"/>
       <rect x="17" y="22" width="114" height="206" rx="34" fill="#0d1714" opacity="0.18"/>
+      <rect x="17" y="22" width="114" height="206" rx="34" fill="url(#gouacheDeskTexture)" opacity="0.18"/>
       <path d="M40 54 H108" stroke="#f5dfae" stroke-width="5" stroke-linecap="round" opacity="0.34"/>
       <path d="M52 178 H96" stroke="#f5dfae" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
     </g>
@@ -1006,7 +1013,7 @@ function gouachePanelSvg(panelId) {
     ? gouacheCareScene({ panelId, x: -8, y: 984, scale: 1.34, opacity: 0.98 })
     : panelId === "back"
       ? gouacheCareScene({ panelId, x: 1230, y: 1120, scale: 0.78, mirrored: true, compact: true, opacity: 0.74 })
-      : gouacheCareScene({ panelId, x: mirrored ? 1308 : 110, y: 1284, scale: 0.64, mirrored, compact: true, opacity: 0.68 });
+      : gouacheCareScene({ panelId, x: mirrored ? 1346 : 72, y: 1208, scale: 0.72, mirrored, compact: true, opacity: 0.82 });
   const topRelief = dark
     ? `<path d="M1070 172 C954 314 902 498 926 694 C1068 590 1216 470 1366 254" fill="none" stroke="#d9c08e" stroke-width="10" stroke-linecap="round" opacity="0.14"/>
        <path d="M1130 370 C1242 292 1348 306 1412 412 C1282 482 1198 452 1130 370Z" fill="#d9c08e" opacity="0.1"/>`
