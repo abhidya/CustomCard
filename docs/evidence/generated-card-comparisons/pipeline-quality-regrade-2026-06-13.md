@@ -54,6 +54,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` Cloudflare SDXL v54 | `image-cloudflare-sdxl-lightning` | 15 | 80 | F/D raster regression; fake labels/box clutter | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v54-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 | `text-deterministic-support` Cloudflare FLUX v55 | `image-cloudflare-flux-schnell` -> fallback `browser-svg-renderer` | 8 | 58 | F route failure; provider 400 after first panel | [manual grade](./pipeline-quality-sympathy-cloudflare-flux-v55-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/manual-grade.md) |
 | `text-deterministic-support` Cloudflare SDXL v56 | `image-cloudflare-sdxl-lightning` | 12 | 78 | F raster regression; prompt compression failed | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v56-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
+| `text-deterministic-support` premium-care SVG v57 | `image-browser-svg-renderer` | 5 | 98 | F visible product; user-calibrated rejection | [manual grade](./pipeline-quality-sympathy-premium-care-svg-v57-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -100,6 +101,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Cloudflare SDXL v54 regresses further to product `15/100`, contract `80/100`: replacing meal language with sealed containers produced cartons/cans, fake labels, and box clutter. Stop tuning SDXL object wording for this story unless the provider can enforce no-label/no-text object rendering.
 - Cloudflare FLUX v55 is route-failure evidence, product `8/100`, contract `58/100`: it returned one native panel then hit provider 400 and fell back to generic SVG templates. The long repeated prompt is a likely brittleness factor.
 - Cloudflare SDXL v56 proves prompt compression did not solve the route, product `12/100`, contract `78/100`: fake label grids, package clutter, scenery, flowers, and jar/can back art returned. Revert the compressed prompt patch; do not deploy it.
+- Premium-care SVG v57 is corrected to product `5/100`, contract `98/100` after user-visible calibration. Removing frame-template styling and reducing object clutter does not matter enough because the artifact still reads as cheap deterministic SVG clipart with faint/empty interiors. Treat it as contract-only failure evidence, not a renderer-floor lift.
 
 ## Improvement Loop
 
@@ -162,6 +164,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Cloudflare SDXL v54 | Product 15, contract 80 | Sealed-container wording made SDXL render carton/can clutter with fake labels; abandon SDXL for this story unless no-label object control improves. |
 | Cloudflare FLUX v55 | Product 8, contract 58 | Provider 400 after first panel; fallback template only. Compress image prompts before another provider run. |
 | Cloudflare SDXL v56 | Product 12, contract 78 | Prompt compression reduced repetition but still produced fake labels, package clutter, scenery, and overlay collisions; revert prompt patch and keep evidence only. |
+| Premium-care SVG v57 | Product 5, contract 98 | User calibration rejects the visible product; frame removal did not fix generic SVG stationery/clipart feel. Keep evidence as failure; next gain needs a richer art source or deeper relief/bitmap system. |
 
 ## Prompt/Skill Changes Applied
 
