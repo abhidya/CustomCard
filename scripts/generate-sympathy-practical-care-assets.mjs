@@ -860,6 +860,173 @@ function monotypePanelSvg(panelId) {
 </svg>`;
 }
 
+function gouacheDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="gouacheGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.36 0.78" numOctaves="4" seed="${dark ? 3137 : 3299}"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.075"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="gouacheBleed" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.018 0.046" numOctaves="4" seed="${dark ? 3467 : 3581}"/>
+        <feDisplacementMap in="SourceGraphic" scale="11"/>
+      </filter>
+      <filter id="gouacheShadow" x="-24%" y="-24%" width="148%" height="148%">
+        <feDropShadow dx="0" dy="30" stdDeviation="28" flood-color="#03100b" flood-opacity="${dark ? 0.46 : 0.16}"/>
+      </filter>
+      <filter id="gouacheSoft" x="-24%" y="-24%" width="148%" height="148%">
+        <feGaussianBlur stdDeviation="34"/>
+      </filter>
+      <linearGradient id="gouacheDark" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#1b3028"/>
+        <stop offset="0.56" stop-color="#0b1814"/>
+        <stop offset="1" stop-color="#030807"/>
+      </linearGradient>
+      <linearGradient id="gouacheIvory" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff8e8"/>
+        <stop offset="0.58" stop-color="#f2dfbd"/>
+        <stop offset="1" stop-color="#d3b779"/>
+      </linearGradient>
+      <linearGradient id="gouacheMoss" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#8fa08b"/>
+        <stop offset="0.56" stop-color="#526b60"/>
+        <stop offset="1" stop-color="#182821"/>
+      </linearGradient>
+      <linearGradient id="gouacheWarm" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f6e4bc"/>
+        <stop offset="0.62" stop-color="#cfa96a"/>
+        <stop offset="1" stop-color="#8f723c"/>
+      </linearGradient>
+      <linearGradient id="gouachePhone" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#6f8176"/>
+        <stop offset="1" stop-color="#18221e"/>
+      </linearGradient>
+      <radialGradient id="gouacheQuietGlow" cx="${dark ? "47%" : "50%"}" cy="${dark ? "31%" : "35%"}" r="${dark ? "70%" : "58%"}">
+        <stop offset="0" stop-color="#f7e5bc" stop-opacity="${dark ? 0.34 : 0.3}"/>
+        <stop offset="0.62" stop-color="#cda668" stop-opacity="${dark ? 0.1 : 0.08}"/>
+        <stop offset="1" stop-color="${dark ? "#07110e" : "#fbf1df"}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  `;
+}
+
+function gouacheBackground(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const base = dark ? "url(#gouacheDark)" : "#fbf2df";
+  const topWash = dark
+    ? "M-190 190 C238 62 520 214 884 98 C1168 8 1378 122 1658 42 V792 C1288 706 1026 786 666 900 C332 1006 92 880 -190 1042 Z"
+    : "M-190 134 C246 230 520 88 840 196 C1112 288 1354 124 1658 198 V646 C1264 608 1022 718 660 762 C320 804 80 726 -190 864 Z";
+  const sideRelief = inside
+    ? `<path d="M${panelId === "inside-right" ? 1354 : 146} 276 C${panelId === "inside-right" ? 1248 : 252} 560 ${panelId === "inside-right" ? 1282 : 218} 902 ${panelId === "inside-right" ? 1366 : 134} 1190 C${panelId === "inside-right" ? 1420 : 80} 1388 ${panelId === "inside-right" ? 1364 : 136} 1550 ${panelId === "inside-right" ? 1254 : 246} 1712" fill="none" stroke="#738574" stroke-width="14" stroke-linecap="round" opacity="0.16"/>
+       <path d="M244 238 C478 190 670 242 908 196 C1102 160 1236 180 1310 138" fill="none" stroke="#b99d61" stroke-width="4" stroke-linecap="round" opacity="0.13"/>
+       <ellipse cx="750" cy="705" rx="560" ry="430" fill="#fffaf0" opacity="0.28"/>`
+    : "";
+  return `
+    <rect width="${width}" height="${height}" fill="${base}"/>
+    <rect width="${width}" height="${height}" fill="${dark ? "#d7bd82" : "#6f5c3e"}" filter="url(#gouacheGrain)" opacity="${dark ? 0.32 : 0.14}"/>
+    <ellipse cx="${dark ? 650 : 760}" cy="${dark ? 540 : 620}" rx="${dark ? 820 : 640}" ry="${dark ? 560 : 420}" fill="url(#gouacheQuietGlow)"/>
+    <path d="${topWash}" fill="${dark ? "#f0d9a8" : "#fff9ea"}" opacity="${dark ? 0.16 : 0.34}" filter="url(#gouacheBleed)"/>
+    ${sideRelief}
+    <path d="M-140 1824 C250 1684 552 1772 894 1644 C1158 1546 1362 1566 1624 1454" fill="none" stroke="${dark ? "#ecd8a6" : "#ad955e"}" stroke-width="${dark ? 24 : 12}" stroke-linecap="round" opacity="${dark ? 0.1 : 0.08}"/>
+    <path d="M-92 1924 C278 1780 612 1884 934 1760 C1166 1672 1368 1690 1588 1616" fill="none" stroke="${dark ? "#06100d" : "#776646"}" stroke-width="${dark ? 9 : 5}" stroke-linecap="round" opacity="${dark ? 0.18 : 0.1}"/>
+  `;
+}
+
+function gouacheCoveredDish({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)">
+      <ellipse cx="262" cy="244" rx="252" ry="82" fill="${dark ? "#020604" : "#bca878"}" opacity="${dark ? 0.34 : 0.16}" filter="url(#gouacheSoft)"/>
+      <path d="M36 210 C66 82 188 16 334 42 C462 66 546 146 560 266 C410 334 176 316 36 210Z" fill="url(#gouacheIvory)" filter="url(#gouacheBleed)"/>
+      <path d="M98 206 C164 120 406 126 508 238" fill="none" stroke="#b9924e" stroke-width="15" stroke-linecap="round" opacity="0.34"/>
+      <path d="M216 74 C256 38 326 42 366 82" fill="none" stroke="#52685d" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
+      <path d="M88 276 C224 322 418 310 546 252" fill="none" stroke="#fff6dd" stroke-width="12" stroke-linecap="round" opacity="0.48"/>
+    </g>
+  `;
+}
+
+function gouacheBag({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)">
+      <path d="M88 104 C142 42 274 40 334 108" fill="none" stroke="#b59456" stroke-width="20" stroke-linecap="round" opacity="0.44"/>
+      <path d="M16 122 L388 78 L456 500 C300 582 132 542 -34 630 Z" fill="url(#gouacheIvory)" filter="url(#gouacheBleed)" opacity="${dark ? 0.86 : 0.94}"/>
+      <path d="M78 172 C176 136 310 126 406 152" fill="none" stroke="#cfaa68" stroke-width="9" stroke-linecap="round" opacity="0.3"/>
+      <path d="M52 346 C180 296 326 294 438 330" fill="none" stroke="#52685d" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+    </g>
+  `;
+}
+
+function gouacheBlankNote({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)">
+      <path d="M0 0 H330 V218 C232 268 106 250 -20 314 Z" fill="#fff9ea" opacity="${dark ? 0.8 : 0.92}" filter="url(#gouacheBleed)"/>
+      <path d="M48 76 H270" stroke="#bd9a58" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+      <path d="M48 140 H232" stroke="#52685d" stroke-width="4" stroke-linecap="round" opacity="0.11"/>
+    </g>
+  `;
+}
+
+function gouachePhone({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#gouacheShadow)" opacity="${dark ? 0.72 : 0.52}">
+      <rect x="0" y="0" width="148" height="250" rx="46" fill="url(#gouachePhone)"/>
+      <rect x="17" y="22" width="114" height="206" rx="34" fill="#0d1714" opacity="0.18"/>
+      <path d="M40 54 H108" stroke="#f5dfae" stroke-width="5" stroke-linecap="round" opacity="0.34"/>
+      <path d="M52 178 H96" stroke="#f5dfae" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
+    </g>
+  `;
+}
+
+function gouacheCareScene({ panelId, x = 0, y = 0, scale = 1, mirrored = false, compact = false, opacity = 1 }) {
+  const dark = panelId === "front" || panelId === "back";
+  const sx = mirrored ? -scale : scale;
+  const shelfY = compact ? 438 : 560;
+  return `
+    <g transform="translate(${x} ${y}) scale(${sx} ${scale})" opacity="${opacity}">
+      <ellipse cx="600" cy="${shelfY + 132}" rx="${compact ? 560 : 770}" ry="${compact ? 118 : 178}" fill="${dark ? "#020604" : "#bda878"}" filter="url(#gouacheSoft)" opacity="${dark ? 0.42 : 0.16}"/>
+      <path d="M-92 ${compact ? 322 : 438} C124 ${compact ? 232 : 320} 350 ${compact ? 288 : 384} 570 ${compact ? 206 : 292} C788 ${compact ? 116 : 194} 1006 ${compact ? 166 : 280} 1194 ${compact ? 288 : 404} L1112 ${compact ? 516 : 704} C858 ${compact ? 746 : 932} 610 ${compact ? 628 : 792} 374 ${compact ? 760 : 972} C172 ${compact ? 878 : 1084} 14 ${compact ? 730 : 930} -134 ${compact ? 900 : 1132} Z" fill="${dark ? "#ecd8a6" : "#80927f"}" opacity="${dark ? 0.27 : 0.18}" filter="url(#gouacheBleed)"/>
+      <path d="M-22 ${compact ? 392 : 520} C200 ${compact ? 306 : 416} 390 ${compact ? 352 : 488} 608 ${compact ? 266 : 380} C804 ${compact ? 202 : 300} 982 ${compact ? 242 : 370} 1132 ${compact ? 340 : 494}" fill="none" stroke="${dark ? "#f3dfad" : "#53675d"}" stroke-width="${compact ? 7 : 11}" stroke-linecap="round" opacity="${dark ? 0.24 : 0.15}"/>
+      ${gouacheBag({ x: compact ? 100 : 86, y: compact ? 228 : 306, scale: compact ? 0.58 : 0.78, rotate: -5, dark })}
+      ${gouacheCoveredDish({ x: compact ? 348 : 410, y: compact ? 196 : 256, scale: compact ? 0.52 : 0.72, rotate: 2, dark })}
+      ${gouacheBlankNote({ x: compact ? 704 : 818, y: compact ? 172 : 246, scale: compact ? 0.5 : 0.62, rotate: -5, dark })}
+      ${gouachePhone({ x: compact ? 934 : 1050, y: compact ? 312 : 430, scale: compact ? 0.44 : 0.56, rotate: 4, dark })}
+      <path d="M44 ${compact ? 686 : 842} C244 ${compact ? 596 : 736} 430 ${compact ? 652 : 800} 636 ${compact ? 560 : 700} C824 ${compact ? 480 : 622} 1016 ${compact ? 534 : 660} 1200 ${compact ? 606 : 750}" fill="none" stroke="${dark ? "#f2dfb2" : "#776646"}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.2 : 0.1}"/>
+    </g>
+  `;
+}
+
+function gouachePanelSvg(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const mirrored = panelId === "inside-right" || panelId === "back";
+  const scene = panelId === "front"
+    ? gouacheCareScene({ panelId, x: -8, y: 984, scale: 1.34, opacity: 0.98 })
+    : panelId === "back"
+      ? gouacheCareScene({ panelId, x: 1230, y: 1120, scale: 0.78, mirrored: true, compact: true, opacity: 0.74 })
+      : gouacheCareScene({ panelId, x: mirrored ? 1308 : 110, y: 1284, scale: 0.64, mirrored, compact: true, opacity: 0.68 });
+  const topRelief = dark
+    ? `<path d="M1070 172 C954 314 902 498 926 694 C1068 590 1216 470 1366 254" fill="none" stroke="#d9c08e" stroke-width="10" stroke-linecap="round" opacity="0.14"/>
+       <path d="M1130 370 C1242 292 1348 306 1412 412 C1282 482 1198 452 1130 370Z" fill="#d9c08e" opacity="0.1"/>`
+    : "";
+  const interiorRelief = inside
+    ? `<path d="M254 1728 C468 1660 654 1720 866 1660 C1050 1610 1184 1632 1288 1574" fill="none" stroke="#ad955e" stroke-width="6" stroke-linecap="round" opacity="0.14"/>
+       <path d="M344 1832 H1156" fill="none" stroke="#53675d" stroke-width="3" stroke-linecap="round" opacity="0.08"/>`
+    : "";
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${gouacheDefs({ dark })}
+  ${gouacheBackground(panelId)}
+  ${monotypeSurfaceRelief(panelId)}
+  ${topRelief}
+  ${scene}
+  ${interiorRelief}
+  ${dark ? `<rect width="${width}" height="${height}" fill="#06100d" opacity="${panelId === "back" ? 0.18 : 0.08}"/>` : ""}
+</svg>`;
+}
+
 function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
     return legacyPanelSvg(panelId);
@@ -875,6 +1042,11 @@ function panelSvg(panelId) {
     const licensed = licensedPhotoPanelSvg(panelId);
     if (licensed) return licensed;
   }
+  if (process.env.CUSTOMCARD_BLOCKPRINT_PRACTICAL_CARE_ASSETS === "enabled") {
+    return monotypePanelSvg(panelId);
+  }
+  const gouache = gouachePanelSvg(panelId);
+  if (gouache) return gouache;
   const monotype = monotypePanelSvg(panelId);
   if (monotype) return monotype;
   return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
