@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100" role="img" aria-label="CustomCard generated artwork layer" data-customcard-theme="sympathy-care-package">
+<rect width="1500" height="2100" fill="#1d312b"/>
+
+    <defs>
+      <filter id="carePackageGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="3" seed="71"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.12"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="carePackageShadow" x="-16%" y="-16%" width="132%" height="132%">
+        <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#07100d" flood-opacity="0.3"/>
+      </filter>
+      <filter id="carePackageSoft" x="-12%" y="-12%" width="124%" height="124%">
+        <feGaussianBlur stdDeviation="18"/>
+      </filter>
+      <linearGradient id="carePackagePanel" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#27483f" stop-opacity="0.9"/>
+        <stop offset="1" stop-color="#10211c" stop-opacity="0.72"/>
+      </linearGradient>
+      <linearGradient id="carePackageGold" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f1dfad"/>
+        <stop offset="1" stop-color="#ad9160"/>
+      </linearGradient>
+      <radialGradient id="carePackageGlow" cx="50%" cy="34%" r="64%">
+        <stop offset="0" stop-color="#f1dfad" stop-opacity="0.24"/>
+        <stop offset="0.7" stop-color="#f1dfad" stop-opacity="0.05"/>
+        <stop offset="1" stop-color="#1d312b" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="#1d312b"/>
+    <rect width="1500" height="2100" fill="#ddc998" filter="url(#carePackageGrain)" opacity="0.2"/>
+    <ellipse cx="750" cy="720" rx="620" ry="520" fill="url(#carePackageGlow)"/>
+    <path d="M-120 1710 C230 1618 454 1710 734 1604 C1008 1500 1234 1540 1620 1408 V2100 H-120 Z" fill="#10211c" opacity="0.58"/>
+  
+
+    <g data-customcard-hero="sympathy-care-package-back">
+      <path d="M196 1128 C404 1048 598 1102 794 1048 C1004 990 1170 1030 1308 1120 L1276 1706 C1084 1778 902 1724 720 1772 C536 1820 364 1768 210 1710 Z" fill="url(#carePackagePanel)" opacity="0.42" filter="url(#carePackageShadow)"/>
+      
+    <g data-customcard-illustration="concrete-care-kit" transform="translate(394 1228) scale(0.7)" opacity="1">
+      
+    <ellipse cx="430" cy="744" rx="448" ry="80" fill="#07100d" opacity="0.28"/>
+    <rect x="104" y="586" width="720" height="124" rx="34" fill="#0b1915" opacity="0.52"/>
+    <path d="M116 650 C270 598 432 620 586 584 C700 558 782 568 854 590" fill="none" stroke="#10211c" stroke-width="9" stroke-linecap="round" opacity="0.24"/>
+
+    <g data-customcard-care-object="paper-bag-with-meal" transform="translate(38 120)">
+      <path d="M76 190 H370 L416 600 H38 Z" fill="#f4e6b0" stroke="#10211c" stroke-width="12" stroke-linejoin="round"/>
+      <path d="M138 188 C146 76 336 76 344 188" fill="none" stroke="#10211c" stroke-width="16" stroke-linecap="round"/>
+      <path d="M94 296 H360" stroke="#53685f" stroke-width="7" stroke-linecap="round" opacity="0.48"/>
+      <path d="M112 382 H336" stroke="#53685f" stroke-width="6" stroke-linecap="round" opacity="0.32"/>
+      <circle cx="224" cy="484" r="58" fill="url(#carePackageGold)" opacity="0.88"/>
+      <path d="M188 484 C216 456 250 456 278 484 C250 512 216 512 188 484Z" fill="#f4e6b0" opacity="0.84"/>
+    </g>
+
+    <g data-customcard-care-object="covered-dish" transform="translate(324 424)">
+      <ellipse cx="174" cy="208" rx="186" ry="48" fill="#07100d" opacity="0.36"/>
+      <path d="M34 182 C86 82 254 82 314 182 C252 236 100 238 34 182Z" fill="url(#carePackageGold)" stroke="#10211c" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M92 184 C144 146 224 146 276 184" fill="none" stroke="#f4e6b0" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+      <path d="M146 82 C172 54 218 56 244 86" fill="none" stroke="#10211c" stroke-width="8" stroke-linecap="round"/>
+      <path d="M58 246 H302" stroke="#10211c" stroke-width="9" stroke-linecap="round"/>
+    </g>
+
+    <g data-customcard-care-object="muted-phone" transform="translate(610 186) rotate(5)">
+      <rect x="0" y="0" width="148" height="252" rx="34" fill="#f4e6b0" stroke="#10211c" stroke-width="12"/>
+      <circle cx="74" cy="204" r="10" fill="#53685f" opacity="0.8"/>
+      <path d="M42 62 C76 36 116 50 128 88 C104 122 54 116 34 78 C60 70 92 66 116 74" fill="none" stroke="url(#carePackageGold)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M36 38 L132 150" stroke="#10211c" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
+    </g>
+
+    <g data-customcard-care-object="house-key" transform="translate(668 514) rotate(-16)" opacity="0.62">
+      <circle cx="54" cy="54" r="44" fill="none" stroke="#f1dfad" stroke-width="10"/>
+      <path d="M96 54 H242" stroke="#f1dfad" stroke-width="10" stroke-linecap="round"/>
+      <path d="M178 54 V104 M220 54 V92" stroke="#f1dfad" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="54" cy="54" r="12" fill="url(#carePackageGold)" opacity="0.86"/>
+    </g>
+
+    <g data-customcard-care-object="quiet-presence-card" transform="translate(454 152) rotate(-6)">
+      <rect x="0" y="0" width="178" height="126" rx="18" fill="#f4e6b0" stroke="#53685f" stroke-width="8" opacity="0.72"/>
+      <path d="M34 44 H142 M34 74 H116" stroke="#53685f" stroke-width="7" stroke-linecap="round" opacity="0.44"/>
+    </g>
+  
+    </g>
+  
+      <path d="M366 1812 H1134" stroke="#ddc998" stroke-width="8" stroke-linecap="round" opacity="0.2"/>
+      <path d="M526 1860 H974" stroke="#f1dfad" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
+    </g>
+  
+
+
+
+      <rect x="116" y="116" width="1268" height="1868" rx="34" fill="none" stroke="#ddc998" stroke-width="4" opacity="0.2"/>
+      <path d="M330 1904 H1170" stroke="#ddc998" stroke-width="3" stroke-linecap="round" opacity="0.14"/>
+    
+</svg>

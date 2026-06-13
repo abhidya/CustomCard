@@ -45,8 +45,11 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` paper-cut SVG v45 | `image-browser-svg-renderer` | 88 | 98 | B+ intermediate cleanup; no score lift | [manual grade](./pipeline-quality-sympathy-papercut-svg-v45-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v46 | `image-browser-svg-renderer` | 89 | 98 | B+ latest local route; no production-candidate claim | [manual grade](./pipeline-quality-sympathy-papercut-svg-v46-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` Cloudflare SDXL v47 | `image-cloudflare-sdxl-lightning` | 60 | 90 | C rough raster draft; provider works, concept wrong | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v47-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
-| `text-deterministic-support` paper-cut SVG v48 | `image-browser-svg-renderer` | 90 | 98 | A- production-candidate with human proofing; latest local winner | [manual grade](./pipeline-quality-sympathy-papercut-svg-v48-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
-| `text-deterministic-support` paper-cut SVG v49 | `image-browser-svg-renderer` | 91 | 98 | A- production-candidate; improved interior material detail | [manual grade](./pipeline-quality-sympathy-papercut-svg-v49-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v48 | `image-browser-svg-renderer` | 5 | 98 | F visible product; overgraded local SVG lineage | [manual grade](./pipeline-quality-sympathy-papercut-svg-v48-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v49 | `image-browser-svg-renderer` | 5 | 98 | F visible product; user-calibrated rejection | [manual grade](./pipeline-quality-sympathy-papercut-svg-v49-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` care-package SVG v50 | `image-browser-svg-renderer` | 37 | 98 | D+ concept repair; still clipart/template | [manual grade](./pipeline-quality-sympathy-care-package-svg-v50-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` care-package SVG v51 | `image-browser-svg-renderer` | 40 | 98 | D+ clearer still-life; remaining ambiguity | [manual grade](./pipeline-quality-sympathy-care-package-svg-v51-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` care-package SVG v52 | `image-browser-svg-renderer` | 41 | 98 | D+ ambiguity cleanup; local SVG ceiling | [manual grade](./pipeline-quality-sympathy-care-package-svg-v52-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -85,8 +88,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Paper-cut SVG v45 is intermediate cleanup at product `88/100`, contract `98/100`. The front doorway is calmer, but visible quality does not beat v43.
 - Paper-cut SVG v46 is latest local route at product `89/100`, contract `98/100`. It reduces squiggle clutter and emphasizes a single doorstep-care relief, but it is still deterministic SVG and does not cross into production-candidate quality.
 - Cloudflare SDXL v47 is product `60/100`, contract `90/100`: four real raster panels and readable deterministic text plates, but the art is generic wheat/field landscape instead of practical quiet support. Major concept/art redo still required.
-- Paper-cut SVG v48 is the latest local winner at product `90/100`, contract `98/100`. Replacing stacked small marks with a single bespoke doorstep-practical-care vignette makes meals/rides/calls/silence visibly legible enough for an A- proof. Still do not call it top-band: deterministic SVG and restrained interiors remain blockers.
-- Paper-cut SVG v49 is the latest local winner at product `91/100`, contract `98/100`. Handmade vellum/deckle stitching improves the two interior panels without text collision. It is production-candidate evidence, not top-band evidence.
+- Paper-cut SVG v48-v49 were overgraded. User-visible calibration on v49 sets the product score to `5/100`; because v48 shares the same front/back art system, both are contract-only controls, not local winners. Correct copy, safe typography, and four panels do not rescue generic template-looking dark stationery.
+- Care-package SVG v50 repairs the specific visible ambiguity: the image now reads as a bag, meal, muted phone, key, and practical support instead of vague marks. Product rises to `37/100`, contract stays `98/100`, but it remains a D+ because the visible style is still local SVG clipart on a card template.
+- Care-package SVG v51 improves fill/material and reduces card-inside-card boxes, reaching product `40/100`, contract `98/100`. It is still not customer-ready, and the small dark key/phone cluster can read as unintended clutter at thumbnail size.
+- Care-package SVG v52 reduces the remaining dark key ambiguity and lands at product `41/100`, contract `98/100`. This is likely the useful ceiling for the current local-SVG care-kit direction; further progress needs a better art source or a fundamentally stronger editorial illustration system.
 
 ## Improvement Loop
 
@@ -140,8 +145,11 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Paper-cut SVG v45 | Product 88, contract 98 | Doorway cleanup reduced ambiguity but did not beat v43. |
 | Paper-cut SVG v46 | Product 89, contract 98 | Squiggle-opacity cleanup made v43 cleaner but did not create a score lift. |
 | Cloudflare SDXL v47 | Product 60, contract 90 | Real raster run worked, but SDXL ignored practical-support object constraints and rendered generic landscape art. |
-| Paper-cut SVG v48 | Product 90, contract 98 | One stronger bespoke doorstep-care vignette beats tiny-mark tuning and crosses into proofable production-candidate quality. |
-| Paper-cut SVG v49 | Product 91, contract 98 | Interior vellum/deckle material detail fixes v48's weakest panels without hurting readability. |
+| Paper-cut SVG v48 | Product 5, contract 98 | Later visible calibration invalidates the production-candidate grade; the shared art system reads as generic dark stationery and needs replacement. |
+| Paper-cut SVG v49 | Product 5, contract 98 | Interior vellum detail does not matter because the visible card still fails as low-effort template-like stationery. |
+| Care-package SVG v50 | Product 37, contract 98 | Replacing abstract doorstep marks with explicit care-package objects fixes legibility but still looks like clipart, not customer-ready card art. |
+| Care-package SVG v51 | Product 40, contract 98 | Filled still-life shapes help, but remaining dark accessory clutter keeps it in D+ territory. |
+| Care-package SVG v52 | Product 41, contract 98 | Pale key cleanup removes most car-like ambiguity; score barely moves because local SVG remains the visible-product ceiling. |
 
 ## Prompt/Skill Changes Applied
 
