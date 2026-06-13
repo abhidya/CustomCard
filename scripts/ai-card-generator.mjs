@@ -1404,6 +1404,11 @@ function sympathyThresholdHero(panelId) {
         <path d="M170 792 C332 690 512 724 662 646 C804 572 972 554 1158 604 L1264 1476 C1048 1534 890 1518 724 1592 C550 1668 342 1640 188 1738 Z" fill="#0b1714" opacity="0.32" filter="url(#sympathyCutShadow)"/>
         <path d="M206 748 C376 650 548 690 704 612 C866 532 1012 546 1186 590 L1246 1438 C1032 1502 878 1488 712 1568 C536 1652 348 1612 196 1708 Z" fill="url(#sympathyPaperFace)" opacity="0.26"/>
         <rect x="256" y="818" width="468" height="746" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.88" filter="url(#sympathyThresholdSoft)"/>
+        <g data-customcard-bespoke-depth="front-title-threshold" opacity="0.46">
+          <path d="M318 350 C500 286 690 332 878 286 C1050 244 1186 270 1282 332 L1282 622 C1108 664 956 632 790 678 C610 728 456 688 318 748 Z" fill="#ead9aa" opacity="0.08" filter="url(#sympathyThresholdSoft)"/>
+          <path d="M264 702 C430 636 608 670 776 612 C944 554 1104 574 1232 632" fill="none" stroke="#ead9aa" stroke-width="11" stroke-linecap="round" opacity="0.14"/>
+          <path d="M348 786 C500 734 676 754 852 696 C1018 642 1156 666 1268 720" fill="none" stroke="#cfd3bf" stroke-width="6" stroke-linecap="round" opacity="0.12"/>
+        </g>
         <path d="M286 848 V1536 H1024" fill="none" stroke="#ead9aa" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity="0.52"/>
         <path d="M340 904 V1470 H952" fill="none" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
         <path d="M226 1584 C436 1502 658 1542 866 1462 C1046 1392 1194 1404 1320 1324" fill="none" stroke="#ead9aa" stroke-width="10" stroke-linecap="round" opacity="0.34"/>
@@ -1416,6 +1421,8 @@ function sympathyThresholdHero(panelId) {
           <path d="M456 1198 C534 1160 640 1174 702 1226 C666 1304 500 1308 454 1220 Z" fill="#ead9aa" opacity="0.1"/>
           <path d="M804 1176 C900 1142 1018 1176 1084 1242 C1014 1306 872 1308 794 1236 Z" fill="#cfd3bf" opacity="0.1"/>
           <path d="M870 1240 C918 1210 990 1224 1034 1268" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.34"/>
+          <path d="M384 1518 C530 1474 690 1508 862 1456 C1030 1406 1162 1426 1276 1384" fill="none" stroke="#ead9aa" stroke-width="5" stroke-linecap="round" opacity="0.28"/>
+          <path d="M430 1566 C572 1530 724 1556 884 1512 C1030 1472 1160 1484 1240 1452" fill="none" stroke="#cfd3bf" stroke-width="3" stroke-linecap="round" opacity="0.18"/>
         </g>
         <g data-customcard-support-relief="meals-rides-calls-silence" opacity="0.35">
           <path d="M376 1316 C420 1274 514 1280 568 1322 C552 1378 420 1394 374 1332 Z" fill="#ead9aa" opacity="0.16"/>
@@ -1450,6 +1457,7 @@ function sympathyThresholdHero(panelId) {
         <path d="${paperPath}" fill="url(#sympathyPaperFace)" opacity="0.32" filter="url(#sympathyCutShadow)"/>
         <path d="M${lineX} 260 C${mirrored ? "1208 572 1238 890 1300 1190 C1342 1392 1294 1554 1196 1712" : "292 572 262 890 200 1190 C158 1392 206 1554 304 1712"}" fill="none" stroke="#53685f" stroke-width="9" stroke-linecap="round" opacity="0.2"/>
         <path d="M${lineX} 310 C${mirrored ? "1238 610 1250 910 1274 1160 C1292 1344 1246 1494 1174 1650" : "262 610 250 910 226 1160 C208 1344 254 1494 326 1650"}" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
+        <path d="M${mirrored ? "1188 430 C1080 388 948 414 828 380 C682 338 548 360 444 414" : "312 430 C420 388 552 414 672 380 C818 338 952 360 1056 414"}" fill="none" stroke="#ddc998" stroke-width="7" stroke-linecap="round" opacity="0.1"/>
         <rect x="${doorX}" y="1468" width="354" height="216" rx="10" fill="#d9bd7f" opacity="0.12" filter="url(#sympathyThresholdSoft)"/>
         <path d="M${doorX + 38} 1494 V1648 H${doorX + 316}" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.24"/>
         <path d="M258 302 C468 266 650 324 856 292 C1042 262 1164 296 1250 268" fill="none" stroke="#ddc998" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
@@ -1458,6 +1466,7 @@ function sympathyThresholdHero(panelId) {
           <path d="M${mirrored ? "782 1438 C900 1380 1042 1416 1226 1362 L1270 1608 C1116 1650 984 1626 850 1670 C742 1706 642 1692 560 1654" : "718 1438 C600 1380 458 1416 274 1362 L230 1608 C384 1650 516 1626 650 1670 C758 1706 858 1692 940 1654"}" fill="#53685f" opacity="0.2"/>
           <path d="M${mirrored ? "698 1582 C842 1528 996 1566 1192 1498" : "802 1582 C658 1528 504 1566 308 1498"}" fill="none" stroke="#ad9160" stroke-width="11" stroke-linecap="round"/>
           <path d="M${mirrored ? "894 1468 C966 1438 1066 1452 1128 1504 C1074 1560 944 1564 884 1508 Z" : "606 1468 C534 1438 434 1452 372 1504 C426 1560 556 1564 616 1508 Z"}" fill="#d9bd7f" opacity="0.32"/>
+          <path d="M${mirrored ? "642 1698 C812 1648 988 1682 1218 1608" : "858 1698 C688 1648 512 1682 282 1608"}" fill="none" stroke="#53685f" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
         </g>
         <g data-customcard-support-relief="${mirrored ? "rides-calls-silence" : "meals-and-presence"}" opacity="0.19">
           ${mirrored ? `
@@ -1479,6 +1488,7 @@ function sympathyThresholdHero(panelId) {
   }
   return `
     <g data-customcard-hero="sympathy-threshold-back">
+      <path d="M286 332 C480 270 688 318 882 270 C1056 228 1194 260 1292 318 L1292 590 C1118 630 964 602 798 648 C610 700 456 662 286 724 Z" fill="#ead9aa" opacity="0.08" filter="url(#sympathyThresholdSoft)"/>
       <path d="M386 1304 C514 1238 668 1256 794 1204 C926 1150 1050 1168 1172 1218 L1230 1650 C1080 1702 944 1678 810 1732 C676 1786 526 1760 392 1834 Z" fill="url(#sympathyPaperFace)" opacity="0.22" filter="url(#sympathyCutShadow)"/>
       <rect x="476" y="1374" width="548" height="304" rx="18" fill="url(#sympathyThresholdDoor)" opacity="0.5" filter="url(#sympathyThresholdSoft)"/>
       <path d="M540 1418 V1628 H958" fill="none" stroke="#ead9aa" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
