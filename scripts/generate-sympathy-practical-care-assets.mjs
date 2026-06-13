@@ -1,10 +1,11 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import sharp from "sharp";
 
 const width = 1500;
 const height = 2100;
 const outputDir = resolve("public/generated");
+const sourceAssetDir = resolve("public/generated/source-assets");
 
 function defs({ dark = false } = {}) {
   return `
@@ -277,10 +278,75 @@ function premiumPanelSvg(panelId) {
 </svg>`;
 }
 
+function sourceAssetDataUrl(fileName, contentType = "image/png") {
+  const filePath = resolve(sourceAssetDir, fileName);
+  if (!existsSync(filePath)) return "";
+  return `data:${contentType};base64,${readFileSync(filePath).toString("base64")}`;
+}
+
+function licensedPhotoDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="licensedPhotoSoft" x="-10%" y="-10%" width="120%" height="120%">
+        <feGaussianBlur stdDeviation="10"/>
+      </filter>
+      <filter id="licensedPhotoPaper" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.82 0.9" numOctaves="2" seed="${dark ? 151 : 271}"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.045"/>
+        </feComponentTransfer>
+      </filter>
+      <linearGradient id="licensedPhotoVignette" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="${dark ? "#07100d" : "#fff8e8"}" stop-opacity="${dark ? 0.74 : 0.08}"/>
+        <stop offset="0.46" stop-color="${dark ? "#07100d" : "#fff8e8"}" stop-opacity="${dark ? 0.22 : 0.02}"/>
+        <stop offset="1" stop-color="${dark ? "#020604" : "#e8d0a1"}" stop-opacity="${dark ? 0.66 : 0.08}"/>
+      </linearGradient>
+      <radialGradient id="licensedPhotoTitleGlow" cx="${dark ? "45%" : "50%"}" cy="${dark ? "28%" : "38%"}" r="${dark ? "62%" : "54%"}">
+        <stop offset="0" stop-color="#fff5dc" stop-opacity="${dark ? 0.38 : 0.22}"/>
+        <stop offset="0.7" stop-color="#d6bd82" stop-opacity="${dark ? 0.08 : 0.05}"/>
+        <stop offset="1" stop-color="${dark ? "#07100d" : "#fff5dc"}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+  `;
+}
+
+function licensedPhotoPanelSvg(panelId) {
+  const href = sourceAssetDataUrl("rawpixel-cc0-leaves-note.png");
+  if (!href) return "";
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const mirrored = panelId === "inside-right" || panelId === "back";
+  const photoOpacity = dark ? 0.76 : 0.58;
+  const photoY = dark ? 0 : 1210;
+  const photoHeight = dark ? height : 760;
+  const photoWidth = Math.round(photoHeight * 1.5);
+  const photoX = inside
+    ? mirrored ? 430 : -70
+    : -820;
+  const flip = mirrored ? ` transform="translate(1500 0) scale(-1 1)"` : "";
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${licensedPhotoDefs({ dark })}
+  <rect width="${width}" height="${height}" fill="${dark ? "#07100d" : "#fff7e7"}"/>
+  <rect width="${width}" height="${height}" fill="${dark ? "#d7bd80" : "#7a6846"}" filter="url(#licensedPhotoPaper)" opacity="${dark ? 0.34 : 0.16}"/>
+  <ellipse cx="${dark ? 660 : 750}" cy="${dark ? 560 : 640}" rx="${dark ? 820 : 660}" ry="${dark ? 520 : 430}" fill="url(#licensedPhotoTitleGlow)"/>
+  <g${flip}>
+    <image href="${href}" x="${photoX}" y="${photoY}" width="${photoWidth}" height="${photoHeight}" preserveAspectRatio="xMidYMid slice" opacity="${photoOpacity}"/>
+  </g>
+  ${inside ? `<rect x="138" y="214" width="1224" height="1156" rx="46" fill="#fff9ea" opacity="0.42"/>` : ""}
+  ${inside ? `<path d="M238 238 C484 194 680 230 920 186 C1100 154 1234 174 1308 136" stroke="#9d8b63" stroke-width="3" stroke-linecap="round" opacity="0.13" fill="none"/>` : ""}
+  <rect width="${width}" height="${height}" fill="url(#licensedPhotoVignette)"/>
+  ${dark ? `<rect width="${width}" height="${height}" fill="#07100d" opacity="${panelId === "back" ? 0.26 : 0.18}"/>` : ""}
+</svg>`;
+}
+
 function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
     return legacyPanelSvg(panelId);
   }
+  const licensed = licensedPhotoPanelSvg(panelId);
+  if (licensed) return licensed;
   return premiumPanelSvg(panelId);
 }
 
