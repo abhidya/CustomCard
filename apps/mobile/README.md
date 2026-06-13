@@ -208,6 +208,10 @@ apps/mobile/
   customer workflow screens mount only for an authenticated session.
 - **Proof-first print**: print options and checkout stay locked until the
   customer approves the rendered proof.
+- **Honest gating**: capabilities like live AI, retail orders, and hosted
+  checkout are gated by the **backend** (credentials + kill switch); the app
+  renders real server state rather than faking it. See `GATING.md` for the
+  per-feature trace and how to flip each.
 - **Resilience**: a top-level `ErrorBoundary` catches render errors and shows a
   recovery screen (error detail redacted, never displayed). Misconfiguration
   (missing/invalid API URL) fails closed with a clear message.
