@@ -9,7 +9,7 @@
 - Openverse source URL: `https://www.rawpixel.com/image/3301590/free-photo-image-pottery-acanthaceae-blossom`
 - Download URL used: `https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA0L3Vwd2s2MTgyMDQ5My13aWtpbWVkaWEtaW1hZ2Uta293cHhjemwuanBn.jpg`
 - Render copy: `rawpixel-cc0-leaves-note.png`, converted locally from WebP with Sharp so SVG rasterization can embed it.
-- Use: optional licensed-photo comparison route when `CUSTOMCARD_LICENSED_PRACTICAL_CARE_ASSETS=enabled`; not used by default after v101.
+- Use: optional licensed-photo comparison route when `CUSTOMCARD_LICENSED_PRACTICAL_CARE_ASSETS=enabled`; clipped paper texture in the default v104 bespoke-care route.
 
 ## `rawpixel-cc0-sympathy-flower.webp`
 
@@ -31,7 +31,7 @@
 - Commons source URL: `https://commons.wikimedia.org/wiki/File:White_work_table_with_notes,_smartphone_and_laptop_(Unsplash).jpg`
 - Download URL used: `https://commons.wikimedia.org/wiki/Special:Redirect/file/White_work_table_with_notes,_smartphone_and_laptop_(Unsplash).jpg?width=1800`
 - Render copy: `commons-cc0-phone-notes-table.png`, converted locally from JPG with Sharp for inspection; renderer embeds the smaller JPG to avoid SVG XML buffer limits.
-- Use: v100 inside-right source photo layer for calls/silence/note practical-care concept; optional for future licensed-photo comparisons.
+- Use: v100 inside-right source photo layer for calls/silence/note practical-care concept; clipped note/phone texture in the default v104 bespoke-care route.
 
 ## `commons-cc0-preparing-food.jpg`
 
@@ -42,7 +42,7 @@
 - Commons source URL: `https://commons.wikimedia.org/wiki/File:Preparing_food_(Unsplash).jpg`
 - Download URL used: `https://upload.wikimedia.org/wikipedia/commons/8/86/Preparing_food_%28Unsplash%29.jpg`
 - Render copy: `commons-cc0-preparing-food.png`, converted locally from JPG with Sharp for inspection; renderer embeds the smaller JPG to avoid SVG XML buffer limits.
-- Use: reserve source for future meal-prep composition; not used in default v101/v102 bespoke-care route.
+- Use: clipped meal-container texture in the default v104 bespoke-care route.
 
 ## `commons-pd-grocery-bag.jpg`
 

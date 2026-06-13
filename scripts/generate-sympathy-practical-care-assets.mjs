@@ -369,6 +369,16 @@ function licensedPhotoPanelSvg(panelId) {
 </svg>`;
 }
 
+function imageTexturePattern({ id, fileName, contentType = "image/png", opacity = 0.18, width: patternWidth = 1024, height: patternHeight = 682 }) {
+  const href = sourceAssetDataUrl(fileName, contentType);
+  if (!href) return "";
+  return `
+      <pattern id="${id}" patternUnits="userSpaceOnUse" width="${patternWidth}" height="${patternHeight}">
+        <image href="${href}" x="0" y="0" width="${patternWidth}" height="${patternHeight}" preserveAspectRatio="xMidYMid slice" opacity="${opacity}"/>
+      </pattern>
+  `;
+}
+
 function bespokeCareDefs({ dark = false } = {}) {
   return `
     <defs>
@@ -418,6 +428,9 @@ function bespokeCareDefs({ dark = false } = {}) {
         <stop offset="0.58" stop-color="#d0ad69" stop-opacity="${dark ? 0.12 : 0.1}"/>
         <stop offset="1" stop-color="${dark ? "#07100d" : "#fbf1df"}" stop-opacity="0"/>
       </radialGradient>
+      ${imageTexturePattern({ id: "bespokeCareNotePhoto", fileName: "rawpixel-cc0-leaves-note.png", opacity: dark ? 0.16 : 0.12 })}
+      ${imageTexturePattern({ id: "bespokeCareDeskPhoto", fileName: "commons-cc0-phone-notes-table.jpg", contentType: "image/jpeg", opacity: dark ? 0.18 : 0.14, width: 960, height: 640 })}
+      ${imageTexturePattern({ id: "bespokeCareMealPhoto", fileName: "commons-cc0-preparing-food.jpg", contentType: "image/jpeg", opacity: dark ? 0.14 : 0.1, width: 1036, height: 691 })}
     </defs>
   `;
 }
@@ -441,10 +454,12 @@ function bespokeCareBackground(panelId) {
 }
 
 function bespokeCoveredMeal({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  const domePath = "M26 204 C48 92 150 24 278 38 C390 50 468 122 484 230 C356 298 154 290 26 204Z";
   return `
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)">
       <ellipse cx="226" cy="230" rx="218" ry="74" fill="${dark ? "#020604" : "#b6a073"}" opacity="${dark ? 0.36 : 0.16}" filter="url(#bespokeCareSoft)"/>
-      <path d="M26 204 C48 92 150 24 278 38 C390 50 468 122 484 230 C356 298 154 290 26 204Z" fill="#f6e8c8"/>
+      <path d="${domePath}" fill="#f6e8c8"/>
+      <path d="${domePath}" fill="url(#bespokeCareMealPhoto)" opacity="${dark ? 0.22 : 0.16}"/>
       <path d="M72 200 C122 128 346 132 438 220" fill="none" stroke="#b89a5d" stroke-width="13" stroke-linecap="round" opacity="0.34"/>
       <path d="M176 70 C210 40 272 42 306 76" fill="none" stroke="#4e675d" stroke-width="9" stroke-linecap="round" opacity="0.28"/>
       <path d="M66 250 C178 292 338 286 452 230" fill="none" stroke="#fff7df" stroke-width="10" stroke-linecap="round" opacity="0.46"/>
@@ -453,10 +468,12 @@ function bespokeCoveredMeal({ x = 0, y = 0, scale = 1, rotate = 0, dark = false 
 }
 
 function bespokeFoldedBag({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  const bagPath = "M18 116 L326 82 L378 430 C250 500 122 468 -24 534 Z";
   return `
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)">
       <path d="M62 100 C116 42 238 40 294 104" fill="none" stroke="#b4955c" stroke-width="18" stroke-linecap="round" opacity="0.5"/>
-      <path d="M18 116 L326 82 L378 430 C250 500 122 468 -24 534 Z" fill="url(#bespokeCareIvory)" filter="url(#bespokeCareFiber)" opacity="${dark ? 0.92 : 0.96}"/>
+      <path d="${bagPath}" fill="url(#bespokeCareIvory)" filter="url(#bespokeCareFiber)" opacity="${dark ? 0.92 : 0.96}"/>
+      <path d="${bagPath}" fill="url(#bespokeCareNotePhoto)" opacity="${dark ? 0.22 : 0.16}"/>
       <path d="M78 142 C154 112 262 104 330 126" fill="none" stroke="#d2b06f" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
       <path d="M42 272 C148 234 266 232 360 260" fill="none" stroke="#52675d" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
       <path d="M28 390 C146 342 266 352 374 398" fill="none" stroke="#d2b06f" stroke-width="6" stroke-linecap="round" opacity="0.18"/>
@@ -468,6 +485,7 @@ function bespokePhone({ x = 0, y = 0, scale = 1, rotate = 0, opacity = 1 }) {
   return `
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)" opacity="${opacity}">
       <rect x="0" y="0" width="126" height="216" rx="38" fill="url(#bespokeCarePhone)"/>
+      <rect x="12" y="16" width="102" height="184" rx="30" fill="url(#bespokeCareDeskPhoto)" opacity="0.18"/>
       <path d="M34 44 H92" stroke="#f8e7c6" stroke-width="5" stroke-linecap="round" opacity="0.42"/>
       <path d="M44 152 H84" stroke="#f8e7c6" stroke-width="4" stroke-linecap="round" opacity="0.22"/>
     </g>
@@ -475,9 +493,11 @@ function bespokePhone({ x = 0, y = 0, scale = 1, rotate = 0, opacity = 1 }) {
 }
 
 function bespokeBlankNote({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  const notePath = "M0 0 H288 V196 C204 236 98 222 -16 274 Z";
   return `
     <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#bespokeCareShadow)">
-      <path d="M0 0 H288 V196 C204 236 98 222 -16 274 Z" fill="#fff9ea" opacity="${dark ? 0.84 : 0.95}" filter="url(#bespokeCareFiber)"/>
+      <path d="${notePath}" fill="#fff9ea" opacity="${dark ? 0.84 : 0.95}" filter="url(#bespokeCareFiber)"/>
+      <path d="${notePath}" fill="url(#bespokeCareDeskPhoto)" opacity="${dark ? 0.18 : 0.12}"/>
       <path d="M42 66 H240" stroke="#c4a76d" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
       <path d="M42 124 H202" stroke="#52675d" stroke-width="4" stroke-linecap="round" opacity="0.12"/>
     </g>
@@ -499,10 +519,12 @@ function bespokeCareTableau({ panelId, x = 0, y = 0, scale = 1, mirrored = false
   const dark = panelId === "front" || panelId === "back";
   const sx = mirrored ? -scale : scale;
   const shelfY = compact ? 460 : 620;
+  const shelfPath = `M-66 ${compact ? 334 : 454} C126 ${compact ? 250 : 342} 328 ${compact ? 286 : 398} 530 ${compact ? 214 : 306} C736 ${compact ? 126 : 218} 932 ${compact ? 178 : 300} 1104 ${compact ? 292 : 408} L1042 ${compact ? 502 : 690} C814 ${compact ? 720 : 902} 590 ${compact ? 612 : 784} 378 ${compact ? 732 : 958} C196 ${compact ? 836 : 1060} 34 ${compact ? 710 : 910} -112 ${compact ? 874 : 1090} Z`;
   return `
     <g transform="translate(${x} ${y}) scale(${sx} ${scale})" opacity="${opacity}">
       <ellipse cx="560" cy="${shelfY + 116}" rx="${compact ? 520 : 680}" ry="${compact ? 118 : 170}" fill="${dark ? "#020604" : "#b6a073"}" filter="url(#bespokeCareSoft)" opacity="${dark ? 0.48 : 0.18}"/>
-      <path d="M-66 ${compact ? 334 : 454} C126 ${compact ? 250 : 342} 328 ${compact ? 286 : 398} 530 ${compact ? 214 : 306} C736 ${compact ? 126 : 218} 932 ${compact ? 178 : 300} 1104 ${compact ? 292 : 408} L1042 ${compact ? 502 : 690} C814 ${compact ? 720 : 902} 590 ${compact ? 612 : 784} 378 ${compact ? 732 : 958} C196 ${compact ? 836 : 1060} 34 ${compact ? 710 : 910} -112 ${compact ? 874 : 1090} Z" fill="${dark ? "#e8d5a3" : "#7f927f"}" opacity="${dark ? 0.3 : 0.2}" filter="url(#bespokeCareFiber)"/>
+      <path d="${shelfPath}" fill="${dark ? "#e8d5a3" : "#7f927f"}" opacity="${dark ? 0.3 : 0.2}" filter="url(#bespokeCareFiber)"/>
+      <path d="${shelfPath}" fill="url(#bespokeCareNotePhoto)" opacity="${dark ? 0.12 : 0.08}"/>
       <path d="M-18 ${compact ? 390 : 530} C180 ${compact ? 304 : 424} 356 ${compact ? 346 : 494} 558 ${compact ? 270 : 390} C744 ${compact ? 210 : 314} 906 ${compact ? 244 : 376} 1038 ${compact ? 334 : 490}" fill="none" stroke="${dark ? "#f4e0ae" : "#52675d"}" stroke-width="${compact ? 7 : 10}" stroke-linecap="round" opacity="${dark ? 0.24 : 0.16}"/>
       ${bespokeFoldedBag({ x: compact ? 122 : 132, y: compact ? 214 : 314, scale: compact ? 0.64 : 0.82, rotate: -4, dark })}
       ${bespokeCoveredMeal({ x: compact ? 356 : 410, y: compact ? 186 : 274, scale: compact ? 0.56 : 0.76, rotate: 3, dark })}
