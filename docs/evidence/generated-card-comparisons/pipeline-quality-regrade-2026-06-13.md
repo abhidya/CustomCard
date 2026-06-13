@@ -21,7 +21,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` support-object SVG v20 | `image-browser-svg-renderer` | 10 | 98 | F visible product; contract-only control | [manual grade](./pipeline-quality-sympathy-deterministic-svg-v20-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` still-life SVG v22 | `image-browser-svg-renderer` | 32 | 98 | D visible product; stronger hook, still crude | [manual grade](./pipeline-quality-sympathy-still-life-svg-v22-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` still-life SVG v24 | `image-browser-svg-renderer` | 40 | 98 | D+ visible product; cleaner cover, still not saleable | [manual grade](./pipeline-quality-sympathy-still-life-svg-v24-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
-| `text-deterministic-support` still-life SVG v25 | `image-browser-svg-renderer` | 45 | 98 | D/C- rough draft; best deterministic branch, not saleable | [manual grade](./pipeline-quality-sympathy-still-life-svg-v25-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` still-life SVG v25 | `image-browser-svg-renderer` | 8 | 98 | F visible product; contract-only control | [manual grade](./pipeline-quality-sympathy-still-life-svg-v25-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 
 ## Findings
 
@@ -38,7 +38,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Deterministic support-copy controls isolate visual quality from failing live text routes. The v20 SVG control passes contract checks at `98/100`, but product score is only `10/100` because the visible card still looks like low-effort generic stationery. The v12 DeepAI support-object retry is worse at `8/100` because inside-left text collides with landscape art.
 - Still-life SVG v22 improves the deterministic visual route to product `32/100`, contract `98/100`. The dark front/back and light typography create a real thumbnail hook and remove route-line/car-like ambiguity, but the interiors and vector objects remain crude, generic, and not saleable.
 - Still-life SVG v24 improves the deterministic visual route to product `40/100`, contract `98/100` by making the sympathy cover headline-only and adding richer SVG shadows/scene layers. It remains a D+ product because interiors are generic and the vector object craft still looks tool-made.
-- Still-life SVG v25 improves the deterministic visual route to product `45/100`, contract `98/100` by adding stronger interior side-stem/leaf structure while keeping text zones clear. It is the current best deterministic branch, but still capped because interiors are close to unfinished stationery and the art system is not premium.
+- Still-life SVG v25 was overgraded at product `45/100`. User-visible re-audit corrects it to product `8/100`, contract `98/100`: stronger interior side-stem/leaf structure preserves clear text zones but reads as generic low-effort stationery, not a saleable sympathy card.
 
 ## Improvement Loop
 
@@ -68,7 +68,7 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Deterministic support-copy DeepAI v11-v12 | Product 8, contract 76 on v12 | Moving front body text upward helped the cover, but DeepAI still placed landscape art through inside text and produced generic bowl/branch imagery. |
 | Still-life SVG v21-v22 | Product 32, contract 98 on v22 | A dark cover/back with light deterministic typography improves visual hook. Keep that direction, but crude SVG object craft and blank interiors still require a better art system. |
 | Still-life SVG v23-v24 | Product 40, contract 98 on v24 | Larger scene layers and headline-only cover improve visible quality. Still capped: deterministic vector art is not premium enough and interiors remain mostly generic. |
-| Still-life SVG v25 | Product 45, contract 98 | Stronger interior edge illustration improves the opened-card spread, but the route still needs real illustration assets/provider to leave rough-draft tier. |
+| Still-life SVG v25 | Product 8, contract 98 | User-visible re-audit shows incremental SVG decoration did not improve product quality. It remains a contract-only control that needs real illustration assets/provider before promotion. |
 
 ## Prompt/Skill Changes Applied
 
