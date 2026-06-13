@@ -160,6 +160,15 @@ eas submit --profile production --platform ios
 eas submit --profile production --platform android
 ```
 
+For installable **APK** builds (EAS cloud or local Gradle) and the iOS
+equivalent, see `BUILD_ANDROID.md`. Quick start:
+
+```sh
+npm run build:android:apk          # EAS: release-style standalone .apk
+npm run build:android:apk:preview  # EAS: internal-distribution .apk
+npm run build:android:apk:gradle   # local: prebuild + ./gradlew assembleRelease (needs Android SDK)
+```
+
 See `STORE_RELEASE_CHECKLIST.md` for the full Apple/Google checklist, privacy
 labels, and required assets.
 

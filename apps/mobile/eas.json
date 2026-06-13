@@ -31,6 +31,18 @@
       "env": {
         "REAL_ORDER_KILL_SWITCH": "disabled"
       }
+    },
+    "apk": {
+      "extends": "production",
+      "distribution": "internal",
+      "channel": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "REAL_ORDER_KILL_SWITCH": "disabled"
+      }
     }
   },
   "submit": {
