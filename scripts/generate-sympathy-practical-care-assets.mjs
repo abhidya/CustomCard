@@ -652,6 +652,164 @@ function bespokeCarePanelSvg(panelId) {
 </svg>`;
 }
 
+function monotypeDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="monotypeGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.52 0.82" numOctaves="3" seed="${dark ? 2029 : 2381}"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.08"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="monotypeFiber" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.016 0.04" numOctaves="5" seed="${dark ? 2693 : 2903}"/>
+        <feDisplacementMap in="SourceGraphic" scale="8"/>
+      </filter>
+      <filter id="monotypeShadow" x="-26%" y="-26%" width="152%" height="152%">
+        <feDropShadow dx="0" dy="30" stdDeviation="28" flood-color="#03100b" flood-opacity="${dark ? 0.48 : 0.18}"/>
+      </filter>
+      <filter id="monotypeSoft" x="-24%" y="-24%" width="148%" height="148%">
+        <feGaussianBlur stdDeviation="32"/>
+      </filter>
+      <linearGradient id="monotypeMoss" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#1a3028"/>
+        <stop offset="0.54" stop-color="#0a1714"/>
+        <stop offset="1" stop-color="#040907"/>
+      </linearGradient>
+      <linearGradient id="monotypeIvory" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff8e7"/>
+        <stop offset="0.58" stop-color="#f1dfbd"/>
+        <stop offset="1" stop-color="#d2b577"/>
+      </linearGradient>
+      <linearGradient id="monotypeWarm" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#f8e7c2"/>
+        <stop offset="0.62" stop-color="#d0ad69"/>
+        <stop offset="1" stop-color="#8f743f"/>
+      </linearGradient>
+      <linearGradient id="monotypeInk" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#778a7d"/>
+        <stop offset="1" stop-color="#18241f"/>
+      </linearGradient>
+      <radialGradient id="monotypeGlow" cx="${dark ? "48%" : "50%"}" cy="${dark ? "31%" : "35%"}" r="${dark ? "70%" : "56%"}">
+        <stop offset="0" stop-color="#f8e6bd" stop-opacity="${dark ? 0.36 : 0.34}"/>
+        <stop offset="0.62" stop-color="#cfa96b" stop-opacity="${dark ? 0.1 : 0.08}"/>
+        <stop offset="1" stop-color="${dark ? "#07110e" : "#fbf1df"}" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="monotypeMessageField" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff9ea" stop-opacity="0.94"/>
+        <stop offset="0.64" stop-color="#f9edcf" stop-opacity="0.88"/>
+        <stop offset="1" stop-color="#ecd6a4" stop-opacity="0.78"/>
+      </linearGradient>
+    </defs>
+  `;
+}
+
+function monotypeBackground(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const base = dark ? "url(#monotypeMoss)" : "#fbf1df";
+  const wash = dark
+    ? "M-160 190 C260 62 532 192 884 96 C1160 20 1360 122 1640 52 V740 C1290 662 1022 738 660 842 C332 936 94 850 -160 1018 Z"
+    : "M-160 162 C252 220 508 112 828 190 C1084 254 1328 132 1640 190 V620 C1260 594 1014 690 662 738 C326 782 96 712 -160 848 Z";
+  return `
+    <rect width="${width}" height="${height}" fill="${base}"/>
+    <rect width="${width}" height="${height}" fill="${dark ? "#d9c18a" : "#76613e"}" filter="url(#monotypeGrain)" opacity="${dark ? 0.34 : 0.14}"/>
+    <ellipse cx="${dark ? 674 : 750}" cy="${dark ? 548 : 620}" rx="${dark ? 850 : 660}" ry="${dark ? 560 : 420}" fill="url(#monotypeGlow)"/>
+    <path d="${wash}" fill="${dark ? "#f2dcae" : "#fff9ea"}" opacity="${dark ? 0.14 : 0.42}" filter="url(#monotypeFiber)"/>
+    <path d="M-120 1826 C266 1690 552 1764 902 1642 C1166 1550 1360 1572 1624 1456" fill="none" stroke="${dark ? "#ead8a8" : "#ad955e"}" stroke-width="${dark ? 22 : 12}" stroke-linecap="round" opacity="${dark ? 0.1 : 0.08}"/>
+  `;
+}
+
+function monotypeMeal({ x = 0, y = 0, scale = 1, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) scale(${scale})" filter="url(#monotypeShadow)">
+      <ellipse cx="252" cy="244" rx="244" ry="84" fill="${dark ? "#020604" : "#b9a87a"}" opacity="${dark ? 0.34 : 0.16}" filter="url(#monotypeSoft)"/>
+      <path d="M36 210 C68 84 188 18 330 42 C454 62 536 140 548 260 C398 328 176 314 36 210Z" fill="url(#monotypeIvory)" filter="url(#monotypeFiber)"/>
+      <path d="M96 204 C160 122 400 128 498 232" fill="none" stroke="#bd9b58" stroke-width="15" stroke-linecap="round" opacity="0.34"/>
+      <path d="M214 72 C252 38 322 42 360 80" fill="none" stroke="#54695e" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
+      <path d="M92 272 C224 320 406 308 534 252" fill="none" stroke="#fff6dc" stroke-width="12" stroke-linecap="round" opacity="0.46"/>
+    </g>
+  `;
+}
+
+function monotypeBag({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#monotypeShadow)">
+      <path d="M84 104 C140 42 270 40 328 108" fill="none" stroke="#b69a61" stroke-width="19" stroke-linecap="round" opacity="0.44"/>
+      <path d="M18 122 L382 82 L446 480 C292 560 132 524 -34 610 Z" fill="url(#monotypeIvory)" filter="url(#monotypeFiber)" opacity="${dark ? 0.9 : 0.96}"/>
+      <path d="M78 170 C174 136 304 126 398 152" fill="none" stroke="#d0ad69" stroke-width="9" stroke-linecap="round" opacity="0.3"/>
+      <path d="M52 332 C176 288 322 286 430 320" fill="none" stroke="#53675d" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+    </g>
+  `;
+}
+
+function monotypeNote({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#monotypeShadow)">
+      <path d="M0 0 H318 V214 C224 258 104 244 -18 300 Z" fill="#fff9ea" opacity="${dark ? 0.82 : 0.96}" filter="url(#monotypeFiber)"/>
+      <path d="M48 74 H264" stroke="#bd9b58" stroke-width="5" stroke-linecap="round" opacity="0.18"/>
+      <path d="M48 136 H224" stroke="#53675d" stroke-width="4" stroke-linecap="round" opacity="0.12"/>
+    </g>
+  `;
+}
+
+function monotypePhone({ x = 0, y = 0, scale = 1, rotate = 0, dark = false }) {
+  return `
+    <g transform="translate(${x} ${y}) rotate(${rotate}) scale(${scale})" filter="url(#monotypeShadow)" opacity="${dark ? 0.76 : 0.58}">
+      <rect x="0" y="0" width="146" height="246" rx="44" fill="url(#monotypeInk)"/>
+      <rect x="16" y="20" width="114" height="206" rx="34" fill="#0d1714" opacity="0.18"/>
+      <path d="M38 52 H108" stroke="#f5e2b7" stroke-width="5" stroke-linecap="round" opacity="0.34"/>
+      <path d="M52 174 H96" stroke="#f5e2b7" stroke-width="4" stroke-linecap="round" opacity="0.2"/>
+    </g>
+  `;
+}
+
+function monotypeCareScene({ panelId, x = 0, y = 0, scale = 1, mirrored = false, compact = false, opacity = 1 }) {
+  const dark = panelId === "front" || panelId === "back";
+  const sx = mirrored ? -scale : scale;
+  const shelfY = compact ? 438 : 572;
+  return `
+    <g transform="translate(${x} ${y}) scale(${sx} ${scale})" opacity="${opacity}">
+      <ellipse cx="590" cy="${shelfY + 138}" rx="${compact ? 560 : 750}" ry="${compact ? 120 : 178}" fill="${dark ? "#020604" : "#bca878"}" filter="url(#monotypeSoft)" opacity="${dark ? 0.44 : 0.18}"/>
+      <path d="M-84 ${compact ? 326 : 446} C126 ${compact ? 236 : 328} 346 ${compact ? 292 : 392} 560 ${compact ? 210 : 300} C780 ${compact ? 114 : 202} 988 ${compact ? 174 : 286} 1184 ${compact ? 292 : 410} L1102 ${compact ? 520 : 708} C850 ${compact ? 752 : 936} 606 ${compact ? 630 : 796} 376 ${compact ? 760 : 974} C174 ${compact ? 884 : 1088} 16 ${compact ? 734 : 932} -132 ${compact ? 902 : 1126} Z" fill="${dark ? "#ecd8a6" : "#7f927f"}" opacity="${dark ? 0.28 : 0.2}" filter="url(#monotypeFiber)"/>
+      <path d="M-18 ${compact ? 394 : 526} C196 ${compact ? 312 : 424} 386 ${compact ? 356 : 494} 598 ${compact ? 272 : 386} C790 ${compact ? 206 : 306} 974 ${compact ? 248 : 376} 1124 ${compact ? 346 : 500}" fill="none" stroke="${dark ? "#f3dfaf" : "#53675d"}" stroke-width="${compact ? 7 : 10}" stroke-linecap="round" opacity="${dark ? 0.24 : 0.16}"/>
+      ${monotypeBag({ x: compact ? 112 : 96, y: compact ? 226 : 308, scale: compact ? 0.6 : 0.78, rotate: -4, dark })}
+      ${monotypeMeal({ x: compact ? 356 : 416, y: compact ? 196 : 260, scale: compact ? 0.52 : 0.7, dark })}
+      ${monotypeNote({ x: compact ? 704 : 814, y: compact ? 176 : 254, scale: compact ? 0.5 : 0.62, rotate: -5, dark })}
+      ${monotypePhone({ x: compact ? 922 : 1044, y: compact ? 316 : 438, scale: compact ? 0.44 : 0.56, rotate: 4, dark })}
+      <path d="M54 ${compact ? 684 : 842} C242 ${compact ? 592 : 734} 418 ${compact ? 648 : 802} 626 ${compact ? 562 : 706} C812 ${compact ? 486 : 626} 1008 ${compact ? 536 : 662} 1192 ${compact ? 610 : 756}" fill="none" stroke="${dark ? "#f2dfb2" : "#776646"}" stroke-width="5" stroke-linecap="round" opacity="${dark ? 0.22 : 0.1}"/>
+    </g>
+  `;
+}
+
+function monotypePanelSvg(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const mirrored = panelId === "inside-right" || panelId === "back";
+  const messageField = inside
+    ? `<rect x="134" y="164" width="1232" height="1096" rx="44" fill="url(#monotypeMessageField)" opacity="0.9" filter="url(#monotypeFiber)"/>
+       <path d="M228 226 C488 178 690 230 940 184 C1122 150 1242 176 1310 138" fill="none" stroke="#9c8658" stroke-width="4" stroke-linecap="round" opacity="0.13"/>`
+    : "";
+  const scene = panelId === "front"
+    ? monotypeCareScene({ panelId, x: 38, y: 1114, scale: 1.18, opacity: 0.96 })
+    : panelId === "back"
+      ? monotypeCareScene({ panelId, x: 1210, y: 1228, scale: 0.66, mirrored: true, compact: true, opacity: 0.64 })
+      : monotypeCareScene({ panelId, x: mirrored ? 1290 : 154, y: 1322, scale: 0.56, mirrored, compact: true, opacity: 0.62 });
+  const topLeaf = dark
+    ? `<path d="M1222 120 C1108 236 1038 346 1014 488 C1150 438 1268 340 1368 196" fill="none" stroke="#d9c08e" stroke-width="9" stroke-linecap="round" opacity="0.16"/>
+       <path d="M1200 292 C1290 218 1368 234 1410 320 C1302 374 1240 356 1200 292Z" fill="#d9c08e" opacity="0.12"/>`
+    : "";
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${monotypeDefs({ dark })}
+  ${monotypeBackground(panelId)}
+  ${messageField}
+  ${topLeaf}
+  ${scene}
+  ${dark ? `<rect width="${width}" height="${height}" fill="#06100d" opacity="${panelId === "back" ? 0.18 : 0.1}"/>` : ""}
+</svg>`;
+}
+
 function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
     return legacyPanelSvg(panelId);
@@ -659,12 +817,16 @@ function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_VECTOR_PRACTICAL_CARE_ASSETS === "enabled") {
     return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
   }
+  if (process.env.CUSTOMCARD_PHOTO_PRACTICAL_CARE_ASSETS === "enabled") {
+    const photoCare = photoCarePanelSvg(panelId);
+    if (photoCare) return photoCare;
+  }
   if (process.env.CUSTOMCARD_LICENSED_PRACTICAL_CARE_ASSETS === "enabled") {
     const licensed = licensedPhotoPanelSvg(panelId);
     if (licensed) return licensed;
   }
-  const photoCare = photoCarePanelSvg(panelId);
-  if (photoCare) return photoCare;
+  const monotype = monotypePanelSvg(panelId);
+  if (monotype) return monotype;
   return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
 }
 
