@@ -882,6 +882,20 @@ function themeForPrompt(prompt) {
       motif: () => ""
     };
   }
+  if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text) &&
+    /\b(support-object|meal bowl|folded cloth|muted phone|small key|practical support)\b/.test(text)) {
+    return {
+      kind: "sympathy-premium-still-life",
+      background: (panelId) => panelId === "front" || panelId === "back" ? "#10211c" : "#fff8ea",
+      accent: (panelId) => panelId.startsWith("inside") ? "#53685f" : "#ead9aa",
+      count: 0,
+      texture: (panelId) => sympathyPremiumStillLifeTexture(panelId),
+      hero: (panelId) => sympathyPremiumStillLifeHero(panelId),
+      overlay: () => "",
+      border: (panelId) => sympathyPremiumStillLifeBorder(panelId),
+      motif: () => ""
+    };
+  }
   if (/\b(sympathy|condolence|grieving|grief|quiet support|father'?s loss|losing (?:a|his|her|their) father)\b/.test(text)) {
     return {
       kind: "sympathy-threshold-light",
@@ -1395,6 +1409,117 @@ function sympathyThresholdTexture(panelId) {
     <path d="M-120 1840 C250 1694 590 1788 890 1668 C1134 1570 1334 1594 1600 1510" fill="none" stroke="${glow}" stroke-width="${dark ? 26 : 16}" stroke-linecap="round" opacity="${dark ? 0.13 : 0.1}"/>
     <path d="M-80 1930 C278 1794 628 1894 938 1778 C1170 1692 1368 1710 1588 1640" fill="none" stroke="${ink}" stroke-width="${dark ? 8 : 5}" stroke-linecap="round" opacity="${dark ? 0.17 : 0.1}"/>
   `;
+}
+
+function sympathyPremiumStillLifeTexture(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const base = dark ? "#10211c" : "#fff8ea";
+  const glow = dark ? "#ead9aa" : "#d7b56f";
+  const ink = dark ? "#07120f" : "#53685f";
+  return `
+    <defs>
+      <filter id="premiumStillLifeGrain" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.013 0.031" numOctaves="4" seed="89"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.14"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="premiumStillLifeShadow" x="-18%" y="-18%" width="136%" height="136%">
+        <feDropShadow dx="0" dy="24" stdDeviation="22" flood-color="#06100d" flood-opacity="${dark ? 0.38 : 0.14}"/>
+      </filter>
+      <filter id="premiumStillLifeSoft" x="-12%" y="-12%" width="124%" height="124%">
+        <feGaussianBlur stdDeviation="18"/>
+      </filter>
+      <linearGradient id="premiumStillLifeBeam" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.34 : 0.24}"/>
+        <stop offset="0.46" stop-color="${glow}" stop-opacity="${dark ? 0.12 : 0.1}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="premiumStillLifePaper" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff7dd"/>
+        <stop offset="1" stop-color="#d9bd7f"/>
+      </linearGradient>
+      <radialGradient id="premiumStillLifePool" cx="46%" cy="38%" r="64%">
+        <stop offset="0" stop-color="${glow}" stop-opacity="${dark ? 0.18 : 0.24}"/>
+        <stop offset="0.7" stop-color="${glow}" stop-opacity="${dark ? 0.05 : 0.08}"/>
+        <stop offset="1" stop-color="${base}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1500" height="2100" fill="${base}"/>
+    <rect width="1500" height="2100" fill="${dark ? "#ead9aa" : ink}" filter="url(#premiumStillLifeGrain)" opacity="${dark ? 0.26 : 0.08}"/>
+    <ellipse cx="${dark ? 610 : 760}" cy="${dark ? 620 : 650}" rx="${dark ? 660 : 560}" ry="${dark ? 470 : 380}" fill="url(#premiumStillLifePool)"/>
+    <path d="M-160 ${dark ? 230 : 150} C252 ${dark ? 130 : 224} 540 ${dark ? 224 : 160} 834 ${dark ? 142 : 224} C1082 ${dark ? 74 : 146} 1310 ${dark ? 150 : 182} 1640 ${dark ? 42 : 126} V${dark ? 760 : 520} C1250 ${dark ? 710 : 504} 972 ${dark ? 774 : 588} 650 ${dark ? 850 : 654} C352 ${dark ? 916 : 712} 126 ${dark ? 840 : 694} -160 ${dark ? 966 : 760} Z" fill="url(#premiumStillLifeBeam)"/>
+    <path d="M-120 1858 C260 1710 594 1796 906 1682 C1152 1592 1340 1614 1600 1522" fill="none" stroke="${glow}" stroke-width="${dark ? 22 : 13}" stroke-linecap="round" opacity="${dark ? 0.13 : 0.1}"/>
+  `;
+}
+
+function sympathyPremiumStillLifeHero(panelId) {
+  if (panelId === "front") {
+    return `
+      <g data-customcard-hero="premium-still-life-front">
+        <path d="M0 168 V1226 C264 1060 518 1136 800 1018 C1040 916 1240 932 1500 850 V0 H0Z" fill="#ead9aa" opacity="0.07"/>
+        <path d="M166 350 V1522 H366" fill="none" stroke="#ead9aa" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="0.36"/>
+        <path d="M224 424 V1450 H336" fill="none" stroke="#f7f0d8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
+        <path d="M226 1330 C426 1238 628 1274 836 1198 C1038 1124 1196 1134 1332 1068" fill="none" stroke="#ead9aa" stroke-width="11" stroke-linecap="round" opacity="0.22"/>
+        <g filter="url(#premiumStillLifeShadow)" transform="translate(364 1252)">
+          <ellipse cx="412" cy="430" rx="410" ry="70" fill="#07120f" opacity="0.32"/>
+          <path d="M46 302 C176 214 356 238 492 174 C630 110 752 136 850 208 C734 328 582 342 420 412 C248 486 126 430 18 498 Z" fill="#fff7dd" opacity="0.68"/>
+          <path d="M84 318 C218 264 348 286 490 230 C616 180 722 196 814 244" fill="none" stroke="#53685f" stroke-width="10" stroke-linecap="round" opacity="0.28"/>
+          <path d="M120 456 C270 412 420 438 586 382 C720 336 816 350 886 318" fill="none" stroke="#d9bd7f" stroke-width="8" stroke-linecap="round" opacity="0.32"/>
+          <path d="M496 278 C564 166 738 150 820 278 C758 344 566 346 496 278Z" fill="url(#premiumStillLifePaper)" stroke="#10211c" stroke-width="9" stroke-linejoin="round" opacity="0.92"/>
+          <path d="M542 278 C610 222 714 222 780 278" fill="none" stroke="#fff7dd" stroke-width="8" stroke-linecap="round" opacity="0.64"/>
+          <path d="M620 170 C660 136 724 146 754 186" fill="none" stroke="#10211c" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
+          <path d="M208 250 C282 196 386 210 456 276 C392 346 268 348 198 282Z" fill="#8da08e" opacity="0.24"/>
+          <path d="M232 274 C296 240 380 246 430 286" fill="none" stroke="#ead9aa" stroke-width="7" stroke-linecap="round" opacity="0.6"/>
+        </g>
+        <path d="M292 1806 C514 1748 720 1784 934 1724 C1138 1668 1282 1688 1392 1648" fill="none" stroke="#ead9aa" stroke-width="4" stroke-linecap="round" opacity="0.18"/>
+      </g>
+    `;
+  }
+  if (panelId === "inside-left" || panelId === "inside-right") {
+    const mirrored = panelId === "inside-right";
+    const sideX = mirrored ? 1322 : 178;
+    const lowerX = mirrored ? 1042 : 210;
+    return `
+      <g data-customcard-hero="premium-still-life-interior-${panelId}">
+        <path d="M250 250 C464 206 656 258 862 214 C1046 176 1178 204 1268 174" fill="none" stroke="#d9bd7f" stroke-width="4" stroke-linecap="round" opacity="0.14"/>
+        <path d="M${sideX} 270 C${mirrored ? "1190 570 1232 900 1312 1210 C1368 1424 1304 1580 1188 1718" : "310 570 268 900 188 1210 C132 1424 196 1580 312 1718"}" fill="none" stroke="#53685f" stroke-width="10" stroke-linecap="round" opacity="0.16"/>
+        <path d="M${sideX} 314 C${mirrored ? "1230 620 1250 910 1280 1168 C1302 1360 1254 1510 1168 1674" : "270 620 250 910 220 1168 C198 1360 246 1510 332 1674"}" fill="none" stroke="#d9bd7f" stroke-width="5" stroke-linecap="round" opacity="0.16"/>
+        <path d="M${mirrored ? "1182 520 C1094 480 1018 524 1008 630 C1100 670 1170 620 1182 520Z" : "318 520 C406 480 482 524 492 630 C400 670 330 620 318 520Z"}" fill="#8da08e" opacity="0.12"/>
+        <path d="M${mirrored ? "1198 1224 C1106 1178 1030 1230 1022 1340 C1118 1384 1190 1330 1198 1224Z" : "302 1224 C394 1178 470 1230 478 1340 C382 1384 310 1330 302 1224Z"}" fill="#8da08e" opacity="0.1"/>
+        <g transform="translate(${lowerX} 1548) scale(${mirrored ? -0.48 : 0.48} 0.48)" opacity="0.38">
+          <ellipse cx="412" cy="430" rx="410" ry="70" fill="#d9bd7f" opacity="0.12"/>
+          <path d="M46 302 C176 214 356 238 492 174 C630 110 752 136 850 208 C734 328 582 342 420 412 C248 486 126 430 18 498 Z" fill="#fffdf6" opacity="0.72"/>
+          <path d="M84 318 C218 264 348 286 490 230 C616 180 722 196 814 244" fill="none" stroke="#53685f" stroke-width="10" stroke-linecap="round" opacity="0.26"/>
+          <path d="M496 278 C564 166 738 150 820 278 C758 344 566 346 496 278Z" fill="#d9bd7f" stroke="#53685f" stroke-width="9" stroke-linejoin="round" opacity="0.7"/>
+        </g>
+        <path d="M250 1828 C450 1764 642 1826 844 1778 C1040 1732 1180 1764 1268 1706" fill="none" stroke="#ad9160" stroke-width="5" stroke-linecap="round" opacity="0.14"/>
+      </g>
+    `;
+  }
+  return `
+    <g data-customcard-hero="premium-still-life-back">
+      <path d="M260 1376 C458 1288 672 1330 850 1264 C1026 1200 1180 1222 1296 1292 L1268 1668 C1080 1742 910 1698 730 1760 C550 1820 382 1778 262 1698 Z" fill="#ead9aa" opacity="0.06" filter="url(#premiumStillLifeShadow)"/>
+      <g transform="translate(454 1398) scale(0.62)" opacity="0.62">
+        <ellipse cx="412" cy="430" rx="410" ry="70" fill="#07120f" opacity="0.26"/>
+        <path d="M46 302 C176 214 356 238 492 174 C630 110 752 136 850 208 C734 328 582 342 420 412 C248 486 126 430 18 498 Z" fill="#fff7dd" opacity="0.42"/>
+        <path d="M84 318 C218 264 348 286 490 230 C616 180 722 196 814 244" fill="none" stroke="#ead9aa" stroke-width="10" stroke-linecap="round" opacity="0.3"/>
+        <path d="M496 278 C564 166 738 150 820 278 C758 344 566 346 496 278Z" fill="url(#premiumStillLifePaper)" stroke="#10211c" stroke-width="9" stroke-linejoin="round" opacity="0.76"/>
+      </g>
+      <path d="M430 1850 H1070" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.16"/>
+    </g>
+  `;
+}
+
+function sympathyPremiumStillLifeBorder(panelId) {
+  if (panelId === "front") {
+    return `<path d="M250 1888 H1238" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.16"/>`;
+  }
+  if (panelId === "back") {
+    return `<path d="M350 1888 H1150" stroke="#ead9aa" stroke-width="3" stroke-linecap="round" opacity="0.14"/>`;
+  }
+  return `<path d="M260 220 H1240" stroke="#d9bd7f" stroke-width="3" stroke-linecap="round" opacity="0.12"/>`;
 }
 
 function sympathyCarePackageTexture(panelId) {
