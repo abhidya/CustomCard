@@ -1,0 +1,55 @@
+{
+  "sender": "Jordan",
+  "recipient": "Eli",
+  "relationship": "friend",
+  "occasion": "sympathy after losing a parent",
+  "tone": "quiet, grounded, deeply respectful, practical, not cliched",
+  "style": "premium quiet-support print: deep moss front/back, warm ivory interiors, layered paper-cut threshold relief, practical-care forms integrated as one lower tableau, no clipart",
+  "language": "English",
+  "personal_note": "A quiet card for Eli after losing his father. Mention that I am here for the practical stuff too: meals, rides, calls, silence. No cliches.",
+  "memory_notes": [
+    "Eli lost his father.",
+    "Jordan wants to offer practical support: meals, rides, calls, and silence.",
+    "The card should avoid platitudes and religious claims unless requested."
+  ],
+  "aiFlowConfig": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "deterministic-customer-chat",
+      "fallbackAdapterId": "deterministic-customer-chat",
+      "model": "deterministic-support-copy",
+      "liveProviderCallsEnabled": false,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "cloudflare-workers-ai-image",
+      "fallbackAdapterId": "browser-svg-renderer",
+      "model": "@cf/bytedance/stable-diffusion-xl-lightning",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": true,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

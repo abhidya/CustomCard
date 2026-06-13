@@ -1,0 +1,150 @@
+[
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "01b63649-6ffa-489b-882a-b3f260764914",
+        "output_url": "https://api.deepai.org/job-view-file/01b63649-6ffa-489b-882a-b3f260764914/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/5055703714654f8ab608e27c73fb267e/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+        "backend_request_id": "6fc749e1-24fe-4b67-8587-1ce683debdab"
+      }
+    },
+    "durationMs": 1366
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/01b63649-6ffa-489b-882a-b3f260764914/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 60518
+    },
+    "durationMs": 265
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "f96500cd-8325-490b-9a3d-dc73260cd170",
+        "output_url": "https://api.deepai.org/job-view-file/f96500cd-8325-490b-9a3d-dc73260cd170/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/46c84cb75fdc40cfa7fd6b617400792c/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+        "backend_request_id": "0bb7e41e-9349-413a-8da9-46371bef0cea"
+      }
+    },
+    "durationMs": 3385
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/f96500cd-8325-490b-9a3d-dc73260cd170/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 8488
+    },
+    "durationMs": 93
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "8fa20dc5-8406-47b6-92c8-0d97a026e479",
+        "output_url": "https://api.deepai.org/job-view-file/8fa20dc5-8406-47b6-92c8-0d97a026e479/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/a86e2baf418640909300d35e260025e0/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+        "backend_request_id": "285cefdf-6f18-4bf6-b400-36943e538d86"
+      }
+    },
+    "durationMs": 1091
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/8fa20dc5-8406-47b6-92c8-0d97a026e479/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 9307
+    },
+    "durationMs": 97
+  },
+  {
+    "url": "https://api.deepai.org/api/text2img",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "api-key": "[redacted]"
+      },
+      "body": "<non-string-body>"
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "byteLength": 379,
+      "body": {
+        "id": "8b747e7f-748b-4128-a008-a5ed082a40bb",
+        "output_url": "https://api.deepai.org/job-view-file/8b747e7f-748b-4128-a008-a5ed082a40bb/outputs/output.jpg",
+        "share_url": "https://images.deepai.org/art-image/d346ccbdf54c483e83a3aac8082b7469/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+        "backend_request_id": "3ca245df-3dca-460d-b45f-a3e77975fa45"
+      }
+    },
+    "durationMs": 1281
+  },
+  {
+    "url": "https://api.deepai.org/job-view-file/8b747e7f-748b-4128-a008-a5ed082a40bb/outputs/output.jpg",
+    "method": "GET",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "ok": true,
+      "contentType": "image/jpeg",
+      "byteLength": 53694
+    },
+    "durationMs": 95
+  }
+]

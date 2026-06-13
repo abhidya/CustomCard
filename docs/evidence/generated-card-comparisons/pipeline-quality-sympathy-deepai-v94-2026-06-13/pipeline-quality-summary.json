@@ -1,0 +1,277 @@
+{
+  "phase": "pipeline-quality",
+  "phaseDir": "pipeline-quality",
+  "createdAtIso": "2026-06-13T15:13:00.953Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img",
+      "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img",
+      "startedAt": "2026-06-13T15:13:00.954Z",
+      "finishedAt": "2026-06-13T15:13:11.003Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "deterministic-support-copy",
+      "providerFailures": {},
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-front.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, warm title-safe glow, and one lower paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Premium quiet-support sympathy cover: deep moss field, warm upper title-safe glow, and one lower paper-cut practical-care vignette with sealed meal container, folded cloth, blank note card, and muted phone silhouette; no clipart, cars, fake text, or labels. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting,",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-inside-left.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with warm ivory plain center text-safe space and a small lower-left practical-care vignette below the copy area: sealed meal container, folded cloth, blank note card, quiet path curve; no page seam, fake text, cars, fruit, flowers, or table setting. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters,",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-inside-right.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with warm ivory plain center text-safe space and mirrored lower-right care vignette: blank note card, muted phone silhouette, folded cloth, quiet path curve for rides; no page seam, fake text, route labels, cars, fruit, flowers, or table setting. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/provider-back.jpg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal deep moss back cover with readable upper/center text-safe area and one small lower practical-care echo: sealed container and blank note shapes; no urn, vase, fruit, flowers, table setting, physical paper card, car-like marks, fake text, or labels. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters,",
+          "sourceKind": "data-url",
+          "contentType": "image/jpeg"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-deepai-v94-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-deepai-text2img/contact-sheet.png",
+      "providerCallCount": 8,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": true,
+          "mustIncludeCovered": true,
+          "mustAvoidClean": true,
+          "providerCalls": 8
+        },
+        "missingMustInclude": [],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "01b63649-6ffa-489b-882a-b3f260764914",
+          "output_url": "https://api.deepai.org/job-view-file/01b63649-6ffa-489b-882a-b3f260764914/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/5055703714654f8ab608e27c73fb267e/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+          "backend_request_id": "6fc749e1-24fe-4b67-8587-1ce683debdab"
+        }
+      },
+      "durationMs": 1366
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/01b63649-6ffa-489b-882a-b3f260764914/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 60518
+      },
+      "durationMs": 265
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "f96500cd-8325-490b-9a3d-dc73260cd170",
+          "output_url": "https://api.deepai.org/job-view-file/f96500cd-8325-490b-9a3d-dc73260cd170/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/46c84cb75fdc40cfa7fd6b617400792c/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+          "backend_request_id": "0bb7e41e-9349-413a-8da9-46371bef0cea"
+        }
+      },
+      "durationMs": 3385
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/f96500cd-8325-490b-9a3d-dc73260cd170/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 8488
+      },
+      "durationMs": 93
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "8fa20dc5-8406-47b6-92c8-0d97a026e479",
+          "output_url": "https://api.deepai.org/job-view-file/8fa20dc5-8406-47b6-92c8-0d97a026e479/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/a86e2baf418640909300d35e260025e0/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+          "backend_request_id": "285cefdf-6f18-4bf6-b400-36943e538d86"
+        }
+      },
+      "durationMs": 1091
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/8fa20dc5-8406-47b6-92c8-0d97a026e479/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 9307
+      },
+      "durationMs": 97
+    },
+    {
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "api-key": "[redacted]"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "byteLength": 379,
+        "body": {
+          "id": "8b747e7f-748b-4128-a008-a5ed082a40bb",
+          "output_url": "https://api.deepai.org/job-view-file/8b747e7f-748b-4128-a008-a5ed082a40bb/outputs/output.jpg",
+          "share_url": "https://images.deepai.org/art-image/d346ccbdf54c483e83a3aac8082b7469/full-bleed-flat-2d-practical-care-sympathy-illustrati.jpg",
+          "backend_request_id": "3ca245df-3dca-460d-b45f-a3e77975fa45"
+        }
+      },
+      "durationMs": 1281
+    },
+    {
+      "url": "https://api.deepai.org/job-view-file/8b747e7f-748b-4128-a008-a5ed082a40bb/outputs/output.jpg",
+      "method": "GET",
+      "request": {
+        "headers": {}
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "image/jpeg",
+        "byteLength": 53694
+      },
+      "durationMs": 95
+    }
+  ]
+}

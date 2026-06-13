@@ -1,0 +1,130 @@
+{
+  "phase": "pipeline-quality",
+  "phaseDir": "pipeline-quality",
+  "createdAtIso": "2026-06-13T15:09:19.200Z",
+  "liveProviderCallsEnabled": true,
+  "outputDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ANTHROPIC_API_KEY",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_ALLOW_REQUEST_CONFIG",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "DEEPAI_API_KEY",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_OAUTH_CLIENT_ID",
+      "GOOGLE_OAUTH_CLIENT_SECRET",
+      "GOOGLE_OAUTH_REDIRECT_URI",
+      "GOOGLE_OAUTH_STATE_SECRET",
+      "GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY",
+      "GOOGLE_SHEETS_SPREADSHEET_ID",
+      "HUGGINGFACE_API_TOKEN",
+      "OPENAI_API_KEY"
+    ],
+    "secretsRedacted": true
+  },
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell"
+    }
+  ],
+  "runs": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-deterministic-support",
+      "textAdapterId": "deterministic-customer-chat",
+      "textModel": "deterministic-support-copy",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell",
+      "runDir": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell",
+      "startedAt": "2026-06-13T15:09:19.201Z",
+      "finishedAt": "2026-06-13T15:09:33.514Z",
+      "statusCode": 200,
+      "generatedBy": "ai-text-and-image",
+      "cardCopyModel": "deterministic-support-copy",
+      "providerFailures": {
+        "image": "fetch failed"
+      },
+      "panelCount": 4,
+      "panelFiles": [
+        {
+          "panelId": "front",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/provider-front.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/preview-front.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, warm title-safe glow, and one lower paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Premium quiet-support sympathy cover: deep moss field, warm upper title-safe glow, and one lower paper-cut practical-care vignette with sealed meal container, folded cloth, blank note card, and muted phone silhouette; no clipart, cars, fake text, or labels. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters, handwriting,",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-left",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/provider-inside-left.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/preview-inside-left.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Soft left interior with warm ivory plain center text-safe space and a small lower-left practical-care vignette below the copy area: sealed meal container, folded cloth, blank note card, quiet path curve; no page seam, fake text, cars, fruit, flowers, or table setting. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters,",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "inside-right",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/provider-inside-right.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/preview-inside-right.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Matching right interior with warm ivory plain center text-safe space and mirrored lower-right care vignette: blank note card, muted phone silhouette, folded cloth, quiet path curve for rides; no page seam, fake text, route labels, cars, fruit, flowers, or table setting. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        },
+        {
+          "panelId": "back",
+          "path": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/provider-back.svg",
+          "previewPath": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/preview-back.png",
+          "width": 1500,
+          "height": 2100,
+          "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart. No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template. Panel cue: Minimal deep moss back cover with readable upper/center text-safe area and one small lower practical-care echo: sealed container and blank note shapes; no urn, vase, fruit, flowers, table setting, physical paper card, car-like marks, fake text, or labels. Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested. No words, letters,",
+          "sourceKind": "data-url",
+          "contentType": "image/svg+xml"
+        }
+      ],
+      "contactSheet": "docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-flux-v92-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-flux-schnell/contact-sheet.png",
+      "providerCallCount": 0,
+      "autoChecks": {
+        "advisoryOnly": true,
+        "checks": {
+          "fourPanels": true,
+          "noProviderFailure": false,
+          "mustIncludeCovered": true,
+          "mustAvoidClean": true,
+          "providerCalls": 0
+        },
+        "missingMustInclude": [],
+        "avoidedFailures": [],
+        "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+      }
+    }
+  ],
+  "providerHttp": []
+}
