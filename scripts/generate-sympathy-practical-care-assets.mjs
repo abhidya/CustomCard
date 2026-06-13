@@ -720,6 +720,59 @@ function monotypeBackground(panelId) {
   `;
 }
 
+function monotypeSurfaceRelief(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const stroke = dark ? "#f0dbac" : "#7b6a48";
+  const warm = dark ? "#d8bd7d" : "#b59a60";
+  const leaf = dark ? "#c8caa5" : "#7f927f";
+  const topCuts = [0, 1, 2, 3, 4].map((index) => {
+    const y = inside ? 254 + index * 38 : 332 + index * 52;
+    const start = inside ? 198 : 166;
+    const end = inside ? 1298 : 1360;
+    const mid = inside ? 710 : 728;
+    return `<path d="M${start} ${y} C${mid - 230} ${y - 92} ${mid + 172} ${y + 64} ${end} ${y - 48}" fill="none" stroke="${stroke}" stroke-width="${inside ? 4 : 7}" stroke-linecap="round" opacity="${inside ? 0.055 : 0.075}"/>`;
+  }).join("");
+  const bottomCuts = [0, 1, 2, 3, 4, 5].map((index) => {
+    const y = inside ? 1638 + index * 54 : 1516 + index * 60;
+    return `<path d="M${inside ? 130 : 86} ${y} C${360 + index * 18} ${y - 96} ${690 - index * 22} ${y + 84} ${inside ? 1354 : 1412} ${y - 42}" fill="none" stroke="${warm}" stroke-width="${inside ? 5 : 8}" stroke-linecap="round" opacity="${inside ? 0.065 : 0.11}"/>`;
+  }).join("");
+  const branch = `
+    <g transform="translate(${inside ? 104 : 1018} ${inside ? 1386 : 182}) scale(${inside ? 0.62 : 0.72})" opacity="${inside ? 0.16 : 0.22}">
+      <path d="M0 472 C132 350 302 246 560 64" fill="none" stroke="${stroke}" stroke-width="10" stroke-linecap="round" opacity="0.42"/>
+      ${[0, 1, 2, 3, 4, 5].map((index) => {
+        const px = 86 + index * 78;
+        const py = 420 - index * 58;
+        const side = index % 2 === 0 ? 1 : -1;
+        return `<path d="M${px} ${py} C${px + side * 108} ${py - 86} ${px + side * 226} ${py - 46} ${px + side * 262} ${py + 40} C${px + side * 130} ${py + 84} ${px + side * 44} ${py + 48} ${px} ${py}Z" fill="${leaf}" opacity="${0.28 - index * 0.02}"/>`;
+      }).join("")}
+    </g>`;
+  const threshold = dark
+    ? `<g opacity="0.23">
+        <path d="M322 858 C380 486 624 250 942 242 C1166 236 1320 394 1386 672" fill="none" stroke="#f2dfb2" stroke-width="18" stroke-linecap="round" opacity="0.16"/>
+        <path d="M428 778 C544 520 734 382 968 390 C1134 396 1248 510 1298 688" fill="none" stroke="#f2dfb2" stroke-width="7" stroke-linecap="round" opacity="0.16"/>
+        <path d="M514 1020 C706 782 980 782 1248 990" fill="none" stroke="#c7aa68" stroke-width="9" stroke-linecap="round" opacity="0.12"/>
+      </g>`
+    : "";
+  return `
+    <g>
+      ${threshold}
+      ${topCuts}
+      ${bottomCuts}
+      ${branch}
+    </g>
+  `;
+}
+
+function monotypeMessageField(panelId) {
+  if (!panelId.startsWith("inside")) return "";
+  return `
+    <path d="M146 192 C318 136 534 170 722 148 C930 124 1162 138 1350 196 L1334 1194 C1118 1264 914 1226 720 1260 C520 1296 318 1250 154 1214 Z" fill="url(#monotypeMessageField)" opacity="0.92" filter="url(#monotypeFiber)"/>
+    <path d="M228 232 C488 182 690 232 940 186 C1122 152 1242 178 1310 140" fill="none" stroke="#9c8658" stroke-width="4" stroke-linecap="round" opacity="0.14"/>
+    <path d="M214 1138 C430 1094 636 1140 858 1100 C1038 1068 1184 1086 1288 1046" fill="none" stroke="#bda267" stroke-width="5" stroke-linecap="round" opacity="0.08"/>
+  `;
+}
+
 function monotypeMeal({ x = 0, y = 0, scale = 1, dark = false }) {
   return `
     <g transform="translate(${x} ${y}) scale(${scale})" filter="url(#monotypeShadow)">
@@ -784,17 +837,13 @@ function monotypeCareScene({ panelId, x = 0, y = 0, scale = 1, mirrored = false,
 
 function monotypePanelSvg(panelId) {
   const dark = panelId === "front" || panelId === "back";
-  const inside = panelId.startsWith("inside");
   const mirrored = panelId === "inside-right" || panelId === "back";
-  const messageField = inside
-    ? `<rect x="134" y="164" width="1232" height="1096" rx="44" fill="url(#monotypeMessageField)" opacity="0.9" filter="url(#monotypeFiber)"/>
-       <path d="M228 226 C488 178 690 230 940 184 C1122 150 1242 176 1310 138" fill="none" stroke="#9c8658" stroke-width="4" stroke-linecap="round" opacity="0.13"/>`
-    : "";
+  const messageField = monotypeMessageField(panelId);
   const scene = panelId === "front"
-    ? monotypeCareScene({ panelId, x: 38, y: 1114, scale: 1.18, opacity: 0.96 })
+    ? monotypeCareScene({ panelId, x: 20, y: 1048, scale: 1.24, opacity: 0.98 })
     : panelId === "back"
-      ? monotypeCareScene({ panelId, x: 1210, y: 1228, scale: 0.66, mirrored: true, compact: true, opacity: 0.64 })
-      : monotypeCareScene({ panelId, x: mirrored ? 1290 : 154, y: 1322, scale: 0.56, mirrored, compact: true, opacity: 0.62 });
+      ? monotypeCareScene({ panelId, x: 1218, y: 1168, scale: 0.72, mirrored: true, compact: true, opacity: 0.7 })
+      : monotypeCareScene({ panelId, x: mirrored ? 1298 : 132, y: 1272, scale: 0.64, mirrored, compact: true, opacity: 0.78 });
   const topLeaf = dark
     ? `<path d="M1222 120 C1108 236 1038 346 1014 488 C1150 438 1268 340 1368 196" fill="none" stroke="#d9c08e" stroke-width="9" stroke-linecap="round" opacity="0.16"/>
        <path d="M1200 292 C1290 218 1368 234 1410 320 C1302 374 1240 356 1200 292Z" fill="#d9c08e" opacity="0.12"/>`
@@ -803,6 +852,7 @@ function monotypePanelSvg(panelId) {
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
   ${monotypeDefs({ dark })}
   ${monotypeBackground(panelId)}
+  ${monotypeSurfaceRelief(panelId)}
   ${messageField}
   ${topLeaf}
   ${scene}
