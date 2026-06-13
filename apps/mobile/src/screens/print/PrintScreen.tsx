@@ -21,6 +21,7 @@ import type {
   ImportedOpportunity,
   RenderPacketResponse
 } from "../../lib/api/types";
+import { humanizeStatus } from "../../lib/format";
 import { spacing, typography } from "../../theme";
 
 /**
@@ -127,7 +128,7 @@ export function PrintScreen() {
           <>
             <Pill label={`Project ${project.projectId}`} tone="good" />
             <Text style={typography.body}>
-              Category {project.category} · render status {project.renderStatus}
+              Category {humanizeStatus(project.category)} · {humanizeStatus(project.renderStatus)}
             </Text>
           </>
         ) : (

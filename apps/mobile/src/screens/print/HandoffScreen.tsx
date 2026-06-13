@@ -6,6 +6,7 @@ import { StyleSheet, Switch, Text, View } from "react-native";
 
 import { AppButton, Card, InlineNotice, Pill, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
+import { SelectableOption } from "../../components/SelectableOption";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { VendorHandoffResponse } from "../../lib/api/types";
@@ -52,14 +53,16 @@ export function HandoffScreen() {
 
       <Card>
         <Text style={typography.heading}>Choose a print shop</Text>
-        {VENDORS.map((vendor) => (
-          <AppButton
-            key={vendor.id}
-            label={vendor.label}
-            variant={vendorId === vendor.id ? "primary" : "secondary"}
-            onPress={() => setVendorId(vendor.id)}
-          />
-        ))}
+        <View style={styles.optionGroup} accessibilityRole="radiogroup">
+          {VENDORS.map((vendor) => (
+            <SelectableOption
+              key={vendor.id}
+              label={vendor.label}
+              selected={vendorId === vendor.id}
+              onPress={() => setVendorId(vendor.id)}
+            />
+          ))}
+        </View>
       </Card>
 
       <Card>
@@ -127,6 +130,7 @@ export function HandoffScreen() {
 }
 
 const styles = StyleSheet.create({
+  optionGroup: { gap: spacing.sm },
   consentRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   consentCopy: { flex: 1, gap: spacing.xs }
 });

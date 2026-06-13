@@ -4,6 +4,7 @@ import { StyleSheet, Switch, Text, View } from "react-native";
 
 import { AppButton, Card, InlineNotice, SectionHeading } from "../../components";
 import { Screen } from "../../components/Screen";
+import { SelectableOption } from "../../components/SelectableOption";
 import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { DataRequestRequest, DataRequestResponse } from "../../lib/api/types";
@@ -59,14 +60,16 @@ export function PrivacyScreen() {
       <SectionHeading title="Export or delete" />
       <Card>
         <Text style={typography.label}>Where do you live?</Text>
-        {REGIONS.map((entry) => (
-          <AppButton
-            key={entry.id}
-            label={entry.label}
-            variant={region === entry.id ? "primary" : "secondary"}
-            onPress={() => setRegion(entry.id)}
-          />
-        ))}
+        <View style={styles.optionGroup} accessibilityRole="radiogroup" accessibilityLabel="Region">
+          {REGIONS.map((entry) => (
+            <SelectableOption
+              key={entry.id}
+              label={entry.label}
+              selected={region === entry.id}
+              onPress={() => setRegion(entry.id)}
+            />
+          ))}
+        </View>
         <View style={styles.consentRow}>
           <Text style={[typography.body, styles.consentText]}>
             I confirm I'm making this request for my own account.
@@ -106,6 +109,7 @@ export function PrivacyScreen() {
 }
 
 const styles = StyleSheet.create({
+  optionGroup: { gap: spacing.sm },
   consentRow: {
     flexDirection: "row",
     alignItems: "center",

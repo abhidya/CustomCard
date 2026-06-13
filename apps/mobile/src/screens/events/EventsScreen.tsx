@@ -14,6 +14,7 @@ import {
 } from "../../components";
 import { Screen } from "../../components/Screen";
 import { useApi } from "../../lib/api/ApiProvider";
+import { formatLongDate, humanizeStatus } from "../../lib/format";
 import { spacing, typography } from "../../theme";
 
 export function EventsScreen() {
@@ -59,10 +60,10 @@ export function EventsScreen() {
           <Card key={opportunity.opportunityId}>
             <View style={styles.rowBetween}>
               <Text style={styles.cardTitle}>{opportunity.title}</Text>
-              <Pill label={opportunity.decision} />
+              <Pill label={humanizeStatus(opportunity.decision)} />
             </View>
             <Text style={typography.body}>
-              For {opportunity.recipientName} · {formatDate(opportunity.startsAt)}
+              For {opportunity.recipientName} · {formatLongDate(opportunity.startsAt)}
             </Text>
             <Text style={typography.body}>
               Confidence {(opportunity.confidence * 100).toFixed(0)}%
@@ -87,7 +88,7 @@ export function EventsScreen() {
             <View style={styles.rowBetween}>
               <Text style={styles.cardTitle}>{labelForProvider(connection.provider)}</Text>
               <Pill
-                label={connection.status}
+                label={humanizeStatus(connection.status)}
                 tone={connection.status === "connected" ? "good" : "neutral"}
               />
             </View>
@@ -117,12 +118,6 @@ function labelForProvider(provider: string): string {
     icloud_ics: "Apple Calendar (ICS export)"
   };
   return labels[provider] ?? provider;
-}
-
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
 }
 
 const styles = StyleSheet.create({

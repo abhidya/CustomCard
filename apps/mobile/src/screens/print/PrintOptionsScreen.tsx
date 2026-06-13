@@ -17,6 +17,7 @@ import { userMessageForError } from "../../lib/api/errors";
 import { useApi } from "../../lib/api/ApiProvider";
 import type { RetailOperationStartResponse } from "../../lib/api/types";
 import type { RootStackParamList } from "../../navigation/types";
+import { formatCents } from "../../lib/format";
 import { spacing, typography } from "../../theme";
 
 /**
@@ -128,10 +129,6 @@ function vendorIdFor(vendorLabel: string): string {
     Staples: "staples"
   };
   return map[vendorLabel] ?? vendorLabel.toLowerCase().replace(/\s+/g, "-");
-}
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`;
 }
 
 const styles = StyleSheet.create({

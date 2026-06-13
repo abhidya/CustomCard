@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   AppButton,
@@ -15,6 +15,7 @@ import {
 } from "../../components";
 import { Screen } from "../../components/Screen";
 import { useApi } from "../../lib/api/ApiProvider";
+import { formatShortDate, humanizeStatus } from "../../lib/format";
 import { colors, spacing, typography } from "../../theme";
 
 export function HomeScreen() {
@@ -79,18 +80,27 @@ export function HomeScreen() {
         />
       ) : (
         visibleQueue.map((item) => (
-          <Card key={item.id}>
-            <View style={styles.rowBetween}>
-              <Text style={styles.queueTitle}>
-                {item.recipientLabel} · {item.eventLabel}
+          <Pressable
+            key={item.id}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.recipientLabel}, ${item.eventLabel}. ${item.nextAction}`}
+            accessibilityHint="Opens the proof and print workflow"
+            onPress={() => navigation.navigate("MainTabs", { screen: "Print" })}
+            style={({ pressed }) => pressed && styles.cardPressed}
+          >
+            <Card>
+              <View style={styles.rowBetween}>
+                <Text style={styles.queueTitle}>
+                  {item.recipientLabel} · {item.eventLabel}
+                </Text>
+                <Pill label={humanizeStatus(item.status)} />
+              </View>
+              <Text style={typography.body}>
+                Due {formatShortDate(item.dueIso)} · from {item.source}
               </Text>
-              <Pill label={item.status} />
-            </View>
-            <Text style={typography.body}>
-              Due {formatDue(item.dueIso)} · from {item.source}
-            </Text>
-            <Text style={typography.body}>Next: {item.nextAction}</Text>
-          </Card>
+              <Text style={typography.body}>Next: {item.nextAction}</Text>
+            </Card>
+          </Pressable>
         ))
       )}
 
@@ -151,15 +161,10 @@ export function HomeScreen() {
   );
 }
 
-function formatDue(dueIso: string): string {
-  const date = new Date(dueIso);
-  if (Number.isNaN(date.getTime())) return dueIso;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
 const styles = StyleSheet.create({
   todayTitle: { ...typography.title, fontSize: 22 },
   queueTitle: { ...typography.heading, fontSize: 16, flexShrink: 1 },
+  cardPressed: { opacity: 0.85 },
   row: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
   rowBetween: {
     flexDirection: "row",

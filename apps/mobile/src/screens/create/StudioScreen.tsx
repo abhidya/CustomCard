@@ -278,7 +278,7 @@ const chipStyles = StyleSheet.create({
   label: { ...typography.label, color: colors.ink },
   row: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   chip: {
-    minHeight: minTouchTarget - 8,
+    minHeight: minTouchTarget,
     justifyContent: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
