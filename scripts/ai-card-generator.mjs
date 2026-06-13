@@ -1052,25 +1052,44 @@ function sympathyGalleryHero(panelId) {
   if (panelId === "front") {
     return `
       <g data-customcard-hero="sympathy-support-still-life-front">
-        <ellipse cx="750" cy="585" rx="530" ry="320" fill="#f7f2e8" opacity="0.08"/>
-        <rect x="82" y="150" width="380" height="710" rx="10" fill="#dfe7d7" stroke="#d8c7a1" stroke-width="16" opacity="0.72"/>
-        <rect x="120" y="190" width="304" height="630" rx="6" fill="#f7f2e8" opacity="0.55"/>
-        <line x1="272" y1="162" x2="272" y2="846" stroke="#21362f" stroke-width="10" opacity="0.42"/>
-        <line x1="96" y1="506" x2="448" y2="506" stroke="#21362f" stroke-width="10" opacity="0.36"/>
-        <path d="M120 786 C222 710 340 708 426 780" fill="none" stroke="#b59f76" stroke-width="10" stroke-linecap="round" opacity="0.26"/>
-        <path d="M-70 1510 C250 1368 556 1460 892 1348 C1110 1276 1320 1284 1590 1208 V2100 H-70Z" fill="#d8c7a1" opacity="0.16"/>
-        <path d="M-80 1654 C290 1502 626 1600 930 1480 C1164 1388 1342 1392 1600 1326 V2100 H-80Z" fill="#0f211d" opacity="0.3"/>
-        <path d="M1040 390 C1122 642 1120 914 1046 1138 C1002 1272 1014 1392 1086 1536" fill="none" stroke="#d8c7a1" stroke-width="14" stroke-linecap="round" opacity="0.46"/>
-        <path d="M1058 670 C958 620 876 666 858 784 C962 834 1038 790 1058 670Z" fill="#c5cbb8" opacity="0.36"/>
-        <path d="M1030 944 C1138 874 1232 922 1256 1046 C1142 1110 1056 1062 1030 944Z" fill="#8da08e" opacity="0.3"/>
-        <ellipse cx="436" cy="1536" rx="166" ry="62" fill="#d8c7a1" opacity="0.22"/>
-        <path d="M292 1508 C368 1604 504 1608 594 1514" fill="none" stroke="#d8c7a1" stroke-width="18" stroke-linecap="round" opacity="0.3"/>
-        <ellipse cx="1020" cy="1584" rx="154" ry="52" fill="#d8c7a1" opacity="0.12"/>
-        <rect x="920" y="1492" width="218" height="116" rx="24" fill="#c5cbb8" opacity="0.18"/>
-        <circle cx="1030" cy="1570" r="12" fill="#d8c7a1" opacity="0.28"/>
-        <path d="M1200 1518 C1234 1486 1284 1498 1292 1542 C1298 1576 1270 1600 1238 1594" fill="none" stroke="#d8c7a1" stroke-width="10" stroke-linecap="round" opacity="0.36"/>
-        <circle cx="1210" cy="1512" r="24" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.32"/>
-        <path d="M1266 1594 L1326 1644 M1304 1620 L1328 1594" stroke="#d8c7a1" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+        <defs>
+          <linearGradient id="supportFrontBeam" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#f7f2e8" stop-opacity="0.24"/>
+            <stop offset="0.58" stop-color="#d8c7a1" stop-opacity="0.08"/>
+            <stop offset="1" stop-color="#21362f" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="supportSoftShadowFront" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#07110f" flood-opacity="0.34"/>
+          </filter>
+        </defs>
+        <path d="M-80 240 C260 118 584 178 872 110 C1120 52 1340 94 1580 26 V1130 C1300 1012 1030 1042 756 1116 C448 1198 186 1164 -80 1250Z" fill="url(#supportFrontBeam)"/>
+        <ellipse cx="750" cy="604" rx="552" ry="330" fill="#f7f2e8" opacity="0.07"/>
+        <g filter="url(#supportSoftShadowFront)">
+          <rect x="76" y="142" width="396" height="746" rx="14" fill="#dfe7d7" stroke="#d8c7a1" stroke-width="18" opacity="0.86"/>
+          <rect x="116" y="184" width="316" height="660" rx="8" fill="#f7f2e8" opacity="0.64"/>
+          <rect x="136" y="204" width="276" height="620" rx="6" fill="#dfe7d7" opacity="0.18"/>
+          <line x1="274" y1="156" x2="274" y2="870" stroke="#21362f" stroke-width="11" opacity="0.44"/>
+          <line x1="94" y1="512" x2="452" y2="512" stroke="#21362f" stroke-width="11" opacity="0.36"/>
+          <path d="M116 796 C210 718 352 712 442 788" fill="none" stroke="#b59f76" stroke-width="11" stroke-linecap="round" opacity="0.34"/>
+        </g>
+        <path d="M-70 1494 C238 1344 560 1458 892 1334 C1118 1250 1328 1250 1600 1186 V2100 H-70Z" fill="#d8c7a1" opacity="0.2"/>
+        <path d="M-80 1658 C292 1494 638 1588 954 1470 C1186 1384 1358 1392 1600 1322 V2100 H-80Z" fill="#0f211d" opacity="0.38"/>
+        <path d="M-40 1848 C288 1722 606 1792 944 1690 C1190 1616 1376 1632 1540 1570" fill="none" stroke="#d8c7a1" stroke-width="24" stroke-linecap="round" opacity="0.18"/>
+        <path d="M1048 360 C1140 646 1120 928 1042 1146 C994 1284 1014 1418 1100 1588" fill="none" stroke="#d8c7a1" stroke-width="18" stroke-linecap="round" opacity="0.58"/>
+        <path d="M1066 662 C952 604 862 660 840 790 C960 848 1042 794 1066 662Z" fill="#c5cbb8" opacity="0.48"/>
+        <path d="M1032 944 C1158 868 1256 930 1284 1064 C1148 1136 1056 1078 1032 944Z" fill="#8da08e" opacity="0.36"/>
+        <g filter="url(#supportSoftShadowFront)">
+          <ellipse cx="408" cy="1552" rx="214" ry="78" fill="#b59f76" opacity="0.3"/>
+          <path d="M218 1516 C320 1644 494 1650 612 1524" fill="none" stroke="#d8c7a1" stroke-width="26" stroke-linecap="round" opacity="0.62"/>
+          <ellipse cx="404" cy="1514" rx="162" ry="50" fill="#f7f2e8" opacity="0.24"/>
+          <path d="M592 1494 C672 1450 758 1464 834 1532" fill="none" stroke="#d8c7a1" stroke-width="13" stroke-linecap="round" opacity="0.42"/>
+          <rect x="902" y="1472" width="260" height="144" rx="28" fill="#c5cbb8" opacity="0.25"/>
+          <rect x="936" y="1496" width="192" height="96" rx="20" fill="#21362f" opacity="0.28"/>
+          <circle cx="1032" cy="1580" r="14" fill="#d8c7a1" opacity="0.56"/>
+          <circle cx="1226" cy="1518" r="32" fill="none" stroke="#d8c7a1" stroke-width="10" opacity="0.52"/>
+          <path d="M1260 1548 C1296 1508 1350 1520 1362 1568 C1370 1606 1336 1632 1298 1626" fill="none" stroke="#d8c7a1" stroke-width="11" stroke-linecap="round" opacity="0.46"/>
+          <path d="M1306 1626 L1368 1688 M1340 1660 L1372 1628" stroke="#d8c7a1" stroke-width="9" stroke-linecap="round" opacity="0.42"/>
+        </g>
       </g>
     `;
   }
@@ -1078,34 +1097,37 @@ function sympathyGalleryHero(panelId) {
     const mirrored = panelId === "inside-right";
     return `
       <g data-customcard-hero="sympathy-support-still-life-interior-${panelId}">
-        <ellipse cx="750" cy="790" rx="560" ry="460" fill="#fffaf0" opacity="0.5"/>
-        <path d="M-60 1690 C260 1532 552 1620 832 1518 C1068 1432 1248 1452 1560 1376 V2100 H-60Z" fill="#d8c7a1" opacity="0.12"/>
-        <path d="M-80 1820 C260 1660 580 1754 908 1610 C1110 1526 1300 1526 1580 1458 V2100 H-80Z" fill="#596c5e" opacity="0.08"/>
+        <ellipse cx="750" cy="790" rx="560" ry="460" fill="#fffaf0" opacity="0.58"/>
+        <path d="M-60 1690 C260 1532 552 1620 832 1518 C1068 1432 1248 1452 1560 1376 V2100 H-60Z" fill="#d8c7a1" opacity="0.16"/>
+        <path d="M-80 1820 C260 1660 580 1754 908 1610 C1110 1526 1300 1526 1580 1458 V2100 H-80Z" fill="#596c5e" opacity="0.1"/>
+        <path d="${mirrored ? "M1418" : "M82"} 280 C${mirrored ? "1328 540 1340 862 1422 1152 C1472 1330 1410 1500 1296 1654" : "172 540 160 862 78 1152 C28 1330 90 1500 204 1654"}" fill="none" stroke="#596c5e" stroke-width="13" stroke-linecap="round" opacity="0.16"/>
         ${mirrored
-          ? `<rect x="250" y="1510" width="246" height="126" rx="28" fill="#596c5e" opacity="0.13"/>
-             <circle cx="372" cy="1584" r="14" fill="#4f3726" opacity="0.22"/>
-             <circle cx="930" cy="1570" r="42" fill="none" stroke="#b59f76" stroke-width="10" opacity="0.22"/>
-             <path d="M930 1528 V1476 M900 1598 L860 1640" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.22"/>
-             <path d="M1110 1520 C1170 1482 1236 1510 1258 1576 C1192 1622 1132 1592 1110 1520Z" fill="#8da08e" opacity="0.15"/>`
-          : `<ellipse cx="402" cy="1584" rx="140" ry="54" fill="#4f3726" opacity="0.18"/>
-             <path d="M282 1558 C354 1642 468 1646 546 1562" fill="none" stroke="#4f3726" stroke-width="14" stroke-linecap="round" opacity="0.22"/>
-             <path d="M640 1514 C706 1480 768 1490 832 1538" fill="none" stroke="#b59f76" stroke-width="8" stroke-linecap="round" opacity="0.24"/>
-             <path d="M1044 1488 C1130 1428 1208 1464 1234 1552 C1146 1608 1070 1574 1044 1488Z" fill="#8da08e" opacity="0.14"/>`}
-        <path d="M${mirrored ? 1282 : 218} 1500 C${mirrored ? "1210 1366 1236 1236 1290 1116" : "290 1366 264 1236 210 1116"}" fill="none" stroke="#596c5e" stroke-width="8" stroke-linecap="round" opacity="0.1"/>
+          ? `<rect x="228" y="1492" width="276" height="148" rx="32" fill="#596c5e" opacity="0.16"/>
+             <rect x="262" y="1518" width="208" height="96" rx="22" fill="#f7f2e8" opacity="0.22"/>
+             <circle cx="368" cy="1586" r="14" fill="#4f3726" opacity="0.26"/>
+             <circle cx="928" cy="1570" r="46" fill="none" stroke="#b59f76" stroke-width="10" opacity="0.28"/>
+             <path d="M930 1522 V1468 M896 1602 L850 1644" stroke="#b59f76" stroke-width="9" stroke-linecap="round" opacity="0.28"/>
+             <path d="M1092 1500 C1170 1456 1246 1494 1272 1572 C1190 1628 1120 1592 1092 1500Z" fill="#8da08e" opacity="0.18"/>`
+          : `<ellipse cx="392" cy="1588" rx="168" ry="62" fill="#4f3726" opacity="0.2"/>
+             <path d="M244 1558 C342 1660 486 1664 584 1562" fill="none" stroke="#4f3726" stroke-width="16" stroke-linecap="round" opacity="0.28"/>
+             <ellipse cx="392" cy="1556" rx="130" ry="38" fill="#fffaf0" opacity="0.3"/>
+             <path d="M638 1512 C712 1468 788 1484 858 1540" fill="none" stroke="#b59f76" stroke-width="9" stroke-linecap="round" opacity="0.3"/>
+             <path d="M1036 1468 C1136 1404 1222 1452 1252 1554 C1152 1620 1068 1578 1036 1468Z" fill="#8da08e" opacity="0.17"/>`}
       </g>
     `;
   }
   return `
     <g data-customcard-hero="sympathy-support-still-life-back">
-      <ellipse cx="750" cy="720" rx="470" ry="300" fill="#f7f2e8" opacity="0.07"/>
-      <path d="M-80 1788 C260 1620 580 1732 910 1596 C1122 1508 1300 1514 1580 1440 V2100 H-80Z" fill="#d8c7a1" opacity="0.1"/>
-      <ellipse cx="436" cy="1628" rx="106" ry="42" fill="#d8c7a1" opacity="0.18"/>
-      <path d="M346 1612 C394 1674 474 1672 522 1614" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.26"/>
-      <rect x="724" y="1578" width="202" height="92" rx="22" fill="#c5cbb8" opacity="0.14"/>
-      <circle cx="826" cy="1636" r="10" fill="#d8c7a1" opacity="0.24"/>
-      <circle cx="1058" cy="1586" r="34" fill="none" stroke="#d8c7a1" stroke-width="8" opacity="0.22"/>
-      <path d="M1092 1612 L1144 1662 M1122 1640 L1148 1616" stroke="#d8c7a1" stroke-width="7" stroke-linecap="round" opacity="0.22"/>
-      <path d="M1188 1582 C1254 1538 1320 1560 1354 1632 C1288 1678 1222 1650 1188 1582Z" fill="#8da08e" opacity="0.16"/>
+      <ellipse cx="750" cy="720" rx="470" ry="300" fill="#f7f2e8" opacity="0.08"/>
+      <path d="M-80 1788 C260 1620 580 1732 910 1596 C1122 1508 1300 1514 1580 1440 V2100 H-80Z" fill="#d8c7a1" opacity="0.12"/>
+      <path d="M300 1578 C454 1490 622 1518 740 1628" fill="none" stroke="#d8c7a1" stroke-width="13" stroke-linecap="round" opacity="0.26"/>
+      <ellipse cx="444" cy="1630" rx="118" ry="44" fill="#d8c7a1" opacity="0.2"/>
+      <path d="M346 1612 C398 1678 482 1676 534 1614" fill="none" stroke="#d8c7a1" stroke-width="9" opacity="0.32"/>
+      <rect x="724" y="1570" width="220" height="104" rx="24" fill="#c5cbb8" opacity="0.18"/>
+      <circle cx="834" cy="1638" r="11" fill="#d8c7a1" opacity="0.36"/>
+      <circle cx="1076" cy="1582" r="38" fill="none" stroke="#d8c7a1" stroke-width="9" opacity="0.3"/>
+      <path d="M1110 1612 L1170 1672 M1144 1648 L1176 1616" stroke="#d8c7a1" stroke-width="8" stroke-linecap="round" opacity="0.28"/>
+      <path d="M1200 1568 C1272 1518 1342 1544 1378 1624 C1304 1676 1232 1646 1200 1568Z" fill="#8da08e" opacity="0.18"/>
     </g>
   `;
 }
@@ -2747,7 +2769,7 @@ function buildCopyRepairPlan(input, themeGuide) {
     return {
       front: {
         headline: `For ${recipient}`,
-        body: "A quiet note after your father's loss, with room for grief, silence, and steady care."
+        body: ""
       },
       "inside-left": {
         headline: "With You In This",
