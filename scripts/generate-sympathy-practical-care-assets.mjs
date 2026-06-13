@@ -369,6 +369,101 @@ function licensedPhotoPanelSvg(panelId) {
 </svg>`;
 }
 
+function photoCareDefs({ dark = false } = {}) {
+  return `
+    <defs>
+      <filter id="photoCarePaper" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.68 0.88" numOctaves="2" seed="${dark ? 1301 : 1613}"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.05"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="photoCareMute" color-interpolation-filters="sRGB">
+        <feColorMatrix type="saturate" values="${dark ? 0.36 : 0.44}"/>
+        <feComponentTransfer>
+          <feFuncR type="gamma" amplitude="${dark ? 0.72 : 0.88}" exponent="1.08"/>
+          <feFuncG type="gamma" amplitude="${dark ? 0.76 : 0.9}" exponent="1.05"/>
+          <feFuncB type="gamma" amplitude="${dark ? 0.68 : 0.82}" exponent="1.12"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="photoCareShadow" x="-24%" y="-24%" width="148%" height="148%">
+        <feDropShadow dx="0" dy="28" stdDeviation="26" flood-color="#06100d" flood-opacity="${dark ? 0.48 : 0.2}"/>
+      </filter>
+      <linearGradient id="photoCareDarkWash" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0" stop-color="#06100d" stop-opacity="${dark ? 0.76 : 0.08}"/>
+        <stop offset="0.42" stop-color="${dark ? "#0a1714" : "#fff8e8"}" stop-opacity="${dark ? 0.36 : 0.1}"/>
+        <stop offset="1" stop-color="${dark ? "#020604" : "#e6cf9c"}" stop-opacity="${dark ? 0.72 : 0.14}"/>
+      </linearGradient>
+      <radialGradient id="photoCareTextGlow" cx="${dark ? "46%" : "50%"}" cy="${dark ? "34%" : "34%"}" r="${dark ? "58%" : "48%"}">
+        <stop offset="0" stop-color="${dark ? "#fff2cf" : "#fffaf0"}" stop-opacity="${dark ? 0.32 : 0.78}"/>
+        <stop offset="0.68" stop-color="${dark ? "#d9bd7c" : "#fff3d8"}" stop-opacity="${dark ? 0.08 : 0.22}"/>
+        <stop offset="1" stop-color="${dark ? "#07100d" : "#fbf1df"}" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="photoCareIvoryField" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff9ea" stop-opacity="0.9"/>
+        <stop offset="1" stop-color="#f2dfb6" stop-opacity="0.74"/>
+      </linearGradient>
+    </defs>
+  `;
+}
+
+function photoCareImage({ fileName, contentType = "image/png", x, y, imageWidth, imageHeight, opacity = 1 }) {
+  const href = sourceAssetDataUrl(fileName, contentType);
+  if (!href) return "";
+  return `<image href="${href}" x="${x}" y="${y}" width="${imageWidth}" height="${imageHeight}" preserveAspectRatio="xMidYMid slice" opacity="${opacity}" filter="url(#photoCareMute)"/>`;
+}
+
+function photoCareFrame({ x, y, imageWidth, imageHeight, dark = false }) {
+  return `
+    <rect x="${x}" y="${y}" width="${imageWidth}" height="${imageHeight}" rx="${dark ? 18 : 28}" fill="${dark ? "#f2dfb6" : "#ffffff"}" opacity="${dark ? 0.04 : 0.12}"/>
+    <rect x="${x}" y="${y}" width="${imageWidth}" height="${imageHeight}" rx="${dark ? 18 : 28}" fill="none" stroke="${dark ? "#ead9aa" : "#c5aa70"}" stroke-width="${dark ? 2 : 2}" opacity="${dark ? 0.08 : 0.1}"/>
+  `;
+}
+
+function photoCarePanelSvg(panelId) {
+  const dark = panelId === "front" || panelId === "back";
+  const inside = panelId.startsWith("inside");
+  const base = dark ? "#07100d" : "#fbf1df";
+  const photoPanels = {
+    front: [
+      { fileName: "rawpixel-cc0-leaves-note.png", x: -210, y: 0, imageWidth: 1940, imageHeight: 1294, opacity: 0.68 }
+    ],
+    "inside-left": [
+      { fileName: "commons-cc0-preparing-food.jpg", contentType: "image/jpeg", x: -120, y: 1288, imageWidth: 1740, imageHeight: 1160, opacity: 0.54 }
+    ],
+    "inside-right": [
+      { fileName: "commons-cc0-phone-notes-table.jpg", contentType: "image/jpeg", x: -72, y: 1278, imageWidth: 1644, imageHeight: 1096, opacity: 0.58 }
+    ],
+    back: [
+      { fileName: "rawpixel-cc0-sympathy-flower.png", x: -260, y: 300, imageWidth: 1840, imageHeight: 1412, opacity: 0.56 }
+    ]
+  }[panelId] || [];
+  const frames = photoPanels
+    .map((photo) => photoCareFrame({ x: photo.x, y: photo.y, imageWidth: photo.imageWidth, imageHeight: photo.imageHeight, dark }))
+    .join("");
+  const images = photoPanels.map((photo) => photoCareImage(photo)).join("");
+  const textField = inside
+    ? `<rect x="128" y="168" width="1244" height="1080" rx="46" fill="url(#photoCareIvoryField)" opacity="0.82"/>
+       <path d="M230 228 C486 178 684 228 934 184 C1116 152 1240 176 1310 138" fill="none" stroke="#a38d5e" stroke-width="4" stroke-linecap="round" opacity="0.12"/>`
+    : "";
+  const conceptLine = inside
+    ? `<path d="M204 1266 C420 1206 624 1248 842 1184 C1048 1124 1226 1146 1362 1088" fill="none" stroke="#8f7d56" stroke-width="6" stroke-linecap="round" opacity="0.16"/>`
+    : `<path d="M234 1904 C468 1818 688 1854 914 1784 C1128 1716 1282 1734 1370 1678" fill="none" stroke="#ead9aa" stroke-width="4" stroke-linecap="round" opacity="0.18"/>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  ${photoCareDefs({ dark })}
+  <rect width="${width}" height="${height}" fill="${base}"/>
+  <rect width="${width}" height="${height}" fill="${dark ? "#e4cea0" : "#6f6144"}" filter="url(#photoCarePaper)" opacity="${dark ? 0.32 : 0.14}"/>
+  ${frames}
+  ${images}
+  <rect width="${width}" height="${height}" fill="url(#photoCareDarkWash)"/>
+  <ellipse cx="${dark ? 654 : 750}" cy="${dark ? 602 : 632}" rx="${dark ? 720 : 610}" ry="${dark ? 500 : 404}" fill="url(#photoCareTextGlow)"/>
+  ${textField}
+  ${conceptLine}
+</svg>`;
+}
+
 function imageTexturePattern({ id, fileName, contentType = "image/png", opacity = 0.18, width: patternWidth = 1024, height: patternHeight = 682 }) {
   const href = sourceAssetDataUrl(fileName, contentType);
   if (!href) return "";
@@ -561,10 +656,15 @@ function panelSvg(panelId) {
   if (process.env.CUSTOMCARD_LEGACY_PRACTICAL_CARE_ASSETS === "enabled") {
     return legacyPanelSvg(panelId);
   }
+  if (process.env.CUSTOMCARD_VECTOR_PRACTICAL_CARE_ASSETS === "enabled") {
+    return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
+  }
   if (process.env.CUSTOMCARD_LICENSED_PRACTICAL_CARE_ASSETS === "enabled") {
     const licensed = licensedPhotoPanelSvg(panelId);
     if (licensed) return licensed;
   }
+  const photoCare = photoCarePanelSvg(panelId);
+  if (photoCare) return photoCare;
   return bespokeCarePanelSvg(panelId) || premiumPanelSvg(panelId);
 }
 
