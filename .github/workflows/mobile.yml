@@ -1,0 +1,78 @@
+name: Mobile App
+
+on:
+  pull_request:
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/mobile.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/mobile.yml"
+
+jobs:
+  mobile-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install mobile dependencies
+        # The mobile lockfile is intentionally not committed; install from
+        # package.json with pinned versions/overrides.
+        run: npm install --no-audit --no-fund
+
+      - name: Generate placeholder assets
+        run: npm run assets:placeholders
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit / component / navigation tests
+        run: npm test
+
+      - name: Repo-local config + customer contract doctor
+        run: CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm run doctor
+
+      - name: Native release-readiness doctor
+        run: npm run release:doctor
+
+      - name: Validate native Expo config resolves
+        run: CUSTOMCARD_API_BASE_URL=https://example.com npx expo config --type public > /dev/null
+
+      - name: Live API contract test (in-memory runtime)
+        working-directory: .
+        env:
+          CUSTOMCARD_API_RUNTIME: memory
+          AUTH_SESSION_SECRET: test-auth-session-secret-32-chars
+          CUSTOMCARD_CUSTOMER_SESSION_TOKEN: test-customer-session-token
+          CUSTOMCARD_ADMIN_SESSION_TOKEN: test-admin-session-token
+        run: |
+          npm ci --no-audit --no-fund
+          PORT=8787 node scripts/api-server.mjs &
+          API_PID=$!
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8787/api/health > /dev/null; then break; fi
+            sleep 1
+          done
+          CUSTOMCARD_LIVE_API_URL=http://127.0.0.1:8787 \
+          CUSTOMCARD_LIVE_API_TOKEN=test-customer-session-token \
+          npm --prefix apps/mobile test -- liveApi
+          kill "$API_PID" 2>/dev/null || true

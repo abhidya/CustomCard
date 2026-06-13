@@ -90,6 +90,25 @@ npm run release:doctor # native build-profile / release-readiness checks
 npm run verify         # typecheck + lint + format:check + test in one shot
 ```
 
+### Live API contract test
+
+A real, un-mocked test runs the typed client against a running CustomCard API to
+prove the request/response models match the server. It is skipped unless
+`CUSTOMCARD_LIVE_API_URL` is set:
+
+```sh
+# terminal 1 (repo root): start the in-memory API
+CUSTOMCARD_API_RUNTIME=memory AUTH_SESSION_SECRET=test-auth-session-secret-32-chars \
+CUSTOMCARD_CUSTOMER_SESSION_TOKEN=test-customer-session-token \
+CUSTOMCARD_ADMIN_SESSION_TOKEN=test-admin-session-token PORT=8787 node scripts/api-server.mjs
+
+# terminal 2 (apps/mobile): run it against the live server
+CUSTOMCARD_LIVE_API_URL=http://127.0.0.1:8787 \
+CUSTOMCARD_LIVE_API_TOKEN=test-customer-session-token npx jest liveApi
+```
+
+### Repo-root checks
+
 The repo root additionally validates the mobile boundary:
 
 ```sh
@@ -99,6 +118,13 @@ npm run mobile:render:doctor
 npm run mobile:release:doctor
 npm run localization:doctor
 ```
+
+### Continuous integration
+
+`.github/workflows/mobile.yml` runs typecheck, lint, format check, the Jest
+suite, the config/release doctors, `expo config` resolution, and the live API
+contract test (against the in-memory runtime) on every change under
+`apps/mobile/`.
 
 ## Build & submit (EAS)
 
@@ -156,6 +182,9 @@ apps/mobile/
   customer workflow screens mount only for an authenticated session.
 - **Proof-first print**: print options and checkout stay locked until the
   customer approves the rendered proof.
+- **Resilience**: a top-level `ErrorBoundary` catches render errors and shows a
+  recovery screen (error detail redacted, never displayed). Misconfiguration
+  (missing/invalid API URL) fails closed with a clear message.
 
 ## Reviewer browser lane
 

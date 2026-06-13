@@ -80,6 +80,9 @@ open. Each is the safest reasonable default for the existing backend.
   valid PNGs so builds succeed, but must be replaced with real brand artwork
   before store submission.
 - **Device E2E automation is unavailable in this environment.** The "main user
-  workflow" is covered by an API-client-level end-to-end test
-  (`src/lib/api/__tests__/workflow.test.ts`) plus component/navigation tests. A
-  manual on-device smoke test is documented in `STORE_RELEASE_CHECKLIST.md`.
+  workflow" is covered two ways: a fully mocked client test
+  (`src/lib/api/__tests__/workflow.test.ts`) and a real, un-mocked **live API
+  contract test** (`src/lib/api/__tests__/liveApi.test.ts`) that runs the typed
+  client against a running backend (executed in CI against the in-memory
+  runtime), plus component/navigation tests. A manual on-device smoke test is
+  documented in `STORE_RELEASE_CHECKLIST.md`.

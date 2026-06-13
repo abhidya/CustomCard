@@ -10,6 +10,7 @@ import {
   type MobileRenderRow,
   type MobileRenderSection
 } from "./customerExperience";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { resolveAppConfig, ConfigError } from "./config/env";
 import { ApiProvider } from "./lib/api/ApiProvider";
 import { AuthProvider } from "./lib/auth/AuthProvider";
@@ -39,14 +40,16 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <ApiProvider>
-            <StatusBar style="dark" />
-            <RootNavigator WorkflowGuideScreen={WorkflowOverviewScreen} />
-          </ApiProvider>
-        </QueryClientProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <ApiProvider>
+              <StatusBar style="dark" />
+              <RootNavigator WorkflowGuideScreen={WorkflowOverviewScreen} />
+            </ApiProvider>
+          </QueryClientProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </SafeAreaProvider>
   );
 }

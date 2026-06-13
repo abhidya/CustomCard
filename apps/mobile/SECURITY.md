@@ -48,6 +48,9 @@ Security posture for the CustomCard mobile app, aligned with OWASP MASVS basics.
   UI or captured by any reporter never contains a token or raw payload.
 - `devLog` is a no-op in release builds (`__DEV__` guard); production builds emit
   no payload logging.
+- The top-level `ErrorBoundary` logs caught errors only through the redacting
+  `devLog` and never renders the raw error message to the user, so a thrown
+  error carrying sensitive text cannot leak to the screen or to logs.
 
 ## Platform permissions
 
