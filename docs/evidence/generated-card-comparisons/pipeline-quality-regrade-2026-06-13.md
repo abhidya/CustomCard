@@ -41,6 +41,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | `text-deterministic-support` paper-cut SVG v41 | `image-browser-svg-renderer` | 88 | 98 | B+ strong proof; best latest local route | [manual grade](./pipeline-quality-sympathy-papercut-svg-v41-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v42 | `image-browser-svg-renderer` | 88 | 98 | B+ strong proof; best latest local route, no score lift | [manual grade](./pipeline-quality-sympathy-papercut-svg-v42-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
 | `text-deterministic-support` paper-cut SVG v43 | `image-browser-svg-renderer` | 89 | 98 | B+ strong proof; best latest local route, still below production-candidate | [manual grade](./pipeline-quality-sympathy-papercut-svg-v43-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` HF Z Image v44 | `image-hf-z-image-turbo` -> fallback `browser-svg-renderer` | 8 | 72 | F route failure; HF provider 402, fallback only | [manual grade](./pipeline-quality-sympathy-hf-z-image-v44-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-hf-z-image-turbo/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v45 | `image-browser-svg-renderer` | 88 | 98 | B+ intermediate cleanup; no score lift | [manual grade](./pipeline-quality-sympathy-papercut-svg-v45-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` paper-cut SVG v46 | `image-browser-svg-renderer` | 89 | 98 | B+ latest local route; no production-candidate claim | [manual grade](./pipeline-quality-sympathy-papercut-svg-v46-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-browser-svg-renderer/manual-grade.md) |
+| `text-deterministic-support` Cloudflare SDXL v47 | `image-cloudflare-sdxl-lightning` | 60 | 90 | C rough raster draft; provider works, concept wrong | [manual grade](./pipeline-quality-sympathy-cloudflare-sdxl-v47-2026-06-13/pipeline-quality/sympathy-quiet-support__text-deterministic-support__image-cloudflare-sdxl-lightning/manual-grade.md) |
 
 ## Findings
 
@@ -75,6 +79,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Paper-cut SVG v41 is the new best latest controllable local route at product `88/100`, contract `98/100`. It adds a larger paper-stage relief layer under the care-kit motif, improving material depth and print composition. It remains below top-band because the card still reads as deterministic SVG rather than premium bespoke illustration.
 - Paper-cut SVG v42 is the latest controllable local route at product `88/100`, contract `98/100`. It tightens sympathy copy from general support into concrete actions: meals left at the door, quiet rides, answered/missed calls, and silence. The score does not rise above v41 because the visible art/layout is mostly unchanged and still deterministic SVG.
 - Paper-cut SVG v43 is the best latest controllable local route at product `89/100`, contract `98/100`. It adds a quieter doorstep-care relief and lowers the older icon-like support marks, making the practical-support concept more visible on front/back. It remains below `90` because the route is still deterministic SVG and not a premium bespoke art source.
+- HF Z Image v44 is a provider-route failure, not HF image-quality evidence. The provider returned 402 monthly-credit depletion before rendering; the visible contact sheet is fallback SVG. Route score stays product `8/100`, contract `72/100`.
+- Paper-cut SVG v45 is intermediate cleanup at product `88/100`, contract `98/100`. The front doorway is calmer, but visible quality does not beat v43.
+- Paper-cut SVG v46 is latest local route at product `89/100`, contract `98/100`. It reduces squiggle clutter and emphasizes a single doorstep-care relief, but it is still deterministic SVG and does not cross into production-candidate quality.
+- Cloudflare SDXL v47 is product `60/100`, contract `90/100`: four real raster panels and readable deterministic text plates, but the art is generic wheat/field landscape instead of practical quiet support. Major concept/art redo still required.
 
 ## Improvement Loop
 
@@ -124,6 +132,10 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 | Paper-cut SVG v41 | Product 88, contract 98 | Larger paper-stage relief improves material depth and composition; still capped below 90 because the art source remains deterministic SVG. |
 | Paper-cut SVG v42 | Product 88, contract 98 | Copy polish raises emotional specificity, but visible product quality stays flat because art/layout did not materially change. |
 | Paper-cut SVG v43 | Product 89, contract 98 | Doorstep-care relief creates the first visible post-v41 art lift; still one point below production-candidate because deterministic SVG remains the ceiling. |
+| HF Z Image v44 | Product 8, contract 72 | Provider 402 produced fallback-only evidence; keep route disabled for promotion until native panels render. |
+| Paper-cut SVG v45 | Product 88, contract 98 | Doorway cleanup reduced ambiguity but did not beat v43. |
+| Paper-cut SVG v46 | Product 89, contract 98 | Squiggle-opacity cleanup made v43 cleaner but did not create a score lift. |
+| Cloudflare SDXL v47 | Product 60, contract 90 | Real raster run worked, but SDXL ignored practical-support object constraints and rendered generic landscape art. |
 
 ## Prompt/Skill Changes Applied
 
@@ -165,6 +177,8 @@ Benchmark input was deterministic and ran through the full `createAiCardGenerati
 - Added a larger paper-stage relief layer beneath the care-kit motif to improve handmade material depth across panels.
 - Tightened deterministic sympathy copy so practical support reads as concrete actions while preserving father/meals/rides/calls/silence.
 - Added quieter doorstep-care relief and reduced older icon-like support marks so practical help reads more like a handmade scene than scattered symbols.
+- Cleaned the paper-cut front doorway and reduced older squiggle/support-mark opacity so v46 favors one stronger doorstep-care relief.
+- Probed HF Z Image Turbo and Cloudflare SDXL Lightning with the full card pipeline after deterministic text controls; HF failed with 402, SDXL rendered generic wheat/field art.
 
 ## Commands
 
@@ -231,4 +245,12 @@ rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --outpu
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v42-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v43-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
 rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v43-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-hf-z-image-v44-dryrun-2026-06-13 --text text-deterministic-support --image image-hf-z-image-turbo
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-hf-z-image-v44-2026-06-13 --text text-deterministic-support --image image-hf-z-image-turbo --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v45-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v45-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v46-dryrun-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-papercut-svg-v46-2026-06-13 --text text-deterministic-support --image image-browser-svg-renderer --live true
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v47-dryrun-2026-06-13 --text text-deterministic-support --image image-cloudflare-sdxl-lightning
+rtk proxy node scripts/model-benchmark-loop.mjs --phase pipeline-quality --output-dir docs/evidence/generated-card-comparisons/pipeline-quality-sympathy-cloudflare-sdxl-v47-2026-06-13 --text text-deterministic-support --image image-cloudflare-sdxl-lightning --live true
 ```
