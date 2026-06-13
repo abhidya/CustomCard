@@ -1,110 +1,171 @@
-# CustomCard Mobile Shell
+# CustomCard Mobile
 
-This is the iOS/Android customer app boundary. The current app shell mirrors the
-web customer panel and adds a mobile-specific workflow contract: Google/Apple
-entry points, calendar/email/invite import actions, card queue items, customer
-approval controls, approved memory review, local scripted chat, card proof path,
-proof-gated print recommendations, offline idempotent sync, locale readiness,
-and checkout confirmation. The customer state and
-render snapshot live in `src/customerExperience.ts`, a pure module tested by the
-root Vitest suite and inspected by the mobile doctor. `App.tsx` is the Expo root
-entrypoint and re-exports the native shell from `src/App.tsx`, which renders the
-`mobileRenderSnapshot` instead of importing raw contract arrays directly.
-Ready mobile actions render through an explicit native action surface using
-accessible `Pressable` controls. The primary card review action, local
-paste/ICS action, queued card actions, and card controls are enabled; print
-estimates and print-shop steps render as disabled locked actions until proof
-approval.
+Native iOS/Android customer app for CustomCard, built with Expo (React Native)
+and TypeScript. It talks to the shared CustomCard API (the same routes the web
+app uses) and walks a customer through the full card workflow: import an event →
+draft a card → review approved memories → approve the print proof → compare
+print options → finish at a print shop. The app never places an order itself —
+every purchase is confirmed by the customer on the print shop's own site.
 
-Calendar import is intentionally explicit in the mobile shell: paste invite/ICS
-is the ready local path, Google Calendar is shown as not connected yet, and
-Apple Calendar is shown as manual ICS export. The mobile app does not prepare a
-Google request URL, store calendar credentials, request Apple credentials, or
-claim native calendar sync.
+> Stack decision: Expo React Native + TypeScript + React Navigation + TanStack
+> Query, with Clerk for hosted authentication and Expo SecureStore for token
+> storage. This is the default stack from the brief; no backend/product
+> constraint required deviating from it. See `ASSUMPTIONS.md`.
 
-## Current proof boundary
+## Requirements
 
-The mobile proof is deterministic and repo-local. It proves that the native shell
-source and customer contract align with the web customer flow stages:
-account/import, event review, card approval, proof review, print options review,
-and checkout confirmation. The `mobileProofBoundary` contract intentionally
-keeps print estimates and print-shop steps locked until proof approval, and it
-blocks native emulator render proof, signed native artifact proof, app-store
-review proof, and live retail-order proof.
+- Node 20+ and npm
+- For device/simulator runs: the Expo tooling (installed as a dev dependency)
+  plus Xcode (iOS) and/or Android Studio (Android)
+- A running CustomCard API (local memory runtime, local Vite middleware, or a
+  hosted deployment)
 
-It uses a deterministic render snapshot because the repo-local verification loop
-does not run a hosted API server, native emulator, or signed platform build. The
-snapshot is still customer-facing screen state, not an emulator screenshot.
-The launch locale options mirror the web/API contract: English (US), Spanish
-(US), Urdu, and Arabic, with RTL and non-English copy review still gated before
-production use.
-
-`eas.json` defines development, preview, and production native build profiles
-for iOS and Android. The release doctor checks that the app config resolves
-`CUSTOMCARD_API_BASE_URL` from the environment instead of hardcoding production,
-keeps the shared kill switch disabled, and exposes bundle/package identifiers.
-Running an EAS build and platform signing still requires Expo/React Native
-tooling and credentials outside this repo-local Vite verification loop. Real
-ordering, live quotes, live OAuth, and paid generation remain disabled until
-their production evidence gates pass.
-
-## Preview paths
-
-### Reviewer browser lane
-
-Use this path for desktop UI review. It renders the mobile customer workflow as
-HTML inside the main Vite app instead of opening the Expo dev-server metadata
-endpoint:
+## Setup
 
 ```sh
-npm run mobile:web:preview
+cd apps/mobile
+npm install
+cp .env.example .env        # then edit values (see below)
+npm run assets:placeholders # generate placeholder icon/splash PNGs (first run)
 ```
 
-Expected screen signals: `Mobile app`, `Your card assistant`, the phone-shaped
-customer workflow, one primary mobile action, checkout safeguards, locked print
-and checkout sections before proof approval, and the `Mobile customer summary`
-panel. The browser route must not render an Expo
-manifest, JSON payload, or visible mobile contract/debug panel. The direct URL
-is `/?view=mobile`.
+### Environment variables
 
-The same lane is reachable through the normal app:
+All mobile config is **non-secret public config** only. Secrets (Clerk secret
+key, provider credentials, database URLs) belong to the API deployment and must
+never be added here. Values are read at build time through `app.config.js` and
+surfaced to the app via `expo-constants`.
+
+| Variable                            | Required          | Purpose                                                            |
+| ----------------------------------- | ----------------- | ------------------------------------------------------------------ |
+| `CUSTOMCARD_API_BASE_URL`           | yes               | API base URL. Must be `https://` for any non-development build.    |
+| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | for real sign-in  | Clerk **publishable** key (`pk_test_`/`pk_live_`).                 |
+| `CUSTOMCARD_APP_ENV`                | no                | `development` \| `staging` \| `production` (default `development`). |
+| `REAL_ORDER_KILL_SWITCH`            | no                | Mirrors the backend safety gate; keep `disabled`.                  |
+| `EAS_PROJECT_ID`                    | for EAS builds    | Set by `eas init`, or via EAS environment variables.               |
+
+When `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` is unset **and** the build is a local
+development build pointed at `development`, the app offers a dev-only sign-in
+that accepts the local API's `CUSTOMCARD_CUSTOMER_SESSION_TOKEN`. Release builds
+require Clerk and never expose that path.
+
+## Run
+
+Start a CustomCard API first. The quickest is the in-memory runtime from the
+repo root:
 
 ```sh
-npm run dev
+# from repo root
+CUSTOMCARD_API_RUNTIME=memory \
+AUTH_SESSION_SECRET=test-auth-session-secret-32-chars \
+CUSTOMCARD_CUSTOMER_SESSION_TOKEN=test-customer-session-token \
+CUSTOMCARD_ADMIN_SESSION_TOKEN=test-admin-session-token \
+PORT=8787 node scripts/api-server.mjs
 ```
 
-Open the Vite URL and choose `Mobile app` in the left navigation. That preview
-uses the same `apps/mobile/src/customerExperience.ts` contract as the Expo shell,
-so it is useful for quick desktop inspection without a simulator.
-
-### Native Expo preview
+Then launch the app:
 
 ```sh
-npm --prefix apps/mobile install
-CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run start
+cd apps/mobile
+CUSTOMCARD_API_BASE_URL=http://127.0.0.1:8787 REAL_ORDER_KILL_SWITCH=disabled npm run start
+# or: npm run ios   /   npm run android
 ```
 
-Open the QR code in Expo Go or launch the configured iOS/Android simulator from
-the Expo terminal. A desktop browser pointed at the native Expo server can show a
-JSON manifest; that is Expo metadata, not the app UI.
+In Expo Go (or a simulator), sign in with the dev token
+(`test-customer-session-token`) to exercise the full workflow against the memory
+runtime.
 
-Repo-local validation:
+> Note: a desktop browser pointed at the Expo dev server shows a JSON manifest —
+> that is Expo metadata, not the app UI. Use Expo Go or a simulator.
+
+## Verify
 
 ```sh
-CUSTOMCARD_API_BASE_URL=http://127.0.0.1:5173 REAL_ORDER_KILL_SWITCH=disabled npm --prefix apps/mobile run doctor
-npm test -- --run tests/mobile-contract.test.ts src/mobileRenderReadiness.test.ts
+npm run typecheck      # tsc --noEmit
+npm run lint           # eslint
+npm run format:check   # prettier --check
+npm run test           # jest (unit + component + navigation + workflow)
+npm run doctor         # repo-local config + customer-contract checks
+npm run release:doctor # native build-profile / release-readiness checks
+npm run verify         # typecheck + lint + format:check + test in one shot
+```
+
+The repo root additionally validates the mobile boundary:
+
+```sh
+# from repo root
+npx vitest run tests/mobile-contract.test.ts src/mobileRenderReadiness.test.ts
 npm run mobile:render:doctor
 npm run mobile:release:doctor
-git diff --check
+npm run localization:doctor
 ```
 
-Live-proof blockers:
+## Build & submit (EAS)
 
-- Native emulator proof: requires iOS Simulator or Android Emulator boot logs,
-  screenshots, and a native smoke transcript.
-- Signed native artifact proof: requires EAS artifact URLs and signing evidence
-  for iOS and Android.
-- App-store proof: requires store-review submission evidence outside this
-  repo-local loop.
-- Live order proof: requires approved quote, payment, and retail-order mutation
-  evidence with the kill switch intentionally changed by a release owner.
+`eas.json` defines `development`, `preview`, and `production` profiles for both
+platforms. Build/submit require an Expo account, EAS CLI, and platform signing
+credentials configured outside this repo.
+
+```sh
+npm install -g eas-cli
+eas login
+eas init                     # sets the EAS project id
+# Provide non-secret config and platform secrets via EAS environment variables.
+eas build --profile production --platform ios
+eas build --profile production --platform android
+eas submit --profile production --platform ios
+eas submit --profile production --platform android
+```
+
+See `STORE_RELEASE_CHECKLIST.md` for the full Apple/Google checklist, privacy
+labels, and required assets.
+
+## Architecture
+
+```
+apps/mobile/
+├─ App.tsx                      # Expo root, re-exports src/App
+├─ app.config.js                # build-time public config (no secrets)
+├─ eas.json                     # EAS build/submit profiles
+├─ assets/                      # placeholder icon/splash (replace before launch)
+└─ src/
+   ├─ App.tsx                   # providers + RootNavigator; offline workflow guide
+   ├─ config/env.ts             # config resolution + HTTPS/secret guards
+   ├─ theme/                    # design tokens (color, spacing, type)
+   ├─ components/               # Screen scaffold + shared UI (buttons, fields, states)
+   ├─ forms/validation.ts       # dependency-free form validators
+   ├─ navigation/               # auth-gated stack + bottom tabs
+   ├─ lib/
+   │  ├─ api/                   # typed client, endpoints, errors, redaction
+   │  ├─ auth/                  # Clerk + SecureStore token cache + session provider
+   │  ├─ offline/               # network status hook
+   │  └─ query/                 # TanStack Query client
+   ├─ screens/                  # auth, home, create, events, memories, print, settings
+   └─ customerExperience.ts     # deterministic customer snapshot (shared contract)
+```
+
+- **Auth/session**: `AuthProvider` wraps Clerk when a publishable key is present
+  and falls back to the dev-token provider locally. Tokens live only in
+  `expo-secure-store` (Keychain/Keystore). A 401 from the API clears cached data
+  and signs the user out.
+- **API client**: `createHttpClient` injects the bearer token, adds an
+  `X-Idempotency-Key` to every mutation, applies a request timeout, classifies
+  errors, and redacts sensitive data from logs/error messages. `endpoints.ts`
+  is the typed facade over every customer route.
+- **Navigation guard**: signed-out users can only reach the sign-in screen;
+  customer workflow screens mount only for an authenticated session.
+- **Proof-first print**: print options and checkout stay locked until the
+  customer approves the rendered proof.
+
+## Reviewer browser lane
+
+The repo's web app can render the mobile customer workflow as HTML for quick
+desktop inspection without a simulator (from repo root):
+
+```sh
+npm run mobile:web:preview   # opens /?view=mobile
+```
+
+This uses the same `apps/mobile/src/customerExperience.ts` contract as the Expo
+shell. The deterministic snapshot also renders in-app as the offline "How it
+works" guide (Settings → How CustomCard works).

@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest"]
+  },
+  "include": ["App.tsx", "app.config.js", "src", "jest.setup.ts"],
+  "exclude": ["node_modules"]
+}

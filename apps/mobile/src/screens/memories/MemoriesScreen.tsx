@@ -1,0 +1,148 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
+
+import { AppButton, Card, FormField, InlineNotice, Pill, SectionHeading } from "../../components";
+import { Screen } from "../../components/Screen";
+import { userMessageForError } from "../../lib/api/errors";
+import { useApi } from "../../lib/api/ApiProvider";
+import type { MemoryReviewRequest, MemoryReviewResponse } from "../../lib/api/types";
+import { hasErrors, requireText, type FieldErrors } from "../../forms/validation";
+import { spacing, typography } from "../../theme";
+
+type Field = "recipientName" | "text";
+
+/**
+ * Relationship memory review. Approving stores the reviewed note for reuse on
+ * future cards; forgetting tombstones it so it is never used again.
+ */
+export function MemoriesScreen() {
+  const api = useApi();
+  const queryClient = useQueryClient();
+
+  const [recipientName, setRecipientName] = useState("");
+  const [text, setText] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors<Field>>({});
+  const [lastResult, setLastResult] = useState<MemoryReviewResponse | null>(null);
+
+  const bootstrap = useQuery({
+    queryKey: ["mobile-bootstrap"],
+    queryFn: () => api.getMobileBootstrap(Platform.OS)
+  });
+
+  const review = useMutation({
+    mutationFn: (body: MemoryReviewRequest) => api.reviewMemory(body),
+    onSuccess: (response) => {
+      setLastResult(response);
+      setText("");
+      void queryClient.invalidateQueries({ queryKey: ["mobile-bootstrap"] });
+    }
+  });
+
+  function submit(decision: "approve" | "forget") {
+    const errors: FieldErrors<Field> = {
+      recipientName: requireText(recipientName, "Recipient name", 100),
+      text: requireText(text, "Memory note", 500)
+    };
+    setFieldErrors(errors);
+    if (hasErrors(errors)) return;
+    setLastResult(null);
+    review.mutate({ recipientName: recipientName.trim(), text: text.trim(), decision });
+  }
+
+  const pendingItems =
+    bootstrap.data?.memoryReviewItems.filter((item) => item.customerVisible) ?? [];
+
+  return (
+    <Screen>
+      <SectionHeading
+        title="Memory review"
+        detail="Only notes you approve here can appear on cards. Forgetting is permanent."
+      />
+
+      {pendingItems.length > 0 ? (
+        <>
+          {pendingItems.map((item) => (
+            <Card key={item.id}>
+              <View style={styles.rowBetween}>
+                <Text style={styles.cardTitle}>{item.recipientLabel}</Text>
+                <Pill label={item.usage} />
+              </View>
+              <Text style={typography.body}>{item.memoryLabel}</Text>
+              <AppButton
+                label="Review this note"
+                variant="secondary"
+                onPress={() => {
+                  setRecipientName(item.recipientLabel);
+                  setText(item.memoryLabel);
+                }}
+              />
+            </Card>
+          ))}
+        </>
+      ) : null}
+
+      <Card>
+        <Text style={typography.heading}>Review a memory note</Text>
+        <FormField
+          label="Recipient"
+          value={recipientName}
+          onChangeText={setRecipientName}
+          placeholder="Maya"
+          autoCapitalize="words"
+          error={fieldErrors.recipientName}
+          testID="memory-recipient"
+        />
+        <FormField
+          label="Memory note"
+          value={text}
+          onChangeText={setText}
+          placeholder="Loves hiking in autumn"
+          multiline
+          error={fieldErrors.text}
+          testID="memory-text"
+        />
+        <View style={styles.actionRow}>
+          <AppButton
+            label="Approve for cards"
+            onPress={() => submit("approve")}
+            loading={review.isPending}
+            style={styles.actionButton}
+          />
+          <AppButton
+            label="Forget"
+            variant="danger"
+            onPress={() => submit("forget")}
+            loading={review.isPending}
+            style={styles.actionButton}
+            accessibilityHint="Permanently blocks this note from being used on cards"
+          />
+        </View>
+        {review.isError ? (
+          <InlineNotice tone="warn" text={userMessageForError(review.error)} />
+        ) : null}
+        {lastResult ? (
+          <InlineNotice
+            text={
+              lastResult.approved
+                ? `Approved. "${lastResult.recipientName}" notes can now appear on cards.`
+                : "Forgotten. That note will never be used on a card."
+            }
+          />
+        ) : null}
+      </Card>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  cardTitle: { ...typography.heading, fontSize: 16, flexShrink: 1 },
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: spacing.sm
+  },
+  actionRow: { flexDirection: "row", gap: spacing.sm },
+  actionButton: { flex: 1 }
+});

@@ -1,0 +1,19 @@
+node_modules/
+.expo/
+dist/
+web-build/
+coverage/
+ios/
+android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.env
+.env.local
+
+# Lockfile omitted from VCS in this environment (proxy body-size limit);
+# versions are pinned in package.json overrides. Run npm install to regenerate.
+package-lock.json

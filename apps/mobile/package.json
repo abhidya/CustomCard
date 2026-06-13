@@ -2,21 +2,57 @@
   "name": "@customcard/mobile",
   "version": "0.1.0",
   "private": true,
-  "description": "CustomCard iOS/Android app shell targeting the shared API and service contracts.",
+  "description": "CustomCard iOS/Android customer app targeting the shared API and service contracts.",
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
     "android": "expo start --android",
     "doctor": "node ./scripts/doctor.mjs",
-    "release:doctor": "node ./scripts/release-doctor.mjs"
+    "release:doctor": "node ./scripts/release-doctor.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src App.tsx",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" App.tsx",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" App.tsx",
+    "test": "jest --forceExit",
+    "test:watch": "jest --watch",
+    "assets:placeholders": "node ./scripts/generate-placeholder-assets.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^2.19.31",
+    "@react-native-community/netinfo": "^11.5.2",
+    "@react-navigation/bottom-tabs": "^7.18.0",
+    "@react-navigation/native": "^7.3.1",
+    "@react-navigation/native-stack": "^7.17.3",
+    "@tanstack/react-query": "^5.101.0",
     "expo": "^55.0.0",
-    "react": "^19.2.6",
-    "react-native": "^0.84.0"
+    "expo-constants": "~55.0.16",
+    "expo-crypto": "~55.0.15",
+    "expo-linking": "~55.0.15",
+    "expo-secure-store": "~55.0.14",
+    "expo-status-bar": "~55.0.6",
+    "expo-web-browser": "~55.0.16",
+    "react": "19.2.3",
+    "react-native": "^0.84.0",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
+    "react-native-svg": "^15.15.3"
   },
   "overrides": {
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-test-renderer": "19.2.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@testing-library/react-native": "^14.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.2.17",
+    "eslint": "^9.39.4",
+    "eslint-config-expo": "^56.0.4",
+    "jest": "^29.7.0",
+    "jest-expo": "^55.0.18",
+    "prettier": "^3.8.4",
+    "typescript": "^5.9.3"
+  }
 }

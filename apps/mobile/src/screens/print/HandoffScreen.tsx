@@ -1,0 +1,132 @@
+import { useRoute, type RouteProp } from "@react-navigation/native";
+import { useMutation } from "@tanstack/react-query";
+import * as WebBrowser from "expo-web-browser";
+import React, { useState } from "react";
+import { StyleSheet, Switch, Text, View } from "react-native";
+
+import { AppButton, Card, InlineNotice, Pill, SectionHeading } from "../../components";
+import { Screen } from "../../components/Screen";
+import { userMessageForError } from "../../lib/api/errors";
+import { useApi } from "../../lib/api/ApiProvider";
+import type { VendorHandoffResponse } from "../../lib/api/types";
+import type { RootStackParamList } from "../../navigation/types";
+import { colors, spacing, typography } from "../../theme";
+
+const VENDORS = [
+  { id: "walgreens", label: "Walgreens Photo" },
+  { id: "cvs", label: "CVS Photo" },
+  { id: "fedex-office", label: "FedEx Office" }
+];
+
+/**
+ * Manual vendor handoff: explicit consent to share the rendered card files,
+ * then a checklist plus expiring signed download links. No order is placed by
+ * the app.
+ */
+export function HandoffScreen() {
+  const api = useApi();
+  const route = useRoute<RouteProp<RootStackParamList, "Handoff">>();
+  const { projectId, renderPacketId } = route.params;
+
+  const [vendorId, setVendorId] = useState(VENDORS[0]?.id ?? "walgreens");
+  const [shareApproved, setShareApproved] = useState(false);
+  const [result, setResult] = useState<VendorHandoffResponse | null>(null);
+
+  const handoff = useMutation({
+    mutationFn: () =>
+      api.manualVendorHandoff({
+        projectId,
+        renderPacketId,
+        vendorId,
+        externalShareApproval: shareApproved
+      }),
+    onSuccess: (response) => setResult(response)
+  });
+
+  return (
+    <Screen>
+      <SectionHeading
+        title="Finish manually"
+        detail="Download your print files and upload them to the print shop yourself. You stay in control of payment and ordering."
+      />
+
+      <Card>
+        <Text style={typography.heading}>Choose a print shop</Text>
+        {VENDORS.map((vendor) => (
+          <AppButton
+            key={vendor.id}
+            label={vendor.label}
+            variant={vendorId === vendor.id ? "primary" : "secondary"}
+            onPress={() => setVendorId(vendor.id)}
+          />
+        ))}
+      </Card>
+
+      <Card>
+        <View style={styles.consentRow}>
+          <View style={styles.consentCopy}>
+            <Text style={typography.heading}>Share files externally</Text>
+            <Text style={typography.body}>
+              I approve sharing this card's print files with the selected print shop.
+            </Text>
+          </View>
+          <Switch
+            accessibilityLabel="Approve sharing print files with the selected print shop"
+            value={shareApproved}
+            onValueChange={setShareApproved}
+            trackColor={{ true: colors.brand, false: colors.border }}
+          />
+        </View>
+        <AppButton
+          label="Prepare handoff package"
+          disabled={!shareApproved}
+          loading={handoff.isPending}
+          onPress={() => handoff.mutate()}
+        />
+        {handoff.isError ? (
+          <InlineNotice tone="warn" text={userMessageForError(handoff.error)} />
+        ) : null}
+      </Card>
+
+      {result ? (
+        <>
+          <SectionHeading title="Handoff checklist" />
+          <Card>
+            <Pill
+              label={result.handoffStatus === "vendor_handoff_ready" ? "Ready" : "Blocked"}
+              tone={result.handoffStatus === "vendor_handoff_ready" ? "good" : "warn"}
+            />
+            {result.handoffChecklist.map((step, index) => (
+              <Text key={step} style={typography.body}>
+                {index + 1}. {step}
+              </Text>
+            ))}
+          </Card>
+          {result.signedArtifactUrls.map((artifact) => (
+            <Card key={artifact.url}>
+              <Text style={typography.body}>
+                Download link (expires in {artifact.expiresInMinutes} minutes)
+              </Text>
+              <AppButton
+                label="Open download"
+                variant="secondary"
+                disabled={
+                  !artifact.url.startsWith("https://") && !artifact.url.startsWith("http://")
+                }
+                onPress={() => void WebBrowser.openBrowserAsync(artifact.url)}
+              />
+            </Card>
+          ))}
+          {result.disabledReasons.map((reason) => (
+            <InlineNotice key={reason} text={reason} />
+          ))}
+        </>
+      ) : null}
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  consentRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  consentCopy: { flex: 1, gap: spacing.xs }
+});

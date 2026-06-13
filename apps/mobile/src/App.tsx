@@ -1,8 +1,62 @@
-import React from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import { mobileRenderSnapshot, type MobileRenderAction, type MobileRenderRow, type MobileRenderSection } from "./customerExperience";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import {
+  mobileRenderSnapshot,
+  type MobileRenderAction,
+  type MobileRenderRow,
+  type MobileRenderSection
+} from "./customerExperience";
+import { resolveAppConfig, ConfigError } from "./config/env";
+import { ApiProvider } from "./lib/api/ApiProvider";
+import { AuthProvider } from "./lib/auth/AuthProvider";
+import { createAppQueryClient } from "./lib/query/queryClient";
+import { RootNavigator } from "./navigation/RootNavigator";
 
 export default function App() {
+  const [queryClient] = useState(createAppQueryClient);
+
+  let configError: string | null = null;
+  try {
+    resolveAppConfig();
+  } catch (error) {
+    configError = error instanceof ConfigError ? error.message : "App configuration failed.";
+  }
+
+  if (configError) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.configErrorBox}>
+          <Text style={styles.title}>CustomCard</Text>
+          <Text style={styles.subtitle}>{configError}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <ApiProvider>
+            <StatusBar style="dark" />
+            <RootNavigator WorkflowGuideScreen={WorkflowOverviewScreen} />
+          </ApiProvider>
+        </QueryClientProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
+}
+
+/**
+ * Offline-safe workflow guide rendered from the deterministic customer
+ * snapshot in `customerExperience.ts`. This screen mirrors the web customer
+ * flow stages and is the contract surface checked by the repo doctors.
+ */
+export function WorkflowOverviewScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -32,7 +86,11 @@ export default function App() {
         </View>
 
         {mobileRenderSnapshot.sections.map((section) =>
-          section.id === "next-action" ? <NextActionSection key={section.id} section={section} /> : <StandardSection key={section.id} section={section} />
+          section.id === "next-action" ? (
+            <NextActionSection key={section.id} section={section} />
+          ) : (
+            <StandardSection key={section.id} section={section} />
+          )
         )}
 
         <View style={styles.group}>
@@ -59,13 +117,18 @@ function NextActionSection({ section }: { section: MobileRenderSection }) {
 }
 
 function StandardSection({ section }: { section: MobileRenderSection }) {
-  const sectionStyle = section.id === "card-assistant" ? [styles.group, styles.chatGroup] : styles.group;
+  const sectionStyle =
+    section.id === "card-assistant" ? [styles.group, styles.chatGroup] : styles.group;
 
   return (
     <View style={sectionStyle}>
       <Text style={styles.groupTitle}>{section.title}</Text>
       {section.rows.map((row) => (
-        <SectionRow key={`${section.id}-${row.title}-${row.modeLabel}`} row={row} chat={section.id === "card-assistant"} />
+        <SectionRow
+          key={`${section.id}-${row.title}-${row.modeLabel}`}
+          row={row}
+          chat={section.id === "card-assistant"}
+        />
       ))}
     </View>
   );
@@ -74,7 +137,12 @@ function StandardSection({ section }: { section: MobileRenderSection }) {
 function SectionRow({ row, chat }: { row: MobileRenderRow; chat?: boolean }) {
   if (chat) {
     return (
-      <View style={[styles.chatBubble, row.modeLabel === "Customer" ? styles.customerBubble : styles.assistantBubble]}>
+      <View
+        style={[
+          styles.chatBubble,
+          row.modeLabel === "Customer" ? styles.customerBubble : styles.assistantBubble
+        ]}
+      >
         <Text style={styles.chatSpeaker}>{row.title}</Text>
         <Text style={styles.chatCopy}>{row.detail}</Text>
       </View>
@@ -148,6 +216,13 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     gap: 14
+  },
+  configErrorBox: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 8,
+    padding: 24,
+    backgroundColor: "#172927"
   },
   header: {
     gap: 8,
