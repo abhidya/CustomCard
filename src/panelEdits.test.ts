@@ -6,7 +6,7 @@ import {
   parseFreeImport,
   sampleInviteText,
   validateCardDraft
-} from "./freeMvp";
+} from "./customerWorkflow";
 import {
   applyPanelOverrides,
   clearPanelOverride,

@@ -12,7 +12,7 @@ import {
   WandSparkles
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { CardDraft } from "../../src/freeMvp";
+import type { CardDraft } from "../../src/customerWorkflow";
 import { cardImageByCategory } from "../cardTemplates";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";

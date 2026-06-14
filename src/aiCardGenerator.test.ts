@@ -208,13 +208,74 @@ describe("AI card generator service", () => {
       ai_flow: {
         card_copy: expect.objectContaining({
           adapter_id: "",
-          fallback_adapter_id: "",
+          fallback_adapter_id: "cloudflare-workers-ai-chat",
           provider_failure: expect.stringContaining("missing")
         })
       }
     });
     expect(payload).not.toHaveProperty("card_copy");
     expect(JSON.stringify(payload)).not.toMatch(/Sara|morning hikes|She keeps a fern|Can you make it warmer/i);
+  });
+
+  it("falls back from a failed card-copy provider to the configured text fallback", async () => {
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("router.huggingface.co/v1/chat/completions")) {
+        return new Response(JSON.stringify({ error: "credits depleted" }), {
+          status: 402,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        HUGGINGFACE_API_TOKEN: "test_hf_token",
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "huggingface-chat",
+        CUSTOMCARD_AI_CARD_COPY_FALLBACK_ADAPTER_ID: "cloudflare-workers-ai-chat",
+        CUSTOMCARD_AI_CARD_COPY_FALLBACK_QUEUE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-card-copy-fallback" });
+    const payload = result.payload as {
+      fallback_queued: boolean;
+      ai_flow: { card_copy: { adapter_id: string; primary_adapter_id: string; fallback_adapter_id: string } };
+      provider_call_events: Array<{ adapter_id: string; status: string; fallback_from_adapter_id?: string; metadata?: Record<string, unknown> }>;
+      card_copy: unknown;
+    };
+
+    expect(result.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(payload.fallback_queued).toBe(true);
+    expect(payload.ai_flow.card_copy).toMatchObject({
+      adapter_id: "cloudflare-workers-ai-chat",
+      primary_adapter_id: "huggingface-chat",
+      fallback_adapter_id: "cloudflare-workers-ai-chat"
+    });
+    expect(payload.provider_call_events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ adapter_id: "huggingface-chat", status: "failed" }),
+        expect.objectContaining({
+          adapter_id: "cloudflare-workers-ai-chat",
+          status: "succeeded",
+          fallback_from_adapter_id: "huggingface-chat"
+        })
+      ])
+    );
+    expect(JSON.stringify(payload.card_copy)).toContain("Happy Birthday Sara");
+    expect(JSON.stringify(result.payload)).not.toMatch(/test_hf_token|test_text_token/);
   });
 
   it("enforces monthly text spend caps before making another provider call", async () => {
@@ -1226,6 +1287,85 @@ describe("AI card generator service", () => {
     expect(imageBodies.every((body) => body.get("image_generator_version") === "standard")).toBe(true);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_deepai_token");
+  });
+
+  it("falls back from DeepAI image generation to Cloudflare image generation for all panels", async () => {
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes("/ai/v1/chat/completions")) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl === "https://api.deepai.org/api/text2img") {
+        return new Response(JSON.stringify({ err: "DeepAI busy" }), {
+          status: 503,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      if (requestUrl.includes("/ai/run/@cf/black-forest-labs/flux-1-schnell")) {
+        return new Response(JSON.stringify({ result: { image: "/9j/AAAA" } }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      throw new Error(`Unexpected fetch ${requestUrl}`);
+    });
+    const service = createAiCardGenerationService({
+      env: {
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CLOUDFLARE_WORKERS_AI_IMAGE_MODEL: "@cf/black-forest-labs/flux-1-schnell",
+        DEEPAI_API_KEY: "test_deepai_token",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "deepai-text2img-image",
+        CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_ADAPTER_ID: "cloudflare-workers-ai-image",
+        CUSTOMCARD_AI_CARD_IMAGE_FALLBACK_QUEUE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_RATE_LIMIT_PER_MINUTE: "8",
+        CUSTOMCARD_AI_CARD_IMAGE_MAX_RETRIES: "0"
+      },
+      fetchImpl
+    });
+
+    const result = await service.generateCard(cardRequest, { rateKey: "test-card-image-fallback" });
+    const payload = result.payload as {
+      fallback_queued: boolean;
+      images: Array<{ image_url: string }>;
+      ai_flow: { card_image: { adapter_id: string; primary_adapter_id: string; fallback_adapter_id: string } };
+      provider_call_events: Array<{ adapter_id: string; status: string; request_units: number; fallback_from_adapter_id?: string }>;
+    };
+    const deepAiCalls = fetchImpl.mock.calls.filter(([url]) => String(url) === "https://api.deepai.org/api/text2img");
+    const cloudflareImageCalls = fetchImpl.mock.calls.filter(([url]) =>
+      String(url).includes("/ai/run/@cf/black-forest-labs/flux-1-schnell")
+    );
+
+    expect(result.statusCode).toBe(200);
+    expect(deepAiCalls).toHaveLength(1);
+    expect(cloudflareImageCalls).toHaveLength(4);
+    expect(payload.fallback_queued).toBe(true);
+    expect(payload.images).toHaveLength(4);
+    expect(payload.images.every((image) => image.image_url.startsWith("data:image/jpeg;base64,"))).toBe(true);
+    expect(payload.ai_flow.card_image).toMatchObject({
+      adapter_id: "cloudflare-workers-ai-image",
+      primary_adapter_id: "deepai-text2img-image",
+      fallback_adapter_id: "cloudflare-workers-ai-image"
+    });
+    expect(payload.provider_call_events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ adapter_id: "deepai-text2img-image", status: "failed", request_units: 4 }),
+        expect.objectContaining({
+          adapter_id: "cloudflare-workers-ai-image",
+          status: "succeeded",
+          request_units: 4,
+          fallback_from_adapter_id: "deepai-text2img-image"
+        })
+      ])
+    );
+    expect(JSON.stringify(result.payload)).not.toMatch(/test_deepai_token|test_image_token|test_text_token/);
   });
 
   it("uses Hugging Face routed image generation and materializes provider image URLs", async () => {

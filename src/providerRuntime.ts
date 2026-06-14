@@ -1,4 +1,4 @@
-import { buildVendorHandoff, parseFreeImport, type VendorId } from "./freeMvp";
+import { buildVendorHandoff, parseFreeImport, type VendorId } from "./customerWorkflow";
 import {
   getProviderAdapter,
   providerCatalog,

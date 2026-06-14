@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CardDraft, CardDraftInput, CardPanel, MemoryItem } from "../src/freeMvp";
+import type { CardDraft, CardDraftInput, CardPanel, MemoryItem } from "../src/customerWorkflow";
 import {
   buildStudioModel,
   defaultPanelTextLayout,

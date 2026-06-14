@@ -1,4 +1,4 @@
-import type { CardOpportunity, CardValidation, LocalWorkspace, OpportunityDecision, VendorHandoff } from "./freeMvp";
+import type { CardOpportunity, CardValidation, LocalWorkspace, OpportunityDecision, VendorHandoff } from "./customerWorkflow";
 import type { FulfillmentRecommendation, FulfillmentRecommendationSet } from "./fulfillmentRecommendation";
 import type { LocalizationReadinessSummary, SupportedLocale } from "./localization";
 import type { ProductionReadinessSummary } from "./productionReadiness";

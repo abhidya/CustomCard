@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Workflow
 } from "lucide-react";
-import type { CardDraft } from "../../src/freeMvp";
+import type { CardDraft } from "../../src/customerWorkflow";
 import { businessEngagementReadinessItems, summarizeBusinessEngagementReadiness } from "../../src/businessEngagementReadiness";
 import { PanelArt } from "../ui";
 

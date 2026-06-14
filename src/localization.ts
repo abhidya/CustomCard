@@ -1,4 +1,4 @@
-import type { LanguageChoice } from "./freeMvp.ts";
+import type { LanguageChoice } from "./customerWorkflow";
 
 export type SupportedLocaleCode = "en-US" | "es-US" | "ur-PK" | "ar-EG";
 export type WritingDirection = "ltr" | "rtl";

@@ -10,7 +10,7 @@ import {
   sampleInviteText,
   validateCardDraft,
   type CardValidation
-} from "./freeMvp";
+} from "./customerWorkflow";
 import { applyPanelOverrides, emptyPanelOverrides, setPanelOverride } from "./panelEdits";
 import {
   buildCombinedPdfExportFile,

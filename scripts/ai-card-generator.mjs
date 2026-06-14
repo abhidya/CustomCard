@@ -3,10 +3,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { isIP } from "node:net";
 import { resolve } from "node:path";
 import {
+  adapterMissingEnv,
+  modelForAiAdapter,
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig
 } from "../src/aiFlowConfigData.mjs";
 import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
+import { createAiCardDraftPolicy } from "./ai-card-draft-policy.mjs";
 import {
   createAiProviderExecutionAdapter,
   openAiCompatibleTextAdapterIds
@@ -18,6 +21,7 @@ export const aiChatRespondRoute = "/api/ai/chat/respond";
 const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
 const maxMaterializedImageBytes = 8_000_000;
 const materializedImageFetchTimeoutMs = 15_000;
+const aiCardDraftPolicy = createAiCardDraftPolicy({ buildDraftId });
 const textLayoutEnums = {
   headline_zone: ["top", "upper", "center", "lower"],
   body_zone: ["upper", "center", "lower", "bottom"],
@@ -191,163 +195,74 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
       const imageFlow = resolveAiFlowConfig("card-image", env, adminConfig);
       const draftInput = normalizeCardInput(body);
       const providerCallEvents = [];
-      let cardCopy;
 
-      if (!copyFlow.readyForLiveCalls) {
-        const providerFailure = copyFlow.blockedReasons[0] ?? "Live card-copy provider is disabled.";
+      const textResult = await executeTextProviderWithFallback({
+        flow: copyFlow,
+        env,
+        fetchImpl,
+        costGate,
+        requestContext,
+        providerCallEvents,
+        systemPrompt: copyFlow.promptInstructions,
+        userPrompt: buildCardCopyPrompt(draftInput),
+        responseFormat: buildCardCopyResponseFormat(copyFlow)
+      });
+      if (!textResult.ok) {
         return providerUnavailableResponse({
-          statusCode: 503,
+          statusCode: textResult.statusCode,
           flowKey: "card_copy",
           flow: copyFlow,
-          providerFailure,
-          providerCallEvents
-        });
-      }
-
-      const textReservation = await costGate.reserve(
-        aiCostGateInput({
-          flow: copyFlow,
-          requestContext,
-          routeId: aiCardGenerateRoute,
-          requestUnits: 1,
-          phase: "card-copy"
-        })
-      );
-      providerCallEvents.push(textReservation.event);
-      if (!textReservation.ok) {
-        return providerUnavailableResponse({
-          statusCode: textReservation.statusCode ?? 503,
-          flowKey: "card_copy",
-          flow: copyFlow,
-          providerFailure: textReservation.providerFailure,
+          adapterId: textResult.adapterId,
+          providerFailure: textResult.providerFailure,
           providerCallEvents,
-          extraPayload: textReservation.payload
+          fallbackQueued: textResult.fallbackQueued,
+          extraPayload: textResult.extraPayload
         });
       }
 
-      try {
-        const text = await executeTextProvider({
-          flow: copyFlow,
-          env,
-          fetchImpl,
-          systemPrompt: copyFlow.promptInstructions,
-          userPrompt: buildCardCopyPrompt(draftInput),
-          responseFormat: buildCardCopyResponseFormat(copyFlow)
-        });
-        cardCopy = normalizeCardCopy(parseJsonFromText(text), draftInput);
-        providerCallEvents.push(await costGate.settle(textReservation.reservation, { status: "succeeded" }));
-      } catch (error) {
-        const providerFailure = error instanceof Error ? error.message : "Provider text generation failed.";
-        providerCallEvents.push(
-          await costGate.settle(textReservation.reservation, {
-            status: "failed",
-            errorClass: "provider-text-generation-failed",
-            metadata: { providerFailure }
-          })
-        );
-        return providerUnavailableResponse({
-          statusCode: 502,
-          flowKey: "card_copy",
-          flow: copyFlow,
-          providerFailure,
-          providerCallEvents
-        });
-      }
-
-      if (!imageFlow.readyForLiveCalls) {
-        return buildCardGenerationPayload({
-          draftInput,
-          cardCopy,
-          images: [],
-          copyFlow,
-          imageFlow,
-          imageProvider: "",
-          imageProviderFailure: imageFlow.blockedReasons[0] ?? "Live card-image provider is disabled.",
-          providerCallEvents
-        });
-      }
+      const cardCopy = normalizeCardCopy(parseJsonFromText(textResult.text), draftInput);
 
       const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
-      const imageReservation = await costGate.reserve(
-        aiCostGateInput({
-          flow: imageFlow,
-          requestContext,
-          routeId: aiCardGenerateRoute,
-          requestUnits: imagePromptPlan.length,
-          phase: "card-image",
-          metadata: { panelCount: imagePromptPlan.length }
-        })
-      );
-      providerCallEvents.push(imageReservation.event);
-      if (!imageReservation.ok) {
+      const imageResult = await executeImageProviderBatchWithFallback({
+        flow: imageFlow,
+        env,
+        fetchImpl,
+        costGate,
+        requestContext,
+        providerCallEvents,
+        imagePromptPlan
+      });
+      const fallbackQueued = textResult.fallbackQueued || imageResult.fallbackQueued;
+      if (!imageResult.ok) {
+        if (!imageResult.madeLiveAttempt && !imageResult.madeReservationAttempt) {
+          return buildCardGenerationPayload({
+            draftInput,
+            cardCopy,
+            images: [],
+            copyFlow,
+            copyProvider: textResult.adapterId,
+            imageFlow,
+            imageProvider: "",
+            imageProviderFailure: imageResult.providerFailure,
+            providerCallEvents,
+            fallbackQueued
+          });
+        }
         return providerUnavailableResponse({
-          statusCode: imageReservation.statusCode ?? 503,
+          statusCode: imageResult.statusCode,
           flowKey: "card_image",
           flow: imageFlow,
-          providerFailure: imageReservation.providerFailure,
+          adapterId: imageResult.adapterId,
+          providerFailure: imageResult.providerFailure,
           providerCallEvents,
+          fallbackQueued,
           extraPayload: {
-            ...imageReservation.payload,
+            ...imageResult.extraPayload,
             draft_id: buildDraftId(draftInput),
             card_copy: cardCopy,
             images: [],
             ai_flow: {
-              card_copy: publicFlowState(copyFlow, copyFlow.primaryAdapterId, "")
-            }
-          }
-        });
-      }
-
-      const images = [];
-      try {
-        for (const panelPrompt of imagePromptPlan) {
-          const imageUrl = await executeImageProvider({
-            flow: imageFlow,
-            env,
-            fetchImpl,
-            panelId: panelPrompt.panel_id,
-            prompt: panelPrompt.prompt,
-            negativePrompt: panelPrompt.negative_prompt
-          });
-          if (!imageUrl) continue;
-          images.push({
-            panel_id: panelPrompt.panel_id,
-            image_url: imageUrl,
-            revised_prompt: panelPrompt.prompt,
-            width: 1500,
-            height: 2100
-          });
-        }
-        if (images.length !== imagePromptPlan.length) {
-          throw new Error("Image provider returned " + images.length + " of " + imagePromptPlan.length + " required panels.");
-        }
-        providerCallEvents.push(
-          await costGate.settle(imageReservation.reservation, {
-            status: "succeeded",
-            metadata: { generatedPanelCount: images.length }
-          })
-        );
-      } catch (error) {
-        const providerFailure = error instanceof Error ? error.message : "Provider image generation failed.";
-        providerCallEvents.push(
-          await costGate.settle(imageReservation.reservation, {
-            status: "failed",
-            errorClass: "provider-image-generation-failed",
-            metadata: { providerFailure, generatedPanelCount: images.length }
-          })
-        );
-        return providerUnavailableResponse({
-          statusCode: 502,
-          flowKey: "card_image",
-          flow: imageFlow,
-          providerFailure,
-          providerCallEvents,
-          extraPayload: {
-            draft_id: buildDraftId(draftInput),
-            card_copy: cardCopy,
-            images: [],
-            ai_flow: {
-              card_copy: publicFlowState(copyFlow, copyFlow.primaryAdapterId, "")
+              card_copy: publicFlowState(copyFlow, textResult.adapterId, "")
             }
           }
         });
@@ -356,11 +271,13 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
       return buildCardGenerationPayload({
         draftInput,
         cardCopy,
-        images,
+        images: imageResult.images,
         copyFlow,
+        copyProvider: textResult.adapterId,
         imageFlow,
-        imageProvider: imageFlow.primaryAdapterId,
-        providerCallEvents
+        imageProvider: imageResult.adapterId,
+        providerCallEvents,
+        fallbackQueued
       });
     },
 
@@ -455,60 +372,50 @@ function buildCardGenerationPayload({
   cardCopy,
   images,
   copyFlow,
+  copyProvider,
   imageFlow,
   imageProvider,
   imageProviderFailure,
-  providerCallEvents
+  providerCallEvents,
+  fallbackQueued = false
 }) {
-  return {
-    statusCode: 200,
-    payload: {
-      status: imageProviderFailure ? "partial" : "succeeded",
-      draft_id: buildDraftId(draftInput),
-      card_copy: cardCopy,
-      images,
-      generated_by: images.length > 0 ? "ai-text-and-image" : "ai-text-only",
-      user_content_only: false,
-      ai_flow: {
-        card_copy: publicFlowState(copyFlow, copyFlow.primaryAdapterId, ""),
-        card_image: publicFlowState(imageFlow, imageProvider, imageProviderFailure)
-      },
-      provider_call_events: publicProviderCallEvents(providerCallEvents),
-      ai_cost_gate: publicCostGateSummary(providerCallEvents),
-      live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
-      fallback_queued: false,
-      external_network_calls: hasExternalNetworkEvent(providerCallEvents)
-    }
-  };
+  return aiCardDraftPolicy.buildCardGenerationPayload({
+    draftInput,
+    cardCopy,
+    images,
+    copyFlow,
+    copyProvider,
+    imageFlow,
+    imageProvider,
+    imageProviderFailure,
+    providerCallEvents,
+    fallbackQueued
+  });
 }
 
-function providerUnavailableResponse({ statusCode, flowKey, flow, providerFailure, providerCallEvents, extraPayload = {} }) {
-  const { ai_flow: extraAiFlow, ...payloadRest } = extraPayload ?? {};
-  const mergedAiFlow = extraAiFlow && typeof extraAiFlow === "object" && !Array.isArray(extraAiFlow)
-    ? extraAiFlow
-    : {};
-  return {
+function providerUnavailableResponse({
+  statusCode,
+  flowKey,
+  flow,
+  adapterId,
+  providerFailure,
+  providerCallEvents,
+  fallbackQueued = false,
+  extraPayload = {}
+}) {
+  return aiCardDraftPolicy.providerUnavailableResponse({
     statusCode,
-    payload: {
-      ...payloadRest,
-      status: "provider-unavailable",
-      detail: providerFailure,
-      error: providerFailure,
-      user_content_only: false,
-      ai_flow: {
-        ...mergedAiFlow,
-        [flowKey]: publicFlowState(flow, flow.readyForLiveCalls ? flow.primaryAdapterId : "", providerFailure)
-      },
-      provider_call_events: publicProviderCallEvents(providerCallEvents),
-      ai_cost_gate: publicCostGateSummary(providerCallEvents),
-      live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
-      fallback_queued: false,
-      external_network_calls: hasExternalNetworkEvent(providerCallEvents)
-    }
-  };
+    flowKey,
+    flow,
+    adapterId,
+    providerFailure,
+    providerCallEvents,
+    fallbackQueued,
+    extraPayload
+  });
 }
 
-function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, metadata = {} }) {
+function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, metadata = {}, fallbackFromAdapterId }) {
   return {
     flow,
     routeId,
@@ -516,7 +423,7 @@ function aiCostGateInput({ flow, requestContext, routeId, requestUnits, phase, m
     rateKey: requestContext.rateKey,
     idempotencyKey: requestContext.idempotencyKey,
     authContext: requestContext.authContext,
-    fallbackFromAdapterId: flow.primaryAdapterId,
+    fallbackFromAdapterId: fallbackFromAdapterId ?? flow.primaryAdapterId,
     metadata: {
       phase,
       ...metadata
@@ -587,6 +494,282 @@ export function describeAiCardGenerationAdapters() {
 
 async function executeTextProvider(input) {
   return providerExecutionAdapter.executeText(input);
+}
+
+async function executeTextProviderWithFallback({
+  flow,
+  env,
+  fetchImpl,
+  costGate,
+  requestContext,
+  providerCallEvents,
+  systemPrompt,
+  userPrompt,
+  responseFormat
+}) {
+  const attempts = providerAttemptsForFlow(flow, env);
+  let fallbackQueued = false;
+  let madeReservationAttempt = false;
+  let lastFailure = flow.blockedReasons[0] ?? "Live card-copy provider is disabled.";
+  let lastStatusCode = 503;
+  let lastAdapterId = flow.readyForLiveCalls ? flow.primaryAdapterId : "";
+  let lastExtraPayload = {};
+
+  for (const attempt of attempts) {
+    if (!attempt.flow.readyForLiveCalls) {
+      lastAdapterId = "";
+      if (attempt.index === 0 || madeReservationAttempt) {
+        lastFailure = attempt.flow.blockedReasons[0] ?? `Live provider calls disabled for ${flow.flowId}.`;
+      }
+      lastStatusCode = 503;
+      continue;
+    }
+    lastAdapterId = attempt.adapterId;
+    fallbackQueued = fallbackQueued || attempt.isFallback;
+
+    const reservation = await costGate.reserve(
+      aiCostGateInput({
+        flow: attempt.flow,
+        requestContext,
+        routeId: aiCardGenerateRoute,
+        requestUnits: 1,
+        phase: "card-copy",
+        fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined,
+        metadata: {
+          providerAttempt: attempt.index + 1,
+          fallbackAttempt: attempt.isFallback,
+          fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined
+        }
+      })
+    );
+    madeReservationAttempt = true;
+    providerCallEvents.push(reservation.event);
+    if (!reservation.ok) {
+      lastFailure = reservation.providerFailure;
+      lastStatusCode = reservation.statusCode ?? 503;
+      lastExtraPayload = reservation.payload;
+      continue;
+    }
+
+    try {
+      const text = await executeTextProvider({
+        flow: attempt.flow,
+        env,
+        fetchImpl,
+        systemPrompt,
+        userPrompt,
+        responseFormat
+      });
+      providerCallEvents.push(
+        await costGate.settle(reservation.reservation, {
+          status: "succeeded",
+          metadata: {
+            fallbackAttempt: attempt.isFallback,
+            fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined
+          }
+        })
+      );
+      return {
+        ok: true,
+        text,
+        adapterId: attempt.adapterId,
+        fallbackQueued
+      };
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : "Provider text generation failed.";
+      lastStatusCode = 502;
+      lastExtraPayload = {};
+      providerCallEvents.push(
+        await costGate.settle(reservation.reservation, {
+          status: "failed",
+          errorClass: "provider-text-generation-failed",
+          metadata: {
+            providerFailure: lastFailure,
+            fallbackAttempt: attempt.isFallback,
+            fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined
+          }
+        })
+      );
+    }
+  }
+
+  return {
+    ok: false,
+    statusCode: lastStatusCode,
+    adapterId: lastAdapterId,
+    providerFailure: lastFailure,
+    fallbackQueued,
+    extraPayload: lastExtraPayload
+  };
+}
+
+async function executeImageProviderBatchWithFallback({
+  flow,
+  env,
+  fetchImpl,
+  costGate,
+  requestContext,
+  providerCallEvents,
+  imagePromptPlan
+}) {
+  const attempts = providerAttemptsForFlow(flow, env);
+  let fallbackQueued = false;
+  let madeLiveAttempt = false;
+  let madeReservationAttempt = false;
+  let lastFailure = flow.blockedReasons[0] ?? "Live card-image provider is disabled.";
+  let lastStatusCode = 503;
+  let lastAdapterId = flow.readyForLiveCalls ? flow.primaryAdapterId : "";
+  let lastExtraPayload = {};
+
+  for (const attempt of attempts) {
+    if (!attempt.flow.readyForLiveCalls) {
+      lastAdapterId = "";
+      if (attempt.index === 0 || madeReservationAttempt) {
+        lastFailure = attempt.flow.blockedReasons[0] ?? `Live provider calls disabled for ${flow.flowId}.`;
+      }
+      lastStatusCode = 503;
+      continue;
+    }
+    lastAdapterId = attempt.adapterId;
+    fallbackQueued = fallbackQueued || attempt.isFallback;
+
+    const reservation = await costGate.reserve(
+      aiCostGateInput({
+        flow: attempt.flow,
+        requestContext,
+        routeId: aiCardGenerateRoute,
+        requestUnits: imagePromptPlan.length,
+        phase: "card-image",
+        fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined,
+        metadata: {
+          panelCount: imagePromptPlan.length,
+          providerAttempt: attempt.index + 1,
+          fallbackAttempt: attempt.isFallback,
+          fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined
+        }
+      })
+    );
+    madeReservationAttempt = true;
+    providerCallEvents.push(reservation.event);
+    if (!reservation.ok) {
+      lastFailure = reservation.providerFailure;
+      lastStatusCode = reservation.statusCode ?? 503;
+      lastExtraPayload = reservation.payload;
+      continue;
+    }
+
+    const images = [];
+    try {
+      madeLiveAttempt = true;
+      for (const panelPrompt of imagePromptPlan) {
+        const imageUrl = await executeImageProvider({
+          flow: attempt.flow,
+          env,
+          fetchImpl,
+          panelId: panelPrompt.panel_id,
+          prompt: panelPrompt.prompt,
+          negativePrompt: panelPrompt.negative_prompt
+        });
+        if (!imageUrl) continue;
+        images.push({
+          panel_id: panelPrompt.panel_id,
+          image_url: imageUrl,
+          revised_prompt: panelPrompt.prompt,
+          width: 1500,
+          height: 2100
+        });
+      }
+      if (images.length !== imagePromptPlan.length) {
+        throw new Error("Image provider returned " + images.length + " of " + imagePromptPlan.length + " required panels.");
+      }
+      providerCallEvents.push(
+        await costGate.settle(reservation.reservation, {
+          status: "succeeded",
+          metadata: {
+            generatedPanelCount: images.length,
+            fallbackAttempt: attempt.isFallback,
+            fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined
+          }
+        })
+      );
+      return {
+        ok: true,
+        images,
+        adapterId: attempt.adapterId,
+        fallbackQueued,
+        madeLiveAttempt,
+        madeReservationAttempt
+      };
+    } catch (error) {
+      lastFailure = error instanceof Error ? error.message : "Provider image generation failed.";
+      lastStatusCode = 502;
+      lastExtraPayload = {};
+      providerCallEvents.push(
+        await costGate.settle(reservation.reservation, {
+          status: "failed",
+          errorClass: "provider-image-generation-failed",
+          metadata: {
+            providerFailure: lastFailure,
+            generatedPanelCount: images.length,
+            fallbackAttempt: attempt.isFallback,
+            fallbackFromAdapterId: attempt.isFallback ? flow.primaryAdapterId : undefined
+          }
+        })
+      );
+    }
+  }
+
+  return {
+    ok: false,
+    statusCode: lastStatusCode,
+    adapterId: lastAdapterId,
+    providerFailure: lastFailure,
+    fallbackQueued,
+    madeLiveAttempt,
+    madeReservationAttempt,
+    extraPayload: lastExtraPayload
+  };
+}
+
+function providerAttemptsForFlow(flow, env) {
+  const primaryAttempt = {
+    index: 0,
+    adapterId: flow.primaryAdapterId,
+    flow,
+    isFallback: false
+  };
+  if (!flow.fallbackQueueEnabled || !flow.fallbackAdapterId || flow.fallbackAdapterId === flow.primaryAdapterId) {
+    return [primaryAttempt];
+  }
+  return [
+    primaryAttempt,
+    {
+      index: 1,
+      adapterId: flow.fallbackAdapterId,
+      flow: flowForAdapter(flow, flow.fallbackAdapterId, env),
+      isFallback: true
+    }
+  ];
+}
+
+function flowForAdapter(flow, adapterId, env) {
+  const missingEnv = adapterMissingEnv(adapterId, env);
+  const blockedReasons = [
+    ...(flow.allowedAdapterIds.includes(adapterId) ? [] : [`Adapter ${adapterId} is not allowed for ${flow.flowId}.`]),
+    ...(flow.liveProviderCallsEnabled ? [] : [`Live provider calls disabled for ${flow.flowId}.`]),
+    ...missingEnv.map((missing) => `${adapterId} missing ${missing}.`),
+    ...(flow.rateLimitPerMinute > 0 ? [] : [`${flow.flowId} rate limit must be greater than zero.`]),
+    ...(flow.perRequestBudgetCents >= 0 && flow.monthlyBudgetCents >= 0
+      ? []
+      : [`${flow.flowId} budget controls must be non-negative.`])
+  ];
+  return {
+    ...flow,
+    primaryAdapterId: adapterId,
+    model: modelForAiAdapter(adapterId, env),
+    blockedReasons,
+    readyForLiveCalls: blockedReasons.length === 0
+  };
 }
 
 async function executeCloudflareWorkersAiChat({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
@@ -2577,69 +2760,23 @@ function buildCopyRepairPlan(input, themeGuide) {
 }
 
 function publicFlowState(flow, adapterId, providerFailure) {
-  return {
-    flow_id: flow.flowId,
-    adapter_id: adapterId,
-    primary_adapter_id: flow.primaryAdapterId,
-    fallback_adapter_id: flow.fallbackAdapterId,
-    model: flow.model,
-    rate_limit_per_minute: flow.rateLimitPerMinute,
-    monthly_budget_cents: flow.monthlyBudgetCents,
-    per_request_budget_cents: flow.perRequestBudgetCents,
-    queue_enabled: flow.queueEnabled,
-    fallback_queue_enabled: flow.fallbackQueueEnabled,
-    live_provider_calls_enabled: flow.readyForLiveCalls,
-    ready_for_live_calls: flow.readyForLiveCalls,
-    blocked_reasons: flow.blockedReasons,
-    provider_failure: providerFailure || undefined
-  };
+  return aiCardDraftPolicy.publicFlowState(flow, adapterId, providerFailure);
 }
 
 function publicProviderCallEvents(events) {
-  return events
-    .filter(Boolean)
-    .map((event) => ({
-      id: event.id,
-      tenant_id: event.tenantId,
-      route_id: event.routeId,
-      flow_id: event.flowId,
-      adapter_id: event.adapterId,
-      provider: event.provider,
-      capability: event.capability,
-      status: event.status,
-      fallback_reason: event.fallbackReason ?? undefined,
-      month_bucket: event.monthBucket,
-      request_units: event.requestUnits,
-      estimated_cost_cents: event.estimatedCostCents,
-      actual_cost_cents: event.actualCostCents ?? undefined,
-      rate_limit_window_start: event.rateLimitWindowStartIso,
-      live_network_call: event.liveNetworkCall,
-      metadata: event.metadata
-    }));
+  return aiCardDraftPolicy.publicProviderCallEvents(events);
 }
 
 function publicCostGateSummary(events) {
-  const publicEvents = publicProviderCallEvents(events);
-  const reservedEvents = publicEvents.filter((event) => event.status === "reserved");
-  return {
-    event_count: publicEvents.length,
-    reserved_or_spent_cents: reservedEvents
-      .reduce((total, event) => total + event.estimated_cost_cents, 0),
-    actual_spend_cents: publicEvents.reduce((total, event) => total + (event.actual_cost_cents ?? 0), 0),
-    request_units: reservedEvents.reduce((total, event) => total + event.request_units, 0),
-    live_network_calls: publicEvents.some((event) => event.live_network_call),
-    blocked_reasons: publicEvents
-      .filter((event) => event.status === "blocked" && event.fallback_reason)
-      .map((event) => event.fallback_reason)
-  };
+  return aiCardDraftPolicy.publicCostGateSummary(events);
 }
 
 function hasLiveProviderEvent(events) {
-  return publicProviderCallEvents(events).some((event) => event.status !== "blocked");
+  return aiCardDraftPolicy.hasLiveProviderEvent(events);
 }
 
 function hasExternalNetworkEvent(events) {
-  return publicProviderCallEvents(events).some((event) => event.live_network_call && event.status !== "blocked");
+  return aiCardDraftPolicy.hasExternalNetworkEvent(events);
 }
 
 function extractText(data) {

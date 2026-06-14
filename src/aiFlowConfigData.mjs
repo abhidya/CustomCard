@@ -54,11 +54,11 @@ export const aiFlowDefinitions = [
     label: "Card copy",
     capability: "text-chat",
     defaultPrimaryAdapterId: "huggingface-chat",
-    defaultFallbackAdapterId: "",
+    defaultFallbackAdapterId: "cloudflare-workers-ai-chat",
     allowedAdapterIds: textProviderAdapterIds,
     liveDefault: "auto",
     queueDefault: false,
-    fallbackQueueDefault: false,
+    fallbackQueueDefault: true,
     rateLimitPerMinute: 4,
     monthlyBudgetCents: 5000,
     perRequestBudgetCents: 5,
@@ -73,12 +73,12 @@ export const aiFlowDefinitions = [
     label: "Card image",
     capability: "image-generation",
     defaultPrimaryAdapterId: "deepai-text2img-image",
-    defaultFallbackAdapterId: "",
+    defaultFallbackAdapterId: "cloudflare-workers-ai-image",
     allowedAdapterIds: imageProviderAdapterIds,
     liveDefault: false,
     queueDefault: true,
-    fallbackQueueDefault: false,
-    rateLimitPerMinute: 4,
+    fallbackQueueDefault: true,
+    rateLimitPerMinute: 8,
     monthlyBudgetCents: 4000,
     perRequestBudgetCents: 1,
     maxRetries: 1,
@@ -427,10 +427,8 @@ function buildFallbackOverride(definition, env) {
 
 function pickConfiguredAiAdapter(definition, env) {
   if (isAiAdapterConfigured(definition.defaultPrimaryAdapterId, env)) return definition.defaultPrimaryAdapterId;
-  return definition.allowedAdapterIds.find((adapterId) => {
-    if (adapterId === definition.defaultFallbackAdapterId) return false;
-    return isAiAdapterConfigured(adapterId, env);
-  });
+  const configuredAdapterIds = definition.allowedAdapterIds.filter((adapterId) => isAiAdapterConfigured(adapterId, env));
+  return configuredAdapterIds.find((adapterId) => adapterId !== definition.defaultFallbackAdapterId) ?? configuredAdapterIds[0];
 }
 
 function normalizeAdapter(adapterId, allowedAdapterIds, fallback) {

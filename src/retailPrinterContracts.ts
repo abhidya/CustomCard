@@ -1,4 +1,4 @@
-import type { VendorId } from "./freeMvp";
+import type { VendorId } from "./customerWorkflow";
 import {
   retailPrinterRegistryOperationKinds,
   retailPrinterRegistryProductLinks,

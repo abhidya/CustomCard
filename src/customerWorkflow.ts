@@ -66,6 +66,7 @@ export type {
   MemoryItem,
   OpportunityDecision,
   SavedEvent,
+  TextAlignment,
   Tone,
   TonePreset,
   VendorHandoff,

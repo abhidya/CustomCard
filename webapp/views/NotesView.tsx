@@ -1,5 +1,5 @@
 import { ArrowRight, Eye } from "lucide-react";
-import type { CardDraft, CardHistoryEntry, CardLifecycleStatus } from "../../src/freeMvp";
+import type { CardDraft, CardHistoryEntry, CardLifecycleStatus } from "../../src/customerWorkflow";
 import type { DraftProgressStatus } from "../draftProgress";
 import { PanelArt } from "../ui";
 

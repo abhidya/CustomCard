@@ -1,6 +1,6 @@
 import { ArrowRight, Trash2, UserRound } from "lucide-react";
 import { useState } from "react";
-import type { CardHistoryEntry, MemoryItem } from "../../src/freeMvp";
+import type { CardHistoryEntry, MemoryItem } from "../../src/customerWorkflow";
 import { Field } from "../ui";
 
 interface PersonProfile {

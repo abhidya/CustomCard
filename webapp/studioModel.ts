@@ -9,7 +9,7 @@ import type {
   Tone,
   TonePreset,
   VisualStyle
-} from "../src/freeMvp";
+} from "../src/customerWorkflow";
 import type { AiPanelGenerationProgress, AiPanelGenerationStatus } from "../src/appStateOrchestrator";
 import { displayDraftValue } from "./draftProgress";
 import { cardTemplates, type CardTemplateChoice } from "./cardTemplates";

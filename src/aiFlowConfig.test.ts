@@ -37,14 +37,17 @@ describe("AI flow config", () => {
     const cardImage = configs.find((config) => config.flowId === "card-image");
 
     expect(cardCopy?.primaryAdapterId).toBe("huggingface-chat");
+    expect(cardCopy?.fallbackAdapterId).toBe("cloudflare-workers-ai-chat");
+    expect(cardCopy?.fallbackQueueEnabled).toBe(true);
     expect(cardCopy?.model).toBe("Qwen/Qwen3-235B-A22B-Instruct-2507");
     expect(cardCopy?.rateLimitPerMinute).toBe(4);
     expect(cardCopy?.perRequestBudgetCents).toBe(5);
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
     expect(cardImage?.primaryAdapterId).toBe("deepai-text2img-image");
     expect(cardImage?.model).toBe("text2img");
-    expect(cardImage?.fallbackAdapterId).toBe("");
-    expect(cardImage?.rateLimitPerMinute).toBe(4);
+    expect(cardImage?.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
+    expect(cardImage?.fallbackQueueEnabled).toBe(true);
+    expect(cardImage?.rateLimitPerMinute).toBe(8);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
     expect(cardImage?.liveProviderCallsEnabled).toBe(false);
   });
@@ -61,8 +64,10 @@ describe("AI flow config", () => {
     expect(cardCopy.rateLimitPerMinute).toBe(4);
     expect(cardCopy.readyForLiveCalls).toBe(true);
     expect(cardImage.primaryAdapterId).toBe("deepai-text2img-image");
+    expect(cardImage.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
+    expect(cardImage.fallbackQueueEnabled).toBe(true);
     expect(cardImage.model).toBe("text2img");
-    expect(cardImage.rateLimitPerMinute).toBe(4);
+    expect(cardImage.rateLimitPerMinute).toBe(8);
     expect(cardImage.perRequestBudgetCents).toBe(1);
     expect(cardImage.readyForLiveCalls).toBe(true);
   });
@@ -74,7 +79,7 @@ describe("AI flow config", () => {
     });
 
     expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
-    expect(flow.fallbackAdapterId).toBe("");
+    expect(flow.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(flow.model).toBe("@cf/bytedance/stable-diffusion-xl-lightning");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
@@ -102,7 +107,7 @@ describe("AI flow config", () => {
     });
 
     expect(flow.primaryAdapterId).toBe("deepai-text2img-image");
-    expect(flow.fallbackAdapterId).toBe("");
+    expect(flow.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(flow.model).toBe("text2img");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
@@ -117,7 +122,7 @@ describe("AI flow config", () => {
     });
 
     expect(flow.primaryAdapterId).toBe("browser-svg-renderer");
-    expect(flow.fallbackAdapterId).toBe("");
+    expect(flow.fallbackAdapterId).toBe("cloudflare-workers-ai-image");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(false);
     expect(flow.blockedReasons).toEqual(

@@ -1,7 +1,7 @@
 import { CalendarCheck, CalendarClock, CalendarDays, CheckCircle2, RefreshCw, Settings2 } from "lucide-react";
 import { SignInButton } from "@clerk/react";
 import { useCallback, useEffect, useState } from "react";
-import type { CardOpportunity, FreeImportSignal } from "../../src/freeMvp";
+import type { CardOpportunity, FreeImportSignal } from "../../src/customerWorkflow";
 import type { CalendarConnectionStartPacket } from "../../src/onboardingCalendar";
 // The example mirrors what a real person would paste — never raw calendar wire format.
 const exampleInviteText =

@@ -27,7 +27,7 @@ import type {
   CardTextLayout,
   MemoryItem,
   TextAlignment,
-} from "../../src/freeMvp";
+} from "../../src/customerWorkflow";
 import type { AiPanelGenerationProgress, AiPanelGenerationStatus } from "../../src/appStateOrchestrator";
 import type { CalendarMomentDraftContext } from "../calendarMomentDraft";
 import {
