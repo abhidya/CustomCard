@@ -6,6 +6,17 @@
 
 export { CustomCardClient } from "./client.js";
 
+// Simple, card-centric facade — the recommended starting point.
+export {
+  CustomCard,
+  type CustomCardOptions,
+  type CardRequest,
+  type CardHandle,
+  type CardStatus,
+  type Card,
+  type BatchResult,
+} from "./simple.js";
+
 export {
   type CustomCardClientOptions,
   type FetchLike,

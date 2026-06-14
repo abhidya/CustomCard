@@ -8,6 +8,9 @@ follows [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Initial release of the official CustomCard client SDK.
+- `CustomCard` — a simple, card-centric client covering auth, card creation,
+  status, loading, and batch operations, with a guide at
+  `docs/simple-client.md`. Recommended starting point.
 - `CustomCardClient` with resource namespaces: `health`, `customer`, `ai`,
   `imports`, `cards`, `privacy`, `retail`, `walgreens`, `admin`, and `public`.
 - Coverage for all customer, admin, and public API routes.

@@ -26,27 +26,61 @@ pnpm add @customcard/sdk
 yarn add @customcard/sdk
 ```
 
-## Quick start
+## Two ways to use it
+
+- **`CustomCard`** — a small, card-centric client that covers the common flow
+  (auth, create a card, status, load, batch) and hides the job queue / polling /
+  idempotency plumbing. **Start here.** Full guide:
+  [docs/simple-client.md](docs/simple-client.md).
+- **`CustomCardClient`** — the full low-level client with one method per API
+  route, for complete coverage and fine-grained control.
+
+## Quick start (simple client)
+
+```ts
+import { CustomCard } from "@customcard/sdk";
+
+const cc = new CustomCard({
+  baseUrl: "https://customcard-three.vercel.app",
+  token: process.env.CUSTOMCARD_CUSTOMER_TOKEN, // customer-session token or Clerk JWT
+});
+
+// Create a card and wait for the finished result
+const card = await cc.createCardAndWait({
+  from: "Sam",
+  to: "Alex",
+  occasion: "birthday",
+  tone: "warm",
+});
+console.log(card.copy, card.images);
+
+// Or non-blocking: create now, check/load later
+const { id } = await cc.createCard({ from: "Sam", to: "Jordan", occasion: "thank you" });
+const status = await cc.getStatus(id); // "pending" | "ready" | "failed"
+const loaded = await cc.getCard(id);
+
+// Batch — bounded concurrency, order preserved, per-item results
+const results = await cc.createCardsAndWait([
+  { from: "Sam", to: "Alex" },
+  { from: "Sam", to: "Pat" },
+]);
+```
+
+## Quick start (full client)
 
 ```ts
 import { CustomCardClient } from "@customcard/sdk";
 
 const client = new CustomCardClient({
   baseUrl: "https://customcard-three.vercel.app",
-  customerToken: process.env.CUSTOMCARD_CUSTOMER_TOKEN, // customer-session token or Clerk JWT
+  customerToken: process.env.CUSTOMCARD_CUSTOMER_TOKEN,
 });
 
-// Public — no auth required
 const health = await client.health.check();
-console.log(health.status, "real orders:", health.realOrdersEnabled);
-
-// Customer — generate a card and wait for the queued result
 const job = await client.ai.generateCardAndWait({
   sender: "Sam",
   recipient: "Alex",
-  relationship: "sibling",
   occasion: "birthday",
-  tone: "warm",
 });
 console.log(job.result);
 ```
