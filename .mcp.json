@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "customcard": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--disable-warning=ExperimentalWarning", "mcp/server.mjs"]
+    }
+  }
+}

@@ -69,6 +69,7 @@
     "migrate": "node scripts/migrate.mjs",
     "runtime:doctor": "node scripts/validate-runtime-env.mjs",
     "worker": "node scripts/worker.mjs",
+    "mcp:serve": "node --disable-warning=ExperimentalWarning mcp/server.mjs",
     "mobile:release:doctor": "npm --prefix apps/mobile run release:doctor"
   },
   "dependencies": {
