@@ -2,9 +2,18 @@ node_modules/
 dist/
 coverage/
 .omx/
+.codex/
+.tmp/
 .DS_Store
 *.local
 .vercel
+
+# Local agent skill installs
+.impeccable/
+.claude/skills/impeccable/
+.claude/skills/ui-ux-pro-max/
+.github/skills/
+
 card_gen/.venv/
 card_gen/**/__pycache__/
 card_gen/**/*.pyc

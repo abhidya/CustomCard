@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCardGenSidecarContract,
   buildStubCardGenResponse,
+  cardGenSchemaContract,
   requiredCardPanelIds,
   validateCardGenRequest,
   validateCardGenResponse,
@@ -58,6 +59,33 @@ const validResponse: CardGenResponse = {
 };
 
 describe("buildCardGenSidecarContract", () => {
+  it("exports the shared sidecar schema contract", () => {
+    expect(cardGenSchemaContract.request.wireFields).toEqual([
+      "sender",
+      "recipient",
+      "relationship",
+      "occasion",
+      "tone",
+      "style",
+      "language",
+      "personal_note",
+      "memory_notes"
+    ]);
+    expect(cardGenSchemaContract.request.requiredWireFields).toEqual([
+      "sender",
+      "recipient",
+      "relationship",
+      "occasion",
+      "tone",
+      "style"
+    ]);
+    expect(cardGenSchemaContract.request.fieldLimits.memory_notes).toMatchObject({
+      maxItems: 12,
+      itemMaxLength: 500
+    });
+    expect(cardGenSchemaContract.response.generatedBy).toEqual(["ai-text-only", "ai-text-and-image"]);
+  });
+
   it("uses the shared Render Packet panel order and target dimensions", () => {
     expect(requiredCardPanelIds).toEqual(renderPacketPanelIds);
     expect(renderPacketTarget).toMatchObject({ widthPixels: 1500, heightPixels: 2100, dpi: 300 });

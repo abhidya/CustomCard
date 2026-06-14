@@ -150,6 +150,10 @@ describe("object store runtime", () => {
 
     expect(downloaded.statusCode).toBe(200);
     expect(downloaded.contentType).toBe("image/svg+xml");
+    expect(downloaded.contentDisposition).toBe("attachment; filename=\"front.svg\"");
+    expect(downloaded.contentSecurityPolicy).toContain("sandbox");
+    expect(downloaded.crossOriginResourcePolicy).toBe("same-origin");
+    expect(downloaded.downloadOptions).toBe("noopen");
     expect(downloaded.body.toString("utf8")).toContain("Hello");
 
     const bucket = await runtime.listBucketArtifacts({
@@ -182,8 +186,52 @@ describe("object store runtime", () => {
     expect(bucket.payload.objects.find((object) => object.fileName === "front.svg")?.signedDownload?.url).toContain(
       "/api/artifacts/projects/project-test/render-packets/render-packet-test/front.svg?"
     );
+    expect(bucket.payload.objects.find((object) => object.fileName === "front.svg")?.downloadMode).toBe("attachment");
     expect(JSON.stringify(bucket.payload)).not.toContain("write-secret");
     expect(JSON.stringify(bucket.payload)).not.toContain("read-secret");
+  });
+
+  it("blocks unsafe SVG artifacts before object-store persistence", async () => {
+    const runtime = createObjectStoreRuntime({
+      env: objectStoreEnv,
+      now: () => new Date("2026-06-11T12:00:00.000Z")
+    });
+
+    const stored = await runtime.persistRenderPacketArtifacts({
+      record: {
+        id: "render-packet-unsafe-svg",
+        projectId: "project-unsafe-svg",
+        kind: "validated_print_packet",
+        locale: "en-US",
+        direction: "ltr",
+        safeZonePassed: true,
+        textOverflow: false,
+        checksum: "cc_unsafe_svg",
+        artifactManifest: { persistenceStatus: "pending", blockers: [] }
+      },
+      bodyText: JSON.stringify({
+        artifacts: [
+          {
+            kind: "panel-svg",
+            fileName: "front.svg",
+            mimeType: "image/svg+xml",
+            text: "<svg viewBox=\"0 0 1500 2100\"><script>alert(1)</script></svg>",
+            panelId: "front"
+          }
+        ]
+      })
+    });
+
+    expect(stored.record.kind).toBe("blocked");
+    expect(stored.record.artifactManifest).toMatchObject({
+      persistenceStatus: "blocked",
+      blockers: [expect.stringContaining("Unsafe SVG artifact content: front.svg")]
+    });
+    expect(stored.payload.artifactPersistence).toMatchObject({
+      status: "blocked",
+      storedArtifactCount: 1,
+      manifestStored: false
+    });
   });
 
   it("compresses generated raster data URLs into signed artifacts instead of inline response bytes", async () => {

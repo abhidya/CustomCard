@@ -48,21 +48,14 @@ import { jpegDataUrlToBytes, panelToJpegBase64 } from "./panelMediaAdapter";
 import { buildProofSignature } from "./proofApproval";
 import {
   adminNavItems,
+  buildAppShellViewModel,
   canEnterAdminSurface,
   customerNavItems,
   getAdminAccessStatus,
   getAdminSurfaceHeading,
   getAdminTargetLabel,
-  isAdminRoute,
   isBusinessRoute,
-  resolveActiveCustomerNavView,
   resolveCreateFlowEntryView,
-  resolveVisibleCustomerView,
-  shouldRenderBusinessLanding,
-  shouldRenderCustomerNav,
-  shouldShowCreateFlowStepper,
-  shouldShowCustomerCta,
-  shouldShowTopNav,
   type AdminAccessPolicy
 } from "./routePolicy";
 import { themes, useTheme } from "./theme";
@@ -149,11 +142,28 @@ export default function App() {
     printPackage
   } = state;
 
-  const isAdminView = isAdminRoute(activeView);
-  const showBusinessLanding = shouldRenderBusinessLanding(activeView, adminAccess.isAdmin);
-  const visibleCustomerView = resolveVisibleCustomerView(activeView);
-  const visibleNavView = resolveActiveCustomerNavView(activeView);
-  const renderCustomerNav = shouldRenderCustomerNav(useViewportWidth());
+  const viewportWidth = useViewportWidth();
+  const shellView = useMemo(
+    () =>
+      buildAppShellViewModel({
+        activeView,
+        hasCustomerNavItems: customerNavItems.length > 0,
+        isAdmin: adminAccess.isAdmin,
+        viewportWidth
+      }),
+    [activeView, adminAccess.isAdmin, viewportWidth]
+  );
+  const {
+    isAdminView,
+    showBusinessLanding,
+    visibleCustomerView,
+    visibleNavView,
+    renderCustomerNav,
+    showBottomNav,
+    showCreateFlowStepper,
+    showCustomerCta,
+    showTopNav
+  } = shellView;
   const displayPanels: CardPanel[] = activeDraft.panels;
   const displayDraft = activeDraft;
   const proofSignature = useMemo(() => buildProofSignature(displayDraft), [displayDraft]);
@@ -418,13 +428,6 @@ export default function App() {
 
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
-  const showTopNav = shouldShowTopNav({
-    hasCustomerNavItems: customerNavItems.length > 0,
-    isAdmin: adminAccess.isAdmin,
-    renderCustomerNav
-  });
-
-  const showBottomNav = !renderCustomerNav && !isAdminView;
 
   return (
     <div
@@ -491,7 +494,7 @@ export default function App() {
       </header>
 
       <main id="main-content">
-        {!isAdminView && shouldShowCreateFlowStepper(activeView) ? (
+        {showCreateFlowStepper ? (
           <CreateFlowStepper currentView={activeView} onNavigate={openView} />
         ) : null}
 
@@ -676,7 +679,7 @@ export default function App() {
 
       <AppFooter />
 
-      {shouldShowCustomerCta(activeView) ? <div className="ctadock">
+      {showCustomerCta ? <div className="ctadock">
         <span className="ctadock-progress" aria-hidden="true">
           <i data-done={true} />
           <i data-done={printing} />

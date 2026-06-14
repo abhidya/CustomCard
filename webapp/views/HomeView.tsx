@@ -156,12 +156,22 @@ export function HomeView({
           </p>
         </div>
         <div className="landingHeroVisual" aria-label="Example 5 by 7 card preview">
-          <img
-            alt="Premium folded greeting card and envelope"
-            className="landingHeroCard landingHeroProductImage"
-            decoding="async"
-            src="/generated/landing-hero-product.webp"
-          />
+          <div className="landingHeroStage">
+            <img
+              alt=""
+              aria-hidden="true"
+              className="landingHeroPeek"
+              decoding="async"
+              loading="lazy"
+              src={cardImageByCategory.birthday}
+            />
+            <img
+              alt="Premium folded greeting card and envelope"
+              className="landingHeroCard landingHeroProductImage"
+              decoding="async"
+              src="/generated/landing-hero-product.webp"
+            />
+          </div>
           <span className="landingHeroCaption">5 × 7 folded card · print-ready at 300 DPI</span>
         </div>
       </section>
@@ -244,9 +254,11 @@ export function HomeView({
         <div className="howitworksGrid">
           {howItWorksSteps.map((step, index) => (
             <article className="howstep" key={step.title}>
-              <span className="howstepIcon">{step.icon}</span>
-              <span className="howstepNum">{index + 1}</span>
-              <h3>{step.title}</h3>
+              <span className="howstepNum" aria-hidden="true">{index + 1}</span>
+              <h3>
+                <span className="howstepIcon" aria-hidden="true">{step.icon}</span>
+                {step.title}
+              </h3>
               <p>{step.body}</p>
             </article>
           ))}

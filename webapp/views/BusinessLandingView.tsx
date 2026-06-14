@@ -145,7 +145,6 @@ export function BusinessLandingView({
 
       <section className="businessSection" aria-label="Lifecycle card moments">
         <div className="businessSectionHead">
-          <p className="eyebrow">Lifecycle campaigns</p>
           <h2>Moments B2B buyers expect</h2>
           <p>These are the card-worthy customer events the landing page should demonstrate without promising automation prematurely.</p>
         </div>
@@ -161,7 +160,6 @@ export function BusinessLandingView({
 
       <section className="businessSection" aria-label="B2B landing page feature checklist">
         <div className="businessSectionHead">
-          <p className="eyebrow">What this page needs</p>
           <h2>Features that make the B2B offer credible</h2>
           <p>
             The page should sell an approval-safe lifecycle card workflow, not a generic card maker or a production CRM
@@ -181,7 +179,6 @@ export function BusinessLandingView({
 
       <section className="businessSection businessReadinessSection" aria-label="Business readiness boundaries">
         <div className="businessSectionHead">
-          <p className="eyebrow">Evidence honest</p>
           <h2>Ready locally, gated for production</h2>
           <p>Each public claim should map to a readiness item, and every blocked production action should say why.</p>
         </div>
@@ -198,7 +195,6 @@ export function BusinessLandingView({
 
       <section className="businessFinalCta" aria-label="Business final call to action">
         <div>
-          <p className="eyebrow">Private review flow</p>
           <h2>Start with one approved lifecycle card.</h2>
           <p>
             Import or paste a customer moment, approve the card, and export the proof before connecting live CRM,

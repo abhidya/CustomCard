@@ -7,6 +7,9 @@ const maxArtifactBytes = 8_000_000;
 const defaultBucketListLimit = 5;
 const maxBucketListObjects = 50;
 const memoryStores = new Map();
+const forceDownloadMimeTypes = new Set(["image/svg+xml", "application/pdf", "application/json"]);
+const attachmentContentSecurityPolicy =
+  "sandbox; default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'unsafe-inline'; form-action 'none'";
 
 export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...args) => globalThis.fetch(...args), now = () => new Date() } = {}) {
   const config = resolveObjectStoreConfig(env);
@@ -176,7 +179,8 @@ export function createObjectStoreRuntime({ env = process.env, fetchImpl = (...ar
         statusCode: 200,
         body: stored.body,
         contentType: stored.contentType,
-        cacheControl: "private, max-age=60"
+        cacheControl: "private, max-age=60",
+        ...artifactDownloadResponseHeaders({ contentType: stored.contentType, objectKey })
       };
     },
     async listBucketArtifacts({ query } = {}) {
@@ -610,6 +614,7 @@ function buildBucketObjectSummary({ object, config, expiresAtIso }) {
     fileName: object.key.split("/").pop() ?? object.key,
     byteLength: object.byteLength,
     contentType: object.contentType || "application/octet-stream",
+    downloadMode: shouldForceArtifactDownload(object.contentType) ? "attachment" : "inline",
     lastModifiedIso: object.lastModifiedIso || "",
     metadata: sanitizeObjectMetadata(metadata),
     signedDownload: signature
@@ -974,6 +979,10 @@ function validateStoredArtifacts(artifacts) {
     if (keys.has(artifact.objectKey)) blockers.push(`Duplicate artifact object key: ${artifact.objectKey}`);
     keys.add(artifact.objectKey);
     if (artifact.byteLength <= 0 || artifact.byteLength > maxArtifactBytes) blockers.push(`Invalid artifact byte length: ${artifact.fileName}`);
+    if (artifact.mimeType === "image/svg+xml") {
+      const svgIssue = unsafeSvgArtifactIssue(artifact.body);
+      if (svgIssue) blockers.push(`Unsafe SVG artifact content: ${artifact.fileName} (${svgIssue})`);
+    }
   }
   return blockers;
 }
@@ -1041,6 +1050,36 @@ function signaturePayloadFor(projectId, objectKey, artifactHash, expiresAtIso) {
 
 function contentHash(value) {
   return `sha256-${sha256Hex(value)}`;
+}
+
+function artifactDownloadResponseHeaders({ contentType, objectKey }) {
+  if (!shouldForceArtifactDownload(contentType)) return {};
+  return {
+    contentDisposition: `attachment; filename="${safeHeaderFileName(objectKey.split("/").pop() ?? "artifact")}"`,
+    contentSecurityPolicy: attachmentContentSecurityPolicy,
+    crossOriginResourcePolicy: "same-origin",
+    downloadOptions: "noopen"
+  };
+}
+
+function shouldForceArtifactDownload(contentType) {
+  const mimeType = String(contentType ?? "").split(";")[0].trim().toLowerCase();
+  return forceDownloadMimeTypes.has(mimeType) || mimeType.startsWith("text/");
+}
+
+function safeHeaderFileName(value) {
+  return String(value ?? "artifact").replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 120) || "artifact";
+}
+
+function unsafeSvgArtifactIssue(body) {
+  const text = body.toString("utf8", 0, Math.min(body.length, maxArtifactBytes));
+  if (!/<svg[\s>]/i.test(text)) return "missing svg root";
+  if (/<\s*script\b/i.test(text)) return "script element";
+  if (/\son[a-z]+\s*=/i.test(text)) return "event handler attribute";
+  if (/\bjavascript\s*:/i.test(text)) return "javascript URL";
+  if (/<\s*(?:foreignObject|iframe|object|embed|link|meta)\b/i.test(text)) return "active or embedded content element";
+  if (/\b(?:href|xlink:href|src)\s*=\s*["']?\s*(?:https?:|data:|\/\/)/i.test(text)) return "external or data URL reference";
+  return "";
 }
 
 function sha256Hex(value) {

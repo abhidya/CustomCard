@@ -34,6 +34,7 @@ import { buildAiCardGenerationHeaders, readAiGenerationResponse } from "../src/a
 import { jpegDataUrlByteLength, jpegDataUrlToBytes } from "../webapp/panelMediaAdapter";
 import {
   adminNavItems,
+  buildAppShellViewModel,
   createFlowStepIndex,
   createFlowSteps,
   customerNavItems,
@@ -125,6 +126,25 @@ describe("frontend architecture seams", () => {
     expect(shouldShowTopNav({ hasCustomerNavItems: true, isAdmin: false, renderCustomerNav: true })).toBe(true);
     expect(shouldShowTopNav({ hasCustomerNavItems: false, isAdmin: true, renderCustomerNav: true })).toBe(true);
     expect(shouldShowTopNav({ hasCustomerNavItems: true, isAdmin: true, renderCustomerNav: false })).toBe(false);
+
+    expect(buildAppShellViewModel({ activeView: "handoff", isAdmin: false, viewportWidth: 1280 })).toMatchObject({
+      isAdminView: false,
+      renderCustomerNav: true,
+      showBottomNav: false,
+      showCreateFlowStepper: true,
+      showCustomerCta: true,
+      showTopNav: true,
+      visibleCustomerView: "handoff",
+      visibleNavView: "customer"
+    });
+    expect(buildAppShellViewModel({ activeView: "admin", isAdmin: true, viewportWidth: 390 })).toMatchObject({
+      isAdminView: true,
+      renderCustomerNav: false,
+      showBottomNav: false,
+      showCreateFlowStepper: false,
+      showTopNav: false,
+      visibleCustomerView: "customer"
+    });
   });
 
   it("keeps the internal B2B landing admin-only until real marketing copy exists", () => {

@@ -32,3 +32,15 @@ export function createAiCardGenerationService(options?: {
   fetchImpl?: typeof fetch;
   costGate?: unknown;
 }): AiService;
+
+export function describeAiCardGenerationAdapters(): {
+  text: string[];
+  image: string[];
+};
+
+export function assertSafeGeneratedImageDownloadUrl(
+  imageUrl: string,
+  env?: Record<string, string | undefined>
+): Promise<string>;
+
+export function isPrivateGeneratedImageAddress(address: string): boolean;

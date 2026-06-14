@@ -17,6 +17,12 @@ describe("Walgreens hosted checkout", () => {
     expect(html).toContain('window.opener.postMessage(payload, "http://127.0.0.1:5173")');
   });
 
+  it("keeps callback script failures visible without blocking window close", () => {
+    const html = buildWalgreensCallbackHtml("http://127.0.0.1:5173/");
+    expect(html).toContain('console.error("CustomCard Walgreens checkout callback failed", error);');
+    expect(html).toContain("setTimeout(function () { window.close(); }, 1200);");
+  });
+
   it("explains PhotoPrints vendor-match credential errors", async () => {
     const fetchImpl = (async () =>
       new Response(JSON.stringify({ err: "659", errDesc: "" }), {

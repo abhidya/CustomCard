@@ -27,10 +27,6 @@ import type {
   CardTextLayout,
   MemoryItem,
   TextAlignment,
-  Tone,
-  TonePreset,
-  VisualStyle,
-  VisualStylePreset
 } from "../../src/freeMvp";
 import type { AiPanelGenerationProgress, AiPanelGenerationStatus } from "../../src/appStateOrchestrator";
 import type { CalendarMomentDraftContext } from "../calendarMomentDraft";
@@ -44,10 +40,27 @@ import {
 } from "../../src/panelEdits";
 import { displayDraftValue } from "../draftProgress";
 import { cardTemplates, type CardTemplateChoice } from "../cardTemplates";
+import {
+  buildStudioModel,
+  genericOccasion,
+  mergePanelTextFormat,
+  mergePanelTextLayout,
+  normalizeGenerationPanelIds,
+  panelArtworkLabel,
+  photoWindowTextLayoutPatch,
+  styleLabel,
+  styleLabels,
+  studioVisualStylePresets,
+  templatePanelPatch,
+  titleCase,
+  toggleGenerationPanelId,
+  toneImpliesHumor,
+  toneLabel,
+  toneLabels,
+  uploadedImagePanelPatch
+} from "../studioModel";
 import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
-const allTones: TonePreset[] = ["warm", "funny", "elegant", "simple", "reverent", "sentimental"];
-const styles: VisualStylePreset[] = ["botanical", "bold-type", "photo-note", "minimal"];
 const aiButtonLogoSrc = "/customcard-ai-button-logo.png";
 
 const imageFrameLabels: Record<CardImageFrame, string> = {
@@ -70,86 +83,6 @@ const alignmentIcons: Record<TextAlignment, typeof AlignLeft> = {
   right: AlignRight
 };
 
-const toneLabels: Record<TonePreset, string> = {
-  warm: "Warm",
-  funny: "Funny",
-  elegant: "Elegant",
-  simple: "Simple",
-  reverent: "Reverent",
-  sentimental: "Sentimental"
-};
-
-const styleLabels: Record<VisualStylePreset, string> = {
-  botanical: "Botanical",
-  "bold-type": "Bold type",
-  "photo-note": "Photo note",
-  minimal: "Minimal"
-};
-
-/** High-care occasions hide humor and add a review-everything banner. */
-export function isSensitiveOccasion(occasion: string): boolean {
-  return /sympath|grief|loss|condol|illness|sick|get well|apolog|memorial|funeral|miscarriage|divorce/i.test(occasion);
-}
-
-function titleCase(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function humanizeChoice(value: string): string {
-  return value
-    .split(/[-\s]+/)
-    .filter(Boolean)
-    .map(titleCase)
-    .join(" ");
-}
-
-function toneLabel(value: Tone): string {
-  return toneLabels[value as TonePreset] ?? humanizeChoice(value);
-}
-
-function styleLabel(value: VisualStyle): string {
-  return styleLabels[value as VisualStylePreset] ?? humanizeChoice(value);
-}
-
-function toneImpliesHumor(value: string): boolean {
-  return /\b(funny|playful|witty|humou?r)\b/i.test(value);
-}
-
-function defaultPanelTextLayout(panel: CardPanel): CardTextLayout {
-  const photoWindow = panel.imagePlacement?.frame === "photo-window";
-  return {
-    headlineZone: photoWindow ? "lower" : "upper",
-    bodyZone: photoWindow ? "bottom" : "center",
-    alignment: panel.rtl ? "right" : "center",
-    fontPairing: photoWindow ? "serif-sans" : "soft-serif",
-    colorMode: "dark-ink",
-    scale: "standard"
-  };
-}
-
-function mergePanelTextLayout(panel: CardPanel, patch: Partial<CardTextLayout>): CardTextLayout {
-  return { ...defaultPanelTextLayout(panel), ...panel.textLayout, ...patch };
-}
-
-function mergePanelTextFormat(
-  panel: CardPanel,
-  target: keyof CardTextFormat,
-  patch: NonNullable<CardTextFormat[keyof CardTextFormat]>
-): CardTextFormat {
-  return {
-    ...panel.textFormat,
-    [target]: {
-      ...panel.textFormat?.[target],
-      ...patch
-    }
-  };
-}
-
-function genericOccasion(value: string): boolean {
-  const normalized = value.trim().toLowerCase();
-  return normalized === "" || normalized === "card";
-}
-
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -162,58 +95,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-function panelArtworkLabel(panel: CardPanel, stale: boolean, status: AiPanelGenerationStatus | undefined): string {
-  if (stale) return "Needs review";
-  if (status === "queued") return "Queued";
-  if (status === "copy-ready") return "Copy ready";
-  if (status === "artwork-loading") return "Loading art";
-  if (status === "artwork-ready") return "Artwork ready";
-  if (status === "artwork-missing") return panel.imageUrl ? "Artwork ready" : "Copy ready";
-  if (panel.imageUrl) return "Artwork ready";
-  return "Template";
-}
-
-type GenerationStageState = "done" | "active" | "pending";
-
-function generationStages({
-  aiLoading,
-  aiActive,
-  panelProgress,
-  printFitPassed,
-  readyArtworkCount,
-  totalPanels
-}: {
-  aiLoading: boolean;
-  aiActive: boolean;
-  panelProgress: AiPanelGenerationProgress;
-  printFitPassed: boolean;
-  readyArtworkCount: number;
-  totalPanels: number;
-}): Array<{ label: string; state: GenerationStageState }> {
-  const statuses = Object.values(panelProgress);
-  const copyReady = statuses.some((status) => status !== "queued");
-  const artworkExpected = statuses.some((status) => status === "artwork-loading" || status === "artwork-ready");
-  const artworkDone = artworkExpected ? readyArtworkCount === totalPanels && totalPanels > 0 : aiActive;
-  const artworkLabel = artworkExpected ? `Loading artwork (${readyArtworkCount}/${totalPanels})` : "Applying panel copy";
-
-  if (aiLoading) {
-    return [
-      { label: "Writing editable copy", state: copyReady ? "done" : "active" },
-      { label: artworkLabel, state: copyReady ? (artworkDone ? "done" : "active") : "pending" },
-      { label: "Checking print fit", state: artworkDone ? "active" : "pending" },
-      { label: "Ready for review", state: "pending" }
-    ];
-  }
-  if (aiActive) {
-    return [
-      { label: "Writing editable copy", state: "done" },
-      { label: artworkLabel, state: artworkDone ? "done" : "active" },
-      { label: "Checking print fit", state: printFitPassed ? "done" : "active" },
-      { label: "Ready for review", state: printFitPassed ? "done" : "pending" }
-    ];
-  }
-  return [];
-}
+export { isSensitiveOccasion } from "../studioModel";
 
 export function StudioView({
   draft,
@@ -263,17 +145,36 @@ export function StudioView({
   const [templateReviewStarted, setTemplateReviewStarted] = useState(false);
   const [generationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
-  const frontPanel = draft.panels.find((candidate) => candidate.id === "front") ?? draft.panels[0];
-  const selectedTemplate = cardTemplates.find((template) => template.imageUrl === frontPanel?.imageUrl);
-  const selectedGenerationPanels = draft.panels.filter((candidate) => generationPanelIds.includes(candidate.id));
-  const approvedForRecipient = memories.filter((memory) => memory.approved).length;
-  const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
-  const totalPanels = draft.panels.length;
-  const setupRecipient = displayDraftValue(draftInput.recipient);
-  const activePanelStatus = aiPanelProgress[panel.id];
-  const sensitive = isSensitiveOccasion(draftInput.occasion);
-  const tones = sensitive ? allTones.filter((tone) => tone !== "funny") : allTones;
+  const {
+    activePanel: panel,
+    activePanelStatus,
+    aiNote,
+    aiState,
+    approvedForRecipient,
+    contextChecklist,
+    minContextReady,
+    proofWorkspaceVisible,
+    selectedGenerationPanels,
+    selectedTemplate,
+    sensitive,
+    setupRecipient,
+    stagePanelSummary,
+    stages,
+    tones
+  } = buildStudioModel({
+    activePanelId: activePanel,
+    aiActive,
+    aiLoading,
+    aiPanelProgress,
+    aiRequiresSignIn,
+    aiStatus,
+    draft,
+    draftInput,
+    generationPanelIds,
+    memories,
+    printFitPassed,
+    templateReviewStarted
+  });
 
   // High-care occasions never keep a humorous tone selected.
   useEffect(() => {
@@ -281,49 +182,10 @@ export function StudioView({
   }, [draftInput.tone, onField, sensitive]);
   useEffect(() => {
     setGenerationPanelIds((current) => {
-      if (current.length > 0 && current.every((panelId) => draft.panels.some((candidate) => candidate.id === panelId))) {
-        return current;
-      }
-      return draft.panels.some((candidate) => candidate.id === activePanel) ? [activePanel] : [draft.panels[0]?.id ?? "front"];
+      return normalizeGenerationPanelIds({ activePanelId: activePanel, draft, generationPanelIds: current });
     });
   }, [activePanel, draft.panels]);
-  const aiState = aiLoading ? "loading" : aiActive ? "ready" : "idle";
-  const stages = generationStages({
-    aiLoading,
-    aiActive,
-    panelProgress: aiPanelProgress,
-    printFitPassed,
-    readyArtworkCount: artworkCount,
-    totalPanels
-  });
-  const aiPanelSummary = aiActive
-    ? `${artworkCount}/${totalPanels} artwork panels ready`
-    : `${totalPanels} print panels`;
-  const stagePanelSummary = aiLoading
-    ? artworkCount > 0
-      ? `${artworkCount}/${totalPanels} panels ready`
-      : "Ready panels will appear here"
-    : aiPanelSummary;
-  // AI drafting needs the minimum relationship context to write something personal.
-  const contextChecklist = [
-    { label: "Recipient", done: displayDraftValue(draftInput.recipient).trim() !== "" },
-    { label: "Occasion", done: displayDraftValue(draftInput.occasion).trim() !== "" },
-    {
-      label: "Relationship or one personal detail",
-      done: draftInput.relationship.trim() !== "" || displayDraftValue(draftInput.personalNote).trim() !== ""
-    }
-  ];
-  const minContextReady = contextChecklist.every((item) => item.done);
-  const proofWorkspaceVisible = aiActive || aiLoading || templateReviewStarted;
-  const aiNote = aiRequiresSignIn
-    ? "AI drafting needs sign-in so your draft can be generated and saved. You can still make, edit, preview, and save a print package without AI."
-    : aiStatus
-      ? aiStatus
-      : aiActive
-        ? "Review the copy, artwork, and print fit before continuing."
-        : minContextReady
-          ? "We’ll write editable copy first, then load artwork panel by panel."
-          : "Add who it’s for, the occasion, and one real detail so the draft isn’t generic.";
+
   function handleTabKeys(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const lastIndex = draft.panels.length - 1;
     const nextIndexByKey: Partial<Record<string, number>> = {
@@ -357,23 +219,12 @@ export function StudioView({
     setTemplateReviewStarted(true);
     if (genericOccasion(draftInput.occasion)) onField("occasion", template.occasion);
     onField("style", template.styleId);
-    onPanelEdit("front", {
-      artDirection: template.artDirection,
-      imagePlacement: template.imagePlacement,
-      imageUrl: template.imageUrl,
-      styleId: template.styleId,
-      textLayout: template.textLayout
-    });
+    onPanelEdit("front", templatePanelPatch(template));
   }
 
   function toggleGenerationPanel(panelId: CardPanel["id"]) {
     setGenerationPanelIds((current) => {
-      const next = current.includes(panelId)
-        ? current.length === 1
-          ? current
-          : current.filter((candidate) => candidate !== panelId)
-        : [...current, panelId];
-      return draft.panels.map((candidate) => candidate.id).filter((candidate) => next.includes(candidate));
+      return toggleGenerationPanelId({ current, draft, panelId });
     });
   }
 
@@ -574,7 +425,7 @@ export function StudioView({
               <Chips
                 format={(value) => styleLabels[value]}
                 onValue={(value) => onField("style", value)}
-                options={styles}
+                options={studioVisualStylePresets}
                 value={draftInput.style}
               />
               <input
@@ -1044,10 +895,7 @@ function PanelEditor({
     const nextPlacement = { ...placement, ...patch };
     onPanelEdit(panel.id, {
       imagePlacement: nextPlacement,
-      textLayout:
-        nextPlacement.frame === "photo-window"
-          ? mergePanelTextLayout(panel, { headlineZone: "lower", bodyZone: "bottom", alignment: "center" })
-          : panel.textLayout
+      textLayout: photoWindowTextLayoutPatch(panel, nextPlacement)
     });
   }
 
@@ -1056,17 +904,7 @@ function PanelEditor({
     event.currentTarget.value = "";
     if (!file || !file.type.startsWith("image/")) return;
     const imageUrl = await readFileAsDataUrl(file);
-    onPanelEdit(panel.id, {
-      artDirection: `Customer uploaded image: ${file.name}`,
-      imagePlacement: { frame: "photo-window", focus: "center" },
-      imageUrl,
-      textLayout: mergePanelTextLayout(panel, {
-        alignment: "center",
-        bodyZone: "bottom",
-        colorMode: "dark-ink",
-        headlineZone: "lower"
-      })
-    });
+    onPanelEdit(panel.id, uploadedImagePanelPatch(panel, file.name, imageUrl));
   }
 
   return (

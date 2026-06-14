@@ -1,15 +1,23 @@
+import { lookup as lookupDns } from "node:dns/promises";
 import { existsSync, readFileSync } from "node:fs";
+import { isIP } from "node:net";
 import { resolve } from "node:path";
 import {
   normalizeAiFlowAdminConfigs,
   resolveAiFlowConfig
 } from "../src/aiFlowConfigData.mjs";
 import { createAiFlowCostGate } from "./ai-flow-cost-gate.mjs";
+import {
+  createAiProviderExecutionAdapter,
+  openAiCompatibleTextAdapterIds
+} from "./ai-provider-execution-adapter.mjs";
 
 export const aiCardGenerateRoute = "/api/ai/card/generate";
 export const aiChatRespondRoute = "/api/ai/chat/respond";
 
 const requiredPanelIds = ["front", "inside-left", "inside-right", "back"];
+const maxMaterializedImageBytes = 8_000_000;
+const materializedImageFetchTimeoutMs = 15_000;
 const textLayoutEnums = {
   headline_zone: ["top", "upper", "center", "lower"],
   body_zone: ["upper", "center", "lower", "bottom"],
@@ -553,205 +561,227 @@ function isAiEnvKey(key) {
   return /^(CUSTOMCARD_AI_|ANTHROPIC_|OPENAI_|CLOUDFLARE_|GOOGLE_|GEMINI_|HUGGINGFACE_|GROQ_|TOGETHER_|MISTRAL_|DEEPSEEK_|DEEPAI_|FIREWORKS_|PERPLEXITY_|XAI_|REPLICATE_|STABILITY_|FAL_|BFL_)/.test(key);
 }
 
-async function executeTextProvider({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
-  const adapterId = flow.primaryAdapterId;
-  if (adapterId === "cloudflare-workers-ai-chat") {
-    const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
-    const token = env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
-    const data = await postJson(fetchImpl, `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`, {
-      headers: { authorization: `Bearer ${token}` },
-      body: {
-        model: flow.model,
-        messages: buildMessages(systemPrompt, userPrompt),
-        max_tokens: flow.maxTokens || 700,
-        temperature: flow.temperature,
-        ...(responseFormat ? { response_format: responseFormat } : {})
-      }
-    });
-    return extractText(data);
-  }
+const textProviderExecutors = {
+  "cloudflare-workers-ai-chat": executeCloudflareWorkersAiChat,
+  "openai-responses-chat": executeOpenAiResponsesChat,
+  "anthropic-messages-chat": executeAnthropicMessagesChat,
+  "google-gemini-chat": executeGoogleGeminiChat
+};
+const imageProviderExecutors = {
+  "cloudflare-workers-ai-image": executeCloudflareWorkersAiImage,
+  "openai-images": executeOpenAiImages,
+  "google-gemini-image": executeGoogleGeminiImage,
+  "huggingface-image": executeHuggingFaceImage,
+  "deepai-text2img-image": executeDeepAiText2ImgImage
+};
+const providerExecutionAdapter = createAiProviderExecutionAdapter({
+  textProviderExecutors,
+  imageProviderExecutors,
+  openAiCompatibleAdapter,
+  executeOpenAiCompatibleTextProvider
+});
 
-  if (adapterId === "openai-responses-chat") {
-    const textFormat = buildOpenAiResponsesTextFormat(responseFormat);
-    const data = await postJson(fetchImpl, "https://api.openai.com/v1/responses", {
-      headers: { authorization: `Bearer ${requiredEnv(env, "OPENAI_API_KEY")}` },
-      body: {
-        model: flow.model,
-        input: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_output_tokens: flow.maxTokens || 700,
-        temperature: flow.temperature,
-        ...(textFormat ? { text: { format: textFormat } } : {})
-      }
-    });
-    return extractText(data);
-  }
-
-  if (adapterId === "anthropic-messages-chat") {
-    const data = await postJson(fetchImpl, "https://api.anthropic.com/v1/messages", {
-      headers: {
-        "anthropic-version": "2023-06-01",
-        "x-api-key": requiredEnv(env, "ANTHROPIC_API_KEY")
-      },
-      body: {
-        model: flow.model,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
-        max_tokens: flow.maxTokens || 700,
-        temperature: flow.temperature
-      }
-    });
-    return extractText(data);
-  }
-
-  if (adapterId === "google-gemini-chat") {
-    const model = encodeURIComponent(flow.model);
-    const data = await postJson(
-      fetchImpl,
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        headers: { "x-goog-api-key": requiredEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY") },
-        body: {
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-          generationConfig: {
-            maxOutputTokens: flow.maxTokens || 700,
-            temperature: flow.temperature,
-            ...(responseFormat ? { responseFormat: buildGeminiTextResponseFormat(responseFormat) } : {})
-          }
-        }
-      }
-    );
-    return extractText(data);
-  }
-
-  const compatible = openAiCompatibleAdapter(adapterId, env);
-  if (compatible) {
-    const data = await postJson(fetchImpl, compatible.url, {
-      headers: compatible.headers,
-      body: {
-        model: flow.model,
-        messages: buildMessages(systemPrompt, userPrompt),
-        max_tokens: flow.maxTokens || 700,
-        temperature: flow.temperature
-      }
-    });
-    return extractText(data);
-  }
-
-  throw new Error(`Adapter ${adapterId} is configured but not executable in this runtime yet.`);
+export function describeAiCardGenerationAdapters() {
+  return providerExecutionAdapter.describe();
 }
 
-async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
-  if (flow.primaryAdapterId === "cloudflare-workers-ai-image") {
-    const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
-    const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
-    const requestBody = buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt });
-    const response = await fetchWithProviderBackoff(
-      fetchImpl,
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${flow.model}`,
-      {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-      },
-      { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
-    );
-    if (!response.ok) throw new Error(`Cloudflare image provider returned ${response.status}.`);
-    const contentType = response.headers?.get?.("content-type") ?? "";
-    if (contentType.startsWith("image/")) {
-      const buffer = Buffer.from(await response.arrayBuffer());
-      return `data:${contentType};base64,${buffer.toString("base64")}`;
+async function executeTextProvider(input) {
+  return providerExecutionAdapter.executeText(input);
+}
+
+async function executeCloudflareWorkersAiChat({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
+  const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
+  const token = env.CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
+  const data = await postJson(fetchImpl, `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`, {
+    headers: { authorization: `Bearer ${token}` },
+    body: {
+      model: flow.model,
+      messages: buildMessages(systemPrompt, userPrompt),
+      max_tokens: flow.maxTokens || 700,
+      temperature: flow.temperature,
+      ...(responseFormat ? { response_format: responseFormat } : {})
     }
-    return materializeGeneratedImageUrl(await extractImageUrl(await response.json(), contentType), fetchImpl);
-  }
+  });
+  return extractText(data);
+}
 
-  if (flow.primaryAdapterId === "openai-images") {
-    const data = await postJson(fetchImpl, "https://api.openai.com/v1/images/generations", {
-      headers: { authorization: `Bearer ${requiredEnv(env, "OPENAI_API_KEY")}` },
+async function executeOpenAiResponsesChat({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
+  const textFormat = buildOpenAiResponsesTextFormat(responseFormat);
+  const data = await postJson(fetchImpl, "https://api.openai.com/v1/responses", {
+    headers: { authorization: `Bearer ${requiredEnv(env, "OPENAI_API_KEY")}` },
+    body: {
+      model: flow.model,
+      input: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      max_output_tokens: flow.maxTokens || 700,
+      temperature: flow.temperature,
+      ...(textFormat ? { text: { format: textFormat } } : {})
+    }
+  });
+  return extractText(data);
+}
+
+async function executeAnthropicMessagesChat({ flow, env, fetchImpl, systemPrompt, userPrompt }) {
+  const data = await postJson(fetchImpl, "https://api.anthropic.com/v1/messages", {
+    headers: {
+      "anthropic-version": "2023-06-01",
+      "x-api-key": requiredEnv(env, "ANTHROPIC_API_KEY")
+    },
+    body: {
+      model: flow.model,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+      max_tokens: flow.maxTokens || 700,
+      temperature: flow.temperature
+    }
+  });
+  return extractText(data);
+}
+
+async function executeGoogleGeminiChat({ flow, env, fetchImpl, systemPrompt, userPrompt, responseFormat }) {
+  const model = encodeURIComponent(flow.model);
+  const data = await postJson(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      headers: { "x-goog-api-key": requiredEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY") },
       body: {
-        model: flow.model,
-        prompt,
-        size: "1024x1536",
-        n: 1
-      }
-    });
-    return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
-  }
-
-  if (flow.primaryAdapterId === "google-gemini-image") {
-    const model = encodeURIComponent(flow.model);
-    const data = await postJson(
-      fetchImpl,
-      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`,
-      {
-        headers: { "x-goog-api-key": requiredEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY") },
-        body: {
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseModalities: ["Image"],
-            responseFormat: { image: { aspectRatio: "3:4", imageSize: "2K" } }
-          }
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          maxOutputTokens: flow.maxTokens || 700,
+          temperature: flow.temperature,
+          ...(responseFormat ? { responseFormat: buildGeminiTextResponseFormat(responseFormat) } : {})
         }
       }
-    );
-    return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl);
-  }
+    }
+  );
+  return extractText(data);
+}
 
-  if (flow.primaryAdapterId === "huggingface-image") {
-    const request = buildHuggingFaceImageRequestBody({ flow, env, panelId, prompt, negativePrompt });
-    const response = await fetchWithProviderBackoff(
-      fetchImpl,
-      request.url,
-      {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${requiredEnv(env, "HUGGINGFACE_API_TOKEN")}`,
-          "content-type": "application/json"
-        },
-        body: JSON.stringify(request.body)
+async function executeOpenAiCompatibleTextProvider({ flow, fetchImpl, systemPrompt, userPrompt }, compatible) {
+  const data = await postJson(fetchImpl, compatible.url, {
+    headers: compatible.headers,
+    body: {
+      model: flow.model,
+      messages: buildMessages(systemPrompt, userPrompt),
+      max_tokens: flow.maxTokens || 700,
+      temperature: flow.temperature
+    }
+  });
+  return extractText(data);
+}
+
+async function executeImageProvider(input) {
+  return providerExecutionAdapter.executeImage(input);
+}
+
+async function executeCloudflareWorkersAiImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
+  const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
+  const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
+  const requestBody = buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt });
+  const response = await fetchWithProviderBackoff(
+    fetchImpl,
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${flow.model}`,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json"
       },
-      { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
-    );
-    const contentType = response.headers?.get?.("content-type") ?? "";
-    if (!response.ok) {
-      throw new Error(`Hugging Face image provider returned ${response.status}: ${await readProviderError(response, contentType)}.`);
-    }
-    if (contentType.startsWith("image/")) {
-      const buffer = Buffer.from(await response.arrayBuffer());
-      return `data:${contentType};base64,${buffer.toString("base64")}`;
-    }
-    const data = await response.json().catch(() => undefined);
-    return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl);
+      body: JSON.stringify(requestBody)
+    },
+    { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
+  );
+  if (!response.ok) throw new Error(`Cloudflare image provider returned ${response.status}.`);
+  const contentType = response.headers?.get?.("content-type") ?? "";
+  if (contentType.startsWith("image/")) {
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return `data:${contentType};base64,${buffer.toString("base64")}`;
   }
+  return materializeGeneratedImageUrl(await extractImageUrl(await response.json(), contentType), fetchImpl, env);
+}
 
-  if (flow.primaryAdapterId === "deepai-text2img-image") {
-    const body = new FormData();
-    body.set("text", buildDeepAiTextPrompt({ prompt, negativePrompt }));
-    const response = await fetchWithProviderBackoff(
-      fetchImpl,
-      "https://api.deepai.org/api/text2img",
-      {
-        method: "POST",
-        headers: { "api-key": requiredEnv(env, "DEEPAI_API_KEY") },
-        body
+async function executeOpenAiImages({ flow, env, fetchImpl, prompt }) {
+  const data = await postJson(fetchImpl, "https://api.openai.com/v1/images/generations", {
+    headers: { authorization: `Bearer ${requiredEnv(env, "OPENAI_API_KEY")}` },
+    body: {
+      model: flow.model,
+      prompt,
+      size: "1024x1536",
+      n: 1
+    }
+  });
+  return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl, env);
+}
+
+async function executeGoogleGeminiImage({ flow, env, fetchImpl, prompt }) {
+  const model = encodeURIComponent(flow.model);
+  const data = await postJson(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`,
+    {
+      headers: { "x-goog-api-key": requiredEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY") },
+      body: {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ["Image"],
+          responseFormat: { image: { aspectRatio: "3:4", imageSize: "2K" } }
+        }
+      }
+    }
+  );
+  return materializeGeneratedImageUrl(extractImageUrl(data, "image/png"), fetchImpl, env);
+}
+
+async function executeHuggingFaceImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
+  const request = buildHuggingFaceImageRequestBody({ flow, env, panelId, prompt, negativePrompt });
+  const response = await fetchWithProviderBackoff(
+    fetchImpl,
+    request.url,
+    {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${requiredEnv(env, "HUGGINGFACE_API_TOKEN")}`,
+        "content-type": "application/json"
       },
-      { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
-    );
-    const contentType = response.headers?.get?.("content-type") ?? "";
-    const data = await response.json().catch(() => undefined);
-    if (!response.ok) {
-      throw new Error(`DeepAI image provider returned ${response.status}: ${data?.err || data?.status || "request failed"}.`);
-    }
-    return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl);
+      body: JSON.stringify(request.body)
+    },
+    { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
+  );
+  const contentType = response.headers?.get?.("content-type") ?? "";
+  if (!response.ok) {
+    throw new Error(`Hugging Face image provider returned ${response.status}: ${await readProviderError(response, contentType)}.`);
   }
+  if (contentType.startsWith("image/")) {
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return `data:${contentType};base64,${buffer.toString("base64")}`;
+  }
+  const data = await response.json().catch(() => undefined);
+  return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl, env);
+}
 
-  throw new Error(`Image adapter ${flow.primaryAdapterId} is configured but not executable in this runtime yet.`);
+async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, prompt, negativePrompt }) {
+  const body = new FormData();
+  body.set("text", buildDeepAiTextPrompt({ prompt, negativePrompt }));
+  const response = await fetchWithProviderBackoff(
+    fetchImpl,
+    "https://api.deepai.org/api/text2img",
+    {
+      method: "POST",
+      headers: { "api-key": requiredEnv(env, "DEEPAI_API_KEY") },
+      body
+    },
+    { retries: flow.maxRetries, baseDelayMs: 1500, maxDelayMs: 5000 }
+  );
+  const contentType = response.headers?.get?.("content-type") ?? "";
+  const data = await response.json().catch(() => undefined);
+  if (!response.ok) {
+    throw new Error(`DeepAI image provider returned ${response.status}: ${data?.err || data?.status || "request failed"}.`);
+  }
+  return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl, env);
 }
 
 function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
@@ -2603,14 +2633,110 @@ function extractImageUrl(data, contentType) {
   return `data:${inferImageContentType(image, inlineImage?.mimeType || contentType)};base64,${image}`;
 }
 
-async function materializeGeneratedImageUrl(imageUrl, fetchImpl) {
+async function materializeGeneratedImageUrl(imageUrl, fetchImpl, env = process.env) {
   const value = String(imageUrl);
   if (!/^https?:\/\//i.test(value)) return value;
-  const response = await fetchImpl(value, { method: "GET" });
+  const safeUrl = await assertSafeGeneratedImageDownloadUrl(value, env);
+  const response = await fetchWithTimeout(fetchImpl, safeUrl, { method: "GET" }, materializedImageFetchTimeoutMs);
   if (!response.ok) throw new Error(`Generated image URL fetch failed with ${response.status}.`);
   const contentType = response.headers?.get?.("content-type") || "image/png";
+  if (!String(contentType).toLowerCase().startsWith("image/")) {
+    throw new Error("Generated image URL did not return an image content type.");
+  }
+  const contentLength = Number(response.headers?.get?.("content-length") ?? 0);
+  if (Number.isFinite(contentLength) && contentLength > maxMaterializedImageBytes) {
+    throw new Error("Generated image URL exceeded the maximum allowed size.");
+  }
   const buffer = Buffer.from(await response.arrayBuffer());
+  if (buffer.length > maxMaterializedImageBytes) {
+    throw new Error("Generated image URL exceeded the maximum allowed size.");
+  }
   return `data:${contentType};base64,${buffer.toString("base64")}`;
+}
+
+export async function assertSafeGeneratedImageDownloadUrl(imageUrl, env = process.env) {
+  let parsed;
+  try {
+    parsed = new URL(String(imageUrl));
+  } catch {
+    throw new Error("Generated image URL is invalid.");
+  }
+  if (parsed.protocol !== "https:") {
+    throw new Error("Generated image URL must use https.");
+  }
+  if (!isAllowedGeneratedImageDownloadHost(parsed.hostname, env)) {
+    throw new Error("Generated image URL host is not in the configured allowlist.");
+  }
+  await assertPublicGeneratedImageHost(parsed.hostname);
+  parsed.username = "";
+  parsed.password = "";
+  return parsed.toString();
+}
+
+function isAllowedGeneratedImageDownloadHost(hostname, env) {
+  const host = normalizeGeneratedImageHost(hostname);
+  const allowlist = String(env.CUSTOMCARD_AI_IMAGE_DOWNLOAD_ALLOWED_HOSTS ?? "")
+    .split(",")
+    .map((value) => normalizeGeneratedImageHost(value))
+    .filter(Boolean);
+  if (allowlist.length === 0) return true;
+  return allowlist.some((allowedHost) => host === allowedHost || host.endsWith(`.${allowedHost}`));
+}
+
+async function assertPublicGeneratedImageHost(hostname) {
+  const host = normalizeGeneratedImageHost(hostname);
+  if (isIP(host)) {
+    if (isPrivateGeneratedImageAddress(host)) throw new Error("Generated image URL resolved to a private network address.");
+    return;
+  }
+  let addresses;
+  try {
+    addresses = await lookupDns(host, { all: true, verbatim: false });
+  } catch {
+    throw new Error("Generated image URL host could not be resolved.");
+  }
+  if (addresses.length === 0) throw new Error("Generated image URL host could not be resolved.");
+  if (addresses.some((entry) => isPrivateGeneratedImageAddress(entry.address))) {
+    throw new Error("Generated image URL resolved to a private network address.");
+  }
+}
+
+export function isPrivateGeneratedImageAddress(address) {
+  const value = String(address ?? "").trim().toLowerCase();
+  if (!value) return true;
+  if (value.startsWith("::ffff:")) return isPrivateGeneratedImageAddress(value.slice("::ffff:".length));
+  if (isIP(value) === 6) {
+    return value === "::" || value === "::1" || value.startsWith("fc") || value.startsWith("fd") || value.startsWith("fe80:");
+  }
+  if (isIP(value) !== 4) return true;
+  const octets = value.split(".").map((part) => Number(part));
+  if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) return true;
+  const [first, second] = octets;
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    first >= 224 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && (second === 0 || second === 168)) ||
+    (first === 198 && (second === 18 || second === 19))
+  );
+}
+
+function normalizeGeneratedImageHost(value) {
+  return String(value ?? "").trim().toLowerCase().replace(/^\.+|\.+$/g, "");
+}
+
+async function fetchWithTimeout(fetchImpl, url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function extractInlineImage(data) {

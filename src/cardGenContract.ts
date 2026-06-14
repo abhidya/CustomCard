@@ -19,9 +19,12 @@ import {
   renderPacketTarget,
   type RenderPacketPanelId
 } from "./renderPacketContract";
+import cardGenSchemaContractData from "../card-gen-contract.json";
 
 export type CardPanelId = RenderPacketPanelId;
 export type CardGenMode = "ai-text-only" | "ai-text-and-image";
+
+export const cardGenSchemaContract = cardGenSchemaContractData;
 
 /** POST /generate request body — mirrors CardDraftInput in domain.py */
 export interface CardGenRequest {
@@ -108,6 +111,7 @@ export interface CardGenSidecarContract {
 }
 
 export const requiredCardPanelIds: CardPanelId[] = [...renderPacketPanelIds];
+const cardGenGeneratedByModes = new Set<string>(cardGenSchemaContract.response.generatedBy);
 
 /** Build the sidecar contract from env. baseUrl null = gate closed. */
 export function buildCardGenSidecarContract(env: {
@@ -212,7 +216,7 @@ export function validateCardGenResponse(response: CardGenResponse): string[] {
     }
   }
 
-  if (!["ai-text-only", "ai-text-and-image"].includes(response.generatedBy)) {
+  if (!cardGenGeneratedByModes.has(response.generatedBy)) {
     issues.push(`Card gen generatedBy must be ai-text-only or ai-text-and-image, got: ${response.generatedBy}.`);
   }
   if (response.generatedBy === "ai-text-and-image" && response.images.length === 0) {

@@ -1,12 +1,34 @@
 import { describe, expect, it } from "vitest";
 import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
-import { createApiRuntime, postgresPoolConfig } from "../scripts/api-runtime.mjs";
+import { createApiRuntime, describeApiRoutePersistenceAdapters, postgresPoolConfig } from "../scripts/api-runtime.mjs";
 import { createPostgresRuntime } from "../scripts/postgres-runtime.mjs";
 
 const renderPacketsRoute = apiRouteContracts.find((route) => route.id === "render-packets")!;
 const calendarConnectionStartRoute = apiRouteContracts.find((route) => route.id === "calendar-connection-start")!;
+const persistedMutationRouteIds = [
+  "admin-card-gallery-save",
+  "card-projects",
+  "customer-draft-state-save",
+  "data-requests",
+  "import-preview",
+  "manual-vendor-handoff",
+  "relationship-memories",
+  "render-packets"
+];
 
 describe("api runtime safety", () => {
+  it("keeps route-specific persistence behind explicit adapters", () => {
+    expect(describeApiRoutePersistenceAdapters()).toEqual({
+      memory: persistedMutationRouteIds,
+      postgres: persistedMutationRouteIds
+    });
+
+    for (const routeId of persistedMutationRouteIds) {
+      const route = apiRouteContracts.find((candidate) => candidate.id === routeId);
+      expect(route?.method).toBe("POST");
+    }
+  });
+
   it("keeps contract-runtime provider routes behind a bearer boundary", async () => {
     const runtime = createApiRuntime({
       env: { CUSTOMCARD_API_RUNTIME: "contract" },

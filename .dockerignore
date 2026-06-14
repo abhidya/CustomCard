@@ -1,0 +1,22 @@
+# Secret values must come from deployment secret managers, never Docker context.
+.env*
+infra/env/.env*
+
+# VCS and dependency/cache output.
+.git
+.gitignore
+node_modules
+apps/mobile/node_modules
+coverage
+dist
+
+# Local evidence and generated working state.
+docs/evidence
+.omx
+.claude
+.DS_Store
+
+# Python/build cache.
+card_gen/.venv
+card_gen/**/__pycache__
+card_gen/**/*.pyc

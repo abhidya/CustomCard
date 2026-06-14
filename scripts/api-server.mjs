@@ -15,31 +15,20 @@ import {
 } from "../src/retailPrinterOperationStartData.mjs";
 import {
   buildRetailPrinterCouponPortalEvidenceResponse,
-  missingRetailPrinterCouponPortalEvidenceFields,
-  retailPrinterCouponPortalEvidenceRoute
+  missingRetailPrinterCouponPortalEvidenceFields
 } from "../src/retailPrinterCouponPortalEvidenceData.mjs";
 import { resolveImportPreviewMetadata } from "../src/importPreviewMetadata.mjs";
 import {
-  WALGREENS_CHECKOUT_MAX_IMAGE_BYTES,
-  buildWalgreensCallbackHtml,
-  createWalgreensHostedCheckoutService,
-  formatWalgreensCheckoutUpstreamError,
-  walgreensCheckoutCallbackRoute,
-  walgreensCheckoutSessionRoute,
-  walgreensCheckoutStatusRoute,
-  walgreensCheckoutUploadRoute
+  createWalgreensHostedCheckoutService
 } from "../src/walgreensHostedCheckout.mjs";
-import { mobileBootstrap } from "../src/mobileBootstrapData.mjs";
 import { createApiRuntime } from "./api-runtime.mjs";
 import {
+  createApiRouteFamilyAdapter,
   googleCalendarApiOAuthCallbackRoute,
   googleCalendarOAuthCallbackRoute
-} from "./api-route-adapter-contract.mjs";
-import { createApiRouteFamilies } from "./api-route-families.mjs";
+} from "./api-route-family-adapter.mjs";
 import { apiRouteContracts, hostedCheckoutExemptRouteIds, requiredApiRoutePaths } from "../src/apiRouteContractsData.mjs";
 import {
-  aiCardGenerateRoute,
-  aiChatRespondRoute,
   createAiCardGenerationService,
   loadLocalAiEnvFiles
 } from "./ai-card-generator.mjs";
@@ -106,7 +95,6 @@ function parseLocalEnv(text) {
 const walgreensRateBuckets = new Map();
 const WALGREENS_RATE_LIMIT = 30;
 const WALGREENS_RATE_WINDOW_MS = 60_000;
-const WALGREENS_UPLOAD_BODY_LIMIT = Math.ceil((WALGREENS_CHECKOUT_MAX_IMAGE_BYTES * 4) / 3) + 2_000_000;
 
 function walgreensRateLimited(request) {
   const key = clientRateLimitKey(request);
@@ -324,34 +312,22 @@ const aiGenerationService = createAiCardGenerationService({
       : undefined
   })
 });
-const apiRouteFamilies = createApiRouteFamilies({
-  aiCardGenerateRoute,
-  aiChatRespondRoute,
+const apiRouteFamilies = createApiRouteFamilyAdapter({
   aiGenerationService,
   apiRuntime,
   buildMutationContractPayload,
-  buildRetailPrinterOperationStartPackets,
-  buildWalgreensCallbackHtml,
   calendarConnectionLifecycle: handleCalendarConnectionLifecycle,
   calendarConnectionStartPackets,
   clientRateLimitKey,
   decodeArtifactObjectKey,
-  formatWalgreensCheckoutUpstreamError,
-  mobileBootstrap,
   readRequestBody,
   readiness,
-  retailPrinterCouponPortalEvidenceRoute,
   routes,
   sendArtifact,
   sendHtml,
   sendJson,
   walgreensCheckout,
-  walgreensCheckoutCallbackRoute,
-  walgreensCheckoutSessionRoute,
-  walgreensCheckoutStatusRoute,
-  walgreensCheckoutUploadRoute,
-  walgreensRateLimited,
-  walgreensUploadBodyLimit: WALGREENS_UPLOAD_BODY_LIMIT
+  walgreensRateLimited
 });
 
 if (process.argv.includes("--doctor")) {
@@ -498,6 +474,10 @@ function sendArtifact(response, artifact) {
   response.setHeader("Content-Type", artifact.contentType ?? "application/octet-stream");
   response.setHeader("Content-Length", String(artifact.body.length));
   applySecurityHeaders(response, artifact.cacheControl ?? "private, max-age=60");
+  if (artifact.contentDisposition) response.setHeader("Content-Disposition", artifact.contentDisposition);
+  if (artifact.contentSecurityPolicy) response.setHeader("Content-Security-Policy", artifact.contentSecurityPolicy);
+  if (artifact.crossOriginResourcePolicy) response.setHeader("Cross-Origin-Resource-Policy", artifact.crossOriginResourcePolicy);
+  if (artifact.downloadOptions) response.setHeader("X-Download-Options", artifact.downloadOptions);
   response.end(artifact.body);
 }
 

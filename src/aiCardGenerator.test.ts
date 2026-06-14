@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAiCardGenerationService } from "../scripts/ai-card-generator.mjs";
+import {
+  assertSafeGeneratedImageDownloadUrl,
+  createAiCardGenerationService,
+  describeAiCardGenerationAdapters,
+  isPrivateGeneratedImageAddress
+} from "../scripts/ai-card-generator.mjs";
 import { buildDefaultAiFlowAdminConfigs } from "./aiFlowConfig";
 
 const cardRequest = {
@@ -64,6 +69,33 @@ const cardCopyResponse = {
 };
 
 describe("AI card generator service", () => {
+  it("keeps Provider Adapter transports behind explicit generation adapters", () => {
+    expect(describeAiCardGenerationAdapters()).toEqual({
+      text: [
+        "anthropic-messages-chat",
+        "cloudflare-workers-ai-chat",
+        "deepseek-chat",
+        "fireworks-chat",
+        "google-gemini-chat",
+        "groq-chat",
+        "huggingface-chat",
+        "mistral-chat",
+        "openai-responses-chat",
+        "perplexity-sonar-chat",
+        "self-hosted-openai-compatible-chat",
+        "together-chat",
+        "xai-chat"
+      ],
+      image: [
+        "cloudflare-workers-ai-image",
+        "deepai-text2img-image",
+        "google-gemini-image",
+        "huggingface-image",
+        "openai-images"
+      ]
+    });
+  });
+
   it("uses Cloudflare JSON Mode for card copy without returning secrets", async () => {
     const fetchImpl = vi.fn(async () =>
       new Response(
@@ -1201,12 +1233,12 @@ describe("AI card generator service", () => {
       }
       if (requestUrl.includes("router.huggingface.co/fal-ai/fal-ai/qwen-image")) {
         imageIndex += 1;
-        return new Response(JSON.stringify({ images: [{ url: `https://hf-images.example/panel-${imageIndex}.png` }] }), {
+        return new Response(JSON.stringify({ images: [{ url: `https://8.8.8.8/panel-${imageIndex}.png` }] }), {
           status: 200,
           headers: { "content-type": "application/json" }
         });
       }
-      if (requestUrl.startsWith("https://hf-images.example/")) {
+      if (requestUrl.startsWith("https://8.8.8.8/")) {
         return new Response(new Uint8Array([1, 2, 3, imageIndex]), {
           status: 200,
           headers: { "content-type": "image/png" }
@@ -1232,7 +1264,7 @@ describe("AI card generator service", () => {
     const result = await service.generateCard(cardRequest, { rateKey: "test-huggingface-images" });
     const hfProviderCalls = fetchImpl.mock.calls.filter(([url]) => String(url).includes("router.huggingface.co/fal-ai/"));
     const hfBodies = hfProviderCalls.map((call) => JSON.parse(String((call[1] as RequestInit | undefined)?.body)));
-    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://hf-images.example/"));
+    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://8.8.8.8/"));
     const payload = result.payload as { images: Array<{ image_url: string; revised_prompt: string }> };
 
     expect(result.statusCode).toBe(200);
@@ -1314,12 +1346,12 @@ describe("AI card generator service", () => {
       }
       if (requestUrl.includes("/v1/images/generations")) {
         imageIndex += 1;
-        return new Response(JSON.stringify({ data: [{ url: `https://images.example/panel-${imageIndex}.png` }] }), {
+        return new Response(JSON.stringify({ data: [{ url: `https://1.1.1.1/panel-${imageIndex}.png` }] }), {
           status: 200,
           headers: { "content-type": "application/json" }
         });
       }
-      if (requestUrl.startsWith("https://images.example/")) {
+      if (requestUrl.startsWith("https://1.1.1.1/")) {
         return new Response(new Uint8Array([1, 2, 3, imageIndex]), {
           status: 200,
           headers: { "content-type": "image/png" }
@@ -1340,13 +1372,13 @@ describe("AI card generator service", () => {
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-openai-hosted-images" });
     const payload = result.payload as { images: Array<{ image_url: string }> };
-    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://images.example/"));
+    const hostedFetches = fetchImpl.mock.calls.filter(([url]) => String(url).startsWith("https://1.1.1.1/"));
 
     expect(result.statusCode).toBe(200);
     expect(hostedFetches).toHaveLength(4);
     expect(payload.images).toHaveLength(4);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
-    expect(payload.images.some((image) => image.image_url.includes("https://images.example/"))).toBe(false);
+    expect(payload.images.some((image) => image.image_url.includes("https://1.1.1.1/"))).toBe(false);
   });
 
   it("uses Gemini structured text output and Gemini inline image responses when configured", async () => {
@@ -1680,5 +1712,26 @@ describe("AI card generator service", () => {
     });
     expect(result.payload).not.toHaveProperty("assistant_message");
     expect(JSON.stringify(result.payload)).not.toMatch(/Sara|morning hikes|Can you make it warmer/i);
+  });
+
+  it("blocks unsafe provider image download URLs before materializing them", async () => {
+    await expect(assertSafeGeneratedImageDownloadUrl("http://example.com/image.png", {})).rejects.toThrow(
+      "must use https"
+    );
+    await expect(assertSafeGeneratedImageDownloadUrl("https://127.0.0.1/image.png", {})).rejects.toThrow(
+      "private network"
+    );
+    await expect(
+      assertSafeGeneratedImageDownloadUrl("https://cdn.example.com/image.png", {
+        CUSTOMCARD_AI_IMAGE_DOWNLOAD_ALLOWED_HOSTS: "images.example.net"
+      })
+    ).rejects.toThrow("allowlist");
+
+    expect(isPrivateGeneratedImageAddress("10.0.0.5")).toBe(true);
+    expect(isPrivateGeneratedImageAddress("172.20.0.5")).toBe(true);
+    expect(isPrivateGeneratedImageAddress("192.168.1.5")).toBe(true);
+    expect(isPrivateGeneratedImageAddress("169.254.169.254")).toBe(true);
+    expect(isPrivateGeneratedImageAddress("::1")).toBe(true);
+    expect(isPrivateGeneratedImageAddress("8.8.8.8")).toBe(false);
   });
 });

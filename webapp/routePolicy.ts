@@ -104,6 +104,48 @@ export function shouldShowTopNav({
   return renderCustomerNav && (hasCustomerNavItems || isAdmin);
 }
 
+export interface AppShellViewModel {
+  isAdminView: boolean;
+  showBusinessLanding: boolean;
+  visibleCustomerView: ViewId;
+  visibleNavView: ViewId;
+  renderCustomerNav: boolean;
+  showTopNav: boolean;
+  showBottomNav: boolean;
+  showCreateFlowStepper: boolean;
+  showCustomerCta: boolean;
+}
+
+export function buildAppShellViewModel({
+  activeView,
+  hasCustomerNavItems = customerNavItems.length > 0,
+  isAdmin,
+  viewportWidth
+}: {
+  activeView: ViewId;
+  hasCustomerNavItems?: boolean;
+  isAdmin: boolean;
+  viewportWidth?: number;
+}): AppShellViewModel {
+  const isAdminView = isAdminRoute(activeView);
+  const renderCustomerNav = shouldRenderCustomerNav(viewportWidth);
+  return {
+    isAdminView,
+    showBusinessLanding: shouldRenderBusinessLanding(activeView, isAdmin),
+    visibleCustomerView: resolveVisibleCustomerView(activeView),
+    visibleNavView: resolveActiveCustomerNavView(activeView),
+    renderCustomerNav,
+    showTopNav: shouldShowTopNav({
+      hasCustomerNavItems,
+      isAdmin,
+      renderCustomerNav
+    }),
+    showBottomNav: !renderCustomerNav && !isAdminView,
+    showCreateFlowStepper: !isAdminView && shouldShowCreateFlowStepper(activeView),
+    showCustomerCta: shouldShowCustomerCta(activeView)
+  };
+}
+
 export function getAdminTargetLabel(view: ViewId): string {
   if (view === "legal") return "Legal docs";
   return view === "adapters" ? "Adapters" : "Admin panel";

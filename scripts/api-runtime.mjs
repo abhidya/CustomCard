@@ -7,70 +7,50 @@ import { mutationBodyContractSpecs, persistedTablesForRouteId } from "../src/api
 import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime, postgresPoolConfig } from "./postgres-runtime.mjs";
 import {
-  hasStrongEnvSecret,
-  isProductionRuntimeEnv,
-  runtimeModes,
-  validateDurableRuntimeEnv
-} from "./runtime-env-contract.mjs";
+  authSessionSecretMessage,
+  describeApiRuntimeModeAdapters,
+  resolveApiRuntimeModeAdapter
+} from "./api-runtime-mode-adapters.mjs";
+import { hasStrongEnvSecret, isProductionRuntimeEnv } from "./runtime-env-contract.mjs";
 
 export { postgresPoolConfig } from "./postgres-runtime.mjs";
 
-const authSessionSecretMessage = "Postgres API runtime requires AUTH_SESSION_SECRET to be at least 32 characters.";
+export { describeApiRuntimeModeAdapters };
 const generatedImageWebpQuality = 82;
 const generatedImageWebpEffort = 4;
 const generatedImageMaxEdgePixels = 2100;
 const generatedImageRasterMimeTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 let sharpCodecPromise;
 
-export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
-  const configuredMode = String(env.CUSTOMCARD_API_RUNTIME ?? "").trim();
-  const requestedMode = configuredMode || "contract";
-  const objectStoreRuntime = createObjectStoreRuntime({ env });
-  if (!runtimeModes.includes(requestedMode)) return createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime });
-  if (isProductionRuntimeEnv(env) && requestedMode !== "postgres") {
-    return createInvalidApiRuntime({
-      requestedMode: configuredMode || "(missing)",
-      routes,
-      objectStoreRuntime,
-      validationMessage:
-        "Production API runtime requires CUSTOMCARD_API_RUNTIME=postgres. Contract and memory runtimes are reviewer-only and do not provide durable production auth/idempotency."
-    });
-  }
-  const mode = requestedMode;
-  if (isProductionRuntimeEnv(env)) {
-    const validationMessages = durableRuntimeValidationMessages(validateDurableRuntimeEnv(env));
-    if (validationMessages.length > 0) {
-      return createInvalidApiRuntime({
-        requestedMode: mode,
-        routes,
-        objectStoreRuntime,
-        validationMessages
-      });
-    }
-  }
-  if (mode === "postgres" && !hasStrongAuthSessionSecret(env)) {
-    return createInvalidApiRuntime({
-      requestedMode: mode,
-      routes,
-      objectStoreRuntime,
-      validationMessage: authSessionSecretMessage
-    });
-  }
-  if (mode === "memory") return createMemoryApiRuntime({ env, routes, objectStoreRuntime });
-  if (mode === "postgres") return createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStoreRuntime });
-  return createContractApiRuntime({ routes, objectStoreRuntime });
-}
-
 function hasStrongAuthSessionSecret(env) {
   return hasStrongEnvSecret(env, "AUTH_SESSION_SECRET");
 }
 
-function durableRuntimeValidationMessages(report) {
-  return [
-    ...report.missing.map((key) => `CustomCard runtime missing env: ${key}`),
-    ...report.placeholders.map((key) => `CustomCard runtime has placeholder env: ${key}`),
-    ...report.blockers
-  ];
+export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
+  const objectStoreRuntime = createObjectStoreRuntime({ env });
+  const adapter = resolveApiRuntimeModeAdapter({
+    env,
+    factories: {
+      contract: (input) => createContractApiRuntime({ routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
+      memory: (input) => createMemoryApiRuntime({ env: input.env, routes: input.routes, objectStoreRuntime: input.objectStoreRuntime }),
+      postgres: (input) =>
+        createPostgresApiRuntime({
+          env: input.env,
+          routes: input.routes,
+          postgresPoolFactory: input.postgresPoolFactory,
+          objectStoreRuntime: input.objectStoreRuntime
+        })
+    }
+  });
+  if (adapter.mode === "invalid") {
+    return createInvalidApiRuntime({
+      requestedMode: adapter.requestedMode,
+      routes,
+      objectStoreRuntime,
+      validationMessages: adapter.blockers
+    });
+  }
+  return adapter.create({ env, routes, postgresPoolFactory, objectStoreRuntime });
 }
 
 export function hashSessionToken(token, sessionSecret = "") {
@@ -1539,440 +1519,203 @@ function buildQueuedJobReadResult({ runtimeMode, authContext, job, statusCode })
   };
 }
 
-async function persistMemoryRouteMutation({ repositories, route, authContext, bodyText, objectStoreRuntime }) {
-  if (route.id === "import-preview") {
-    const record = buildImportPreviewRecord({ authContext, bodyText });
-    repositories.providerConnections.set(record.providerConnection.id, record.providerConnection);
-    repositories.importedEvents.set(record.importedEvent.id, record.importedEvent);
-    repositories.cardOpportunities.set(record.cardOpportunity.id, record.cardOpportunity);
-    return {
-      persisted: true,
-      payload: buildImportPreviewRepositoryPayload(record, "memory")
-    };
-  }
+const memoryRoutePersistenceAdapters = {
+  "import-preview": persistImportPreviewMemory,
+  "card-projects": persistCardProjectMemory,
+  "customer-draft-state-save": persistDraftStateMemory,
+  "relationship-memories": persistRelationshipMemoryMemory,
+  "render-packets": persistRenderPacketMemory,
+  "manual-vendor-handoff": persistManualVendorHandoffMemory,
+  "data-requests": persistDataRequestMemory,
+  "admin-card-gallery-save": persistCardGalleryMemory
+};
 
-  if (route.id === "card-projects") {
-    const record = buildCardProjectRecord({ authContext, bodyText });
-    repositories.cardProjects.set(record.projectId, record);
-    return {
-      persisted: true,
-      payload: buildCardProjectRepositoryPayload(record, "memory")
-    };
-  }
+const postgresRoutePersistenceAdapters = {
+  "import-preview": persistImportPreviewPostgres,
+  "card-projects": persistCardProjectPostgres,
+  "customer-draft-state-save": persistDraftStatePostgres,
+  "relationship-memories": persistRelationshipMemoryPostgres,
+  "render-packets": persistRenderPacketPostgres,
+  "manual-vendor-handoff": persistManualVendorHandoffPostgres,
+  "data-requests": persistDataRequestPostgres,
+  "admin-card-gallery-save": persistCardGalleryPostgres
+};
 
-  if (route.id === "customer-draft-state-save") {
-    const record = buildDraftStateRecord({ authContext, bodyText });
-    repositories.draftStates.set(authContext.userId, record);
-    return {
-      persisted: true,
-      payload: buildDraftStateRepositoryPayload(record, "memory")
-    };
-  }
-
-  if (route.id === "relationship-memories") {
-    const record = buildRelationshipMemoryRecord({ authContext, bodyText });
-    repositories.relationshipMemories.set(record.id, record);
-    return {
-      persisted: true,
-      payload: buildRelationshipMemoryRepositoryPayload(record, "memory")
-    };
-  }
-
-  if (route.id === "render-packets") {
-    const record = buildRenderPacketRecord({ authContext, bodyText });
-    const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
-    const persistedRecord = artifactPersistence.record;
-    repositories.renderPackets.set(persistedRecord.id, persistedRecord);
-    const providerCallEvent = buildRenderProviderCallEvent({
-      authContext,
-      bodyText,
-      idempotencyId: stableRuntimeId("idem", authContext.userId, route.id, persistedRecord.id)
-    });
-    repositories.providerCallEvents.set(providerCallEvent.id, providerCallEvent);
-    return {
-      persisted: true,
-      payload: buildRenderPacketRepositoryPayload(persistedRecord, "memory", artifactPersistence.payload)
-    };
-  }
-
-  if (route.id === "manual-vendor-handoff") {
-    const record = buildManualVendorHandoffRecord({ authContext, bodyText });
-    repositories.orders.set(record.order.id, record.order);
-    repositories.orderEvents.set(record.orderEvent.id, record.orderEvent);
-    repositories.consentRecords.set(record.consentRecord.id, record.consentRecord);
-    return {
-      persisted: true,
-      payload: buildManualVendorHandoffRepositoryPayload(record, "memory")
-    };
-  }
-
-  if (route.id === "data-requests") {
-    const record = buildDataRequestRecord({ authContext, bodyText });
-    repositories.dataRequests.set(record.dataRequest.id, record.dataRequest);
-    repositories.consentRecords.set(record.consentRecord.id, record.consentRecord);
-    return {
-      persisted: true,
-      payload: buildDataRequestRepositoryPayload(record, "memory")
-    };
-  }
-
-  if (route.id === "admin-card-gallery-save") {
-    const record = buildCardGalleryEntryRecord({ authContext, bodyText });
-    if (record.remove) {
-      repositories.cardGalleryEntries.delete(record.id);
-    } else {
-      repositories.cardGalleryEntries.set(record.id, { ...record, updatedAtIso: new Date().toISOString() });
-    }
-    return {
-      persisted: true,
-      payload: buildCardGalleryRepositoryPayload(record, "memory")
-    };
-  }
-
-  return undefined;
+export function describeApiRoutePersistenceAdapters() {
+  return {
+    memory: Object.keys(memoryRoutePersistenceAdapters).sort(),
+    postgres: Object.keys(postgresRoutePersistenceAdapters).sort()
+  };
 }
 
-async function persistPostgresRouteMutation({ client, route, authContext, bodyText, objectStoreRuntime }) {
-  if (route.id === "import-preview") {
-    const record = buildImportPreviewRecord({ authContext, bodyText });
-    await client.query(
-      `INSERT INTO provider_connections
-         (id, user_id, provider, scopes, status, adapter_version, metadata_schema, raw_content_stored)
-       VALUES ($1, $2, $3, $4::text[], 'connected', $5, $6::jsonb, FALSE)
-       ON CONFLICT (id) DO UPDATE SET
-         provider = EXCLUDED.provider,
-         scopes = EXCLUDED.scopes,
-         status = EXCLUDED.status,
-         adapter_version = EXCLUDED.adapter_version,
-         metadata_schema = EXCLUDED.metadata_schema,
-         raw_content_stored = FALSE`,
-      [
-        record.providerConnection.id,
-        authContext.userId,
-        record.providerConnection.provider,
-        record.providerConnection.scopes,
-        record.providerConnection.adapterVersion,
-        JSON.stringify(record.providerConnection.metadataSchema)
-      ]
-    );
-    await client.query(
-      `INSERT INTO imported_events
-         (id, connection_id, title, starts_at, timezone, source_evidence, recipient_hint)
-       VALUES ($1, $2, $3, $4::timestamptz, $5, $6, $7)
-       ON CONFLICT (id) DO UPDATE SET
-         connection_id = EXCLUDED.connection_id,
-         title = EXCLUDED.title,
-         starts_at = EXCLUDED.starts_at,
-         timezone = EXCLUDED.timezone,
-         source_evidence = EXCLUDED.source_evidence,
-         recipient_hint = EXCLUDED.recipient_hint`,
-      [
-        record.importedEvent.id,
-        record.providerConnection.id,
-        record.importedEvent.title,
-        record.importedEvent.startsAt,
-        record.importedEvent.timezone,
-        record.importedEvent.sourceEvidence,
-        record.importedEvent.recipientHint
-      ]
-    );
-    await client.query(
-      `INSERT INTO card_opportunities
-         (id, event_id, recipient_name, lead_time_hours, confidence, decision, evidence)
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
-       ON CONFLICT (id) DO UPDATE SET
-         event_id = EXCLUDED.event_id,
-         recipient_name = EXCLUDED.recipient_name,
-         lead_time_hours = EXCLUDED.lead_time_hours,
-         confidence = EXCLUDED.confidence,
-         decision = EXCLUDED.decision,
-         evidence = EXCLUDED.evidence`,
-      [
-        record.cardOpportunity.id,
-        record.importedEvent.id,
-        record.cardOpportunity.recipientName,
-        record.cardOpportunity.leadTimeHours,
-        record.cardOpportunity.confidence,
-        record.cardOpportunity.decision,
-        JSON.stringify(record.cardOpportunity.evidence)
-      ]
-    );
-    return {
-      persisted: true,
-      payload: buildImportPreviewRepositoryPayload(record, "postgres")
-    };
-  }
+async function persistMemoryRouteMutation(input) {
+  return memoryRoutePersistenceAdapters[input.route.id]?.(input);
+}
 
-  if (route.id === "manual-vendor-handoff") {
-    const record = buildManualVendorHandoffRecord({ authContext, bodyText });
-    await client.query(
-      `INSERT INTO orders
-         (id, project_id, status, store_id, quote_cents, pickup_window_minutes, certification_recorded, recovery_actions)
-       VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7::jsonb)
-       ON CONFLICT (id) DO UPDATE SET
-         project_id = EXCLUDED.project_id,
-         status = EXCLUDED.status,
-         store_id = EXCLUDED.store_id,
-         quote_cents = EXCLUDED.quote_cents,
-         pickup_window_minutes = EXCLUDED.pickup_window_minutes,
-         certification_recorded = FALSE,
-         recovery_actions = EXCLUDED.recovery_actions,
-         updated_at = NOW()`,
-      [
-        record.order.id,
-        record.order.projectId,
-        record.order.status,
-        record.order.storeId,
-        record.order.quoteCents,
-        record.order.pickupWindowMinutes,
-        JSON.stringify(record.order.recoveryActions)
-      ]
-    );
-    await client.query(
-      `INSERT INTO order_events (order_id, event_type, payload)
-       VALUES ($1, $2, $3::jsonb)`,
-      [record.order.id, record.orderEvent.eventType, JSON.stringify(record.orderEvent.payload)]
-    );
-    await client.query(
-      `INSERT INTO consent_records (id, user_id, action, region, granted, controls)
-       VALUES ($1, $2, $3, $4, $5, $6::jsonb)
-       ON CONFLICT (id) DO UPDATE SET
-         action = EXCLUDED.action,
-         region = EXCLUDED.region,
-         granted = EXCLUDED.granted,
-         controls = EXCLUDED.controls`,
-      [
-        record.consentRecord.id,
-        authContext.userId,
-        record.consentRecord.action,
-        record.consentRecord.region,
-        record.consentRecord.granted,
-        JSON.stringify(record.consentRecord.controls)
-      ]
-    );
-    return {
-      persisted: true,
-      payload: buildManualVendorHandoffRepositoryPayload(record, "postgres")
-    };
-  }
+async function persistPostgresRouteMutation(input) {
+  return postgresRoutePersistenceAdapters[input.route.id]?.(input);
+}
 
-  if (route.id === "data-requests") {
-    const record = buildDataRequestRecord({ authContext, bodyText });
-    await client.query(
-      `INSERT INTO data_requests (id, user_id, request_type, status, due_at, completed_at)
-       VALUES ($1, $2, $3, $4, $5::timestamptz, NULL)
-       ON CONFLICT (id) DO UPDATE SET
-         request_type = EXCLUDED.request_type,
-         status = EXCLUDED.status,
-         due_at = EXCLUDED.due_at,
-         completed_at = EXCLUDED.completed_at`,
-      [
-        record.dataRequest.id,
-        authContext.userId,
-        record.dataRequest.requestType,
-        record.dataRequest.status,
-        record.dataRequest.dueAt
-      ]
-    );
-    await client.query(
-      `INSERT INTO consent_records (id, user_id, action, region, granted, controls)
-       VALUES ($1, $2, $3, $4, $5, $6::jsonb)
-       ON CONFLICT (id) DO UPDATE SET
-         action = EXCLUDED.action,
-         region = EXCLUDED.region,
-         granted = EXCLUDED.granted,
-         controls = EXCLUDED.controls`,
-      [
-        record.consentRecord.id,
-        authContext.userId,
-        record.consentRecord.action,
-        record.consentRecord.region,
-        record.consentRecord.granted,
-        JSON.stringify(record.consentRecord.controls)
-      ]
-    );
-    return {
-      persisted: true,
-      payload: buildDataRequestRepositoryPayload(record, "postgres")
-    };
-  }
+function persistImportPreviewMemory({ repositories, authContext, bodyText }) {
+  const record = buildImportPreviewRecord({ authContext, bodyText });
+  repositories.providerConnections.set(record.providerConnection.id, record.providerConnection);
+  repositories.importedEvents.set(record.importedEvent.id, record.importedEvent);
+  repositories.cardOpportunities.set(record.cardOpportunity.id, record.cardOpportunity);
+  return {
+    persisted: true,
+    payload: buildImportPreviewRepositoryPayload(record, "memory")
+  };
+}
 
-  if (route.id === "relationship-memories") {
-    const record = buildRelationshipMemoryRecord({ authContext, bodyText });
-    await client.query(
-      `INSERT INTO relationship_memories
-         (id, user_id, recipient_name, approved, sensitivity, locale, source, text, forgotten_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::timestamptz)
-       ON CONFLICT (id) DO UPDATE SET
-         recipient_name = EXCLUDED.recipient_name,
-         approved = EXCLUDED.approved,
-         sensitivity = EXCLUDED.sensitivity,
-         locale = EXCLUDED.locale,
-         source = EXCLUDED.source,
-         text = EXCLUDED.text,
-         forgotten_at = EXCLUDED.forgotten_at`,
-      [
-        record.id,
-        authContext.userId,
-        record.recipientName,
-        record.approved,
-        record.sensitivity,
-        record.locale,
-        record.source,
-        record.text,
-        record.forgottenAt
-      ]
-    );
-    return {
-      persisted: true,
-      payload: buildRelationshipMemoryRepositoryPayload(record, "postgres")
-    };
-  }
+function persistCardProjectMemory({ repositories, authContext, bodyText }) {
+  const record = buildCardProjectRecord({ authContext, bodyText });
+  repositories.cardProjects.set(record.projectId, record);
+  return {
+    persisted: true,
+    payload: buildCardProjectRepositoryPayload(record, "memory")
+  };
+}
 
-  if (route.id === "customer-draft-state-save") {
-    const record = buildDraftStateRecord({ authContext, bodyText });
-    await client.query(
-      `INSERT INTO draft_states
-         (id, user_id, status, draft_input, opportunity_id, opportunity_decision, vendor_id, locale, raw_content_stored, updated_at)
-       VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7, $8, FALSE, $9::timestamptz)
-       ON CONFLICT (id) DO UPDATE SET
-         status = EXCLUDED.status,
-         draft_input = EXCLUDED.draft_input,
-         opportunity_id = EXCLUDED.opportunity_id,
-         opportunity_decision = EXCLUDED.opportunity_decision,
-         vendor_id = EXCLUDED.vendor_id,
-         locale = EXCLUDED.locale,
-         raw_content_stored = FALSE,
-         updated_at = EXCLUDED.updated_at`,
-      [
-        record.id,
-        authContext.userId,
-        record.status,
-        JSON.stringify(record.draftInput),
-        record.opportunityId,
-        record.opportunityDecision,
-        record.vendorId,
-        record.localeCode,
-        record.updatedAtIso
-      ]
-    );
-    return {
-      persisted: true,
-      payload: buildDraftStateRepositoryPayload(record, "postgres")
-    };
-  }
+function persistDraftStateMemory({ repositories, authContext, bodyText }) {
+  const record = buildDraftStateRecord({ authContext, bodyText });
+  repositories.draftStates.set(authContext.userId, record);
+  return {
+    persisted: true,
+    payload: buildDraftStateRepositoryPayload(record, "memory")
+  };
+}
 
-  if (route.id === "render-packets") {
-    const record = buildRenderPacketRecord({ authContext, bodyText });
-    const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
-    const persistedRecord = artifactPersistence.record;
-    await client.query(
-      `INSERT INTO render_packets
-         (id, project_id, kind, width, height, dpi, locale, direction, safe_zone_passed, text_overflow,
-          checksum, artifact_uri, storage_provider, artifact_count, artifact_manifest,
-          signed_url_expires_at, external_share_approval_required, real_orders_enabled)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-               $11, $12, $13, $14, $15::jsonb, $16::timestamptz, $17, FALSE)
-       ON CONFLICT (id) DO UPDATE SET
-         project_id = EXCLUDED.project_id,
-         kind = EXCLUDED.kind,
-         width = EXCLUDED.width,
-         height = EXCLUDED.height,
-         dpi = EXCLUDED.dpi,
-         locale = EXCLUDED.locale,
-         direction = EXCLUDED.direction,
-         safe_zone_passed = EXCLUDED.safe_zone_passed,
-         text_overflow = EXCLUDED.text_overflow,
-         checksum = EXCLUDED.checksum,
-         artifact_uri = EXCLUDED.artifact_uri,
-         storage_provider = EXCLUDED.storage_provider,
-         artifact_count = EXCLUDED.artifact_count,
-         artifact_manifest = EXCLUDED.artifact_manifest,
-         signed_url_expires_at = EXCLUDED.signed_url_expires_at,
-         external_share_approval_required = EXCLUDED.external_share_approval_required,
-         real_orders_enabled = FALSE`,
-      [
-        persistedRecord.id,
-        persistedRecord.projectId,
-        persistedRecord.kind,
-        persistedRecord.width,
-        persistedRecord.height,
-        persistedRecord.dpi,
-        persistedRecord.locale,
-        persistedRecord.direction,
-        persistedRecord.safeZonePassed,
-        persistedRecord.textOverflow,
-        persistedRecord.checksum,
-        persistedRecord.artifactUri,
-        persistedRecord.storageProvider,
-        persistedRecord.artifactCount,
-        JSON.stringify(persistedRecord.artifactManifest),
-        persistedRecord.signedUrlExpiresAt,
-        persistedRecord.externalShareApprovalRequired
-      ]
-    );
-    return {
-      persisted: true,
-      payload: buildRenderPacketRepositoryPayload(persistedRecord, "postgres", artifactPersistence.payload)
-    };
-  }
+function persistRelationshipMemoryMemory({ repositories, authContext, bodyText }) {
+  const record = buildRelationshipMemoryRecord({ authContext, bodyText });
+  repositories.relationshipMemories.set(record.id, record);
+  return {
+    persisted: true,
+    payload: buildRelationshipMemoryRepositoryPayload(record, "memory")
+  };
+}
 
-  if (route.id === "admin-card-gallery-save") {
-    const record = buildCardGalleryEntryRecord({ authContext, bodyText });
-    if (record.remove) {
-      await client.query(`DELETE FROM card_gallery_entries WHERE id = $1`, [record.id]);
-      return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
-    }
-    // The curating admin must exist in users for the created_by FK.
-    await client.query(
-      `INSERT INTO users (id, email, locale, region, platform)
-       VALUES ($1, $2, 'en-US', 'us', 'web')
-       ON CONFLICT (id) DO NOTHING`,
-      [authContext.userId, authContext.email || `${authContext.userId}@customcard.invalid`]
-    );
-    const projectExists = record.projectId
-      ? (await client.query(`SELECT 1 FROM card_projects WHERE id = $1`, [record.projectId])).rowCount > 0
-      : false;
-    const renderPacketExists = record.renderPacketId
-      ? (await client.query(`SELECT 1 FROM render_packets WHERE id = $1`, [record.renderPacketId])).rowCount > 0
-      : false;
-    await client.query(
-      `INSERT INTO card_gallery_entries
-         (id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
-          featured, featured_rank, public_approved, front_svg, redacted, created_by, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, $12, NOW())
-       ON CONFLICT (id) DO UPDATE SET
-         project_id = EXCLUDED.project_id,
-         render_packet_id = EXCLUDED.render_packet_id,
-         source_draft_id = EXCLUDED.source_draft_id,
-         category = EXCLUDED.category,
-         title = EXCLUDED.title,
-         public_caption = EXCLUDED.public_caption,
-         featured = EXCLUDED.featured,
-         featured_rank = EXCLUDED.featured_rank,
-         public_approved = EXCLUDED.public_approved,
-         front_svg = COALESCE(EXCLUDED.front_svg, card_gallery_entries.front_svg),
-         redacted = TRUE,
-         updated_at = NOW()`,
-      [
-        record.id,
-        projectExists ? record.projectId : null,
-        renderPacketExists ? record.renderPacketId : null,
-        record.sourceDraftId || null,
-        record.category,
-        record.title,
-        record.publicCaption,
-        record.featured,
-        record.featuredRank,
-        record.publicApproved,
-        record.frontSvg || null,
-        authContext.userId
-      ]
-    );
-    return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
-  }
+async function persistRenderPacketMemory({ repositories, route, authContext, bodyText, objectStoreRuntime }) {
+  const record = buildRenderPacketRecord({ authContext, bodyText });
+  const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
+  const persistedRecord = artifactPersistence.record;
+  repositories.renderPackets.set(persistedRecord.id, persistedRecord);
+  const providerCallEvent = buildRenderProviderCallEvent({
+    authContext,
+    bodyText,
+    idempotencyId: stableRuntimeId("idem", authContext.userId, route.id, persistedRecord.id)
+  });
+  repositories.providerCallEvents.set(providerCallEvent.id, providerCallEvent);
+  return {
+    persisted: true,
+    payload: buildRenderPacketRepositoryPayload(persistedRecord, "memory", artifactPersistence.payload)
+  };
+}
 
-  if (route.id !== "card-projects") return undefined;
+function persistManualVendorHandoffMemory({ repositories, authContext, bodyText }) {
+  const record = buildManualVendorHandoffRecord({ authContext, bodyText });
+  repositories.orders.set(record.order.id, record.order);
+  repositories.orderEvents.set(record.orderEvent.id, record.orderEvent);
+  repositories.consentRecords.set(record.consentRecord.id, record.consentRecord);
+  return {
+    persisted: true,
+    payload: buildManualVendorHandoffRepositoryPayload(record, "memory")
+  };
+}
+
+function persistDataRequestMemory({ repositories, authContext, bodyText }) {
+  const record = buildDataRequestRecord({ authContext, bodyText });
+  repositories.dataRequests.set(record.dataRequest.id, record.dataRequest);
+  repositories.consentRecords.set(record.consentRecord.id, record.consentRecord);
+  return {
+    persisted: true,
+    payload: buildDataRequestRepositoryPayload(record, "memory")
+  };
+}
+
+function persistCardGalleryMemory({ repositories, authContext, bodyText }) {
+  const record = buildCardGalleryEntryRecord({ authContext, bodyText });
+  if (record.remove) {
+    repositories.cardGalleryEntries.delete(record.id);
+  } else {
+    repositories.cardGalleryEntries.set(record.id, { ...record, updatedAtIso: new Date().toISOString() });
+  }
+  return {
+    persisted: true,
+    payload: buildCardGalleryRepositoryPayload(record, "memory")
+  };
+}
+
+async function persistImportPreviewPostgres({ client, authContext, bodyText }) {
+  const record = buildImportPreviewRecord({ authContext, bodyText });
+  await client.query(
+    `INSERT INTO provider_connections
+       (id, user_id, provider, scopes, status, adapter_version, metadata_schema, raw_content_stored)
+     VALUES ($1, $2, $3, $4::text[], 'connected', $5, $6::jsonb, FALSE)
+     ON CONFLICT (id) DO UPDATE SET
+       provider = EXCLUDED.provider,
+       scopes = EXCLUDED.scopes,
+       status = EXCLUDED.status,
+       adapter_version = EXCLUDED.adapter_version,
+       metadata_schema = EXCLUDED.metadata_schema,
+       raw_content_stored = FALSE`,
+    [
+      record.providerConnection.id,
+      authContext.userId,
+      record.providerConnection.provider,
+      record.providerConnection.scopes,
+      record.providerConnection.adapterVersion,
+      JSON.stringify(record.providerConnection.metadataSchema)
+    ]
+  );
+  await client.query(
+    `INSERT INTO imported_events
+       (id, connection_id, title, starts_at, timezone, source_evidence, recipient_hint)
+     VALUES ($1, $2, $3, $4::timestamptz, $5, $6, $7)
+     ON CONFLICT (id) DO UPDATE SET
+       connection_id = EXCLUDED.connection_id,
+       title = EXCLUDED.title,
+       starts_at = EXCLUDED.starts_at,
+       timezone = EXCLUDED.timezone,
+       source_evidence = EXCLUDED.source_evidence,
+       recipient_hint = EXCLUDED.recipient_hint`,
+    [
+      record.importedEvent.id,
+      record.providerConnection.id,
+      record.importedEvent.title,
+      record.importedEvent.startsAt,
+      record.importedEvent.timezone,
+      record.importedEvent.sourceEvidence,
+      record.importedEvent.recipientHint
+    ]
+  );
+  await client.query(
+    `INSERT INTO card_opportunities
+       (id, event_id, recipient_name, lead_time_hours, confidence, decision, evidence)
+     VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+     ON CONFLICT (id) DO UPDATE SET
+       event_id = EXCLUDED.event_id,
+       recipient_name = EXCLUDED.recipient_name,
+       lead_time_hours = EXCLUDED.lead_time_hours,
+       confidence = EXCLUDED.confidence,
+       decision = EXCLUDED.decision,
+       evidence = EXCLUDED.evidence`,
+    [
+      record.cardOpportunity.id,
+      record.importedEvent.id,
+      record.cardOpportunity.recipientName,
+      record.cardOpportunity.leadTimeHours,
+      record.cardOpportunity.confidence,
+      record.cardOpportunity.decision,
+      JSON.stringify(record.cardOpportunity.evidence)
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildImportPreviewRepositoryPayload(record, "postgres")
+  };
+}
+
+async function persistCardProjectPostgres({ client, authContext, bodyText }) {
   const record = buildCardProjectRecord({ authContext, bodyText });
   await client.query(
     `INSERT INTO card_projects
@@ -1997,6 +1740,275 @@ async function persistPostgresRouteMutation({ client, route, authContext, bodyTe
     persisted: true,
     payload: buildCardProjectRepositoryPayload(record, "postgres")
   };
+}
+
+async function persistDraftStatePostgres({ client, authContext, bodyText }) {
+  const record = buildDraftStateRecord({ authContext, bodyText });
+  await client.query(
+    `INSERT INTO draft_states
+       (id, user_id, status, draft_input, opportunity_id, opportunity_decision, vendor_id, locale, raw_content_stored, updated_at)
+     VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7, $8, FALSE, $9::timestamptz)
+     ON CONFLICT (id) DO UPDATE SET
+       status = EXCLUDED.status,
+       draft_input = EXCLUDED.draft_input,
+       opportunity_id = EXCLUDED.opportunity_id,
+       opportunity_decision = EXCLUDED.opportunity_decision,
+       vendor_id = EXCLUDED.vendor_id,
+       locale = EXCLUDED.locale,
+       raw_content_stored = FALSE,
+       updated_at = EXCLUDED.updated_at`,
+    [
+      record.id,
+      authContext.userId,
+      record.status,
+      JSON.stringify(record.draftInput),
+      record.opportunityId,
+      record.opportunityDecision,
+      record.vendorId,
+      record.localeCode,
+      record.updatedAtIso
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildDraftStateRepositoryPayload(record, "postgres")
+  };
+}
+
+async function persistRelationshipMemoryPostgres({ client, authContext, bodyText }) {
+  const record = buildRelationshipMemoryRecord({ authContext, bodyText });
+  await client.query(
+    `INSERT INTO relationship_memories
+       (id, user_id, recipient_name, approved, sensitivity, locale, source, text, forgotten_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::timestamptz)
+     ON CONFLICT (id) DO UPDATE SET
+       recipient_name = EXCLUDED.recipient_name,
+       approved = EXCLUDED.approved,
+       sensitivity = EXCLUDED.sensitivity,
+       locale = EXCLUDED.locale,
+       source = EXCLUDED.source,
+       text = EXCLUDED.text,
+       forgotten_at = EXCLUDED.forgotten_at`,
+    [
+      record.id,
+      authContext.userId,
+      record.recipientName,
+      record.approved,
+      record.sensitivity,
+      record.locale,
+      record.source,
+      record.text,
+      record.forgottenAt
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildRelationshipMemoryRepositoryPayload(record, "postgres")
+  };
+}
+
+async function persistRenderPacketPostgres({ client, authContext, bodyText, objectStoreRuntime }) {
+  const record = buildRenderPacketRecord({ authContext, bodyText });
+  const artifactPersistence = await objectStoreRuntime.persistRenderPacketArtifacts({ record, bodyText, authContext });
+  const persistedRecord = artifactPersistence.record;
+  await client.query(
+    `INSERT INTO render_packets
+       (id, project_id, kind, width, height, dpi, locale, direction, safe_zone_passed, text_overflow,
+        checksum, artifact_uri, storage_provider, artifact_count, artifact_manifest,
+        signed_url_expires_at, external_share_approval_required, real_orders_enabled)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+             $11, $12, $13, $14, $15::jsonb, $16::timestamptz, $17, FALSE)
+     ON CONFLICT (id) DO UPDATE SET
+       project_id = EXCLUDED.project_id,
+       kind = EXCLUDED.kind,
+       width = EXCLUDED.width,
+       height = EXCLUDED.height,
+       dpi = EXCLUDED.dpi,
+       locale = EXCLUDED.locale,
+       direction = EXCLUDED.direction,
+       safe_zone_passed = EXCLUDED.safe_zone_passed,
+       text_overflow = EXCLUDED.text_overflow,
+       checksum = EXCLUDED.checksum,
+       artifact_uri = EXCLUDED.artifact_uri,
+       storage_provider = EXCLUDED.storage_provider,
+       artifact_count = EXCLUDED.artifact_count,
+       artifact_manifest = EXCLUDED.artifact_manifest,
+       signed_url_expires_at = EXCLUDED.signed_url_expires_at,
+       external_share_approval_required = EXCLUDED.external_share_approval_required,
+       real_orders_enabled = FALSE`,
+    [
+      persistedRecord.id,
+      persistedRecord.projectId,
+      persistedRecord.kind,
+      persistedRecord.width,
+      persistedRecord.height,
+      persistedRecord.dpi,
+      persistedRecord.locale,
+      persistedRecord.direction,
+      persistedRecord.safeZonePassed,
+      persistedRecord.textOverflow,
+      persistedRecord.checksum,
+      persistedRecord.artifactUri,
+      persistedRecord.storageProvider,
+      persistedRecord.artifactCount,
+      JSON.stringify(persistedRecord.artifactManifest),
+      persistedRecord.signedUrlExpiresAt,
+      persistedRecord.externalShareApprovalRequired
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildRenderPacketRepositoryPayload(persistedRecord, "postgres", artifactPersistence.payload)
+  };
+}
+
+async function persistManualVendorHandoffPostgres({ client, authContext, bodyText }) {
+  const record = buildManualVendorHandoffRecord({ authContext, bodyText });
+  await client.query(
+    `INSERT INTO orders
+       (id, project_id, status, store_id, quote_cents, pickup_window_minutes, certification_recorded, recovery_actions)
+     VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7::jsonb)
+     ON CONFLICT (id) DO UPDATE SET
+       project_id = EXCLUDED.project_id,
+       status = EXCLUDED.status,
+       store_id = EXCLUDED.store_id,
+       quote_cents = EXCLUDED.quote_cents,
+       pickup_window_minutes = EXCLUDED.pickup_window_minutes,
+       certification_recorded = FALSE,
+       recovery_actions = EXCLUDED.recovery_actions,
+       updated_at = NOW()`,
+    [
+      record.order.id,
+      record.order.projectId,
+      record.order.status,
+      record.order.storeId,
+      record.order.quoteCents,
+      record.order.pickupWindowMinutes,
+      JSON.stringify(record.order.recoveryActions)
+    ]
+  );
+  await client.query(
+    `INSERT INTO order_events (order_id, event_type, payload)
+     VALUES ($1, $2, $3::jsonb)`,
+    [record.order.id, record.orderEvent.eventType, JSON.stringify(record.orderEvent.payload)]
+  );
+  await client.query(
+    `INSERT INTO consent_records (id, user_id, action, region, granted, controls)
+     VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+     ON CONFLICT (id) DO UPDATE SET
+       action = EXCLUDED.action,
+       region = EXCLUDED.region,
+       granted = EXCLUDED.granted,
+       controls = EXCLUDED.controls`,
+    [
+      record.consentRecord.id,
+      authContext.userId,
+      record.consentRecord.action,
+      record.consentRecord.region,
+      record.consentRecord.granted,
+      JSON.stringify(record.consentRecord.controls)
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildManualVendorHandoffRepositoryPayload(record, "postgres")
+  };
+}
+
+async function persistDataRequestPostgres({ client, authContext, bodyText }) {
+  const record = buildDataRequestRecord({ authContext, bodyText });
+  await client.query(
+    `INSERT INTO data_requests (id, user_id, request_type, status, due_at, completed_at)
+     VALUES ($1, $2, $3, $4, $5::timestamptz, NULL)
+     ON CONFLICT (id) DO UPDATE SET
+       request_type = EXCLUDED.request_type,
+       status = EXCLUDED.status,
+       due_at = EXCLUDED.due_at,
+       completed_at = EXCLUDED.completed_at`,
+    [
+      record.dataRequest.id,
+      authContext.userId,
+      record.dataRequest.requestType,
+      record.dataRequest.status,
+      record.dataRequest.dueAt
+    ]
+  );
+  await client.query(
+    `INSERT INTO consent_records (id, user_id, action, region, granted, controls)
+     VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+     ON CONFLICT (id) DO UPDATE SET
+       action = EXCLUDED.action,
+       region = EXCLUDED.region,
+       granted = EXCLUDED.granted,
+       controls = EXCLUDED.controls`,
+    [
+      record.consentRecord.id,
+      authContext.userId,
+      record.consentRecord.action,
+      record.consentRecord.region,
+      record.consentRecord.granted,
+      JSON.stringify(record.consentRecord.controls)
+    ]
+  );
+  return {
+    persisted: true,
+    payload: buildDataRequestRepositoryPayload(record, "postgres")
+  };
+}
+
+async function persistCardGalleryPostgres({ client, authContext, bodyText }) {
+  const record = buildCardGalleryEntryRecord({ authContext, bodyText });
+  if (record.remove) {
+    await client.query(`DELETE FROM card_gallery_entries WHERE id = $1`, [record.id]);
+    return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
+  }
+  // The curating admin must exist in users for the created_by FK.
+  await client.query(
+    `INSERT INTO users (id, email, locale, region, platform)
+     VALUES ($1, $2, 'en-US', 'us', 'web')
+     ON CONFLICT (id) DO NOTHING`,
+    [authContext.userId, authContext.email || `${authContext.userId}@customcard.invalid`]
+  );
+  const projectExists = record.projectId
+    ? (await client.query(`SELECT 1 FROM card_projects WHERE id = $1`, [record.projectId])).rowCount > 0
+    : false;
+  const renderPacketExists = record.renderPacketId
+    ? (await client.query(`SELECT 1 FROM render_packets WHERE id = $1`, [record.renderPacketId])).rowCount > 0
+    : false;
+  await client.query(
+    `INSERT INTO card_gallery_entries
+       (id, project_id, render_packet_id, source_draft_id, category, title, public_caption,
+        featured, featured_rank, public_approved, front_svg, redacted, created_by, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, $12, NOW())
+     ON CONFLICT (id) DO UPDATE SET
+       project_id = EXCLUDED.project_id,
+       render_packet_id = EXCLUDED.render_packet_id,
+       source_draft_id = EXCLUDED.source_draft_id,
+       category = EXCLUDED.category,
+       title = EXCLUDED.title,
+       public_caption = EXCLUDED.public_caption,
+       featured = EXCLUDED.featured,
+       featured_rank = EXCLUDED.featured_rank,
+       public_approved = EXCLUDED.public_approved,
+       front_svg = COALESCE(EXCLUDED.front_svg, card_gallery_entries.front_svg),
+       redacted = TRUE,
+       updated_at = NOW()`,
+    [
+      record.id,
+      projectExists ? record.projectId : null,
+      renderPacketExists ? record.renderPacketId : null,
+      record.sourceDraftId || null,
+      record.category,
+      record.title,
+      record.publicCaption,
+      record.featured,
+      record.featuredRank,
+      record.publicApproved,
+      record.frontSvg || null,
+      authContext.userId
+    ]
+  );
+  return { persisted: true, payload: buildCardGalleryRepositoryPayload(record, "postgres") };
 }
 
 async function persistGoogleCalendarImportPostgres(client, authContext, record) {

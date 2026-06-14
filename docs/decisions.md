@@ -391,3 +391,83 @@ skipped.
 Rejected: returning 503/429/502 for provider blocks inside the worker. That turns
 expected cost/security gates into retried queue failures and delays customers even
 when an explicit user-content-only result is safe.
+
+## D026: Concentrate The Card Draft Studio Model
+
+Decision: add `webapp/studioModel.ts` as the pure Card Draft studio model. It owns
+sensitive Occasion detection, Panel artwork labels, generation stages, AI launch
+context checklist, selected Panel normalization, template Panel patches, and
+uploaded-image layout patches. `StudioView` keeps render state and delegates these
+facts to the model.
+
+Reason: StudioView had become the test surface for both visual markup and Card
+Draft behavior. Moving the behavior into a model gives tests a smaller interface
+while preserving the existing SSR render coverage.
+
+Rejected: continuing to test sensitive Occasion and Panel edit behavior only
+through full StudioView render output. That weakens locality and makes small
+workflow changes expensive to verify.
+
+## D027: Name The API Route-Family Adapter
+
+Decision: add `scripts/api-route-family-adapter.mjs` as the assembly seam for API
+route families. `api-server.mjs` now owns HTTP lifecycle, static serving, security
+headers, OAuth callback entry, and local helper callbacks; the route-family
+Adapter owns feature-route constants, mobile bootstrap payloads, Walgreens hosted
+checkout wiring, retail operation-start packets, and coupon evidence route wiring.
+
+Reason: D021 named route Adapter paths, but server lifecycle still knew every
+route-family dependency. The new Adapter concentrates route-family wiring and
+keeps `api-server.mjs` focused on transport concerns.
+
+Rejected: leaving `createApiRouteFamilies(...)` assembly inline in
+`api-server.mjs`. That made route-family changes look like server lifecycle
+changes.
+
+## D028: Put Runtime Mode Selection Behind Runtime Mode Adapters
+
+Decision: add `scripts/api-runtime-mode-adapters.mjs` as the runtime mode Adapter
+resolver. It owns supported mode names, production-only Postgres policy, durable
+env blockers, and strong session-secret gating; `api-runtime.mjs` now passes the
+contract, memory, and Postgres Adapter factories into that resolver.
+
+Reason: the runtime mode seam already exists, but mode selection policy lived at
+the top of a large runtime implementation file. Moving the policy to its own
+Adapter module gives contract tests a small interface and keeps future runtime
+mode changes out of persistence implementation details.
+
+Rejected: splitting the full contract, memory, and Postgres implementations in
+the same pass. Their implementations share mutation, sanitizer, and repository
+helpers; extracting selection policy first reduces risk without freezing a future
+full file split.
+
+## D029: Extract The Admin Card Gallery Workflow Model
+
+Decision: add `webapp/adminCardGalleryWorkflow.ts` as the Admin Card Gallery
+workflow module. It owns stage classification, editor derivation, candidate entry
+ids, preview SVG construction, text-fit rules, review checklist state, publish
+blockers, generated gallery copy, captions, and labels. `AdminCardGalleryView`
+keeps data loading, saving, and rendering.
+
+Reason: curation workflow rules were embedded in the React view, so publish-gate
+bugs required render-level tests. The workflow module gives Card Gallery policy
+a direct interface and leaves view tests to focus on markup and interaction.
+
+Rejected: preserving publish readiness as private view helpers. That keeps the
+most important public-gallery safety rules in the hardest place to test.
+
+## D030: Put AI Provider Dispatch Behind One Execution Adapter
+
+Decision: add `scripts/ai-provider-execution-adapter.mjs` as the AI provider
+execution Adapter. It describes supported text/image Provider Adapters and owns
+dispatch for direct text executors, OpenAI-compatible text executors, and image
+executors. `ai-card-generator.mjs` still owns provider-specific request builders,
+response repair, prompts, and Evidence shaping.
+
+Reason: provider dispatch is a real seam: many Provider Adapters vary behind one
+card-generation workflow. Naming the execution Adapter concentrates unsupported
+adapter errors and keeps D025 provider-failure evidence easier to protect.
+
+Rejected: moving prompts, provider HTTP request bodies, response repair, and
+Evidence shaping all at once. That would make one high-risk refactor out of four
+separate seams.

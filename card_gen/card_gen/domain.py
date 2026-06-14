@@ -1,7 +1,7 @@
 """Domain models for the card generation pipeline.
 
-Mirrors the TypeScript interfaces in src/freeMvp.ts so the FastAPI endpoint
-speaks the same contract as the browser app.
+Consumes card-gen-contract.json plus render-packet-contract.json so the FastAPI
+sidecar and TypeScript contract share the same wire field limits.
 """
 
 from __future__ import annotations
@@ -12,32 +12,63 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-_CONTRACT_PATH = Path(__file__).resolve().parents[2] / "render-packet-contract.json"
-_CONTRACT = json.loads(_CONTRACT_PATH.read_text(encoding="utf-8"))
-PANEL_IDS = tuple(_CONTRACT["panelIds"])
-PANEL_WIDTH = _CONTRACT["target"]["widthPixels"]
-PANEL_HEIGHT = _CONTRACT["target"]["heightPixels"]
-HEADLINE_MAX_CHARACTERS = _CONTRACT["copyLimits"]["headlineMaxCharacters"]
-BODY_MAX_CHARACTERS = _CONTRACT["copyLimits"]["bodyMaxCharacters"]
-ART_DIRECTION_MIN_CHARACTERS = _CONTRACT["copyLimits"]["artDirectionMinCharacters"]
-ART_DIRECTION_MAX_CHARACTERS = _CONTRACT["copyLimits"]["artDirectionMaxCharacters"]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_RENDER_PACKET_CONTRACT_PATH = _REPO_ROOT / "render-packet-contract.json"
+_CARD_GEN_CONTRACT_PATH = _REPO_ROOT / "card-gen-contract.json"
+_RENDER_PACKET_CONTRACT = json.loads(_RENDER_PACKET_CONTRACT_PATH.read_text(encoding="utf-8"))
+_CARD_GEN_CONTRACT = json.loads(_CARD_GEN_CONTRACT_PATH.read_text(encoding="utf-8"))
+_REQUEST_LIMITS = _CARD_GEN_CONTRACT["request"]["fieldLimits"]
+PANEL_IDS = tuple(_RENDER_PACKET_CONTRACT["panelIds"])
+PANEL_WIDTH = _RENDER_PACKET_CONTRACT["target"]["widthPixels"]
+PANEL_HEIGHT = _RENDER_PACKET_CONTRACT["target"]["heightPixels"]
+HEADLINE_MAX_CHARACTERS = _RENDER_PACKET_CONTRACT["copyLimits"]["headlineMaxCharacters"]
+BODY_MAX_CHARACTERS = _RENDER_PACKET_CONTRACT["copyLimits"]["bodyMaxCharacters"]
+ART_DIRECTION_MIN_CHARACTERS = _RENDER_PACKET_CONTRACT["copyLimits"]["artDirectionMinCharacters"]
+ART_DIRECTION_MAX_CHARACTERS = _RENDER_PACKET_CONTRACT["copyLimits"]["artDirectionMaxCharacters"]
+
+
+def _text_field_limits(field_name: str) -> dict[str, int]:
+    limits = _REQUEST_LIMITS[field_name]
+    return {
+        key: value
+        for key, value in {
+            "min_length": limits.get("minLength"),
+            "max_length": limits.get("maxLength"),
+        }.items()
+        if value is not None
+    }
 
 PanelId = Literal["front", "inside-left", "inside-right", "back"]
-MemoryNote = Annotated[str, Field(min_length=1, max_length=500)]
+MemoryNote = Annotated[
+    str,
+    Field(
+        min_length=_REQUEST_LIMITS["memory_notes"]["itemMinLength"],
+        max_length=_REQUEST_LIMITS["memory_notes"]["itemMaxLength"],
+    ),
+]
 
 
 class CardDraftInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    sender: str = Field(min_length=1, max_length=120)
-    recipient: str = Field(min_length=1, max_length=120)
-    relationship: str = Field(min_length=1, max_length=120)
-    occasion: str = Field(min_length=1, max_length=120)
-    tone: str = Field(min_length=1, max_length=80)
-    style: str = Field(min_length=1, max_length=120)
-    language: str = Field(default="English", min_length=1, max_length=80)
-    personal_note: str = Field(default="", max_length=1_000)
-    memory_notes: list[MemoryNote] = Field(default_factory=list, max_length=12)
+    sender: str = Field(**_text_field_limits("sender"))
+    recipient: str = Field(**_text_field_limits("recipient"))
+    relationship: str = Field(**_text_field_limits("relationship"))
+    occasion: str = Field(**_text_field_limits("occasion"))
+    tone: str = Field(**_text_field_limits("tone"))
+    style: str = Field(**_text_field_limits("style"))
+    language: str = Field(
+        default=_CARD_GEN_CONTRACT["request"]["defaults"]["language"],
+        **_text_field_limits("language"),
+    )
+    personal_note: str = Field(
+        default=_CARD_GEN_CONTRACT["request"]["defaults"]["personal_note"],
+        max_length=_REQUEST_LIMITS["personal_note"]["maxLength"],
+    )
+    memory_notes: list[MemoryNote] = Field(
+        default_factory=list,
+        max_length=_REQUEST_LIMITS["memory_notes"]["maxItems"],
+    )
 
 
 class PanelCopy(BaseModel):

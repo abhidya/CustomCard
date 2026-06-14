@@ -299,7 +299,9 @@ export function buildWalgreensCallbackHtml(appOrigin = "") {
           var params = new URLSearchParams(window.location.search);
           var payload = { source: "customcard-walgreens-checkout", status: params.get("status") || "returned" };
           ${postMessageScript}
-        } catch (error) { /* non-fatal */ }
+        } catch (error) {
+          console.error("CustomCard Walgreens checkout callback failed", error);
+        }
         setTimeout(function () { window.close(); }, 1200);
       })();
     </script>

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from card_gen.domain import (
@@ -45,7 +48,32 @@ def _full_copy() -> CardCopyOutput:
     )
 
 
+def _card_gen_contract() -> dict:
+    contract_path = Path(__file__).resolve().parents[2] / "card-gen-contract.json"
+    return json.loads(contract_path.read_text(encoding="utf-8"))
+
+
 class TestCardDraftInput:
+    def test_uses_shared_card_gen_contract_limits(self) -> None:
+        contract = _card_gen_contract()
+        schema = CardDraftInput.model_json_schema()
+
+        assert contract["request"]["wireFields"] == [
+            "sender",
+            "recipient",
+            "relationship",
+            "occasion",
+            "tone",
+            "style",
+            "language",
+            "personal_note",
+            "memory_notes",
+        ]
+        assert schema["properties"]["recipient"]["maxLength"] == contract["request"]["fieldLimits"]["recipient"]["maxLength"]
+        assert schema["properties"]["tone"]["maxLength"] == contract["request"]["fieldLimits"]["tone"]["maxLength"]
+        assert schema["properties"]["personal_note"]["maxLength"] == contract["request"]["fieldLimits"]["personal_note"]["maxLength"]
+        assert schema["properties"]["memory_notes"]["maxItems"] == contract["request"]["fieldLimits"]["memory_notes"]["maxItems"]
+
     def test_round_trip_json(self) -> None:
         inp = _minimal_input()
         assert CardDraftInput.model_validate(inp.model_dump()) == inp

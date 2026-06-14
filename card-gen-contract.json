@@ -1,0 +1,52 @@
+{
+  "request": {
+    "wireFields": [
+      "sender",
+      "recipient",
+      "relationship",
+      "occasion",
+      "tone",
+      "style",
+      "language",
+      "personal_note",
+      "memory_notes"
+    ],
+    "requiredWireFields": [
+      "sender",
+      "recipient",
+      "relationship",
+      "occasion",
+      "tone",
+      "style"
+    ],
+    "defaults": {
+      "language": "English",
+      "personal_note": "",
+      "memory_notes": []
+    },
+    "fieldLimits": {
+      "sender": { "minLength": 1, "maxLength": 120 },
+      "recipient": { "minLength": 1, "maxLength": 120 },
+      "relationship": { "minLength": 1, "maxLength": 120 },
+      "occasion": { "minLength": 1, "maxLength": 120 },
+      "tone": { "minLength": 1, "maxLength": 80 },
+      "style": { "minLength": 1, "maxLength": 120 },
+      "language": { "minLength": 1, "maxLength": 80 },
+      "personal_note": { "maxLength": 1000 },
+      "memory_notes": { "maxItems": 12, "itemMinLength": 1, "itemMaxLength": 500 }
+    }
+  },
+  "panelCopy": {
+    "wireFields": ["id", "headline", "body", "art_direction"],
+    "panelIdsSource": "render-packet-contract.json",
+    "copyLimitsSource": "render-packet-contract.json"
+  },
+  "imageResult": {
+    "wireFields": ["panel_id", "image_url", "revised_prompt", "width", "height"],
+    "targetSource": "render-packet-contract.json"
+  },
+  "response": {
+    "wireFields": ["draft_id", "card_copy", "images", "generated_by"],
+    "generatedBy": ["ai-text-only", "ai-text-and-image"]
+  }
+}
