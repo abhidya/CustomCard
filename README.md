@@ -58,8 +58,8 @@ CustomCard is the product wedge between those worlds:
 | Print handoff | Four 1500 x 2100 SVG panels, local PDF proof, checksum manifest, and manual printer checklist. |
 | Fulfillment recommendations | Review-only public pricing and pickup/shipping recommendation contracts for retail printers. |
 | Admin readiness | Provider catalog, readiness registers, production gates, deployment posture, and doctor scripts. |
-| API skeleton | Contract, memory, fake-pool Postgres, isolated live Postgres, idempotency, audit, queue, and artifact-store boundaries. |
-| Mobile shell | Expo customer app contract plus a browser-inspectable mobile route at `/?view=mobile`. |
+| API runtime | Contract, memory, fake-pool Postgres, isolated live Postgres, idempotency, audit, queue, and artifact-store boundaries. |
+| Mobile shell | Expo customer app contract, release doctor, and a browser-inspectable mobile route at `/?view=mobile`. |
 | Deployment shape | Vercel/serverless route, static API server, Docker Compose, Kubernetes manifests, Postgres migration, worker, and object-store contracts. |
 
 ## Intentional Boundaries
@@ -78,6 +78,11 @@ The current repo is honest about what it does not prove yet.
 
 ## Quick Start
 
+Prerequisites:
+
+- Node.js 24 or newer. The package engine is `>=24`.
+- npm, bundled with Node.
+
 ```sh
 npm ci
 cp .env.example .env.local
@@ -87,6 +92,9 @@ npm run dev
 Open the Vite URL printed by the dev server. The app opens into the free local
 workflow and does not require paid AI, payment, retail, CRM, email, or cloud
 credentials.
+
+Use `npm install` instead of `npm ci` only when you intentionally need to update
+the lockfile.
 
 To open the mobile customer UI in a desktop browser:
 
@@ -135,6 +143,18 @@ npm run api:doctor:memory
 # Postgres runtime contract
 npm run api:doctor:postgres
 ```
+
+Common local commands:
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite app on `127.0.0.1`. |
+| `npm run preview` | Preview the production build locally. |
+| `npm run serve:dist` | Serve the built `dist/` artifact with the repo's static server. |
+| `npm run api:serve` | Start the local API server. |
+| `npm run migrate` | Apply the SQL migration against `DATABASE_URL`. |
+| `npm run worker` | Run the worker contract with explicit queue/object-store env. |
+| `npm run mobile:web:preview` | Open the browser-reviewable mobile customer route. |
 
 ## Product Walkthrough
 
@@ -192,29 +212,51 @@ npm run check
 That runs the Vitest suite, coverage gate, production build, and high-severity
 dependency audit.
 
-Focused readiness checks:
+Focused readiness checks are grouped by what they prove:
+
+| Area | Commands |
+| --- | --- |
+| Runtime and deployment | `npm run deployment:doctor`, `npm run runtime:doctor`, `npm run hosted:api:doctor`, `npm run cloud:doctor`, `npm run cloud:artifact:proof:doctor` |
+| API and persistence | `npm run api:doctor`, `npm run api:doctor:memory`, `npm run api:doctor:postgres`, `npm run persistence:doctor`, `npm run reviewer:db:seed:doctor` |
+| Security and audits | `npm run security:doctor`, `npm run external:audit:doctor`, `npm run customer:accessibility:doctor`, `npm run accessibility:doctor`, `npm run e2e:coverage:doctor` |
+| Providers and operations | `npm run ai:doctor`, `npm run ai:queue:doctor`, `npm run provider:governance:doctor`, `npm run provider:operations:doctor`, `npm run admin:operations:doctor`, `npm run observability:doctor`, `npm run metrics:doctor` |
+| Commerce and fulfillment | `npm run retail:doctor`, `npm run payment:doctor`, `npm run printer:pricing:doctor`, `npm run artifact:doctor`, `npm run business:engagement:doctor` |
+| Product surfaces | `npm run mobile:render:doctor`, `npm run mobile:release:doctor`, `npm run localization:doctor`, `npm run capacity:doctor`, `npm run demo:doctor` |
+
+Same commands, copy-ready:
 
 ```sh
 npm run deployment:doctor
 npm run runtime:doctor
 npm run api:doctor
+npm run api:doctor:memory
+npm run api:doctor:postgres
+npm run persistence:doctor
+npm run artifact:doctor
 npm run security:doctor
+npm run external:audit:doctor
+npm run accessibility:doctor
 npm run customer:accessibility:doctor
 npm run e2e:coverage:doctor
 npm run ai:doctor
+npm run ai:queue:doctor
 npm run observability:doctor
+npm run metrics:doctor
 npm run retail:doctor
 npm run payment:doctor
+npm run cloud:doctor
+npm run cloud:artifact:proof:doctor
 npm run mobile:render:doctor
+npm run mobile:release:doctor
 npm run hosted:api:doctor
 npm run reviewer:db:seed:doctor
 npm run business:engagement:doctor
+npm run admin:operations:doctor
 npm run provider:governance:doctor
 npm run provider:operations:doctor
 npm run capacity:doctor
 npm run printer:pricing:doctor
 npm run localization:doctor
-npm run persistence:doctor
 npm run demo:doctor
 ```
 
@@ -252,13 +294,16 @@ DB doctor evidence.
 
 Start here:
 
+- [Setup guide](SETUP.md)
 - [Product brief](docs/product-brief.md)
+- [Product register](PRODUCT.md)
 - [Design source of truth](DESIGN.md)
 - [Domain vocabulary](CONTEXT.md)
 - [Decisions](docs/decisions.md)
 - [Verification](docs/verification.md)
 - [Deployment evidence](docs/deployment-evidence.md)
 - [Implementation roadmap](docs/implementation-roadmap.md)
+- [Final package audit](docs/final-package.md)
 - [Infrastructure](infra/README.md)
 - [Mobile shell](apps/mobile/README.md)
 
