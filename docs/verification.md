@@ -672,35 +672,29 @@ URL handling, `REAL_ORDER_KILL_SWITCH=disabled`, no live provider calls, no real
 orders, and no signed artifact built.
 
 ```text
-Visual inspection
+Current customer UI evidence
 ```
 
-Result: passed with local rendered screenshots.
+Result: passed with focused tests and live DOM inspection on 2026-06-14.
 
-- Desktop opportunity screen: `docs/evidence/customcard-desktop.png`.
-- Mobile opportunity screen after responsive fix: `docs/evidence/customcard-mobile.png`.
-- Desktop card studio screen: `docs/evidence/customcard-studio.png`.
-- Desktop manual handoff screen: `docs/evidence/customcard-handoff.png`.
-- Desktop customer panel: `docs/evidence/customcard-customer-panel.png`.
-- Desktop admin panel: `docs/evidence/customcard-admin-panel.png`.
-- Mobile customer panel: `docs/evidence/customcard-customer-mobile-panel.png`.
+- `npm run test -- --run tests/frontend-architecture.test.ts tests/customer-shell-ssr.test.tsx tests/app-smoke.test.ts`
+  passed with 51 tests.
+- Live browser DOM checks found the current landing, Studio setup, Studio
+  template-review, and Print surfaces have zero horizontal overflow and do not
+  expose the "Someone important" sentinel in customer-visible copy.
+- Studio setup has no fixed dock, no premature proof CTA, and no panel editor
+  before generation or explicit template review.
+- Print handoff has no global fixed `ctadock`; proof approval unlocks the
+  in-page `Continue to Walgreens` action without a competing floating
+  `Save print package` CTA.
 
-The visual pass caught and fixed two layout issues: mobile status-chip clipping
-and cramped four-across panel previews.
-
-The latest visual pass additionally verified the customer panel appears before
-workspace setup, the admin meters have accessible labels, the adapter matrix
-separates ready-local, credential-gated, contract-only, and live-blocked rows.
-After the provider expansion, pricing-research, print-package, AI-provider,
-hosted-auth, contact-import, event-platform, CRM, workflow-integration,
-notification, payment, and observability catalog passes the catalog contains 18
-ready-local, 97 credential-gated, 10 contract-only, and 6 blocked adapters. The web mobile
-customer panel appears before the navigation rail with zero horizontal overflow
-at 1440px desktop and 390px mobile widths. The mobile render readiness admin
-card was also rendered at 1440x1000 and 390x900 with the emulator-proof-missing
-state, signed-artifact gap, required proof rows, and zero horizontal overflow;
-screenshots were saved to `/tmp/customcard-mobile-render-readiness-desktop.png`
-and `/tmp/customcard-mobile-render-readiness-mobile.png`.
+Legacy screenshot note: `docs/evidence/customcard-desktop.png`,
+`docs/evidence/customcard-mobile.png`, `docs/evidence/customcard-studio.png`,
+`docs/evidence/customcard-handoff.png`, `docs/evidence/customcard-customer-panel.png`,
+`docs/evidence/customcard-admin-panel.png`, and
+`docs/evidence/customcard-customer-mobile-panel.png` show an older sidebar/grid
+UI and are not current UI proof. Recapture current landing, Studio, Print, and
+mobile screenshots before citing them as visual evidence again.
 
 ```text
 Final package audit

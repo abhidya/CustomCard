@@ -113,7 +113,7 @@ describe("frontend architecture seams", () => {
 
     expect(shouldShowCustomerCta("customer")).toBe(false);
     expect(shouldShowCustomerCta("studio")).toBe(false);
-    expect(shouldShowCustomerCta("handoff")).toBe(true);
+    expect(shouldShowCustomerCta("handoff")).toBe(false);
     expect(shouldShowCustomerCta("settings")).toBe(false);
     expect(shouldShowCustomerCta("legal")).toBe(false);
     expect(shouldShowCustomerCta("business")).toBe(false);
@@ -132,7 +132,7 @@ describe("frontend architecture seams", () => {
       renderCustomerNav: true,
       showBottomNav: false,
       showCreateFlowStepper: true,
-      showCustomerCta: true,
+      showCustomerCta: false,
       showTopNav: true,
       visibleCustomerView: "handoff",
       visibleNavView: "customer"

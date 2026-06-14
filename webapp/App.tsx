@@ -1,4 +1,4 @@
-import { Download, LockKeyhole, Settings, ShieldCheck } from "lucide-react";
+import { LockKeyhole, Settings, ShieldCheck } from "lucide-react";
 import { Show, SignInButton, SignUpButton, UserButton, useAuth, useUser } from "@clerk/react";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
@@ -161,7 +161,6 @@ export default function App() {
     renderCustomerNav,
     showBottomNav,
     showCreateFlowStepper,
-    showCustomerCta,
     showTopNav
   } = shellView;
   const displayPanels: CardPanel[] = activeDraft.panels;
@@ -411,20 +410,6 @@ export default function App() {
     url.searchParams.delete("calendarError");
     window.history.replaceState({ customCardView: calendarConnection === "connected" ? "opportunities" : initialViewFromLocation() }, "", url);
   }, [setActiveView, setExportStatus, setOpportunityDecision]);
-
-  /* ---------- live CTA ---------- */
-  const estimate = pricingComparison.selectedVendorOptions.find((option) => option.observation.vendorId === "walgreens");
-  const priceLabel = estimate?.effectiveSubtotalLabel;
-  const printing = visibleCustomerView === "handoff";
-
-  const cta = {
-    label: "Save print package",
-    icon: <Download size={16} />,
-    disabled: !printPackage.manifest.passed,
-    meta: priceLabel ? `est. ${priceLabel} at Walgreens` : "Walgreens confirms price at checkout",
-    metaTitle: validation.passed ? "Your card is print-ready" : "Almost ready",
-    onClick: downloadPrintPackage
-  };
 
   const draftProgress = buildDraftProgressState(draftInput, validation.passed);
   const hasProgress = draftProgress.hasMeaningfulProgress || inviteText.trim().length > 0;
@@ -678,22 +663,6 @@ export default function App() {
       </main>
 
       <AppFooter />
-
-      {showCustomerCta ? <div className="ctadock">
-        <span className="ctadock-progress" aria-hidden="true">
-          <i data-done={true} />
-          <i data-done={printing} />
-          <i data-done={printing && printPackage.manifest.passed} data-now={printing} />
-        </span>
-        <span className="ctadock-meta">
-          <strong>{cta.metaTitle}</strong>
-          <small>{cta.meta}</small>
-        </span>
-        <button className="btn btn-primary" disabled={cta.disabled} onClick={cta.onClick} type="button">
-          {cta.label}
-          {cta.icon}
-        </button>
-      </div> : null}
 
       {showBottomNav ? (
         <nav aria-label="CustomCard quick navigation" className="bottomnav">

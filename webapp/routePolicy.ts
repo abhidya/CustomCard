@@ -85,7 +85,8 @@ export function resolveActiveCustomerNavView(view: ViewId): ViewId {
 }
 
 export function shouldShowCustomerCta(view: ViewId): boolean {
-  return view === "handoff";
+  // Print owns proof approval, package download, and Walgreens checkout in context.
+  return false;
 }
 
 export function shouldRenderCustomerNav(viewportWidth: number | undefined): boolean {

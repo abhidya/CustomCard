@@ -2,10 +2,10 @@
 
 ## Source of truth
 - Status: Active
-- Last refreshed: 2026-06-12
+- Last refreshed: 2026-06-14
 - Primary product surfaces: customer landing/home, event import, card studio, people/notes, print handoff, business landing, admin operations, adapter readiness.
-- Evidence reviewed: `webapp/App.tsx`, `webapp/views/HomeView.tsx`, `webapp/views/EventsView.tsx`, `webapp/views/StudioView.tsx`, `webapp/views/BusinessLandingView.tsx`, `webapp/routePolicy.ts`, `webapp/ui.tsx`, `webapp/panelMediaAdapter.ts`, `webapp/styles.css`, `src/styles.css`, `docs/ui-ux-walkthrough.md`, `docs/cloudflare-workers-ai-setup.md`, `docs/competitor-card-asset-categories.md`, `docs/evidence/*`, `docs/evidence/generated-card-comparisons/*`, live browser screenshots at `http://127.0.0.1:5173/` and `/?view=studio`, NN/g action/object proximity guidance, and Material Design 3 button hierarchy guidance.
-- Verification evidence: `npm run test -- --run tests/frontend-architecture.test.ts tests/customer-shell-ssr.test.tsx tests/app-smoke.test.ts` passed on 2026-06-12 with 48 tests; `npm run build` passed with the existing Vite chunk-size warning. Browser DOM checks found the Studio setup state has no fixed proof dock, no proof CTA, and no panel editor before draft/review; template review reveals inline proof navigation plus four panel tabs; print handoff owns the fixed CTA; mobile Studio has no horizontal overflow at 390px.
+- Evidence reviewed: `webapp/App.tsx`, `webapp/views/HomeView.tsx`, `webapp/views/EventsView.tsx`, `webapp/views/StudioView.tsx`, `webapp/views/PrintView.tsx`, `webapp/views/BusinessLandingView.tsx`, `webapp/routePolicy.ts`, `webapp/ui.tsx`, `webapp/panelMediaAdapter.ts`, `webapp/styles.css`, `src/styles.css`, `docs/ui-ux-walkthrough.md`, `docs/cloudflare-workers-ai-setup.md`, `docs/competitor-card-asset-categories.md`, `docs/evidence/*`, `docs/evidence/generated-card-comparisons/*`, live browser DOM checks at `http://127.0.0.1:5173/`, NN/g action/object proximity guidance, and Material Design 3 button hierarchy guidance.
+- Verification evidence: `npm run test -- --run tests/frontend-architecture.test.ts tests/customer-shell-ssr.test.tsx tests/app-smoke.test.ts` passed on 2026-06-14 with 51 tests. Browser DOM checks found the Studio setup state has no fixed proof dock, no proof CTA, and no panel editor before draft/review; template review reveals inline proof navigation plus four panel tabs; print handoff has no global fixed CTA competing with proof approval or Walgreens checkout; mobile shell coverage still verifies no horizontal overflow at 390px. Existing `docs/evidence/customcard-*.png` files are legacy screenshots until recaptured from the current shell.
 
 ## Brand
 - Personality: warm, careful, private, useful, and tactile. The product should feel like a calm stationery desk with software discipline underneath.
@@ -26,7 +26,7 @@
 - Primary navigation: desktop top nav for Create, My cards, People, Settings; admin nav only for admin users; business landing through business route; print and event import are stages within Create.
 - Core routes/screens: landing/home, invite/calendar import, card studio, people/notes, my cards/history, print handoff, settings/privacy, business landing, admin ops/adapters/legal.
 - Content hierarchy: product value and card preview first; occasion/invite start second; examples/trust notes third; provider readiness and operational gates only in admin/business contexts.
-- Current UX guardrail: small screens must keep a visible customer navigation recovery path while Studio setup stays focused on details first. Do not reintroduce a fixed proof CTA on Studio; the fixed dock belongs to print handoff after a proof exists.
+- Current UX guardrail: small screens must keep a visible customer navigation recovery path while Studio setup stays focused on details first. Do not reintroduce a fixed proof CTA on Studio, and do not render a global fixed print dock that competes with the in-page proof approval or Walgreens checkout actions.
 
 ## Design principles
 - Product proof first: show a real card, proof, queue, or handoff state instead of generic marketing illustration.
@@ -40,12 +40,13 @@
 
 ## UI/UX Review Findings
 - Strength: current `webapp` landing is clearer than old sidebar evidence screenshots. First viewport now has brand, account actions, occasion/product value, two start actions, and an actual 5x7 card preview.
-- Strength: studio view correctly leads with proof preview, panel tabs, account-gated AI generation, editable fields, and generation stages. This supports review-before-print.
+- Strength: studio view correctly keeps setup focused until generation or template review starts, then reveals proof preview, panel tabs, account-gated AI generation, editable fields, and generation stages. This supports review-before-print.
 - Strength: trust copy is specific: free to create, Walgreens handles payment/final checkout, calendar is optional, saved personal details are editable/deletable.
-- Issue P1: hero/product examples still expose placeholder copy such as "Card for Someone important." Replace public-facing default cards with polished examples like "Birthday for Maya" or neutral copy like "Start with their moment."
-- Issue P1: Studio previously showed "Continue to proof checks" in the fixed customer dock before any draft or review surface existed. Keep this fixed: no fixed Studio proof dock, no proof CTA before generation/review, and no live text placement preview while the user is still entering setup details.
+- Fixed P1: current landing, Studio setup, Studio template review, and Print DOM checks do not expose placeholder copy such as "Card for Someone important." Keep sentinel values hidden from polished customer surfaces.
+- Fixed P1: Studio previously showed "Continue to proof checks" in the fixed customer dock before any draft or review surface existed. Keep this fixed: no fixed Studio proof dock, no proof CTA before generation/review, and no live text placement preview while the user is still entering setup details.
+- Fixed P1: Print previously showed a global "Save print package" dock that overlapped and competed with the in-page Walgreens checkout action after proof approval. Print actions now live in the Print view, next to the proof and checkout form.
 - Issue P1: mobile navigation recovery must remain visible below 600px. The old `docs/evidence/customcard-mobile.png` shows an older nav pattern and should not be treated as current proof.
-- Issue P1: current app screenshots in `docs/evidence/customcard-*.png` are stale and show the older sidebar/grid UI. Recapture current landing, studio, print, and mobile screens after image updates.
+- Issue P1: current app screenshots in `docs/evidence/customcard-*.png` are legacy evidence and show the older sidebar/grid UI. Do not cite them as current UI proof until current landing, studio, print, and mobile screens are recaptured.
 - Issue P2: example card gallery is useful but visually repetitive because fallback examples are generated from the same SVG motif system. Add distinct occasion art assets so the gallery proves range.
 - Issue P2: generated provider contact sheets show fake lettering, over-busy borders, low-contrast interior text zones, and occasional people/faces. Tighten prompts and QA around text-free background art.
 - Issue P2: B2B landing has good claim discipline but needs one stronger workflow/product visual that shows lifecycle queue plus proof review, not only a card preview.

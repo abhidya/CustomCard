@@ -154,6 +154,13 @@ describeWithChrome("CustomCard UI smoke", () => {
         const studioObjectText = document.querySelector(".studioObject")?.textContent;
         const generationScopeText = document.querySelector(".generationScope")?.textContent;
         await clickByText("Continue to proof checks");
+        const printCtaDock = !!document.querySelector(".ctadock");
+        const proofInputs = [...document.querySelectorAll(".proofcheck input")];
+        proofInputs.forEach((node) => node.click());
+        await raf();
+        const checkoutButton = [...document.querySelectorAll("button")].find((node) =>
+          node.textContent?.includes("Continue to Walgreens")
+        );
 
         return {
           homeText,
@@ -165,8 +172,11 @@ describeWithChrome("CustomCard UI smoke", () => {
           generationTargetCount,
           studioObjectText,
           generationScopeText,
+          checkoutButtonEnabledAfterApproval: checkoutButton ? !checkoutButton.disabled : false,
           printHeading: document.querySelector("h1")?.textContent,
+          printCtaDock,
           printText: document.body.textContent,
+          proofProgress: document.querySelector(".proofprogress")?.textContent,
           downloadButtons: [...document.querySelectorAll("button")].map((node) => node.textContent),
           checkoutInputs: [...document.querySelectorAll(".checkoutgrid input")].length,
           storeSteps: document.querySelectorAll(".storestep").length,
@@ -198,6 +208,9 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.printText).toContain("I approve this proof for printing");
     expect(result.printText).toContain("Continue to Walgreens");
     expect(result.printText).toContain("Walgreens handles payment");
+    expect(result.printCtaDock).toBe(false);
+    expect(result.proofProgress).toContain("Proof approved");
+    expect(result.checkoutButtonEnabledAfterApproval).toBe(true);
     expect(result.printText).not.toContain("Manual fallback");
     expect(result.printText).not.toContain("CVS");
     expect(result.printText).not.toContain("FedEx Office");

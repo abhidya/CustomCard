@@ -437,6 +437,7 @@ describe("customer shell server render", () => {
       expect(text).toContain("Back to design");
       const { html } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
       expect(html).toContain('aria-label="Card creation steps"');
+      expect(html).not.toContain('class="ctadock"');
     });
 
     it("renders the exact-panel editor with tabs, fields, and local text tools after a draft exists", () => {
