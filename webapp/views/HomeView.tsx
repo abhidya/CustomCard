@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { CardDraft } from "../../src/freeMvp";
+import { cardImageByCategory } from "../cardTemplates";
 import { PanelArt } from "../ui";
 import { ImportSection, type ImportSectionProps } from "./EventsView";
 
@@ -81,23 +82,14 @@ const trustPoints = [
   "Saved personal details are yours to edit or delete at any time."
 ];
 
-const cardImageByCategory: Record<string, string> = {
-  birthday: "/generated/card-birthday.webp",
-  graduation: "/generated/card-graduation.webp",
-  wedding: "/generated/card-wedding-anniversary.webp",
-  anniversary: "/generated/card-photo-milestone.webp",
-  "thank-you": "/generated/card-thank-you.webp",
-  sympathy: "/generated/card-sympathy.webp",
-  custom: "/generated/card-default-botanical.webp"
-};
-
 const exampleCards = [
   { label: "Birthday", category: "birthday", imageUrl: cardImageByCategory.birthday },
   { label: "Graduation", category: "graduation", imageUrl: cardImageByCategory.graduation },
   { label: "Wedding", category: "wedding", imageUrl: cardImageByCategory.wedding },
   { label: "Thank you", category: "thank-you", imageUrl: cardImageByCategory["thank-you"] },
   { label: "Sympathy", category: "sympathy", imageUrl: cardImageByCategory.sympathy },
-  { label: "Anniversary", category: "anniversary", imageUrl: cardImageByCategory.anniversary }
+  { label: "Anniversary", category: "anniversary", imageUrl: cardImageByCategory.anniversary },
+  { label: "Friendship", category: "friendship", imageUrl: cardImageByCategory.friendship }
 ];
 
 export function HomeView({

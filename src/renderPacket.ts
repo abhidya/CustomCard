@@ -1,5 +1,12 @@
 import { renderPacketFileName, renderPacketTarget } from "./renderPacketContract";
-import type { CardPanel, CardTextLayout, TextAlignment, VisualStylePreset } from "./cardDraft";
+import type {
+  CardImageFocus,
+  CardImagePlacement,
+  CardPanel,
+  CardTextLayout,
+  TextAlignment,
+  VisualStylePreset
+} from "./cardDraft";
 
 /**
  * Recipient-facing print artwork. Art direction/design notes never render here —
@@ -11,7 +18,7 @@ export function buildPanelSvg(panel: CardPanel): string {
   const accent = panel.id === "inside-right" ? "#c8553d" : panel.id === "inside-left" ? "#258477" : "#315b7d";
   const direction = panel.rtl ? "rtl" : "ltr";
   const layout = styleLayouts[styleId];
-  const artworkLayer = panel.imageUrl ? buildArtworkLayer(panel.imageUrl) : layout.decoration(panel, accent);
+  const artworkLayer = panel.imageUrl ? buildArtworkLayer(panel.imageUrl, panel.imagePlacement) : layout.decoration(panel, accent);
   const textPlan = buildTextPlan(panel, layout, accent, styleId);
   const headlineLines = wrapSvgText(panel.headline, textPlan.headlineMaxChars).slice(0, textPlan.headlineMaxLines);
   const bodyLines = wrapSvgText(panel.body, textPlan.bodyMaxChars).slice(0, textPlan.bodyMaxLines);
@@ -20,10 +27,10 @@ export function buildPanelSvg(panel: CardPanel): string {
   <rect width="${renderPacketTarget.widthPixels}" height="${renderPacketTarget.heightPixels}" fill="${layout.background(panel)}"/>
 ${layout.frame(accent)}
 ${artworkLayer}
-  <text x="${textPlan.x}" y="${textPlan.headlineY}" fill="${textPlan.headlineFill}" font-family="${textPlan.headlineFont}" font-size="${textPlan.headlineSize}" font-weight="${textPlan.headlineWeight}" text-anchor="${textPlan.anchor}">
+  <text x="${textPlan.x}" y="${textPlan.headlineY}" fill="${textPlan.headlineFill}" font-family="${textPlan.headlineFont}" font-size="${textPlan.headlineSize}" font-weight="${textPlan.headlineWeight}" font-style="${textPlan.headlineStyle}" text-anchor="${textPlan.anchor}">
 ${headlineLines.map((line, index) => `    <tspan x="${textPlan.x}" dy="${index === 0 ? 0 : textPlan.headlineLeading}">${escapeXml(line)}</tspan>`).join("\n")}
   </text>
-  <text x="${textPlan.x}" y="${textPlan.bodyY}" fill="${textPlan.bodyFill}" font-family="${textPlan.bodyFont}" font-size="${textPlan.bodySize}" text-anchor="${textPlan.anchor}">
+  <text x="${textPlan.x}" y="${textPlan.bodyY}" fill="${textPlan.bodyFill}" font-family="${textPlan.bodyFont}" font-size="${textPlan.bodySize}" font-weight="${textPlan.bodyWeight}" font-style="${textPlan.bodyStyle}" text-anchor="${textPlan.anchor}">
 ${bodyLines.map((line, index) => `    <tspan x="${textPlan.x}" dy="${index === 0 ? 0 : textPlan.bodyLeading}">${escapeXml(line)}</tspan>`).join("\n")}
   </text>
 ${layout.footer(panel, accent, textPlan.anchor, textPlan.x)}
@@ -36,6 +43,7 @@ interface TextPlan {
   headlineFont: string;
   headlineSize: number;
   headlineWeight: number;
+  headlineStyle: "normal" | "italic";
   headlineLeading: number;
   headlineY: number;
   headlineFill: string;
@@ -43,6 +51,8 @@ interface TextPlan {
   headlineMaxLines: number;
   bodyFont: string;
   bodySize: number;
+  bodyWeight: number;
+  bodyStyle: "normal" | "italic";
   bodyLeading: number;
   bodyY: number;
   bodyFill: string;
@@ -71,25 +81,34 @@ function buildTextPlan(
   accent: string,
   styleId: VisualStylePreset
 ): TextPlan {
+  const artworkCoversText = Boolean(panel.imageUrl && imageFrame(panel.imagePlacement) === "fill");
+  const headlineFormat = panel.textFormat?.headline;
+  const bodyFormat = panel.textFormat?.body;
   if (!panel.textLayout) {
-    const anchor = panel.rtl ? "end" : "start";
-    const x = panel.rtl ? 1240 : 260;
+    const photoWindow = panel.imagePlacement?.frame === "photo-window";
+    const anchor = photoWindow ? "middle" : panel.rtl ? "end" : "start";
+    const x = photoWindow ? 750 : panel.rtl ? 1240 : 260;
+    const headlineFill = artworkCoversText ? "#ffffff" : layout.textFill;
+    const bodyFill = artworkCoversText ? "rgba(255,255,255,0.92)" : layout.bodyFill;
     return {
       x,
       anchor,
       headlineFont: layout.headlineFont,
       headlineSize: layout.headlineSize,
-      headlineWeight: layout.headlineWeight,
+      headlineWeight: headlineFormat?.bold ? Math.max(layout.headlineWeight, 800) : layout.headlineWeight,
+      headlineStyle: headlineFormat?.italic ? "italic" : "normal",
       headlineLeading: layout.headlineLeading,
-      headlineY: layout.headlineY,
-      headlineFill: panel.imageUrl ? "#ffffff" : layout.textFill,
+      headlineY: photoWindow ? 1280 : layout.headlineY,
+      headlineFill: headlineFormat?.accent ? accent : headlineFill,
       headlineMaxChars: styleId === "bold-type" ? 14 : 24,
       headlineMaxLines: 3,
       bodyFont: "Arial, sans-serif",
       bodySize: 54,
+      bodyWeight: bodyFormat?.bold ? 700 : 400,
+      bodyStyle: bodyFormat?.italic ? "italic" : "normal",
       bodyLeading: 74,
-      bodyY: layout.bodyY,
-      bodyFill: panel.imageUrl ? "rgba(255,255,255,0.92)" : layout.bodyFill,
+      bodyY: photoWindow ? 1520 : layout.bodyY,
+      bodyFill: bodyFormat?.accent ? accent : bodyFill,
       bodyMaxChars: 34,
       bodyMaxLines: 8
     };
@@ -105,17 +124,20 @@ function buildTextPlan(
     anchor: anchorForAlignment(panel.textLayout.alignment),
     headlineFont: font.headlineFont,
     headlineSize,
-    headlineWeight: font.headlineWeight,
+    headlineWeight: headlineFormat?.bold ? Math.max(font.headlineWeight, 800) : font.headlineWeight,
+    headlineStyle: headlineFormat?.italic ? "italic" : "normal",
     headlineLeading: Math.round(headlineSize * 1.18),
     headlineY: yForHeadlineZone(panel.textLayout.headlineZone),
-    headlineFill: colors.headline,
+    headlineFill: headlineFormat?.accent ? accent : colors.headline,
     headlineMaxChars: maxCharsForScale(panel.textLayout.scale, panel.textLayout.fontPairing, "headline"),
     headlineMaxLines: panel.textLayout.scale === "large" ? 2 : 3,
     bodyFont: font.bodyFont,
     bodySize,
+    bodyWeight: bodyFormat?.bold ? 700 : 400,
+    bodyStyle: bodyFormat?.italic ? "italic" : "normal",
     bodyLeading: Math.round(bodySize * 1.38),
     bodyY: yForBodyZone(panel.textLayout.bodyZone),
-    bodyFill: colors.body,
+    bodyFill: bodyFormat?.accent ? accent : colors.body,
     bodyMaxChars: maxCharsForScale(panel.textLayout.scale, panel.textLayout.fontPairing, "body"),
     bodyMaxLines: panel.textLayout.scale === "large" ? 7 : 8
   };
@@ -337,14 +359,51 @@ function escapeXml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildArtworkLayer(imageUrl: string): string {
+function buildArtworkLayer(imageUrl: string, placement?: CardImagePlacement): string {
+  const box = artworkBox(placement);
+  const preserveAspectRatio = preserveAspectRatioFor(placement);
+  const backing =
+    imageFrame(placement) === "fit"
+      ? `  <rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" fill="#f8f3e8" stroke="#d8d2c6" stroke-width="6"/>`
+      : "";
+  const frame =
+    imageFrame(placement) === "photo-window"
+      ? `  <rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" fill="none" stroke="#d8d2c6" stroke-width="8"/>`
+      : "";
   const inlineSvg = deterministicArtworkSvg(imageUrl);
   if (inlineSvg) {
-    return `  <svg x="120" y="120" width="1260" height="1860" viewBox="0 0 1500 2100" preserveAspectRatio="xMidYMid slice">
+    return `${backing}
+  <svg x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" viewBox="0 0 1500 2100" preserveAspectRatio="${preserveAspectRatio}">
 ${inlineSvg}
-  </svg>`;
+  </svg>
+${frame}`.trimEnd();
   }
-  return `  <image href="${escapeXml(imageUrl)}" x="120" y="120" width="1260" height="1860" preserveAspectRatio="xMidYMid slice"/>`;
+  return `${backing}
+  <image href="${escapeXml(imageUrl)}" x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" preserveAspectRatio="${preserveAspectRatio}"/>
+${frame}`.trimEnd();
+}
+
+function imageFrame(placement?: CardImagePlacement): CardImagePlacement["frame"] {
+  return placement?.frame ?? "fill";
+}
+
+function artworkBox(placement?: CardImagePlacement): { x: number; y: number; width: number; height: number } {
+  if (placement?.frame === "fit") return { x: 180, y: 180, width: 1140, height: 1740 };
+  if (placement?.frame === "photo-window") return { x: 180, y: 210, width: 1140, height: 860 };
+  return { x: 120, y: 120, width: 1260, height: 1860 };
+}
+
+function preserveAspectRatioFor(placement?: CardImagePlacement): string {
+  const focus = focusAnchor(placement?.focus ?? "center");
+  return `${focus} ${placement?.frame === "fit" ? "meet" : "slice"}`;
+}
+
+function focusAnchor(focus: CardImageFocus): string {
+  if (focus === "top") return "xMidYMin";
+  if (focus === "bottom") return "xMidYMax";
+  if (focus === "left") return "xMinYMid";
+  if (focus === "right") return "xMaxYMid";
+  return "xMidYMid";
 }
 
 function deterministicArtworkSvg(imageUrl: string): string | undefined {

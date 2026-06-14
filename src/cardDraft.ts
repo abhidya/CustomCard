@@ -18,6 +18,8 @@ export type TextAlignment = "left" | "center" | "right";
 export type TextFontPairing = "serif-sans" | "bold-editorial" | "minimal-sans" | "soft-serif";
 export type TextColorMode = "dark-ink" | "light-ink" | "accent-ink" | "high-contrast";
 export type TextScale = "compact" | "standard" | "large";
+export type CardImageFrame = "fill" | "fit" | "photo-window";
+export type CardImageFocus = "center" | "top" | "bottom" | "left" | "right";
 
 export interface CardTextLayout {
   headlineZone: Exclude<TextZone, "bottom">;
@@ -26,6 +28,22 @@ export interface CardTextLayout {
   fontPairing: TextFontPairing;
   colorMode: TextColorMode;
   scale: TextScale;
+}
+
+export interface CardImagePlacement {
+  frame: CardImageFrame;
+  focus: CardImageFocus;
+}
+
+export interface CardTextStyle {
+  bold?: boolean;
+  italic?: boolean;
+  accent?: boolean;
+}
+
+export interface CardTextFormat {
+  headline?: CardTextStyle;
+  body?: CardTextStyle;
 }
 
 export interface CardDraftInput {
@@ -52,7 +70,9 @@ export interface CardPanel {
   rtl: boolean;
   overflowRisk: boolean;
   imageUrl?: string;
+  imagePlacement?: CardImagePlacement;
   textLayout?: CardTextLayout;
+  textFormat?: CardTextFormat;
   /** Visual style the renderer uses for layout/decoration. Older panels omit it; renderer defaults to botanical. */
   styleId?: VisualStylePreset;
 }

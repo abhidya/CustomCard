@@ -6,7 +6,12 @@ import { panelOverflowRisk, type CardDraft, type CardPanel } from "./cardDraft";
  * (template or AI) and every downstream artifact is rebuilt from the result.
  */
 
-export type PanelOverride = Partial<Pick<CardPanel, "headline" | "body" | "artDirection" | "imageUrl">>;
+export type PanelOverride = Partial<
+  Pick<
+    CardPanel,
+    "headline" | "body" | "artDirection" | "imageUrl" | "imagePlacement" | "textLayout" | "textFormat" | "styleId"
+  >
+>;
 export type PanelOverrides = Partial<Record<CardPanel["id"], PanelOverride>>;
 
 export const emptyPanelOverrides: PanelOverrides = {};

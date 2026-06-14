@@ -52,6 +52,32 @@ describe("panel overrides", () => {
     expect(validateCardDraft(active).passed).toBe(false);
   });
 
+  it("applies template artwork, placement, and rich text overrides", () => {
+    const draft = buildDraft();
+    const active = applyPanelOverrides(
+      draft,
+      setPanelOverride(emptyPanelOverrides, "front", {
+        imagePlacement: { frame: "photo-window", focus: "top" },
+        imageUrl: "data:image/png;base64,iVBORw0KGgo=",
+        textFormat: { headline: { bold: true, accent: true }, body: { italic: true } },
+        textLayout: {
+          headlineZone: "lower",
+          bodyZone: "bottom",
+          alignment: "center",
+          fontPairing: "serif-sans",
+          colorMode: "dark-ink",
+          scale: "standard"
+        }
+      })
+    );
+    const edited = active.panels.find((panel) => panel.id === "front");
+
+    expect(edited?.imagePlacement).toEqual({ frame: "photo-window", focus: "top" });
+    expect(edited?.imageUrl).toBe("data:image/png;base64,iVBORw0KGgo=");
+    expect(edited?.textFormat).toMatchObject({ headline: { bold: true, accent: true }, body: { italic: true } });
+    expect(edited?.textLayout?.alignment).toBe("center");
+  });
+
   it("clears a panel override so the panel reverts to the active draft copy", () => {
     let overrides = setPanelOverride(emptyPanelOverrides, "front", { headline: "Edited" });
     expect(hasPanelOverride(overrides, "front")).toBe(true);

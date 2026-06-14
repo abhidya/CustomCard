@@ -87,6 +87,15 @@ const cardGenerationEndpoint = resolveCardGenerationEndpoint(import.meta.env);
 export type CustomerApiTokenProvider = () => Promise<string | null | undefined>;
 export type AiPanelGenerationStatus = "queued" | "copy-ready" | "artwork-loading" | "artwork-ready" | "artwork-missing";
 export type AiPanelGenerationProgress = Partial<Record<CardPanel["id"], AiPanelGenerationStatus>>;
+export type AiGenerationJobPollResult =
+  | { status: "ready"; result: AiGenerationApiResult }
+  | {
+      status: "pending";
+      jobId: string;
+      queueStatus: string;
+      retryAfterSeconds: number;
+      statusText: string;
+    };
 
 export interface AppState {
   activeView: ViewId;
@@ -330,15 +339,21 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         })
       )
       .then(readAiGenerationResponse)
-      .then(async (result: AiGenerationApiResult) => {
+      .then(async (initialResult: AiGenerationApiResult) => {
+        let result = initialResult;
         if (result.status === "queued" || result.queue_status === "queued") {
-          setAiCardGenStatus(
-            result.job_id
-              ? `AI card job queued. Job ${result.job_id} will be processed by the worker.`
-              : "AI card job queued. It will be processed by the worker."
-          );
+          setAiDraft(requestDraft);
+          setAiCardGenStatus("Template is ready while AI drafts the card in the background.");
           setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
-          return;
+          result = await pollQueuedAiGenerationJob({
+            getCustomerApiToken,
+            jobId: result.job_id,
+            statusUrl: result.job_status_url,
+            onStatus: (status) => {
+              setAiCardGenStatus(status.statusText);
+              setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
+            }
+          });
         }
 
         const imageByPanel = new Map<string, AiGenerationApiImage>(
@@ -596,6 +611,122 @@ export async function readAiGenerationResponse(response: Response): Promise<AiGe
     throw new Error("AI card generation returned an unexpected response.");
   }
   return payload as AiGenerationApiResult;
+}
+
+export async function readAiGenerationJobStatusResponse(response: Response): Promise<AiGenerationJobPollResult> {
+  const contentType = response.headers.get("content-type") ?? "";
+  const payload = contentType.includes("application/json")
+    ? await response.json() as Record<string, unknown>
+    : undefined;
+
+  if (!response.ok) {
+    throw new Error(formatAiGenerationHttpError(response.status, payload));
+  }
+  if (!payload) throw new Error("AI card job status returned an unexpected response.");
+
+  const jobId = readOptionalString(payload.job_id ?? payload.jobId);
+  const queueStatus = readOptionalString(payload.queue_status ?? payload.queueStatus);
+  if (queueStatus === "dead_lettered") {
+    const detail = readOptionalString(payload.last_error ?? payload.error ?? payload.status);
+    throw new Error(detail ? `AI card generation failed after retries: ${detail}` : "AI card generation failed after retries.");
+  }
+
+  if (payload.result_available === true || payload.resultAvailable === true) {
+    const result = readCompletedAiGenerationPayload(payload);
+    if (!result) throw new Error("AI card job completed without a usable card result.");
+    return { status: "ready", result };
+  }
+
+  return {
+    status: "pending",
+    jobId,
+    queueStatus: queueStatus || "queued",
+    retryAfterSeconds: coerceRetryAfterSeconds(payload.retry_after_seconds ?? payload.retryAfterSeconds, response.headers.get("retry-after")),
+    statusText: formatQueuedAiGenerationStatus(queueStatus || "queued")
+  };
+}
+
+async function pollQueuedAiGenerationJob({
+  getCustomerApiToken,
+  jobId,
+  statusUrl,
+  onStatus,
+  maxAttempts = 60
+}: {
+  getCustomerApiToken?: CustomerApiTokenProvider;
+  jobId?: string;
+  statusUrl?: string;
+  onStatus?: (status: Extract<AiGenerationJobPollResult, { status: "pending" }>) => void;
+  maxAttempts?: number;
+}): Promise<AiGenerationApiResult> {
+  const path = normalizeAiJobStatusUrl(statusUrl, jobId);
+  let retryAfterSeconds = 2;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (attempt > 0) await wait(Math.min(10, Math.max(1, retryAfterSeconds)) * 1000);
+    const headers = await buildCustomerAuthorizationHeaders(getCustomerApiToken);
+    const response = await fetch(path, { cache: "no-store", headers });
+    const status = await readAiGenerationJobStatusResponse(response);
+    if (status.status === "ready") return status.result;
+
+    retryAfterSeconds = status.retryAfterSeconds;
+    onStatus?.(status);
+  }
+
+  throw new Error("AI card generation is still queued. You can keep editing the template and try again in a moment.");
+}
+
+function readCompletedAiGenerationPayload(payload: Record<string, unknown>): AiGenerationApiResult | undefined {
+  const result = payload.result && typeof payload.result === "object" ? payload.result as Record<string, unknown> : undefined;
+  const candidate = result?.payload && typeof result.payload === "object"
+    ? result.payload as Record<string, unknown>
+    : result;
+  if (!candidate || !Array.isArray((candidate.card_copy as { panels?: unknown } | undefined)?.panels)) return undefined;
+  return {
+    ...candidate,
+    job_id: readOptionalString(payload.job_id ?? payload.jobId),
+    queue_status: readOptionalString(payload.queue_status ?? payload.queueStatus),
+    result_available: true
+  } as AiGenerationApiResult;
+}
+
+async function buildCustomerAuthorizationHeaders(getCustomerApiToken?: CustomerApiTokenProvider): Promise<Headers> {
+  const token = await getCustomerApiToken?.();
+  if (!token) throw new Error("AI card generation needs an active signed-in session.");
+  return new Headers({ Authorization: `Bearer ${token}` });
+}
+
+function normalizeAiJobStatusUrl(statusUrl: string | undefined, jobId: string | undefined): string {
+  const raw = readOptionalString(statusUrl) || (jobId ? `/api/ai/jobs/status?job_id=${encodeURIComponent(jobId)}` : "");
+  if (!raw) throw new Error("AI card generation queued without a status URL.");
+  if (raw.startsWith("/")) return raw;
+
+  const baseOrigin = typeof window === "undefined" ? "http://customcard.local" : window.location.origin;
+  const parsed = new URL(raw, baseOrigin);
+  if (parsed.origin !== baseOrigin) throw new Error("AI card generation returned an unsafe status URL.");
+  return `${parsed.pathname}${parsed.search}`;
+}
+
+function formatQueuedAiGenerationStatus(queueStatus: string): string {
+  if (queueStatus === "running") return "AI is writing the card now. The template stays editable while it works.";
+  if (queueStatus === "queued") return "AI draft is queued. The template stays editable while the worker starts.";
+  return `AI draft is ${queueStatus}. The template stays editable while the worker updates.`;
+}
+
+function coerceRetryAfterSeconds(payloadValue: unknown, headerValue: string | null): number {
+  const payloadNumber = Number(payloadValue);
+  if (Number.isFinite(payloadNumber) && payloadNumber > 0) return Math.min(30, Math.max(1, Math.round(payloadNumber)));
+  const headerNumber = Number(headerValue);
+  if (Number.isFinite(headerNumber) && headerNumber > 0) return Math.min(30, Math.max(1, Math.round(headerNumber)));
+  return 2;
+}
+
+function readOptionalString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function formatAiGenerationHttpError(status: number, payload: Record<string, unknown> | undefined): string {

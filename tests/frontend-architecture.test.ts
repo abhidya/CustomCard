@@ -425,6 +425,28 @@ describe("frontend architecture seams", () => {
     expect(buildProofSignature({ ...draft, panels: [{ ...panel, body: "Other" }] })).not.toBe(base);
     expect(buildProofSignature({ ...draft, panels: [{ ...panel, artDirection: "Minimal" }] })).not.toBe(base);
     expect(buildProofSignature({ ...draft, panels: [{ ...panel, imageUrl: "data:image/png;base64,AA" }] })).not.toBe(base);
+    expect(
+      buildProofSignature({ ...draft, panels: [{ ...panel, imagePlacement: { frame: "photo-window", focus: "top" } }] })
+    ).not.toBe(base);
+    expect(
+      buildProofSignature({
+        ...draft,
+        panels: [
+          {
+            ...panel,
+            textLayout: {
+              headlineZone: "lower",
+              bodyZone: "bottom",
+              alignment: "center",
+              fontPairing: "serif-sans",
+              colorMode: "dark-ink",
+              scale: "standard"
+            }
+          }
+        ]
+      })
+    ).not.toBe(base);
+    expect(buildProofSignature({ ...draft, panels: [{ ...panel, textFormat: { headline: { bold: true } } }] })).not.toBe(base);
     expect(buildProofSignature({ ...draft, panels: [{ ...panel, styleId: "minimal" }] })).not.toBe(base);
     expect(buildProofSignature({ ...draft, panels: [{ ...panel, rtl: true }] })).not.toBe(base);
     expect(buildProofSignature({ ...draft, panels: [{ ...panel, overflowRisk: true }] })).not.toBe(base);

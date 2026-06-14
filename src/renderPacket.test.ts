@@ -73,6 +73,43 @@ describe("buildPanelSvg", () => {
     expect(svg).toContain('font-family="Helvetica, Arial, sans-serif"');
     expect(svg).toContain('y="1320"');
   });
+
+  it("renders uploaded image placement and rich text formatting into the SVG", () => {
+    const svg = buildPanelSvg({
+      ...panel,
+      imagePlacement: { frame: "photo-window", focus: "top" },
+      imageUrl: "data:image/png;base64,iVBORw0KGgo=",
+      textFormat: {
+        headline: { accent: true, bold: true, italic: true },
+        body: { bold: true, italic: true }
+      },
+      textLayout: {
+        headlineZone: "lower",
+        bodyZone: "bottom",
+        alignment: "center",
+        fontPairing: "serif-sans",
+        colorMode: "dark-ink",
+        scale: "standard"
+      }
+    });
+
+    expect(svg).toContain('x="180" y="210" width="1140" height="860"');
+    expect(svg).toContain('preserveAspectRatio="xMidYMin slice"');
+    expect(svg).toContain('font-weight="800" font-style="italic"');
+    expect(svg).toContain('font-weight="700" font-style="italic"');
+    expect(svg).toContain('fill="#315b7d"');
+  });
+
+  it("can fit a whole uploaded image inside the print-safe frame", () => {
+    const svg = buildPanelSvg({
+      ...panel,
+      imagePlacement: { frame: "fit", focus: "center" },
+      imageUrl: "data:image/jpeg;base64,/9j/AA=="
+    });
+
+    expect(svg).toContain('x="180" y="180" width="1140" height="1740"');
+    expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
+  });
 });
 
 const panel: CardPanel = {

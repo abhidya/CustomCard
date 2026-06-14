@@ -205,6 +205,133 @@ describe("worker runtime", () => {
     expect(JSON.stringify(completedPayload)).not.toContain("aiFlowConfig");
   });
 
+  it("persists queued AI card image results before storing the job result", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const cardCopyResponse = {
+      panels: ["front", "inside-left", "inside-right", "back"].map((id) => ({
+        id,
+        headline: id === "front" ? "Happy Birthday Sara" : "For Sara",
+        body: "Warm birthday copy shaped from approved memories.",
+        art_direction: "Botanical greeting-card panel.",
+        visual_cue: `Botanical text-safe composition for ${id}.`,
+        text_layout: {
+          headline_zone: "upper",
+          body_zone: "center",
+          alignment: "center",
+          font_pairing: "serif-sans",
+          color_mode: "dark-ink",
+          scale: "standard"
+        },
+        image_prompt: `Full-bleed flat 2D botanical artwork layer for the ${id} panel, no readable text.`,
+        image_negative_prompt: "readable text, logo, watermark"
+      })),
+      memory_citations: ["She keeps a fern by the kitchen window."]
+    };
+    const fetchImpl = async (_url: unknown, init?: { body?: unknown }) => {
+      const body = typeof init?.body === "string" ? JSON.parse(init.body) : {};
+      if (Array.isArray(body.messages)) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        });
+      }
+      return new Response(new Uint8Array([137, 80, 78, 71]), {
+        status: 200,
+        headers: { "content-type": "image/png" }
+      });
+    };
+    const persistedPayloads: unknown[] = [];
+    const pool = createWorkerPool(queries, [
+      {
+        id: "job-ai-card-images",
+        user_id: "user-demo",
+        route_id: "ai-card-generate",
+        idempotency_key_id: "idem-ai-card-images",
+        payload: {
+          routeId: "ai-card-generate",
+          body: {
+            sender: "Manny",
+            recipient: "Sara",
+            relationship: "friend",
+            occasion: "birthday",
+            tone: "warm",
+            style: "botanical",
+            language: "English",
+            personal_note: "She loves morning hikes.",
+            memory_notes: ["She keeps a fern by the kitchen window."]
+          },
+          requestContext: {
+            rateKey: "user-demo-images",
+            idempotencyKey: "ai-card-worker-image-test",
+            authContext: { userId: "user-demo", role: "customer", sessionId: "session-demo" }
+          },
+          security: { clientAiFlowConfigAccepted: false, payloadMinimized: true }
+        },
+        attempt_count: 1,
+        max_attempts: 3
+      }
+    ]);
+    const runtime = createWorkerRuntime({
+      env: {
+        ...baseEnv,
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+        CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN: "test_image_token",
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "cloudflare-workers-ai-image",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "true"
+      },
+      routes: [{ id: "ai-card-generate", runtimeMode: "queue-backed" }],
+      postgresPoolFactory: () => pool,
+      fetchImpl,
+      generatedImageArtifactPersister: async ({ payload }: { payload: { images?: Array<{ panel_id?: string }> } }) => {
+        persistedPayloads.push(payload);
+        return {
+          payload: {
+            ...payload,
+            images: (payload.images ?? []).map((image) => ({
+              ...image,
+              image_url: `/api/artifacts/generated/${image.panel_id}.png`,
+              image_inline_bytes_persisted: false
+            })),
+            generated_image_persistence: {
+              status: "stored",
+              inlineImageBytesPersisted: false,
+              signedArtifactUrls: true
+            }
+          }
+        };
+      },
+      workerId: "worker-ai-card-images",
+      now: () => new Date("2030-01-01T00:00:00.000Z")
+    });
+
+    const result = await runtime.runOnce({ limit: 1 });
+    const completed = queries.find((query) => query.sql.includes("status = 'succeeded'"));
+    const completedPayload = JSON.parse(String(completed?.params[1] ?? "{}"));
+
+    expect(result).toMatchObject({ processed: 1, succeeded: 1, failed: 0 });
+    expect(persistedPayloads).toHaveLength(1);
+    expect(completedPayload.payload.generated_image_persistence).toMatchObject({
+      status: "stored",
+      inlineImageBytesPersisted: false
+    });
+    expect(completedPayload.payload.images).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          panel_id: "front",
+          image_url: "/api/artifacts/generated/front.png",
+          image_inline_bytes_persisted: false
+        })
+      ])
+    );
+    expect(JSON.stringify(completedPayload)).not.toContain("data:image");
+    expect(JSON.stringify(completedPayload)).not.toContain("inline-image-result-not-stored-in-job-result");
+  });
+
   it("dead-letters exhausted jobs and records audit evidence", async () => {
     const queries: Array<{ sql: string; params: unknown[] }> = [];
     const pool = createWorkerPool(queries, [

@@ -3,6 +3,8 @@ import {
   createAiCardGenerationService,
 } from "./ai-card-generator.mjs";
 import { createAiFlowCostGate, createPostgresAiFlowCostStore } from "./ai-flow-cost-gate.mjs";
+import { persistGeneratedImageArtifacts as persistGeneratedImageArtifactsToObjectStore } from "./api-runtime.mjs";
+import { createObjectStoreRuntime } from "./object-store-runtime.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
 import {
   validateWorkerRuntimeEnv,
@@ -16,12 +18,25 @@ export function createWorkerRuntime({
   routes = defaultRoutes,
   postgresPoolFactory,
   jobHandlers,
+  generatedImageArtifactPersister,
   fetchImpl = globalThis.fetch,
   workerId = defaultWorkerId(env),
   now = () => new Date()
 } = {}) {
   const postgresRuntime = createPostgresRuntime({ env, postgresPoolFactory });
-  const effectiveJobHandlers = jobHandlers ?? createDefaultJobHandlers({ env, postgresRuntime, fetchImpl });
+  const objectStoreRuntime = createObjectStoreRuntime({ env, fetchImpl });
+  const effectiveGeneratedImageArtifactPersister =
+    generatedImageArtifactPersister ??
+    (({ authContext, payload }) =>
+      persistGeneratedImageArtifactsToObjectStore({ objectStoreRuntime, authContext, payload }));
+  const effectiveJobHandlers =
+    jobHandlers ??
+    createDefaultJobHandlers({
+      env,
+      postgresRuntime,
+      fetchImpl,
+      persistGeneratedImageArtifacts: effectiveGeneratedImageArtifactPersister
+    });
   const queueBackedRouteIds = routes.filter((route) => route.runtimeMode === "queue-backed").map((route) => route.id);
   const routeIdSet = new Set(queueBackedRouteIds);
 
@@ -39,6 +54,7 @@ export function createWorkerRuntime({
         retryBackoffSeconds: workerRetryBackoffSeconds(env),
         pollIntervalMs: workerPollIntervalMs(env),
         postgres: postgresRuntime.describe(),
+        artifactStore: objectStoreRuntime.describe(),
         idempotency: "required",
         liveNetworkCalls: false
       };
@@ -286,7 +302,7 @@ async function runJobAdapter(job, jobHandlers) {
   return handler({ job });
 }
 
-function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl }) {
+function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl, persistGeneratedImageArtifacts }) {
   const aiService = createAiCardGenerationService({
     env,
     fetchImpl,
@@ -297,7 +313,8 @@ function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl }) {
 
   return {
     "ai-chat-respond": async ({ job }) => runQueuedAiJob({ job, aiService, method: "respondChat" }),
-    "ai-card-generate": async ({ job }) => runQueuedAiJob({ job, aiService, method: "generateCard" }),
+    "ai-card-generate": async ({ job }) =>
+      runQueuedAiJob({ job, aiService, method: "generateCard", persistGeneratedImageArtifacts }),
     "render-packets": async ({ job }) => ({
       status: "render-review-ready",
       routeId: job.routeId,
@@ -318,7 +335,7 @@ function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl }) {
   };
 }
 
-async function runQueuedAiJob({ job, aiService, method }) {
+async function runQueuedAiJob({ job, aiService, method, persistGeneratedImageArtifacts }) {
   const body = job.payload?.body;
   if (!body || typeof body !== "object") throw new Error(`Queued ${job.routeId} job is missing sanitized AI payload.`);
   const requestContext = job.payload?.requestContext && typeof job.payload.requestContext === "object"
@@ -327,12 +344,17 @@ async function runQueuedAiJob({ job, aiService, method }) {
   const result = await aiService[method](body, requestContext);
   if (result.statusCode === 429) throw new Error(`${job.routeId} provider rate limited; retry scheduled by worker.`);
   if (result.statusCode >= 500) throw new Error(`${job.routeId} provider failed with HTTP ${result.statusCode}.`);
+  const persisted =
+    typeof persistGeneratedImageArtifacts === "function"
+      ? await persistGeneratedImageArtifacts({ authContext: requestContext.authContext, payload: result.payload })
+      : undefined;
+  const payload = persisted?.payload ?? result.payload;
   return {
     status: "ai-result-ready",
     routeId: job.routeId,
     httpStatusCode: result.statusCode,
-    providerCallMode: result.payload?.external_network_calls ? "live-provider" : "provider-disabled",
-    payload: compactAiWorkerPayload(result.payload),
+    providerCallMode: payload?.external_network_calls ? "live-provider" : "provider-disabled",
+    payload: compactAiWorkerPayload(payload),
     evidence: "Worker completed queued AI flow with server-selected provider config and durable cost gate."
   };
 }

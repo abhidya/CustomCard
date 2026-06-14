@@ -338,6 +338,9 @@ describe("customer shell server render", () => {
       }
       expect(html).toContain("Type a tone");
       expect(html).toContain("Type a style");
+      expect(text).toContain("Start from a design");
+      expect(text).toContain("Birthday glow");
+      expect(text).toContain("Friendship stars");
       expect(text).toContain("Make it personal");
       expect(text).toContain("Set up the card first");
       expect(text).toContain("Draft your card with AI");
@@ -483,6 +486,11 @@ describe("customer shell server render", () => {
       expect(text).toContain("Regenerate this panel");
       expect(text).toContain("Panel generation updates only the selected panel.");
       expect(text).toContain("Advanced: art direction");
+      expect(text).toContain("Upload image");
+      expect(text).toContain("Fill panel");
+      expect(text).toContain("Photo window");
+      expect(html).toContain('aria-label="Rich text formatting"');
+      expect(html).toContain('accept="image/png,image/jpeg,image/webp"');
       // WAI-ARIA tabs pattern for the panel switcher.
       expect(html).toContain('role="tablist"');
       expect(html).toContain('role="tab"');

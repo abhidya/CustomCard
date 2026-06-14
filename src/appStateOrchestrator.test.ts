@@ -3,6 +3,8 @@ import {
   buildAiPanelGenerationProgress,
   initialViewFromLocation,
   progressForPanels,
+  readAiGenerationJobStatusResponse,
+  readAiGenerationResponse,
   syncDraftInputWithOpportunity
 } from "./appStateOrchestrator";
 import type { CardPanel } from "./customerWorkflow";
@@ -69,6 +71,85 @@ describe("AI panel generation progress", () => {
       "inside-left": "copy-ready",
       "inside-right": "artwork-loading",
       back: "artwork-missing"
+    });
+  });
+});
+
+describe("queued AI generation responses", () => {
+  it("accepts queued generation admission and preserves the status URL", async () => {
+    const response = new Response(
+      JSON.stringify({
+        status: "queued",
+        job_id: "job-ai-card-1",
+        job_status_url: "/api/ai/jobs/status?job_id=job-ai-card-1",
+        queue_status: "queued",
+        result_available: false
+      }),
+      { status: 202, headers: { "content-type": "application/json" } }
+    );
+
+    await expect(readAiGenerationResponse(response)).resolves.toMatchObject({
+      status: "queued",
+      job_id: "job-ai-card-1",
+      job_status_url: "/api/ai/jobs/status?job_id=job-ai-card-1",
+      result_available: false
+    });
+  });
+
+  it("unwraps completed queued worker results into the direct generation payload shape", async () => {
+    const response = new Response(
+      JSON.stringify({
+        status: "job-result-ready",
+        job_id: "job-ai-card-1",
+        queue_status: "succeeded",
+        result_available: true,
+        result: {
+          status: "ai-result-ready",
+          routeId: "ai-card-generate",
+          payload: {
+            draft_id: "draft-sara",
+            generated_by: "ai-text-and-image",
+            card_copy: {
+              panels: [{ id: "front", headline: "For Sara", body: "A warm note." }]
+            },
+            images: [{ panel_id: "front", image_url: "/api/artifacts/front.png" }]
+          }
+        }
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+
+    await expect(readAiGenerationJobStatusResponse(response)).resolves.toMatchObject({
+      status: "ready",
+      result: {
+        job_id: "job-ai-card-1",
+        queue_status: "succeeded",
+        result_available: true,
+        card_copy: {
+          panels: [{ id: "front", headline: "For Sara" }]
+        },
+        images: [{ panel_id: "front", image_url: "/api/artifacts/front.png" }]
+      }
+    });
+  });
+
+  it("keeps queued job status pending until the worker has a result", async () => {
+    const response = new Response(
+      JSON.stringify({
+        status: "job-running",
+        job_id: "job-ai-card-2",
+        queue_status: "running",
+        result_available: false,
+        retry_after_seconds: 4
+      }),
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
+
+    await expect(readAiGenerationJobStatusResponse(response)).resolves.toMatchObject({
+      status: "pending",
+      jobId: "job-ai-card-2",
+      queueStatus: "running",
+      retryAfterSeconds: 4
     });
   });
 });

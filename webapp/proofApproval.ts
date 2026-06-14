@@ -70,6 +70,9 @@ function buildPanelProofSignature(panel: CardPanel): string {
     panel.body,
     panel.artDirection,
     panel.imageUrl ?? "",
+    panel.imagePlacement ? `${panel.imagePlacement.frame}:${panel.imagePlacement.focus}` : "",
+    panel.textLayout ? JSON.stringify(panel.textLayout) : "",
+    panel.textFormat ? JSON.stringify(panel.textFormat) : "",
     panel.styleId ?? "",
     panel.rtl ? "rtl" : "ltr",
     panel.overflowRisk ? "overflow" : "fits"

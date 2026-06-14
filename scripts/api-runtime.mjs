@@ -2804,7 +2804,7 @@ function buildRenderPacketRepositoryPayload(record, runtimeMode, artifactPersist
   };
 }
 
-async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload }) {
+export async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload }) {
   const objectStoreDescription = objectStoreRuntime?.describe?.();
   const images = Array.isArray(payload?.images) ? payload.images : [];
   const artifacts = (

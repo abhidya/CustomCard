@@ -1,11 +1,32 @@
 import { SignInButton } from "@clerk/react";
-import { ArrowRight, CalendarDays, HeartHandshake, RefreshCw, Undo2 } from "lucide-react";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  ArrowRight,
+  Bold,
+  CalendarDays,
+  HeartHandshake,
+  ImageOff,
+  ImagePlus,
+  Italic,
+  Palette,
+  RefreshCw,
+  Undo2,
+  Upload
+} from "lucide-react";
+import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import type {
+  CardImageFocus,
+  CardImageFrame,
+  CardImagePlacement,
   CardDraft,
   CardDraftInput,
   CardPanel,
+  CardTextFormat,
+  CardTextLayout,
   MemoryItem,
+  TextAlignment,
   Tone,
   TonePreset,
   VisualStyle,
@@ -22,11 +43,32 @@ import {
   type PanelTransformId
 } from "../../src/panelEdits";
 import { displayDraftValue } from "../draftProgress";
+import { cardTemplates, type CardTemplateChoice } from "../cardTemplates";
 import { Chips, Field, FoldedCardPreview, PanelArt, Step } from "../ui";
 
 const allTones: TonePreset[] = ["warm", "funny", "elegant", "simple", "reverent", "sentimental"];
 const styles: VisualStylePreset[] = ["botanical", "bold-type", "photo-note", "minimal"];
 const aiButtonLogoSrc = "/customcard-ai-button-logo.png";
+
+const imageFrameLabels: Record<CardImageFrame, string> = {
+  fill: "Fill panel",
+  fit: "Fit image",
+  "photo-window": "Photo window"
+};
+
+const imageFocusLabels: Record<CardImageFocus, string> = {
+  center: "Center",
+  top: "Top",
+  bottom: "Bottom",
+  left: "Left",
+  right: "Right"
+};
+
+const alignmentIcons: Record<TextAlignment, typeof AlignLeft> = {
+  left: AlignLeft,
+  center: AlignCenter,
+  right: AlignRight
+};
 
 const toneLabels: Record<TonePreset, string> = {
   warm: "Warm",
@@ -71,6 +113,53 @@ function styleLabel(value: VisualStyle): string {
 
 function toneImpliesHumor(value: string): boolean {
   return /\b(funny|playful|witty|humou?r)\b/i.test(value);
+}
+
+function defaultPanelTextLayout(panel: CardPanel): CardTextLayout {
+  const photoWindow = panel.imagePlacement?.frame === "photo-window";
+  return {
+    headlineZone: photoWindow ? "lower" : "upper",
+    bodyZone: photoWindow ? "bottom" : "center",
+    alignment: panel.rtl ? "right" : "center",
+    fontPairing: photoWindow ? "serif-sans" : "soft-serif",
+    colorMode: "dark-ink",
+    scale: "standard"
+  };
+}
+
+function mergePanelTextLayout(panel: CardPanel, patch: Partial<CardTextLayout>): CardTextLayout {
+  return { ...defaultPanelTextLayout(panel), ...panel.textLayout, ...patch };
+}
+
+function mergePanelTextFormat(
+  panel: CardPanel,
+  target: keyof CardTextFormat,
+  patch: NonNullable<CardTextFormat[keyof CardTextFormat]>
+): CardTextFormat {
+  return {
+    ...panel.textFormat,
+    [target]: {
+      ...panel.textFormat?.[target],
+      ...patch
+    }
+  };
+}
+
+function genericOccasion(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized === "" || normalized === "card";
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") resolve(reader.result);
+      else reject(new Error("Image could not be read."));
+    };
+    reader.onerror = () => reject(new Error("Image could not be read."));
+    reader.readAsDataURL(file);
+  });
 }
 
 function panelArtworkLabel(panel: CardPanel, stale: boolean, status: AiPanelGenerationStatus | undefined): string {
@@ -175,6 +264,8 @@ export function StudioView({
   const [generationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
+  const frontPanel = draft.panels.find((candidate) => candidate.id === "front") ?? draft.panels[0];
+  const selectedTemplate = cardTemplates.find((template) => template.imageUrl === frontPanel?.imageUrl);
   const selectedGenerationPanels = draft.panels.filter((candidate) => generationPanelIds.includes(candidate.id));
   const approvedForRecipient = memories.filter((memory) => memory.approved).length;
   const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
@@ -259,6 +350,20 @@ export function StudioView({
 
   function startTemplateReview() {
     setTemplateReviewStarted(true);
+  }
+
+  function applyTemplate(template: CardTemplateChoice) {
+    setActivePanel("front");
+    setTemplateReviewStarted(true);
+    if (genericOccasion(draftInput.occasion)) onField("occasion", template.occasion);
+    onField("style", template.styleId);
+    onPanelEdit("front", {
+      artDirection: template.artDirection,
+      imagePlacement: template.imagePlacement,
+      imageUrl: template.imageUrl,
+      styleId: template.styleId,
+      textLayout: template.textLayout
+    });
   }
 
   function toggleGenerationPanel(panelId: CardPanel["id"]) {
@@ -434,8 +539,20 @@ export function StudioView({
 
           <Step
             defaultOpen
-            meta={`${toneLabel(draftInput.tone)} · ${styleLabel(draftInput.style)}`}
+            meta={selectedTemplate ? selectedTemplate.label : "Gallery or blank"}
             number={2}
+            title="Start from a design"
+          >
+            <TemplateGallery
+              onTemplate={applyTemplate}
+              selectedTemplateId={selectedTemplate?.id}
+            />
+          </Step>
+
+          <Step
+            defaultOpen
+            meta={`${toneLabel(draftInput.tone)} · ${styleLabel(draftInput.style)}`}
+            number={3}
             title="The look and feel"
           >
             <Field label="Tone">
@@ -473,7 +590,7 @@ export function StudioView({
           <Step
             defaultOpen={aiRequiresSignIn || Boolean(displayDraftValue(draftInput.personalNote))}
             meta={displayDraftValue(draftInput.personalNote) ? "Note added" : "Optional"}
-            number={3}
+            number={4}
             title="Make it personal"
           >
             <Field label="A shared memory, an inside joke, or what you appreciate about them">
@@ -666,6 +783,36 @@ export function StudioView({
         </div>
       </div>
     </>
+  );
+}
+
+function TemplateGallery({
+  selectedTemplateId,
+  onTemplate
+}: {
+  selectedTemplateId?: string;
+  onTemplate: (template: CardTemplateChoice) => void;
+}) {
+  return (
+    <div className="templateGallery" role="list" aria-label="Card template gallery">
+      {cardTemplates.map((template) => (
+        <button
+          aria-pressed={selectedTemplateId === template.id}
+          className="templateTile"
+          data-on={selectedTemplateId === template.id}
+          key={template.id}
+          onClick={() => onTemplate(template)}
+          role="listitem"
+          type="button"
+        >
+          <img alt={`${template.label} template`} decoding="async" loading="lazy" src={template.imageUrl} />
+          <span>
+            <strong>{template.label}</strong>
+            <small>{template.detail}</small>
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -878,6 +1025,49 @@ function PanelEditor({
     ? ["shorten", "warmer", "simpler", "less-generic"]
     : ["improve", "shorten", "warmer", "simpler", "less-generic"];
   const status = panelStatus ?? (aiActive ? "copy-ready" : "idle");
+  const uploadInputId = `panel-upload-${panel.id}`;
+  const placement: CardImagePlacement = panel.imagePlacement ?? { frame: "fill", focus: "center" };
+  const textLayout = mergePanelTextLayout(panel, {});
+  const headlineFormat = panel.textFormat?.headline ?? {};
+  const bodyFormat = panel.textFormat?.body ?? {};
+
+  function updateTextLayout(patch: Partial<CardTextLayout>) {
+    onPanelEdit(panel.id, { textLayout: mergePanelTextLayout(panel, patch) });
+  }
+
+  function toggleTextFormat(target: keyof CardTextFormat, key: "bold" | "italic" | "accent") {
+    const current = panel.textFormat?.[target]?.[key] === true;
+    onPanelEdit(panel.id, { textFormat: mergePanelTextFormat(panel, target, { [key]: !current }) });
+  }
+
+  function updateImagePlacement(patch: Partial<CardImagePlacement>) {
+    const nextPlacement = { ...placement, ...patch };
+    onPanelEdit(panel.id, {
+      imagePlacement: nextPlacement,
+      textLayout:
+        nextPlacement.frame === "photo-window"
+          ? mergePanelTextLayout(panel, { headlineZone: "lower", bodyZone: "bottom", alignment: "center" })
+          : panel.textLayout
+    });
+  }
+
+  async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file || !file.type.startsWith("image/")) return;
+    const imageUrl = await readFileAsDataUrl(file);
+    onPanelEdit(panel.id, {
+      artDirection: `Customer uploaded image: ${file.name}`,
+      imagePlacement: { frame: "photo-window", focus: "center" },
+      imageUrl,
+      textLayout: mergePanelTextLayout(panel, {
+        alignment: "center",
+        bodyZone: "bottom",
+        colorMode: "dark-ink",
+        headlineZone: "lower"
+      })
+    });
+  }
 
   return (
     <section
@@ -916,6 +1106,101 @@ function PanelEditor({
         <span>Body</span>
         <textarea value={panel.body} onChange={(event) => onPanelEdit(panel.id, { body: event.target.value })} />
       </label>
+      <div className="richTextTools" aria-label="Rich text formatting">
+        <div className="richTextGroup" role="group" aria-label="Headline formatting">
+          <span>Headline</span>
+          <button
+            aria-label="Bold headline"
+            aria-pressed={headlineFormat.bold === true}
+            data-on={headlineFormat.bold === true}
+            onClick={() => toggleTextFormat("headline", "bold")}
+            title="Bold headline"
+            type="button"
+          >
+            <Bold size={14} />
+          </button>
+          <button
+            aria-label="Italic headline"
+            aria-pressed={headlineFormat.italic === true}
+            data-on={headlineFormat.italic === true}
+            onClick={() => toggleTextFormat("headline", "italic")}
+            title="Italic headline"
+            type="button"
+          >
+            <Italic size={14} />
+          </button>
+          <button
+            aria-label="Accent headline"
+            aria-pressed={headlineFormat.accent === true}
+            data-on={headlineFormat.accent === true}
+            onClick={() => toggleTextFormat("headline", "accent")}
+            title="Accent headline"
+            type="button"
+          >
+            <Palette size={14} />
+          </button>
+        </div>
+        <div className="richTextGroup" role="group" aria-label="Body formatting">
+          <span>Body</span>
+          <button
+            aria-label="Bold body"
+            aria-pressed={bodyFormat.bold === true}
+            data-on={bodyFormat.bold === true}
+            onClick={() => toggleTextFormat("body", "bold")}
+            title="Bold body"
+            type="button"
+          >
+            <Bold size={14} />
+          </button>
+          <button
+            aria-label="Italic body"
+            aria-pressed={bodyFormat.italic === true}
+            data-on={bodyFormat.italic === true}
+            onClick={() => toggleTextFormat("body", "italic")}
+            title="Italic body"
+            type="button"
+          >
+            <Italic size={14} />
+          </button>
+          <button
+            aria-label="Accent body"
+            aria-pressed={bodyFormat.accent === true}
+            data-on={bodyFormat.accent === true}
+            onClick={() => toggleTextFormat("body", "accent")}
+            title="Accent body"
+            type="button"
+          >
+            <Palette size={14} />
+          </button>
+        </div>
+        <div className="richTextGroup" role="group" aria-label="Text alignment">
+          <span>Align</span>
+          {(["left", "center", "right"] as const).map((alignment) => {
+            const Icon = alignmentIcons[alignment];
+            return (
+              <button
+                aria-label={`${titleCase(alignment)} align`}
+                aria-pressed={textLayout.alignment === alignment}
+                data-on={textLayout.alignment === alignment}
+                key={alignment}
+                onClick={() => updateTextLayout({ alignment })}
+                title={`${titleCase(alignment)} align`}
+                type="button"
+              >
+                <Icon size={14} />
+              </button>
+            );
+          })}
+        </div>
+        <label className="richTextSelect">
+          <span>Size</span>
+          <select value={textLayout.scale} onChange={(event) => updateTextLayout({ scale: event.target.value as CardTextLayout["scale"] })}>
+            <option value="compact">Compact</option>
+            <option value="standard">Standard</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+      </div>
       {panel.overflowRisk ? (
         <p className="paneleditor-warn" role="alert">
           Too much text for this panel — use “Shorten to fit” or trim the body so nothing gets cut off in print.
@@ -951,7 +1236,64 @@ function PanelEditor({
           We couldn’t load artwork for this panel. The copy is safe; template artwork will print.
         </p>
       ) : null}
-      <details className="paneleditor-advanced" id="panel-artwork-section">
+      <section className="imageUploadPanel" id="panel-artwork-section" aria-label="Panel image">
+        <div className="imageUploadHead">
+          <span>
+            <ImagePlus size={15} />
+            Image
+          </span>
+          <div className="imageUploadActions">
+            <label className="uploadButton btn btn-ghost btn-sm" htmlFor={uploadInputId}>
+              <Upload size={14} />
+              Upload image
+              <input
+                accept="image/png,image/jpeg,image/webp"
+                id={uploadInputId}
+                onChange={(event) => void handleImageUpload(event)}
+                type="file"
+              />
+            </label>
+            {panel.imageUrl ? (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => onPanelEdit(panel.id, { imagePlacement: undefined, imageUrl: undefined })}
+                type="button"
+              >
+                <ImageOff size={14} />
+                Remove image
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <div className="imagePlacementControls" role="group" aria-label="Image placement">
+          {(["fill", "fit", "photo-window"] as const).map((frame) => (
+            <button
+              aria-pressed={placement.frame === frame}
+              data-on={placement.frame === frame}
+              key={frame}
+              onClick={() => updateImagePlacement({ frame })}
+              type="button"
+            >
+              {imageFrameLabels[frame]}
+            </button>
+          ))}
+        </div>
+        <label className="placementSelect">
+          <span>Focus</span>
+          <select
+            disabled={!panel.imageUrl}
+            onChange={(event) => updateImagePlacement({ focus: event.target.value as CardImageFocus })}
+            value={placement.focus}
+          >
+            {(["center", "top", "bottom", "left", "right"] as const).map((focus) => (
+              <option key={focus} value={focus}>
+                {imageFocusLabels[focus]}
+              </option>
+            ))}
+          </select>
+        </label>
+      </section>
+      <details className="paneleditor-advanced">
         <summary>Advanced: art direction</summary>
         <label className="paneltext-field">
           <span>Art direction (design notes — never printed on the card)</span>
@@ -968,7 +1310,11 @@ function PanelEditor({
         </span>
         <span>
           <strong>Layout</strong>
-          <small>{panel.textLayout ? "AI layout applied" : "Template layout"}</small>
+          <small>{panel.textLayout ? "Custom text layout" : "Template layout"}</small>
+        </span>
+        <span>
+          <strong>Image</strong>
+          <small>{panel.imageUrl ? imageFrameLabels[placement.frame] : "Template art"}</small>
         </span>
       </div>
       <div className="panelhistory-note" id="panel-history-section">
