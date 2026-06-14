@@ -45,9 +45,19 @@ export interface AiGenerationApiImage {
   image_storage_provider?: string;
   image_signed_url_expires_at?: string;
   image_inline_bytes_persisted?: boolean;
+  image_compression?: AiGenerationImageCompression;
   revised_prompt?: string;
   width?: number;
   height?: number;
+}
+
+export interface AiGenerationImageCompression {
+  status?: "compressed" | "skipped";
+  algorithm?: string;
+  reason?: string;
+  originalByteLength?: number;
+  storedByteLength?: number;
+  savedBytes?: number;
 }
 
 export interface AiGenerationApiResult {
@@ -71,6 +81,15 @@ export interface AiGenerationApiResult {
     inlineImageBytesPersisted?: boolean;
     manifestUri?: string;
     signedUrlExpiresAt?: string;
+    compression?: {
+      attemptedArtifactCount?: number;
+      compressedArtifactCount?: number;
+      skippedArtifactCount?: number;
+      originalBytes?: number;
+      storedBytes?: number;
+      savedBytes?: number;
+      algorithms?: string[];
+    };
   };
   generated_by?: string;
   ai_flow?: {

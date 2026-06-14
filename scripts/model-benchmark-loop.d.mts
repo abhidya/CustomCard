@@ -80,7 +80,7 @@ export interface TypographyExperimentSpec {
 export interface TypographyPromptPlan {
   modeId: string;
   panelId: string;
-  renderTextDeterministically: boolean;
+  renderTextInApp: boolean;
   prompt: string;
   negativePrompt: string;
 }

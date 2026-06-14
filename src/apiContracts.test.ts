@@ -327,6 +327,16 @@ describe("api contracts", () => {
       productionTrafficEnabled: 0,
       blockers: []
     });
+    expect(summary.aiQueueOperations).toMatchObject({
+      total: 7,
+      productionReadyControls: 7,
+      metricsTracked: 5,
+      alertThresholds: 5,
+      humanOwnedControls: 7,
+      liveProviderCalls: 0,
+      externalNetworkCalls: 0,
+      blockers: []
+    });
     expect(summary.capacity).toMatchObject({
       total: 4,
       localProfiles: 1,
@@ -670,6 +680,16 @@ describe("api contracts", () => {
     expect(payload.aiProviderReadiness.items.map((item) => item.id)).toEqual(
       expect.arrayContaining(["ai-adapter-inventory", "prompt-brand-safety-review", "image-print-qa"])
     );
+    expect(payload.aiQueueOperations.summary).toMatchObject({
+      total: 7,
+      metricsTracked: 5,
+      alertThresholds: 5,
+      humanOwnedControls: 7,
+      liveProviderCalls: 0
+    });
+    expect(payload.aiQueueOperations.items.map((item) => item.id)).toEqual(
+      expect.arrayContaining(["queue-admission-contract", "worker-lease-retry-dlq", "human-dead-letter-management"])
+    );
     expect(payload.capacity.summary).toMatchObject({
       total: 4,
       maxDailyCards: 12000,
@@ -827,6 +847,12 @@ describe("api contracts", () => {
         total: 8,
         liveProviderCallsEnabled: 0,
         productionTrafficEnabled: 0
+      },
+      aiQueueOperations: {
+        total: 7,
+        metricsTracked: 5,
+        alertThresholds: 5,
+        liveProviderCalls: 0
       },
       observability: {
         total: 7,

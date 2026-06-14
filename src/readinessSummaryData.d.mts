@@ -1,4 +1,5 @@
 import type { AiProviderReadinessItem, AiProviderReadinessSummary } from "./aiProviderReadinessData.mjs";
+import type { AiQueueOperationsItem, AiQueueOperationsSummary } from "./aiQueueOperationsData.mjs";
 import type {
   BusinessEngagementReadinessItem,
   BusinessEngagementReadinessSummary
@@ -38,6 +39,7 @@ export interface CapacityReadinessDomain {
 
 export interface ReadinessSummary {
   aiProvider: ReadinessDomain<AiProviderReadinessItem, AiProviderReadinessSummary>;
+  aiQueueOperations: ReadinessDomain<AiQueueOperationsItem, AiQueueOperationsSummary>;
   businessEngagement: ReadinessDomain<BusinessEngagementReadinessItem, BusinessEngagementReadinessSummary>;
   capacity: CapacityReadinessDomain;
   cloudArtifactProof: ReadinessDomain<CloudArtifactProofReadinessItem, CloudArtifactProofReadinessSummary>;
@@ -56,6 +58,7 @@ export type ReadinessDomainId = keyof ReadinessSummary;
 
 export type ReadinessPayloadById = {
   aiProvider: AiProviderReadinessItem[];
+  aiQueueOperations: AiQueueOperationsItem[];
   businessEngagement: BusinessEngagementReadinessItem[];
   capacity: CapacityProfile[];
   cloudArtifactProof: CloudArtifactProofReadinessItem[];

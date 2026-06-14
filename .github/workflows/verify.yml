@@ -85,6 +85,9 @@ jobs:
       - name: Validate AI provider readiness
         run: npm run ai:doctor
 
+      - name: Validate AI queue operations readiness
+        run: npm run ai:queue:doctor
+
       - name: Validate observability readiness
         run: npm run observability:doctor
 

@@ -1,0 +1,40 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-openai-baseline",
+  "textAdapterId": "openai-responses-chat",
+  "textModel": "gpt-4o-mini",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260613-210508-deepai-openai-text-live/pipeline-quality/sympathy-quiet-support__text-openai-baseline__image-deepai-text2img",
+  "startedAt": "2026-06-14T01:05:08.653Z",
+  "finishedAt": "2026-06-14T01:05:08.658Z",
+  "statusCode": 503,
+  "cardCopyModel": "gpt-4o-mini",
+  "providerFailures": {
+    "text": "openai-responses-chat missing OPENAI_API_KEY."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 0,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 0
+    },
+    "missingMustInclude": [
+      "Eli",
+      "father",
+      "meals",
+      "rides",
+      "silence"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

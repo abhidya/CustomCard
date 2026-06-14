@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, resolve } from "node:path";
 import sharp from "sharp";
 import { createAiCardGenerationService, loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
-import { resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
+import { hasUsableAiEnvValue, resolveAiFlowConfigs } from "../src/aiFlowConfigData.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const defaultOutputDir = resolve(
@@ -662,6 +662,17 @@ function withAvailability(candidate, env) {
   };
 }
 
+function missingEnvGroups(groups, env) {
+  return groups
+    .map((group) => (Array.isArray(group) ? group : [group]))
+    .filter((keys) => !keys.some((key) => hasUsableEnvValue(env[key])))
+    .map((keys) => keys.join(" or "));
+}
+
+function hasUsableEnvValue(value) {
+  return hasUsableAiEnvValue(value);
+}
+
 function plannedRunsForPhase(phase, candidates) {
   if (phase === "smoke") return smokeRuns(candidates);
   if (phase === "full") return fullRuns(candidates);
@@ -768,7 +779,13 @@ export function typographyExperimentRuns(candidates) {
 
 export function pipelineQualityRuns(candidates) {
   const story = stories[pipelineQualityStoryId];
-  const textIds = new Set(["text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
+  const textIds = new Set([
+    "text-hf-qwen3-235b-a22b",
+    "text-cloudflare-baseline",
+    "text-openai-baseline",
+    "text-gemini-baseline",
+    "text-claude-baseline"
+  ]);
   const imageIds = new Set([
     "image-cloudflare-sdxl-lightning",
     "image-deepai-text2img",
@@ -906,7 +923,7 @@ async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, 
       writeFileSync(providerFile, decoded.buffer);
       const previewBuffer = await renderTypographyPreview({
         imageBuffer: decoded.buffer,
-        overlayText: promptPlan.renderTextDeterministically,
+        overlayText: promptPlan.renderTextInApp,
         panelCopy: typographyTextPanels[promptPlan.panelId],
         modeId: promptPlan.modeId
       });
@@ -918,7 +935,7 @@ async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, 
         previewPath: previewFile,
         prompt: promptPlan.prompt,
         negativePrompt: promptPlan.negativePrompt,
-        renderTextDeterministically: promptPlan.renderTextDeterministically,
+        renderTextInApp: promptPlan.renderTextInApp,
         sourceKind: decoded.sourceKind,
         contentType: decoded.contentType
       });
@@ -1025,7 +1042,7 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
       return {
         modeId,
         panelId: panel.id,
-        renderTextDeterministically: false,
+        renderTextInApp: false,
         prompt: [
           "You are generating a FINAL PRINT-READY GREETING CARD PANEL.",
           "This is NOT an artwork layer.",
@@ -1066,7 +1083,7 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
     return {
       modeId,
       panelId: panel.id,
-      renderTextDeterministically: false,
+      renderTextInApp: false,
       prompt: [
         "You are generating a FINAL PRINT-READY GREETING CARD PANEL.",
         "This is NOT an artwork layer.",
@@ -1126,7 +1143,7 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
           `Headline length: ${panel.headline.split(/\s+/).filter(Boolean).length} words.`,
           `Body length: ${countSentences(panel.body)} short sentence.`,
           "Reserve visual hierarchy accordingly with a large quiet headline area and a smaller readable body area.",
-          "Text-safe field requirement: create one continuous opaque plain field for deterministic app typography.",
+          "Text-safe field requirement: create one continuous opaque plain field for app-rendered typography.",
           "The field must read as solid matte paper or ink, with edge-only ornaments around it.",
           "Do not place sunburst rays, radial bursts, starbursts, borders, ornaments, bright marks, fake glyphs, circles, halos, medallions, or high-contrast details inside, around, or underneath the text-safe field.",
           "For this text-bearing panel, the center must be quiet and plain. Use only small outer-edge or corner sunburst echoes.",
@@ -1143,7 +1160,7 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
             panel.modeCHint || ""
           ].join("\n")
         : hasPanelText
-          ? "Reserve calm central negative space for deterministic app-rendered typography."
+          ? "Reserve calm central negative space for app-rendered typography."
           : [
               "No card copy belongs on this panel.",
               panel.id === "back"
@@ -1154,7 +1171,7 @@ export function buildTypographyExperimentPrompt(modeId, spec = typographyExperim
   return {
     modeId,
     panelId: panel.id,
-    renderTextDeterministically: hasPanelText,
+    renderTextInApp: hasPanelText,
     prompt: [
       `Create one artwork-only 5x7 portrait ${panel.panelType || "greeting card"} panel for a premium greeting card.`,
       "This is an artwork layer, not a finished panel.",
@@ -1785,8 +1802,8 @@ function typographyAutoChecks({ promptPlans, providerCalls, decodedFiles }) {
       providerCalls: providerCalls.length,
       materializedImages: decoded.length,
       allPanelsMaterialized: decoded.length === 4 && decoded.every((file) => Boolean(file?.buffer?.length)),
-      deterministicTextOverlayPanels: plans
-        .filter((plan) => plan.renderTextDeterministically)
+      appRenderedTextOverlayPanels: plans
+        .filter((plan) => plan.renderTextInApp)
         .map((plan) => plan.panelId),
       copyPanelIds: copyPlans.map((plan) => plan.panelId),
       copyPanelsExactTextInPrompt: copyPlansExactTextInPrompt,
@@ -1888,8 +1905,8 @@ function buildManualGradeTemplate(result, run) {
 }
 
 function buildTypographyManualGradeTemplate(result, run, promptPlans) {
-  const deterministicPanels = (Array.isArray(promptPlans) ? promptPlans : [])
-    .filter((plan) => plan.renderTextDeterministically)
+  const appRenderedPanels = (Array.isArray(promptPlans) ? promptPlans : [])
+    .filter((plan) => plan.renderTextInApp)
     .map((plan) => plan.panelId);
   return [
     `# Manual Grade: ${run.typographyMode.label}`,
@@ -1897,7 +1914,7 @@ function buildTypographyManualGradeTemplate(result, run, promptPlans) {
     `- Image: ${run.image.label} (${run.image.model || run.image.adapterId})`,
     `- Strategy: ${run.typographyMode.strategy}`,
     `- Panels: ${result.panelCount}`,
-    `- Text rendered deterministically on: ${deterministicPanels.join(", ") || "none"}`,
+    `- Text rendered in app on: ${appRenderedPanels.join(", ") || "none"}`,
     `- Contact sheet: ${result.contactSheet ? `[open](./${basename(result.contactSheet)})` : "missing"}`,
     "",
     "## Rubric",
@@ -1971,6 +1988,26 @@ function relativeEvidenceLink(filePath, outputDir) {
     return normalizedPath.slice(normalizedOutputDir.length + 1);
   }
   return normalizedPath;
+}
+
+function parseArgs(values) {
+  const parsed = {};
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (!value.startsWith("--")) continue;
+    const [rawKey, inlineValue] = value.slice(2).split("=");
+    if (inlineValue !== undefined) {
+      parsed[rawKey] = inlineValue;
+      continue;
+    }
+    if (values[index + 1] && !values[index + 1].startsWith("--")) {
+      parsed[rawKey] = values[index + 1];
+      index += 1;
+    } else {
+      parsed[rawKey] = true;
+    }
+  }
+  return parsed;
 }
 
 function loadBenchmarkEnv() {

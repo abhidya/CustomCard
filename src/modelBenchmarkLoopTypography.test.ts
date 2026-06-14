@@ -15,17 +15,17 @@ describe("model benchmark typography experiment", () => {
     const insideLeft = buildTypographyExperimentPrompt("mode-b-full-ai-typography", typographyExperimentSpec, "inside-left");
     const insideRight = buildTypographyExperimentPrompt("mode-b-full-ai-typography", typographyExperimentSpec, "inside-right");
 
-    expect(prompt.renderTextDeterministically).toBe(false);
+    expect(prompt.renderTextInApp).toBe(false);
     expect(prompt.panelId).toBe("front");
     expect(prompt.prompt).toContain("FINAL PRINT-READY GREETING CARD PANEL");
     expect(prompt.prompt).toContain(typographyExperimentSpec.headline);
     expect(prompt.prompt).toContain(typographyExperimentSpec.body);
     expect(prompt.prompt).toContain("All text must be spelled exactly as provided.");
     expect(prompt.negativePrompt).not.toContain("readable text");
-    expect(insideLeft.renderTextDeterministically).toBe(false);
+    expect(insideLeft.renderTextInApp).toBe(false);
     expect(insideLeft.prompt).toContain(typographyExperimentSpec.panels["inside-left"].headline);
     expect(insideLeft.prompt).toContain(typographyExperimentSpec.panels["inside-left"].body);
-    expect(insideRight.renderTextDeterministically).toBe(false);
+    expect(insideRight.renderTextInApp).toBe(false);
     expect(insideRight.prompt).toContain(typographyExperimentSpec.panels["inside-right"].headline);
     expect(insideRight.prompt).toContain(typographyExperimentSpec.panels["inside-right"].body);
   });
@@ -44,7 +44,7 @@ describe("model benchmark typography experiment", () => {
 
     for (const prompt of [...current, ...hybrid]) {
       const panel = typographyExperimentSpec.panels[prompt.panelId];
-      expect(prompt.renderTextDeterministically).toBe(true);
+      expect(prompt.renderTextInApp).toBe(true);
       expect(prompt.prompt).not.toContain(panel.headline);
       expect(prompt.prompt).not.toContain(panel.body);
       expect(prompt.negativePrompt).toContain("readable text");
@@ -64,7 +64,7 @@ describe("model benchmark typography experiment", () => {
 
     for (const prompt of prompts) {
       expect(prompt.panelId).toBe("back");
-      expect(prompt.renderTextDeterministically).toBe(false);
+      expect(prompt.renderTextInApp).toBe(false);
       expect(prompt.prompt).toContain("No card copy belongs on this panel.");
       for (const panel of Object.values(typographyExperimentSpec.panels).filter((candidate) => candidate.headline)) {
         expect(prompt.prompt).not.toContain(panel.headline);
@@ -80,8 +80,8 @@ describe("model benchmark typography experiment", () => {
     const left = buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", typographyExperimentSpec, "inside-left");
     const right = buildTypographyExperimentPrompt("mode-c-hybrid-reserved-layout", typographyExperimentSpec, "inside-right");
 
-    expect(left.renderTextDeterministically).toBe(true);
-    expect(right.renderTextDeterministically).toBe(true);
+    expect(left.renderTextInApp).toBe(true);
+    expect(right.renderTextInApp).toBe(true);
     expect(left.prompt).toContain("paired as a cohesive opened spread");
     expect(right.prompt).toContain("paired as a cohesive opened spread");
     expect(left.prompt).toContain("paired with inside-right");

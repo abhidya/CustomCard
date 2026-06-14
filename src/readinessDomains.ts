@@ -7,6 +7,7 @@ export {
 } from "./readinessSummaryData.mjs";
 
 export type { AiProviderReadinessItem, AiProviderReadinessSummary } from "./aiProviderReadiness";
+export type { AiQueueOperationsItem, AiQueueOperationsSummary } from "./aiQueueOperations";
 export type { BusinessEngagementReadinessItem, BusinessEngagementReadinessSummary } from "./businessEngagementReadiness";
 export type { CapacityPlanSummary, CapacityProfile } from "./capacityPlan";
 export type { CloudArtifactProofReadinessItem, CloudArtifactProofReadinessSummary } from "./cloudArtifactProofReadiness";

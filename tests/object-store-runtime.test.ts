@@ -207,12 +207,29 @@ describe("object store runtime", () => {
       storedArtifactCount: 1,
       deduplicatedArtifactCount: 1,
       deduplicatedBytes: 3,
-      inlineImageBytesPersisted: false
+      inlineImageBytesPersisted: false,
+      compression: {
+        attemptedArtifactCount: 2,
+        compressedArtifactCount: 0,
+        skippedArtifactCount: 2,
+        originalBytes: 6,
+        storedBytes: 6,
+        savedBytes: 0,
+        algorithms: []
+      }
     });
     expect(persisted?.payload.images.every((image: { image_url: string }) => !image.image_url.startsWith("data:"))).toBe(true);
     expect(persisted?.payload.images[0]).toMatchObject({
       image_storage_provider: "s3-compatible",
       image_inline_bytes_persisted: false,
+      image_compression: {
+        status: "skipped",
+        algorithm: "none",
+        reason: "raster-compression-requires-codec",
+        originalByteLength: 3,
+        storedByteLength: 3,
+        savedBytes: 0
+      },
       image_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.png",
       image_byte_length: 3
     });
@@ -232,6 +249,73 @@ describe("object store runtime", () => {
     expect(downloaded.statusCode).toBe(200);
     expect(downloaded.contentType).toBe("image/png");
     expect(downloaded.body.equals(Buffer.from("AAAA", "base64"))).toBe(true);
+  });
+
+  it("losslessly compresses generated SVG images before object storage", async () => {
+    const runtime = createApiRuntime({
+      env: objectStoreEnv,
+      routes: apiRouteContracts
+    });
+    const svg = [
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100">',
+      "  <!-- generated artwork comment should not be stored -->",
+      "  <g>",
+      '    <path d="M0   0 L10   10" fill="#123456" />',
+      "  </g>",
+      "</svg>"
+    ].join("\n");
+    const svgDataUrl = `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
+
+    const persisted = await runtime.persistGeneratedImageArtifacts({
+      authContext: { userId: "user-svg-images", role: "customer", sessionId: "session-svg-images" },
+      payload: {
+        draft_id: "ai-draft-svg-storage",
+        card_copy: { panels: [] },
+        images: [
+          {
+            panel_id: "front",
+            image_url: svgDataUrl,
+            revised_prompt: "Front generated SVG image.",
+            width: 1500,
+            height: 2100
+          }
+        ],
+        generated_by: "ai-text-and-image"
+      }
+    });
+
+    expect(persisted?.payload.generated_image_persistence.compression).toMatchObject({
+      attemptedArtifactCount: 1,
+      compressedArtifactCount: 1,
+      skippedArtifactCount: 0,
+      originalBytes: Buffer.byteLength(svg, "utf8"),
+      algorithms: ["svg-minify-v1"]
+    });
+    expect(persisted?.payload.generated_image_persistence.compression.savedBytes).toBeGreaterThan(0);
+    expect(persisted?.payload.images[0]).toMatchObject({
+      image_object_key: "projects/ai-user-svg-images/render-packets/ai-draft-svg-storage/provider-01-front.svg",
+      image_compression: {
+        status: "compressed",
+        algorithm: "svg-minify-v1",
+        originalByteLength: Buffer.byteLength(svg, "utf8")
+      }
+    });
+    expect(persisted?.payload.images[0].image_compression.savedBytes).toBeGreaterThan(0);
+    expect(persisted?.payload.images[0].image_byte_length).toBeLessThan(Buffer.byteLength(svg, "utf8"));
+
+    const signedUrl = new URL(persisted!.payload.images[0].image_url);
+    const objectKey = signedUrl.pathname.replace(/^\/api\/artifacts\//, "");
+    const downloaded = await runtime.readArtifact({
+      objectKey,
+      query: signedUrl.searchParams
+    });
+    const storedSvg = downloaded.body.toString("utf8");
+
+    expect(downloaded.statusCode).toBe(200);
+    expect(downloaded.contentType).toBe("image/svg+xml");
+    expect(storedSvg).not.toContain("generated artwork comment");
+    expect(storedSvg).not.toContain("\n");
+    expect(storedSvg.length).toBeLessThan(svg.length);
   });
 
   it("honors bounded concurrent artifact write/readback verification", async () => {

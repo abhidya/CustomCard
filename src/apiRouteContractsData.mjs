@@ -267,6 +267,7 @@ export const apiRouteContracts = [
       "externalAudit",
       "e2eCoverage",
       "aiProviderReadiness",
+      "aiQueueOperations",
       "capacity",
       "observability",
       "retailFulfillment",

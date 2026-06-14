@@ -9,6 +9,8 @@ export {
 export type {
   AiProviderReadinessItem,
   AiProviderReadinessSummary,
+  AiQueueOperationsItem,
+  AiQueueOperationsSummary,
   BusinessEngagementReadinessItem,
   BusinessEngagementReadinessSummary,
   CapacityPlanSummary,

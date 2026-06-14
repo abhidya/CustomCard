@@ -1389,6 +1389,8 @@ function buildQueuedJobRecord({ route, authContext, idempotencyKey, idempotencyK
 
 function buildQueuedJobPayload({ route, authContext, idempotencyKey, bodyText }) {
   const body = parseJsonBody(bodyText);
+  // Queue payloads are an operational boundary: store only what a worker needs
+  // to retry safely, never client provider config, credentials, or raw prompts.
   const basePayload = {
     routeId: route.id,
     jobKind: route.id.startsWith("ai-") ? "ai-flow" : "api-route",
@@ -2862,6 +2864,7 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
     bodyText: JSON.stringify({ artifacts })
   });
   const artifactPersistence = persistence.payload?.artifactPersistence;
+  const compressionSummary = summarizeGeneratedImageCompression(artifacts);
   if (artifactPersistence?.status !== "stored") {
     return {
       payload: {
@@ -2869,13 +2872,15 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
         generated_image_persistence: {
           ...(artifactPersistence ?? {}),
           status: artifactPersistence?.status ?? "blocked",
-          inlineImageBytesPersisted: false
+          inlineImageBytesPersisted: false,
+          compression: compressionSummary
         }
       }
     };
   }
 
   const storedByPanel = new Map();
+  const compressionByPanel = new Map(artifacts.map((artifact) => [artifact.panelId, artifact.compression]));
   const manifestArtifacts = persistence.record.artifactManifest?.artifacts ?? [];
   const signedDownloads = persistence.record.signedArtifactUrls ?? [];
   manifestArtifacts.forEach((artifact, index) => {
@@ -2895,6 +2900,7 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
         const stored = storedByPanel.get(panelId);
         if (!stored) return image;
         const { artifact, signedDownload } = stored;
+        const compression = compressionByPanel.get(panelId);
         return {
           ...image,
           image_url: signedDownload.url,
@@ -2905,6 +2911,7 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
           image_storage_provider: persistence.record.storageProvider,
           image_signed_url_expires_at: signedDownload.expiresAtIso,
           image_inline_bytes_persisted: false,
+          image_compression: compression,
           ...(artifact.duplicateOfObjectKey
             ? {
                 duplicate_of_object_key: artifact.duplicateOfObjectKey,
@@ -2917,7 +2924,8 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
         ...artifactPersistence,
         manifestUri: persistence.record.artifactUri,
         signedUrlExpiresAt: persistence.record.signedUrlExpiresAt,
-        inlineImageBytesPersisted: false
+        inlineImageBytesPersisted: false,
+        compression: compressionSummary
       }
     }
   };
@@ -2926,26 +2934,96 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
 function normalizeGeneratedImageArtifact(image, index) {
   if (!image || typeof image !== "object") return undefined;
   const dataUrl = String(image.image_url ?? image.imageUrl ?? "");
-  const parsed = parseImageDataUrlHeader(dataUrl);
+  const parsed = parseImageDataUrl(dataUrl);
   if (!parsed) return undefined;
   const panelId = safeGeneratedImagePanelId(image.panel_id ?? image.panelId, index);
   const fileIndex = String(index + 1).padStart(2, "0");
+  const compressed = compressGeneratedImageDataUrl(parsed);
   return {
     kind: "generated-image",
     fileName: `provider-${fileIndex}-${panelId}.${parsed.extension}`,
     mimeType: parsed.mimeType,
-    dataUrl,
-    panelId
+    panelId,
+    compression: compressed.compression,
+    ...(compressed.text ? { text: compressed.text } : { dataUrl })
   };
 }
 
-function parseImageDataUrlHeader(value) {
-  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,/i.exec(String(value));
+function parseImageDataUrl(value) {
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]*)$/i.exec(String(value));
   if (!match) return undefined;
   const mimeType = match[1].toLowerCase();
+  const buffer = Buffer.from(match[2], "base64");
+  if (buffer.length <= 0) return undefined;
   return {
     mimeType,
-    extension: imageExtensionForMimeType(mimeType)
+    extension: imageExtensionForMimeType(mimeType),
+    buffer
+  };
+}
+
+function compressGeneratedImageDataUrl(parsed) {
+  if (parsed.mimeType !== "image/svg+xml") {
+    return {
+      compression: {
+        status: "skipped",
+        algorithm: "none",
+        reason: "raster-compression-requires-codec",
+        originalByteLength: parsed.buffer.length,
+        storedByteLength: parsed.buffer.length,
+        savedBytes: 0
+      }
+    };
+  }
+
+  const minified = minifySvgText(parsed.buffer.toString("utf8"));
+  const minifiedBytes = Buffer.byteLength(minified, "utf8");
+  if (!minified || minifiedBytes >= parsed.buffer.length) {
+    return {
+      compression: {
+        status: "skipped",
+        algorithm: "svg-minify-v1",
+        reason: "not-smaller",
+        originalByteLength: parsed.buffer.length,
+        storedByteLength: parsed.buffer.length,
+        savedBytes: 0
+      }
+    };
+  }
+
+  return {
+    text: minified,
+    compression: {
+      status: "compressed",
+      algorithm: "svg-minify-v1",
+      originalByteLength: parsed.buffer.length,
+      storedByteLength: minifiedBytes,
+      savedBytes: parsed.buffer.length - minifiedBytes
+    }
+  };
+}
+
+function minifySvgText(value) {
+  return String(value)
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/>\s+</g, "><")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function summarizeGeneratedImageCompression(artifacts) {
+  const compression = artifacts.map((artifact) => artifact.compression).filter(Boolean);
+  const originalBytes = compression.reduce((total, item) => total + (item.originalByteLength ?? 0), 0);
+  const storedBytes = compression.reduce((total, item) => total + (item.storedByteLength ?? item.originalByteLength ?? 0), 0);
+  const savedBytes = compression.reduce((total, item) => total + (item.savedBytes ?? 0), 0);
+  return {
+    attemptedArtifactCount: compression.length,
+    compressedArtifactCount: compression.filter((item) => item.status === "compressed").length,
+    skippedArtifactCount: compression.filter((item) => item.status === "skipped").length,
+    originalBytes,
+    storedBytes,
+    savedBytes,
+    algorithms: Array.from(new Set(compression.filter((item) => item.status === "compressed").map((item) => item.algorithm))).sort()
   };
 }
 
@@ -2964,7 +3042,7 @@ function safeGeneratedImagePanelId(value, index) {
 
 function generatedImageHashInput(artifacts) {
   return artifacts
-    .map((artifact) => `${artifact.fileName}:${artifact.mimeType}:${artifact.dataUrl}`)
+    .map((artifact) => `${artifact.fileName}:${artifact.mimeType}:${artifact.text ?? artifact.dataUrl ?? ""}`)
     .join("\n");
 }
 

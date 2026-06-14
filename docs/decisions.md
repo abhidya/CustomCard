@@ -339,3 +339,19 @@ and same-origin API fallback behavior testable in one place.
 Rejected: keeping each browser caller responsible for env parsing and metadata
 shape. That preserves short local code but lets gate behavior drift across app
 startup surfaces.
+
+## D023: Treat AI Queue Operations As A Release-Gated Domain
+
+Decision: add `src/aiQueueOperationsData.mjs` as the executable readiness contract
+for AI queue admission, worker retry/dead-letter behavior, status polling,
+payload minimization, queue metrics, alert thresholds, and human dead-letter
+management. Admin/API readiness exposes the summary, and
+`npm run ai:queue:doctor` gates the contract plus `docs/ai-queue-operations-runbook.md`.
+
+Reason: queue-backed AI flows are production infrastructure, not an isolated API
+detail. The release gate needs one place that names the metrics, alert thresholds,
+human owners, and privacy invariants that make queued AI safe to operate.
+
+Rejected: documenting queue behavior only in the worker code. That would explain
+implementation mechanics but would not give operators a CI-gated runbook or an
+admin-facing readiness summary.

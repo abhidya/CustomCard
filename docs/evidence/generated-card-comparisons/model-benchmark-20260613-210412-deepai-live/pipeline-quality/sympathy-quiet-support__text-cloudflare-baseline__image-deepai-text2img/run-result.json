@@ -1,0 +1,40 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260613-210412-deepai-live/pipeline-quality/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img",
+  "startedAt": "2026-06-14T01:04:13.075Z",
+  "finishedAt": "2026-06-14T01:04:13.448Z",
+  "statusCode": 502,
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {
+    "text": "AI provider returned 429."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 1,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 1
+    },
+    "missingMustInclude": [
+      "Eli",
+      "father",
+      "meals",
+      "rides",
+      "silence"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

@@ -4,6 +4,11 @@ import {
   validateAiProviderReadiness
 } from "./aiProviderReadinessData.mjs";
 import {
+  aiQueueOperationsItems,
+  summarizeAiQueueOperations,
+  validateAiQueueOperations
+} from "./aiQueueOperationsData.mjs";
+import {
   businessEngagementReadinessItems,
   summarizeBusinessEngagementReadiness,
   validateBusinessEngagementReadiness
@@ -87,6 +92,25 @@ export const readinessDomainDefinitions = [
       ...zero(summary, "externalNetworkCalls", "AI provider readiness cannot require live external network calls."),
       ...zero(summary, "productionTrafficEnabled", "AI provider readiness cannot enable production AI traffic."),
       ...noBlockers(summary, "AI provider readiness summary has blockers.")
+    ]
+  }),
+  domain({
+    id: "aiQueueOperations",
+    label: "AI queue operations",
+    payload: aiQueueOperationsItems,
+    summarize: summarizeAiQueueOperations,
+    validate: validateAiQueueOperations,
+    validateSummary: (summary) => [
+      ...minimum(summary, "total", 7, "AI queue operations must track queue admission, worker, privacy, metrics, alerts, and human ops."),
+      ...equal(summary, "repoLocalReady", summary.total, "Every AI queue operation control must be repo-local ready."),
+      ...equal(summary, "productionReadyControls", summary.total, "Every AI queue operation control must be production ready."),
+      ...minimum(summary, "metricsTracked", 5, "AI queue operations must track at least five production metrics."),
+      ...minimum(summary, "alertThresholds", 5, "AI queue operations must define alert thresholds."),
+      ...minimum(summary, "humanOwnedControls", 7, "AI queue operations must assign human owners."),
+      ...minimum(summary, "deadLetterControls", 3, "AI queue operations must cover dead-letter management."),
+      ...zero(summary, "externalNetworkCalls", "AI queue operations cannot require live external network calls."),
+      ...zero(summary, "liveProviderCalls", "AI queue operations cannot enable live providers."),
+      ...noBlockers(summary, "AI queue operations summary has blockers.")
     ]
   }),
   domain({

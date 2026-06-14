@@ -23,6 +23,7 @@ import {
 import { useMemo, useState, type ReactNode } from "react";
 import {
   type AiProviderReadinessItem,
+  type AiQueueOperationsItem,
   type BusinessEngagementReadinessItem,
   type CloudArtifactProofReadinessItem,
   type E2eCoverageItem,
@@ -100,9 +101,11 @@ export function AdminPanelView({
   const [activeAdminSection, setActiveAdminSection] = useState<AdminPortalSectionId>("ops");
   const [adminPortalQuery, setAdminPortalQuery] = useState("");
   const [adminPortalStatus, setAdminPortalStatus] = useState<AdminPortalStatusFilter>("all");
-  const { aiProvider, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, legalCompliance, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
+  const { aiProvider, aiQueueOperations, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, legalCompliance, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
   const aiProviderReadinessItems = aiProvider.items;
   const aiProviderReadinessSummary = aiProvider.summary;
+  const aiQueueOperationsItems = aiQueueOperations.items;
+  const aiQueueOperationsSummary = aiQueueOperations.summary;
   const capacityProfiles = capacity.profiles;
   const capacitySummary = capacity.summary;
   const e2eCoverageItems = e2eCoverage.items;
@@ -302,6 +305,28 @@ export function AdminPanelView({
           </div>
           <p className="panelNote">
             Only selected provider adapters are shown here, not the whole Provider Catalog.
+          </p>
+        </article>
+
+        <article className="toolPanel adminWide">
+          <div className="sectionHeader compact">
+            <div>
+              <p className="eyebrow">AI operations</p>
+              <h3>AI queue operations</h3>
+            </div>
+            <StatusChip icon={RefreshCw} label="Queue gated" tone="blue" />
+          </div>
+          <div className="runtimeGrid" aria-label="AI queue operations readiness">
+            <Metric label="Controls" value={`${aiQueueOperationsSummary.total}`} />
+            <Metric label="Metrics" value={`${aiQueueOperationsSummary.metricsTracked}`} />
+            <Metric label="Alert rules" value={`${aiQueueOperationsSummary.alertThresholds}`} />
+            <Metric label="Human owned" value={`${aiQueueOperationsSummary.humanOwnedControls}`} />
+            <Metric label="DLQ controls" value={`${aiQueueOperationsSummary.deadLetterControls}`} />
+            <Metric label="Live calls" value={`${aiQueueOperationsSummary.liveProviderCalls}`} />
+          </div>
+          <AiQueueOperationsList items={aiQueueOperationsItems} />
+          <p className="panelNote">
+            These are queue admission, worker retry/dead-letter, status polling, payload minimization, alert threshold, and human escalation contracts.
           </p>
         </article>
 
@@ -1544,6 +1569,20 @@ function AiProviderReadinessList({ items }: { items: AiProviderReadinessItem[] }
         eyebrow: item.lane,
         label: item.label,
         detail: item.liveProviderCallsEnabled ? "Live AI" : "Live AI off",
+        className: readinessStatusClass(item.status)
+      }))}
+    />
+  );
+}
+
+function AiQueueOperationsList({ items }: { items: AiQueueOperationsItem[] }) {
+  return (
+    <AdminReadinessMiniList
+      items={items.map((item) => ({
+        id: item.id,
+        eyebrow: item.lane,
+        label: item.label,
+        detail: `${item.metrics.length} metrics · ${item.humanOwner}`,
         className: readinessStatusClass(item.status)
       }))}
     />

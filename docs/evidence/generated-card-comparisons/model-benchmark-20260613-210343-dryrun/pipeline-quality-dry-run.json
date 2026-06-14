@@ -1,0 +1,204 @@
+{
+  "phase": "pipeline-quality",
+  "liveProviderCallsEnabled": false,
+  "plannedRuns": [
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-cloudflare-sdxl-lightning",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-openai-gpt-image-2",
+      "imageAdapterId": "openai-images",
+      "imageModel": "gpt-image-2"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-gemini-supported",
+      "imageAdapterId": "google-gemini-image",
+      "imageModel": "gemini-3.1-flash-image"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-flux-schnell",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "black-forest-labs/FLUX.1-schnell"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-qwen-image",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Qwen/Qwen-Image"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-qwen-image-2512",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Qwen/Qwen-Image-2512"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-z-image-turbo",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Tongyi-MAI/Z-Image-Turbo"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-cloudflare-sdxl-lightning",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-cloudflare-flux-schnell",
+      "imageAdapterId": "cloudflare-workers-ai-image",
+      "imageModel": "@cf/black-forest-labs/flux-1-schnell"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-openai-gpt-image-2",
+      "imageAdapterId": "openai-images",
+      "imageModel": "gpt-image-2"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-gemini-supported",
+      "imageAdapterId": "google-gemini-image",
+      "imageModel": "gemini-3.1-flash-image"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-hf-flux-schnell",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "black-forest-labs/FLUX.1-schnell"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-hf-qwen-image",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Qwen/Qwen-Image"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-hf-qwen-image-2512",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Qwen/Qwen-Image-2512"
+    },
+    {
+      "phase": "pipeline-quality",
+      "focus": "full-card-quality",
+      "storyId": "sympathy-quiet-support",
+      "textCandidateId": "text-hf-qwen3-235b-a22b",
+      "textAdapterId": "huggingface-chat",
+      "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "imageCandidateId": "image-hf-z-image-turbo",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Tongyi-MAI/Z-Image-Turbo"
+    }
+  ]
+}

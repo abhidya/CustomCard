@@ -17,6 +17,7 @@ describe("readinessSummary", () => {
   it("keeps the readiness domain manifest as the single domain list", () => {
     expect(readinessDomainIds).toEqual([
       "aiProvider",
+      "aiQueueOperations",
       "businessEngagement",
       "capacity",
       "cloudArtifactProof",
@@ -38,7 +39,7 @@ describe("readinessSummary", () => {
     expect(validateRuntimeReadinessSummary()).toEqual([]);
   });
 
-  it("builds a summary with all 13 readiness domains present", () => {
+  it("builds a summary with all 14 readiness domains present", () => {
     const summary = buildReadinessSummary();
     const runtimeSummary = buildRuntimeReadinessSummary();
 
@@ -47,6 +48,9 @@ describe("readinessSummary", () => {
 
     expect(summary.aiProvider.items.length).toBeGreaterThan(0);
     expect(summary.aiProvider.summary.total).toBeGreaterThan(0);
+
+    expect(summary.aiQueueOperations.items.length).toBeGreaterThan(0);
+    expect(summary.aiQueueOperations.summary.total).toBeGreaterThan(0);
 
     expect(summary.businessEngagement.items.length).toBeGreaterThan(0);
     expect(summary.businessEngagement.summary.total).toBeGreaterThan(0);
@@ -89,12 +93,15 @@ describe("readinessSummary", () => {
     const a = buildReadinessSummary();
     const b = buildReadinessSummary();
     expect(a.aiProvider.items).toBe(b.aiProvider.items);
+    expect(a.aiQueueOperations.items).toBe(b.aiQueueOperations.items);
     expect(a.capacity.profiles).toBe(b.capacity.profiles);
   });
 
   it("production gates are all blocked — no live services claimed ready", () => {
-    const { aiProvider, payment, hostedApi, retailFulfillment } = buildReadinessSummary();
+    const { aiProvider, aiQueueOperations, payment, hostedApi, retailFulfillment } = buildReadinessSummary();
     expect(aiProvider.summary.liveProviderCallsEnabled).toBe(0);
+    expect(aiQueueOperations.summary.liveProviderCalls).toBe(0);
+    expect(aiQueueOperations.summary.externalNetworkCalls).toBe(0);
     expect(payment.summary.liveChargesEnabled).toBe(0);
     expect(hostedApi.summary.liveProviderCalls).toBe(0);
     expect(retailFulfillment.summary.directOrderEnabled).toBe(0);
@@ -137,12 +144,14 @@ describe("readinessSummary", () => {
     const bootstrap = buildApiBootstrapPayload();
 
     expect(apiReadiness.aiProviderReadiness).toEqual(readiness.aiProvider.summary);
+    expect(apiReadiness.aiQueueOperations).toEqual(readiness.aiQueueOperations.summary);
     expect(apiReadiness.paymentReadiness).toEqual(readiness.payment.summary);
     expect(apiReadiness.hostedApiReadiness).toEqual(readiness.hostedApi.summary);
     expect(apiReadiness.legalCompliance).toEqual(readiness.legalCompliance.summary);
     expect(apiReadiness.businessEngagementReadiness).toEqual(readiness.businessEngagement.summary);
 
     expect(bootstrap.aiProviderReadiness.items).toBe(readiness.aiProvider.items);
+    expect(bootstrap.aiQueueOperations.items).toBe(readiness.aiQueueOperations.items);
     expect(bootstrap.capacity.profiles).toBe(readiness.capacity.profiles);
     expect(bootstrap.cloudArtifactProofReadiness.items).toBe(readiness.cloudArtifactProof.items);
     expect(bootstrap.legalCompliance.items).toBe(readiness.legalCompliance.items);

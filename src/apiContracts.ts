@@ -6,6 +6,8 @@ import {
   validateReadinessSummary,
   type AiProviderReadinessItem,
   type AiProviderReadinessSummary,
+  type AiQueueOperationsItem,
+  type AiQueueOperationsSummary,
   type BusinessEngagementReadinessItem,
   type BusinessEngagementReadinessSummary,
   type CapacityPlanSummary,
@@ -121,6 +123,7 @@ export interface ApiReadinessSummary {
   externalAudit: ExternalAuditReadinessSummary;
   e2eCoverage: E2eCoverageSummary;
   aiProviderReadiness: AiProviderReadinessSummary;
+  aiQueueOperations: AiQueueOperationsSummary;
   capacity: CapacityPlanSummary;
   observability: ObservabilityReadinessSummary;
   retailFulfillment: RetailFulfillmentReadinessSummary;
@@ -164,6 +167,10 @@ export interface ApiBootstrapPayload {
   aiProviderReadiness: {
     items: AiProviderReadinessItem[];
     summary: AiProviderReadinessSummary;
+  };
+  aiQueueOperations: {
+    items: AiQueueOperationsItem[];
+    summary: AiQueueOperationsSummary;
   };
   capacity: {
     profiles: CapacityProfile[];
@@ -246,6 +253,7 @@ export function buildApiReadinessSummary(routes: ApiRouteContract[] = apiRouteCo
     externalAudit: readiness.externalAudit.summary,
     e2eCoverage: readiness.e2eCoverage.summary,
     aiProviderReadiness: readiness.aiProvider.summary,
+    aiQueueOperations: readiness.aiQueueOperations.summary,
     capacity: readiness.capacity.summary,
     observability: readiness.observability.summary,
     retailFulfillment: readiness.retailFulfillment.summary,
@@ -283,6 +291,7 @@ export function buildApiBootstrapPayload(): ApiBootstrapPayload {
     externalAudit: readiness.externalAudit,
     e2eCoverage: readiness.e2eCoverage,
     aiProviderReadiness: readiness.aiProvider,
+    aiQueueOperations: readiness.aiQueueOperations,
     capacity: readiness.capacity,
     observability: readiness.observability,
     retailFulfillment: readiness.retailFulfillment,

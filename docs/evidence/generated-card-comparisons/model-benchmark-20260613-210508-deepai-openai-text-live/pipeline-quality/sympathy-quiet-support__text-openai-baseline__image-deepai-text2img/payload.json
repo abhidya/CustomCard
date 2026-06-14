@@ -1,0 +1,36 @@
+{
+  "status": "provider-unavailable",
+  "error": "openai-responses-chat missing OPENAI_API_KEY.",
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "openai-responses-chat",
+      "primary_adapter_id": "openai-responses-chat",
+      "fallback_adapter_id": "",
+      "model": "gpt-4o-mini",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "live_provider_calls_enabled": false,
+      "ready_for_live_calls": false,
+      "blocked_reasons": [
+        "openai-responses-chat missing OPENAI_API_KEY."
+      ],
+      "provider_failure": "openai-responses-chat missing OPENAI_API_KEY."
+    }
+  },
+  "provider_call_events": [],
+  "ai_cost_gate": {
+    "event_count": 0,
+    "reserved_or_spent_cents": 0,
+    "actual_spend_cents": 0,
+    "request_units": 0,
+    "live_network_calls": false,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": false,
+  "fallback_queued": false,
+  "external_network_calls": false
+}

@@ -49,6 +49,7 @@
     "external:audit:doctor": "node scripts/external-audit-readiness-doctor.mjs",
     "e2e:coverage:doctor": "node scripts/e2e-coverage-doctor.mjs",
     "ai:doctor": "node scripts/ai-provider-readiness-doctor.mjs",
+    "ai:queue:doctor": "node scripts/ai-queue-operations-doctor.mjs",
     "observability:doctor": "node scripts/observability-readiness-doctor.mjs",
     "retail:doctor": "node scripts/retail-fulfillment-readiness-doctor.mjs",
     "payment:doctor": "node scripts/payment-readiness-doctor.mjs",

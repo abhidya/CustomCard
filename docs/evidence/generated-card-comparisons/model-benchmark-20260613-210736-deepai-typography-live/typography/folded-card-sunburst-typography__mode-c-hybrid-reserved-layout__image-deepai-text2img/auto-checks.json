@@ -1,0 +1,31 @@
+{
+  "advisoryOnly": true,
+  "checks": {
+    "fourPanels": true,
+    "panelIds": [
+      "front",
+      "inside-left",
+      "inside-right",
+      "back"
+    ],
+    "providerCalls": 8,
+    "materializedImages": 4,
+    "allPanelsMaterialized": true,
+    "appRenderedTextOverlayPanels": [
+      "front",
+      "inside-left",
+      "inside-right"
+    ],
+    "copyPanelIds": [
+      "front",
+      "inside-left",
+      "inside-right"
+    ],
+    "copyPanelsExactTextInPrompt": false,
+    "copyPanelsTextSuppressedInPrompt": true,
+    "backHasNoTextContract": true,
+    "insideSpreadCohesionPrompted": true,
+    "noTextPanelsSuppressText": true
+  },
+  "note": "Automated checks only prove prompt contract and image materialization. Front/interior typography, back no-text discipline, and inside-spread cohesion require visual inspection."
+}

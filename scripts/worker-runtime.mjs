@@ -294,6 +294,8 @@ async function runQueuedAiJob({ job, aiService, method }) {
 
 function compactAiWorkerPayload(payload = {}) {
   if (!Array.isArray(payload.images)) return payload;
+  // Job status is stored in Postgres and may be polled by customers, so inline
+  // image bytes stay out of api_jobs.result until object storage owns them.
   let omittedInlineImages = 0;
   const images = payload.images.map((image) => {
     if (!String(image?.image_url ?? "").startsWith("data:")) return image;
