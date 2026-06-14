@@ -4,9 +4,9 @@ import {
   type ChatMessage,
   type ProviderStatus
 } from "./providerCatalog";
-import { buildTextChatRuntime, getProviderRuntimeReadiness, sanitizeText } from "./providerRuntime";
+import { sanitizeText } from "./providerRuntime";
 
-export type CustomerChatMode = "local-deterministic";
+export type CustomerChatMode = "local-scripted";
 
 export interface CustomerChatInput {
   recipientName: string;
@@ -28,7 +28,7 @@ export interface CustomerChatProviderSummary {
 
 export interface CustomerChatSession {
   mode: CustomerChatMode;
-  adapterId: "deterministic-customer-chat";
+  adapterId: "local-scripted-customer-chat";
   messages: ChatMessage[];
   providerSummary: CustomerChatProviderSummary;
   redactions: string[];
@@ -120,14 +120,8 @@ export function buildCustomerChatSession(
   input: CustomerChatInput,
   existingMessages?: ChatMessage[]
 ): CustomerChatSession {
-  const localRuntime = buildTextChatRuntime("deterministic-customer-chat", {
-    customerMessage: input.customerMessage,
-    recipientName: input.recipientName,
-    approvedMemoryNotes: input.approvedMemoryNotes,
-    locale: input.locale
-  });
   const sanitized = sanitizeText(input.customerMessage);
-  const baseMessages = existingMessages ?? localRuntime.localResult ?? buildCustomerChatTranscript(input.recipientName);
+  const baseMessages = existingMessages ?? buildCustomerChatTranscript(input.recipientName);
   const nextMessages: ChatMessage[] = sanitized.text
     ? [
         ...baseMessages,
@@ -138,8 +132,8 @@ export function buildCustomerChatSession(
   const providers = getAdaptersByCapability("text-chat");
 
   return {
-    mode: "local-deterministic",
-    adapterId: "deterministic-customer-chat",
+    mode: "local-scripted",
+    adapterId: "local-scripted-customer-chat",
     messages: nextMessages,
     providerSummary: summarizeChatProviders(providers.map((provider) => provider.status)),
     redactions: sanitized.redactions,
@@ -150,8 +144,7 @@ export function buildCustomerChatSession(
       .filter((provider) => provider.status === "credential-gated")
       .slice(0, 4)
       .map((provider) => {
-        const readiness = getProviderRuntimeReadiness(provider.id);
-        return `${provider.label}: ${readiness.missingCredentials.join(", ") || "provider credentials required"}`;
+        return `${provider.label}: ${provider.credentials.join(", ") || "provider credentials required"}`;
       })
   };
 }
@@ -159,11 +152,11 @@ export function buildCustomerChatSession(
 export function validateCustomerChatSession(session: CustomerChatSession): string[] {
   const issues: string[] = [];
 
-  if (session.adapterId !== "deterministic-customer-chat") {
-    issues.push("Customer chat must use the deterministic local adapter until live model gates pass.");
+  if (session.adapterId !== "local-scripted-customer-chat") {
+    issues.push("Customer chat must use the local scripted session until live model gates pass.");
   }
-  if (session.mode !== "local-deterministic") {
-    issues.push("Customer chat must stay in local deterministic mode for the free MVP.");
+  if (session.mode !== "local-scripted") {
+    issues.push("Customer chat must stay in local scripted mode for the free MVP.");
   }
   if (session.liveModelCallsEnabled) {
     issues.push("Customer chat must not enable live model calls.");
@@ -173,9 +166,6 @@ export function validateCustomerChatSession(session: CustomerChatSession): strin
   }
   if (!session.noNetworkProof) {
     issues.push("Customer chat must expose a no-network proof flag.");
-  }
-  if (session.providerSummary.readyLocal < 1) {
-    issues.push("Customer chat must include at least one ready local provider.");
   }
   if (session.providerSummary.credentialGated < 1) {
     issues.push("Customer chat must preserve credential-gated provider visibility for admin review.");
@@ -200,7 +190,7 @@ function summarizeChatProviders(statuses: ProviderStatus[]): CustomerChatProvide
     credentialGated: statuses.filter((status) => status === "credential-gated").length,
     contractOnly: statuses.filter((status) => status === "contract-only").length,
     blocked: statuses.filter((status) => status === "blocked").length,
-    preferredLocalAdapterId: "deterministic-customer-chat",
+    preferredLocalAdapterId: "",
     previewProviderIds: getAdaptersByCapability("text-chat")
       .filter((provider) => provider.status === "credential-gated")
       .slice(0, 4)

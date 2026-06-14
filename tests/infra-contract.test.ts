@@ -946,7 +946,7 @@ describe("production infrastructure contract", () => {
       items: 8,
       textProviderContracts: 16,
       imageProviderContracts: 17,
-      localFallbacks: 2,
+      localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
       liveProviderCallsEnabled: 0,
@@ -1676,7 +1676,7 @@ describe("production infrastructure contract", () => {
       providerUsageLedger: true,
       queueJobs: true
     });
-    expect(report.readiness.api).toMatchObject({ statefulRoutes: 25, idempotentMutations: 14 });
+    expect(report.readiness.api).toMatchObject({ statefulRoutes: 26, idempotentMutations: 14 });
     expect(report.readiness.localBrowserState).toMatchObject({
       auditItems: 6,
       dbRequiredItems: 0,

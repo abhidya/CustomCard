@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { apiRouteContracts } from "../src/apiRouteContractsData.mjs";
+import { createApiRuntime } from "../scripts/api-runtime.mjs";
 import { createObjectStoreRuntime } from "../scripts/object-store-runtime.mjs";
 
 const objectStoreEnv = {
@@ -164,6 +166,72 @@ describe("object store runtime", () => {
     );
     expect(JSON.stringify(bucket.payload)).not.toContain("write-secret");
     expect(JSON.stringify(bucket.payload)).not.toContain("read-secret");
+  });
+
+  it("persists generated image data URLs as signed artifacts instead of inline response bytes", async () => {
+    const runtime = createApiRuntime({
+      env: objectStoreEnv,
+      routes: apiRouteContracts
+    });
+    const pngDataUrl = "data:image/png;base64,AAAA";
+    const payload = {
+      draft_id: "ai-draft-storage",
+      card_copy: { panels: [] },
+      images: [
+        {
+          panel_id: "front",
+          image_url: pngDataUrl,
+          revised_prompt: "Front generated image.",
+          width: 1500,
+          height: 2100
+        },
+        {
+          panel_id: "back",
+          image_url: pngDataUrl,
+          revised_prompt: "Back generated image.",
+          width: 1500,
+          height: 2100
+        }
+      ],
+      generated_by: "ai-text-and-image"
+    };
+
+    const persisted = await runtime.persistGeneratedImageArtifacts({
+      authContext: { userId: "user-images", role: "customer", sessionId: "session-images" },
+      payload
+    });
+
+    expect(persisted?.payload.generated_image_persistence).toMatchObject({
+      status: "stored",
+      artifactCount: 2,
+      storedArtifactCount: 1,
+      deduplicatedArtifactCount: 1,
+      deduplicatedBytes: 3,
+      inlineImageBytesPersisted: false
+    });
+    expect(persisted?.payload.images.every((image: { image_url: string }) => !image.image_url.startsWith("data:"))).toBe(true);
+    expect(persisted?.payload.images[0]).toMatchObject({
+      image_storage_provider: "s3-compatible",
+      image_inline_bytes_persisted: false,
+      image_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.png",
+      image_byte_length: 3
+    });
+    expect(persisted?.payload.images[1]).toMatchObject({
+      duplicate_of_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.png",
+      duplicate_of_file_name: "provider-01-front.png"
+    });
+    expect(JSON.stringify(persisted?.payload)).not.toContain(pngDataUrl);
+
+    const signedUrl = new URL(persisted!.payload.images[0].image_url);
+    const objectKey = signedUrl.pathname.replace(/^\/api\/artifacts\//, "");
+    const downloaded = await runtime.readArtifact({
+      objectKey,
+      query: signedUrl.searchParams
+    });
+
+    expect(downloaded.statusCode).toBe(200);
+    expect(downloaded.contentType).toBe("image/png");
+    expect(downloaded.body.equals(Buffer.from("AAAA", "base64"))).toBe(true);
   });
 
   it("honors bounded concurrent artifact write/readback verification", async () => {

@@ -1,6 +1,5 @@
 import { buildVendorHandoff, parseFreeImport, type VendorId } from "./freeMvp";
 import {
-  buildCustomerChatTranscript,
   getProviderAdapter,
   providerCatalog,
   type ChatMessage,
@@ -477,17 +476,6 @@ export function buildTextChatRuntime(
   gates: ProviderGateState = {}
 ): RuntimeResult<ChatMessage[]> {
   const adapter = requireCapability(adapterId, "text-chat");
-  if (adapter.id === "deterministic-customer-chat") {
-    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
-    return {
-      adapterId: adapter.id,
-      capability: adapter.capability,
-      mode: "local-result",
-      readiness,
-      localResult: buildCustomerChatTranscript(input.recipientName)
-    };
-  }
-
   const sanitized = sanitizeText(
     [
       `Customer: ${input.customerMessage}`,
@@ -530,27 +518,6 @@ export function buildImageGenerationRuntime(
     ].join("\n")
   );
   const promptPlan = buildCardImagePromptPlan(sanitized, input);
-
-  if (adapter.id === "browser-svg-renderer") {
-    const readiness = getProviderRuntimeReadiness(adapter.id, env, gates);
-    return {
-      adapterId: adapter.id,
-      capability: adapter.capability,
-      mode: "local-result",
-      readiness,
-      localResult: {
-        renderer: "browser-svg",
-        width: 1500,
-        height: 2100,
-        dpi: 300,
-        prompt: promptPlan.sharedPrompt,
-        requiredPanelCount: promptPlan.requiredPanelCount,
-        generationStrategy: promptPlan.generationStrategy,
-        providerCaveats: promptPlan.providerCaveats,
-        panelPrompts: promptPlan.panelPrompts
-      }
-    };
-  }
 
   const readiness = getProviderRuntimeReadiness(adapter.id, env, {
     ...gates,
@@ -1388,7 +1355,7 @@ function buildCardImagePromptPlan(sanitized: SanitizedText, input: ImageRuntimeI
   const providerCaveats = [
     "Generate one panel per provider request to avoid a 4-up collage, contact sheet, or uncontrolled variations.",
     "Keep provider image counts at one image per panel; orchestrate four calls for the full folded card set.",
-    "Treat generated text as untrusted until proofed; exact names and multilingual text require deterministic overlay or human QA before print."
+    "Treat generated text as untrusted until proofed; exact names and multilingual text require app-rendered overlay or human QA before print."
   ];
   const sharedPrompt = [
     input.promptInstructions || "Create CustomCard print artwork using the configured admin prompt policy.",

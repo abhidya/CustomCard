@@ -30,7 +30,7 @@ describe("model benchmark typography experiment", () => {
     expect(insideRight.prompt).toContain(typographyExperimentSpec.panels["inside-right"].body);
   });
 
-  it("keeps exact copy out of artwork-only and hybrid prompts for deterministic text panels", () => {
+  it("keeps exact copy out of artwork-only and hybrid prompts for fixed text panels", () => {
     const current = [
       buildTypographyExperimentPrompt("mode-a-current-overlay"),
       buildTypographyExperimentPrompt("mode-a-current-overlay", typographyExperimentSpec, "inside-left"),
@@ -162,14 +162,6 @@ describe("model benchmark typography experiment", () => {
           configured: true,
           missingEnv: []
         },
-        {
-          id: "image-browser-svg-renderer",
-          label: "Deterministic browser SVG renderer",
-          adapterId: "browser-svg-renderer",
-          model: "deterministic-svg",
-          configured: true,
-          missingEnv: []
-        }
       ],
       text: []
     });
@@ -182,7 +174,7 @@ describe("model benchmark typography experiment", () => {
     expect(new Set(runs.map((run) => run.image.id))).toEqual(new Set(["image-deepai-text2img"]));
   });
 
-  it("plans product-quality benchmarks through the full card generation pipeline with deterministic story input", () => {
+  it("plans product-quality benchmarks through the full card generation pipeline with fixed story input", () => {
     const runs = pipelineQualityRuns({
       image: [
         {
@@ -198,14 +190,6 @@ describe("model benchmark typography experiment", () => {
           label: "DeepAI text2img",
           adapterId: "deepai-text2img-image",
           model: "text2img",
-          configured: true,
-          missingEnv: []
-        },
-        {
-          id: "image-browser-svg-renderer",
-          label: "Deterministic browser SVG renderer",
-          adapterId: "browser-svg-renderer",
-          model: "deterministic-svg",
           configured: true,
           missingEnv: []
         }
@@ -229,12 +213,12 @@ describe("model benchmark typography experiment", () => {
       ]
     });
 
-    expect(runs).toHaveLength(6);
+    expect(runs).toHaveLength(4);
     expect(new Set(runs.map((run) => run.text.id))).toEqual(
       new Set(["text-cloudflare-baseline", "text-hf-qwen3-235b-a22b"])
     );
     expect(new Set(runs.map((run) => run.image.id))).toEqual(
-      new Set(["image-cloudflare-flux-schnell", "image-deepai-text2img", "image-browser-svg-renderer"])
+      new Set(["image-cloudflare-flux-schnell", "image-deepai-text2img"])
     );
     for (const run of runs) {
       expect(run.phase).toBe("pipeline-quality");

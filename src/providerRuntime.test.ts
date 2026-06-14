@@ -1271,12 +1271,10 @@ describe("provider runtime contracts", () => {
   });
 
   it("runs free local fallbacks without credentials or requests", () => {
-    const chat = buildTextChatRuntime("deterministic-customer-chat", textInput);
     const importResult = buildEventImportRuntime("ics-paste-import", importInput);
     const contactResult = buildContactImportRuntime("vcard-contact-import", contactInput);
     const crm = buildCrmRuntime("crm-csv-lifecycle-import", crmInput);
     const workflow = buildWorkflowIntegrationRuntime("local-workflow-payload-export", workflowInput);
-    const image = buildImageGenerationRuntime("browser-svg-renderer", imageInput);
     const notification = buildNotificationRuntime("browser-download-notification", notificationInput);
     const payment = buildPaymentRuntime("no-payment-checkout-gate", paymentInput);
     const observability = buildObservabilityRuntime("local-health-audit-observability", observabilityInput);
@@ -1284,8 +1282,6 @@ describe("provider runtime contracts", () => {
     const vendor = buildVendorRuntime("manual-vendor-handoff", { vendorId: "walgreens" });
     const pricing = buildVendorRuntime("public-printer-pricing-research", { vendorId: "walgreens" });
 
-    expect(chat.mode).toBe("local-result");
-    expect(chat.localResult?.length).toBeGreaterThan(0);
     expect(importResult.mode).toBe("local-result");
     expect(contactResult.mode).toBe("local-result");
     expect(contactResult.localResult).toMatchObject({
@@ -1316,10 +1312,6 @@ describe("provider runtime contracts", () => {
       liveWorkflowSend: false,
       noNetwork: true
     });
-    expect(image.mode).toBe("local-result");
-    expect(image.localResult?.width).toBe(1500);
-    expect(image.localResult?.requiredPanelCount).toBe(4);
-    expect(image.localResult?.panelPrompts).toHaveLength(4);
     expect(notification.mode).toBe("local-result");
     expect(notification.localResult).toMatchObject({ noNetwork: true, visibleOnly: true });
     expect(payment.mode).toBe("local-result");

@@ -43,7 +43,7 @@ describe("AI flow config", () => {
     expect(cardCopy?.liveProviderCallsEnabled).toBe(true);
     expect(cardImage?.primaryAdapterId).toBe("deepai-text2img-image");
     expect(cardImage?.model).toBe("text2img");
-    expect(cardImage?.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(cardImage?.fallbackAdapterId).toBe("");
     expect(cardImage?.rateLimitPerMinute).toBe(4);
     expect(cardImage?.perRequestBudgetCents).toBe(1);
     expect(cardImage?.liveProviderCallsEnabled).toBe(false);
@@ -74,7 +74,7 @@ describe("AI flow config", () => {
     });
 
     expect(flow.primaryAdapterId).toBe("cloudflare-workers-ai-image");
-    expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(flow.fallbackAdapterId).toBe("");
     expect(flow.model).toBe("@cf/bytedance/stable-diffusion-xl-lightning");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
@@ -102,14 +102,14 @@ describe("AI flow config", () => {
     });
 
     expect(flow.primaryAdapterId).toBe("deepai-text2img-image");
-    expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(flow.fallbackAdapterId).toBe("");
     expect(flow.model).toBe("text2img");
     expect(flow.liveProviderCallsEnabled).toBe(true);
     expect(flow.readyForLiveCalls).toBe(true);
     expect(flow.blockedReasons).toEqual([]);
   });
 
-  it("allows the deterministic SVG renderer as an explicit card-image override", () => {
+  it("rejects the removed deterministic SVG renderer as a card-image override", () => {
     const flow = resolveAiFlowConfig("card-image", {
       ...cloudflareEnv,
       CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "browser-svg-renderer",
@@ -117,10 +117,12 @@ describe("AI flow config", () => {
     });
 
     expect(flow.primaryAdapterId).toBe("browser-svg-renderer");
-    expect(flow.fallbackAdapterId).toBe("browser-svg-renderer");
+    expect(flow.fallbackAdapterId).toBe("");
     expect(flow.liveProviderCallsEnabled).toBe(true);
-    expect(flow.readyForLiveCalls).toBe(true);
-    expect(flow.blockedReasons).toEqual([]);
+    expect(flow.readyForLiveCalls).toBe(false);
+    expect(flow.blockedReasons).toEqual(
+      expect.arrayContaining(["Adapter browser-svg-renderer is not allowed for card-image."])
+    );
   });
 
   it("honors admin provider, model, prompt, rate, budget, and fallback queue overrides", () => {
@@ -128,7 +130,7 @@ describe("AI flow config", () => {
       {
         flowId: "customer-chat",
         primaryAdapterId: "groq-chat",
-        fallbackAdapterId: "deterministic-customer-chat",
+        fallbackAdapterId: "",
         model: "llama-3.1-8b-instant",
         promptInstructions: "Reply in one sentence.",
         rateLimitPerMinute: 3,

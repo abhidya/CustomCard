@@ -17,7 +17,7 @@ describe("AI provider readiness", () => {
       evidenceMissing: 4,
       textProviderContracts: 16,
       imageProviderContracts: 17,
-      localFallbacks: 2,
+      localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
       liveProviderCallsEnabled: 0,
@@ -36,7 +36,7 @@ describe("AI provider readiness", () => {
     );
   });
 
-  it("covers all existing AI text, image, and local fallback adapters explicitly", () => {
+  it("covers all existing AI text and image adapters explicitly without local fallbacks", () => {
     const inventory = aiProviderReadinessItems.find((item) => item.id === "ai-adapter-inventory");
     const imageQa = aiProviderReadinessItems.find((item) => item.id === "image-print-qa");
 
@@ -64,9 +64,7 @@ describe("AI provider readiness", () => {
         "luma-image"
       ])
     );
-    expect(inventory?.localFallbackAdapterIds).toEqual(
-      expect.arrayContaining(["deterministic-customer-chat", "browser-svg-renderer"])
-    );
+    expect(inventory?.localFallbackAdapterIds).toEqual([]);
     expect(imageQa).toMatchObject({
       humanReviewRequired: true,
       liveProviderCallsEnabled: false,

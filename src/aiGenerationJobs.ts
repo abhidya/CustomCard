@@ -38,17 +38,40 @@ export interface AiGenerationApiTextLayout {
 export interface AiGenerationApiImage {
   panel_id?: string;
   image_url?: string;
+  image_artifact_uri?: string;
+  image_object_key?: string;
+  image_content_hash?: string;
+  image_byte_length?: number;
+  image_storage_provider?: string;
+  image_signed_url_expires_at?: string;
+  image_inline_bytes_persisted?: boolean;
   revised_prompt?: string;
   width?: number;
   height?: number;
 }
 
 export interface AiGenerationApiResult {
+  status?: string;
+  job_id?: string;
+  queue_status?: string;
+  job_status_url?: string;
+  result_available?: boolean;
   draft_id?: string;
   card_copy?: {
     panels?: AiGenerationApiPanel[];
   };
   images?: AiGenerationApiImage[];
+  generated_image_persistence?: {
+    status?: string;
+    storageProvider?: string;
+    artifactCount?: number;
+    storedArtifactCount?: number;
+    deduplicatedArtifactCount?: number;
+    deduplicatedBytes?: number;
+    inlineImageBytesPersisted?: boolean;
+    manifestUri?: string;
+    signedUrlExpiresAt?: string;
+  };
   generated_by?: string;
   ai_flow?: {
     card_copy?: AiGenerationFlowState;

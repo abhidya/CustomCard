@@ -235,12 +235,13 @@ export function buildProviderOpsModel(input: ProviderOpsModelInput): ProviderOps
 export function validateProviderOpsModel(model: ProviderOpsModel): string[] {
   const issues: string[] = [];
   const providerById = new Map(model.providers.map((provider) => [provider.adapterId, provider]));
+  const fallbackOptionalCapabilities = new Set<ProviderCapability>(["text-chat", "image-generation"]);
 
   for (const provider of model.providers) {
     if (provider.liveGate === "live-ready" && (provider.missingEnv.length > 0 || provider.blockedReasons.length > 0)) {
       issues.push(`Provider ${provider.adapterId} cannot be live-ready with missing env or blockers.`);
     }
-    if (provider.availability !== "blocked" && !provider.fallbackAdapterId) {
+    if (provider.availability !== "blocked" && !provider.fallbackAdapterId && !fallbackOptionalCapabilities.has(provider.capability)) {
       issues.push(`Provider ${provider.adapterId} must name a fallback adapter.`);
     }
     if (provider.fallbackAdapterId && !providerById.has(provider.fallbackAdapterId)) {
@@ -252,7 +253,7 @@ export function validateProviderOpsModel(model: ProviderOpsModel): string[] {
     if (!providerById.has(queue.primaryAdapterId)) {
       issues.push(`Provider ops queue ${queue.id} references unknown primary adapter ${queue.primaryAdapterId}.`);
     }
-    if (!providerById.has(queue.fallbackAdapterId)) {
+    if (queue.fallbackAdapterId && !providerById.has(queue.fallbackAdapterId)) {
       issues.push(`Provider ops queue ${queue.id} references unknown fallback adapter ${queue.fallbackAdapterId}.`);
     }
   }

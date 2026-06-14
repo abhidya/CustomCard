@@ -50,7 +50,7 @@ const requiredImageAdapterIds = [
   "luma-image"
 ];
 
-const requiredLocalFallbackAdapterIds = ["deterministic-customer-chat", "browser-svg-renderer"];
+const requiredLocalFallbackAdapterIds = [];
 
 export const aiProviderReadinessItems = [
   {
@@ -103,7 +103,7 @@ export const aiProviderReadinessItems = [
     liveProviderCallsEnabled: false,
     externalNetworkCalls: false,
     productionTrafficEnabled: false,
-    currentEvidence: ["deterministic local chat transcript", "card copy tests", "blocked live AI production gate"],
+    currentEvidence: ["card copy tests", "blocked live AI production gate"],
     requiredEvidence: ["Prompt audit report", "Brand safety review", "Unsafe-output red-team transcript"],
     blocker: "No prompt audit, brand safety review, or red-team transcript is attached."
   },
@@ -132,7 +132,7 @@ export const aiProviderReadinessItems = [
     status: "evidence-missing",
     textAdapterIds: [],
     imageAdapterIds: requiredImageAdapterIds,
-    localFallbackAdapterIds: ["browser-svg-renderer"],
+    localFallbackAdapterIds: [],
     modelFamilies: ["image-generation"],
     promptAuditRequired: true,
     humanReviewRequired: true,
@@ -140,7 +140,6 @@ export const aiProviderReadinessItems = [
     externalNetworkCalls: false,
     productionTrafficEnabled: false,
     currentEvidence: [
-      "browser SVG renderer",
       "local print package export",
       "print proof checks",
       "folded-card-four-panel-v1 provider prompt contract"
@@ -180,7 +179,7 @@ export const aiProviderReadinessItems = [
     liveProviderCallsEnabled: false,
     externalNetworkCalls: false,
     productionTrafficEnabled: false,
-    currentEvidence: ["deterministic fixture tests", "local customer chat transcript", "image/render choice contract"],
+    currentEvidence: ["fixture tests", "image/render choice contract"],
     requiredEvidence: ["Golden prompt suite", "Model comparison scores", "Regression review transcript"],
     blocker: "No model-output evaluation suite or scored provider comparison is attached."
   },

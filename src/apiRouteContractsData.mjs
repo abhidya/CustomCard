@@ -158,6 +158,12 @@ export const apiRouteContracts = [
       "locale"
     ],
     responseSchema: [
+      "job_id",
+      "queue_status",
+      "job_status_url",
+      "retry_after_seconds",
+      "result_available",
+      "ai_queue",
       "assistant_message",
       "ai_flow",
       "ai_cost_gate",
@@ -171,8 +177,8 @@ export const apiRouteContracts = [
     externalNetworkCalls: true,
     realOrdersEnabled: false,
     piiPolicy:
-      "Customer-session-protected chat text is redacted and sent only to the server-selected AI provider when the flow is live, configured, rate-limited, and fallback-covered; the route does not persist transcripts.",
-    backedBy: ["server-side aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "deterministic-customer-chat fallback"]
+      "Customer-session-protected chat text is minimized into api_jobs for worker execution; client aiFlowConfig and credentials are never accepted, and only the server-selected AI provider may run when live gates pass.",
+    backedBy: ["api_jobs", "server-side aiFlowConfig", "server-side live AI gate", "ai-card-generator service"]
   },
   {
     id: "ai-card-generate",
@@ -194,9 +200,16 @@ export const apiRouteContracts = [
       "memory_notes"
     ],
     responseSchema: [
+      "job_id",
+      "queue_status",
+      "job_status_url",
+      "retry_after_seconds",
+      "result_available",
+      "ai_queue",
       "draft_id",
       "card_copy",
       "images",
+      "generated_image_persistence",
       "generated_by",
       "ai_flow",
       "ai_cost_gate",
@@ -210,8 +223,33 @@ export const apiRouteContracts = [
     externalNetworkCalls: true,
     realOrdersEnabled: false,
     piiPolicy:
-      "Customer-session-protected card fields and approved memories are minimized and sent only to the server-selected AI provider when the flow is live, configured, rate-limited, and fallback-covered; the route does not place orders or store raw drafts.",
-    backedBy: ["server-side aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "browser-svg-renderer fallback"]
+      "Customer-session-protected card fields and approved memories are redacted and minimized into api_jobs for worker execution; client aiFlowConfig and credentials are never accepted, and inline generated images must not be stored in job results.",
+    backedBy: ["api_jobs", "server-side aiFlowConfig", "server-side live AI gate", "ai-card-generator service", "app-rendered typography overlays"]
+  },
+  {
+    id: "ai-job-status",
+    method: "GET",
+    path: "/api/ai/jobs/status",
+    audience: "customer",
+    auth: "customer-session",
+    runtimeMode: "durable-api",
+    requestSchema: ["session", "job_id"],
+    responseSchema: [
+      "job_id",
+      "route_id",
+      "queue_status",
+      "result_available",
+      "attempt_count",
+      "max_attempts",
+      "retry_after_seconds",
+      "result"
+    ],
+    idempotencyKeyRequired: false,
+    externalNetworkCalls: false,
+    realOrdersEnabled: false,
+    piiPolicy:
+      "Returns only the signed-in customer's api_jobs status and completed AI result; queued jobs are scoped by user_id and never expose credentials.",
+    backedBy: ["api_jobs", "customer-session auth"]
   },
   {
     id: "admin-readiness",
@@ -675,6 +713,14 @@ export const apiRouteIdByPath = Object.freeze(
 );
 
 export const mutationBodyContractSpecs = Object.freeze({
+  "ai-chat-respond": {
+    requiredFields: ["customer_message", "recipient_name"],
+    detail: "Queued AI chat requires a customer message and recipient before worker execution."
+  },
+  "ai-card-generate": {
+    requiredFields: ["sender", "recipient", "occasion"],
+    detail: "Queued AI card generation requires sender, recipient, and occasion before worker execution."
+  },
   "import-preview": {
     requiredFields: [
       "sourceKind",
@@ -736,6 +782,9 @@ export const persistedTablesByRouteId = Object.freeze({
   "customer-draft-state": ["auth_sessions", "draft_states", "audit_log"],
   "customer-draft-state-save": ["auth_sessions", "idempotency_keys", "draft_states", "audit_log"],
   "relationship-memories": ["auth_sessions", "idempotency_keys", "relationship_memories", "audit_log"],
+  "ai-chat-respond": ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
+  "ai-card-generate": ["auth_sessions", "idempotency_keys", "provider_call_events", "api_jobs", "audit_log"],
+  "ai-job-status": ["auth_sessions", "api_jobs"],
   "render-packets": [
     "auth_sessions",
     "idempotency_keys",

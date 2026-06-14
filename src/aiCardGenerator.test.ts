@@ -157,16 +157,25 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 
-  it("falls back to deterministic copy when configured provider credentials are missing", async () => {
+  it("fails explicitly when card-copy provider credentials are missing", async () => {
     const fetchImpl = vi.fn();
     const service = createAiCardGenerationService({ env: {}, fetchImpl });
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-fallback" });
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(503);
     expect(fetchImpl).not.toHaveBeenCalled();
-    expect(JSON.stringify(result.payload)).toContain("Happy Birthday Sara");
-    expect(JSON.stringify(result.payload)).toContain("fallback_queued");
+    expect(result.payload).toMatchObject({
+      status: "provider-unavailable",
+      fallback_queued: false,
+      ai_flow: {
+        card_copy: expect.objectContaining({
+          adapter_id: "huggingface-chat",
+          fallback_adapter_id: "",
+          provider_failure: expect.stringContaining("missing")
+        })
+      }
+    });
   });
 
   it("enforces monthly text spend caps before making another provider call", async () => {
@@ -199,7 +208,7 @@ describe("AI card generator service", () => {
     };
 
     expect(first.statusCode).toBe(200);
-    expect(second.statusCode).toBe(200);
+    expect(second.statusCode).toBe(503);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(secondPayload.ai_flow.card_copy.provider_failure).toContain("projected monthly spend");
     expect(secondPayload.ai_cost_gate.blocked_reasons).toContain("monthly-budget-exceeded");
@@ -244,11 +253,8 @@ describe("AI card generator service", () => {
       provider_call_events: Array<{ flow_id: string; status: string; fallback_reason?: string; request_units: number }>;
     };
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(429);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(payload.generated_by).toBe("ai-text-and-image");
-    expect(payload.images).toHaveLength(4);
-    expect(String((payload.images[0] as { image_url: string }).image_url)).toMatch(/^data:image\/svg\+xml;base64,/);
     expect(payload.ai_flow.card_image.provider_failure).toContain("rate limit 3/minute");
     expect(payload.provider_call_events).toEqual(
       expect.arrayContaining([
@@ -348,7 +354,7 @@ describe("AI card generator service", () => {
     };
     const serializedCopy = JSON.stringify(payload.card_copy);
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(503);
     expect(payload.card_copy.panels[0]).toMatchObject({
       headline: "From Dream to Doctor",
       body: "For every late night, long shift, and quiet sacrifice that brought you here."
@@ -861,7 +867,7 @@ describe("AI card generator service", () => {
       { rateKey: "test-admin-off", trustRequestAiFlowConfig: true }
     );
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(503);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
   });

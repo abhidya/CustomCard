@@ -33,7 +33,7 @@ describe("provider ops", () => {
     expect(validateProviderOpsModel(providerOps)).toEqual([]);
     expect(providerOps.summary.availableProviders).toBeGreaterThan(0);
     expect(providerOps.availableProviders.map((provider) => provider.adapterId)).toEqual(
-      expect.arrayContaining(["local-workspace-auth", "deterministic-customer-chat", "browser-svg-renderer"])
+      expect.arrayContaining(["local-workspace-auth", "local-print-package-export", "no-payment-checkout-gate"])
     );
     expect(providerOps.env.requiredForSelectedProviders).toEqual(
       expect.arrayContaining(["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN or CLOUDFLARE_API_TOKEN"])

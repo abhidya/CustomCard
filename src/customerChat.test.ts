@@ -21,13 +21,13 @@ describe("customer chat contract", () => {
 
     expect(validateCustomerChatSession(session)).toEqual([]);
     expect(session).toMatchObject({
-      mode: "local-deterministic",
-      adapterId: "deterministic-customer-chat",
+      mode: "local-scripted",
+      adapterId: "local-scripted-customer-chat",
       liveModelCallsEnabled: false,
       externalNetworkCalls: false,
       noNetworkProof: true
     });
-    expect(session.providerSummary.readyLocal).toBeGreaterThanOrEqual(1);
+    expect(session.providerSummary.readyLocal).toBe(0);
     expect(session.providerSummary.credentialGated).toBeGreaterThanOrEqual(13);
     expect(session.providerSummary.previewProviderIds).toEqual(
       expect.arrayContaining(["openai-responses-chat", "azure-openai-chat", "aws-bedrock-converse-chat"])
@@ -95,7 +95,7 @@ describe("customer chat contract", () => {
     expect(result.messages.at(-1)).toMatchObject({ role: "assistant", text: "Route reply ready." });
   });
 
-  it("falls back to the deterministic local session when the chat route fails", async () => {
+  it("falls back to the local scripted session when the chat route fails", async () => {
     const result = await sendCustomerChatMessage(baseInput, {
       fetchImpl: async () => new Response(JSON.stringify({ error: "nope" }), { status: 503 })
     });
@@ -111,8 +111,8 @@ describe("customer chat contract", () => {
     const session = buildCustomerChatSession(baseInput);
     const unsafe: CustomerChatSession = {
       ...session,
-      adapterId: "openai-responses-chat" as "deterministic-customer-chat",
-      mode: "live-provider" as "local-deterministic",
+      adapterId: "openai-responses-chat" as "local-scripted-customer-chat",
+      mode: "live-provider" as "local-scripted",
       liveModelCallsEnabled: true as unknown as false,
       externalNetworkCalls: true as unknown as false,
       noNetworkProof: false as unknown as true,
@@ -128,12 +128,11 @@ describe("customer chat contract", () => {
 
     expect(validateCustomerChatSession(unsafe)).toEqual(
       expect.arrayContaining([
-        "Customer chat must use the deterministic local adapter until live model gates pass.",
-        "Customer chat must stay in local deterministic mode for the free MVP.",
+        "Customer chat must use the local scripted session until live model gates pass.",
+        "Customer chat must stay in local scripted mode for the free MVP.",
         "Customer chat must not enable live model calls.",
         "Customer chat must not make external network calls.",
         "Customer chat must expose a no-network proof flag.",
-        "Customer chat must include at least one ready local provider.",
         "Customer chat must preserve credential-gated provider visibility for admin review.",
         "Customer chat must include an assistant response.",
         "Customer chat messages must redact email addresses.",

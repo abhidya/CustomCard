@@ -10,7 +10,7 @@ const liveFlow = {
   label: "Card copy",
   capability: "text-chat",
   primaryAdapterId: "openai-gpt-4o-mini",
-  fallbackAdapterId: "browser-svg-renderer",
+  fallbackAdapterId: "",
   rateLimitPerMinute: 2,
   monthlyBudgetCents: 100,
   perRequestBudgetCents: 50,

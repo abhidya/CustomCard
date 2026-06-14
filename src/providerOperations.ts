@@ -166,7 +166,7 @@ export function buildProviderFailoverPlan(input: ProviderOperationsInput): Provi
       fallbackAdapterId,
       requestUnits,
       attempts,
-      ledgerEvents: [],
+      ledgerEvents: blockedLedgerEvents,
       blockers: [`Missing ready-local fallback for ${input.capability}: ${fallbackAdapterId}.`],
       liveNetworkDefault: false,
       auditRequired: true

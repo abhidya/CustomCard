@@ -40,10 +40,10 @@ const checks = [
     "provider.fallback.selected"
   ]),
   checkIncludes("tests", "provider-operations-tests", contents.operationsTest, [
-    "falls back to deterministic local rendering when preferred providers are unavailable",
+    "blocks image generation when preferred providers are unavailable and no local fallback exists",
     "reserves budget for the first ready provider without performing a live call",
     "skips over-budget providers and selects the next configured provider",
-    "uses the local fallback when every configured provider exceeds the current rate window",
+    "blocks when every configured provider exceeds the current rate window and no local fallback exists",
     "summarizes monthly spend and audit events by tenant"
   ]),
   checkIncludes("schema", "durable-provider-usage-ledger", `${contents.persistenceContracts}\n${contents.migration}`, [
@@ -58,9 +58,6 @@ const checks = [
   ]),
   checkIncludes("runtime", "render-route-ledger-insert", contents.apiRuntime, [
     "INSERT INTO provider_call_events",
-    "browser-svg-renderer",
-    "local-fallback-no-live-network",
-    "provider.fallback.selected",
     "provider_call_events"
   ]),
   checkIncludes("docs", "provider-failover-gameday-runbook", contents.docs, [

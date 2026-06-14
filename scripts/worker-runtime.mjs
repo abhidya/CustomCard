@@ -1,4 +1,8 @@
 import { apiRouteContracts as defaultRoutes } from "../src/apiRouteContractsData.mjs";
+import {
+  createAiCardGenerationService,
+} from "./ai-card-generator.mjs";
+import { createAiFlowCostGate, createPostgresAiFlowCostStore } from "./ai-flow-cost-gate.mjs";
 import { createPostgresRuntime } from "./postgres-runtime.mjs";
 import {
   validateWorkerRuntimeEnv,
@@ -11,11 +15,13 @@ export function createWorkerRuntime({
   env = process.env,
   routes = defaultRoutes,
   postgresPoolFactory,
-  jobHandlers = defaultJobHandlers,
+  jobHandlers,
+  fetchImpl = globalThis.fetch,
   workerId = defaultWorkerId(env),
   now = () => new Date()
 } = {}) {
   const postgresRuntime = createPostgresRuntime({ env, postgresPoolFactory });
+  const effectiveJobHandlers = jobHandlers ?? createDefaultJobHandlers({ env, postgresRuntime, fetchImpl });
   const queueBackedRouteIds = routes.filter((route) => route.runtimeMode === "queue-backed").map((route) => route.id);
   const routeIdSet = new Set(queueBackedRouteIds);
 
@@ -86,7 +92,7 @@ export function createWorkerRuntime({
         }
 
         try {
-          const result = await runJobAdapter(job, jobHandlers);
+          const result = await runJobAdapter(job, effectiveJobHandlers);
           await completeJob({ postgresRuntime, job, result, now });
           report.processed += 1;
           report.succeeded += 1;
@@ -172,7 +178,7 @@ async function completeJob({ postgresRuntime, job, result, now }) {
     await client.query(
       `UPDATE api_jobs
        SET status = 'succeeded',
-           result = $2::jsonb,
+          result = $2::jsonb,
            locked_by = NULL,
            locked_at = NULL,
            last_error = NULL,
@@ -183,7 +189,7 @@ async function completeJob({ postgresRuntime, job, result, now }) {
         JSON.stringify({
           ...result,
           completedAtIso: now().toISOString(),
-          liveNetworkCalls: false
+          liveNetworkCalls: Boolean(result?.liveNetworkCalls ?? result?.payload?.external_network_calls ?? false)
         })
       ]
     );
@@ -235,37 +241,82 @@ async function runJobAdapter(job, jobHandlers) {
   return handler({ job });
 }
 
-const defaultJobHandlers = {
-  "ai-chat-respond": async ({ job }) => ({
-    status: "chat-response-ready",
+function createDefaultJobHandlers({ env, postgresRuntime, fetchImpl }) {
+  const aiService = createAiCardGenerationService({
+    env,
+    fetchImpl,
+    costGate: createAiFlowCostGate({
+      store: createPostgresAiFlowCostStore({ getPool: () => postgresRuntime.getPool() })
+    })
+  });
+
+  return {
+    "ai-chat-respond": async ({ job }) => runQueuedAiJob({ job, aiService, method: "respondChat" }),
+    "ai-card-generate": async ({ job }) => runQueuedAiJob({ job, aiService, method: "generateCard" }),
+    "render-packets": async ({ job }) => ({
+      status: "render-review-ready",
+      routeId: job.routeId,
+      artifactVerification: "worker-reviewed",
+      evidence: "Worker adapter completed render packet review handoff."
+    }),
+    "manual-vendor-handoff": async ({ job }) => ({
+      status: "vendor-handoff-ready",
+      routeId: job.routeId,
+      realOrdersEnabled: false,
+      evidence: "Worker adapter completed manual vendor handoff review without placing a real order."
+    }),
+    default: async ({ job }) => ({
+      status: "generic-worker-complete",
+      routeId: job.routeId,
+      liveNetworkCalls: false
+    })
+  };
+}
+
+async function runQueuedAiJob({ job, aiService, method }) {
+  const body = job.payload?.body;
+  if (!body || typeof body !== "object") throw new Error(`Queued ${job.routeId} job is missing sanitized AI payload.`);
+  const requestContext = job.payload?.requestContext && typeof job.payload.requestContext === "object"
+    ? job.payload.requestContext
+    : {};
+  const result = await aiService[method](body, requestContext);
+  if (result.statusCode === 429) throw new Error(`${job.routeId} provider rate limited; retry scheduled by worker.`);
+  if (result.statusCode >= 500) throw new Error(`${job.routeId} provider failed with HTTP ${result.statusCode}.`);
+  return {
+    status: "ai-result-ready",
     routeId: job.routeId,
-    providerCallMode: "no-live-network-call",
-    evidence: "Worker adapter completed queued AI chat handoff without a live provider call."
-  }),
-  "ai-card-generate": async ({ job }) => ({
-    status: "card-generation-ready",
-    routeId: job.routeId,
-    providerCallMode: "no-live-network-call",
-    evidence: "Worker adapter completed queued card generation handoff without a live provider call."
-  }),
-  "render-packets": async ({ job }) => ({
-    status: "render-review-ready",
-    routeId: job.routeId,
-    artifactVerification: "worker-reviewed",
-    evidence: "Worker adapter completed render packet review handoff."
-  }),
-  "manual-vendor-handoff": async ({ job }) => ({
-    status: "vendor-handoff-ready",
-    routeId: job.routeId,
-    realOrdersEnabled: false,
-    evidence: "Worker adapter completed manual vendor handoff review without placing a real order."
-  }),
-  default: async ({ job }) => ({
-    status: "generic-worker-complete",
-    routeId: job.routeId,
-    liveNetworkCalls: false
-  })
-};
+    httpStatusCode: result.statusCode,
+    providerCallMode: result.payload?.external_network_calls ? "live-provider" : "provider-disabled",
+    payload: compactAiWorkerPayload(result.payload),
+    evidence: "Worker completed queued AI flow with server-selected provider config and durable cost gate."
+  };
+}
+
+function compactAiWorkerPayload(payload = {}) {
+  if (!Array.isArray(payload.images)) return payload;
+  let omittedInlineImages = 0;
+  const images = payload.images.map((image) => {
+    if (!String(image?.image_url ?? "").startsWith("data:")) return image;
+    omittedInlineImages += 1;
+    return {
+      ...image,
+      image_url: "",
+      image_inline_bytes_persisted: false,
+      image_omitted_reason: "inline-image-result-not-stored-in-job-result"
+    };
+  });
+  if (omittedInlineImages === 0) return payload;
+  return {
+    ...payload,
+    images,
+    generated_image_persistence: {
+      status: "blocked",
+      omittedInlineImages,
+      inlineImageBytesPersisted: false,
+      blocker: "Persist generated images to object storage before returning signed URLs from queued job status."
+    }
+  };
+}
 
 function normalizeJobRow(row) {
   return {

@@ -324,6 +324,16 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
       )
       .then(readAiGenerationResponse)
       .then(async (result: AiGenerationApiResult) => {
+        if (result.status === "queued" || result.queue_status === "queued") {
+          setAiCardGenStatus(
+            result.job_id
+              ? `AI card job queued. Job ${result.job_id} will be processed by the worker.`
+              : "AI card job queued. It will be processed by the worker."
+          );
+          setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
+          return;
+        }
+
         const imageByPanel = new Map<string, AiGenerationApiImage>(
           (result.images ?? [])
             .filter((image): image is AiGenerationApiImage & { panel_id: string; image_url: string } =>
@@ -557,6 +567,10 @@ export async function readAiGenerationResponse(response: Response): Promise<AiGe
 
   if (!response.ok) {
     throw new Error(formatAiGenerationHttpError(response.status, payload));
+  }
+  if (payload?.status === "queued" || payload?.queue_status === "queued") {
+    if (typeof payload.job_id === "string" && payload.job_id.trim()) return payload as AiGenerationApiResult;
+    throw new Error("AI card generation queued without a job id.");
   }
   if (!payload || !Array.isArray((payload.card_copy as { panels?: unknown } | undefined)?.panels)) {
     throw new Error("AI card generation returned an unexpected response.");

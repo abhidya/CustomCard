@@ -79,6 +79,97 @@ describe("worker runtime", () => {
     expect(queries.some((query) => query.params.includes("api.job.succeeded"))).toBe(true);
   });
 
+  it("executes queued AI card jobs through the worker with live text provider coverage", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const cardCopyResponse = {
+      panels: ["front", "inside-left", "inside-right", "back"].map((id) => ({
+        id,
+        headline: id === "front" ? "Happy Birthday Sara" : "For Sara",
+        body: "Warm birthday copy shaped from approved memories.",
+        art_direction: "Botanical greeting-card panel.",
+        image_prompt: `Full-bleed flat 2D botanical artwork layer for the ${id} panel, no readable text.`,
+        image_negative_prompt: "readable text, logo, watermark"
+      })),
+      memory_citations: ["She keeps a fern by the kitchen window."]
+    };
+    const fetchImpl = async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    const pool = createWorkerPool(queries, [
+      {
+        id: "job-ai-card-1",
+        user_id: "user-demo",
+        route_id: "ai-card-generate",
+        idempotency_key_id: "idem-ai-card-1",
+        payload: {
+          routeId: "ai-card-generate",
+          body: {
+            sender: "Manny",
+            recipient: "Sara",
+            relationship: "friend",
+            occasion: "birthday",
+            tone: "warm",
+            style: "botanical",
+            language: "English",
+            personal_note: "She loves morning hikes.",
+            memory_notes: ["She keeps a fern by the kitchen window."]
+          },
+          requestContext: {
+            rateKey: "user-demo",
+            idempotencyKey: "ai-card-worker-test",
+            authContext: { userId: "user-demo", role: "customer", sessionId: "session-demo" }
+          },
+          security: { clientAiFlowConfigAccepted: false, payloadMinimized: true }
+        },
+        attempt_count: 1,
+        max_attempts: 3
+      }
+    ]);
+    const runtime = createWorkerRuntime({
+      env: {
+        ...baseEnv,
+        CUSTOMCARD_API_RUNTIME: "postgres",
+        CLOUDFLARE_ACCOUNT_ID: "acct_123",
+        CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
+        CLOUDFLARE_WORKERS_AI_TEXT_MODEL: "@cf/meta/llama-3.1-8b-instruct-fast",
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
+        CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
+        CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED: "false"
+      },
+      routes: [{ id: "ai-card-generate", runtimeMode: "queue-backed" }],
+      postgresPoolFactory: () => pool,
+      fetchImpl,
+      workerId: "worker-ai-card",
+      now: () => new Date("2030-01-01T00:00:00.000Z")
+    });
+
+    const result = await runtime.runOnce({ limit: 1 });
+    const completed = queries.find((query) => query.sql.includes("status = 'succeeded'"));
+    const completedPayload = JSON.parse(String(completed?.params[1] ?? "{}"));
+
+    expect(result).toMatchObject({
+      processed: 1,
+      succeeded: 1,
+      failed: 0
+    });
+    expect(completedPayload).toMatchObject({
+      status: "ai-result-ready",
+      routeId: "ai-card-generate",
+      payload: {
+        generated_by: "ai-text-only",
+        card_copy: {
+          panels: expect.any(Array)
+        },
+        external_network_calls: true,
+        fallback_queued: false
+      },
+      liveNetworkCalls: true
+    });
+    expect(JSON.stringify(completedPayload)).not.toContain("aiFlowConfig");
+  });
+
   it("dead-letters exhausted jobs and records audit evidence", async () => {
     const queries: Array<{ sql: string; params: unknown[] }> = [];
     const pool = createWorkerPool(queries, [

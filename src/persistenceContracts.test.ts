@@ -81,7 +81,7 @@ describe("persistence contracts", () => {
       requiredRole: "customer",
       persistedTables: expect.arrayContaining(["auth_sessions", "idempotency_keys", "draft_states", "audit_log"])
     });
-    expect(summary.routes.schemaBacked).toBe(25);
+    expect(summary.routes.schemaBacked).toBe(26);
     expect(summary.routes.idempotentMutations).toBe(summary.routes.mutations);
     expect(apiPersistenceRouteContracts.find((contract) => contract.routeId === "admin-demo-reset")).toMatchObject({
       requiredRole: "admin",

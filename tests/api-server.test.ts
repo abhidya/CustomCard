@@ -334,10 +334,10 @@ describe("api server wrapper", () => {
     expect(report.blockers).toEqual([]);
     expect(report.readiness.providers.total).toBeGreaterThanOrEqual(124);
     expect(report.readiness.providerGovernance).toMatchObject({
-      total: 131,
+      total: 129,
       budgetCapped: 104,
       blockedZeroSpend: 6,
-      fallbackCovered: 131,
+      fallbackCovered: 96,
       liveNetworkDefault: false,
       realOrdersEnabled: false,
       blockers: []
@@ -370,7 +370,7 @@ describe("api server wrapper", () => {
       evidenceMissing: 4,
       textProviderContracts: 16,
       imageProviderContracts: 17,
-      localFallbacks: 2,
+      localFallbacks: 0,
       promptAuditRequired: 6,
       humanReviewRequired: 5,
       liveProviderCallsEnabled: 0,
@@ -548,7 +548,7 @@ describe("api server wrapper", () => {
         "No physical print sample, pickup proof, or retailer QA certification is attached."
       ])
     );
-    expect(report.readiness.routes.total).toBe(31);
+    expect(report.readiness.routes.total).toBe(32);
     expect(report.readiness.routes.idempotentMutations).toBe(expectedIdempotentMutations);
     expect(report.readiness.security).toMatchObject({
       headers: 8,
@@ -762,11 +762,11 @@ describe("api server wrapper", () => {
       expect(staticResponse.headers.get("cache-control")).toBe("no-store");
 
       const readiness = await getJson(port, "/api/admin/readiness");
-      expect(readiness.routes).toMatchObject({ total: 31, admin: 9, idempotentMutations: expectedIdempotentMutations });
-      expect(readiness.providers).toMatchObject({ total: 131, readyLocal: 18, credentialGated: 97, blocked: 6 });
+      expect(readiness.routes).toMatchObject({ total: 32, admin: 9, idempotentMutations: expectedIdempotentMutations });
+      expect(readiness.providers).toMatchObject({ total: 129, readyLocal: 16, credentialGated: 97, blocked: 6 });
       expect(readiness.providerGovernance).toMatchObject({
-        total: 131,
-        fallbackCovered: 131,
+        total: 129,
+        fallbackCovered: 96,
         budgetCapped: 104,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
@@ -807,7 +807,7 @@ describe("api server wrapper", () => {
         evidenceMissing: 4,
         textProviderContracts: 16,
         imageProviderContracts: 17,
-        localFallbacks: 2,
+        localFallbacks: 0,
         promptAuditRequired: 6,
         humanReviewRequired: 5,
         liveProviderCallsEnabled: 0,
@@ -979,12 +979,12 @@ describe("api server wrapper", () => {
 
       const governance = await getJson(port, "/api/admin/provider-governance");
       expect(governance.providerGovernance).toMatchObject({
-        total: 131,
+        total: 129,
         monthlyBudgetCents: 202600,
         maxPerRequestBudgetCents: 5,
-        rateLimited: 125,
-        queueRequired: 91,
-        fallbackCovered: 131,
+        rateLimited: 123,
+        queueRequired: 90,
+        fallbackCovered: 96,
         liveNetworkDefault: false,
         realOrdersEnabled: false,
         blockers: []
@@ -1804,11 +1804,32 @@ describe("api server wrapper", () => {
           "X-Idempotency-Key": "ai-chat-customer-session"
         }
       );
-      expect(customerAiChat.status).toBe(200);
-      expect(await customerAiChat.json()).toMatchObject({
-        assistant_message: expect.stringContaining("Sara"),
+      expect(customerAiChat.status).toBe(202);
+      const customerAiChatPayload = await customerAiChat.json();
+      expect(customerAiChatPayload).toMatchObject({
+        status: "queued",
+        route: "ai-chat-respond",
+        queue_status: "queued",
+        job_id: expect.any(String),
         live_provider_calls_enabled: false,
-        external_network_calls: false
+        external_network_calls: false,
+        ai_queue: expect.objectContaining({
+          backend: "api_jobs",
+          payload_minimized: true,
+          client_ai_flow_config_accepted: false
+        })
+      });
+
+      const customerAiJob = await getJson(
+        port,
+        `/api/ai/jobs/status?job_id=${encodeURIComponent(customerAiChatPayload.job_id)}`,
+        bearer(customerToken)
+      );
+      expect(customerAiJob).toMatchObject({
+        status: "job-queued",
+        queue_status: "queued",
+        result_available: false,
+        authenticatedUserId: "user-demo"
       });
 
       const wrongRoleCouponEvidence = await postJson(
@@ -2323,9 +2344,9 @@ describe("api server wrapper", () => {
       const finalReadiness = await getJson(port, "/api/admin/readiness", bearer(adminToken));
       expect(finalReadiness.runtime).toMatchObject({
         mode: "memory",
-        idempotencyRecords: 9,
-        auditRecords: 9,
-        queuedJobs: 2,
+        idempotencyRecords: 10,
+        auditRecords: 10,
+        queuedJobs: 3,
         providerConnectionRecords: 2,
         importedEventRecords: 2,
         cardOpportunityRecords: 2,

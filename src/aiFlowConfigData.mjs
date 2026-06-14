@@ -13,8 +13,7 @@ const textProviderAdapterIds = [
   "fireworks-chat",
   "perplexity-sonar-chat",
   "xai-chat",
-  "self-hosted-openai-compatible-chat",
-  "deterministic-customer-chat"
+  "self-hosted-openai-compatible-chat"
 ];
 
 const imageProviderAdapterIds = [
@@ -27,8 +26,7 @@ const imageProviderAdapterIds = [
   "replicate-image",
   "together-image",
   "fal-image",
-  "bfl-flux-image",
-  "browser-svg-renderer"
+  "bfl-flux-image"
 ];
 
 export const aiFlowDefinitions = [
@@ -37,11 +35,11 @@ export const aiFlowDefinitions = [
     label: "Customer chat",
     capability: "text-chat",
     defaultPrimaryAdapterId: "cloudflare-workers-ai-chat",
-    defaultFallbackAdapterId: "deterministic-customer-chat",
+    defaultFallbackAdapterId: "",
     allowedAdapterIds: textProviderAdapterIds,
     liveDefault: "auto",
     queueDefault: false,
-    fallbackQueueDefault: true,
+    fallbackQueueDefault: false,
     rateLimitPerMinute: 12,
     monthlyBudgetCents: 2500,
     perRequestBudgetCents: 10,
@@ -56,11 +54,11 @@ export const aiFlowDefinitions = [
     label: "Card copy",
     capability: "text-chat",
     defaultPrimaryAdapterId: "huggingface-chat",
-    defaultFallbackAdapterId: "deterministic-customer-chat",
+    defaultFallbackAdapterId: "",
     allowedAdapterIds: textProviderAdapterIds,
     liveDefault: "auto",
     queueDefault: false,
-    fallbackQueueDefault: true,
+    fallbackQueueDefault: false,
     rateLimitPerMinute: 4,
     monthlyBudgetCents: 5000,
     perRequestBudgetCents: 5,
@@ -75,11 +73,11 @@ export const aiFlowDefinitions = [
     label: "Card image",
     capability: "image-generation",
     defaultPrimaryAdapterId: "deepai-text2img-image",
-    defaultFallbackAdapterId: "browser-svg-renderer",
+    defaultFallbackAdapterId: "",
     allowedAdapterIds: imageProviderAdapterIds,
     liveDefault: false,
     queueDefault: true,
-    fallbackQueueDefault: true,
+    fallbackQueueDefault: false,
     rateLimitPerMinute: 4,
     monthlyBudgetCents: 4000,
     perRequestBudgetCents: 1,
@@ -87,7 +85,7 @@ export const aiFlowDefinitions = [
     maxTokens: 0,
     temperature: 0,
     promptInstructions:
-      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for deterministic app overlays."
+      "Create one portrait 5x7 print panel at a time from the card-copy flow's literal image_prompt. Do not use internal form labels as art direction, do not make a collage or folded mockup, and reserve exact typography for app-rendered overlays."
   }
 ];
 
@@ -109,8 +107,6 @@ const placeholderValues = new Set([
 ]);
 
 export const aiProviderEnvRequirements = {
-  "deterministic-customer-chat": [],
-  "browser-svg-renderer": [],
   "cloudflare-workers-ai-chat": [
     ["CLOUDFLARE_ACCOUNT_ID"],
     ["CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN", "CLOUDFLARE_API_TOKEN"],

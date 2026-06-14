@@ -964,20 +964,6 @@ export const providerCatalog: ProviderAdapter[] = [
     docsUrl: "https://partiful.com"
   },
   {
-    id: "deterministic-customer-chat",
-    label: "Local customer chat",
-    provider: "Deterministic rules",
-    capability: "text-chat",
-    lane: "Free local",
-    status: "ready-local",
-    cost: "free-local",
-    credentials: [],
-    safetyGates: ["No model call", "No external transcript storage"],
-    roleSurface: ["customer", "admin"],
-    priority: 4,
-    detail: "Provides a tested scripted assistant for card intent, memory, and handoff status."
-  },
-  {
     id: "openai-responses-chat",
     label: "OpenAI Responses chat",
     provider: "OpenAI",
@@ -1215,20 +1201,6 @@ export const providerCatalog: ProviderAdapter[] = [
     roleSurface: ["admin"],
     priority: 49,
     detail: "Keeps a cheap local or private model path available without bundling a runtime."
-  },
-  {
-    id: "browser-svg-renderer",
-    label: "Browser SVG renderer",
-    provider: "CustomCard renderer",
-    capability: "image-generation",
-    lane: "Free local",
-    status: "ready-local",
-    cost: "free-local",
-    credentials: [],
-    safetyGates: ["Deterministic output", "5x7 validation", "No external image API"],
-    roleSurface: ["customer", "admin"],
-    priority: 5,
-    detail: "Creates inspectable 1500 x 2100 card panels from local templates."
   },
   {
     id: "openai-images",
@@ -2321,6 +2293,7 @@ export function validateProviderCatalog(adapters: ProviderAdapter[] = providerCa
   const errors: string[] = [];
   const ids = new Set<string>();
   const requiredCapabilities = Object.keys(capabilityLabels) as ProviderCapability[];
+  const credentialOnlyCapabilities = new Set<ProviderCapability>(["text-chat", "image-generation"]);
 
   for (const adapter of adapters) {
     if (ids.has(adapter.id)) {
@@ -2350,7 +2323,7 @@ export function validateProviderCatalog(adapters: ProviderAdapter[] = providerCa
     if (capabilityAdapters.length === 0) {
       errors.push(`Missing capability: ${capability}`);
     }
-    if (!capabilityAdapters.some((adapter) => adapter.status === "ready-local")) {
+    if (!credentialOnlyCapabilities.has(capability) && !capabilityAdapters.some((adapter) => adapter.status === "ready-local")) {
       errors.push(`Capability ${capability} has no ready-local fallback.`);
     }
   }

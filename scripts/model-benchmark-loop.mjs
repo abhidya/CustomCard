@@ -84,7 +84,7 @@ const typographyModes = [
   {
     id: "mode-a-current-overlay",
     label: "Mode A - current overlay",
-    strategy: "artwork-only-plus-deterministic-overlay"
+    strategy: "artwork-only-plus-app-overlay"
   },
   {
     id: "mode-b-full-ai-typography",
@@ -94,7 +94,7 @@ const typographyModes = [
   {
     id: "mode-c-hybrid-reserved-layout",
     label: "Mode C - hybrid reserved layout",
-    strategy: "reserved-layout-plus-deterministic-overlay"
+    strategy: "reserved-layout-plus-app-overlay"
   }
 ];
 
@@ -450,13 +450,6 @@ export const stories = {
 
 const textCandidates = [
   {
-    id: "text-deterministic-support",
-    label: "Deterministic support copy baseline",
-    adapterId: "deterministic-customer-chat",
-    model: "deterministic-support-copy",
-    requiredEnv: []
-  },
-  {
     id: "text-cloudflare-baseline",
     label: "Current Cloudflare text baseline",
     adapterId: "cloudflare-workers-ai-chat",
@@ -570,13 +563,6 @@ const imageCandidates = [
     adapterId: "huggingface-image",
     model: "Tongyi-MAI/Z-Image-Turbo",
     requiredEnv: ["HUGGINGFACE_API_TOKEN"]
-  },
-  {
-    id: "image-browser-svg-renderer",
-    label: "Deterministic browser SVG renderer",
-    adapterId: "browser-svg-renderer",
-    model: "deterministic-svg",
-    requiredEnv: []
   }
 ];
 
@@ -712,22 +698,17 @@ function matchesTypographyMode(run, value) {
 function smokeRuns(candidates) {
   const story = stories["first-time-user-birthday"];
   const baselineText = firstConfigured(candidates.text, "text-cloudflare-baseline");
-  const baselineImage = firstConfigured(candidates.image, "image-cloudflare-sdxl-lightning");
+  const baselineImage = firstConfigured(candidates.image, "image-deepai-text2img") ||
+    firstConfigured(candidates.image, "image-cloudflare-sdxl-lightning");
   const textRuns = candidates.text
     .filter((candidate) => candidate.configured)
+    .filter(() => Boolean(baselineImage))
     .map((text) => ({
       phase: "smoke",
       storyId: story.id,
       story,
       text,
-      image: {
-        id: "image-browser-svg-renderer",
-        label: "Browser SVG renderer for text-only smoke",
-        adapterId: "browser-svg-renderer",
-        model: "",
-        configured: true,
-        missingEnv: []
-      },
+      image: baselineImage,
       focus: "text"
     }));
   const imageRuns = candidates.image
@@ -763,14 +744,8 @@ function fullRuns(candidates) {
 }
 
 export function typographyExperimentRuns(candidates) {
-  const image = firstConfigured(candidates.image, "image-deepai-text2img") || {
-    id: "image-browser-svg-renderer",
-    label: "Browser SVG renderer",
-    adapterId: "browser-svg-renderer",
-    model: "",
-    configured: true,
-    missingEnv: []
-  };
+  const image = firstConfigured(candidates.image, "image-deepai-text2img");
+  if (!image) return [];
   return typographyModes.map((mode) => ({
     phase: "typography",
     focus: "typography",
@@ -793,13 +768,12 @@ export function typographyExperimentRuns(candidates) {
 
 export function pipelineQualityRuns(candidates) {
   const story = stories[pipelineQualityStoryId];
-  const textIds = new Set(["text-deterministic-support", "text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
+  const textIds = new Set(["text-hf-qwen3-235b-a22b", "text-cloudflare-baseline"]);
   const imageIds = new Set([
     "image-cloudflare-sdxl-lightning",
     "image-deepai-text2img",
     "image-openai-gpt-image-2",
     "image-gemini-supported",
-    "image-browser-svg-renderer",
     "image-cloudflare-flux-schnell",
     "image-hf-flux-schnell",
     "image-hf-qwen-image",
@@ -807,29 +781,9 @@ export function pipelineQualityRuns(candidates) {
     "image-hf-z-image-turbo"
   ]);
   const texts = (candidates.text || []).filter((candidate) => candidate.configured && textIds.has(candidate.id));
-  const selectedTexts = texts.length > 0 ? texts : [
-    {
-      id: "text-deterministic-fallback",
-      label: "Deterministic fallback copy",
-      adapterId: "deterministic-customer-chat",
-      model: "",
-      configured: true,
-      missingEnv: []
-    }
-  ];
   const images = (candidates.image || []).filter((candidate) => candidate.configured && imageIds.has(candidate.id));
-  const selectedImages = images.length > 0 ? images : [
-    {
-      id: "image-browser-svg-renderer",
-      label: "Browser SVG renderer",
-      adapterId: "browser-svg-renderer",
-      model: "deterministic-svg",
-      configured: true,
-      missingEnv: []
-    }
-  ];
-  return selectedTexts.flatMap((text) =>
-    selectedImages.map((image) => ({
+  return texts.flatMap((text) =>
+    images.map((image) => ({
       phase: "pipeline-quality",
       focus: "full-card-quality",
       storyId: story.id,
@@ -1012,21 +966,13 @@ async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, 
 function buildRunAiFlowConfig(run) {
   return [
     {
-      flowId: "customer-chat",
-      primaryAdapterId: "deterministic-customer-chat",
-      fallbackAdapterId: "deterministic-customer-chat",
-      liveProviderCallsEnabled: false,
-      queueEnabled: false,
-      fallbackQueueEnabled: true
-    },
-    {
       flowId: "card-copy",
       primaryAdapterId: run.text.adapterId,
-      fallbackAdapterId: "deterministic-customer-chat",
+      fallbackAdapterId: "",
       model: run.text.model,
-      liveProviderCallsEnabled: run.text.adapterId !== "deterministic-customer-chat",
+      liveProviderCallsEnabled: true,
       queueEnabled: false,
-      fallbackQueueEnabled: true,
+      fallbackQueueEnabled: false,
       rateLimitPerMinute: 4,
       monthlyBudgetCents: 5000,
       perRequestBudgetCents: 5,
@@ -1037,11 +983,11 @@ function buildRunAiFlowConfig(run) {
     {
       flowId: "card-image",
       primaryAdapterId: run.image.adapterId,
-      fallbackAdapterId: "browser-svg-renderer",
+      fallbackAdapterId: "",
       model: run.image.model,
-      liveProviderCallsEnabled: run.image.adapterId !== "browser-svg-renderer",
+      liveProviderCallsEnabled: true,
       queueEnabled: false,
-      fallbackQueueEnabled: true,
+      fallbackQueueEnabled: false,
       rateLimitPerMinute: 4,
       monthlyBudgetCents: 4000,
       perRequestBudgetCents: 1,
@@ -1306,14 +1252,6 @@ function countSentences(value) {
 }
 
 async function executeTypographyImageProvider({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
-  if (image.adapterId === "browser-svg-renderer") {
-    return buildTypographyPlaceholderSvgDataUrl({
-      panelId,
-      prompt,
-      renderText: !negativePrompt.includes("readable text")
-    });
-  }
-
   if (image.adapterId === "deepai-text2img-image") {
     const body = new FormData();
     body.set("text", truncateText(negativePrompt ? `${prompt}\n\nAvoid: ${negativePrompt}.` : prompt, 2048));
@@ -2178,62 +2116,6 @@ function requiredEnv(env, key) {
 
 function isCloudflareFluxModel(model) {
   return String(model || "").includes("/flux-1-schnell");
-}
-
-function buildTypographyPlaceholderSvgDataUrl({ panelId = "front", prompt, renderText }) {
-  const showText = panelId === "front" && renderText && prompt.includes(typographyExperimentSpec.headline);
-  const text = showText
-    ? `<text x="750" y="900" text-anchor="middle" font-family="Georgia" font-size="112" fill="#f9edcf">${escapeXml(typographyExperimentSpec.headline)}</text>
-       <text x="750" y="1035" text-anchor="middle" font-family="Arial" font-size="44" fill="#f5d889">${escapeXml(typographyExperimentSpec.body)}</text>`
-    : "";
-  const background = panelId.startsWith("inside") ? "#fff9ec" : "#171717";
-  const borderColor = panelId.startsWith("inside") ? "#caa24f" : "#d6aa45";
-  const mark = panelId === "back"
-    ? '<g opacity="0.9"><circle cx="750" cy="1570" r="54" fill="#e0aa35"/><path d="M750 1490 V1650 M670 1570 H830 M694 1514 L806 1626 M806 1514 L694 1626" stroke="#fff4d7" stroke-width="8"/></g>'
-    : panelId.startsWith("inside")
-      ? `<g opacity="0.55"><path d="${panelId === "inside-left" ? "M80 350 C260 460 300 690 120 860" : "M1420 350 C1240 460 1200 690 1380 860"}" fill="none" stroke="#d6aa45" stroke-width="18"/><circle cx="${panelId === "inside-left" ? 160 : 1340}" cy="420" r="46" fill="#e0aa35"/></g>`
-      : "";
-  const rays = Array.from({ length: 40 }, (_, index) => {
-    const angle = (Math.PI * 2 * index) / 40;
-    const x = 750 + Math.cos(angle) * 760;
-    const y = 1050 + Math.sin(angle) * 760;
-    return `<line x1="750" y1="1050" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#d6aa45" stroke-width="18" opacity="0.18"/>`;
-  }).join("");
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2100" viewBox="0 0 1500 2100">
-      <rect width="1500" height="2100" fill="${background}"/>
-      ${panelId === "front" ? rays : ""}
-      ${panelId === "front" ? '<circle cx="750" cy="1050" r="560" fill="none" stroke="#d6aa45" stroke-width="10" opacity="0.42"/>' : mark}
-      <rect x="92" y="92" width="1316" height="1916" rx="24" fill="none" stroke="${borderColor}" stroke-width="8" opacity="0.62"/>
-      ${text}
-    </svg>
-  `;
-  return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
-}
-
-function missingEnvGroups(groups, env) {
-  return groups.flatMap((group) => {
-    const keys = Array.isArray(group) ? group : [group];
-    return keys.some((key) => hasEnv(env[key])) ? [] : [keys.join(" or ")];
-  });
-}
-
-function hasEnv(value) {
-  const text = String(value || "").trim().toLowerCase();
-  return Boolean(text && !["changeme", "replace-me", "dummy", "fake", "sample", "test", "unset"].includes(text));
-}
-
-function parseArgs(values) {
-  const parsed = {};
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index];
-    if (!value.startsWith("--")) continue;
-    const [key, inlineValue] = value.slice(2).split("=");
-    if (inlineValue !== undefined) parsed[key] = inlineValue;
-    else if (values[index + 1] && !values[index + 1].startsWith("--")) parsed[key] = values[++index];
-    else parsed[key] = true;
-  }
-  return parsed;
 }
 
 function parseDotenv(text) {

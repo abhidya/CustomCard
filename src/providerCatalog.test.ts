@@ -27,13 +27,13 @@ describe("provider catalog", () => {
     expect(registry.adaptersByCapability.get("text-chat")?.map((adapter) => adapter.id)).toEqual(
       getAdaptersByCapability("text-chat").map((adapter) => adapter.id)
     );
-    expect(registry.readyLocalFallbackByCapability.get("image-generation")?.id).toBe("browser-svg-renderer");
+    expect(registry.readyLocalFallbackByCapability.get("image-generation")).toBeUndefined();
     expect(registry.readyLocalFallbackByCapability.get("payment")?.id).toBe("no-payment-checkout-gate");
     expect(getProviderAdapter("openai-responses-chat")?.capability).toBe("text-chat");
     expect(providerCatalogRegistry.adaptersById.get("manual-vendor-handoff")?.status).toBe("ready-local");
   });
 
-  it("covers every platform capability with a free local fallback", () => {
+  it("covers platform capabilities with local fallbacks while keeping AI provider-gated", () => {
     const requiredCapabilities: ProviderCapability[] = [
       "auth",
       "event-import",
@@ -58,7 +58,12 @@ describe("provider catalog", () => {
     for (const capability of requiredCapabilities) {
       const adapters = getAdaptersByCapability(capability);
       expect(adapters.length).toBeGreaterThan(0);
-      expect(adapters.some((adapter) => adapter.status === "ready-local")).toBe(true);
+      if (capability === "text-chat" || capability === "image-generation") {
+        expect(adapters.some((adapter) => adapter.status === "ready-local")).toBe(false);
+        expect(adapters.some((adapter) => adapter.status === "credential-gated")).toBe(true);
+      } else {
+        expect(adapters.some((adapter) => adapter.status === "ready-local")).toBe(true);
+      }
     }
   });
 
@@ -375,12 +380,13 @@ describe("provider catalog", () => {
     const transcript = buildCustomerChatTranscript("Sara and Ahmed");
 
     expect(customer.primaryActions.map((action) => action.capability)).toEqual(
-      expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "payment", "vendor-handoff"])
+      expect.arrayContaining(["event-import", "render-export", "payment", "vendor-handoff"])
+    );
+    expect(customer.primaryActions.map((action) => action.capability)).not.toEqual(
+      expect.arrayContaining(["text-chat", "image-generation"])
     );
     expect(customer.readyFallbacks.map((adapter) => adapter.label)).toEqual(
       expect.arrayContaining([
-        "Local customer chat",
-        "Browser SVG renderer",
         "Local print package export",
         "Manual print checklist",
         "Public printer pricing research",

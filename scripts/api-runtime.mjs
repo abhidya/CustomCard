@@ -136,22 +136,49 @@ function createContractApiRuntime({ routes, objectStoreRuntime }) {
         sessionId: "contract-session"
       };
     },
-    async persistMutation({ route, bodyText, responsePayload }) {
+    async persistMutation({ route, request, authContext, bodyText, responsePayload }) {
       const bodyValidation = validateMutationBody(route, bodyText);
       if (bodyValidation) return bodyValidation;
+      const idempotencyKey = readHeader(request, "x-idempotency-key");
+      const queueJob = buildQueuedJobRecord({
+        route,
+        authContext: authContext ?? anonymousAuthContext(route),
+        idempotencyKey,
+        bodyText
+      });
 
       return {
         ok: true,
         statusCode: 202,
         payload: {
           ...responsePayload,
+          ...publicQueuedJobAcceptance(queueJob),
           runtimeMode: "contract",
           idempotencyPersisted: false
         }
       };
     },
+    async readQueuedJob({ authContext, jobId }) {
+      return buildQueuedJobReadResult({
+        runtimeMode: "contract",
+        authContext,
+        job: {
+          id: safeId(jobId, ""),
+          userId: authContext.userId,
+          routeId: "ai-job",
+          status: "unavailable",
+          result: {},
+          attemptCount: 0,
+          maxAttempts: 3
+        },
+        statusCode: 404
+      });
+    },
     async recordProviderCallEvents() {
       return { persisted: false, count: 0, runtimeMode: "contract" };
+    },
+    async persistGeneratedImageArtifacts({ authContext, payload }) {
+      return persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload });
     },
     async persistGoogleCalendarImport({ record }) {
       return {
@@ -220,6 +247,9 @@ function createInvalidApiRuntime({ requestedMode, routes, objectStoreRuntime, va
     },
     async recordProviderCallEvents() {
       return { persisted: false, count: 0, runtimeMode: "invalid" };
+    },
+    async persistGeneratedImageArtifacts() {
+      return undefined;
     },
     async persistGoogleCalendarImport() {
       return { persisted: false, payload };
@@ -324,6 +354,12 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       const existing = idempotencyRecords.get(prepared.recordKey);
       if (existing) return replayOrConflict(existing, prepared.requestHash);
 
+      const queueJob = buildQueuedJobRecord({
+        route,
+        authContext,
+        idempotencyKey: prepared.idempotencyKey,
+        bodyText
+      });
       const routePersistence = await persistMemoryRouteMutation({
         repositories: {
           providerConnections,
@@ -352,7 +388,8 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         runtimeMode: "memory",
         idempotencyKey: prepared.idempotencyKey,
         idempotencyReplayed: false,
-        routePersistence
+        routePersistence,
+        queueJob
       });
       const record = {
         requestHash: prepared.requestHash,
@@ -368,14 +405,24 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
       });
       if (route.runtimeMode === "queue-backed") {
         queuedJobs.push({
-          id: stableRuntimeId("job", authContext.userId, route.id, prepared.idempotencyKey),
+          id: queueJob.id,
           userId: authContext.userId,
           routeId: route.id,
-          status: "queued"
+          status: "queued",
+          payload: queueJob.payload,
+          result: {},
+          attemptCount: 0,
+          maxAttempts: queueJob.maxAttempts,
+          createdAtIso: new Date().toISOString()
         });
       }
 
       return { ok: true, statusCode: 202, payload };
+    },
+    async readQueuedJob({ authContext, jobId }) {
+      const id = safeId(jobId, "");
+      const job = queuedJobs.find((candidate) => candidate.id === id && candidate.userId === authContext.userId);
+      return buildQueuedJobReadResult({ runtimeMode: "memory", authContext, job, statusCode: job ? 200 : 404 });
     },
     async recordProviderCallEvents({ authContext, events = [] }) {
       const normalized = normalizeProviderCallEvents({ authContext, events });
@@ -383,6 +430,9 @@ function createMemoryApiRuntime({ env, routes, objectStoreRuntime }) {
         providerCallEvents.set(event.id, event);
       }
       return { persisted: normalized.length > 0, count: normalized.length, runtimeMode: "memory" };
+    },
+    async persistGeneratedImageArtifacts({ authContext, payload }) {
+      return persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload });
     },
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
@@ -636,6 +686,13 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           );
         }
 
+        const queueJob = buildQueuedJobRecord({
+          route,
+          authContext,
+          idempotencyKey: prepared.idempotencyKey,
+          idempotencyKeyId: idempotencyId,
+          bodyText
+        });
         const routePersistence = await persistPostgresRouteMutation({
           client,
           route,
@@ -650,7 +707,8 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
           runtimeMode: "postgres",
           idempotencyKey: prepared.idempotencyKey,
           idempotencyReplayed: false,
-          routePersistence
+          routePersistence,
+          queueJob
         });
         await client.query(
           `UPDATE idempotency_keys
@@ -692,11 +750,11 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
             `INSERT INTO api_jobs (id, user_id, route_id, idempotency_key_id, status, payload, result)
              VALUES ($1, $2, $3, $4, 'queued', $5::jsonb, '{}'::jsonb)`,
             [
-              stableRuntimeId("job", authContext.userId, route.id, prepared.idempotencyKey),
+              queueJob.id,
               authContext.userId,
               route.id,
               idempotencyId,
-              JSON.stringify({ routeId: route.id })
+              JSON.stringify(queueJob.payload)
             ]
           );
         }
@@ -743,8 +801,37 @@ function createPostgresApiRuntime({ env, routes, postgresPoolFactory, objectStor
         return { persisted: true, count: normalized.length, runtimeMode: "postgres" };
       });
     },
+    async persistGeneratedImageArtifacts({ authContext, payload }) {
+      return persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload });
+    },
     async readArtifact(input) {
       return objectStoreRuntime.readSignedArtifact(input);
+    },
+    async readQueuedJob({ authContext, jobId }) {
+      const pool = await getPool();
+      const result = await pool.query(
+        `SELECT id, user_id, route_id, status, result, attempt_count, max_attempts, last_error, created_at, updated_at
+         FROM api_jobs
+         WHERE id = $1 AND user_id = $2
+         LIMIT 1`,
+        [safeId(jobId, ""), authContext.userId]
+      );
+      const row = result.rows[0];
+      const job = row
+        ? {
+            id: row.id,
+            userId: row.user_id,
+            routeId: row.route_id,
+            status: row.status,
+            result: normalizeJson(row.result),
+            attemptCount: Number(row.attempt_count ?? 0),
+            maxAttempts: Number(row.max_attempts ?? 3),
+            lastError: row.last_error ?? "",
+            createdAtIso: new Date(row.created_at).toISOString(),
+            updatedAtIso: new Date(row.updated_at).toISOString()
+          }
+        : undefined;
+      return buildQueuedJobReadResult({ runtimeMode: "postgres", authContext, job, statusCode: job ? 200 : 404 });
     },
     async listArtifacts(input) {
       return objectStoreRuntime.listBucketArtifacts(input);
@@ -1065,6 +1152,27 @@ function prepareIdempotentMutation({ route, request, authContext, bodyText }) {
 }
 
 const mutationBodyContracts = {
+  "ai-chat-respond": {
+    requiredFields: ["customer_message", "recipient_name"],
+    detail: "AI chat jobs require a customer message and recipient before queue admission.",
+    missingFields(body) {
+      const missingFields = [];
+      if (!hasRequiredText(body.customer_message ?? body.customerMessage)) missingFields.push("customer_message");
+      if (!hasRequiredText(body.recipient_name ?? body.recipientName)) missingFields.push("recipient_name");
+      return missingFields;
+    }
+  },
+  "ai-card-generate": {
+    requiredFields: ["sender", "recipient", "occasion"],
+    detail: "AI card generation jobs require sender, recipient, and occasion before queue admission.",
+    missingFields(body) {
+      const missingFields = [];
+      if (!hasRequiredText(body.sender)) missingFields.push("sender");
+      if (!hasRequiredText(body.recipient)) missingFields.push("recipient");
+      if (!hasRequiredText(body.occasion)) missingFields.push("occasion");
+      return missingFields;
+    }
+  },
   "import-preview": {
     ...mutationBodyContractSpecs["import-preview"],
     missingFields(body) {
@@ -1239,9 +1347,19 @@ function replayOrConflict(record, nextRequestHash) {
   };
 }
 
-function decorateMutationPayload({ route, authContext, responsePayload, runtimeMode, idempotencyKey, idempotencyReplayed, routePersistence }) {
+function decorateMutationPayload({
+  route,
+  authContext,
+  responsePayload,
+  runtimeMode,
+  idempotencyKey,
+  idempotencyReplayed,
+  routePersistence,
+  queueJob
+}) {
   return {
     ...responsePayload,
+    ...publicQueuedJobAcceptance(queueJob),
     ...(routePersistence?.payload ?? {}),
     runtimeMode,
     authenticatedUserId: authContext.userId,
@@ -1250,6 +1368,167 @@ function decorateMutationPayload({ route, authContext, responsePayload, runtimeM
     idempotencyPersisted: true,
     repositoryPersisted: Boolean(routePersistence?.persisted),
     idempotencyReplayed
+  };
+}
+
+function buildQueuedJobRecord({ route, authContext, idempotencyKey, idempotencyKeyId = null, bodyText }) {
+  if (route.runtimeMode !== "queue-backed") return undefined;
+  const safeIdempotencyKey = safeId(idempotencyKey, stableRuntimeId("idempotency", authContext.userId, route.id, bodyText || "{}"));
+  return {
+    id: stableRuntimeId("job", authContext.userId, route.id, safeIdempotencyKey),
+    userId: authContext.userId,
+    routeId: route.id,
+    idempotencyKeyId,
+    status: "queued",
+    payload: buildQueuedJobPayload({ route, authContext, idempotencyKey: safeIdempotencyKey, bodyText }),
+    result: {},
+    attemptCount: 0,
+    maxAttempts: 3
+  };
+}
+
+function buildQueuedJobPayload({ route, authContext, idempotencyKey, bodyText }) {
+  const body = parseJsonBody(bodyText);
+  const basePayload = {
+    routeId: route.id,
+    jobKind: route.id.startsWith("ai-") ? "ai-flow" : "api-route",
+    idempotencyKey,
+    requestContext: {
+      rateKey: authContext.userId,
+      idempotencyKey,
+      authContext: {
+        userId: authContext.userId,
+        sessionId: authContext.sessionId,
+        role: authContext.role
+      }
+    },
+    security: {
+      payloadMinimized: true,
+      clientAiFlowConfigAccepted: false,
+      credentialsPersisted: false,
+      rawProviderContentStored: false
+    }
+  };
+  if (route.id === "ai-chat-respond") {
+    return {
+      ...basePayload,
+      flowId: "customer-chat",
+      body: sanitizeAiChatJobBody(body)
+    };
+  }
+  if (route.id === "ai-card-generate") {
+    return {
+      ...basePayload,
+      flowId: "card-generation",
+      body: sanitizeAiCardJobBody(body)
+    };
+  }
+  return basePayload;
+}
+
+function sanitizeAiChatJobBody(body) {
+  return {
+    customer_message: safeQueuedText(body.customer_message ?? body.customerMessage, 1200),
+    recipient_name: safeQueuedText(body.recipient_name ?? body.recipientName, 120),
+    approved_memory_notes: safeQueuedTextArray(body.approved_memory_notes ?? body.approvedMemoryNotes, 6, 600),
+    locale: safeLocale(body.locale),
+    fulfillment_context: safeQueuedText(body.fulfillment_context ?? body.fulfillmentContext, 240)
+  };
+}
+
+function sanitizeAiCardJobBody(body) {
+  return {
+    sender: safeQueuedText(body.sender, 120),
+    recipient: safeQueuedText(body.recipient, 120),
+    relationship: safeQueuedText(body.relationship, 80),
+    occasion: safeQueuedText(body.occasion, 120),
+    tone: safeQueuedText(body.tone, 80),
+    style: safeQueuedText(body.style, 160),
+    language: safeQueuedText(body.language, 40),
+    personal_note: safeQueuedText(body.personal_note ?? body.personalNote, 1200),
+    memory_notes: safeQueuedTextArray(body.memory_notes ?? body.memoryNotes, 6, 600)
+  };
+}
+
+function safeQueuedTextArray(value, maxItems, maxLength) {
+  return (Array.isArray(value) ? value : [])
+    .map((item) => safeQueuedText(item, maxLength))
+    .filter(Boolean)
+    .slice(0, maxItems);
+}
+
+function safeQueuedText(value, maxLength) {
+  const text = String(value ?? "")
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[redacted-email]")
+    .replace(/\b(?:\d[ -]*?){13,16}\b/g, "[redacted-payment]")
+    .replace(/\+?\d[\d\s().-]{7,}\d/g, "[redacted-phone]")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.slice(0, Math.max(1, maxLength));
+}
+
+function publicQueuedJobAcceptance(queueJob) {
+  if (!queueJob || !queueJob.routeId?.startsWith("ai-")) return {};
+  return {
+    status: "queued",
+    queue_status: queueJob.status,
+    job_id: queueJob.id,
+    job_status_url: `/api/ai/jobs/status?job_id=${encodeURIComponent(queueJob.id)}`,
+    retry_after_seconds: 2,
+    result_available: false,
+    worker_required: true,
+    live_provider_calls_enabled: false,
+    external_network_calls: false,
+    fallback_queued: true,
+    ai_queue: {
+      backend: "api_jobs",
+      worker: "customcard-worker",
+      route_id: queueJob.routeId,
+      max_attempts: queueJob.maxAttempts,
+      payload_minimized: true,
+      client_ai_flow_config_accepted: false,
+      credentials_persisted: false,
+      raw_provider_content_stored: false
+    }
+  };
+}
+
+function buildQueuedJobReadResult({ runtimeMode, authContext, job, statusCode }) {
+  if (!job) {
+    return {
+      statusCode,
+      payload: {
+        service: "customcard-api",
+        status: "job-not-found",
+        runtimeMode,
+        authenticatedUserId: authContext.userId
+      }
+    };
+  }
+  const normalizedResult = normalizeJson(job.result ?? {});
+  const result = normalizedResult && typeof normalizedResult === "object" ? normalizedResult : {};
+  const resultAvailable = job.status === "succeeded" && Object.keys(result).length > 0;
+  return {
+    statusCode,
+    payload: {
+      service: "customcard-api",
+      status: resultAvailable ? "job-result-ready" : `job-${job.status}`,
+      runtimeMode,
+      authenticatedUserId: authContext.userId,
+      job_id: job.id,
+      route_id: job.routeId,
+      queue_status: job.status,
+      result_available: resultAvailable,
+      attempt_count: Number(job.attemptCount ?? 0),
+      max_attempts: Number(job.maxAttempts ?? 3),
+      retry_after_seconds: resultAvailable || job.status === "dead_lettered" ? undefined : 2,
+      last_error: job.lastError || undefined,
+      created_at: job.createdAtIso,
+      updated_at: job.updatedAtIso,
+      result: resultAvailable ? result : undefined,
+      live_provider_calls_enabled: Boolean(result.live_provider_calls_enabled),
+      external_network_calls: Boolean(result.external_network_calls)
+    }
   };
 }
 
@@ -2393,14 +2672,14 @@ function buildRenderProviderCallEvent({ authContext, bodyText, idempotencyId }) 
   return {
     id: stableRuntimeId("provider-call", authContext.userId, "render-packets", idempotencyId),
     tenantId: authContext.userId,
-    adapterId: "browser-svg-renderer",
-    provider: "CustomCard renderer",
+    adapterId: "customcard-render-packet",
+    provider: "CustomCard render packet",
     capability: "image-generation",
     metadata: {
       renderPacketId: renderPacket.id,
       projectId: renderPacket.projectId,
-      policy: "local-fallback-no-live-network",
-      auditEventName: "provider.fallback.selected"
+      policy: "app-rendered-no-live-network",
+      auditEventName: "provider.render.completed"
     }
   };
 }
@@ -2516,6 +2795,177 @@ function buildRenderPacketRepositoryPayload(record, runtimeMode, artifactPersist
       realOrdersEnabled: false
     }
   };
+}
+
+async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload }) {
+  const objectStoreDescription = objectStoreRuntime?.describe?.();
+  const images = Array.isArray(payload?.images) ? payload.images : [];
+  const artifacts = images
+    .map((image, index) => normalizeGeneratedImageArtifact(image, index))
+    .filter(Boolean);
+  if (artifacts.length === 0) return undefined;
+  if (!objectStoreDescription?.configured) {
+    const blockers = objectStoreDescription?.blockers ?? [];
+    return blockers.length > 0
+      ? {
+          payload: {
+            ...payload,
+            generated_image_persistence: {
+              status: "blocked",
+              blockers,
+              inlineImageBytesPersisted: false,
+              liveNetworkCalls: false
+            }
+          }
+        }
+      : undefined;
+  }
+
+  const draftId = safeId(
+    payload?.draft_id ?? payload?.draftId,
+    stableRuntimeId("ai-draft", authContext?.userId ?? "anonymous", generatedImageHashInput(artifacts))
+  );
+  const projectId = safeId(
+    payload?.project_id ?? payload?.projectId,
+    `ai-${safeId(authContext?.userId, stableRuntimeId("user", "anonymous"))}`
+  );
+  const firstImage = images.find((image) => image && typeof image === "object") ?? {};
+  const record = {
+    id: draftId,
+    projectId,
+    kind: "validated_print_packet",
+    width: safeInteger(firstImage.width, 1500, 1, 10_000),
+    height: safeInteger(firstImage.height, 2100, 1, 10_000),
+    dpi: 300,
+    locale: "en-US",
+    direction: "ltr",
+    safeZonePassed: true,
+    textOverflow: false,
+    checksum: `cc_${createHash("sha256").update(generatedImageHashInput(artifacts)).digest("hex").slice(0, 8)}`,
+    artifactUri: "",
+    storageProvider: "filesystem",
+    artifactCount: artifacts.length,
+    artifactManifest: {
+      renderPacketId: draftId,
+      projectId,
+      artifactCount: artifacts.length,
+      persistenceStatus: "pending",
+      blockers: []
+    },
+    signedUrlExpiresAt: defaultSignedUrlExpiresAt(),
+    externalShareApprovalRequired: true
+  };
+
+  const persistence = await objectStoreRuntime.persistRenderPacketArtifacts({
+    record,
+    authContext,
+    bodyText: JSON.stringify({ artifacts })
+  });
+  const artifactPersistence = persistence.payload?.artifactPersistence;
+  if (artifactPersistence?.status !== "stored") {
+    return {
+      payload: {
+        ...payload,
+        generated_image_persistence: {
+          ...(artifactPersistence ?? {}),
+          status: artifactPersistence?.status ?? "blocked",
+          inlineImageBytesPersisted: false
+        }
+      }
+    };
+  }
+
+  const storedByPanel = new Map();
+  const manifestArtifacts = persistence.record.artifactManifest?.artifacts ?? [];
+  const signedDownloads = persistence.record.signedArtifactUrls ?? [];
+  manifestArtifacts.forEach((artifact, index) => {
+    if (!artifact?.panelId || !signedDownloads[index]?.url) return;
+    storedByPanel.set(artifact.panelId, {
+      artifact,
+      signedDownload: signedDownloads[index]
+    });
+  });
+
+  return {
+    record: persistence.record,
+    payload: {
+      ...payload,
+      images: images.map((image) => {
+        const panelId = String(image?.panel_id ?? image?.panelId ?? "").trim();
+        const stored = storedByPanel.get(panelId);
+        if (!stored) return image;
+        const { artifact, signedDownload } = stored;
+        return {
+          ...image,
+          image_url: signedDownload.url,
+          image_artifact_uri: artifact.artifactUri,
+          image_object_key: artifact.objectKey,
+          image_content_hash: artifact.contentHash,
+          image_byte_length: artifact.byteLength,
+          image_storage_provider: persistence.record.storageProvider,
+          image_signed_url_expires_at: signedDownload.expiresAtIso,
+          image_inline_bytes_persisted: false,
+          ...(artifact.duplicateOfObjectKey
+            ? {
+                duplicate_of_object_key: artifact.duplicateOfObjectKey,
+                duplicate_of_file_name: artifact.duplicateOfFileName
+              }
+            : {})
+        };
+      }),
+      generated_image_persistence: {
+        ...artifactPersistence,
+        manifestUri: persistence.record.artifactUri,
+        signedUrlExpiresAt: persistence.record.signedUrlExpiresAt,
+        inlineImageBytesPersisted: false
+      }
+    }
+  };
+}
+
+function normalizeGeneratedImageArtifact(image, index) {
+  if (!image || typeof image !== "object") return undefined;
+  const dataUrl = String(image.image_url ?? image.imageUrl ?? "");
+  const parsed = parseImageDataUrlHeader(dataUrl);
+  if (!parsed) return undefined;
+  const panelId = safeGeneratedImagePanelId(image.panel_id ?? image.panelId, index);
+  const fileIndex = String(index + 1).padStart(2, "0");
+  return {
+    kind: "generated-image",
+    fileName: `provider-${fileIndex}-${panelId}.${parsed.extension}`,
+    mimeType: parsed.mimeType,
+    dataUrl,
+    panelId
+  };
+}
+
+function parseImageDataUrlHeader(value) {
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,/i.exec(String(value));
+  if (!match) return undefined;
+  const mimeType = match[1].toLowerCase();
+  return {
+    mimeType,
+    extension: imageExtensionForMimeType(mimeType)
+  };
+}
+
+function imageExtensionForMimeType(mimeType) {
+  if (mimeType === "image/svg+xml") return "svg";
+  if (mimeType === "image/jpeg") return "jpg";
+  if (mimeType === "image/webp") return "webp";
+  if (mimeType === "image/png") return "png";
+  return "img";
+}
+
+function safeGeneratedImagePanelId(value, index) {
+  const fallback = `panel-${index + 1}`;
+  return safeId(value, fallback).toLowerCase() || fallback;
+}
+
+function generatedImageHashInput(artifacts) {
+  return artifacts
+    .map((artifact) => `${artifact.fileName}:${artifact.mimeType}:${artifact.dataUrl}`)
+    .join("\n");
 }
 
 function buildManualVendorHandoffRecord({ authContext, bodyText }) {

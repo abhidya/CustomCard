@@ -74,6 +74,7 @@ describe("api contracts", () => {
     const walgreensCheckoutSession = apiRouteContracts.find((route) => route.id === "walgreens-checkout-session");
     const aiChatRespond = apiRouteContracts.find((route) => route.id === "ai-chat-respond");
     const aiCardGenerate = apiRouteContracts.find((route) => route.id === "ai-card-generate");
+    const aiJobStatus = apiRouteContracts.find((route) => route.id === "ai-job-status");
 
     expect(mutations.length).toBeGreaterThanOrEqual(6);
     expect(nonCheckoutMutations.every((route) => route.idempotencyKeyRequired)).toBe(true);
@@ -259,6 +260,15 @@ describe("api contracts", () => {
     expect(aiCardGenerate?.requestSchema).not.toContain("aiFlowConfig");
     expect(aiChatRespond?.requestSchema).not.toContain("aiFlowConfig");
     expect(aiChatRespond?.responseSchema).toEqual(expect.arrayContaining(["ai_flow", "ai_cost_gate", "ai_cost_ledger", "provider_call_events", "fallback_queued"]));
+    expect(aiChatRespond?.responseSchema).toEqual(expect.arrayContaining(["job_id", "queue_status", "job_status_url", "ai_queue"]));
+    expect(aiJobStatus).toMatchObject({
+      method: "GET",
+      path: "/api/ai/jobs/status",
+      audience: "customer",
+      auth: "customer-session",
+      externalNetworkCalls: false,
+      realOrdersEnabled: false
+    });
     expect(apiRouteContracts.find((route) => route.id === "mobile-bootstrap")?.responseSchema).toEqual(
       expect.arrayContaining(["queueItems", "approvalActions", "pricingPreviews", "syncState"])
     );
@@ -274,7 +284,8 @@ describe("api contracts", () => {
     expect(summary.providers.credentialGated).toBeGreaterThanOrEqual(91);
     expect(summary.governance.total).toBe(summary.providers.total);
     expect(summary.governance.blockers).toEqual([]);
-    expect(summary.governance.fallbackCovered).toBe(summary.providers.total);
+    expect(summary.governance.fallbackCovered).toBeLessThan(summary.providers.total);
+    expect(summary.governance.fallbackCovered).toBeGreaterThan(0);
     expect(summary.governance.liveNetworkDefault).toBe(false);
     expect(summary.localization).toMatchObject({
       defaultLocale: "en-US",
@@ -310,7 +321,7 @@ describe("api contracts", () => {
       total: 8,
       textProviderContracts: 16,
       imageProviderContracts: 17,
-      localFallbacks: 2,
+      localFallbacks: 0,
       liveProviderCallsEnabled: 0,
       externalNetworkCalls: 0,
       productionTrafficEnabled: 0,
@@ -484,7 +495,10 @@ describe("api contracts", () => {
     const payload = buildApiBootstrapPayload();
 
     expect(payload.customer.primaryActions.map((action) => action.capability)).toEqual(
-      expect.arrayContaining(["event-import", "text-chat", "image-generation", "render-export", "vendor-handoff"])
+      expect.arrayContaining(["event-import", "render-export", "payment", "vendor-handoff"])
+    );
+    expect(payload.customer.primaryActions.map((action) => action.capability)).not.toEqual(
+      expect.arrayContaining(["text-chat", "image-generation"])
     );
     expect(payload.admin.coverage.total).toBeGreaterThanOrEqual(121);
     expect(payload.mobile.safetyBanner.label).toBe("Confirm before checkout");
@@ -569,8 +583,8 @@ describe("api contracts", () => {
       expect.arrayContaining(["lowest-current-estimate", "fastest-pickup", "cheapest-shipped"])
     );
     expect(payload.customerChat).toMatchObject({
-      mode: "local-deterministic",
-      adapterId: "deterministic-customer-chat",
+      mode: "local-scripted",
+      adapterId: "local-scripted-customer-chat",
       liveModelCallsEnabled: false,
       externalNetworkCalls: false,
       noNetworkProof: true,
@@ -579,7 +593,7 @@ describe("api contracts", () => {
         credentialGated: expect.any(Number)
       })
     });
-    expect(payload.customerChat.providerSummary.readyLocal).toBeGreaterThanOrEqual(1);
+    expect(payload.customerChat.providerSummary.readyLocal).toBe(0);
     expect(payload.customerChat.providerSummary.credentialGated).toBeGreaterThanOrEqual(13);
     expect(payload.fulfillmentRecommendations).toMatchObject({
       liveQuote: false,
@@ -921,7 +935,7 @@ describe("api contracts", () => {
         blockers: []
       },
       customerChat: {
-        mode: "local-deterministic",
+        mode: "local-scripted",
         liveModelCallsEnabled: false,
         externalNetworkCalls: false
       },

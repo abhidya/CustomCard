@@ -54,7 +54,7 @@ export function createApiRouteFamilies(deps) {
       if (await handleCustomerStateRoute({ authContext, path, response })) return true;
       if (handleWalgreensCallbackRoute({ path, response })) return true;
       if (await handleWalgreensHostedCheckoutRoute({ path, request, response })) return true;
-      if (await handleAiRoute({ authContext, path, request, response })) return true;
+      if (await handleAiRoute({ authContext, path, request, requestUrl, response, route })) return true;
 
       const bodyText = await readRequestBody(request);
       if (route.id === "calendar-connection-start" && calendarConnectionLifecycle) {
@@ -306,7 +306,16 @@ export function createApiRouteFamilies(deps) {
     return true;
   }
 
-  async function handleAiRoute({ authContext, path, request, response }) {
+  async function handleAiRoute({ authContext, path, request, requestUrl, response, route }) {
+    if (path === "/api/ai/jobs/status") {
+      const result = await apiRuntime.readQueuedJob({
+        authContext,
+        jobId: requestUrl.searchParams.get("job_id") ?? requestUrl.searchParams.get("jobId") ?? ""
+      });
+      sendJson(response, result.statusCode, result.payload);
+      return true;
+    }
+
     if (path !== aiCardGenerateRoute && path !== aiChatRespondRoute) return false;
     if (!request.headers?.["x-idempotency-key"]) {
       sendJson(response, 400, {
@@ -317,24 +326,53 @@ export function createApiRouteFamilies(deps) {
       return true;
     }
 
-    let parsedBody;
+    let rawBody;
     try {
-      const rawBody = await readRequestBody(request, 128_000);
-      parsedBody = rawBody ? JSON.parse(rawBody) : {};
+      rawBody = await readRequestBody(request, 128_000);
+      if (rawBody) JSON.parse(rawBody);
     } catch {
       sendJson(response, 400, { service: "customcard-api", status: "invalid-json", path });
       return true;
     }
 
-    const rateKey = clientRateLimitKey(request);
-    const idempotencyKey = request.headers?.["x-idempotency-key"];
-    const result =
-      path === aiCardGenerateRoute
-        ? await aiGenerationService.generateCard(parsedBody, { authContext, idempotencyKey, rateKey })
-        : await aiGenerationService.respondChat(parsedBody, { authContext, idempotencyKey, rateKey });
-    const ledger = await recordAiProviderEvents({ authContext, result });
-    sendJson(response, result.statusCode, { service: "customcard-api", ...result.payload, ...(ledger ? { ai_cost_ledger: ledger } : {}) });
+    const result = await apiRuntime.persistMutation({
+      route,
+      request,
+      authContext,
+      bodyText: rawBody,
+      responsePayload: {
+        service: "customcard-api",
+        status: "queued",
+        route: route.id,
+        queue_admission: {
+          accepted_at: new Date().toISOString(),
+          execution: "worker",
+          payload_minimized: true,
+          client_ai_flow_config_accepted: false
+        }
+      }
+    });
+    sendJson(response, result.statusCode, result.payload);
     return true;
+  }
+
+  async function persistAiGeneratedImages({ authContext, result }) {
+    if (result?.statusCode !== 200 || !apiRuntime.persistGeneratedImageArtifacts) return undefined;
+    try {
+      return await apiRuntime.persistGeneratedImageArtifacts({ authContext, payload: result.payload });
+    } catch (error) {
+      return {
+        payload: {
+          ...result.payload,
+          generated_image_persistence: {
+            status: "blocked",
+            blockers: [error instanceof Error ? error.message.slice(0, 180) : "Generated image persistence failed."],
+            inlineImageBytesPersisted: false,
+            liveNetworkCalls: false
+          }
+        }
+      };
+    }
   }
 
   async function recordAiProviderEvents({ authContext, result }) {

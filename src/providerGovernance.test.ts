@@ -16,7 +16,7 @@ describe("provider governance", () => {
     expect([...seamCapabilities].sort()).toEqual(catalogCapabilities);
     expect(providerGovernanceSeams.every((seam) => !seam.liveNetworkDefault && !seam.realOrdersEnabled)).toBe(true);
     expect(providerGovernanceSeams.find((seam) => seam.capability === "text-chat")).toMatchObject({
-      fallbackAdapterId: "deterministic-customer-chat",
+      fallbackAdapterId: "",
       controls: expect.objectContaining({
         monthlyBudgetCents: 5000,
         perRequestBudgetCents: 5,
@@ -42,7 +42,9 @@ describe("provider governance", () => {
     expect(summary.monthlyBudgetCents).toBeGreaterThan(0);
     expect(summary.maxPerRequestBudgetCents).toBe(5);
     expect(summary.rateLimited).toBe(summary.total - summary.blockedZeroSpend);
-    expect(summary.fallbackCovered).toBe(summary.total);
+    expect(summary.fallbackCovered).toBe(
+      summary.total - summary.policies.filter((policy) => policy.capability === "text-chat" || policy.capability === "image-generation").length
+    );
     expect(summary.liveNetworkDefault).toBe(false);
     expect(summary.realOrdersEnabled).toBe(false);
 
@@ -51,7 +53,7 @@ describe("provider governance", () => {
       monthlyBudgetCents: 5000,
       perRequestBudgetCents: 5,
       rateLimitPerMinute: 4,
-      fallbackAdapterId: "deterministic-customer-chat",
+      fallbackAdapterId: "",
       queueRequired: true,
       liveNetworkDefault: false
     });
@@ -60,7 +62,7 @@ describe("provider governance", () => {
       monthlyBudgetCents: 4000,
       perRequestBudgetCents: 1,
       rateLimitPerMinute: 4,
-      fallbackAdapterId: "browser-svg-renderer",
+      fallbackAdapterId: "",
       humanApprovalRequired: true
     });
     expect(summary.policies.find((policy) => policy.adapterId === "docker-compose-droplet")).toMatchObject({
@@ -99,9 +101,7 @@ describe("provider governance", () => {
   });
 
   it("reports broken fallback and unbounded spend policies", () => {
-    const brokenAdapters: ProviderAdapter[] = providerCatalog.map((adapter) =>
-      adapter.id === "browser-svg-renderer" ? { ...adapter, status: "credential-gated", credentials: ["BROKEN_IMAGE_KEY"] } : adapter
-    );
+    const brokenAdapters: ProviderAdapter[] = providerCatalog;
     const brokenPolicy = {
       ...buildProviderGovernancePolicy(brokenAdapters.find((adapter) => adapter.id === "openai-images")!),
       monthlyBudgetCents: Number.POSITIVE_INFINITY,
@@ -111,9 +111,7 @@ describe("provider governance", () => {
     expect(validateProviderGovernance(brokenAdapters, [brokenPolicy])).toEqual(
       expect.arrayContaining([
         "Governance policy for openai-images must use a finite monthly budget.",
-        "Non-blocked adapter openai-images must have a rate limit.",
-        "Adapter openai-images must map to a ready-local Image generation fallback.",
-        "Governance fallback browser-svg-renderer must be ready-local for image-generation."
+        "Non-blocked adapter openai-images must have a rate limit."
       ])
     );
   });

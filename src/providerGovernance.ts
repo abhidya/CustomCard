@@ -62,14 +62,12 @@ export interface ProviderGovernanceSummary {
   blockers: string[];
 }
 
-const fallbackByCapability: Record<ProviderCapability, string> = {
+const fallbackByCapability: Partial<Record<ProviderCapability, string>> = {
   auth: "local-workspace-auth",
   "event-import": "ics-paste-import",
   "contact-import": "vcard-contact-import",
   "crm-integration": "crm-csv-lifecycle-import",
   "workflow-integration": "local-workflow-payload-export",
-  "text-chat": "deterministic-customer-chat",
-  "image-generation": "browser-svg-renderer",
   "render-export": "local-print-package-export",
   memory: "local-relationship-memory",
   "vendor-handoff": "manual-vendor-handoff",
@@ -157,10 +155,10 @@ const queuedCapabilities = new Set<ProviderCapability>([
   "cloud-runtime"
 ]);
 
-export const providerGovernanceSeams: ProviderGovernanceSeam[] = (Object.keys(fallbackByCapability) as ProviderCapability[]).map(
+export const providerGovernanceSeams: ProviderGovernanceSeam[] = (Object.keys(capabilityLabels) as ProviderCapability[]).map(
   (capability) => ({
     capability,
-    fallbackAdapterId: fallbackByCapability[capability],
+    fallbackAdapterId: fallbackByCapability[capability] ?? "",
     liveNetworkDefault: false,
     realOrdersEnabled: false,
     controls: buildProviderGovernanceControls(capability)
@@ -169,7 +167,7 @@ export const providerGovernanceSeams: ProviderGovernanceSeam[] = (Object.keys(fa
 
 export function buildProviderGovernanceControls(capability: ProviderCapability): ProviderGovernanceControls {
   return {
-    fallbackAdapterId: fallbackByCapability[capability],
+    fallbackAdapterId: fallbackByCapability[capability] ?? "",
     monthlyBudgetCents: monthlyBudgetCentsByCapability[capability],
     perRequestBudgetCents: perRequestBudgetCentsByCapability[capability],
     rateLimitPerMinute: rateLimitPerMinuteByCapability[capability],
@@ -266,7 +264,7 @@ export function validateProviderGovernance(
     if (policy.spendTier === "budget-capped" && adapter.cost === "usage-based" && !policy.queueRequired) {
       errors.push(`Usage-based adapter ${adapter.id} must run through a queue or explicit throttle.`);
     }
-    if (!fallbackIsReadyLocal(policy, adapters)) {
+    if (policy.fallbackAdapterId && !fallbackIsReadyLocal(policy, adapters)) {
       errors.push(`Adapter ${adapter.id} must map to a ready-local ${capabilityLabels[adapter.capability]} fallback.`);
     }
   }

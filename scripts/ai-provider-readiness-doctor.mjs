@@ -50,7 +50,7 @@ const checks = [
   checkExact("register", "item-count", summary.total, 8),
   checkExact("register", "text-provider-contracts", summary.textProviderContracts, 16),
   checkExact("register", "image-provider-contracts", summary.imageProviderContracts, 17),
-  checkExact("register", "local-fallbacks", summary.localFallbacks, 2),
+  checkExact("register", "local-fallbacks", summary.localFallbacks, 0),
   checkExact("register", "no-live-provider-calls", summary.liveProviderCallsEnabled, 0),
   checkExact("register", "no-live-external-network", summary.externalNetworkCalls, 0),
   checkExact("register", "no-production-traffic", summary.productionTrafficEnabled, 0),
@@ -94,7 +94,7 @@ const checks = [
     sourceKeys: ["aiTest"],
     signals: [
       "tracks text and image provider readiness without live model calls",
-      "covers all existing AI text, image, and local fallback adapters explicitly",
+      "covers all existing AI text and image adapters explicitly without local fallbacks",
       "flags unsafe AI launch claims"
     ]
   }),
@@ -115,8 +115,6 @@ const checks = [
     id: "provider-catalog-runtime-ai-contracts",
     sourceKeys: ["providerCatalog", "providerRuntime"],
     signals: [
-      "deterministic-customer-chat",
-      "browser-svg-renderer",
       "openai-responses-chat",
       "anthropic-messages-chat",
       "google-gemini-chat",

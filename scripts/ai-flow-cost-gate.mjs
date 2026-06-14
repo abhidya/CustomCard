@@ -1,4 +1,4 @@
-const localAdapterIds = new Set(["browser-svg-renderer", "deterministic-customer-chat"]);
+const localAdapterIds = new Set();
 const defaultTenantId = "anonymous";
 const defaultRouteId = "ai-flow";
 const defaultRateKey = "unknown";
@@ -30,7 +30,7 @@ export function createAiFlowCostGate({ store = createMemoryAiFlowCostStore(), no
         // live call instead of allowing unaccounted provider spend.
         const blockedReason = {
           reason: "provider-unavailable",
-          statusCode: 200,
+          statusCode: 503,
           detail: `${reservation.flowId} cost ledger is unavailable; live provider call refused to keep spend accounted.`
         };
         outcome = {
@@ -289,14 +289,14 @@ function firstBlockedReason(reservation, usage) {
   if (!reservation.readyForLiveCalls) {
     return {
       reason: "provider-blocked",
-      statusCode: 200,
+      statusCode: 503,
       detail: reservation.blockedReasons[0] ?? `Live provider calls disabled for ${reservation.flowId}.`
     };
   }
   if (reservation.unitCostCents > reservation.perRequestBudgetCents) {
     return {
       reason: "per-request-budget-exceeded",
-      statusCode: 200,
+      statusCode: 503,
       detail: `${reservation.flowId} estimated unit cost ${reservation.unitCostCents}c exceeds per-request budget ${reservation.perRequestBudgetCents}c.`
     };
   }
@@ -304,7 +304,7 @@ function firstBlockedReason(reservation, usage) {
   if (projectedMonthlyCents > reservation.monthlyBudgetCents) {
     return {
       reason: "monthly-budget-exceeded",
-      statusCode: 200,
+      statusCode: 503,
       detail: `${reservation.flowId} projected monthly spend ${projectedMonthlyCents}c exceeds monthly budget ${reservation.monthlyBudgetCents}c.`
     };
   }
@@ -426,8 +426,6 @@ function providerForAdapter(adapterId) {
   if (adapterId.startsWith("openai-")) return "OpenAI";
   if (adapterId.startsWith("anthropic-")) return "Anthropic";
   if (adapterId.startsWith("google-")) return "Google";
-  if (adapterId === "browser-svg-renderer") return "CustomCard renderer";
-  if (adapterId === "deterministic-customer-chat") return "CustomCard deterministic";
   if (adapterId.includes("huggingface")) return "Hugging Face";
   if (adapterId.includes("mistral")) return "Mistral";
   if (adapterId.includes("groq")) return "Groq";

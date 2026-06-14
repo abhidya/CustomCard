@@ -37,9 +37,7 @@ const checks = [
   ]),
   checkIncludes("governance", "ready-local-fallbacks", contents.governance, [
     'auth: "local-workspace-auth"',
-    '"text-chat": "deterministic-customer-chat"',
     '"crm-integration": "crm-csv-lifecycle-import"',
-    '"image-generation": "browser-svg-renderer"',
     '"vendor-handoff": "manual-vendor-handoff"',
     'payment: "no-payment-checkout-gate"',
     'observability: "local-health-audit-observability"'
@@ -102,4 +100,3 @@ if (failed.length > 0) process.exit(1);
 function countMatches(text, pattern) {
   return [...text.matchAll(pattern)].length;
 }
-

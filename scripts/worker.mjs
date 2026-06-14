@@ -1,5 +1,8 @@
 #!/usr/bin/env node
+import { loadLocalAiEnvFiles } from "./ai-card-generator.mjs";
 import { createWorkerRuntime, describeWorkerReadiness } from "./worker-runtime.mjs";
+
+loadLocalAiEnvFiles();
 
 const args = new Set(process.argv.slice(2));
 const runOnce = args.has("--once") || process.env.CUSTOMCARD_WORKER_PROCESS_ON_START === "true";

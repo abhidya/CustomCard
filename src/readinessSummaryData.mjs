@@ -81,7 +81,7 @@ export const readinessDomainDefinitions = [
       ...minimum(summary, "total", 8, "AI provider readiness must track text/image launch evidence."),
       ...minimum(summary, "textProviderContracts", 16, "AI provider readiness must cover every text provider contract."),
       ...minimum(summary, "imageProviderContracts", 17, "AI provider readiness must cover every image provider contract."),
-      ...minimum(summary, "localFallbacks", 2, "AI provider readiness must keep local fallbacks."),
+      ...equal(summary, "localFallbacks", 0, "AI provider readiness must not report fake local AI fallbacks."),
       ...minimum(summary, "promptAuditRequired", 6, "AI provider readiness must require prompt audits."),
       ...zero(summary, "liveProviderCallsEnabled", "AI provider readiness cannot enable live provider calls."),
       ...zero(summary, "externalNetworkCalls", "AI provider readiness cannot require live external network calls."),

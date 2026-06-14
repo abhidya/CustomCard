@@ -140,19 +140,21 @@ describe("Vite API middleware", () => {
       })
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(202);
     expect(response.headers.get("content-type")).toContain("application/json");
     const body = await response.json();
     expect(body).toMatchObject({
-      draft_id: expect.any(String),
-      generated_by: "ai-text-only",
-      ai_flow: {
-        card_copy: {
-          adapter_id: expect.any(String)
-        }
-      }
+      status: "queued",
+      route: "ai-card-generate",
+      job_id: expect.any(String),
+      queue_status: "queued",
+      result_available: false,
+      ai_queue: expect.objectContaining({
+        backend: "api_jobs",
+        payload_minimized: true,
+        client_ai_flow_config_accepted: false
+      })
     });
-    expect(body.card_copy.panels).toHaveLength(4);
   });
 });
 

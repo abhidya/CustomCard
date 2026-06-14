@@ -24,7 +24,7 @@ const imageGates: ProviderGateState = {
 };
 
 describe("provider operations", () => {
-  it("falls back to deterministic local rendering when preferred providers are unavailable", () => {
+  it("blocks image generation when preferred providers are unavailable and no local fallback exists", () => {
     const plan = buildProviderFailoverPlan({
       capability: "image-generation",
       routeId: "render-packets",
@@ -35,15 +35,15 @@ describe("provider operations", () => {
     });
 
     expect(plan).toMatchObject({
-      mode: "local-fallback",
-      selectedAdapterId: "browser-svg-renderer",
-      fallbackAdapterId: "browser-svg-renderer",
+      mode: "blocked",
+      fallbackAdapterId: "",
       liveNetworkDefault: false,
       auditRequired: true,
-      blockers: []
+      blockers: ["Missing ready-local fallback for image-generation: ."]
     });
+    expect(plan.selectedAdapterId).toBeUndefined();
     expect(plan.attempts.map((attempt) => attempt.reason)).toEqual(["missing-credentials", "missing-credentials"]);
-    expect(plan.ledgerEvents.map((event) => event.status)).toEqual(["blocked", "blocked", "fallback-selected"]);
+    expect(plan.ledgerEvents.map((event) => event.status)).toEqual(["blocked", "blocked"]);
     expect(plan.ledgerEvents.slice(0, 2)).toEqual([
       expect.objectContaining({
         adapterId: "openai-images",
@@ -60,18 +60,6 @@ describe("provider operations", () => {
         auditEventName: "provider.request.blocked"
       })
     ]);
-    expect(plan.ledgerEvents.at(-1)).toEqual(
-      expect.objectContaining({
-        adapterId: "browser-svg-renderer",
-        status: "fallback-selected",
-        fallbackFromAdapterId: "openai-images",
-        fallbackReason: "missing-credentials",
-        estimatedCostCents: 0,
-        piiFree: true,
-        liveNetworkCall: false,
-        auditEventName: "provider.fallback.selected"
-      })
-    );
   });
 
   it("reserves budget for the first ready provider without performing a live call", () => {
@@ -158,7 +146,7 @@ describe("provider operations", () => {
     });
   });
 
-  it("uses the local fallback when every configured provider exceeds the current rate window", () => {
+  it("blocks when every configured provider exceeds the current rate window and no local fallback exists", () => {
     const openAi = getProviderAdapter("openai-images");
     const google = getProviderAdapter("google-gemini-image");
     expect(openAi).toBeDefined();
@@ -196,26 +184,20 @@ describe("provider operations", () => {
       requestUnits: 1
     });
 
-    expect(plan.mode).toBe("local-fallback");
-    expect(plan.selectedAdapterId).toBe("browser-svg-renderer");
+    expect(plan.mode).toBe("blocked");
+    expect(plan.selectedAdapterId).toBeUndefined();
     expect(plan.attempts.every((attempt) => attempt.reason === "rate-limit-exceeded")).toBe(true);
-    expect(plan.ledgerEvents.map((event) => event.status)).toEqual(["blocked", "blocked", "fallback-selected"]);
+    expect(plan.ledgerEvents.map((event) => event.status)).toEqual(["blocked", "blocked"]);
     expect(plan.ledgerEvents.slice(0, 2).map((event) => event.fallbackReason)).toEqual([
       "rate-limit-exceeded",
       "rate-limit-exceeded"
     ]);
-    expect(plan.ledgerEvents.at(-1)).toMatchObject({
-      status: "fallback-selected",
-      fallbackReason: "rate-limit-exceeded",
-      liveNetworkCall: false
-    });
+    expect(plan.blockers).toEqual(["Missing ready-local fallback for image-generation: ."]);
   });
 
   it("summarizes monthly spend and audit events by tenant", () => {
     const openAi = getProviderAdapter("openai-images");
-    const fallback = getProviderAdapter("browser-svg-renderer");
     expect(openAi).toBeDefined();
-    expect(fallback).toBeDefined();
     const events = [
       buildProviderCallEvent({
         adapter: openAi!,
@@ -228,14 +210,13 @@ describe("provider operations", () => {
         actualCostCents: 280
       }),
       buildProviderCallEvent({
-        adapter: fallback!,
+        adapter: openAi!,
         tenantId: "tenant-a",
         routeId: "render-packets",
-        status: "fallback-selected",
+        status: "blocked",
         nowIso,
-        requestUnits: 1,
-        estimatedCostCents: 0,
-        fallbackFromAdapterId: "openai-images",
+        requestUnits: 4,
+        estimatedCostCents: 4,
         fallbackReason: "monthly-budget-exceeded"
       }),
       buildProviderCallEvent({
@@ -256,10 +237,10 @@ describe("provider operations", () => {
       tenantId: "tenant-a",
       monthBucket: "2026-06",
       events: 2,
-      adapters: 2,
+      adapters: 1,
       reservedOrSpentCents: 300,
       actualSpendCents: 280,
-      fallbackEvents: 1,
+      fallbackEvents: 0,
       overBudgetBlocks: 1,
       liveNetworkCalls: 0
     });
