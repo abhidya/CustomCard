@@ -36,6 +36,7 @@ const doctorManifest = defineDoctorManifest({
     apiContracts: "src/apiContracts.ts",
     routeContracts: "src/apiRouteContractsData.mjs",
     workerRuntime: "scripts/worker-runtime.mjs",
+    workerScript: "scripts/worker.mjs",
     workerTest: "tests/worker-runtime.test.ts",
     docs: "docs/ai-queue-operations-runbook.md",
     decisions: "docs/decisions.md"
@@ -111,11 +112,39 @@ const checks = [
     sourceKeys: ["workerRuntime", "workerTest"],
     signals: [
       "FOR UPDATE SKIP LOCKED",
+      "runLoop",
+      "pollIntervalMs",
       "dead_lettered",
       "retryBackoffSeconds",
       "requeueExpiredJobs",
       "compactAiWorkerPayload",
-      "executes queued AI card jobs"
+      "executes queued AI card jobs",
+      "bounded polling loop"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "worker",
+    id: "worker-cli-pickup-signals",
+    sourceKeys: ["docs", "workerRuntime", "workerScript"],
+    signals: [
+      "npm run worker",
+      "--once",
+      "--describe",
+      "runtime.runLoop",
+      "CUSTOMCARD_WORKER_POLL_INTERVAL_MS",
+      "CUSTOMCARD_API_RUNTIME=postgres"
+    ]
+  }),
+  checkDoctorSourceSignals(doctorManifest, contents, {
+    lane: "fallbacks",
+    id: "provider-fallback-signals",
+    sourceKeys: ["docs", "aiQueueData", "workerTest"],
+    signals: [
+      "Provider fallback configuration",
+      "user-content-only",
+      "provider_failure",
+      "provider_call_events",
+      "ai_cost_gate.blocked_reasons"
     ]
   }),
   checkDoctorSourceSignals(doctorManifest, contents, {
@@ -143,6 +172,8 @@ const checks = [
     "api_jobs_queued_total",
     "api_jobs_oldest_queued_age_seconds",
     "api_jobs_dead_lettered_total",
+    "Worker pickup configuration",
+    "Provider fallback configuration",
     "Dead-letter triage",
     "Page immediately",
     "Customer support script"

@@ -150,7 +150,7 @@ export interface CardDraft {
   input: CardDraftInput;
   panels: CardPanel[];
   memoryCitations: string[];
-  generatedBy: "deterministic-free-template" | "ai-text-only" | "ai-text-and-image";
+  generatedBy: "deterministic-free-template" | "user-content-only" | "ai-text-only" | "ai-text-and-image";
 }
 
 export interface ValidationCheck {

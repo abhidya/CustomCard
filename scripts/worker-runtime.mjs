@@ -37,6 +37,7 @@ export function createWorkerRuntime({
         leaseSeconds: workerLeaseSeconds(env),
         batchSize: workerBatchSize(env),
         retryBackoffSeconds: workerRetryBackoffSeconds(env),
+        pollIntervalMs: workerPollIntervalMs(env),
         postgres: postgresRuntime.describe(),
         idempotency: "required",
         liveNetworkCalls: false
@@ -107,6 +108,50 @@ export function createWorkerRuntime({
           }
           report.results.push({ id: job.id, routeId: job.routeId, status: outcome.status, reason: errorMessage(error) });
         }
+      }
+
+      return report;
+    },
+    async runLoop({
+      limit = workerBatchSize(env),
+      pollIntervalMs = workerPollIntervalMs(env),
+      maxIterations = Number.POSITIVE_INFINITY,
+      stopWhenIdle = false,
+      shouldContinue = () => true,
+      onReport
+    } = {}) {
+      const report = {
+        service: "customcard-worker",
+        status: "ready",
+        workerId,
+        iterations: 0,
+        processed: 0,
+        succeeded: 0,
+        failed: 0,
+        deadLettered: 0,
+        expiredJobs: [],
+        results: []
+      };
+
+      while (report.iterations < maxIterations && shouldContinue()) {
+        const iteration = await this.runOnce({ limit });
+        report.iterations += 1;
+        report.processed += iteration.processed ?? 0;
+        report.succeeded += iteration.succeeded ?? 0;
+        report.failed += iteration.failed ?? 0;
+        report.deadLettered += iteration.deadLettered ?? 0;
+        report.expiredJobs.push(...(iteration.expiredJobs ?? []));
+        report.results.push(...(iteration.results ?? []));
+        report.lastReport = iteration;
+        await onReport?.(iteration);
+
+        if (iteration.status !== "ready" || iteration.blockers?.length > 0) {
+          report.status = iteration.status;
+          report.blockers = iteration.blockers ?? [];
+          break;
+        }
+        if (stopWhenIdle && iteration.leased === 0) break;
+        if (report.iterations < maxIterations && shouldContinue() && pollIntervalMs > 0) await sleep(pollIntervalMs);
       }
 
       return report;
@@ -356,12 +401,20 @@ function workerRetryBackoffSeconds(env) {
   return safeIntegerEnv(env.CUSTOMCARD_WORKER_RETRY_BACKOFF_SECONDS, 60, 5, 3600);
 }
 
+function workerPollIntervalMs(env) {
+  return safeIntegerEnv(env.CUSTOMCARD_WORKER_POLL_INTERVAL_MS, 5000, 250, 60000);
+}
+
 function defaultWorkerId(env) {
   return String(env.CUSTOMCARD_WORKER_ID ?? `${env.HOSTNAME ?? "local"}:${process.pid}`);
 }
 
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function safeIntegerEnv(value, fallback, min, max) {

@@ -157,25 +157,32 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 
-  it("fails explicitly when card-copy provider credentials are missing", async () => {
+  it("returns an explicit provider failure when card-copy provider credentials are missing", async () => {
     const fetchImpl = vi.fn();
     const service = createAiCardGenerationService({ env: {}, fetchImpl });
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-fallback" });
+    const payload = result.payload as {
+      user_content_only: boolean;
+      ai_flow: { card_copy: { adapter_id: string; fallback_adapter_id: string; provider_failure?: string } };
+    };
 
     expect(result.statusCode).toBe(503);
     expect(fetchImpl).not.toHaveBeenCalled();
-    expect(result.payload).toMatchObject({
+    expect(payload).toMatchObject({
       status: "provider-unavailable",
+      user_content_only: false,
       fallback_queued: false,
       ai_flow: {
         card_copy: expect.objectContaining({
-          adapter_id: "huggingface-chat",
+          adapter_id: "",
           fallback_adapter_id: "",
           provider_failure: expect.stringContaining("missing")
         })
       }
     });
+    expect(payload).not.toHaveProperty("card_copy");
+    expect(JSON.stringify(payload)).not.toMatch(/Sara|morning hikes|She keeps a fern|Can you make it warmer/i);
   });
 
   it("enforces monthly text spend caps before making another provider call", async () => {
@@ -210,6 +217,8 @@ describe("AI card generator service", () => {
     expect(first.statusCode).toBe(200);
     expect(second.statusCode).toBe(503);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect((second.payload as { user_content_only: boolean }).user_content_only).toBe(false);
+    expect(second.payload).not.toHaveProperty("card_copy");
     expect(secondPayload.ai_flow.card_copy.provider_failure).toContain("projected monthly spend");
     expect(secondPayload.ai_cost_gate.blocked_reasons).toContain("monthly-budget-exceeded");
     expect(secondPayload.provider_call_events).toEqual(
@@ -247,7 +256,7 @@ describe("AI card generator service", () => {
 
     const result = await service.generateCard(cardRequest, { rateKey: "test-image-rate-units" });
     const payload = result.payload as {
-      generated_by: string;
+      card_copy: unknown;
       images: unknown[];
       ai_flow: { card_image: { provider_failure?: string } };
       provider_call_events: Array<{ flow_id: string; status: string; fallback_reason?: string; request_units: number }>;
@@ -255,6 +264,9 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(429);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(payload.images).toEqual([]);
+    expect(JSON.stringify(payload.card_copy)).toContain("Happy Birthday Sara");
+    expect(JSON.stringify(payload.card_copy)).toContain("Happy Birthday Sara");
     expect(payload.ai_flow.card_image.provider_failure).toContain("rate limit 3/minute");
     expect(payload.provider_call_events).toEqual(
       expect.arrayContaining([
@@ -869,6 +881,11 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(503);
     expect(fetchImpl).not.toHaveBeenCalled();
+    expect(result.payload).toMatchObject({
+      status: "provider-unavailable",
+      user_content_only: false
+    });
+    expect(result.payload).not.toHaveProperty("card_copy");
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
   });
 
@@ -900,6 +917,11 @@ describe("AI card generator service", () => {
 
     expect(result.statusCode).toBe(503);
     expect(fetchImpl).not.toHaveBeenCalled();
+    expect(result.payload).toMatchObject({
+      status: "provider-unavailable",
+      user_content_only: false
+    });
+    expect(result.payload).not.toHaveProperty("card_copy");
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
   });
 
@@ -1624,5 +1646,39 @@ describe("AI card generator service", () => {
     expect(result.statusCode).toBe(200);
     expect(JSON.stringify(result.payload)).toContain("warm birthday card");
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
+  });
+
+  it("returns no generated chat text when the customer-chat provider is disabled", async () => {
+    const fetchImpl = vi.fn();
+    const service = createAiCardGenerationService({
+      env: {},
+      fetchImpl
+    });
+
+    const result = await service.respondChat(
+      {
+        customer_message: "Can you make it warmer?",
+        recipient_name: "Sara",
+        approved_memory_notes: ["She loves morning hikes."],
+        locale: "en-US",
+        fulfillment_context: "Walgreens pickup is review-only."
+      },
+      { rateKey: "test-chat-disabled" }
+    );
+
+    expect(result.statusCode).toBe(503);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(result.payload).toMatchObject({
+      status: "provider-unavailable",
+      user_content_only: false,
+      ai_flow: {
+        customer_chat: expect.objectContaining({
+          adapter_id: "",
+          provider_failure: expect.stringContaining("missing")
+        })
+      }
+    });
+    expect(result.payload).not.toHaveProperty("assistant_message");
+    expect(JSON.stringify(result.payload)).not.toMatch(/Sara|morning hikes|Can you make it warmer/i);
   });
 });

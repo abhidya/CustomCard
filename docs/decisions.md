@@ -355,3 +355,39 @@ human owners, and privacy invariants that make queued AI safe to operate.
 Rejected: documenting queue behavior only in the worker code. That would explain
 implementation mechanics but would not give operators a CI-gated runbook or an
 admin-facing readiness summary.
+
+## D024: Worker Command Picks Up Jobs By Default
+
+Decision: make `npm run worker` start the long-running polling worker. Keep
+`node scripts/worker.mjs --once` for one batch and `--describe` for readiness-only
+output. Worker polling uses Postgres leases with `FOR UPDATE SKIP LOCKED`,
+bounded batch size, bounded lease age, bounded retry backoff, and a configurable
+poll interval.
+
+Reason: a production worker command should process queued work, not merely print
+readiness. Readiness-only behavior is still useful, but it belongs behind an
+explicit flag so deployment process managers can run the package script directly.
+
+Rejected: requiring `CUSTOMCARD_WORKER_PROCESS_ON_START=true` in production. That
+made queue pickup depend on an easy-to-miss env var and did not give the process
+a normal long-running poll loop.
+
+## D025: Provider Blocks Use Evidence-Preserving User-Content-Only Fallback
+
+Decision: when AI provider config is missing, disabled, over budget,
+rate-limited, or fails during card-copy/chat execution, the service returns no
+locally generated copy. Card results may contain only sanitized user-entered text
+fields with `generated_by: user-content-only`; chat results return blank
+`assistant_message`. Provider-generated card copy can still degrade to
+text-only output when only image generation is blocked. All paths preserve
+`provider_failure`, `provider_call_events`, and `ai_cost_gate` evidence.
+
+Reason: the queue protects the request path, but customer availability still
+depends on workers completing terminal, inspectable results when an external
+provider is not available. User-content-only fallback keeps editable drafts
+moving without inventing content or hiding the reason the live provider was
+skipped.
+
+Rejected: returning 503/429/502 for provider blocks inside the worker. That turns
+expected cost/security gates into retried queue failures and delays customers even
+when an explicit user-content-only result is safe.

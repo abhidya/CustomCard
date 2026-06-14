@@ -370,7 +370,12 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         const panelCount = requestPanels.length;
         const hasImages = imageByPanel.size > 0;
         const artworkFailure = readArtworkFailure(result);
-        setAiDraft({ ...requestDraft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
+        const generatedBy = result.generated_by === "user-content-only"
+          ? "user-content-only"
+          : hasImages
+            ? "ai-text-and-image"
+            : "ai-text-only";
+        setAiDraft({ ...requestDraft, panels: aiPanels, generatedBy });
         // A fresh whole-card draft replaces exact edits; selected generation replaces only those face edits.
         setPanelOverrides((current) =>
           hasSelectedPanels

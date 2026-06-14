@@ -24,6 +24,7 @@ describe("worker runtime", () => {
       status: "ready",
       executionMode: "postgres-lease",
       queueBackedRoutes: ["render-packets", "manual-vendor-handoff"],
+      pollIntervalMs: 5000,
       liveNetworkCalls: false,
       blockers: []
     });
@@ -77,6 +78,40 @@ describe("worker runtime", () => {
     expect(queries.some((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toBe(true);
     expect(queries.some((query) => query.sql.includes("status = 'succeeded'"))).toBe(true);
     expect(queries.some((query) => query.params.includes("api.job.succeeded"))).toBe(true);
+  });
+
+  it("runs a bounded polling loop so worker processes can continuously pick up queued jobs", async () => {
+    const queries: Array<{ sql: string; params: unknown[] }> = [];
+    const pool = createWorkerPool(queries, [
+      {
+        id: "job-render-loop-1",
+        user_id: "user-demo",
+        route_id: "render-packets",
+        idempotency_key_id: "idem-render-loop-1",
+        payload: { routeId: "render-packets" },
+        attempt_count: 1,
+        max_attempts: 3
+      }
+    ]);
+    const runtime = createWorkerRuntime({
+      env: { ...baseEnv, CUSTOMCARD_API_RUNTIME: "postgres", CUSTOMCARD_WORKER_POLL_INTERVAL_MS: "250" },
+      routes,
+      postgresPoolFactory: () => pool,
+      workerId: "worker-loop-test"
+    });
+
+    const result = await runtime.runLoop({ maxIterations: 2, pollIntervalMs: 0 });
+
+    expect(result).toMatchObject({
+      service: "customcard-worker",
+      status: "ready",
+      iterations: 2,
+      processed: 1,
+      succeeded: 1,
+      failed: 0,
+      deadLettered: 0
+    });
+    expect(queries.filter((query) => query.sql.includes("FOR UPDATE SKIP LOCKED"))).toHaveLength(2);
   });
 
   it("executes queued AI card jobs through the worker with live text provider coverage", async () => {

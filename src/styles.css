@@ -1344,6 +1344,299 @@ h3 {
   white-space: pre-wrap;
 }
 
+.benchmarkPanel {
+  gap: 14px;
+}
+
+.benchmarkRecommendation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.42fr);
+  gap: 12px;
+  align-items: stretch;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d8e2e4;
+  border-left: 4px solid #9b3328;
+  border-radius: 8px;
+  background: #fffafa;
+}
+
+.benchmarkRecommendation.candidate {
+  border-left-color: #258477;
+  background: #f8fffc;
+}
+
+.benchmarkRecommendation strong,
+.benchmarkRecommendation span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.benchmarkRecommendation strong {
+  color: #203038;
+  font-size: 0.96rem;
+  font-weight: 880;
+}
+
+.benchmarkRecommendation span {
+  margin-top: 4px;
+  color: #5e6f77;
+  font-size: 0.8rem;
+  font-weight: 720;
+}
+
+.benchmarkScorePair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.benchmarkToolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.35fr) repeat(4, minmax(120px, 0.72fr)) minmax(74px, 0.32fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.benchmarkToolbar label {
+  min-width: 0;
+}
+
+.benchmarkToolbar label > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #5f6f77;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.benchmarkBlockerStrip,
+.benchmarkRunMeta,
+.benchmarkScores,
+.benchmarkEvidenceLinks,
+.benchmarkBlockers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.benchmarkBlockerStrip span,
+.benchmarkRunMeta span,
+.benchmarkScores span,
+.benchmarkBlockers span {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  overflow-wrap: anywhere;
+  font-size: 0.68rem;
+  font-weight: 820;
+}
+
+.benchmarkBlockerStrip span,
+.benchmarkBlockers span {
+  color: #6f2b22;
+  background: #fff1ee;
+}
+
+.benchmarkRunMeta span,
+.benchmarkScores span {
+  color: #425961;
+  background: #eef3f4;
+}
+
+.benchmarkScores .scoreChip.low {
+  color: #7b3127;
+  background: #ffecea;
+}
+
+.benchmarkScores .scoreChip.mid {
+  color: #6d4c12;
+  background: #fff5da;
+}
+
+.benchmarkScores .scoreChip.strong {
+  color: #20544d;
+  background: #e9f6f2;
+}
+
+.benchmarkScores .scoreChip.ungraded {
+  color: #244656;
+  background: #eaf1f6;
+}
+
+.benchmarkRunList {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.benchmarkRunRow {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d9e2e4;
+  border-left: 4px solid #258477;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.benchmarkRunRow.failed,
+.benchmarkRunRow.blocked {
+  border-left-color: #9b3328;
+}
+
+.benchmarkRunRow.partial {
+  border-left-color: #c88f25;
+}
+
+.benchmarkRunHeader,
+.benchmarkRunBody {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.benchmarkRunHeader {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.benchmarkRunHeader strong,
+.benchmarkRunHeader span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.benchmarkRunHeader strong {
+  color: #203038;
+  font-size: 0.92rem;
+  font-weight: 880;
+}
+
+.benchmarkRunHeader span {
+  color: #68777d;
+  font-size: 0.74rem;
+  font-weight: 760;
+}
+
+.benchmarkRunHeader em {
+  justify-self: end;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #20544d;
+  background: #e9f6f2;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 880;
+}
+
+.benchmarkRunRow.failed .benchmarkRunHeader em,
+.benchmarkRunRow.blocked .benchmarkRunHeader em {
+  color: #6f2b22;
+  background: #fff1ee;
+}
+
+.benchmarkRunBody {
+  grid-template-columns: minmax(180px, 0.3fr) minmax(0, 1fr);
+}
+
+.benchmarkPreviewColumn,
+.benchmarkDetailColumn,
+.benchmarkNotes {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.benchmarkPreviewColumn > a,
+.benchmarkMissingPreview {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 10 / 7;
+  border: 1px solid #d7e0e2;
+  border-radius: 7px;
+  background: #f6f8fb;
+  overflow: hidden;
+}
+
+.benchmarkPreviewColumn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.benchmarkMissingPreview {
+  color: #6b7980;
+  font-size: 0.74rem;
+  font-weight: 820;
+  text-align: center;
+}
+
+.benchmarkThumbs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 220px;
+}
+
+.benchmarkThumbs a {
+  aspect-ratio: 5 / 7;
+  border: 1px solid #d7e0e2;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f6f8fb;
+}
+
+.benchmarkNotes {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.benchmarkNotes div {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid #dce5e7;
+  border-radius: 8px;
+  background: #f9fbfb;
+}
+
+.benchmarkNotes strong {
+  display: block;
+  color: #203038;
+  font-size: 0.78rem;
+  font-weight: 880;
+}
+
+.benchmarkNotes p {
+  margin: 5px 0 0;
+  color: #52636a;
+  font-size: 0.76rem;
+  font-weight: 720;
+  overflow-wrap: anywhere;
+}
+
+.benchmarkEvidenceLinks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #244656;
+  background: #eaf1f6;
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
 .aiFlowRows {
   display: grid;
   gap: 12px;
@@ -3374,7 +3667,8 @@ h3 {
   }
 
   .adminOpsTaskList,
-  .adminPortalRecordGrid {
+  .adminPortalRecordGrid,
+  .benchmarkToolbar {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -3471,6 +3765,10 @@ h3 {
   .adminPortalControlStrip,
   .adminPortalRecordGrid,
   .adminPortalMeta,
+  .benchmarkRecommendation,
+  .benchmarkRunBody,
+  .benchmarkNotes,
+  .benchmarkToolbar,
   .adminOrderRow,
   .adminOpsOverview,
   .adminOpsLaneGrid,
@@ -3497,13 +3795,15 @@ h3 {
 
   .adminOpsTaskHeader,
   .adminOpsTaskEvidence,
-  .adminPortalRecordHeader {
+  .adminPortalRecordHeader,
+  .benchmarkRunHeader {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .adminOpsTask em,
   .adminOpsTaskEvidence small,
-  .adminPortalRecordHeader em {
+  .adminPortalRecordHeader em,
+  .benchmarkRunHeader em {
     justify-self: start;
     text-align: left;
   }

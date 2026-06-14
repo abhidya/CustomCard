@@ -2,6 +2,7 @@ import {
   CircleCheck,
   ClipboardCheck,
   Cloud,
+  ExternalLink,
   Globe2,
   Image,
   KeyRound,
@@ -70,10 +71,19 @@ import {
 } from "./productionReadiness";
 import { type AiFlowAdminConfig, type AiFlowConfigSummary } from "./aiFlowConfig";
 import { type AiGenerationJobEvidence } from "./aiGenerationJobs";
+import {
+  benchmarkResultsModel,
+  filterBenchmarkResults,
+  type BenchmarkPhase,
+  type BenchmarkResultRecord,
+  type BenchmarkStatus
+} from "./benchmarkResults";
 import { AdminReadinessMiniList, readinessStatusClass } from "./adminReadinessRenderer";
 type AdapterStatusFilter = ProviderStatus | "all";
 type AdapterCapabilityFilter = ProviderCapability | "all";
 type AdminPortalStatusFilter = AdminPortalStatus | "all";
+type BenchmarkStatusFilter = BenchmarkStatus | "all";
+type BenchmarkPhaseFilter = BenchmarkPhase | "all";
 
 export function AdminPanelView({
   aiFlowConfigs,
@@ -101,6 +111,11 @@ export function AdminPanelView({
   const [activeAdminSection, setActiveAdminSection] = useState<AdminPortalSectionId>("ops");
   const [adminPortalQuery, setAdminPortalQuery] = useState("");
   const [adminPortalStatus, setAdminPortalStatus] = useState<AdminPortalStatusFilter>("all");
+  const [benchmarkQuery, setBenchmarkQuery] = useState("");
+  const [benchmarkStatus, setBenchmarkStatus] = useState<BenchmarkStatusFilter>("all");
+  const [benchmarkPhase, setBenchmarkPhase] = useState<BenchmarkPhaseFilter>("all");
+  const [benchmarkProvider, setBenchmarkProvider] = useState<string>("all");
+  const [benchmarkScoreFloor, setBenchmarkScoreFloor] = useState(0);
   const { aiProvider, aiQueueOperations, businessEngagement, capacity, cloudArtifactProof, e2eCoverage, externalAudit, hostedApi, legalCompliance, mobileRender, observability, payment, retailFulfillment, reviewerDbSeed } = readiness;
   const aiProviderReadinessItems = aiProvider.items;
   const aiProviderReadinessSummary = aiProvider.summary;
@@ -166,6 +181,13 @@ export function AdminPanelView({
   const filteredPortalRecords = filterAdminPortalRecords(activePortalArea.records, {
     query: adminPortalQuery,
     status: adminPortalStatus
+  });
+  const filteredBenchmarkResults = filterBenchmarkResults(benchmarkResultsModel.records, {
+    query: benchmarkQuery,
+    status: benchmarkStatus,
+    phase: benchmarkPhase,
+    provider: benchmarkProvider,
+    minProductScore: benchmarkScoreFloor
   });
 
   return (
@@ -364,6 +386,21 @@ export function AdminPanelView({
         />
 
         <AiGenerationJobsPanel jobs={aiGenerationJobs} />
+
+        <BenchmarkResultsPanel
+          model={benchmarkResultsModel}
+          onPhase={setBenchmarkPhase}
+          onProvider={setBenchmarkProvider}
+          onQuery={setBenchmarkQuery}
+          onScoreFloor={setBenchmarkScoreFloor}
+          onStatus={setBenchmarkStatus}
+          phase={benchmarkPhase}
+          provider={benchmarkProvider}
+          query={benchmarkQuery}
+          records={filteredBenchmarkResults}
+          scoreFloor={benchmarkScoreFloor}
+          status={benchmarkStatus}
+        />
 
         <article className="toolPanel adminWide">
           <div className="sectionHeader compact">
@@ -1296,6 +1333,249 @@ function AiGenerationJobsPanel({ jobs }: { jobs: AiGenerationJobEvidence[] }) {
   );
 }
 
+function BenchmarkResultsPanel({
+  model,
+  onPhase,
+  onProvider,
+  onQuery,
+  onScoreFloor,
+  onStatus,
+  phase,
+  provider,
+  query,
+  records,
+  scoreFloor,
+  status
+}: {
+  model: typeof benchmarkResultsModel;
+  onPhase: (phase: BenchmarkPhaseFilter) => void;
+  onProvider: (provider: string) => void;
+  onQuery: (query: string) => void;
+  onScoreFloor: (score: number) => void;
+  onStatus: (status: BenchmarkStatusFilter) => void;
+  phase: BenchmarkPhaseFilter;
+  provider: string;
+  query: string;
+  records: BenchmarkResultRecord[];
+  scoreFloor: number;
+  status: BenchmarkStatusFilter;
+}) {
+  const recommendationTone = model.recommendation.status === "candidate" ? "green" : "red";
+
+  return (
+    <article className="toolPanel adminWide benchmarkPanel">
+      <div className="sectionHeader compact">
+        <div>
+          <p className="eyebrow">Benchmark evidence</p>
+          <h3>Model benchmark results</h3>
+        </div>
+        <StatusChip
+          icon={model.recommendation.status === "candidate" ? CircleCheck : Lock}
+          label={model.recommendation.label}
+          tone={recommendationTone}
+        />
+      </div>
+
+      <div className="runtimeGrid compactMetrics" aria-label="Benchmark result summary">
+        <Metric label="Runs indexed" value={`${model.summary.totalRuns}`} />
+        <Metric label="Latest" value={shortRunId(model.summary.latestRunId)} />
+        <Metric label="Manual grades" value={`${model.summary.gradedRuns}`} />
+        <Metric label="Failures" value={`${model.summary.failedRuns}`} />
+        <Metric label="Provider issues" value={`${model.summary.providerFailures}`} />
+        <Metric label="Best product" value={formatBenchmarkScore(model.summary.bestProductScore)} />
+      </div>
+
+      <section className={`benchmarkRecommendation ${model.recommendation.status}`} aria-label="Latest benchmark recommendation">
+        <div>
+          <p className="eyebrow">Recommendation</p>
+          <strong>{model.recommendation.label}</strong>
+          <span>{model.recommendation.rationale}</span>
+        </div>
+        <div className="benchmarkScorePair">
+          <Metric label="Product" value={formatBenchmarkScore(model.recommendation.productScore)} />
+          <Metric label="Contract" value={formatBenchmarkScore(model.recommendation.contractScore)} />
+        </div>
+      </section>
+
+      <div className="benchmarkToolbar" aria-label="Benchmark result filters">
+        <label className="searchField">
+          <Search size={16} />
+          <span>Search runs</span>
+          <input
+            value={query}
+            onChange={(event) => onQuery(event.target.value)}
+            placeholder="Provider, model, blocker, file"
+          />
+        </label>
+        <label>
+          <span>Status</span>
+          <select value={status} onChange={(event) => onStatus(event.target.value as BenchmarkStatusFilter)}>
+            <option value="all">All statuses</option>
+            <option value="succeeded">Succeeded</option>
+            <option value="failed">Failed</option>
+            <option value="partial">Partial</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </label>
+        <label>
+          <span>Phase</span>
+          <select value={phase} onChange={(event) => onPhase(event.target.value as BenchmarkPhaseFilter)}>
+            <option value="all">All phases</option>
+            {model.phases.map((item) => (
+              <option key={item} value={item}>
+                {formatOption(item)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Provider</span>
+          <select value={provider} onChange={(event) => onProvider(event.target.value)}>
+            <option value="all">All providers</option>
+            {model.providers.map((item) => (
+              <option key={item} value={item}>
+                {providerAdapterLabel(item)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Product score</span>
+          <select value={scoreFloor} onChange={(event) => onScoreFloor(Number(event.target.value))}>
+            <option value={0}>All scores</option>
+            <option value={40}>40+</option>
+            <option value={60}>60+</option>
+            <option value={80}>80+</option>
+          </select>
+        </label>
+        <div className="adapterToolbarCount">
+          <strong>{records.length}</strong>
+          <span>shown</span>
+        </div>
+      </div>
+
+      <div className="benchmarkBlockerStrip" aria-label="Remaining benchmark blockers">
+        {model.remainingBlockers.slice(0, 5).map((blocker) => (
+          <span key={blocker}>{blocker}</span>
+        ))}
+      </div>
+
+      {records.length === 0 ? (
+        <div className="adminPortalEmpty">
+          <Info size={18} />
+          <span>No benchmark runs match the current filters.</span>
+        </div>
+      ) : (
+        <div className="benchmarkRunList" aria-label="Benchmark result history">
+          {records.map((record) => (
+            <BenchmarkResultRow key={record.id} record={record} />
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function BenchmarkResultRow({ record }: { record: BenchmarkResultRecord }) {
+  return (
+    <section className={`benchmarkRunRow ${record.status}`}>
+      <div className="benchmarkRunHeader">
+        <div>
+          <span>{new Date(record.createdAtIso).toLocaleString()}</span>
+          <strong>{record.runId}</strong>
+        </div>
+        <em>{benchmarkStatusLabel(record.status)}</em>
+      </div>
+
+      <div className="benchmarkRunMeta">
+        <span>{formatOption(record.phase)}</span>
+        <span>{record.storyId}</span>
+        <span>Text: {providerAdapterLabel(record.textProvider)} / {record.textModel || "none"}</span>
+        <span>Image: {providerAdapterLabel(record.imageProvider)} / {record.imageModel || "none"}</span>
+        <span>{record.nativePanelCount}/{record.panelCount || 4} native panels</span>
+      </div>
+
+      <div className="benchmarkRunBody">
+        <div className="benchmarkPreviewColumn">
+          {record.evidence.contactSheetPath ? (
+            <a href={evidenceHref(record.evidence.contactSheetPath)} target="_blank" rel="noreferrer">
+              <img alt={`${record.runId} contact sheet`} src={evidenceHref(record.evidence.contactSheetPath)} />
+            </a>
+          ) : (
+            <span className="benchmarkMissingPreview">
+              <Image size={20} />
+              No contact sheet
+            </span>
+          )}
+          <div className="benchmarkThumbs">
+            {record.evidence.previewPaths.slice(0, 4).map((path) => (
+              <a href={evidenceHref(path)} key={path} target="_blank" rel="noreferrer">
+                <img alt={`${record.runId} preview`} src={evidenceHref(path)} />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="benchmarkDetailColumn">
+          <div className="benchmarkScores">
+            <span className={scoreClass(record.productScore)}>Product {formatBenchmarkScore(record.productScore)}</span>
+            <span>Contract {formatBenchmarkScore(record.contractScore)}</span>
+            <span>{record.gradeStatus === "manual" ? "Manual grade" : benchmarkGradeStatusLabel(record.gradeStatus)}</span>
+            <span>{record.tier}</span>
+          </div>
+
+          <div className="benchmarkNotes">
+            <div>
+              <strong>AI notes</strong>
+              {record.aiNotes.map((note) => (
+                <p key={note}>{note}</p>
+              ))}
+            </div>
+            <div>
+              <strong>Human notes</strong>
+              {record.humanNotes.map((note) => (
+                <p key={note}>{note}</p>
+              ))}
+            </div>
+          </div>
+
+          <div className="benchmarkEvidenceLinks">
+            <EvidenceLink label="Summary" path={record.evidence.summaryPath} />
+            <EvidenceLink label="Provider HTTP" path={record.evidence.providerHttpPath} />
+            <EvidenceLink label="Manual grade" path={record.evidence.manualGradePath} />
+            <EvidenceLink label="Contact sheet" path={record.evidence.contactSheetPath} />
+            {record.evidence.promptPaths.slice(0, 2).map((path, index) => (
+              <EvidenceLink key={path} label={`Prompt ${index + 1}`} path={path} />
+            ))}
+            {record.evidence.payloadPaths.slice(0, 3).map((path, index) => (
+              <EvidenceLink key={path} label={`Payload ${index + 1}`} path={path} />
+            ))}
+            {record.evidence.failurePaths.slice(0, 2).map((path, index) => (
+              <EvidenceLink key={path} label={`Failure ${index + 1}`} path={path} />
+            ))}
+          </div>
+
+          <div className="benchmarkBlockers">
+            {record.blockers.map((blocker) => (
+              <span key={blocker}>{blocker}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EvidenceLink({ label, path }: { label: string; path?: string }) {
+  if (!path) return null;
+  return (
+    <a href={evidenceHref(path)} target="_blank" rel="noreferrer">
+      <ExternalLink size={13} />
+      <span>{label}</span>
+    </a>
+  );
+}
+
 function aiGenerationJobStatusLabel(status: AiGenerationJobEvidence["status"]): string {
   const labels: Record<AiGenerationJobEvidence["status"], string> = {
     "copy-only": "Copy only",
@@ -1844,6 +2124,47 @@ function runtimeModeLabel(mode: RuntimeReadiness["mode"]): string {
     "prepared-request": "request contract ready"
   };
   return labels[mode];
+}
+
+function benchmarkStatusLabel(status: BenchmarkStatus): string {
+  const labels: Record<BenchmarkStatus, string> = {
+    blocked: "Blocked",
+    failed: "Failed",
+    partial: "Partial",
+    succeeded: "Succeeded"
+  };
+  return labels[status];
+}
+
+function benchmarkGradeStatusLabel(status: BenchmarkResultRecord["gradeStatus"]): string {
+  const labels: Record<BenchmarkResultRecord["gradeStatus"], string> = {
+    "ai-only": "AI notes only",
+    failure: "Failure evidence",
+    manual: "Manual grade",
+    "needs-manual-grade": "Needs grade"
+  };
+  return labels[status];
+}
+
+function formatBenchmarkScore(score: number | undefined): string {
+  return typeof score === "number" ? `${score}/100` : "Needs grade";
+}
+
+function scoreClass(score: number | undefined): string {
+  if (score === undefined) return "scoreChip ungraded";
+  if (score >= 80) return "scoreChip strong";
+  if (score >= 60) return "scoreChip mid";
+  return "scoreChip low";
+}
+
+function evidenceHref(path: string): string {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `/${path.replace(/^\/+/, "")}`;
+}
+
+function shortRunId(value: string): string {
+  if (value.length <= 34) return value;
+  return `${value.slice(0, 18)}...${value.slice(-10)}`;
 }
 
 function formatCents(cents: number): string {
