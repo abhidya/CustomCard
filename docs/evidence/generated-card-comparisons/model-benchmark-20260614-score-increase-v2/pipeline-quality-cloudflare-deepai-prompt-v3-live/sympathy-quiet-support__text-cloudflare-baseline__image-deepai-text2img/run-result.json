@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img",
+  "startedAt": "2026-06-14T18:16:43.721Z",
+  "finishedAt": "2026-06-14T18:16:59.926Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/provider-front.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A quiet, layered paper-cut threshold relief with deep moss and warm ivory colors, a clean text-safe area in the lower central part for the app overlay, and a small coordinating lower mark or border echo on",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/provider-inside-left.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A quiet, layered paper-cut threshold relief with warm ivory colors, a generous margin, a clean text-safe area in the central part for the app overlay, and sparse edge/corner artwork. Palette: warm ivory, muted gray-green, deep",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/provider-inside-right.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A quiet, layered paper-cut threshold relief with warm ivory colors, a generous margin, a clean text-safe area in the central part for the app overlay, and sparse edge/corner artwork. Palette: warm ivory, muted",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/provider-back.jpg",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A quiet, layered paper-cut threshold relief with deep moss and warm ivory colors, mostly negative space, and a small coordinating lower mark or border echo. Palette: warm ivory, muted gray-green, deep moss, soft taupe,",
+      "sourceKind": "data-url",
+      "contentType": "image/jpeg"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-score-increase-v2/pipeline-quality-cloudflare-deepai-prompt-v3-live/sympathy-quiet-support__text-cloudflare-baseline__image-deepai-text2img/contact-sheet.png",
+  "providerCallCount": 9,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 9
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

@@ -319,6 +319,16 @@ describeWithChrome("CustomCard UI smoke", () => {
           node.textContent?.trim() ||
           node.getAttribute("value") ||
           "";
+        const rect = (selector) => {
+          const node = document.querySelector(selector);
+          if (!node) return undefined;
+          const bounds = node.getBoundingClientRect();
+          return {
+            bottom: Math.round(bounds.bottom),
+            height: Math.round(bounds.height),
+            y: Math.round(bounds.y)
+          };
+        };
         const controls = [...document.querySelectorAll("a[href], button, input, textarea, select")]
           .filter((node) => !node.disabled && node.getAttribute("aria-hidden") !== "true")
           .map((node) => ({ tag: node.tagName.toLowerCase(), name: accessibleName(node) }));
@@ -327,6 +337,10 @@ describeWithChrome("CustomCard UI smoke", () => {
           skipHref: document.querySelector(".skipLink")?.getAttribute("href"),
           skipTargetExists: !!document.querySelector("#main-content"),
           customerNavHidden: !document.querySelector('[aria-label="CustomCard navigation"]'),
+          bottomNavText: document.querySelector(".bottomnav")?.textContent,
+          heroActions: rect(".landingHeroActions"),
+          bottomNav: rect(".bottomnav"),
+          pathChooser: rect(".pathchooser"),
           missingNames: controls.filter((control) => !control.name.trim()),
           bodyScrollWidth: document.body.scrollWidth,
           scrollWidth: document.documentElement.scrollWidth,
@@ -339,6 +353,10 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.skipHref).toBe("#main-content");
     expect(result.skipTargetExists).toBe(true);
     expect(result.customerNavHidden).toBe(true);
+    expect(result.bottomNavText).toContain("Create");
+    expect(result.bottomNavText).toContain("My cards");
+    expect(result.heroActions.bottom).toBeLessThan(result.bottomNav.y);
+    expect(result.pathChooser.y).toBeLessThan(result.bottomNav.y);
     expect(result.missingNames).toEqual([]);
     expect(result.bodyScrollWidth).toBe(result.clientWidth);
     expect(result.scrollWidth).toBe(result.clientWidth);

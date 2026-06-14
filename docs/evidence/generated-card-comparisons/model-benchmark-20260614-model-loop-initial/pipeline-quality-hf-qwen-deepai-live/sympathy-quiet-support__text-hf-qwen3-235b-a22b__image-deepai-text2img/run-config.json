@@ -1,0 +1,43 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-hf-qwen3-235b-a22b",
+  "textAdapterId": "huggingface-chat",
+  "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "aiFlowConfig": [
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "huggingface-chat",
+      "fallbackAdapterId": "",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 5000,
+      "perRequestBudgetCents": 5,
+      "maxRetries": 1,
+      "maxTokens": 2200,
+      "temperature": 0.62
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "deepai-text2img-image",
+      "fallbackAdapterId": "",
+      "model": "text2img",
+      "liveProviderCallsEnabled": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "rateLimitPerMinute": 4,
+      "monthlyBudgetCents": 4000,
+      "perRequestBudgetCents": 1,
+      "maxRetries": 1,
+      "maxTokens": 0,
+      "temperature": 0
+    }
+  ]
+}

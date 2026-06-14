@@ -1,0 +1,40 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-hf-qwen3-235b-a22b",
+  "textAdapterId": "huggingface-chat",
+  "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-model-loop-initial/pipeline-quality-hf-qwen-deepai-live/sympathy-quiet-support__text-hf-qwen3-235b-a22b__image-deepai-text2img",
+  "startedAt": "2026-06-14T17:13:49.397Z",
+  "finishedAt": "2026-06-14T17:13:49.656Z",
+  "statusCode": 502,
+  "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "providerFailures": {
+    "text": "AI provider returned 402."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 1,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": false,
+      "mustAvoidClean": true,
+      "providerCalls": 1
+    },
+    "missingMustInclude": [
+      "Eli",
+      "father",
+      "meals",
+      "rides",
+      "silence"
+    ],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

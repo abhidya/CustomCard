@@ -763,9 +763,9 @@ async function executeHuggingFaceImage({ flow, env, fetchImpl, panelId, prompt, 
   return materializeGeneratedImageUrl(extractImageUrl(data, contentType || "image/png"), fetchImpl, env);
 }
 
-async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, prompt, negativePrompt }) {
+async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
   const body = new FormData();
-  body.set("text", buildDeepAiTextPrompt({ prompt, negativePrompt }));
+  body.set("text", buildDeepAiTextPrompt({ panelId, prompt, negativePrompt }));
   const response = await fetchWithProviderBackoff(
     fetchImpl,
     "https://api.deepai.org/api/text2img",
@@ -821,24 +821,24 @@ function buildCloudflareImagePrompt({ panelId, prompt }) {
   if (panelId === "front") {
     return [
       shared,
-      `${role}: deep moss field, warm title-safe glow in upper middle, lower-third practical-care vignette made from paper-cut shapes: sealed meal container, folded cloth, blank note card, and muted phone silhouette with blank screen, all as one quiet support cluster; sophisticated negative space, no door, no table, no room, no waves, no road, no landscape.`
+      `${role}: deep moss field, muted ivory title-safe open field in upper middle, lower-third practical-care vignette made from paper-cut shapes: covered meal form, folded cloth, doorstep threshold arc, quiet ride path curve, and two small call/silence signal arcs, all as one quiet support cluster; sophisticated negative space, no door, no table, no room, no device, no note card, no waves, no road, no landscape.`
     ].join(" ");
   }
   if (panelId === "back") {
     return [
       shared,
-      `${role}: mostly deep moss negative space, small lower-corner echo of the care vignette as simple ivory/taupe paper-cut sealed container and blank note shapes, subtle paper grain, premium stationery finish, open center with no decoration, no door, no table, no room, no waves or landscape.`
+      `${role}: mostly deep moss negative space, small lower-corner echo of the care vignette as simple ivory/taupe paper-cut covered-meal shape, folded cloth, and threshold arc, subtle paper grain, premium stationery finish, open center with no decoration, no door, no table, no room, no device, no note card, no waves or landscape.`
     ].join(" ");
   }
   return [
     shared,
-    `${role}: warm ivory interior, huge plain central negative space for later typography, small low-contrast practical-care vignette only along lower outside edge, sealed meal container, folded cloth, blank note card, quiet path curve for rides, muted moss line accents, soft taupe paper layers, generous margins, calm paired interior spread, no open book, no page seam, no waves or landscape.`
+    `${role}: warm ivory interior, huge plain central negative space for later typography, small low-contrast practical-care vignette only along lower outside edge, covered meal shape, folded cloth, quiet path curve for rides, two tiny call/silence signal arcs, muted moss line accents, soft taupe paper layers, generous margins, calm paired interior spread, no device, no note card, no open book, no page seam, no waves or landscape.`
   ].join(" ");
 }
 
 function buildCloudflareNegativePrompt({ negativePrompt, prompt }) {
   const base = isQuietCarePrompt(prompt)
-    ? "readable text, fake text, letters, words, handwriting, calligraphy, signature, label, logo, watermark, tiny glyphs, small symbols, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, book, paper fold, crease line, page seam, wall floor corner, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, vehicle, road, highway, lane line, landscape, horizon, hills, mountains, river, ocean, waves, sunset, cup, pot, key, visible food, fruit, cans, jars, package labels, screen text, phone app interface, hospital, religious symbols"
+    ? "readable text, fake text, letters, words, handwriting, calligraphy, signature, label, logo, watermark, tiny glyphs, small symbols, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, book, paper fold, crease line, page seam, wall floor corner, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, vehicle, road, highway, lane line, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, cup, pot, key, visible food, fruit, cans, jars, package labels, phone, smartphone, device, screen text, phone app interface, hospital, religious symbols"
     : negativePrompt;
   return truncate(base || negativePrompt || "", 700);
 }
@@ -928,12 +928,46 @@ function numericSeed(value) {
   return hash >>> 0;
 }
 
-function buildDeepAiTextPrompt({ prompt, negativePrompt }) {
+function buildDeepAiTextPrompt({ panelId, prompt, negativePrompt }) {
+  if (isQuietCarePrompt(prompt)) {
+    return buildDeepAiQuietCarePrompt({ panelId, negativePrompt });
+  }
   const avoid = truncate(negativePrompt, 500);
   return truncate(
     avoid
       ? `${prompt}\n\nAvoid: ${avoid}.`
       : prompt,
+    2048
+  );
+}
+
+function buildDeepAiQuietCarePrompt({ panelId, negativePrompt }) {
+  const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : "interior panel";
+  const shared = [
+    `Portrait 5x7 ${role} for a premium sympathy greeting card.`,
+    "Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene.",
+    "Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink.",
+    "No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers.",
+    "No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people."
+  ];
+  const panelSpec = {
+    front:
+      "Deep moss field with a quiet warm-ivory title-safe open area in the upper middle. Lower third has one abstract doorstep-care relief: covered meal shape, folded cloth, threshold arc, quiet ride-path curve, and tiny call/silence arcs. Sophisticated negative space.",
+    "inside-left":
+      "Warm ivory interior with a huge plain center for app-rendered message copy. Lower-left edge has a tiny muted moss/taupe care relief below the text area: covered meal shape, folded cloth, and threshold arc. Very sparse.",
+    "inside-right":
+      "Warm ivory interior matching the left panel with a huge plain center for app-rendered message copy. Lower-right edge has tiny abstract care marks: ride-path curve and two call/silence arcs. Very sparse.",
+    back:
+      "Mostly deep moss negative space with a clean upper/center text-safe area. One small lower-corner ivory/taupe echo of the covered meal and threshold arc. Minimal and quiet."
+  }[panelId] ?? "";
+  const avoid = truncate(negativePrompt, 700);
+  return truncate(
+    [
+      ...shared,
+      panelSpec,
+      "Mood: calm, grounded, deeply respectful, practical support without cliches.",
+      avoid ? `Avoid: ${avoid}.` : ""
+    ].join(" "),
     2048
   );
 }
@@ -1231,7 +1265,7 @@ function buildPanelImagePrompt(input, panelId, panel) {
   const panelInstruction = (isSympathy
       ? {
         front:
-          "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, warm title-safe glow, and one lower paper-cut care vignette.",
+          "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette.",
         "inside-left":
           "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette.",
         "inside-right":
@@ -1275,12 +1309,12 @@ function buildSympathyImagePrompt({ panelInstruction, visualBrief, visualCue, te
     panelInstruction,
     "Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page.",
     `Text contract: keep the ${textSafeCue} empty, plain, low-contrast, and free of objects; put all artwork below or outside that field.`,
-    "Use one cohesive paper-cut practical-care vignette: sealed meal container, folded cloth, blank note card, muted phone silhouette with blank screen, and quiet path curve for rides; make it tasteful, not icon clipart.",
-    "No cars, keys, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, or closed blank-message template.",
+    "Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart.",
+    "No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template.",
     "No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene.",
     visualBrief,
     `Panel cue: ${visualCue}`,
-    "Palette: warm ivory, muted gray-green, deep moss, soft taupe; quiet practical sympathy, no religious symbols unless requested."
+    "Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal ink only; quiet practical sympathy, no religious symbols unless requested."
   ].join(" ");
 }
 
@@ -1317,7 +1351,7 @@ function normalizeImagePrompt(prompt, panelId, input, panel) {
     guardrails.push("No caption plaque, no text box, no inner card rectangle, no blank tag, no label.");
   }
   if (isSympathyInput(input)) {
-    guardrails.push("Sympathy art must keep a plain text field and use only sparse lower-edge support objects; no fruit, flowers, vases, urns, table settings, window bars, ornate frames, or line-art thickets.");
+    guardrails.push("Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets.");
   }
   if (panelId.startsWith("inside") && !/\b(?:ivory|cream|paper|note-sheet|light|low-contrast)\b/i.test(base)) {
     guardrails.push(
@@ -1514,7 +1548,21 @@ function normalizePanelImageNegativePrompt(value, input) {
         "horizon",
         "sunset",
         "sun",
+        "bright yellow",
+        "neon green",
+        "saturated yellow",
+        "cheerful celebration",
         "trees",
+        "phone",
+        "smartphone",
+        "device",
+        "blank note card",
+        "note card",
+        "envelope",
+        "open book",
+        "book",
+        "page seam",
+        "tabletop",
         "artist signature"
       ]
         .map((item) => cleanText(item).toLowerCase())
@@ -1538,7 +1586,7 @@ function buildVisualBrief(input, panel) {
     return "Elegant restrained wedding stationery: soft ivory, sage, and restrained gold, paired botanical stems or ribbon arcs, generous open note area, quiet blessing mood, no religious symbols unless requested, no fake script.";
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
-    return "Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge paper-cut care vignette with sealed meal container, folded cloth, blank note card, muted phone silhouette, quiet path curve, and large calm text fields; no people, fake text, fruit, flowers, vases, urns, table settings, religious symbols unless requested, cliches, or blank-message template.";
+    return "Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template.";
   }
   if (/\b(funny|playful|witty|sprint|project-management|project management|bold type|bold-type|poster|editorial)\b/.test(source) && /\bbirthday\b/.test(source)) {
     return "Funny bold-type birthday artwork: clean editorial poster composition, confident type-safe blocks without rendered letters, lively offset rhythm, warm accent color, plenty of negative space, no age-joke imagery.";
@@ -1679,7 +1727,7 @@ function buildThemeGuide(input) {
     return themeGuide({
       title: "Quietly With You",
       palette: ["warm ivory", "muted gray-green", "deep moss", "soft taupe"],
-      motifs: ["practical-care vignette", "sealed meal container", "folded cloth", "blank note card", "muted phone silhouette", "quiet path curve"],
+      motifs: ["practical-care relief", "covered meal shape", "folded cloth", "doorstep threshold arc", "quiet call/silence arcs", "quiet path curve"],
       border: "open-edge practical-care print composition with no closed frame, generous natural negative space, and lower-edge support objects"
     });
   }
@@ -1824,10 +1872,10 @@ function buildPanelVisualCue(input, panelId, themeGuide = buildThemeGuide(input)
   }
   if (/\b(sympathy|condolence|loss|grieving|grief|quiet support)\b/.test(source)) {
     const cues = {
-      front: "Premium quiet-support sympathy cover: deep moss field, warm upper title-safe glow, and one lower paper-cut practical-care vignette with sealed meal container, folded cloth, blank note card, and muted phone silhouette; no clipart, cars, fake text, or labels.",
-      "inside-left": "Soft left interior with warm ivory plain center text-safe space and a small lower-left practical-care vignette below the copy area: sealed meal container, folded cloth, blank note card, quiet path curve; no page seam, fake text, cars, fruit, flowers, or table setting.",
-      "inside-right": "Matching right interior with warm ivory plain center text-safe space and mirrored lower-right care vignette: blank note card, muted phone silhouette, folded cloth, quiet path curve for rides; no page seam, fake text, route labels, cars, fruit, flowers, or table setting.",
-      back: "Minimal deep moss back cover with readable upper/center text-safe area and one small lower practical-care echo: sealed container and blank note shapes; no urn, vase, fruit, flowers, table setting, physical paper card, car-like marks, fake text, or labels."
+      front: "Premium quiet-support sympathy cover: deep moss field, muted ivory upper title-safe open area, and one lower abstract paper-cut practical-care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; no clipart, phones, cars, fake text, or labels.",
+      "inside-left": "Soft left interior with warm ivory plain center text-safe space and a small lower-left abstract care relief below the copy area: covered meal shape, folded cloth, doorstep threshold arc; no page seam, fake text, phones, note cards, cars, fruit, flowers, or table setting.",
+      "inside-right": "Matching right interior with warm ivory plain center text-safe space and mirrored lower-right abstract care relief: quiet path curve for rides, folded cloth shape, and two tiny call/silence arcs; no page seam, fake text, phones, note cards, route labels, cars, fruit, flowers, or table setting.",
+      back: "Minimal deep moss back cover with readable upper/center text-safe area and one small lower practical-care echo: covered meal shape and threshold arc; no urn, vase, phone, note card, fruit, flowers, table setting, physical paper card, car-like marks, fake text, or labels."
     };
     return cues[panelId];
   }

@@ -1,0 +1,76 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-cloudflare-sdxl-lightning",
+  "imageAdapterId": "cloudflare-workers-ai-image",
+  "imageModel": "@cf/bytedance/stable-diffusion-xl-lightning",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning",
+  "startedAt": "2026-06-14T18:57:07.056Z",
+  "finishedAt": "2026-06-14T18:58:05.198Z",
+  "statusCode": 200,
+  "generatedBy": "ai-text-and-image",
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {},
+  "panelCount": 4,
+  "panelFiles": [
+    {
+      "panelId": "front",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/provider-front.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/preview-front.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for the front of a premium vertical 5x7 print panel; deep moss field, muted ivory title-safe open area, and one lower abstract paper-cut care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the main message field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A calm, layered paper-cut threshold relief with a subtle texture, set against a deep moss green background, and a clean lower text-safe area for the app overlay. Palette: warm ivory, muted gray-green, deep",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-left",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/provider-inside-left.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/preview-inside-left.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-left panel; warm ivory open field, generous center text area, and one small lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A warm ivory interior, a layered paper-cut threshold relief with a subtle texture, a clean text-safe area, generous margins, and sparse edge/corner artwork. Palette: warm ivory, muted gray-green, deep moss, soft taupe, charcoal",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "inside-right",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/provider-inside-right.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/preview-inside-right.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a vertical 5x7 inside-right panel; matching warm ivory open field, generous center text area, and one mirrored lower-edge care vignette. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A warm ivory interior, a layered paper-cut threshold relief with a subtle texture, a clean text-safe area, generous margins, and sparse edge/corner artwork. Palette: warm ivory, muted gray-green, deep moss, soft",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    },
+    {
+      "panelId": "back",
+      "path": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/provider-back.png",
+      "previewPath": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/preview-back.png",
+      "width": 1500,
+      "height": 2100,
+      "prompt": "Full-bleed flat 2D practical-care sympathy illustration for a minimal vertical 5x7 back panel; deep moss field, readable upper/center text-safe area, and one small lower care-vignette echo. Artwork layer only, flat 2D editorial illustration, not a photo, not a physical card, not a book, not a page. Text contract: keep the upper-to-center field empty, plain, low-contrast, and free of objects; put all artwork below or outside that field. Use one cohesive paper-cut practical-care vignette: covered meal shape, folded cloth, doorstep threshold arc, quiet path curve for rides, and tiny call/silence signal arcs; make it tasteful, abstract, and not icon clipart. No cars, keys, phones, devices, note cards, envelopes, visible food, fruit, flowers, vases, urns, table settings, window bars, ornate frames, dense line art, thickets, wallpaper, page seams, bright yellow, neon green, sun, sunset, landscape, grassland, or closed blank-message template. No readable text, words, letters, numbers, handwriting, labels, fake text, people, hands, logos, watermark, mockup, envelope, or tabletop scene. Reverent practical-care sympathy artwork: deep moss front/back, warm ivory interiors, lower-edge abstract paper-cut care relief with covered meal shape, folded cloth, doorstep threshold arc, quiet ride path curve, and tiny call/silence arcs; large calm text fields; no people, fake text, phones, devices, note cards, envelopes, fruit, flowers, vases, urns, table settings, bright yellow, neon green, religious symbols unless requested, cliches, or blank-message template. Panel cue: A deep moss green background, a warm ivory paper-cut threshold relief with a subtle texture, and mostly negative space with a small coordinating lower mark. Palette: warm ivory, muted gray-green, deep moss, soft taupe,",
+      "sourceKind": "data-url",
+      "contentType": "image/png"
+    }
+  ],
+  "contactSheet": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-sdxl-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-cloudflare-sdxl-lightning/contact-sheet.png",
+  "providerCallCount": 5,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": true,
+      "noProviderFailure": true,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 5
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}

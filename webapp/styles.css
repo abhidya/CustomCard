@@ -3990,6 +3990,100 @@ a { color: inherit; }
   .landingHeroPeek { left: -4%; bottom: -18px; width: 34%; }
 }
 @media (max-width: 560px) {
+  .landingHero {
+    gap: 14px;
+    padding-top: 16px;
+    padding-bottom: 12px;
+  }
+  .landingHeroCopy {
+    display: grid;
+    gap: 12px;
+  }
+  .landingHeroCopy .eyebrow {
+    margin-bottom: 0;
+  }
+  .landingHeroCopy h1 {
+    font-size: 38px;
+    line-height: 1.04;
+    margin-bottom: 0;
+  }
+  .landingHeroCopy p {
+    font-size: 16px;
+  }
+  .landingHeroActions {
+    display: grid;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .landingHeroActions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .landingHeroActions .textlink {
+    justify-self: center;
+  }
+  .landingHeroTrust {
+    margin-top: 0;
+  }
+  .landingHeroVisual {
+    gap: 10px;
+  }
+  .landingHeroStage {
+    width: min(280px, 74vw);
+  }
+  .landingHeroCard.landingHeroProductImage {
+    border-radius: var(--radius);
+  }
+  .landingHeroPeek {
+    bottom: -12px;
+    border-width: 3px;
+    width: 31%;
+  }
+}
+@media (max-width: 560px) and (max-height: 760px) {
+  .landingHero {
+    gap: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .landingHeroCopy {
+    gap: 9px;
+  }
+  .landingHeroCopy h1 {
+    font-size: 32px;
+    line-height: 1.03;
+  }
+  .landingHeroCopy p {
+    font-size: 14.5px;
+    line-height: 1.42;
+  }
+  .landingHeroActions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .landingHeroActions .btn-primary {
+    grid-column: 1 / -1;
+  }
+  .landingHeroActions .btn-ghost {
+    min-height: 42px;
+    padding-inline: 10px;
+  }
+  .landingHeroActions .textlink {
+    align-self: center;
+    font-size: 14px;
+  }
+  .landingHeroTrust,
+  .landingHeroCaption {
+    display: none;
+  }
+  .landingHeroStage {
+    width: min(190px, 56vw);
+  }
+  .landingHeroPeek {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
   .carditem { flex-direction: column; align-items: flex-start; }
   .carditem-actions { justify-items: start; }
 }
@@ -4009,6 +4103,8 @@ a { color: inherit; }
 .pathcard small { color: var(--ink-faint); }
 .pathcard .btn { justify-self: start; min-height: 40px; }
 @media (max-width: 720px) { .pathchooserGrid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .pathchooser { margin-top: 8px; } }
+@media (max-width: 560px) and (max-height: 760px) { .pathchooser { margin-top: -8px; } }
 .finalcta p { max-width: 460px; margin: 6px auto 14px; color: var(--ink-soft); }
 .finalcta small { display: block; margin-top: 10px; color: var(--ink-faint); }
 

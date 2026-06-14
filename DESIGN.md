@@ -5,7 +5,7 @@
 - Last refreshed: 2026-06-14
 - Primary product surfaces: customer landing/home, event import, card studio, people/notes, print handoff, business landing, admin operations, adapter readiness.
 - Evidence reviewed: `webapp/App.tsx`, `webapp/views/HomeView.tsx`, `webapp/views/EventsView.tsx`, `webapp/views/StudioView.tsx`, `webapp/views/PrintView.tsx`, `webapp/views/BusinessLandingView.tsx`, `webapp/routePolicy.ts`, `webapp/ui.tsx`, `webapp/panelMediaAdapter.ts`, `webapp/styles.css`, `src/styles.css`, `docs/ui-ux-walkthrough.md`, `docs/cloudflare-workers-ai-setup.md`, `docs/competitor-card-asset-categories.md`, `docs/evidence/*`, `docs/evidence/generated-card-comparisons/*`, live browser DOM checks at `http://127.0.0.1:5173/`, NN/g action/object proximity guidance, and Material Design 3 button hierarchy guidance.
-- Verification evidence: `npm run test -- --run tests/frontend-architecture.test.ts tests/customer-shell-ssr.test.tsx tests/app-smoke.test.ts` passed on 2026-06-14 with 51 tests. Browser DOM checks found the Studio setup state has no fixed proof dock, no proof CTA, and no panel editor before draft/review; template review reveals inline proof navigation plus four panel tabs; print handoff has no global fixed CTA competing with proof approval or Walgreens checkout; mobile shell coverage still verifies no horizontal overflow at 390px. Existing `docs/evidence/customcard-*.png` files are legacy screenshots until recaptured from the current shell.
+- Verification evidence: `npm run test -- --run tests/frontend-architecture.test.ts tests/customer-shell-ssr.test.tsx tests/app-smoke.test.ts` passed on 2026-06-14 with 51 tests. Browser DOM checks found the Studio setup state has no fixed proof dock, no proof CTA, and no panel editor before draft/review; template review reveals inline proof navigation plus four panel tabs; print handoff has no global fixed CTA competing with proof approval or Walgreens checkout; mobile landing checks at 375x667 and 390x900 keep CTAs above the fixed bottom nav, show the next section before the nav, and have no horizontal overflow. Existing `docs/evidence/customcard-*.png` files are legacy screenshots until recaptured from the current shell.
 
 ## Brand
 - Personality: warm, careful, private, useful, and tactile. The product should feel like a calm stationery desk with software discipline underneath.
@@ -26,7 +26,7 @@
 - Primary navigation: desktop top nav for Create, My cards, People, Settings; admin nav only for admin users; business landing through business route; print and event import are stages within Create.
 - Core routes/screens: landing/home, invite/calendar import, card studio, people/notes, my cards/history, print handoff, settings/privacy, business landing, admin ops/adapters/legal.
 - Content hierarchy: product value and card preview first; occasion/invite start second; examples/trust notes third; provider readiness and operational gates only in admin/business contexts.
-- Current UX guardrail: small screens must keep a visible customer navigation recovery path while Studio setup stays focused on details first. Do not reintroduce a fixed proof CTA on Studio, and do not render a global fixed print dock that competes with the in-page proof approval or Walgreens checkout actions.
+- Current UX guardrail: small screens must keep a visible customer navigation recovery path while Studio setup stays focused on details first. Landing hero CTAs must clear the fixed bottom nav at short and tall mobile sizes, with a visible next-section hint above the nav. Do not reintroduce a fixed proof CTA on Studio, and do not render a global fixed print dock that competes with the in-page proof approval or Walgreens checkout actions.
 
 ## Design principles
 - Product proof first: show a real card, proof, queue, or handoff state instead of generic marketing illustration.
@@ -45,7 +45,7 @@
 - Fixed P1: current landing, Studio setup, Studio template review, and Print DOM checks do not expose placeholder copy such as "Card for Someone important." Keep sentinel values hidden from polished customer surfaces.
 - Fixed P1: Studio previously showed "Continue to proof checks" in the fixed customer dock before any draft or review surface existed. Keep this fixed: no fixed Studio proof dock, no proof CTA before generation/review, and no live text placement preview while the user is still entering setup details.
 - Fixed P1: Print previously showed a global "Save print package" dock that overlapped and competed with the in-page Walgreens checkout action after proof approval. Print actions now live in the Print view, next to the proof and checkout form.
-- Issue P1: mobile navigation recovery must remain visible below 600px. The old `docs/evidence/customcard-mobile.png` shows an older nav pattern and should not be treated as current proof.
+- Fixed P1: mobile navigation recovery remains visible below 600px through bottom tabs, and the landing hero no longer lets primary CTAs sit under that fixed nav. The old `docs/evidence/customcard-mobile.png` shows an older nav pattern and should not be treated as current proof.
 - Issue P1: current app screenshots in `docs/evidence/customcard-*.png` are legacy evidence and show the older sidebar/grid UI. Do not cite them as current UI proof until current landing, studio, print, and mobile screens are recaptured.
 - Issue P2: example card gallery is useful but visually repetitive because fallback examples are generated from the same SVG motif system. Add distinct occasion art assets so the gallery proves range.
 - Issue P2: generated provider contact sheets show fake lettering, over-busy borders, low-contrast interior text zones, and occasional people/faces. Tighten prompts and QA around text-free background art.
@@ -91,7 +91,7 @@
 - Supported breakpoints/devices: 320px mobile through wide desktop.
 - Layout adaptations: landing hero stacks with card visual first on mobile; studio collapses to one column below 980px; forms collapse below 760px; topbar wraps below 760px.
 - Touch/hover differences: touch targets should stay at least 40px high; hover-only card elevation cannot be the only affordance.
-- Required fix: below 600px, restore customer navigation through bottom tabs or compact menu because `shouldRenderCustomerNav` currently removes it.
+- Current rule: below 600px, top navigation yields to bottom tabs; landing hero spacing must keep primary actions above those tabs and reveal the next section on both short and tall mobile viewports.
 
 ## Interaction states
 - Loading: AI generation should show copy/art/proof stages and panel-level progress; import preview can debounce with a quiet checked/processing state. Do not switch Studio into proof navigation until generation has started or the user has explicitly chosen template review.

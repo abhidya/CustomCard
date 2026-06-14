@@ -1,0 +1,240 @@
+{
+  "draft_id": "ai-mqe5enuu-eli",
+  "card_copy": {
+    "theme_guide": {
+      "theme_title": "Quiet Support",
+      "palette": [
+        "#8B9467",
+        "#F5F5DC",
+        "style_guide",
+        "style_title: Premium Quiet-Support Print"
+      ],
+      "motifs": [
+        "Layered Paper-Cut Threshold Relief",
+        "Practical-Care Forms Integrated as One Lower Tableau",
+        "Theme Title: Quiet Support"
+      ],
+      "border_style": "None",
+      "front_back_pairing": "Deep Moss",
+      "interior_pairing": "Warm Ivory"
+    },
+    "panels": [
+      {
+        "id": "front",
+        "headline": "For Eli",
+        "body": "",
+        "art_direction": "Cinematic single-object cover with a quiet, grounded composition",
+        "visual_cue": "A quiet, grounded composition with a small, delicate flower in the center, surrounded by negative space. The flower should be in a soft, muted color palette, with a clean and simple design.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "upper",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a deep moss background with a subtle layered paper-cut threshold relief, featuring a quiet, grounded composition with a small, delicate flower in the center, surrounded by negative space. The flower should be in a soft, muted color palette, with a clean and simple design. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-left",
+        "headline": "With You In This",
+        "body": "I am so sorry about your father. I will not try to explain the loss or cover the quiet with easy words; I am here beside you, at whatever pace the day allows.",
+        "art_direction": "Sparse line-art cover with a clean lower text-safe area",
+        "visual_cue": "A quiet, grounded composition with a small, delicate branch in the center, surrounded by negative space. The branch should be in a soft, muted color palette, with a clean and simple design. Reserve a clean text-safe area for the app overlay.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a warm ivory interior with a sparse line-art cover, featuring a quiet, grounded composition with a small, delicate branch in the center, surrounded by negative space. The branch should be in a soft, muted color palette, with a clean and simple design. Reserve a clean text-safe area for the app overlay. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "inside-right",
+        "headline": "From Jordan",
+        "body": "Meals can be left at your door. Rides can be quiet. Calls can be answered or missed. Silence counts too. You do not have to manage this alone. With sympathy and friendship, Jordan.",
+        "art_direction": "Edge-led gallery illustration with a clean text-safe area",
+        "visual_cue": "A quiet, grounded composition with a small, delicate flower in the center, surrounded by negative space. The flower should be in a soft, muted color palette, with a clean and simple design. Reserve a clean text-safe area for the app overlay.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "dark-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a warm ivory interior with an edge-led gallery illustration, featuring a quiet, grounded composition with a small, delicate flower in the center, surrounded by negative space. The flower should be in a soft, muted color palette, with a clean and simple design. Reserve a clean text-safe area for the app overlay. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. Avoid all-over repeating wallpaper patterns; use restrained hierarchy and negative space. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      },
+      {
+        "id": "back",
+        "headline": "With Steady Care",
+        "body": "For practical help, quiet support, and steady care on days words cannot hold.",
+        "art_direction": "Mostly negative space with a small coordinating lower mark or border echo",
+        "visual_cue": "A quiet, grounded composition with a small, delicate flower in the center, surrounded by negative space. The flower should be in a soft, muted color palette, with a clean and simple design.",
+        "text_layout": {
+          "headline_zone": "upper",
+          "body_zone": "center",
+          "alignment": "center",
+          "font_pairing": "soft-serif",
+          "color_mode": "light-ink",
+          "scale": "large"
+        },
+        "image_prompt": "A 5x7 vertical flat print panel artwork of a deep moss background with mostly negative space and a small coordinating lower mark or border echo, featuring a quiet, grounded composition with a small, delicate flower in the center, surrounded by negative space. The flower should be in a soft, muted color palette, with a clean and simple design. Flat 2D full-bleed digital illustration. No readable text. No words, letters, handwriting, calligraphy, labels, signatures, or fake text. No people. No hands. No logos. No watermark. No caption plaque, no text box, no inner card rectangle, no blank tag, no label. Sympathy art must keep a plain text field and use only sparse lower-edge abstract support relief; no fruit, flowers, vases, urns, table settings, phones, devices, note cards, envelopes, bright yellow, neon green, sun, landscape, window bars, ornate frames, or line-art thickets. Not a photo, not a physical paper card, not a folded card mockup, not a tabletop scene, not a product photograph.",
+        "image_negative_prompt": "readable text, fake text, letters, people, face, portrait, hands, folded card mockup, physical card mockup, tabletop scene, product photo, pseudo text, gibberish text, words, numbers, typography, handwriting, calligraphy, cursive script, faux script, text blocks, signature, label, signage, sign, misspelled text, tiny unreadable lettering, logo, watermark, qr code, crop marks, framed physical card, paper card photo, paper sheet, card within a card, inner card rectangle, blank tag, text box"
+      }
+    ],
+    "memory_citations": []
+  },
+  "images": [],
+  "status": "provider-unavailable",
+  "detail": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage..",
+  "error": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage..",
+  "user_content_only": false,
+  "ai_flow": {
+    "card_copy": {
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "primary_adapter_id": "cloudflare-workers-ai-chat",
+      "fallback_adapter_id": "",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 5000,
+      "per_request_budget_cents": 5,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": []
+    },
+    "card_image": {
+      "flow_id": "card-image",
+      "adapter_id": "huggingface-image",
+      "primary_adapter_id": "huggingface-image",
+      "fallback_adapter_id": "",
+      "model": "Qwen/Qwen-Image-2512",
+      "rate_limit_per_minute": 4,
+      "monthly_budget_cents": 4000,
+      "per_request_budget_cents": 1,
+      "queue_enabled": false,
+      "fallback_queue_enabled": false,
+      "live_provider_calls_enabled": true,
+      "ready_for_live_calls": true,
+      "blocked_reasons": [],
+      "provider_failure": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage.."
+    }
+  },
+  "provider_call_events": [
+    {
+      "id": "provider-call-91959d41",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-hf-qwen-image-2512-1781463552060",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-14T18:59:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-f1396e14",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-hf-qwen-image-2512-1781463552060",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-copy",
+      "adapter_id": "cloudflare-workers-ai-chat",
+      "provider": "Cloudflare",
+      "capability": "text-chat",
+      "status": "succeeded",
+      "month_bucket": "2026-06",
+      "request_units": 1,
+      "estimated_cost_cents": 5,
+      "rate_limit_window_start": "2026-06-14T18:59:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-copy",
+        "flowLabel": "Card copy",
+        "primaryAdapterId": "cloudflare-workers-ai-chat",
+        "fallbackAdapterId": "",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-5fb4b889",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-hf-qwen-image-2512-1781463552060",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "huggingface-image",
+      "provider": "Hugging Face",
+      "capability": "image-generation",
+      "status": "reserved",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 4,
+      "rate_limit_window_start": "2026-06-14T18:59:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "huggingface-image",
+        "fallbackAdapterId": "",
+        "localAdapter": false,
+        "costGateEvent": true
+      }
+    },
+    {
+      "id": "provider-call-bcff74e6",
+      "tenant_id": "model-benchmark-sympathy-quiet-support__text-cloudflare-baseline__image-hf-qwen-image-2512-1781463552060",
+      "route_id": "/api/ai/card/generate",
+      "flow_id": "card-image",
+      "adapter_id": "huggingface-image",
+      "provider": "Hugging Face",
+      "capability": "image-generation",
+      "status": "failed",
+      "month_bucket": "2026-06",
+      "request_units": 4,
+      "estimated_cost_cents": 4,
+      "rate_limit_window_start": "2026-06-14T18:59:00.000Z",
+      "live_network_call": true,
+      "metadata": {
+        "phase": "card-image",
+        "panelCount": 4,
+        "flowLabel": "Card image",
+        "primaryAdapterId": "huggingface-image",
+        "fallbackAdapterId": "",
+        "localAdapter": false,
+        "costGateEvent": true,
+        "providerFailure": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage..",
+        "generatedPanelCount": 0
+      }
+    }
+  ],
+  "ai_cost_gate": {
+    "event_count": 4,
+    "reserved_or_spent_cents": 9,
+    "actual_spend_cents": 0,
+    "request_units": 5,
+    "live_network_calls": true,
+    "blocked_reasons": []
+  },
+  "live_provider_calls_enabled": true,
+  "fallback_queued": false,
+  "external_network_calls": true
+}

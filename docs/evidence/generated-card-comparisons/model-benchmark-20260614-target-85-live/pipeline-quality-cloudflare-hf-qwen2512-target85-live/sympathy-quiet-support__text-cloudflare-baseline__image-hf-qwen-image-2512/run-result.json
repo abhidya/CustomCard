@@ -1,0 +1,35 @@
+{
+  "phase": "pipeline-quality",
+  "focus": "full-card-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "textAdapterId": "cloudflare-workers-ai-chat",
+  "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "imageCandidateId": "image-hf-qwen-image-2512",
+  "imageAdapterId": "huggingface-image",
+  "imageModel": "Qwen/Qwen-Image-2512",
+  "runDir": "docs/evidence/generated-card-comparisons/model-benchmark-20260614-target-85-live/pipeline-quality-cloudflare-hf-qwen2512-target85-live/sympathy-quiet-support__text-cloudflare-baseline__image-hf-qwen-image-2512",
+  "startedAt": "2026-06-14T18:59:12.059Z",
+  "finishedAt": "2026-06-14T18:59:19.500Z",
+  "statusCode": 502,
+  "cardCopyModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "providerFailures": {
+    "image": "Hugging Face image provider returned 402: You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage.."
+  },
+  "panelCount": 0,
+  "panelFiles": [],
+  "providerCallCount": 2,
+  "autoChecks": {
+    "advisoryOnly": true,
+    "checks": {
+      "fourPanels": false,
+      "noProviderFailure": false,
+      "mustIncludeCovered": true,
+      "mustAvoidClean": true,
+      "providerCalls": 2
+    },
+    "missingMustInclude": [],
+    "avoidedFailures": [],
+    "note": "Automated checks are scaffolding only. Final visual/design grades must be assigned by the agent using the rubric."
+  }
+}
