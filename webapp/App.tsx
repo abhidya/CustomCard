@@ -56,15 +56,17 @@ import {
   isAdminRoute,
   isBusinessRoute,
   resolveActiveCustomerNavView,
+  resolveCreateFlowEntryView,
   resolveVisibleCustomerView,
+  shouldRenderBusinessLanding,
   shouldRenderCustomerNav,
+  shouldShowCreateFlowStepper,
   shouldShowCustomerCta,
   shouldShowTopNav,
   type AdminAccessPolicy
 } from "./routePolicy";
 import { themes, useTheme } from "./theme";
-import { Toast } from "./ui";
-import { BusinessLandingView } from "./views/BusinessLandingView";
+import { CreateFlowStepper, Toast } from "./ui";
 import { EventsView } from "./views/EventsView";
 import { HomeView } from "./views/HomeView";
 import { NotesView } from "./views/NotesView";
@@ -74,6 +76,9 @@ import { SettingsView } from "./views/SettingsView";
 import { StudioView } from "./views/StudioView";
 
 const AdminOperationalView = lazy(() => import("./AdminOperationalView"));
+const BusinessLandingView = lazy(() =>
+  import("./views/BusinessLandingView").then((module) => ({ default: module.BusinessLandingView }))
+);
 
 const configuredAdminEmails = configuredAdminEmailsFromEnv(import.meta.env);
 
@@ -83,6 +88,14 @@ function updateViewRoute(view: ViewId) {
   url.searchParams.set("view", view);
   url.hash = "";
   window.history.pushState({ customCardView: view }, "", url);
+}
+
+function replaceViewRoute(view: ViewId) {
+  if (typeof window === "undefined" || typeof window.history.replaceState !== "function") return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("view", view);
+  url.hash = "";
+  window.history.replaceState({ customCardView: view }, "", url);
 }
 
 export default function App() {
@@ -137,7 +150,7 @@ export default function App() {
   } = state;
 
   const isAdminView = isAdminRoute(activeView);
-  const isBusinessView = isBusinessRoute(activeView);
+  const showBusinessLanding = shouldRenderBusinessLanding(activeView, adminAccess.isAdmin);
   const visibleCustomerView = resolveVisibleCustomerView(activeView);
   const visibleNavView = resolveActiveCustomerNavView(activeView);
   const renderCustomerNav = shouldRenderCustomerNav(useViewportWidth());
@@ -343,6 +356,24 @@ export default function App() {
     setVendorId("walgreens");
   }, [setVendorId]);
 
+  // The internal B2B landing is admin-only; everyone else is sent to the customer home (URL included).
+  useEffect(() => {
+    if (!isBusinessRoute(activeView) || !adminAccess.isLoaded || adminAccess.isAdmin) return;
+    setActiveView("customer");
+    replaceViewRoute("customer");
+  }, [activeView, adminAccess.isAdmin, adminAccess.isLoaded, setActiveView]);
+
+  // Entry-only wayfinding: a deep link straight to print with nothing designed yet starts in the studio.
+  const entryViewResolved = useRef(false);
+  useEffect(() => {
+    if (entryViewResolved.current) return;
+    entryViewResolved.current = true;
+    const entryView = resolveCreateFlowEntryView(activeView, buildDraftProgressState(draftInput, validation.passed).hasMeaningfulProgress);
+    if (entryView === activeView) return;
+    setActiveView(entryView);
+    replaceViewRoute(entryView);
+  }, [activeView, draftInput, setActiveView, validation.passed]);
+
   useEffect(() => {
     const url = new URL(window.location.href);
     const calendarConnection = url.searchParams.get("calendarConnection");
@@ -460,6 +491,10 @@ export default function App() {
       </header>
 
       <main id="main-content">
+        {!isAdminView && shouldShowCreateFlowStepper(activeView) ? (
+          <CreateFlowStepper currentView={activeView} onNavigate={openView} />
+        ) : null}
+
         {isAdminView ? (
           <AdminRoute
             access={adminAccess}
@@ -503,7 +538,7 @@ export default function App() {
           />
         ) : null}
 
-        {!isAdminView && !isBusinessView && visibleCustomerView === "customer" ? (
+        {!isAdminView && !showBusinessLanding && visibleCustomerView === "customer" ? (
           <HomeView
             draft={displayDraft}
             hasProgress={hasProgress}
@@ -529,12 +564,14 @@ export default function App() {
           />
         ) : null}
 
-        {!isAdminView && isBusinessView ? (
-          <BusinessLandingView
-            draft={displayDraft}
-            onCreate={() => openView("studio")}
-            onReview={() => openView("opportunities")}
-          />
+        {!isAdminView && showBusinessLanding ? (
+          <Suspense fallback={<div className="panelcard">Loading…</div>}>
+            <BusinessLandingView
+              draft={displayDraft}
+              onCreate={() => openView("studio")}
+              onReview={() => openView("opportunities")}
+            />
+          </Suspense>
         ) : null}
 
         {!isAdminView && visibleCustomerView === "opportunities" ? (
@@ -623,6 +660,7 @@ export default function App() {
           <PrintView
             checkoutCustomerDefaults={checkoutProfile}
             getCustomerApiToken={getCustomerApiToken}
+            onBackToDesign={() => openView("studio")}
             onCardEvent={handleCardEvent}
             onCopyChecklist={copyChecklist}
             onDownloadPackage={downloadPrintPackage}

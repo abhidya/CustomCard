@@ -5,6 +5,8 @@ Method: full repo inventory + four parallel deep-dive reviews (security, UX/copy
 
 Validation baseline: `npm run check` (768 tests, 88 files, build, `npm audit`) green before and after fixes; security/persistence/deployment/localization doctors green; customer-accessibility doctor blocked identically before and after (pre-existing).
 
+**Implementation update (2026-06-12, follow-up commits):** P1, P2, P3, P8, and P10 from §5 are now implemented (commits `e219fd4`, `386c6a7`, `90e29a4`). `npm run check` green after each (773 tests; the audit step is clean again after pinning wrangler's esbuild to 0.28.1). Statuses in §2 updated inline. Still open: P4–P6 and P9 (product/legal decisions), P7 (CSP — do not ship without testing Clerk sign-in on a preview deploy), and the Walgreens upload limiter half of P1 (still per-instance).
+
 ---
 
 ## 1. Executive roast summary
@@ -26,7 +28,7 @@ Severity / Area / Title / Status. Evidence and fixes are in the sections below o
 |---|------|-------|--------|
 | C1 | Legal | Google `calendar.events.readonly` (sensitive scope) with no Google-compliant, indexed privacy policy; no Limited Use language | Partially fixed (policy draft now names Google + Limited-Use-style commitments); **Needs legal review + Google OAuth verification work** |
 | C2 | Legal | Terms/Refunds claimed live ordering disabled while production Walgreens checkout is live | Fixed (draft text now matches reality); **Needs legal review** |
-| C3 | UX | `?view=business` serves internal readiness commentary ("live webhooks remain evidence-gated") to any visitor | Needs product decision (rewrite as marketing or 404 the route) |
+| C3 | UX | `?view=business` serves internal readiness commentary ("live webhooks remain evidence-gated") to any visitor | **Fixed** (admin-only B2B preview; everyone else lands on the customer home, URL rewritten); marketing rewrite still a product decision |
 | C4 | Mobile | Mobile app is a non-interactive fixture demo (`onPress={() => undefined}`, hardcoded "Sara and Ahmed", compliance copy at customers) | Needs owner (ship real flow or unship) |
 | C5 | A11y | `--ink-faint` ~1.8:1 contrast (alpha-on-cream) used in 52 places incl. mobile nav labels | **Fixed** (solid AA tokens, all 3 themes) |
 | C6 | UX/Trust | "Everything stays on this device" promise with zero persistence | **Fixed** (honest copy); real opt-in persistence = product decision |
@@ -34,20 +36,20 @@ Severity / Area / Title / Status. Evidence and fixes are in the sections below o
 ### High
 | # | Area | Title | Status |
 |---|------|-------|--------|
-| H1 | Security | AI cost-gate + Walgreens rate limits are per-process `Map`s — useless across serverless instances; provider spend effectively uncapped once live AI is enabled | Needs owner (move to Postgres reserve-then-settle; tables already exist) |
+| H1 | Security | AI cost-gate + Walgreens rate limits are per-process `Map`s — useless across serverless instances; provider spend effectively uncapped once live AI is enabled | **Fixed for AI spend** (Postgres advisory-locked reserve-then-settle over `provider_call_events`; fails closed when the ledger is down). Walgreens upload limiter still per-instance |
 | H2 | Legal | Deletion promised in 3 places; no deletion code path (memory "forget" retains text; DSAR goes to a table; promised follow-up email has no mail provider) | Needs owner + legal review |
 | H3 | Legal | Third-party recipient data (incl. health/bereavement context) collected with no point-of-collection notice | Needs legal review |
 | H4 | Legal | Personal data flows to up to 7 AI providers; none named in policy; free-tier providers may train on inputs | Partially fixed (policy now mentions AI providers generically); **Needs DPA/no-training review per provider** |
 | H5 | Legal | `WALGREENS_AFF_ID` + coupon feeds (FMTC/Rakuten planned) with no FTC material-connection disclosure; "Partner" overstated | Partially **fixed** ("Printed by Walgreens"); disclosure wording **needs legal review** |
 | H6 | Legal | Privacy policy missing controller identity, retention, sale/share, children's terms, DSAR mechanics | Needs legal review (register already tracks these as launch-blocked) |
-| H7 | Metrics | Doctor scripts print `status:"ready"` for grep-the-repo checks; "0 blockers" means "constants agree with themselves" | Needs owner (rename vocabulary: `repo-consistent`/`contract-drift`; reserve "ready" for live doctors) |
-| H8 | Metrics | Readiness ledger has no evidence-attachment path; validators forbid recording success (4-file lockstep per status change) | Needs owner (evidence dir + conditional validators) |
+| H7 | Metrics | Doctor scripts print `status:"ready"` for grep-the-repo checks; "0 blockers" means "constants agree with themselves" | **Fixed** (repo-local doctors emit `repo-consistent`/`contract-drift` + `scope: "repo-local"`, report `registerIssues`; "ready" reserved for live doctors) |
+| H8 | Metrics | Readiness ledger has no evidence-attachment path; validators forbid recording success (4-file lockstep per status change) | **Fixed** (`docs/evidence/` convention; external-audit register accepts `external-evidence-attached` iff refs follow the convention, doctor verifies the files exist) |
 | H9 | Copy | Calendar errors leaked env vars/routes; import showed "Date signal: 20260712"; checkout narrated the API; admin gate documented its own provisioning | **Fixed** (calendar errors, checkout, admin gate, import toast); `freeMvp.buildEvidence` humanization still open |
 | H10 | UI | Brand fonts (Fraunces/Instrument Sans) specified but never loaded — everyone saw Georgia/Helvetica | **Fixed** (self-hosted variable woff2, preloaded; 96KB) |
 | H11 | UX | Frozen `reviewerReferenceDate` (2026-06-03) stamped real user notes and ZIP timestamps | **Fixed** |
 | H12 | UX | Theme choice unlabeled dots, not persisted | Partially fixed (`aria-pressed`); persistence requires updating the localPersistenceAudit attestation chain (5 files) — plan below |
 | H13 | UX | Terminology soup: moments/events/occasions/opportunities/notes/details/memories | Needs product decision (pick: Occasions / People / Details / Cards) |
-| H14 | UX | No stepper/back-path between Studio → Print; deep-link `?view=handoff` shows placeholder proof page | Needs owner |
+| H14 | UX | No stepper/back-path between Studio → Print; deep-link `?view=handoff` shows placeholder proof page | **Fixed** (labeled 3-step stepper on Studio/Print with clickable back-path, "Back to design" link, empty print deep-links start in the studio) |
 | H15 | Copy | Chat replies ended with audit-log disclaimers; safety badges like "No outside transcript" | **Fixed** (chat closing); badges still open |
 
 ### Medium (selected)
@@ -62,8 +64,8 @@ Severity / Area / Title / Status. Evidence and fixes are in the sections below o
 | M7 | UX | "Try an example" dumped raw VCALENDAR | **Fixed** (human-text example, verified parser handles it) |
 | M8 | UX | "87% match" classifier score shown to customers | **Fixed** (removed from Events + Studio) |
 | M9 | Perf | 23MB of PNGs shipped (hero 1.5MB) | **Fixed** (WebP, 1.1MB total, −95%) |
-| M10 | Perf | 670KB main JS bundle (uncompressed) | Open (split Clerk/lucide; admin view already split) |
-| M11 | Metrics | "E2E 100%" green chip over a hand-typed matrix; `ciGated` self-attested | Needs owner |
+| M10 | Perf | 670KB main JS bundle (uncompressed) | **Fixed** (main chunk 352KB; Clerk in its own 314KB cacheable chunk; B2B view lazy) |
+| M11 | Metrics | "E2E 100%" green chip over a hand-typed matrix; `ciGated` self-attested | Partially **fixed** (chip now amber "29/29 mapped journeys (repo-local)"); `ciGated` self-attestation still open |
 | M12 | Metrics | ~10–15% of test suite snapshots constants against themselves | Needs owner (keep validator tests, drop count snapshots) |
 | M13 | UX | Magic sentinels ("Someone important") can swallow real input; one chip tap = "In progress" resume card | Open |
 | M14 | UX | Checkout collects name/email/phone with no explanation | Open (one sentence + inline validation) |

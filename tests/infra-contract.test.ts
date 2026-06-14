@@ -222,12 +222,12 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: number;
       realOrdersEnabled: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-cloud-artifact-proof-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       repoLocalReady: 2,
       evidenceMissing: 6,
@@ -243,7 +243,7 @@ describe("production infrastructure contract", () => {
       restoreDrillProofs: 0,
       externalNetworkCalls: 0,
       realOrdersEnabled: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes.map((lane) => lane.lane)).toEqual(
       expect.arrayContaining(["register", "terraform", "object-store", "surfaces", "docs", "ci"])
@@ -561,7 +561,7 @@ describe("production infrastructure contract", () => {
       liveProviderCalls: boolean;
       realOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
     const app = read("src/App.tsx");
     const apiContracts = read("src/apiContracts.ts");
@@ -571,13 +571,13 @@ describe("production infrastructure contract", () => {
 
     expect(report).toMatchObject({
       service: "customcard-capacity-plan-doctor",
-      status: "ready",
+      status: "repo-consistent",
       profiles: 4,
       maxDailyCards: 12000,
       maxDailyImageGenerations: 1000,
       liveProviderCalls: false,
       realOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes.map((lane) => lane.lane)).toEqual(
       expect.arrayContaining(["profiles", "surfaces", "ci", "safety"])
@@ -820,25 +820,25 @@ describe("production infrastructure contract", () => {
       liveCloudCalls: boolean;
       realOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-cloud-artifact-iac-doctor",
-      status: "ready",
+      status: "repo-consistent",
       module: "infra/aws/artifact-store",
       liveCloudCalls: false,
       realOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "bucket", status: "ready" }),
-        expect.objectContaining({ lane: "policy", status: "ready" }),
-        expect.objectContaining({ lane: "iam", status: "ready" }),
-        expect.objectContaining({ lane: "inputs", status: "ready" }),
-        expect.objectContaining({ lane: "outputs", status: "ready" }),
-        expect.objectContaining({ lane: "safety", status: "ready" })
+        expect.objectContaining({ lane: "bucket", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "policy", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "iam", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "inputs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "outputs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "safety", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -856,24 +856,24 @@ describe("production infrastructure contract", () => {
       liveProviderCalls: boolean;
       realOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-security-privacy-accessibility-doctor",
-      status: "ready",
+      status: "repo-consistent",
       externalAudit: false,
       legalReview: false,
       liveProviderCalls: false,
       realOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "security", status: "ready" }),
-        expect.objectContaining({ lane: "privacy", status: "ready" }),
-        expect.objectContaining({ lane: "accessibility", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "security", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "privacy", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "accessibility", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -893,28 +893,28 @@ describe("production infrastructure contract", () => {
       realOrdersEnabled: number;
       externalNetworkCalls: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-e2e-coverage-doctor",
-      status: "ready",
+      status: "repo-consistent",
       journeys: 29,
       repoLocalCoveragePercent: 100,
       ciGated: 29,
       liveProductionProofs: 0,
       realOrdersEnabled: 0,
       externalNetworkCalls: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "matrix", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "tests", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" }),
-        expect.objectContaining({ lane: "safety", status: "ready" })
+        expect.objectContaining({ lane: "matrix", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "tests", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "safety", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -937,12 +937,12 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: number;
       productionTrafficEnabled: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-ai-provider-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       textProviderContracts: 16,
       imageProviderContracts: 17,
@@ -952,15 +952,15 @@ describe("production infrastructure contract", () => {
       liveProviderCallsEnabled: 0,
       externalNetworkCalls: 0,
       productionTrafficEnabled: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "provider-contracts", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "provider-contracts", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -980,27 +980,27 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: number;
       productionAlertsEnabled: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-observability-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 7,
       providerContracts: 6,
       alertRoutesRequired: 4,
       liveIngestionEnabled: 0,
       externalNetworkCalls: 0,
       productionAlertsEnabled: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "provider-runtime", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "provider-runtime", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1023,12 +1023,12 @@ describe("production infrastructure contract", () => {
       realPaymentsEnabled: number;
       physicalCertificationAttached: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-retail-fulfillment-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       liveVendorAdapterContracts: 6,
       manualFallbacks: 2,
@@ -1038,15 +1038,15 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: 0,
       realPaymentsEnabled: 0,
       physicalCertificationAttached: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "provider-contracts", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "provider-contracts", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1071,12 +1071,12 @@ describe("production infrastructure contract", () => {
       cardDataStored: number;
       pciScopeApproved: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-payment-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       paymentProviderContracts: 4,
       localFallbacks: 1,
@@ -1088,15 +1088,15 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: 0,
       cardDataStored: 0,
       pciScopeApproved: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "provider-contracts", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "provider-contracts", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1122,12 +1122,12 @@ describe("production infrastructure contract", () => {
       realOrdersEnabled: number;
       liveProviderCalls: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-mobile-render-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       repoLocalReady: 5,
       evidenceMissing: 2,
@@ -1140,16 +1140,16 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "mobile-source", status: "ready" }),
-        expect.objectContaining({ lane: "native-profiles", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "mobile-source", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "native-profiles", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1178,12 +1178,12 @@ describe("production infrastructure contract", () => {
       realOrdersEnabled: number;
       liveProviderCalls: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-hosted-api-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       repoLocalReady: 2,
       evidenceMissing: 5,
@@ -1199,16 +1199,16 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: 0,
       realOrdersEnabled: 0,
       liveProviderCalls: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "vercel-source", status: "ready" }),
-        expect.objectContaining({ lane: "hosted-env", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "vercel-source", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "hosted-env", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1239,12 +1239,12 @@ describe("production infrastructure contract", () => {
       liveProviderCalls: number;
       realOrdersEnabled: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-reviewer-db-seed-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       repoLocalReady: 3,
       evidenceMissing: 5,
@@ -1262,17 +1262,17 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: 0,
       liveProviderCalls: 0,
       realOrdersEnabled: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "seed-contract", status: "ready" }),
-        expect.objectContaining({ lane: "token-contract", status: "ready" }),
-        expect.objectContaining({ lane: "hosted-proof-boundary", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "seed-contract", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "token-contract", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "hosted-proof-boundary", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1298,12 +1298,12 @@ describe("production infrastructure contract", () => {
       externalNetworkCalls: number;
       realOrdersEnabled: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-business-engagement-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 8,
       repoLocalReady: 4,
       evidenceMissing: 3,
@@ -1316,16 +1316,16 @@ describe("production infrastructure contract", () => {
       crmWritesEnabled: 0,
       externalNetworkCalls: 0,
       realOrdersEnabled: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "provider-catalog", status: "ready" }),
-        expect.objectContaining({ lane: "provider-runtime", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "provider-catalog", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "provider-runtime", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1343,26 +1343,26 @@ describe("production infrastructure contract", () => {
       publicClaimsAllowed: number;
       externalArtifactsAttached: number;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-external-audit-readiness-doctor",
-      status: "ready",
+      status: "repo-consistent",
       items: 15,
       productionBlocked: 15,
       publicClaimsAllowed: 0,
       externalArtifactsAttached: 0,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "register", status: "ready" }),
-        expect.objectContaining({ lane: "launch-gates", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" }),
-        expect.objectContaining({ lane: "safety", status: "ready" })
+        expect.objectContaining({ lane: "register", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "launch-gates", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "safety", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1381,27 +1381,27 @@ describe("production infrastructure contract", () => {
       liveProviderCalls: boolean;
       realOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-provider-governance-doctor",
-      status: "ready",
+      status: "repo-consistent",
       adapterCount: expect.any(Number),
       usageBasedCount: expect.any(Number),
       blockedCount: 6,
       liveProviderCalls: false,
       realOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.adapterCount).toBeGreaterThanOrEqual(121);
     expect(report.usageBasedCount).toBeGreaterThanOrEqual(57);
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "catalog", status: "ready" }),
-        expect.objectContaining({ lane: "governance", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "catalog", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "governance", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1419,26 +1419,26 @@ describe("production infrastructure contract", () => {
       liveProviderCalls: boolean;
       realOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-provider-operations-doctor",
-      status: "ready",
+      status: "repo-consistent",
       ledgerTable: "provider_call_events",
       fallbackReasons: 9,
       liveProviderCalls: false,
       realOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "router", status: "ready" }),
-        expect.objectContaining({ lane: "ledger", status: "ready" }),
-        expect.objectContaining({ lane: "runtime", status: "ready" }),
-        expect.objectContaining({ lane: "docs", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" }),
-        expect.objectContaining({ lane: "safety", status: "ready" })
+        expect.objectContaining({ lane: "router", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ledger", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "runtime", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "docs", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "safety", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1458,27 +1458,27 @@ describe("production infrastructure contract", () => {
       liveTranslationProvider: boolean;
       realOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-localization-doctor",
-      status: "ready",
+      status: "repo-consistent",
       localeCount: 4,
       rtlCount: 2,
       reviewRequiredCount: expect.any(Number),
       mobileLocaleCount: 4,
       liveTranslationProvider: false,
       realOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.reviewRequiredCount).toBeGreaterThanOrEqual(3);
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "catalog", status: "ready" }),
-        expect.objectContaining({ lane: "mobile", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "catalog", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "mobile", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1499,28 +1499,28 @@ describe("production infrastructure contract", () => {
       liveQuote: boolean;
       liveOrdersEnabled: boolean;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
     expect(report).toMatchObject({
       service: "customcard-printer-pricing-doctor",
-      status: "ready",
+      status: "repo-consistent",
       observationCount: 12,
       officialSourceCount: expect.any(Number),
       collectionRuleCount: expect.any(Number),
       manualConfirmationCount: 12,
       liveQuote: false,
       liveOrdersEnabled: false,
-      blockers: []
+      registerIssues: []
     });
     expect(report.officialSourceCount).toBeGreaterThanOrEqual(9);
     expect(report.collectionRuleCount).toBeGreaterThanOrEqual(8);
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "catalog", status: "ready" }),
-        expect.objectContaining({ lane: "collection", status: "ready" }),
-        expect.objectContaining({ lane: "surfaces", status: "ready" }),
-        expect.objectContaining({ lane: "ci", status: "ready" })
+        expect.objectContaining({ lane: "catalog", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "collection", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "surfaces", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "ci", status: "repo-consistent" })
       ])
     );
     expect(pricingResearch).toContain("FMTC Deal Feed");
@@ -1605,19 +1605,19 @@ describe("production infrastructure contract", () => {
     const report = JSON.parse(output) as {
       status: string;
       lanes: Array<{ lane: string; status: string }>;
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
-    expect(report.status).toBe("ready");
-    expect(report.blockers).toEqual([]);
+    expect(report.status).toBe("repo-consistent");
+    expect(report.registerIssues).toEqual([]);
     expect(report.lanes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ lane: "local-dev", status: "ready" }),
-        expect.objectContaining({ lane: "cheap-droplet", status: "ready" }),
-        expect.objectContaining({ lane: "cloud-native", status: "ready" }),
-        expect.objectContaining({ lane: "cloud-storage", status: "ready" }),
-        expect.objectContaining({ lane: "runtime", status: "ready" }),
-        expect.objectContaining({ lane: "data", status: "ready" })
+        expect.objectContaining({ lane: "local-dev", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "cheap-droplet", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "cloud-native", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "cloud-storage", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "runtime", status: "repo-consistent" }),
+        expect.objectContaining({ lane: "data", status: "repo-consistent" })
       ])
     );
   }, shellDoctorTimeoutMs);
@@ -1656,11 +1656,11 @@ describe("production infrastructure contract", () => {
         };
         safety: { rawContentStored: boolean; liveExternalCalls: boolean; realOrdersEnabled: boolean };
       };
-      blockers: unknown[];
+      registerIssues: unknown[];
     };
 
-    expect(report.status).toBe("ready");
-    expect(report.blockers).toEqual([]);
+    expect(report.status).toBe("repo-consistent");
+    expect(report.registerIssues).toEqual([]);
     expect(report.readiness.tables).toMatchObject({
       total: 20,
       authSessions: true,

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import {
   externalAuditReadinessItems,
   summarizeExternalAuditReadiness,
@@ -29,8 +29,8 @@ const relatedGateIds = Array.from(new Set(externalAuditReadinessItems.flatMap((i
 const checks = [
   checkExact("register", "item-count", summary.total, 15),
   checkExact("register", "production-blocked", summary.productionBlocked, summary.total),
-  checkExact("register", "public-claims-disabled", summary.publicClaimsAllowed, 0),
-  checkExact("register", "external-artifacts-not-claimed", summary.externalArtifactsAttached, 0),
+  checkExact("register", "public-claims-gated-on-attached-evidence", summary.publicClaimsAllowed <= summary.externalEvidenceAttached, true),
+  checkEvidenceRefsResolve("register", "evidence-artifact-refs-resolve", externalAuditReadinessItems),
   checkNoBlockers("register", "executable-summary-and-validation", validationBlockers),
   checkItemsShape("register", "item-contract-shape", externalAuditReadinessItems),
   checkIncludes("launch-gates", "mapped-production-gates", contents.productionReadiness, relatedGateIds),
@@ -73,7 +73,7 @@ const lanes = Array.from(new Set(checks.map((check) => check.lane))).map((lane) 
     lane,
     passed: laneChecks.filter((check) => check.passed).length,
     total: laneChecks.length,
-    status: laneChecks.every((check) => check.passed) ? "ready" : "blocked"
+    status: laneChecks.every((check) => check.passed) ? "repo-consistent" : "contract-drift"
   };
 });
 
@@ -83,14 +83,16 @@ console.log(
   JSON.stringify(
     {
       service: "customcard-external-audit-readiness-doctor",
-      status: failed.length === 0 ? "ready" : "blocked",
+      status: failed.length === 0 ? "repo-consistent" : "contract-drift",
+      scope: "repo-local",
       items: summary.total,
       productionBlocked: summary.productionBlocked,
       publicClaimsAllowed: summary.publicClaimsAllowed,
       externalArtifactsAttached: summary.externalArtifactsAttached,
+      externalEvidenceAttached: summary.externalEvidenceAttached,
       lanes,
       checks,
-      blockers: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
+      registerIssues: failed.map((check) => ({ id: check.id, lane: check.lane, detail: check.detail }))
     },
     null,
     2
@@ -98,6 +100,23 @@ console.log(
 );
 
 if (failed.length > 0) process.exit(1);
+
+/** Status upgrades are only honest when every referenced evidence artifact actually exists on disk. */
+function checkEvidenceRefsResolve(lane, id, items) {
+  const missing = items.flatMap((item) =>
+    item.evidenceArtifactRefs.filter((ref) => !existsSync(ref)).map((ref) => `${item.id}: ${ref}`)
+  );
+
+  return {
+    id,
+    lane,
+    passed: missing.length === 0,
+    detail:
+      missing.length === 0
+        ? `All ${items.reduce((total, item) => total + item.evidenceArtifactRefs.length, 0)} attached evidence refs resolve to files under docs/evidence/.`
+        : `Evidence refs do not resolve to files: ${missing.join(", ")}`
+  };
+}
 
 function checkItemsShape(lane, id, items) {
   const requiredKeys = [

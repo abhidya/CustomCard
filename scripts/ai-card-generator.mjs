@@ -190,7 +190,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
       let textProvider = copyFlow.primaryAdapterId;
 
       if (copyFlow.readyForLiveCalls) {
-        const reservation = costGate.reserve(
+        const reservation = await costGate.reserve(
           aiCostGateInput({
             flow: copyFlow,
             requestContext,
@@ -225,13 +225,13 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
               responseFormat: buildCardCopyResponseFormat(copyFlow)
             });
             cardCopy = normalizeCardCopy(parseJsonFromText(text), draftInput);
-            providerCallEvents.push(costGate.settle(reservation.reservation, { status: "succeeded" }));
+            providerCallEvents.push(await costGate.settle(reservation.reservation, { status: "succeeded" }));
           } catch (error) {
             textProviderFailure = error instanceof Error ? error.message : "Provider text generation failed.";
             cardCopy = buildFallbackCardCopy(draftInput);
             textProvider = copyFlow.fallbackAdapterId;
             providerCallEvents.push(
-              costGate.settle(reservation.reservation, {
+              await costGate.settle(reservation.reservation, {
                 status: "fallback-selected",
                 fallbackReason: "provider-unavailable",
                 errorClass: "provider-text-generation-failed",
@@ -250,7 +250,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
       let imageProvider = imageFlow.fallbackAdapterId;
       if (imageFlow.readyForLiveCalls) {
         const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
-        const reservation = costGate.reserve(
+        const reservation = await costGate.reserve(
           aiCostGateInput({
             flow: imageFlow,
             requestContext,
@@ -294,7 +294,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
             if (images.length === imagePromptPlan.length) {
               imageProvider = imageFlow.primaryAdapterId;
               providerCallEvents.push(
-                costGate.settle(reservation.reservation, {
+                await costGate.settle(reservation.reservation, {
                   status: "succeeded",
                   metadata: { generatedPanelCount: images.length }
                 })
@@ -311,7 +311,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
               });
               if (fallbackPanelCount === imagePromptPlan.length) imageProvider = imageFlow.fallbackAdapterId;
               providerCallEvents.push(
-                costGate.settle(reservation.reservation, {
+                await costGate.settle(reservation.reservation, {
                   status: "fallback-selected",
                   fallbackReason: "provider-unavailable",
                   errorClass: "provider-image-generation-incomplete",
@@ -331,7 +331,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
             });
             if (fallbackPanelCount === imagePromptPlan.length) imageProvider = imageFlow.fallbackAdapterId;
             providerCallEvents.push(
-              costGate.settle(reservation.reservation, {
+              await costGate.settle(reservation.reservation, {
                 status: "fallback-selected",
                 fallbackReason: "provider-unavailable",
                 errorClass: "provider-image-generation-failed",
@@ -381,7 +381,7 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
       let adapterId = flow.primaryAdapterId;
 
       if (flow.readyForLiveCalls) {
-        const reservation = costGate.reserve(
+        const reservation = await costGate.reserve(
           aiCostGateInput({
             flow,
             requestContext,
@@ -414,13 +414,13 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
               systemPrompt: flow.promptInstructions,
               userPrompt: buildChatPrompt(input)
             });
-            providerCallEvents.push(costGate.settle(reservation.reservation, { status: "succeeded" }));
+            providerCallEvents.push(await costGate.settle(reservation.reservation, { status: "succeeded" }));
           } catch (error) {
             providerFailure = error instanceof Error ? error.message : "Provider chat generation failed.";
             assistantMessage = buildLocalChatReply(input);
             adapterId = flow.fallbackAdapterId;
             providerCallEvents.push(
-              costGate.settle(reservation.reservation, {
+              await costGate.settle(reservation.reservation, {
                 status: "fallback-selected",
                 fallbackReason: "provider-unavailable",
                 errorClass: "provider-chat-generation-failed",

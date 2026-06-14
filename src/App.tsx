@@ -384,7 +384,11 @@ export function AdminPanelView({
               <p className="eyebrow">Verification</p>
               <h3>End-to-end coverage</h3>
             </div>
-            <StatusChip icon={ClipboardCheck} label="Repo-local 100%" tone="green" />
+            <StatusChip
+              icon={ClipboardCheck}
+              label={`${e2eCoverageSummary.covered}/${e2eCoverageSummary.total} mapped journeys (repo-local)`}
+              tone="amber"
+            />
           </div>
           <div className="runtimeGrid" aria-label="End-to-end coverage readiness">
             <Metric label="Journeys" value={`${e2eCoverageSummary.total}`} />
@@ -396,7 +400,7 @@ export function AdminPanelView({
           </div>
           <E2eCoverageList items={e2eCoverageItems} />
           <p className="panelNote">
-            The 100% figure is limited to repo-local reviewer workflows and CI-gated doctors; live production auth, real payments, direct printer orders, signed native artifacts, and external audits remain outside this proof.
+            This matrix maps repo-local reviewer workflows and CI-gated doctors against a hand-maintained journey list; live production auth, real payments, direct printer orders, signed native artifacts, and external audits remain outside this proof.
           </p>
         </article>
 

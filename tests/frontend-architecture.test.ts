@@ -34,13 +34,18 @@ import { buildAiCardGenerationHeaders, readAiGenerationResponse } from "../src/a
 import { jpegDataUrlByteLength, jpegDataUrlToBytes } from "../webapp/panelMediaAdapter";
 import {
   adminNavItems,
+  createFlowStepIndex,
+  createFlowSteps,
   customerNavItems,
   getAdminAccessStatus,
   getAdminSurfaceHeading,
   getAdminTargetLabel,
   resolveActiveCustomerNavView,
+  resolveCreateFlowEntryView,
   resolveVisibleCustomerView,
+  shouldRenderBusinessLanding,
   shouldRenderCustomerNav,
+  shouldShowCreateFlowStepper,
   shouldShowCustomerCta,
   shouldShowTopNav
 } from "../webapp/routePolicy";
@@ -120,6 +125,30 @@ describe("frontend architecture seams", () => {
     expect(shouldShowTopNav({ hasCustomerNavItems: true, isAdmin: false, renderCustomerNav: true })).toBe(true);
     expect(shouldShowTopNav({ hasCustomerNavItems: false, isAdmin: true, renderCustomerNav: true })).toBe(true);
     expect(shouldShowTopNav({ hasCustomerNavItems: true, isAdmin: true, renderCustomerNav: false })).toBe(false);
+  });
+
+  it("keeps the internal B2B landing admin-only until real marketing copy exists", () => {
+    expect(shouldRenderBusinessLanding("business", false)).toBe(false);
+    expect(shouldRenderBusinessLanding("business", true)).toBe(true);
+    expect(shouldRenderBusinessLanding("customer", true)).toBe(false);
+  });
+
+  it("routes empty print deep-links to the studio and labels the create flow steps", () => {
+    expect(resolveCreateFlowEntryView("handoff", false)).toBe("studio");
+    expect(resolveCreateFlowEntryView("handoff", true)).toBe("handoff");
+    expect(resolveCreateFlowEntryView("studio", false)).toBe("studio");
+    expect(resolveCreateFlowEntryView("customer", false)).toBe("customer");
+
+    expect(createFlowSteps.map((step) => step.label)).toEqual(["Start", "Design", "Print"]);
+    expect(createFlowSteps.map((step) => step.view)).toEqual(["customer", "studio", "handoff"]);
+    expect(createFlowStepIndex("studio")).toBe(1);
+    expect(createFlowStepIndex("handoff")).toBe(2);
+    expect(createFlowStepIndex("settings")).toBe(-1);
+
+    expect(shouldShowCreateFlowStepper("studio")).toBe(true);
+    expect(shouldShowCreateFlowStepper("handoff")).toBe(true);
+    expect(shouldShowCreateFlowStepper("customer")).toBe(false);
+    expect(shouldShowCreateFlowStepper("business")).toBe(false);
   });
 
   it("keeps admin gate labels and statuses behind one policy interface", () => {

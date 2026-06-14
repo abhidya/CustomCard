@@ -5,43 +5,65 @@ const defaultRateKey = "unknown";
 
 export function createAiFlowCostGate({ store = createMemoryAiFlowCostStore(), now = () => new Date() } = {}) {
   return {
-    reserve(input) {
+    async reserve(input) {
       const reservation = buildReservation(input, now());
-      const blockedReason = firstBlockedReason(store, reservation, now());
-      if (blockedReason) {
-        const event = buildProviderCallEvent({
-          reservation,
-          status: "blocked",
-          fallbackReason: blockedReason.reason,
-          metadata: {
-            ...reservation.metadata,
-            costGateBlocked: true,
-            costGateReason: blockedReason.detail
-          }
+      let outcome;
+      try {
+        outcome = await store.reserveWithChecks(reservation, {
+          evaluate: (usage) => firstBlockedReason(reservation, usage),
+          buildEvent: (blockedReason) =>
+            blockedReason
+              ? buildProviderCallEvent({
+                  reservation,
+                  status: "blocked",
+                  fallbackReason: blockedReason.reason,
+                  metadata: {
+                    ...reservation.metadata,
+                    costGateBlocked: true,
+                    costGateReason: blockedReason.detail
+                  }
+                })
+              : buildProviderCallEvent({ reservation, status: "reserved" })
         });
-        store.appendEvent(event);
-        return {
-          ok: false,
-          reservation,
-          event,
-          statusCode: blockedReason.statusCode,
-          fallbackReason: blockedReason.reason,
-          providerFailure: blockedReason.detail,
-          payload: blockedPayload(reservation, blockedReason.detail)
+      } catch {
+        // Fail closed: if the durable spend ledger is unreachable we refuse the
+        // live call instead of allowing unaccounted provider spend.
+        const blockedReason = {
+          reason: "provider-unavailable",
+          statusCode: 200,
+          detail: `${reservation.flowId} cost ledger is unavailable; live provider call refused to keep spend accounted.`
+        };
+        outcome = {
+          blockedReason,
+          event: buildProviderCallEvent({
+            reservation,
+            status: "blocked",
+            fallbackReason: blockedReason.reason,
+            metadata: { ...reservation.metadata, costGateBlocked: true, costGateReason: blockedReason.detail }
+          })
         };
       }
 
-      store.reserve(reservation);
-      const event = buildProviderCallEvent({ reservation, status: "reserved" });
-      store.appendEvent(event);
+      if (outcome.blockedReason) {
+        return {
+          ok: false,
+          reservation,
+          event: outcome.event,
+          statusCode: outcome.blockedReason.statusCode,
+          fallbackReason: outcome.blockedReason.reason,
+          providerFailure: outcome.blockedReason.detail,
+          payload: blockedPayload(reservation, outcome.blockedReason.detail)
+        };
+      }
+
       return {
         ok: true,
         reservation,
-        event
+        event: outcome.event
       };
     },
 
-    settle(reservation, result = {}) {
+    async settle(reservation, result = {}) {
       const status = normalizeStatus(result.status);
       const event = buildProviderCallEvent({
         reservation,
@@ -51,11 +73,16 @@ export function createAiFlowCostGate({ store = createMemoryAiFlowCostStore(), no
         errorClass: result.errorClass,
         metadata: result.metadata
       });
-      store.appendEvent(event);
+      try {
+        await store.appendEvent(event, reservation);
+      } catch {
+        // Settlement is bookkeeping after the spend decision; losing one event
+        // must not fail the customer response.
+      }
       return event;
     },
 
-    snapshot(input = {}) {
+    async snapshot(input = {}) {
       return store.snapshot({
         flowId: input.flow?.flowId ?? input.flowId,
         tenantId: input.tenantId ?? defaultTenantId,
@@ -82,6 +109,22 @@ export function createMemoryAiFlowCostStore({ now = () => new Date() } = {}) {
 
     monthlyReservedCents(reservation) {
       return monthlyReservedCents.get(monthlyKey(reservation)) ?? 0;
+    },
+
+    /**
+     * Check-and-reserve in one step. Synchronous JS makes this atomic per
+     * process; the Postgres store provides the cross-instance equivalent.
+     */
+    reserveWithChecks(reservation, { evaluate, buildEvent }) {
+      const usage = {
+        monthlyReservedCents: this.monthlyReservedCents(reservation),
+        rateUnitsInWindow: this.rateUsage(reservation, now())
+      };
+      const blockedReason = evaluate(usage);
+      if (!blockedReason) this.reserve(reservation);
+      const event = buildEvent(blockedReason);
+      this.appendEvent(event);
+      return { blockedReason, event };
     },
 
     reserve(reservation) {
@@ -123,7 +166,126 @@ export function createMemoryAiFlowCostStore({ now = () => new Date() } = {}) {
   };
 }
 
-function firstBlockedReason(store, reservation, nowDate) {
+/**
+ * Durable cross-instance cost store backed by the provider_call_events table.
+ *
+ * Serverless deployments run one in-memory gate per instance, which caps
+ * nothing platform-wide. This store makes reserve a single transaction —
+ * advisory lock on (tenant, flow, month), sum reserved spend and the rolling
+ * one-minute rate window, then insert the reserved/blocked event — so budgets
+ * and rate limits hold across every instance that shares the database.
+ */
+export function createPostgresAiFlowCostStore({ getPool, now = () => new Date() } = {}) {
+  if (typeof getPool !== "function") throw new Error("createPostgresAiFlowCostStore requires a getPool function.");
+
+  async function insertEvent(executor, event, reservation) {
+    await executor.query(
+      `INSERT INTO provider_call_events (
+         id, tenant_id, user_id, route_id, adapter_id, provider, capability, status,
+         fallback_from_adapter_id, fallback_reason, month_bucket, request_units,
+         estimated_cost_cents, actual_cost_cents, rate_limit_window_start,
+         latency_ms, error_class, pii_free, live_network_call, metadata
+       ) VALUES (
+         $1, $2, (SELECT id FROM users WHERE id = $3), $4, $5, $6, $7, $8,
+         $9, $10, $11, $12, $13, $14, $15, $16, $17, TRUE, $18, $19::jsonb
+       )
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        event.id,
+        event.tenantId,
+        event.userId,
+        event.routeId,
+        event.adapterId,
+        event.provider,
+        event.capability,
+        event.status,
+        event.fallbackFromAdapterId,
+        event.fallbackReason,
+        event.monthBucket,
+        event.requestUnits,
+        event.estimatedCostCents,
+        event.actualCostCents,
+        event.rateLimitWindowStartIso,
+        event.latencyMs,
+        event.errorClass,
+        event.liveNetworkCall,
+        JSON.stringify({
+          ...event.metadata,
+          flowId: event.flowId,
+          idempotencyKey: event.idempotencyKey,
+          rateBucketKey: reservation ? rateBucketKey(reservation) : undefined
+        })
+      ]
+    );
+  }
+
+  return {
+    async reserveWithChecks(reservation, { evaluate, buildEvent }) {
+      const pool = await getPool();
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [monthlyKey(reservation)]);
+        const monthly = await client.query(
+          `SELECT COALESCE(SUM(estimated_cost_cents), 0)::int AS reserved_cents
+             FROM provider_call_events
+            WHERE tenant_id = $1 AND month_bucket = $2 AND status = 'reserved' AND metadata->>'flowId' = $3`,
+          [reservation.tenantId, reservation.monthBucket, reservation.flowId]
+        );
+        const rate = await client.query(
+          `SELECT COALESCE(SUM(request_units), 0)::int AS units
+             FROM provider_call_events
+            WHERE status = 'reserved' AND metadata->>'rateBucketKey' = $1
+              AND created_at > NOW() - INTERVAL '60 seconds'`,
+          [rateBucketKey(reservation)]
+        );
+        const usage = {
+          monthlyReservedCents: monthly.rows[0]?.reserved_cents ?? 0,
+          rateUnitsInWindow: rate.rows[0]?.units ?? 0
+        };
+        const blockedReason = evaluate(usage);
+        const event = buildEvent(blockedReason);
+        await insertEvent(client, event, reservation);
+        await client.query("COMMIT");
+        return { blockedReason, event };
+      } catch (error) {
+        await client.query("ROLLBACK").catch(() => undefined);
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+
+    async appendEvent(event, reservation) {
+      const pool = await getPool();
+      await insertEvent(pool, event, reservation);
+    },
+
+    async snapshot({ flowId, tenantId = defaultTenantId, monthBucket: month = monthBucket(now()) } = {}) {
+      const pool = await getPool();
+      const result = await pool.query(
+        `SELECT COALESCE(SUM(estimated_cost_cents), 0)::int AS reserved_cents, COUNT(*)::int AS event_count
+           FROM provider_call_events
+          WHERE tenant_id = $1 AND month_bucket = $2 AND status = 'reserved'
+            AND ($3::text IS NULL OR metadata->>'flowId' = $3)`,
+        [tenantId, month, flowId ?? null]
+      );
+      return {
+        monthBucket: month,
+        monthlyReservedCents: result.rows[0]?.reserved_cents ?? 0,
+        eventCount: result.rows[0]?.event_count ?? 0
+      };
+    },
+
+    events() {
+      // The durable ledger lives in provider_call_events; per-request payloads
+      // carry their own events, so there is no in-process backlog to expose.
+      return [];
+    }
+  };
+}
+
+function firstBlockedReason(reservation, usage) {
   if (!reservation.readyForLiveCalls) {
     return {
       reason: "provider-blocked",
@@ -138,7 +300,7 @@ function firstBlockedReason(store, reservation, nowDate) {
       detail: `${reservation.flowId} estimated unit cost ${reservation.unitCostCents}c exceeds per-request budget ${reservation.perRequestBudgetCents}c.`
     };
   }
-  const projectedMonthlyCents = store.monthlyReservedCents(reservation) + reservation.estimatedCostCents;
+  const projectedMonthlyCents = usage.monthlyReservedCents + reservation.estimatedCostCents;
   if (projectedMonthlyCents > reservation.monthlyBudgetCents) {
     return {
       reason: "monthly-budget-exceeded",
@@ -146,7 +308,7 @@ function firstBlockedReason(store, reservation, nowDate) {
       detail: `${reservation.flowId} projected monthly spend ${projectedMonthlyCents}c exceeds monthly budget ${reservation.monthlyBudgetCents}c.`
     };
   }
-  const projectedRate = store.rateUsage(reservation, nowDate) + reservation.requestUnits;
+  const projectedRate = usage.rateUnitsInWindow + reservation.requestUnits;
   if (projectedRate > reservation.rateLimitPerMinute) {
     return {
       reason: "rate-limit-exceeded",

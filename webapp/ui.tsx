@@ -1,6 +1,39 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { buildPanelSvg } from "../src/renderPacket";
 import type { CardPanel } from "../src/customerWorkflow";
+import { createFlowStepIndex, createFlowSteps } from "./routePolicy";
+import type { ViewId } from "../src/appStateOrchestrator";
+
+/** Labeled wayfinding for the create flow; earlier steps are clickable back-paths. */
+export function CreateFlowStepper({ currentView, onNavigate }: { currentView: ViewId; onNavigate: (view: ViewId) => void }) {
+  const currentIndex = createFlowStepIndex(currentView);
+
+  return (
+    <nav aria-label="Card creation steps" className="flowstepper reveal">
+      <ol>
+        {createFlowSteps.map((step, index) => {
+          const isCurrent = index === currentIndex;
+          const isDone = index < currentIndex;
+          return (
+            <li aria-current={isCurrent ? "step" : undefined} data-done={isDone} data-now={isCurrent} key={step.view}>
+              {isDone ? (
+                <button onClick={() => onNavigate(step.view)} type="button">
+                  <span className="flowstepper-num" aria-hidden="true">{index + 1}</span>
+                  {step.label}
+                </button>
+              ) : (
+                <span>
+                  <span className="flowstepper-num" aria-hidden="true">{index + 1}</span>
+                  {step.label}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
 
 /** Render a real print panel as an image (same SVG the export produces). */
 export function PanelArt({ panel, className }: { panel: CardPanel; className?: string }) {

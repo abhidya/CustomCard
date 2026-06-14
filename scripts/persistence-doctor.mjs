@@ -376,13 +376,14 @@ const lanes = Array.from(new Set(checks.map((item) => item.lane))).map((lane) =>
     lane,
     passed: laneChecks.filter((item) => item.passed).length,
     total: laneChecks.length,
-    status: laneChecks.every((item) => item.passed) ? "ready" : "blocked"
+    status: laneChecks.every((item) => item.passed) ? "repo-consistent" : "contract-drift"
   };
 });
 const blockers = checks.filter((item) => !item.passed).map((item) => ({ id: item.id, lane: item.lane, detail: item.detail }));
 const report = {
   service: "customcard-persistence-doctor",
-  status: blockers.length === 0 ? "ready" : "blocked",
+  status: blockers.length === 0 ? "repo-consistent" : "contract-drift",
+  scope: "repo-local",
   readiness: {
     tables: {
       total: requiredTables.length,
@@ -422,7 +423,7 @@ const report = {
     }
   },
   lanes,
-  blockers
+  registerIssues: blockers
 };
 
 console.log(JSON.stringify(report, null, 2));

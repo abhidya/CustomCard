@@ -1,4 +1,8 @@
-export type ExternalAuditStatus = "internal-baseline-ready" | "external-evidence-missing" | "certification-blocked";
+export type ExternalAuditStatus =
+  | "internal-baseline-ready"
+  | "external-evidence-missing"
+  | "certification-blocked"
+  | "external-evidence-attached";
 export type ExternalAuditCategory =
   | "identity"
   | "provider"
@@ -22,8 +26,9 @@ export interface ExternalAuditReadinessItem {
   reviewer: string;
   cadence: string;
   externalReviewerRequired: true;
-  blocksProduction: true;
-  publicClaimAllowed: false;
+  /** May flip only when status is "external-evidence-attached" with resolvable evidence refs. */
+  blocksProduction: boolean;
+  publicClaimAllowed: boolean;
   blocker: string;
 }
 
@@ -32,11 +37,13 @@ export interface ExternalAuditReadinessSummary {
   internalBaselineReady: number;
   externalEvidenceMissing: number;
   certificationBlocked: number;
+  externalEvidenceAttached: number;
   productionBlocked: number;
   publicClaimsAllowed: number;
   externalArtifactsAttached: number;
   externalReviewerRequired: number;
   requiredEvidence: string[];
+  registerIssues: string[];
   blockers: string[];
 }
 

@@ -37,6 +37,7 @@ export function PrintView({
   pricingComparison,
   printPackage,
   onCardEvent,
+  onBackToDesign,
   onDownloadPackage,
   onDownloadPanels,
   onCopyChecklist,
@@ -50,6 +51,7 @@ export function PrintView({
   pricingComparison: PrinterPricingComparison;
   printPackage: PrintExportPackage;
   onCardEvent?: (status: "ready-to-print" | "walgreens-checkout-started" | "returned-from-walgreens") => void;
+  onBackToDesign?: () => void;
   onDownloadPackage: () => void | Promise<void>;
   onDownloadPanels: () => void | Promise<void>;
   onCopyChecklist: () => void;
@@ -176,6 +178,11 @@ export function PrintView({
       <header className="pagehead reveal">
         <h1>Print at Walgreens</h1>
         <p>Approve your proof, then continue to Walgreens — they handle the store, the payment, and the pickup.</p>
+        {onBackToDesign ? (
+          <button className="backlink" onClick={onBackToDesign} type="button">
+            ← Back to design
+          </button>
+        ) : null}
       </header>
 
       <div className="print">

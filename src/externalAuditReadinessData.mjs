@@ -1,4 +1,4 @@
-import { defineReadinessRegister } from "./readinessRegister.mjs";
+import { defineReadinessRegister, invalidEvidenceArtifactRefs } from "./readinessRegister.mjs";
 
 const requiredAuditIds = [
   "production-auth-token-verification",
@@ -18,7 +18,14 @@ const requiredAuditIds = [
   "physical-print-certification"
 ];
 
-const allowedStatuses = new Set(["internal-baseline-ready", "external-evidence-missing", "certification-blocked"]);
+const allowedStatuses = new Set([
+  "internal-baseline-ready",
+  "external-evidence-missing",
+  "certification-blocked",
+  // Upgrade status: only valid when real proof is recorded under docs/evidence/
+  // (the doctor verifies the referenced files exist on disk).
+  "external-evidence-attached"
+]);
 
 export const externalAuditReadinessItems = [
   {
@@ -276,17 +283,26 @@ const externalAuditReadinessRegister = defineReadinessRegister({
   itemRules(item) {
     const issues = [];
     if (!allowedStatuses.has(item.status)) issues.push(`External audit readiness item ${item.id} has unsupported status.`);
-    if (item.publicClaimAllowed !== false) {
+    const evidenceAttached = item.status === "external-evidence-attached";
+    if (item.publicClaimAllowed !== false && !evidenceAttached) {
       issues.push(`External audit readiness item ${item.id} must keep publicClaimAllowed=false until external evidence is reviewed.`);
     }
-    if (item.blocksProduction !== true) {
+    if (item.blocksProduction !== true && !evidenceAttached) {
       issues.push(`External audit readiness item ${item.id} must block production until external evidence is attached.`);
     }
     if (item.externalReviewerRequired !== true) {
       issues.push(`External audit readiness item ${item.id} must require an external reviewer.`);
     }
-    if (item.evidenceArtifactRefs.length > 0) {
-      issues.push(`External audit readiness item ${item.id} must not claim attached external artifacts in the free local MVP.`);
+    if (evidenceAttached && item.evidenceArtifactRefs.length === 0) {
+      issues.push(
+        `External audit readiness item ${item.id} cannot claim attached external evidence without evidenceArtifactRefs under docs/evidence/.`
+      );
+    }
+    const invalidRefs = invalidEvidenceArtifactRefs(item.evidenceArtifactRefs);
+    if (invalidRefs.length > 0) {
+      issues.push(
+        `External audit readiness item ${item.id} has evidence refs outside the docs/evidence convention: ${invalidRefs.join(", ")}.`
+      );
     }
     if (item.requiredEvidence.length < 2) {
       issues.push(`External audit readiness item ${item.id} must list at least two required evidence items.`);
@@ -307,6 +323,7 @@ const externalAuditReadinessRegister = defineReadinessRegister({
       internalBaselineReady: items.filter((item) => item.status === "internal-baseline-ready").length,
       externalEvidenceMissing: items.filter((item) => item.status === "external-evidence-missing").length,
       certificationBlocked: items.filter((item) => item.status === "certification-blocked").length,
+      externalEvidenceAttached: items.filter((item) => item.status === "external-evidence-attached").length,
       productionBlocked: items.filter((item) => item.blocksProduction).length,
       publicClaimsAllowed: items.filter((item) => item.publicClaimAllowed).length,
       externalArtifactsAttached: items.reduce((total, item) => total + item.evidenceArtifactRefs.length, 0),

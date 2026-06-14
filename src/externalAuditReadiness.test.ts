@@ -17,6 +17,7 @@ describe("external audit readiness", () => {
       internalBaselineReady: 3,
       externalEvidenceMissing: 10,
       certificationBlocked: 2,
+      externalEvidenceAttached: 0,
       productionBlocked: 15,
       publicClaimsAllowed: 0,
       externalArtifactsAttached: 0,
@@ -92,11 +93,41 @@ describe("external audit readiness", () => {
         "External audit readiness item production-auth-token-verification must keep publicClaimAllowed=false until external evidence is reviewed.",
         "External audit readiness item production-auth-token-verification must block production until external evidence is attached.",
         "External audit readiness item production-auth-token-verification must require an external reviewer.",
-        "External audit readiness item production-auth-token-verification must not claim attached external artifacts in the free local MVP.",
+        "External audit readiness item production-auth-token-verification has evidence refs outside the docs/evidence convention: docs/audits/fake-report.pdf.",
         "External audit readiness item production-auth-token-verification must list at least two required evidence items.",
         "External audit readiness item production-auth-token-verification must map to at least one production launch gate.",
         "Missing external audit readiness item: oauth-app-approval."
       ])
+    );
+  });
+
+  it("accepts a status upgrade only when evidence is recorded under docs/evidence", () => {
+    const upgraded = externalAuditReadinessItems.map((item) =>
+      item.id === "security-assessment"
+        ? {
+            ...item,
+            status: "external-evidence-attached" as const,
+            evidenceArtifactRefs: ["docs/evidence/external-audit/2026-06-12-security-assessment-report.pdf"],
+            blocksProduction: false
+          }
+        : item
+    );
+
+    expect(validateExternalAuditReadiness(upgraded)).toEqual([]);
+    expect(summarizeExternalAuditReadiness(upgraded)).toMatchObject({
+      externalEvidenceAttached: 1,
+      externalArtifactsAttached: 1,
+      registerIssues: []
+    });
+  });
+
+  it("rejects an evidence-attached claim that has no artifact refs", () => {
+    const hollow = externalAuditReadinessItems.map((item) =>
+      item.id === "security-assessment" ? { ...item, status: "external-evidence-attached" as const } : item
+    );
+
+    expect(validateExternalAuditReadiness(hollow)).toContain(
+      "External audit readiness item security-assessment cannot claim attached external evidence without evidenceArtifactRefs under docs/evidence/."
     );
   });
 });

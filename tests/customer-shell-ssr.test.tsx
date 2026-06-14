@@ -3,6 +3,7 @@ import { renderToString } from "react-dom/server";
 import { createElement, type ReactNode } from "react";
 import App from "../webapp/App";
 import { AdminCardGalleryView } from "../webapp/views/AdminCardGalleryView";
+import { BusinessLandingView } from "../webapp/views/BusinessLandingView";
 import { StudioView } from "../webapp/views/StudioView";
 import { buildOpportunity, generateCardDraft, getDefaultDraftInput, parseFreeImport } from "../src/customerWorkflow";
 import {
@@ -275,20 +276,35 @@ describe("customer shell server render", () => {
       }
     });
 
-    it("renders the business landing page by direct route and exposes it in admin nav", () => {
+    it("keeps the internal business landing away from non-admin visitors", () => {
       const { html, text } = renderShell({ search: "?view=business" });
 
-      expect(text).toContain("For customer lifecycle teams");
-      expect(text).toContain("Send the right card on time");
-      expect(text).toContain("What this page needs");
-      expect(text).toContain("No live CRM writes");
-      expect(text).toContain("Human approval required");
-      expect(text).not.toContain("Never miss the card-worthy moment.");
+      // Non-admins get the customer home, not internal readiness commentary.
+      expect(text).toContain("Make the card you meant to send.");
+      expect(text).not.toContain("For customer lifecycle teams");
+      expect(text).not.toContain("What this page needs");
+      expect(text).not.toContain("No live CRM writes");
       expect(html).not.toContain(">Business<");
       expect(html).not.toContain("navlink-admin");
 
       const admin = renderShell({ admin: true, search: "?view=business" });
       expect(admin.html).toContain('class="navlink navlink-admin" data-active="true" type="button">B2B</button>');
+      expect(admin.text).not.toContain("Make the card you meant to send.");
+    });
+
+    it("renders the business landing content for admins", () => {
+      const draftInput = getDefaultDraftInput(undefined, buildOpportunity(parseFreeImport(""), [], new Date("2026-06-11T12:00:00.000Z")));
+      const html = renderToString(
+        createElement(BusinessLandingView, {
+          draft: generateCardDraft(draftInput, []),
+          onCreate: () => undefined,
+          onReview: () => undefined
+        })
+      );
+      const text = textFromHtml(html);
+
+      expect(text).toContain("For customer lifecycle teams");
+      expect(text).toContain("Send the right card on time");
     });
 
     it("renders the events view with import box and calendar sources", () => {
@@ -330,6 +346,14 @@ describe("customer shell server render", () => {
       expect(text).toContain("Review template instead");
       expect(text).not.toContain("Continue to proof checks");
       expect(html).not.toContain('role="tablist"');
+
+      // Labeled create-flow stepper with a clickable back-path; the future
+      // Print step is inert, so it does not point at a proof before one exists.
+      expect(html).toContain('aria-label="Card creation steps"');
+      expect(html).toContain('aria-current="step"');
+      for (const label of ["Start", "Design", "Print"]) {
+        expect(text).toContain(label);
+      }
     });
 
     it("renders progressive AI generation panel states", () => {
@@ -405,6 +429,11 @@ describe("customer shell server render", () => {
       expect(text).toContain("Copy steps");
       expect(text).toContain("Open Walgreens upload");
       expect(text).toContain("Walgreens confirms the final total");
+
+      // Wayfinding back to the design step.
+      expect(text).toContain("Back to design");
+      const { html } = renderShell({ search: "?view=handoff", storedWorkspace: sampleWorkspace });
+      expect(html).toContain('aria-label="Card creation steps"');
     });
 
     it("renders the exact-panel editor with tabs, fields, and local text tools after a draft exists", () => {

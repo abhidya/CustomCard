@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defineReadinessRegister } from "./readinessRegister.mjs";
+import { defineReadinessRegister, evidenceArtifactRefPattern, invalidEvidenceArtifactRefs } from "./readinessRegister.mjs";
 
 const items = [
   { id: "a", live: false },
@@ -15,7 +15,20 @@ describe("readiness register kernel", () => {
       summarize: (rows) => ({ live: rows.filter((row) => row.live).length })
     });
 
-    expect(register.summarize()).toMatchObject({ total: 2, live: 0, blockers: [] });
+    expect(register.summarize()).toMatchObject({ total: 2, live: 0, registerIssues: [], blockers: [] });
+  });
+
+  it("accepts only docs/evidence artifact refs that follow the recorded-proof convention", () => {
+    expect(evidenceArtifactRefPattern.test("docs/evidence/external-audit/2026-06-12-security-assessment.pdf")).toBe(true);
+    expect(
+      invalidEvidenceArtifactRefs([
+        "docs/evidence/e2e/2026-06-12-coverage-doctor.json",
+        "docs/audits/fake-report.pdf",
+        "docs/evidence/e2e/coverage-doctor.json",
+        "https://example.com/report.pdf"
+      ])
+    ).toEqual(["docs/audits/fake-report.pdf", "docs/evidence/e2e/coverage-doctor.json", "https://example.com/report.pdf"]);
+    expect(invalidEvidenceArtifactRefs(undefined)).toEqual([]);
   });
 
   it("flags duplicate ids, missing required ids, and item rule failures with default messages", () => {
