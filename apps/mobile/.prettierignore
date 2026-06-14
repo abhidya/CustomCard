@@ -1,0 +1,10 @@
+# Shared contract file owned by the repo root (kept in its existing style and
+# validated by the root contract tests/doctors). Do not reformat here.
+src/customerExperience.ts
+
+node_modules/
+.expo/
+dist/
+coverage/
+android/
+ios/

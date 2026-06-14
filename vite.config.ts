@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
 import { isApiRouteAdapterPath } from "./scripts/api-route-adapter-contract.mjs";
@@ -86,6 +86,9 @@ export default defineConfig(() => ({
       }
     },
     environment: "node",
+    // The native app under apps/mobile runs its own jest-expo suite; root
+    // vitest must not try to execute React Native test files.
+    exclude: [...configDefaults.exclude, "apps/mobile/**"],
     globals: true
   }
 }));
