@@ -163,7 +163,7 @@ export function StudioView({
   sourceMoment?: CalendarMomentDraftContext;
   onAddNote: () => void;
   onField: <K extends keyof CardDraftInput>(field: K, value: CardDraftInput[K]) => void;
-  onGenerateAi: (panelId?: CardPanel["id"]) => void;
+  onGenerateAi: (panelId?: CardPanel["id"] | CardPanel["id"][]) => void;
   onKeepArtwork: () => void;
   onReviewProof: () => void;
   onPanelEdit: (panelId: CardPanel["id"], patch: PanelOverride) => void;
@@ -172,8 +172,10 @@ export function StudioView({
   const [activePanel, setActivePanel] = useState<CardPanel["id"]>("front");
   const [previewMode, setPreviewMode] = useState<"proof" | "folded">("proof");
   const [templateReviewStarted, setTemplateReviewStarted] = useState(false);
+  const [generationPanelIds, setGenerationPanelIds] = useState<CardPanel["id"][]>(["front"]);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panel = draft.panels.find((candidate) => candidate.id === activePanel) ?? draft.panels[0];
+  const selectedGenerationPanels = draft.panels.filter((candidate) => generationPanelIds.includes(candidate.id));
   const approvedForRecipient = memories.filter((memory) => memory.approved).length;
   const artworkCount = draft.panels.filter((candidate) => candidate.imageUrl).length;
   const totalPanels = draft.panels.length;
@@ -186,6 +188,14 @@ export function StudioView({
   useEffect(() => {
     if (sensitive && toneImpliesHumor(draftInput.tone)) onField("tone", "simple");
   }, [draftInput.tone, onField, sensitive]);
+  useEffect(() => {
+    setGenerationPanelIds((current) => {
+      if (current.length > 0 && current.every((panelId) => draft.panels.some((candidate) => candidate.id === panelId))) {
+        return current;
+      }
+      return draft.panels.some((candidate) => candidate.id === activePanel) ? [activePanel] : [draft.panels[0]?.id ?? "front"];
+    });
+  }, [activePanel, draft.panels]);
   const aiState = aiLoading ? "loading" : aiActive ? "ready" : "idle";
   const stages = generationStages({
     aiLoading,
@@ -242,13 +252,24 @@ export function StudioView({
     tabRefs.current[nextIndex]?.focus();
   }
 
-  function startAiGeneration(panelId?: CardPanel["id"]) {
+  function startAiGeneration(panelId?: CardPanel["id"] | CardPanel["id"][]) {
     setTemplateReviewStarted(false);
     onGenerateAi(panelId);
   }
 
   function startTemplateReview() {
     setTemplateReviewStarted(true);
+  }
+
+  function toggleGenerationPanel(panelId: CardPanel["id"]) {
+    setGenerationPanelIds((current) => {
+      const next = current.includes(panelId)
+        ? current.length === 1
+          ? current
+          : current.filter((candidate) => candidate !== panelId)
+        : [...current, panelId];
+      return draft.panels.map((candidate) => candidate.id).filter((candidate) => next.includes(candidate));
+    });
   }
 
   return (
@@ -282,6 +303,14 @@ export function StudioView({
         <div className="stage reveal reveal-1">
           {proofWorkspaceVisible ? (
             <>
+              <StudioObjectPreview
+                activePanel={activePanel}
+                aiStale={aiStale}
+                onPanelSelect={setActivePanel}
+                panelProgress={aiPanelProgress}
+                panels={draft.panels}
+              />
+
               <div className="previewmodes" role="group" aria-label="Preview mode">
                 <button className="previewmode" data-on={previewMode === "proof"} onClick={() => setPreviewMode("proof")} type="button">
                   Proof view
@@ -611,6 +640,20 @@ export function StudioView({
             </section>
           ) : null}
 
+          {proofWorkspaceVisible ? (
+            <GenerationScopePanel
+              activePanelId={activePanel}
+              aiActive={aiActive}
+              aiLoading={aiLoading}
+              minContextReady={minContextReady}
+              onGenerateSelected={() => startAiGeneration(generationPanelIds)}
+              onGenerateWhole={() => startAiGeneration()}
+              onTogglePanel={toggleGenerationPanel}
+              panels={draft.panels}
+              selectedPanels={selectedGenerationPanels}
+            />
+          ) : null}
+
           {stages.length > 0 ? (
             <ol className="genstages" aria-label="Generation progress">
               {stages.map((stage) => (
@@ -623,6 +666,190 @@ export function StudioView({
         </div>
       </div>
     </>
+  );
+}
+
+function StudioObjectPreview({
+  panels,
+  activePanel,
+  panelProgress,
+  aiStale,
+  onPanelSelect
+}: {
+  panels: CardPanel[];
+  activePanel: CardPanel["id"];
+  panelProgress: AiPanelGenerationProgress;
+  aiStale: boolean;
+  onPanelSelect: (panelId: CardPanel["id"]) => void;
+}) {
+  const front = panels.find((panel) => panel.id === "front") ?? panels[0];
+  const insideLeft = panels.find((panel) => panel.id === "inside-left") ?? panels[1] ?? front;
+  const insideRight = panels.find((panel) => panel.id === "inside-right") ?? panels[2] ?? front;
+  const back = panels.find((panel) => panel.id === "back") ?? panels[3] ?? front;
+  const orderedPanels = [front, insideLeft, insideRight, back].filter(Boolean);
+  const active = panels.find((panel) => panel.id === activePanel) ?? front;
+
+  return (
+    <section className="studioObject" aria-label="3D folded card proof">
+      <div className="studioObject-head">
+        <div>
+          <span>Folded card object</span>
+          <strong>{active.label}</strong>
+        </div>
+        <small>Select a face, then improve one face or the whole card.</small>
+      </div>
+      <div className="studioObject-scene" data-active-panel={activePanel}>
+        <button
+          aria-label={`Select ${front.label}`}
+          className="studioObject-face studioObject-front"
+          data-on={activePanel === front.id}
+          onClick={() => onPanelSelect(front.id)}
+          type="button"
+        >
+          <PanelArt panel={front} />
+          <span>{front.label}</span>
+        </button>
+        <button
+          aria-label={`Select ${insideLeft.label}`}
+          className="studioObject-face studioObject-insideLeft"
+          data-on={activePanel === insideLeft.id}
+          onClick={() => onPanelSelect(insideLeft.id)}
+          type="button"
+        >
+          <PanelArt panel={insideLeft} />
+          <span>{insideLeft.label}</span>
+        </button>
+        <button
+          aria-label={`Select ${insideRight.label}`}
+          className="studioObject-face studioObject-insideRight"
+          data-on={activePanel === insideRight.id}
+          onClick={() => onPanelSelect(insideRight.id)}
+          type="button"
+        >
+          <PanelArt panel={insideRight} />
+          <span>{insideRight.label}</span>
+        </button>
+        <button
+          aria-label={`Select ${back.label}`}
+          className="studioObject-face studioObject-back"
+          data-on={activePanel === back.id}
+          onClick={() => onPanelSelect(back.id)}
+          type="button"
+        >
+          <PanelArt panel={back} />
+          <span>{back.label}</span>
+        </button>
+      </div>
+      <div className="studioObject-controls" role="group" aria-label="Select card face">
+        {orderedPanels.map((panel) => (
+          <button
+            aria-pressed={activePanel === panel.id}
+            data-on={activePanel === panel.id}
+            key={panel.id}
+            onClick={() => onPanelSelect(panel.id)}
+            type="button"
+          >
+            <span>{panel.label}</span>
+            <small>{panelArtworkLabel(panel, aiStale, panelProgress[panel.id])}</small>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GenerationScopePanel({
+  panels,
+  selectedPanels,
+  activePanelId,
+  aiLoading,
+  aiActive,
+  minContextReady,
+  onTogglePanel,
+  onGenerateWhole,
+  onGenerateSelected
+}: {
+  panels: CardPanel[];
+  selectedPanels: CardPanel[];
+  activePanelId: CardPanel["id"];
+  aiLoading: boolean;
+  aiActive: boolean;
+  minContextReady: boolean;
+  onTogglePanel: (panelId: CardPanel["id"]) => void;
+  onGenerateWhole: () => void;
+  onGenerateSelected: () => void;
+}) {
+  const selectedLabels = selectedPanels.map((panel) => panel.label).join(", ");
+  const selectedCount = selectedPanels.length;
+  const selectedCopy = selectedCount === 1 ? "1 selected face" : `${selectedCount} selected faces`;
+
+  return (
+    <section className="generationScope" aria-label="Choose what to improve">
+      <div className="generationScope-head">
+        <div>
+          <strong>Choose what to improve</strong>
+          <span>Use the whole card or one or more faces. Current proof stays reviewable.</span>
+        </div>
+        <div className="generationScope-actions">
+          <button
+            className="btn btn-ink btn-sm"
+            disabled={aiLoading || !minContextReady}
+            onClick={onGenerateWhole}
+            type="button"
+          >
+            <RefreshCw size={14} />
+            {aiActive ? "Improve whole card" : "Generate whole card"}
+          </button>
+          <button
+            className="btn btn-ghost btn-sm"
+            disabled={aiLoading || !minContextReady || selectedCount === 0}
+            onClick={onGenerateSelected}
+            type="button"
+          >
+            <RefreshCw size={14} />
+            Improve {selectedCopy}
+          </button>
+        </div>
+      </div>
+      <div className="generationTargets" role="group" aria-label="Faces included in selected refresh">
+        {panels.map((panel) => {
+          const selected = selectedPanels.some((candidate) => candidate.id === panel.id);
+          return (
+            <button
+              aria-pressed={selected}
+              className={panel.id === activePanelId ? "generationTarget generationTarget-active" : "generationTarget"}
+              data-on={selected}
+              key={panel.id}
+              onClick={() => onTogglePanel(panel.id)}
+              type="button"
+            >
+              <span>{panel.label}</span>
+              <small>{panel.id === activePanelId ? "Editing now" : selected ? "Included" : "Keep"}</small>
+            </button>
+          );
+        })}
+      </div>
+      <div className="generationParts" aria-label="Face parts">
+        <span>Copy</span>
+        <span>Artwork</span>
+        <span>Layout</span>
+        <span>Print fit</span>
+      </div>
+      <ol className="versionTray" aria-label="Proof versions">
+        <li data-state="current">
+          <strong>Current proof</strong>
+          <span>Printed files use this version.</span>
+        </li>
+        <li>
+          <strong>Selected faces</strong>
+          <span>{selectedLabels || "Choose faces above."}</span>
+        </li>
+        <li>
+          <strong>Easy revert</strong>
+          <span>Each face can go back before proof checks.</span>
+        </li>
+      </ol>
+    </section>
   );
 }
 
@@ -674,8 +901,14 @@ function PanelEditor({
           Revert panel
         </button>
       </div>
+      <div className="inspectorStrip" role="group" aria-label="Selected face tools">
+        <a href="#panel-copy-section">Copy</a>
+        <a href="#panel-artwork-section">Artwork</a>
+        <a href="#panel-layout-section">Layout</a>
+        <a href="#panel-history-section">History</a>
+      </div>
       <p className="paneleditor-note">These are the exact words that print on this panel.</p>
-      <label className="paneltext-field">
+      <label className="paneltext-field" id="panel-copy-section">
         <span>Headline</span>
         <input value={panel.headline} onChange={(event) => onPanelEdit(panel.id, { headline: event.target.value })} />
       </label>
@@ -718,7 +951,7 @@ function PanelEditor({
           We couldn’t load artwork for this panel. The copy is safe; template artwork will print.
         </p>
       ) : null}
-      <details className="paneleditor-advanced">
+      <details className="paneleditor-advanced" id="panel-artwork-section">
         <summary>Advanced: art direction</summary>
         <label className="paneltext-field">
           <span>Art direction (design notes — never printed on the card)</span>
@@ -728,6 +961,20 @@ function PanelEditor({
           />
         </label>
       </details>
+      <div className="panelstatus-grid" id="panel-layout-section" aria-label="Layout and print fit">
+        <span>
+          <strong>Text fit</strong>
+          <small>{panel.overflowRisk ? "Needs shortening" : "Fits this face"}</small>
+        </span>
+        <span>
+          <strong>Layout</strong>
+          <small>{panel.textLayout ? "AI layout applied" : "Template layout"}</small>
+        </span>
+      </div>
+      <div className="panelhistory-note" id="panel-history-section">
+        <strong>History</strong>
+        <span>{edited ? "This face has edits. Revert restores the previous proof." : "No edits on this face yet."}</span>
+      </div>
     </section>
   );
 }

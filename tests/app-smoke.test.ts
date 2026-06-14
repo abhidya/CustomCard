@@ -149,6 +149,10 @@ describeWithChrome("CustomCard UI smoke", () => {
         );
         await clickByText("Review template instead");
         const panelCount = document.querySelectorAll(".pagetab img").length;
+        const objectFaceCount = document.querySelectorAll(".studioObject-face").length;
+        const generationTargetCount = document.querySelectorAll(".generationTarget").length;
+        const studioObjectText = document.querySelector(".studioObject")?.textContent;
+        const generationScopeText = document.querySelector(".generationScope")?.textContent;
         await clickByText("Continue to proof checks");
 
         return {
@@ -157,6 +161,10 @@ describeWithChrome("CustomCard UI smoke", () => {
           preDraftDock,
           preDraftProofCta,
           panelCount,
+          objectFaceCount,
+          generationTargetCount,
+          studioObjectText,
+          generationScopeText,
           printHeading: document.querySelector("h1")?.textContent,
           printText: document.body.textContent,
           downloadButtons: [...document.querySelectorAll("button")].map((node) => node.textContent),
@@ -177,6 +185,11 @@ describeWithChrome("CustomCard UI smoke", () => {
     expect(result.preDraftDock).toBe(false);
     expect(result.preDraftProofCta).toBe(false);
     expect(result.panelCount).toBe(4);
+    expect(result.objectFaceCount).toBe(4);
+    expect(result.generationTargetCount).toBe(4);
+    expect(result.studioObjectText).toContain("Folded card object");
+    expect(result.generationScopeText).toContain("Choose what to improve");
+    expect(result.generationScopeText).toContain("Current proof");
     expect(result.printHeading).toBe("Print at Walgreens");
     expect(result.printText).toContain("Walgreens print details");
     expect(result.printText).toContain("Manual Walgreens upload");

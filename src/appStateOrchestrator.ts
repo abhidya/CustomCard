@@ -123,7 +123,7 @@ export interface AppState {
   aiCardGenStatus: string;
   aiPanelGenerationProgress: AiPanelGenerationProgress;
   aiGenerationJobs: AiGenerationJobEvidence[];
-  triggerAiCardGen: (targetPanelId?: CardPanel["id"]) => void;
+  triggerAiCardGen: (targetPanelId?: CardPanel["id"] | CardPanel["id"][]) => void;
   cardGenAvailable: boolean;
   aiFlowConfigs: AiFlowAdminConfig[];
   setAiFlowConfigs: (configs: AiFlowAdminConfig[]) => void;
@@ -289,11 +289,16 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     [approvedMemoryNotes, customerChatMessages, fulfillmentContext, opportunity.recipient, selectedLocale.locale]
   );
 
-  const triggerAiCardGen = useCallback((targetPanelId?: CardPanel["id"]) => {
+  const triggerAiCardGen = useCallback((targetPanelId?: CardPanel["id"] | CardPanel["id"][]) => {
     if (aiCardGenLoading) return;
-    const selectedPanel = targetPanelId ? activeDraft.panels.find((panel) => panel.id === targetPanelId) : undefined;
-    const requestDraft = selectedPanel ? activeDraft : draft;
-    const requestPanels = selectedPanel ? [selectedPanel] : requestDraft.panels;
+    const targetPanelIds = Array.isArray(targetPanelId) ? targetPanelId : targetPanelId ? [targetPanelId] : [];
+    const selectedPanels = targetPanelIds.length > 0
+      ? activeDraft.panels.filter((panel) => targetPanelIds.includes(panel.id))
+      : [];
+    const selectedPanelSet = new Set(selectedPanels.map((panel) => panel.id));
+    const hasSelectedPanels = selectedPanels.length > 0;
+    const requestDraft = hasSelectedPanels ? activeDraft : draft;
+    const requestPanels = hasSelectedPanels ? selectedPanels : requestDraft.panels;
     const baseBody = {
       sender: draftInput.sender,
       recipient: draftInput.recipient,
@@ -310,8 +315,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
     setAiStale(false);
     setAiPanelGenerationProgress(progressForPanels(requestPanels, "queued"));
     setAiCardGenStatus(
-      selectedPanel
-        ? `Regenerating ${selectedPanel.label}. The other panels will stay unchanged.`
+      hasSelectedPanels
+        ? selectedPanels.length === 1
+          ? `Regenerating ${selectedPanels[0].label}. The other panels will stay unchanged.`
+          : `Regenerating ${selectedPanels.length} selected panels. The other panels will stay unchanged.`
         : "Starting your AI card. Panels will appear as each one is ready."
     );
     buildAiCardGenerationHeaders(getCustomerApiToken)
@@ -346,9 +353,9 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
             .filter((copy): copy is AiGenerationApiPanel & { id: string } => typeof copy.id === "string" && copy.id.length > 0)
             .map((copy) => [copy.id, copy])
         );
-        const basePanels = selectedPanel ? requestDraft.panels : requestPanels;
+        const basePanels = hasSelectedPanels ? requestDraft.panels : requestPanels;
         const aiPanels = basePanels.map((panel) => {
-          if (selectedPanel && panel.id !== selectedPanel.id) return panel;
+          if (hasSelectedPanels && !selectedPanelSet.has(panel.id)) return panel;
           const copy = copyByPanel.get(panel.id);
           if (!copy) return panel;
           return {
@@ -364,9 +371,11 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
         const hasImages = imageByPanel.size > 0;
         const artworkFailure = readArtworkFailure(result);
         setAiDraft({ ...requestDraft, panels: aiPanels, generatedBy: hasImages ? "ai-text-and-image" : "ai-text-only" });
-        // A fresh whole-card draft replaces exact edits; selected-panel generation replaces only that panel's edit.
+        // A fresh whole-card draft replaces exact edits; selected generation replaces only those face edits.
         setPanelOverrides((current) =>
-          selectedPanel ? clearPanelOverride(current, selectedPanel.id) : emptyPanelOverrides
+          hasSelectedPanels
+            ? selectedPanels.reduce((next, panel) => clearPanelOverride(next, panel.id), current)
+            : emptyPanelOverrides
         );
         setAiStale(false);
         setAiPanelGenerationProgress(buildAiPanelGenerationProgress(requestPanels, copyByPanel, imageByPanel));
@@ -379,16 +388,20 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
               ? artworkFailure === imageGenerationDisabledFailure
                 ? "Copy is ready. Artwork is using the printable template because image generation is not enabled."
                 : `Copy is ready. Artwork is blocked by settings: ${artworkFailure}`
-              : selectedPanel
-                ? `${selectedPanel.label} copy is ready. No artwork was returned, so template artwork stays editable.`
+              : hasSelectedPanels && selectedPanels.length === 1
+                ? `${selectedPanels[0].label} copy is ready. No artwork was returned, so template artwork stays editable.`
+                : hasSelectedPanels
+                  ? `${selectedPanels.length} selected panels have copy ready. No artwork was returned, so template artwork stays editable.`
                 : "Copy is ready. No artwork was returned, so template panels stay editable."
           );
           return;
         }
 
         setAiCardGenStatus(
-          selectedPanel
-            ? `${selectedPanel.label} copy is ready. Loading artwork for this panel.`
+          hasSelectedPanels && selectedPanels.length === 1
+            ? `${selectedPanels[0].label} copy is ready. Loading artwork for this panel.`
+            : hasSelectedPanels
+              ? `${selectedPanels.length} selected panels have copy ready. Loading artwork for those panels.`
             : `Copy is ready. Loading ${imageByPanel.size}/${panelCount} artwork panels as they finish.`
         );
         let loadedPanelCount = 0;
@@ -418,8 +431,10 @@ export function useAppState(getCustomerApiToken?: CustomerApiTokenProvider): App
           })
         );
         setAiCardGenStatus(
-          selectedPanel && loadedPanelCount === panelCount
-            ? `${selectedPanel.label} regenerated. Review this panel before printing.`
+          hasSelectedPanels && selectedPanels.length === 1 && loadedPanelCount === panelCount
+            ? `${selectedPanels[0].label} regenerated. Review this panel before printing.`
+            : hasSelectedPanels && loadedPanelCount === panelCount
+              ? `${selectedPanels.length} selected panels regenerated. Review them before printing.`
             : loadedPanelCount === panelCount
             ? "AI draft ready. Review each panel before printing."
             : `AI draft ready with ${loadedPanelCount}/${panelCount} artwork panels. Review the copy before printing.`
