@@ -1,0 +1,82 @@
+# CustomCard Prometheus scrape + rule configuration.
+#
+# Targets are in-cluster only. The app exposes ORR dependency gauges and
+# business counters at /metrics; blackbox-exporter probes the critical and
+# non-critical dependency endpoints so the dependency_up series stay honest even
+# when the app process itself is degraded.
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    service: customcard
+    env: ${CUSTOMCARD_ENV:-prod}
+
+rule_files:
+  - /etc/prometheus/rules/orr-dependencies.rules.yml
+  - /etc/prometheus/rules/business-metrics.rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Application-emitted metrics: ORR dependency gauges + business counters.
+  - job_name: customcard-app
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - app:4173
+        labels:
+          tier: application
+
+  - job_name: customcard-worker
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - worker:4173
+        labels:
+          tier: application
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  # Blackbox probes for ORR critical dependencies (page-worthy).
+  - job_name: orr-critical-dependencies
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          - postgres:5432
+          - redis:6379
+        labels:
+          tier: critical
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Blackbox probes for ORR non-critical dependencies (warn, degrade gracefully).
+  - job_name: orr-noncritical-dependencies
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://app:4173/api/health
+        labels:
+          tier: non-critical
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
