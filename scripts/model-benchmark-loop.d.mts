@@ -102,6 +102,46 @@ export interface BenchmarkPhaseReadmeSummary {
   }>;
 }
 
+export interface LoggedProviderCall {
+  url: string;
+  method?: string;
+  request?: {
+    body?: unknown;
+  };
+  response?: {
+    status?: number;
+    ok?: boolean;
+    contentType?: string;
+  };
+}
+
+export interface EffectiveProviderRequest {
+  panelId: string;
+  url: string;
+  method?: string;
+  requestBody?: unknown;
+  providerPrompt?: unknown;
+  providerNegativePrompt?: unknown;
+  seed?: unknown;
+  width?: unknown;
+  height?: unknown;
+  responseStatus?: number;
+  responseOk?: boolean;
+  responseContentType?: string;
+}
+
+export interface EffectiveProviderRequests {
+  schemaVersion: 1;
+  phase?: string;
+  storyId?: string;
+  textCandidateId?: string;
+  imageCandidateId?: string;
+  imageAdapterId?: string;
+  imageModel?: string;
+  requestCount: number;
+  requests: EffectiveProviderRequest[];
+}
+
 export const typographyExperimentSpec: TypographyExperimentSpec;
 
 export const stories: Record<string, BenchmarkStory>;
@@ -123,6 +163,21 @@ export function pipelineQualityRuns(candidates: {
 }): PipelineQualityRun[];
 
 export function buildPhaseReadme(summary: BenchmarkPhaseReadmeSummary): string;
+
+export function parseBenchmarkRequestBody(body: unknown): unknown;
+
+export function buildEffectiveProviderRequests(args: {
+  run?: {
+    phase?: string;
+    storyId?: string;
+    textCandidateId?: string;
+    imageCandidateId?: string;
+    text?: Partial<BenchmarkCandidate>;
+    image?: Partial<BenchmarkCandidate>;
+  };
+  providerCalls?: LoggedProviderCall[];
+  requestPanelIds?: string[];
+}): EffectiveProviderRequests;
 
 export function sanitizeBenchmarkValue(value: undefined, env?: Record<string, string | undefined>): undefined;
 

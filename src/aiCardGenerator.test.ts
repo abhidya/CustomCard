@@ -1061,6 +1061,8 @@ describe("AI card generator service", () => {
     expect(payload.images.map((image) => image.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
     expect(imageBodies.map((body) => body.metadata.customcard.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
     expect(imageBodies.every((body) => body.width === 1464 && body.height === 2048)).toBe(true);
+    expect(imageBodies.every((body) => Number.isInteger(body.seed))).toBe(true);
+    expect(new Set(imageBodies.map((body) => body.seed)).size).toBe(4);
     expect(imageBodies.every((body) => body.metadata.customcard.generation_strategy === "one-provider-request-per-panel")).toBe(true);
     expect(imageBodies[0].prompt).toContain("Full-bleed flat 2D artwork layer");
     expect(imageBodies[1].prompt).toContain("inside-left print panel");
@@ -1123,6 +1125,8 @@ describe("AI card generator service", () => {
     expect(result.statusCode).toBe(200);
     expect(fetchImpl).toHaveBeenCalledTimes(5);
     expect(imageBodies.every((body) => body.steps === 8)).toBe(true);
+    expect(imageBodies.every((body) => Number.isInteger(body.seed))).toBe(true);
+    expect(new Set(imageBodies.map((body) => body.seed)).size).toBe(4);
     expect(imageBodies.every((body) => typeof body.prompt === "string" && body.prompt.length > 0)).toBe(true);
     expect(imageBodies.every((body) => !("negative_prompt" in body))).toBe(true);
     expect(imageBodies.every((body) => !("width" in body) && !("height" in body))).toBe(true);
@@ -1213,10 +1217,13 @@ describe("AI card generator service", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(5);
     expect(imageCalls.every((call) => String(call[0]) === "https://api.deepai.org/api/text2img")).toBe(true);
     expect(imageCalls.every((call) => (call[1]?.headers as Record<string, string>)["api-key"] === "test_deepai_token")).toBe(true);
-    expect(imageBodies.every((body) => Array.from(body.keys()).join(",") === "text")).toBe(true);
+    expect(imageBodies.every((body) => Array.from(body.keys()).join(",") === "text,negative_prompt,width,height,image_generator_version")).toBe(true);
     expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("Full-bleed flat 2D artwork layer"))).toBe(true);
-    expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("Avoid:"))).toBe(true);
-    expect(imageBodies.every((body) => String(body.get("text") ?? "").includes("folded card mockup"))).toBe(true);
+    expect(imageBodies.every((body) => !String(body.get("text") ?? "").includes("Avoid:"))).toBe(true);
+    expect(imageBodies.every((body) => String(body.get("negative_prompt") ?? "").includes("folded card mockup"))).toBe(true);
+    expect(imageBodies.every((body) => String(body.get("negative_prompt") ?? "").includes("readable text"))).toBe(true);
+    expect(imageBodies.every((body) => body.get("width") === "768" && body.get("height") === "1024")).toBe(true);
+    expect(imageBodies.every((body) => body.get("image_generator_version") === "standard")).toBe(true);
     expect(payload.images.every((image) => image.image_url.startsWith("data:image/png;base64,"))).toBe(true);
     expect(JSON.stringify(result.payload)).not.toContain("test_deepai_token");
   });

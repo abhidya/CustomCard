@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildEffectiveProviderRequests,
   buildPhaseReadme,
   buildTypographyExperimentPrompt,
+  parseBenchmarkRequestBody,
   pipelineQualityRuns,
   sanitizeBenchmarkValue,
   stories as benchmarkStories,
@@ -267,5 +269,95 @@ describe("model benchmark typography experiment", () => {
 
     expect(sanitized.prompt).toBe("Return a final production-ready front cover design.");
     expect(sanitized.token).toBe("[redacted]");
+  });
+
+  it("serializes benchmark FormData request bodies without dropping provider fields", () => {
+    const body = new FormData();
+    body.set("text", "front panel prompt");
+    body.set("negative_prompt", "avoid secret-value-123 and fake text");
+    body.set("width", "768");
+    body.set("height", "1024");
+
+    const parsed = parseBenchmarkRequestBody(body);
+    const sanitized = sanitizeBenchmarkValue(parsed, { DEEPAI_API_KEY: "secret-value-123" });
+
+    expect(sanitized).toEqual({
+      body_type: "form-data",
+      fields: {
+        text: "front panel prompt",
+        negative_prompt: "avoid [redacted] and fake text",
+        width: "768",
+        height: "1024"
+      }
+    });
+  });
+
+  it("builds panel-mapped effective provider request artifacts from final provider calls", () => {
+    const effective = buildEffectiveProviderRequests({
+      run: {
+        phase: "pipeline-quality",
+        storyId: "sympathy-quiet-support",
+        text: { id: "text-cloudflare-baseline" },
+        image: { id: "image-deepai-text2img", adapterId: "deepai-text2img-image", model: "text2img" }
+      },
+      requestPanelIds: ["front", "inside-left"],
+      providerCalls: [
+        {
+          url: "https://api.cloudflare.com/client/v4/accounts/[redacted]/ai/run/@cf/bytedance/stable-diffusion-xl-lightning",
+          method: "POST",
+          request: {
+            body: {
+              prompt: "front provider prompt",
+              negative_prompt: "no readable text",
+              width: 1464,
+              height: 2048,
+              seed: 123,
+              metadata: { customcard: { panel_id: "front" } }
+            }
+          },
+          response: { status: 200, ok: true, contentType: "application/json" }
+        },
+        {
+          url: "https://api.deepai.org/api/text2img",
+          method: "POST",
+          request: {
+            body: {
+              body_type: "form-data",
+              fields: {
+                text: "inside provider prompt",
+                negative_prompt: "no fake text",
+                width: "768",
+                height: "1024"
+              }
+            }
+          },
+          response: { status: 200, ok: true, contentType: "application/json" }
+        },
+        {
+          url: "https://api.deepai.org/job-view-file/example/output.png",
+          method: "GET",
+          request: {},
+          response: { status: 200, ok: true, contentType: "image/png" }
+        }
+      ]
+    });
+
+    expect(effective.requestCount).toBe(2);
+    expect(effective.requests.map((request) => request.panelId)).toEqual(["front", "inside-left"]);
+    expect(effective.requests[0]).toMatchObject({
+      providerPrompt: "front provider prompt",
+      providerNegativePrompt: "no readable text",
+      seed: 123,
+      width: 1464,
+      height: 2048,
+      responseStatus: 200,
+      responseOk: true
+    });
+    expect(effective.requests[1]).toMatchObject({
+      providerPrompt: "inside provider prompt",
+      providerNegativePrompt: "no fake text",
+      width: "768",
+      height: "1024"
+    });
   });
 });

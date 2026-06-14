@@ -688,13 +688,21 @@ Result: passed with focused tests and live DOM inspection on 2026-06-14.
   in-page `Continue to Walgreens` action without a competing floating
   `Save print package` CTA.
 
-Legacy screenshot note: `docs/evidence/customcard-desktop.png`,
-`docs/evidence/customcard-mobile.png`, `docs/evidence/customcard-studio.png`,
-`docs/evidence/customcard-handoff.png`, `docs/evidence/customcard-customer-panel.png`,
-`docs/evidence/customcard-admin-panel.png`, and
-`docs/evidence/customcard-customer-mobile-panel.png` show an older sidebar/grid
-UI and are not current UI proof. Recapture current landing, Studio, Print, and
-mobile screenshots before citing them as visual evidence again.
+Current screenshot evidence was recaptured on 2026-06-14 against production at
+`https://customcard-three.vercel.app/` with isolated headless Chrome. The
+capture pass validated zero horizontal overflow and no visible "Someone
+important" sentinel before writing each file. A production `HEAD` request
+returned HTTP 200 from Vercel before capture.
+
+- Desktop landing: `docs/evidence/customcard-desktop.png` at 1440x1000.
+- Mobile landing: `docs/evidence/customcard-mobile.png` at 390x900.
+- Studio template-review state: `docs/evidence/customcard-studio.png` at
+  1440x1000.
+- Print handoff: `docs/evidence/customcard-handoff.png` at 1440x1000.
+- My cards desktop: `docs/evidence/customcard-customer-panel.png` at 1440x1000.
+- My cards mobile: `docs/evidence/customcard-customer-mobile-panel.png` at
+  390x900.
+- Admin access gate: `docs/evidence/customcard-admin-panel.png` at 1440x1000.
 
 ```text
 Final package audit

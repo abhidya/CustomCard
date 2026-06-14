@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "phase": "pipeline-quality",
+  "storyId": "sympathy-quiet-support",
+  "textCandidateId": "text-cloudflare-baseline",
+  "imageCandidateId": "image-deepai-text2img",
+  "imageAdapterId": "deepai-text2img-image",
+  "imageModel": "text2img",
+  "requestCount": 4,
+  "requests": [
+    {
+      "panelId": "front",
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "requestBody": {
+        "body_type": "form-data",
+        "fields": {
+          "text": "Portrait 5x7 front cover for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Deep moss field with a quiet warm-ivory title-safe open area in the upper middle. Lower third has one abstract doorstep-care relief: covered meal shape, folded cloth, threshold arc, quiet ride-path curve, and tiny call/silence arcs. Sophisticated negative space. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+          "negative_prompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+          "width": "768",
+          "height": "1024",
+          "image_generator_version": "standard"
+        }
+      },
+      "providerPrompt": "Portrait 5x7 front cover for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Deep moss field with a quiet warm-ivory title-safe open area in the upper middle. Lower third has one abstract doorstep-care relief: covered meal shape, folded cloth, threshold arc, quiet ride-path curve, and tiny call/silence arcs. Sophisticated negative space. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+      "providerNegativePrompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+      "width": "768",
+      "height": "1024",
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json"
+    },
+    {
+      "panelId": "inside-left",
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "requestBody": {
+        "body_type": "form-data",
+        "fields": {
+          "text": "Portrait 5x7 interior panel for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Warm ivory interior with a huge plain center for app-rendered message copy. Lower-left edge has a tiny muted moss/taupe care relief below the text area: covered meal shape, folded cloth, and threshold arc. Very sparse. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+          "negative_prompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+          "width": "768",
+          "height": "1024",
+          "image_generator_version": "standard"
+        }
+      },
+      "providerPrompt": "Portrait 5x7 interior panel for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Warm ivory interior with a huge plain center for app-rendered message copy. Lower-left edge has a tiny muted moss/taupe care relief below the text area: covered meal shape, folded cloth, and threshold arc. Very sparse. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+      "providerNegativePrompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+      "width": "768",
+      "height": "1024",
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json"
+    },
+    {
+      "panelId": "inside-right",
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "requestBody": {
+        "body_type": "form-data",
+        "fields": {
+          "text": "Portrait 5x7 interior panel for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Warm ivory interior matching the left panel with a huge plain center for app-rendered message copy. Lower-right edge has tiny abstract care marks: ride-path curve and two call/silence arcs. Very sparse. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+          "negative_prompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+          "width": "768",
+          "height": "1024",
+          "image_generator_version": "standard"
+        }
+      },
+      "providerPrompt": "Portrait 5x7 interior panel for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Warm ivory interior matching the left panel with a huge plain center for app-rendered message copy. Lower-right edge has tiny abstract care marks: ride-path curve and two call/silence arcs. Very sparse. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+      "providerNegativePrompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+      "width": "768",
+      "height": "1024",
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json"
+    },
+    {
+      "panelId": "back",
+      "url": "https://api.deepai.org/api/text2img",
+      "method": "POST",
+      "requestBody": {
+        "body_type": "form-data",
+        "fields": {
+          "text": "Portrait 5x7 back cover for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Mostly deep moss negative space with a clean upper/center text-safe area. One small lower-corner ivory/taupe echo of the covered meal and threshold arc. Minimal and quiet. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+          "negative_prompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+          "width": "768",
+          "height": "1024",
+          "image_generator_version": "standard"
+        }
+      },
+      "providerPrompt": "Portrait 5x7 back cover for a premium sympathy greeting card. Flat 2D editorial paper-cut and soft gouache illustration, not a photo, not a mockup, not a book, not a tabletop scene. Palette only: deep moss, warm ivory, muted gray-green, soft taupe, charcoal ink. No bright yellow, no neon green, no sun, no sunset, no landscape, no hills, no grass texture, no flowers. No phone, no device, no blank note card, no envelope, no open book, no page seam, no table, no readable text, no letters, no people. Mostly deep moss negative space with a clean upper/center text-safe area. One small lower-corner ivory/taupe echo of the covered meal and threshold arc. Minimal and quiet. Mood: calm, grounded, deeply respectful, practical support without cliches.",
+      "providerNegativePrompt": "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols",
+      "width": "768",
+      "height": "1024",
+      "responseStatus": 200,
+      "responseOk": true,
+      "responseContentType": "application/json"
+    }
+  ]
+}

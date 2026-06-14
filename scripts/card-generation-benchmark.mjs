@@ -736,8 +736,34 @@ function createLoggingFetch(logs, env) {
 
 function parseBody(body) {
   if (!body) return undefined;
-  if (typeof body !== "string") return "<non-string-body>";
-  return parseJson(body) ?? body;
+  if (typeof body === "string") return parseJson(body) ?? body;
+  if (typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams) return Object.fromEntries(body.entries());
+  if (isFormDataLike(body)) return serializeFormData(body);
+  return "<non-string-body>";
+}
+
+function isFormDataLike(body) {
+  return Boolean(body && typeof body.entries === "function" && typeof body.get === "function" && typeof body.append === "function");
+}
+
+function serializeFormData(formData) {
+  const fields = {};
+  for (const [key, value] of formData.entries()) {
+    fields[key] = serializeFormDataValue(value);
+  }
+  return {
+    body_type: "form-data",
+    fields
+  };
+}
+
+function serializeFormDataValue(value) {
+  if (typeof value === "string") return value;
+  return {
+    type: value?.type || undefined,
+    name: value?.name || undefined,
+    size: Number.isFinite(value?.size) ? value.size : undefined
+  };
 }
 
 function parseJson(text) {

@@ -34,6 +34,7 @@
     "card:copy-benchmark": "node scripts/card-copy-benchmark.mjs",
     "artifact:doctor": "node scripts/artifact-store-doctor.mjs",
     "artifact:doctor:s3:live": "CUSTOMCARD_S3_ARTIFACT_DOCTOR=enabled node scripts/artifact-store-s3-live-doctor.mjs",
+    "artifact:inventory": "node scripts/artifact-inventory.mjs",
     "r2:bucket:list": "wrangler r2 bucket list",
     "r2:bucket:create": "wrangler r2 bucket create",
     "r2:bucket:create:prod": "wrangler r2 bucket create customcard-prod",

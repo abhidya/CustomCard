@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://router.huggingface.co/v1/chat/completions",
+    "method": "POST",
+    "request": {
+      "headers": {
+        "content-type": "application/json",
+        "authorization": "<redacted>"
+      },
+      "body": {
+        "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+          },
+          {
+            "role": "user",
+            "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short ded...<truncated 13399 chars>"
+          }
+        ],
+        "max_tokens": "<redacted>",
+        "temperature": 0.62
+      }
+    },
+    "response": {
+      "status": 402,
+      "ok": false,
+      "contentType": "application/json; charset=utf-8",
+      "contentLength": "189",
+      "byteLength": 189,
+      "body": {
+        "error": "You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+      }
+    },
+    "durationMs": 134
+  }
+]

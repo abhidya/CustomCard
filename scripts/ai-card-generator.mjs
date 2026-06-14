@@ -765,7 +765,14 @@ async function executeHuggingFaceImage({ flow, env, fetchImpl, panelId, prompt, 
 
 async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, prompt, negativePrompt }) {
   const body = new FormData();
-  body.set("text", buildDeepAiTextPrompt({ panelId, prompt, negativePrompt }));
+  body.set("text", buildDeepAiTextPrompt({ panelId, prompt }));
+  body.set("negative_prompt", buildDeepAiNegativePrompt({ prompt, negativePrompt }));
+  body.set("width", String(env.CUSTOMCARD_DEEPAI_IMAGE_WIDTH || env.DEEPAI_IMAGE_WIDTH || "768"));
+  body.set("height", String(env.CUSTOMCARD_DEEPAI_IMAGE_HEIGHT || env.DEEPAI_IMAGE_HEIGHT || "1024"));
+  body.set(
+    "image_generator_version",
+    String(env.CUSTOMCARD_DEEPAI_IMAGE_GENERATOR_VERSION || env.DEEPAI_IMAGE_GENERATOR_VERSION || "standard")
+  );
   const response = await fetchWithProviderBackoff(
     fetchImpl,
     "https://api.deepai.org/api/text2img",
@@ -787,10 +794,12 @@ async function executeDeepAiText2ImgImage({ flow, env, fetchImpl, panelId, promp
 function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
   const providerPrompt = buildCloudflareImagePrompt({ panelId, prompt });
   const providerNegativePrompt = buildCloudflareNegativePrompt({ negativePrompt, prompt });
+  const seed = numericSeed(`${flow.model}:${panelId}:${providerPrompt}`) % 2147483647;
   if (isCloudflareFluxModel(flow.model)) {
     return {
       prompt: truncate(providerPrompt, 1600),
-      steps: 8
+      steps: 8,
+      seed
     };
   }
   return {
@@ -800,6 +809,7 @@ function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt
     height: 2048,
     guidance: 3.5,
     num_steps: 8,
+    seed,
     metadata: {
       customcard: {
         prompt_contract: "folded-card-four-panel-v1",
@@ -928,20 +938,21 @@ function numericSeed(value) {
   return hash >>> 0;
 }
 
-function buildDeepAiTextPrompt({ panelId, prompt, negativePrompt }) {
+function buildDeepAiTextPrompt({ panelId, prompt }) {
   if (isQuietCarePrompt(prompt)) {
-    return buildDeepAiQuietCarePrompt({ panelId, negativePrompt });
+    return buildDeepAiQuietCarePrompt({ panelId });
   }
-  const avoid = truncate(negativePrompt, 500);
-  return truncate(
-    avoid
-      ? `${prompt}\n\nAvoid: ${avoid}.`
-      : prompt,
-    2048
-  );
+  return truncate(prompt, 2048);
 }
 
-function buildDeepAiQuietCarePrompt({ panelId, negativePrompt }) {
+function buildDeepAiNegativePrompt({ prompt, negativePrompt }) {
+  const base = isQuietCarePrompt(prompt)
+    ? "readable text, fake text, letters, words, handwriting, calligraphy, label, logo, watermark, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, paper fold, crease line, page seam, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, road, landscape, horizon, hills, mountains, river, ocean, waves, sunset, sun, bright yellow, neon green, cheerful celebration, phone, device, hospital, religious symbols"
+    : negativePrompt;
+  return truncate(base || negativePrompt || "", 700);
+}
+
+function buildDeepAiQuietCarePrompt({ panelId }) {
   const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : "interior panel";
   const shared = [
     `Portrait 5x7 ${role} for a premium sympathy greeting card.`,
@@ -960,13 +971,11 @@ function buildDeepAiQuietCarePrompt({ panelId, negativePrompt }) {
     back:
       "Mostly deep moss negative space with a clean upper/center text-safe area. One small lower-corner ivory/taupe echo of the covered meal and threshold arc. Minimal and quiet."
   }[panelId] ?? "";
-  const avoid = truncate(negativePrompt, 700);
   return truncate(
     [
       ...shared,
       panelSpec,
-      "Mood: calm, grounded, deeply respectful, practical support without cliches.",
-      avoid ? `Avoid: ${avoid}.` : ""
+      "Mood: calm, grounded, deeply respectful, practical support without cliches."
     ].join(" "),
     2048
   );

@@ -1,0 +1,28 @@
+{
+  "fixture": "medical-graduation",
+  "category": "Medical school graduation folded card",
+  "competitor": {
+    "competitor": "Shutterfly",
+    "category": "Photo-card print product",
+    "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+    "localFile": "shutterfly-grad-card-preview.webp",
+    "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+  },
+  "requestBody": {
+    "sender": "Manny",
+    "recipient": "my brother",
+    "relationship": "brother",
+    "occasion": "medical school graduation",
+    "tone": "proud, emotional, premium, warm family pride, not cheesy",
+    "style": "deep navy, white, soft gold, elegant medical graduation stationery",
+    "language": "English",
+    "personal_note": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+    "memory_notes": [
+      "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+      "The family is proud of his discipline, patience, heart, and dedication.",
+      "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+    ]
+  },
+  "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+  "panelPrompts": []
+}

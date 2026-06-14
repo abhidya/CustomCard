@@ -1,0 +1,1071 @@
+{
+  "runId": "card-gen-benchmark-2026-06-14T22-49-13-918Z",
+  "createdAtIso": "2026-06-14T22:49:13.922Z",
+  "fixtureIds": [
+    "small-business-thank-you",
+    "medical-graduation",
+    "dad-fix-anything"
+  ],
+  "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z",
+  "envRouting": {
+    "aiEnvSources": [
+      ".env.local",
+      "infra/env/.env"
+    ],
+    "configuredProviderKeys": [
+      "ARTIFACT_SIGNED_URL_TTL_MINUTES",
+      "CLOUDFLARE_ACCOUNT_ID",
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_IMAGE_MODEL",
+      "CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN",
+      "CLOUDFLARE_WORKERS_AI_TEXT_MODEL",
+      "CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED",
+      "CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID",
+      "CUSTOMCARD_AI_CARD_IMAGE_LIVE_ENABLED",
+      "CUSTOMCARD_ARTIFACT_PERSISTENCE",
+      "OBJECT_STORE_ACCESS_KEY_ID",
+      "OBJECT_STORE_BUCKET",
+      "OBJECT_STORE_PUBLIC_BASE_URL",
+      "OBJECT_STORE_READ_ACCESS_KEY_ID",
+      "OBJECT_STORE_READ_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_REGION",
+      "OBJECT_STORE_SECRET_ACCESS_KEY",
+      "OBJECT_STORE_SIGNING_SECRET",
+      "OBJECT_STORE_URL"
+    ],
+    "secretsRedacted": true
+  },
+  "resolvedFlowsBeforeRun": [
+    {
+      "flowId": "customer-chat",
+      "primaryAdapterId": "cloudflare-workers-ai-chat",
+      "fallbackAdapterId": "",
+      "model": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "configuredAdapterIds": [
+        "huggingface-chat",
+        "cloudflare-workers-ai-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-copy",
+      "primaryAdapterId": "huggingface-chat",
+      "fallbackAdapterId": "",
+      "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": false,
+      "fallbackQueueEnabled": false,
+      "configuredAdapterIds": [
+        "huggingface-chat",
+        "cloudflare-workers-ai-chat"
+      ],
+      "blockedReasons": []
+    },
+    {
+      "flowId": "card-image",
+      "primaryAdapterId": "cloudflare-workers-ai-image",
+      "fallbackAdapterId": "",
+      "model": "text2img",
+      "liveProviderCallsEnabled": true,
+      "readyForLiveCalls": true,
+      "queueEnabled": true,
+      "fallbackQueueEnabled": false,
+      "configuredAdapterIds": [
+        "deepai-text2img-image",
+        "cloudflare-workers-ai-image",
+        "huggingface-image"
+      ],
+      "blockedReasons": []
+    }
+  ],
+  "objectStore": {
+    "configured": true,
+    "provider": "cloudflare-r2",
+    "endpoint": "https://{account_id}.r2.cloudflarestorage.com",
+    "bucket": "customcard-prod",
+    "publicBaseUrl": "http://127.0.0.1:4173/api/artifacts",
+    "signedUrlTtlMinutes": 15,
+    "artifactRetentionDays": 30,
+    "noncurrentArtifactRetentionDays": 14,
+    "writeConcurrency": 4,
+    "liveNetworkCalls": true,
+    "credentialMode": "write-read-split",
+    "blockers": []
+  },
+  "fixtures": [
+    {
+      "id": "small-business-thank-you",
+      "category": "Small business thank-you AI card",
+      "competitor": {
+        "competitor": "Adobe Express",
+        "category": "Small business thank-you AI card",
+        "sourcePage": "https://www.adobe.com/express/create/ai/card",
+        "localFile": "adobe-express-small-business-thanks.png",
+        "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+      },
+      "statusCode": 502,
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z/small-business-thank-you",
+      "panelCount": 0,
+      "quality": {
+        "status": "needs-improvement",
+        "score": 47,
+        "passed": 17,
+        "total": 36,
+        "scorecard": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z/small-business-thank-you/qa-scorecard.md"
+      },
+      "prompts": [],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 2,
+          "storedArtifactCount": 2,
+          "deduplicatedArtifactCount": 0,
+          "deduplicatedBytes": 0,
+          "verifiedWrites": 2,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "retentionPolicy": {
+            "currentArtifactDays": 30,
+            "noncurrentArtifactDays": 14,
+            "signedUrlTtlMinutes": 15,
+            "lifecyclePrefix": "projects/",
+            "lifecycleManagedBy": "object-store-lifecycle"
+          },
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-14T22-49-13-918Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-14T23:04:14.000Z"
+      }
+    },
+    {
+      "id": "medical-graduation",
+      "category": "Medical school graduation folded card",
+      "competitor": {
+        "competitor": "Shutterfly",
+        "category": "Photo-card print product",
+        "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+        "localFile": "shutterfly-grad-card-preview.webp",
+        "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+      },
+      "statusCode": 502,
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z/medical-graduation",
+      "panelCount": 0,
+      "quality": {
+        "status": "needs-improvement",
+        "score": 32,
+        "passed": 10,
+        "total": 31,
+        "scorecard": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z/medical-graduation/qa-scorecard.md"
+      },
+      "prompts": [],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 2,
+          "storedArtifactCount": 2,
+          "deduplicatedArtifactCount": 0,
+          "deduplicatedBytes": 0,
+          "verifiedWrites": 2,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "retentionPolicy": {
+            "currentArtifactDays": 30,
+            "noncurrentArtifactDays": 14,
+            "signedUrlTtlMinutes": 15,
+            "lifecyclePrefix": "projects/",
+            "lifecycleManagedBy": "object-store-lifecycle"
+          },
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-14T22-49-13-918Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-14T23:04:15.000Z"
+      }
+    },
+    {
+      "id": "dad-fix-anything",
+      "category": "Father's Day repair-themed card",
+      "competitor": {
+        "competitor": "Greetings Island",
+        "category": "Free template card maker",
+        "sourcePage": "https://www.greetingsisland.com/",
+        "localFile": "greetings-island-fathers-day-preview.jpeg",
+        "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+      },
+      "statusCode": 502,
+      "outputDir": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z/dad-fix-anything",
+      "panelCount": 0,
+      "quality": {
+        "status": "needs-improvement",
+        "score": 29,
+        "passed": 8,
+        "total": 28,
+        "scorecard": "docs/evidence/generated-card-comparisons/card-gen-benchmark-2026-06-14T22-49-13-918Z/dad-fix-anything/qa-scorecard.md"
+      },
+      "prompts": [],
+      "persistence": {
+        "artifactPersistence": {
+          "status": "stored",
+          "storageProvider": "s3-compatible",
+          "provider": "cloudflare-r2",
+          "bucket": "customcard-prod",
+          "artifactCount": 2,
+          "storedArtifactCount": 2,
+          "deduplicatedArtifactCount": 0,
+          "deduplicatedBytes": 0,
+          "verifiedWrites": 2,
+          "writeConcurrency": 4,
+          "manifestStored": true,
+          "retentionPolicy": {
+            "currentArtifactDays": 30,
+            "noncurrentArtifactDays": 14,
+            "signedUrlTtlMinutes": 15,
+            "lifecyclePrefix": "projects/",
+            "lifecycleManagedBy": "object-store-lifecycle"
+          },
+          "liveNetworkCalls": true,
+          "blockers": []
+        },
+        "artifactUri": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-14T22-49-13-918Z/artifact-handoff-manifest.json",
+        "signedUrlExpiresAt": "2026-06-14T23:04:16.000Z"
+      }
+    }
+  ],
+  "providerHttp": [
+    {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short ded...<truncated 13519 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62
+        }
+      },
+      "response": {
+        "status": 402,
+        "ok": false,
+        "contentType": "application/json; charset=utf-8",
+        "contentLength": "189",
+        "byteLength": 189,
+        "body": {
+          "error": "You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+        }
+      },
+      "durationMs": 406
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-14T22-49-13-918Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "0ea4ef9c1f311447a83bf9cc9703ab880a1b4525b34113e73f0b9e38b85165df",
+          "x-amz-date": "20260614T224914Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-0ea4ef9c1f311447a83bf9cc9703ab880a1b4525b34113e73f0b9e38b85165df",
+          "x-amz-meta-artifactretentiondays": "30",
+          "x-amz-meta-noncurrentartifactretentiondays": "14",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 353
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-14T22-49-13-918Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "b3d54744376019d735dfb0c931840ed012cb4f183ad5482f283adf7b6d232269",
+          "x-amz-date": "20260614T224914Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-b3d54744376019d735dfb0c931840ed012cb4f183ad5482f283adf7b6d232269",
+          "x-amz-meta-artifactretentiondays": "30",
+          "x-amz-meta-noncurrentartifactretentiondays": "14",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 384
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-14T22-49-13-918Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260614T224914Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 1426,
+        "body": {
+          "fixture": "small-business-thank-you",
+          "category": "Small business thank-you AI card",
+          "competitor": {
+            "competitor": "Adobe Express",
+            "category": "Small business thank-you AI card",
+            "sourcePage": "https://www.adobe.com/express/create/ai/card",
+            "localFile": "adobe-express-small-business-thanks.png",
+            "sha256": "df852521138cb095b42dbfbf1b1183dbec374d62caf7efe3fe99225bc3a3190f"
+          },
+          "requestBody": {
+            "sender": "CustomCard",
+            "recipient": "loyal customers",
+            "relationship": "small business to repeat customer",
+            "occasion": "thank-you for supporting a small business",
+            "tone": "warm, sincere, polished, grateful, not salesy",
+            "style": "premium small-business editorial stationery: warm citrus, cream, deep teal, soft gold, handmade local-shop texture",
+            "language": "English",
+            "personal_note": "Make this feel like a real small business owner thanking a customer after a purchase, without implying an order was placed inside CustomCard.",
+            "memory_notes": [
+              "The customer chose an independent small business instead of a large marketplace.",
+              "The owner wants the message to feel handmade, specific, and grateful rather than promotional.",
+              "CustomCard needs editable copy overlays, print-safe margins, persistence, and human review before external sharing."
+            ]
+          },
+          "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "panelPrompts": []
+        }
+      },
+      "durationMs": 121
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-14T22-49-13-918Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260614T224914Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 2638,
+        "body": {
+          "status": "provider-unavailable",
+          "detail": "AI provider returned 402.",
+          "error": "AI provider returned 402.",
+          "user_content_only": false,
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "primary_adapter_id": "huggingface-chat",
+              "fallback_adapter_id": "",
+              "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 5000,
+              "per_request_budget_cents": 5,
+              "queue_enabled": false,
+              "fallback_queue_enabled": false,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": [],
+              "provider_failure": "AI provider returned 402."
+            }
+          },
+          "provider_call_events": [
+            {
+              "id": "provider-call-6038e262",
+              "tenant_id": "benchmark-small-business-thank-you-2026-06-14T22-49-13-918Z",
+              "route_id": "/api/ai/card/generate",
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "provider": "Hugging Face",
+              "capability": "text-chat",
+              "status": "reserved",
+              "month_bucket": "2026-06",
+              "request_units": 1,
+              "estimated_cost_cents": 5,
+              "rate_limit_window_start": "2026-06-14T22:49:00.000Z",
+              "live_network_call": true,
+              "metadata": {
+                "phase": "card-copy",
+                "flowLabel": "Card copy",
+                "primaryAdapterId": "huggingface-chat",
+                "fallbackAdapterId": "",
+                "localAdapter": false,
+                "costGateEvent": true
+              }
+            },
+            {
+              "id": "provider-call-49ffca65",
+              "tenant_id": "benchmark-small-business-thank-you-2026-06-14T22-49-13-918Z",
+              "route_id": "/api/ai/card/generate",
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "provider": "Hugging Face",
+              "capability": "text-chat",
+              "status": "failed",
+              "month_bucket": "2026-06",
+              "request_units": 1,
+              "estimated_cost_cents": 5,
+              "rate_limit_window_start": "2026-06-14T22:49:00.000Z",
+              "live_network_call": true,
+              "metadata": {
+                "phase": "card-copy",
+                "flowLabel": "Card copy",
+                "primaryAdapterId": "huggingface-chat",
+                "fallbackAdapterId": "",
+                "localAdapter": false,
+                "costGateEvent": true,
+                "providerFailure": "AI provider returned 402."
+              }
+            }
+          ],
+          "ai_cost_gate": {
+            "event_count": 2,
+            "reserved_or_spent_cents": 5,
+            "actual_spend_cents": 0,
+            "request_units": 1,
+            "live_network_calls": true,
+            "blocked_reasons": []
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 312
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-small-business-thank-you/render-packets/rp-small-business-thank-you-2026-06-14T22-49-13-918Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e766d073722896154c75c76964d5ea4a3a6809a7762e19d6041218bbc5ea363a",
+          "x-amz-date": "20260614T224915Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-small-business-thank-you",
+          "x-amz-meta-renderpacketid": "rp-small-business-thank-you-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 223
+    },
+    {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short ded...<truncated 13399 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62
+        }
+      },
+      "response": {
+        "status": 402,
+        "ok": false,
+        "contentType": "application/json; charset=utf-8",
+        "contentLength": "189",
+        "byteLength": 189,
+        "body": {
+          "error": "You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+        }
+      },
+      "durationMs": 134
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-14T22-49-13-918Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "dfd134db942e496578b86eae50b2e7ff3feba7fbdd64e24e1784bdafcee4f183",
+          "x-amz-date": "20260614T224915Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-dfd134db942e496578b86eae50b2e7ff3feba7fbdd64e24e1784bdafcee4f183",
+          "x-amz-meta-artifactretentiondays": "30",
+          "x-amz-meta-noncurrentartifactretentiondays": "14",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 186
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-14T22-49-13-918Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260614T224915Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 2626,
+        "body": {
+          "status": "provider-unavailable",
+          "detail": "AI provider returned 402.",
+          "error": "AI provider returned 402.",
+          "user_content_only": false,
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "primary_adapter_id": "huggingface-chat",
+              "fallback_adapter_id": "",
+              "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 5000,
+              "per_request_budget_cents": 5,
+              "queue_enabled": false,
+              "fallback_queue_enabled": false,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": [],
+              "provider_failure": "AI provider returned 402."
+            }
+          },
+          "provider_call_events": [
+            {
+              "id": "provider-call-7d658191",
+              "tenant_id": "benchmark-medical-graduation-2026-06-14T22-49-13-918Z",
+              "route_id": "/api/ai/card/generate",
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "provider": "Hugging Face",
+              "capability": "text-chat",
+              "status": "reserved",
+              "month_bucket": "2026-06",
+              "request_units": 1,
+              "estimated_cost_cents": 5,
+              "rate_limit_window_start": "2026-06-14T22:49:00.000Z",
+              "live_network_call": true,
+              "metadata": {
+                "phase": "card-copy",
+                "flowLabel": "Card copy",
+                "primaryAdapterId": "huggingface-chat",
+                "fallbackAdapterId": "",
+                "localAdapter": false,
+                "costGateEvent": true
+              }
+            },
+            {
+              "id": "provider-call-6284154e",
+              "tenant_id": "benchmark-medical-graduation-2026-06-14T22-49-13-918Z",
+              "route_id": "/api/ai/card/generate",
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "provider": "Hugging Face",
+              "capability": "text-chat",
+              "status": "failed",
+              "month_bucket": "2026-06",
+              "request_units": 1,
+              "estimated_cost_cents": 5,
+              "rate_limit_window_start": "2026-06-14T22:49:00.000Z",
+              "live_network_call": true,
+              "metadata": {
+                "phase": "card-copy",
+                "flowLabel": "Card copy",
+                "primaryAdapterId": "huggingface-chat",
+                "fallbackAdapterId": "",
+                "localAdapter": false,
+                "costGateEvent": true,
+                "providerFailure": "AI provider returned 402."
+              }
+            }
+          ],
+          "ai_cost_gate": {
+            "event_count": 2,
+            "reserved_or_spent_cents": 5,
+            "actual_spend_cents": 0,
+            "request_units": 1,
+            "live_network_calls": true,
+            "blocked_reasons": []
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 136
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-14T22-49-13-918Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "88da412f9cf1d4dd4fc751b6c3e9f418a59f35efa112f22702b525899f9d2542",
+          "x-amz-date": "20260614T224915Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-88da412f9cf1d4dd4fc751b6c3e9f418a59f35efa112f22702b525899f9d2542",
+          "x-amz-meta-artifactretentiondays": "30",
+          "x-amz-meta-noncurrentartifactretentiondays": "14",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 330
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-14T22-49-13-918Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260614T224915Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 1288,
+        "body": {
+          "fixture": "medical-graduation",
+          "category": "Medical school graduation folded card",
+          "competitor": {
+            "competitor": "Shutterfly",
+            "category": "Photo-card print product",
+            "sourcePage": "https://www.shutterfly.com/cards-stationery/",
+            "localFile": "shutterfly-grad-card-preview.webp",
+            "sha256": "a1cbeb71fa24dd3d9e5b0e7d098f99c59986c41b623ee0b273e30618000d3622"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "my brother",
+            "relationship": "brother",
+            "occasion": "medical school graduation",
+            "tone": "proud, emotional, premium, warm family pride, not cheesy",
+            "style": "deep navy, white, soft gold, elegant medical graduation stationery",
+            "language": "English",
+            "personal_note": "He is graduating med school. Design a theme called From Dream to Doctor for the card front, back, inside-left, and inside-right.",
+            "memory_notes": [
+              "He pushed through years of exams, late nights, long shifts, and sacrifices.",
+              "The family is proud of his discipline, patience, heart, and dedication.",
+              "Use medical-school graduation symbols such as a white coat, stethoscope, anatomy sketch lines, ECG line, and graduation cap."
+            ]
+          },
+          "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "panelPrompts": []
+        }
+      },
+      "durationMs": 182
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-medical-graduation/render-packets/rp-medical-graduation-2026-06-14T22-49-13-918Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "1fce1e0577c1477e711467b2dcb09d9d4cd8a095a7b6061cf374340515ec636c",
+          "x-amz-date": "20260614T224915Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-medical-graduation",
+          "x-amz-meta-renderpacketid": "rp-medical-graduation-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 176
+    },
+    {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "method": "POST",
+      "request": {
+        "headers": {
+          "content-type": "application/json",
+          "authorization": "<redacted>"
+        },
+        "body": {
+          "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "messages": [
+            {
+              "role": "system",
+              "content": "Create a cohesive folded 5x7 greeting-card theme, layout, and copy plan, panel-specific visual cues, and safe text-layout plan. Return only JSON with exactly four panels: front, inside-left, inside-right, back. Use approved memories only, avoid private claims, and make the card feel finished rather than terse. Each panel needs purposeful copy, art_direction layout notes, visual_cue composition notes, text_layout enum choices, and a literal one-panel image_prompt. The app overlays exact typography, so image prompts reserve text-safe space instead of asking the image model to render final words."
+            },
+            {
+              "role": "user",
+              "content": "{\n  \"task\": \"Generate a cohesive folded 5x7 greeting card theme, layout, panel copy, and literal image-generation prompts as JSON only.\",\n  \"required_schema\": {\n    \"theme_guide\": {\n      \"theme_title\": \"string\",\n      \"palette\": [\n        \"string\"\n      ],\n      \"motifs\": [\n        \"string\"\n      ],\n      \"border_style\": \"string\",\n      \"front_back_pairing\": \"string\",\n      \"interior_pairing\": \"string\"\n    },\n    \"panels\": [\n      {\n        \"id\": \"front\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-left\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"inside-right\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      },\n      {\n        \"id\": \"back\",\n        \"headline\": \"string\",\n        \"body\": \"string\",\n        \"art_direction\": \"string\",\n        \"visual_cue\": \"string\",\n        \"text_layout\": {\n          \"headline_zone\": \"top|upper|center|lower\",\n          \"body_zone\": \"upper|center|lower|bottom\",\n          \"alignment\": \"left|center|right\",\n          \"font_pairing\": \"serif-sans|bold-editorial|minimal-sans|soft-serif\",\n          \"color_mode\": \"dark-ink|light-ink|accent-ink|high-contrast\",\n          \"scale\": \"compact|standard|large\"\n        },\n        \"image_prompt\": \"string\",\n        \"image_negative_prompt\": \"string\"\n      }\n    ],\n    \"memory_citations\": [\n      \"string\"\n    ]\n  },\n  \"section_order\": [\n    \"Choose one cohesive theme_guide from the occasion, personal_note, style, and approved memory_notes before writing panels.\",\n    \"Write the panel copy so the card has an emotional arc from cover to interior to back.\",\n    \"Write art_direction as layout notes for app-rendered typography and print-safe artwork.\",\n    \"Write visual_cue as the specific image composition each panel should show.\",\n    \"Write text_layout as a safe typography plan using only the enumerated zones, alignment, font_pairing, color_mode, and scale values.\",\n    \"Write each image_prompt as a separate one-panel visual request for the image provider.\"\n  ],\n  \"copy_requirements\": [\n    \"Exactly four panels.\",\n    \"Use each panel id exactly once in this order: front, inside-left, inside-right, back.\",\n    \"Use only provided memory_notes.\",\n    \"Preserve exact concrete facts from personal_note and memory_notes in final copy: names, relationships, dates, places, product names, CTA nouns, and practical support items. Do not replace literal requested items such as meals, rides, calls, silence, QR, dates, names, or business terms with generic summaries.\",\n    \"No order/payment claims.\",\n    \"Never invent facts, quotes, religious claims, medical claims, sender history, or recipient traits that are not in the input.\",\n    \"Do not produce generic one-line cards unless the input is extremely thin.\",\n    \"Write final card copy only. Never write meta-copy about the requested tone, style, design language, prompt, theme instructions, CustomCard requirements, or what the card should feel like.\",\n    \"Do not use filler such as 'A card made with care', 'For this moment', 'I wanted this card to feel like...', 'The heart of it is simple...', or '[occasion] with a [tone] feeling'.\",\n    \"When memory_notes are provided, transform them into natural human card language instead of restating them as approved details.\",\n    \"front headline <= 90 characters and body <= 160 characters; use the body only as a subtitle or short ded...<truncated 13309 chars>"
+            }
+          ],
+          "max_tokens": "<redacted>",
+          "temperature": 0.62
+        }
+      },
+      "response": {
+        "status": 402,
+        "ok": false,
+        "contentType": "application/json; charset=utf-8",
+        "contentLength": "189",
+        "byteLength": 189,
+        "body": {
+          "error": "You have depleted your monthly included credits. Purchase pre-paid credits to continue using Inference Providers. Alternatively, subscribe to PRO to get 20x more included usage."
+        }
+      },
+      "durationMs": 51
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-14T22-49-13-918Z/persisted-customcard-ai-output.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "11279d6dc8311672c650ff1c9770fdd172762dd25f250ddb6bb4e5554e34300a",
+          "x-amz-date": "20260614T224916Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-filename": "persisted-customcard-ai-output.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-11279d6dc8311672c650ff1c9770fdd172762dd25f250ddb6bb4e5554e34300a",
+          "x-amz-meta-artifactretentiondays": "30",
+          "x-amz-meta-noncurrentartifactretentiondays": "14",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 270
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-14T22-49-13-918Z/persisted-customcard-ai-output.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260614T224916Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 2622,
+        "body": {
+          "status": "provider-unavailable",
+          "detail": "AI provider returned 402.",
+          "error": "AI provider returned 402.",
+          "user_content_only": false,
+          "ai_flow": {
+            "card_copy": {
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "primary_adapter_id": "huggingface-chat",
+              "fallback_adapter_id": "",
+              "model": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+              "rate_limit_per_minute": 4,
+              "monthly_budget_cents": 5000,
+              "per_request_budget_cents": 5,
+              "queue_enabled": false,
+              "fallback_queue_enabled": false,
+              "live_provider_calls_enabled": true,
+              "ready_for_live_calls": true,
+              "blocked_reasons": [],
+              "provider_failure": "AI provider returned 402."
+            }
+          },
+          "provider_call_events": [
+            {
+              "id": "provider-call-3bd37ae9",
+              "tenant_id": "benchmark-dad-fix-anything-2026-06-14T22-49-13-918Z",
+              "route_id": "/api/ai/card/generate",
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "provider": "Hugging Face",
+              "capability": "text-chat",
+              "status": "reserved",
+              "month_bucket": "2026-06",
+              "request_units": 1,
+              "estimated_cost_cents": 5,
+              "rate_limit_window_start": "2026-06-14T22:49:00.000Z",
+              "live_network_call": true,
+              "metadata": {
+                "phase": "card-copy",
+                "flowLabel": "Card copy",
+                "primaryAdapterId": "huggingface-chat",
+                "fallbackAdapterId": "",
+                "localAdapter": false,
+                "costGateEvent": true
+              }
+            },
+            {
+              "id": "provider-call-1f2d8d46",
+              "tenant_id": "benchmark-dad-fix-anything-2026-06-14T22-49-13-918Z",
+              "route_id": "/api/ai/card/generate",
+              "flow_id": "card-copy",
+              "adapter_id": "huggingface-chat",
+              "provider": "Hugging Face",
+              "capability": "text-chat",
+              "status": "failed",
+              "month_bucket": "2026-06",
+              "request_units": 1,
+              "estimated_cost_cents": 5,
+              "rate_limit_window_start": "2026-06-14T22:49:00.000Z",
+              "live_network_call": true,
+              "metadata": {
+                "phase": "card-copy",
+                "flowLabel": "Card copy",
+                "primaryAdapterId": "huggingface-chat",
+                "fallbackAdapterId": "",
+                "localAdapter": false,
+                "costGateEvent": true,
+                "providerFailure": "AI provider returned 402."
+              }
+            }
+          ],
+          "ai_cost_gate": {
+            "event_count": 2,
+            "reserved_or_spent_cents": 5,
+            "actual_spend_cents": 0,
+            "request_units": 1,
+            "live_network_calls": true,
+            "blocked_reasons": []
+          },
+          "live_provider_calls_enabled": true,
+          "fallback_queued": false,
+          "external_network_calls": true
+        }
+      },
+      "durationMs": 130
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-14T22-49-13-918Z/persisted-effective-prompts.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "7e051e4213b0987ee44c76ee431e9f153f851f4082947038958ef00a62e4060e",
+          "x-amz-date": "20260614T224916Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-filename": "persisted-effective-prompts.json",
+          "x-amz-meta-kind": "manifest-json",
+          "x-amz-meta-contenthash": "sha256-7e051e4213b0987ee44c76ee431e9f153f851f4082947038958ef00a62e4060e",
+          "x-amz-meta-artifactretentiondays": "30",
+          "x-amz-meta-noncurrentartifactretentiondays": "14",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 418
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-14T22-49-13-918Z/persisted-effective-prompts.json",
+      "method": "GET",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "x-amz-date": "20260614T224916Z",
+          "Authorization": "<redacted>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "application/json",
+        "contentLength": null,
+        "byteLength": 1192,
+        "body": {
+          "fixture": "dad-fix-anything",
+          "category": "Father's Day repair-themed card",
+          "competitor": {
+            "competitor": "Greetings Island",
+            "category": "Free template card maker",
+            "sourcePage": "https://www.greetingsisland.com/",
+            "localFile": "greetings-island-fathers-day-preview.jpeg",
+            "sha256": "5489a5a21f2af0814ee9707fc75e9c4bd4bb90aca4a868e74b53af336caf9979"
+          },
+          "requestBody": {
+            "sender": "Manny",
+            "recipient": "Dad",
+            "relationship": "child to father",
+            "occasion": "Father's Day",
+            "tone": "warm, funny, sincere, practical love",
+            "style": "clean printable workshop illustration, blueprint details, golden yellow and green accents",
+            "language": "English",
+            "personal_note": "Make a card for a dad who fixes everything around the house. Avoid copying competitor jokes; make it about steady presence and practical love.",
+            "memory_notes": [
+              "Dad shows love by fixing the small things before anyone asks.",
+              "The card should feel printable, cheerful, and original.",
+              "Use tools as symbols, not a cluttered hardware-store scene."
+            ]
+          },
+          "cardCopyModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+          "panelPrompts": []
+        }
+      },
+      "durationMs": 122
+    },
+    {
+      "url": "https://<redacted-account>.r2.cloudflarestorage.com/customcard-prod/projects/benchmark-dad-fix-anything/render-packets/rp-dad-fix-anything-2026-06-14T22-49-13-918Z/artifact-handoff-manifest.json",
+      "method": "PUT",
+      "request": {
+        "headers": {
+          "host": "<redacted-account>.r2.cloudflarestorage.com",
+          "x-amz-content-sha256": "acd24b1885c77379ff864b0655f585373f51eae04379a3e7cbd352699a463cbd",
+          "x-amz-date": "20260614T224916Z",
+          "content-type": "application/json",
+          "x-amz-meta-projectid": "benchmark-dad-fix-anything",
+          "x-amz-meta-renderpacketid": "rp-dad-fix-anything-2026-06-14T22-49-13-918Z",
+          "x-amz-meta-artifactrole": "handoff-manifest",
+          "x-amz-meta-realordersenabled": "false",
+          "Authorization": "<redacted>"
+        },
+        "body": "<non-string-body>"
+      },
+      "response": {
+        "status": 200,
+        "ok": true,
+        "contentType": "text/plain;charset=UTF-8",
+        "contentLength": "0",
+        "byteLength": 0
+      },
+      "durationMs": 258
+    }
+  ]
+}

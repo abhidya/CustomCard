@@ -849,6 +849,13 @@ async function runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fet
     writeJson(resolve(runDir, "payload.json"), payload);
     writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
     const panelFiles = await materializePanels({ runDir, payload, fetchImpl, env });
+    const effectiveProviderRequests = writeEffectiveProviderRequests({
+      runDir,
+      run,
+      providerCalls,
+      requestPanelIds: (payload.card_copy?.panels || []).map((panel) => panel.id).filter(Boolean),
+      env
+    });
     const contactSheet = await renderContactSheet({ runDir, run, panelFiles });
     const autoChecks = autoGrade({ run, payload, panelFiles, providerCalls });
     const runResult = {
@@ -867,6 +874,7 @@ async function runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fet
       panelCount: panelFiles.length,
       panelFiles: panelFiles.map((file) => ({ ...file, path: relativePath(file.path), previewPath: relativePath(file.previewPath) })),
       contactSheet: contactSheet ? relativePath(contactSheet) : undefined,
+      effectiveProviderRequests,
       providerCallCount: providerCalls.length,
       autoChecks
     };
@@ -886,6 +894,13 @@ async function runBenchmarkCard({ run, phaseDir, service, providerHttp, env, fet
       providerCallCount: providerCalls.length
     };
     writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
+    failure.effectiveProviderRequests = writeEffectiveProviderRequests({
+      runDir,
+      run,
+      providerCalls,
+      requestPanelIds: panelIds,
+      env
+    });
     writeJson(resolve(runDir, "error.json"), sanitize(failure, env));
     return sanitize(failure, env);
   }
@@ -941,6 +956,13 @@ async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, 
       });
     }
     const providerCalls = providerHttp.slice(providerStartIndex);
+    const effectiveProviderRequests = writeEffectiveProviderRequests({
+      runDir,
+      run,
+      providerCalls,
+      requestPanelIds: promptPlans.map((promptPlan) => promptPlan.panelId),
+      env
+    });
     const contactSheet = await renderContactSheet({ runDir, run, panelFiles });
     const autoChecks = typographyAutoChecks({ promptPlans, providerCalls, decodedFiles });
     const runResult = {
@@ -955,6 +977,7 @@ async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, 
         previewPath: relativePath(file.previewPath)
       })),
       contactSheet: contactSheet ? relativePath(contactSheet) : undefined,
+      effectiveProviderRequests,
       providerCallCount: providerCalls.length,
       autoChecks
     };
@@ -975,9 +998,101 @@ async function runTypographyExperimentPanel({ run, phaseDir, providerHttp, env, 
       providerCallCount: providerCalls.length
     };
     writeJson(resolve(runDir, "provider-http.json"), sanitize(providerCalls, env));
+    failure.effectiveProviderRequests = writeEffectiveProviderRequests({
+      runDir,
+      run,
+      providerCalls,
+      requestPanelIds: promptPlans.map((promptPlan) => promptPlan.panelId),
+      env
+    });
     writeJson(resolve(runDir, "error.json"), sanitize(failure, env));
     return sanitize(failure, env);
   }
+}
+
+function writeEffectiveProviderRequests({ runDir, run, providerCalls, requestPanelIds, env }) {
+  const filePath = writeJson(
+    resolve(runDir, "effective-provider-requests.json"),
+    sanitize(buildEffectiveProviderRequests({ run, providerCalls, requestPanelIds }), env)
+  );
+  return relativePath(filePath);
+}
+
+export function buildEffectiveProviderRequests({ run, providerCalls = [], requestPanelIds = [] }) {
+  const imageCalls = providerCalls.filter(isImageGenerationProviderCall);
+  return {
+    schemaVersion: 1,
+    phase: run?.phase,
+    storyId: run?.storyId,
+    textCandidateId: run?.text?.id ?? run?.textCandidateId,
+    imageCandidateId: run?.image?.id ?? run?.imageCandidateId,
+    imageAdapterId: run?.image?.adapterId,
+    imageModel: run?.image?.model,
+    requestCount: imageCalls.length,
+    requests: imageCalls.map((call, index) => {
+      const body = call.request?.body;
+      return {
+        panelId: providerRequestPanelId({ body, index, requestPanelIds }),
+        url: call.url,
+        method: call.method,
+        requestBody: body,
+        providerPrompt: providerRequestPrompt(body),
+        providerNegativePrompt: providerRequestNegativePrompt(body),
+        seed: providerRequestValue(body, "seed"),
+        width: providerRequestValue(body, "width"),
+        height: providerRequestValue(body, "height"),
+        responseStatus: call.response?.status,
+        responseOk: call.response?.ok,
+        responseContentType: call.response?.contentType
+      };
+    })
+  };
+}
+
+function isImageGenerationProviderCall(call) {
+  if (String(call?.method || "GET").toUpperCase() !== "POST") return false;
+  const url = String(call?.url || "");
+  return (
+    /api\.deepai\.org\/api\/text2img/.test(url) ||
+    /\/ai\/run\/@cf\//.test(url) ||
+    /api\.openai\.com\/v1\/images\/generations/.test(url) ||
+    /router\.huggingface\.co\/(?:hf-inference|fal-ai|replicate)\//.test(url) ||
+    /generativelanguage\.googleapis\.com\/v1\/models\/.+:generateContent/.test(url)
+  );
+}
+
+function providerRequestPanelId({ body, index, requestPanelIds }) {
+  return (
+    providerRequestFields(body)?.panel_id ||
+    body?.metadata?.customcard?.panel_id ||
+    body?.customcard?.panel_id ||
+    requestPanelIds[index] ||
+    `panel-${index + 1}`
+  );
+}
+
+function providerRequestPrompt(body) {
+  const fields = providerRequestFields(body);
+  return (
+    fields?.text ||
+    body?.prompt ||
+    body?.inputs ||
+    body?.contents?.[0]?.parts?.find?.((part) => part?.text)?.text
+  );
+}
+
+function providerRequestNegativePrompt(body) {
+  const fields = providerRequestFields(body);
+  return fields?.negative_prompt || body?.negative_prompt || body?.parameters?.negative_prompt;
+}
+
+function providerRequestValue(body, key) {
+  const fields = providerRequestFields(body);
+  return fields?.[key] ?? body?.[key] ?? body?.parameters?.[key] ?? body?.image_size?.[key];
+}
+
+function providerRequestFields(body) {
+  return body?.body_type === "form-data" ? body.fields || {} : undefined;
 }
 
 function buildRunAiFlowConfig(run) {
@@ -1271,7 +1386,14 @@ function countSentences(value) {
 async function executeTypographyImageProvider({ image, panelId, prompt, negativePrompt, env, fetchImpl }) {
   if (image.adapterId === "deepai-text2img-image") {
     const body = new FormData();
-    body.set("text", truncateText(negativePrompt ? `${prompt}\n\nAvoid: ${negativePrompt}.` : prompt, 2048));
+    body.set("text", truncateText(prompt, 2048));
+    body.set("negative_prompt", truncateText(negativePrompt, 700));
+    body.set("width", String(env.CUSTOMCARD_DEEPAI_IMAGE_WIDTH || env.DEEPAI_IMAGE_WIDTH || "768"));
+    body.set("height", String(env.CUSTOMCARD_DEEPAI_IMAGE_HEIGHT || env.DEEPAI_IMAGE_HEIGHT || "1024"));
+    body.set(
+      "image_generator_version",
+      String(env.CUSTOMCARD_DEEPAI_IMAGE_GENERATOR_VERSION || env.DEEPAI_IMAGE_GENERATOR_VERSION || "standard")
+    );
     const response = await fetchWithProviderBackoff(
       fetchImpl,
       "https://api.deepai.org/api/text2img",
@@ -1293,8 +1415,9 @@ async function executeTypographyImageProvider({ image, panelId, prompt, negative
   if (image.adapterId === "cloudflare-workers-ai-image") {
     const accountId = requiredEnv(env, "CLOUDFLARE_ACCOUNT_ID");
     const token = env.CLOUDFLARE_WORKERS_AI_IMAGE_API_TOKEN || requiredEnv(env, "CLOUDFLARE_API_TOKEN");
+    const seed = numericSeed(`${image.model}:${panelId}:${prompt}`) % 2147483647;
     const body = isCloudflareFluxModel(image.model)
-      ? { prompt: truncateText(prompt, 2048), steps: 8 }
+      ? { prompt: truncateText(prompt, 2048), steps: 8, seed }
       : {
           prompt,
           negative_prompt: negativePrompt,
@@ -1302,6 +1425,7 @@ async function executeTypographyImageProvider({ image, panelId, prompt, negative
           height: 2048,
           guidance: 3.5,
           num_steps: 8,
+          seed,
           metadata: {
             customcard: {
               prompt_contract: "typography-experiment-folded-card-v2",
@@ -2168,9 +2292,39 @@ function parseDotenv(text) {
 }
 
 function parseBody(body) {
+  return parseBenchmarkRequestBody(body);
+}
+
+export function parseBenchmarkRequestBody(body) {
   if (!body) return undefined;
   if (typeof body === "string") return parseJson(body) || body;
+  if (typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams) return Object.fromEntries(body.entries());
+  if (isFormDataLike(body)) return serializeFormData(body);
   return "<non-string-body>";
+}
+
+function isFormDataLike(body) {
+  return Boolean(body && typeof body.entries === "function" && typeof body.get === "function" && typeof body.append === "function");
+}
+
+function serializeFormData(formData) {
+  const fields = {};
+  for (const [key, value] of formData.entries()) {
+    fields[key] = serializeFormDataValue(value);
+  }
+  return {
+    body_type: "form-data",
+    fields
+  };
+}
+
+function serializeFormDataValue(value) {
+  if (typeof value === "string") return value;
+  return {
+    type: value?.type || undefined,
+    name: value?.name || undefined,
+    size: Number.isFinite(value?.size) ? value.size : undefined
+  };
 }
 
 function parseJson(text) {
@@ -2253,6 +2407,15 @@ function truncateText(value, maxLength) {
   const clipped = text.slice(0, maxLength);
   const wordSafe = clipped.replace(/\s+\S*$/, "").trimEnd();
   return wordSafe.length >= Math.floor(maxLength * 0.82) ? wordSafe : clipped;
+}
+
+function numericSeed(value) {
+  let hash = 2166136261;
+  for (const char of String(value)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function wrapText(value, maxChars) {
