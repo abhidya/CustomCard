@@ -1,0 +1,63 @@
+# ORR dependency recording + alerting rules.
+#
+# Critical dependencies page (severity: critical); non-critical dependencies
+# warn and are expected to degrade gracefully (severity: warning). Series names
+# match src/metricsPlatformData.mjs exactly so the catalog, exposition, and
+# alerts cannot drift apart.
+groups:
+  - name: orr-critical-dependencies
+    rules:
+      - record: customcard:dependency_availability:ratio30d
+        expr: avg_over_time(customcard_dependency_up[30d])
+
+      - alert: ORRCriticalDependencyDown
+        expr: customcard_dependency_up{tier="critical"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          orr_tier: critical
+        annotations:
+          summary: "Critical dependency {{ $labels.dependency }} is down"
+          description: "customcard_dependency_up for {{ $labels.dependency }} has been 0 for >2m."
+
+      - alert: ORRCriticalDependencySLOBurn
+        expr: customcard:dependency_availability:ratio30d{tier="critical"} < 0.999
+        for: 15m
+        labels:
+          severity: critical
+          orr_tier: critical
+        annotations:
+          summary: "Critical dependency {{ $labels.dependency }} below 99.9% SLO"
+          description: "30d availability for {{ $labels.dependency }} dropped below the 99.9% objective."
+
+      - alert: ORRApiIngressErrorBudgetBurn
+        expr: customcard_http_request_error_ratio > 0.005
+        for: 10m
+        labels:
+          severity: critical
+          orr_tier: critical
+        annotations:
+          summary: "API ingress 5xx error ratio above 0.5%"
+          description: "customcard_http_request_error_ratio has exceeded the 0.5% budget for >10m."
+
+  - name: orr-noncritical-dependencies
+    rules:
+      - alert: ORRNonCriticalDependencyDown
+        expr: customcard_dependency_up{tier="non-critical"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          orr_tier: non-critical
+        annotations:
+          summary: "Non-critical dependency {{ $labels.dependency }} unreachable"
+          description: "customcard_dependency_up for {{ $labels.dependency }} has been 0 for >10m; service should be degrading gracefully."
+
+      - alert: ORRNonCriticalDependencyFlapping
+        expr: changes(customcard_dependency_up{tier="non-critical"}[1h]) > 6
+        for: 5m
+        labels:
+          severity: warning
+          orr_tier: non-critical
+        annotations:
+          summary: "Non-critical dependency {{ $labels.dependency }} flapping"
+          description: "customcard_dependency_up for {{ $labels.dependency }} changed state more than 6 times in the last hour."

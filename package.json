@@ -51,6 +51,7 @@
     "ai:doctor": "node scripts/ai-provider-readiness-doctor.mjs",
     "ai:queue:doctor": "node scripts/ai-queue-operations-doctor.mjs",
     "observability:doctor": "node scripts/observability-readiness-doctor.mjs",
+    "metrics:doctor": "node scripts/metrics-platform-doctor.mjs",
     "retail:doctor": "node scripts/retail-fulfillment-readiness-doctor.mjs",
     "payment:doctor": "node scripts/payment-readiness-doctor.mjs",
     "mobile:render:doctor": "node scripts/mobile-render-readiness-doctor.mjs",
@@ -75,8 +76,7 @@
     "lucide-react": "^1.17.0",
     "pg": "^8.16.3",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "sharp": "^0.34.5"
+    "react-dom": "^19.2.6"
   },
   "overrides": {
     "wrangler": {

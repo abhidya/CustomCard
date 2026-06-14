@@ -1,0 +1,96 @@
+{
+  "uid": "customcard-business-metrics",
+  "title": "CustomCard Business Metrics",
+  "tags": ["customcard", "business", "seo", "acquisition", "demographics"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": { "from": "now-30d", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "SEO organic impressions & clicks",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(customcard_seo_organic_impressions_total[1h]))", "legendFormat": "impressions" },
+        { "refId": "B", "expr": "sum(rate(customcard_seo_organic_clicks_total[1h]))", "legendFormat": "clicks" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "SEO average position",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "customcard_seo_average_position", "legendFormat": "{{query_group}}" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Customer acquisition signups by channel",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (channel) (rate(customcard_acquisition_signups_total[1h]))", "legendFormat": "{{channel}}" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Activation ratio & conversion funnel",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "avg(customcard_acquisition_activation_ratio)", "legendFormat": "activation" },
+        { "refId": "B", "expr": "sum by (funnel_step) (rate(customcard_acquisition_funnel_step_total[1h]))", "legendFormat": "{{funnel_step}}" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Demographics by region",
+      "type": "geomap",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (country, region) (rate(customcard_demographics_region_sessions_total[1h]))", "legendFormat": "{{country}}/{{region}}" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Demographics by locale & device",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (locale, device_type) (rate(customcard_demographics_locale_device_sessions_total[1h]))", "legendFormat": "{{locale}}/{{device_type}}" }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Site usage: pageviews & active sessions",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (route) (rate(customcard_site_pageviews_total[5m]))", "legendFormat": "{{route}}" },
+        { "refId": "B", "expr": "sum by (surface) (customcard_site_active_sessions)", "legendFormat": "active {{surface}}" }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Site usage: card generations & page-load p95",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "customcard-prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (surface) (rate(customcard_site_card_generations_total[1h]))", "legendFormat": "{{surface}}" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum by (le, route) (rate(customcard_site_page_load_seconds_bucket[5m])))", "legendFormat": "p95 {{route}}" }
+      ]
+    }
+  ]
+}

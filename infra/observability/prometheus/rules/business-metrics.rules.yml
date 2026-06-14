@@ -1,0 +1,41 @@
+# Business metrics recording rules — SEO, customer acquisition, demographics,
+# and site-usage metadata. Recording rules pre-aggregate the high-cardinality
+# counters so the Grafana business dashboard stays fast. Series names match
+# src/metricsPlatformData.mjs exactly.
+groups:
+  - name: business-seo
+    rules:
+      - record: customcard:seo_ctr:ratio5m
+        expr: |
+          sum(rate(customcard_seo_organic_clicks_total[5m]))
+          /
+          clamp_min(sum(rate(customcard_seo_organic_impressions_total[5m])), 1)
+      - record: customcard:seo_average_position:avg
+        expr: avg(customcard_seo_average_position)
+
+  - name: business-acquisition
+    rules:
+      - record: customcard:acquisition_signups:rate1h
+        expr: sum by (channel) (rate(customcard_acquisition_signups_total[1h]))
+      - record: customcard:acquisition_activation:avg
+        expr: avg by (channel) (customcard_acquisition_activation_ratio)
+      - record: customcard:acquisition_funnel:rate1h
+        expr: sum by (funnel_step) (rate(customcard_acquisition_funnel_step_total[1h]))
+
+  - name: business-demographics
+    rules:
+      - record: customcard:demographics_region:rate1h
+        expr: sum by (country, region) (rate(customcard_demographics_region_sessions_total[1h]))
+      - record: customcard:demographics_locale_device:rate1h
+        expr: sum by (locale, device_type) (rate(customcard_demographics_locale_device_sessions_total[1h]))
+
+  - name: business-site-usage
+    rules:
+      - record: customcard:site_pageviews:rate5m
+        expr: sum by (route) (rate(customcard_site_pageviews_total[5m]))
+      - record: customcard:site_active_sessions:sum
+        expr: sum by (surface) (customcard_site_active_sessions)
+      - record: customcard:site_card_generations:rate1h
+        expr: sum by (surface) (rate(customcard_site_card_generations_total[1h]))
+      - record: customcard:site_page_load:p95
+        expr: histogram_quantile(0.95, sum by (le, route) (rate(customcard_site_page_load_seconds_bucket[5m])))
