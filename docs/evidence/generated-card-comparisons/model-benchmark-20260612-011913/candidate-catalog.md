@@ -21,15 +21,15 @@
 | `image-deepai-text2img` | `deepai-text2img-image` | `text2img` | yes | none |
 | `image-openai-gpt-image-2` | `openai-images` | `gpt-image-2` | no | OPENAI_API_KEY |
 | `image-gemini-supported` | `google-gemini-image` | `gemini-3.1-flash-image` | no | GOOGLE_GENERATIVE_AI_API_KEY |
+| `image-hf-flux-schnell` | `huggingface-image` | `black-forest-labs/FLUX.1-schnell` | yes | none |
+| `image-hf-qwen-image` | `huggingface-image` | `Qwen/Qwen-Image` | yes | none |
+| `image-hf-qwen-image-2512` | `huggingface-image` | `Qwen/Qwen-Image-2512` | yes | none |
+| `image-hf-z-image-turbo` | `huggingface-image` | `Tongyi-MAI/Z-Image-Turbo` | yes | none |
 
 ## Blocked Image Candidates
 
 | Candidate | Adapter | Model | Reason |
 | --- | --- | --- | --- |
-| `image-hf-flux-schnell` | `huggingface-image` | `black-forest-labs/FLUX.1-schnell` | Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor. |
-| `image-hf-qwen-image` | `huggingface-image` | `Qwen/Qwen-Image` | Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor. |
-| `image-hf-qwen-image-2512` | `huggingface-image` | `Qwen/Qwen-Image-2512` | Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor. |
-| `image-hf-z-image-turbo` | `huggingface-image` | `Tongyi-MAI/Z-Image-Turbo` | Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor. |
 | `image-fal-flux` | `fal-image` | `fal-ai/flux/schnell` | FAL_KEY missing and generator has no fal-image executor. |
 | `image-together-flux` | `together-image` | `black-forest-labs/FLUX.1-schnell-Free` | TOGETHER_API_KEY missing and generator has no together-image executor. |
 | `image-replicate-flux` | `replicate-image` | `black-forest-labs/flux-schnell` | REPLICATE_API_TOKEN missing and generator has no replicate-image executor. |

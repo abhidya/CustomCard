@@ -157,33 +157,53 @@
       "missingEnv": [
         "GOOGLE_GENERATIVE_AI_API_KEY"
       ]
-    }
-  ],
-  "blockedImageCandidates": [
+    },
     {
       "id": "image-hf-flux-schnell",
+      "label": "Hugging Face FLUX.1 Schnell via Inference Providers",
       "adapterId": "huggingface-image",
       "model": "black-forest-labs/FLUX.1-schnell",
-      "blockedReason": "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
     },
     {
       "id": "image-hf-qwen-image",
+      "label": "Hugging Face Qwen Image via Inference Providers",
       "adapterId": "huggingface-image",
       "model": "Qwen/Qwen-Image",
-      "blockedReason": "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
     },
     {
       "id": "image-hf-qwen-image-2512",
+      "label": "Hugging Face Qwen Image 2512 via Inference Providers",
       "adapterId": "huggingface-image",
       "model": "Qwen/Qwen-Image-2512",
-      "blockedReason": "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
     },
     {
       "id": "image-hf-z-image-turbo",
+      "label": "Hugging Face Z-Image Turbo via Inference Providers",
       "adapterId": "huggingface-image",
       "model": "Tongyi-MAI/Z-Image-Turbo",
-      "blockedReason": "Repo catalog has credentials but scripts/ai-card-generator.mjs has no Hugging Face image executor."
-    },
+      "requiredEnv": [
+        "HUGGINGFACE_API_TOKEN"
+      ],
+      "configured": true,
+      "missingEnv": []
+    }
+  ],
+  "blockedImageCandidates": [
     {
       "id": "image-fal-flux",
       "adapterId": "fal-image",
@@ -213,7 +233,11 @@
     "image": [
       "cloudflare-workers-ai-image",
       "cloudflare-workers-ai-image",
-      "deepai-text2img-image"
+      "deepai-text2img-image",
+      "huggingface-image",
+      "huggingface-image",
+      "huggingface-image",
+      "huggingface-image"
     ]
   }
 }

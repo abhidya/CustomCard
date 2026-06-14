@@ -9,9 +9,9 @@
       "textCandidateId": "text-cloudflare-baseline",
       "textAdapterId": "cloudflare-workers-ai-chat",
       "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
-      "imageCandidateId": "image-browser-svg-renderer",
-      "imageAdapterId": "browser-svg-renderer",
-      "imageModel": ""
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
     },
     {
       "phase": "smoke",
@@ -20,9 +20,9 @@
       "textCandidateId": "text-hf-qwen3-235b-a22b",
       "textAdapterId": "huggingface-chat",
       "textModel": "Qwen/Qwen3-235B-A22B-Instruct-2507",
-      "imageCandidateId": "image-browser-svg-renderer",
-      "imageAdapterId": "browser-svg-renderer",
-      "imageModel": ""
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
     },
     {
       "phase": "smoke",
@@ -31,9 +31,9 @@
       "textCandidateId": "text-hf-deepseek-v4-flash",
       "textAdapterId": "huggingface-chat",
       "textModel": "deepseek-ai/DeepSeek-V4-Flash",
-      "imageCandidateId": "image-browser-svg-renderer",
-      "imageAdapterId": "browser-svg-renderer",
-      "imageModel": ""
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
     },
     {
       "phase": "smoke",
@@ -42,9 +42,9 @@
       "textCandidateId": "text-hf-gpt-oss-20b",
       "textAdapterId": "huggingface-chat",
       "textModel": "openai/gpt-oss-20b",
-      "imageCandidateId": "image-browser-svg-renderer",
-      "imageAdapterId": "browser-svg-renderer",
-      "imageModel": ""
+      "imageCandidateId": "image-deepai-text2img",
+      "imageAdapterId": "deepai-text2img-image",
+      "imageModel": "text2img"
     },
     {
       "phase": "smoke",
@@ -78,6 +78,50 @@
       "imageCandidateId": "image-deepai-text2img",
       "imageAdapterId": "deepai-text2img-image",
       "imageModel": "text2img"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-flux-schnell",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "black-forest-labs/FLUX.1-schnell"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-qwen-image",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Qwen/Qwen-Image"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-qwen-image-2512",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Qwen/Qwen-Image-2512"
+    },
+    {
+      "phase": "smoke",
+      "focus": "image",
+      "storyId": "first-time-user-birthday",
+      "textCandidateId": "text-cloudflare-baseline",
+      "textAdapterId": "cloudflare-workers-ai-chat",
+      "textModel": "@cf/meta/llama-3.1-8b-instruct-fast",
+      "imageCandidateId": "image-hf-z-image-turbo",
+      "imageAdapterId": "huggingface-image",
+      "imageModel": "Tongyi-MAI/Z-Image-Turbo"
     }
   ]
 }
