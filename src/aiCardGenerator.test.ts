@@ -354,7 +354,7 @@ describe("AI card generator service", () => {
     };
     const serializedCopy = JSON.stringify(payload.card_copy);
 
-    expect(result.statusCode).toBe(503);
+    expect(result.statusCode).toBe(200);
     expect(payload.card_copy.panels[0]).toMatchObject({
       headline: "From Dream to Doctor",
       body: "For every late night, long shift, and quiet sacrifice that brought you here."
@@ -898,7 +898,7 @@ describe("AI card generator service", () => {
       { rateKey: "test-server-profile" }
     );
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(503);
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(JSON.stringify(result.payload)).toContain("Live provider calls disabled");
   });
@@ -1198,6 +1198,7 @@ describe("AI card generator service", () => {
         CLOUDFLARE_WORKERS_AI_TEXT_API_TOKEN: "test_text_token",
         CLOUDFLARE_WORKERS_AI_TEXT_MODEL: cloudflareTextModel,
         HUGGINGFACE_API_TOKEN: "test_hf_token",
+        CUSTOMCARD_AI_CARD_COPY_ADAPTER_ID: "cloudflare-workers-ai-chat",
         CUSTOMCARD_AI_CARD_IMAGE_ADAPTER_ID: "huggingface-image",
         HUGGINGFACE_IMAGE_MODEL: "Qwen/Qwen-Image",
         CUSTOMCARD_AI_CARD_COPY_LIVE_ENABLED: "true",
@@ -1504,7 +1505,7 @@ describe("AI card generator service", () => {
     );
   });
 
-  it("can route card images to deterministic browser SVG artwork when configured", async () => {
+  it("rejects browser SVG as a card-image provider override", async () => {
     const fetchImpl = vi.fn(async () =>
       new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(cardCopyResponse) } }] }), {
         status: 200,
@@ -1527,20 +1528,19 @@ describe("AI card generator service", () => {
     const payload = result.payload as {
       generated_by: string;
       images: Array<{ panel_id: string; image_url: string; revised_prompt: string }>;
-      ai_flow: { card_image: { primary_adapter_id: string; adapter_id: string } };
+      ai_flow: { card_image: { primary_adapter_id: string; adapter_id: string; provider_failure?: string } };
     };
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(payload.generated_by).toBe("ai-text-and-image");
+    expect(payload.generated_by).toBe("ai-text-only");
     expect(payload.ai_flow.card_image.primary_adapter_id).toBe("browser-svg-renderer");
-    expect(payload.ai_flow.card_image.adapter_id).toBe("browser-svg-renderer");
-    expect(payload.images.map((image) => image.panel_id)).toEqual(["front", "inside-left", "inside-right", "back"]);
-    expect(payload.images.every((image) => image.image_url.startsWith("data:image/svg+xml;base64,"))).toBe(true);
-    expect(Buffer.from(payload.images[0].image_url.split(",")[1], "base64").toString("utf8")).toContain("<svg");
+    expect(payload.ai_flow.card_image.adapter_id).toBe("");
+    expect(payload.ai_flow.card_image.provider_failure).toContain("not allowed");
+    expect(payload.images).toEqual([]);
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 
-  it("keeps deterministic SVG artwork on the tool theme for plural tools and glue prompts", async () => {
+  it("does not synthesize local SVG artwork for tool prompts", async () => {
     const toolCopyResponse = {
       ...cardCopyResponse,
       panels: cardCopyResponse.panels.map((panel) => ({
@@ -1580,17 +1580,14 @@ describe("AI card generator service", () => {
       { rateKey: "test-browser-svg-tools" }
     );
     const payload = result.payload as {
+      generated_by: string;
       images: Array<{ image_url: string }>;
+      ai_flow: { card_image: { provider_failure?: string } };
     };
-    const svgs = payload.images.map((image) => decodeSvgDataUrl(image.image_url));
-    const interiorMotifCenters = svgs
-      .slice(1, 3)
-      .flatMap((svg) => svgMotifCenters(svg));
 
-    expect(payload.images).toHaveLength(4);
-    expect(svgs.every((svg) => svg.includes('fill="#0f6b5f"'))).toBe(true);
-    expect(interiorMotifCenters.some(({ x, y }) => x > 220 && x < 1280 && y > 400 && y < 1720)).toBe(false);
-    expect(svgs.join(" ")).not.toContain("<text");
+    expect(payload.generated_by).toBe("ai-text-only");
+    expect(payload.images).toEqual([]);
+    expect(payload.ai_flow.card_image.provider_failure).toContain("not allowed");
   });
 
   it("uses the customer-chat flow for chat replies", async () => {
@@ -1629,14 +1626,3 @@ describe("AI card generator service", () => {
     expect(JSON.stringify(result.payload)).not.toContain("test_text_token");
   });
 });
-
-function decodeSvgDataUrl(dataUrl: string) {
-  return Buffer.from(dataUrl.split(",")[1], "base64").toString("utf8");
-}
-
-function svgMotifCenters(svg: string) {
-  return Array.from(svg.matchAll(/transform="translate\((-?\d+) (-?\d+)\)/g), ([, x, y]) => ({
-    x: Number(x),
-    y: Number(y)
-  }));
-}

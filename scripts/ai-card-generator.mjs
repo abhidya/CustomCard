@@ -258,14 +258,24 @@ export function createAiCardGenerationService({ env = process.env, fetchImpl = g
 
       if (!imageFlow.readyForLiveCalls) {
         const providerFailure = imageFlow.blockedReasons[0] ?? "Live card-image provider is disabled.";
-        return providerUnavailableResponse({
-          statusCode: 503,
-          flowKey: "card_image",
-          flow: imageFlow,
-          providerFailure,
-          providerCallEvents,
-          extraPayload: { draft_id: buildDraftId(draftInput), card_copy: cardCopy, images: [] }
-        });
+        return {
+          statusCode: 200,
+          payload: {
+            draft_id: buildDraftId(draftInput),
+            card_copy: cardCopy,
+            images: [],
+            generated_by: "ai-text-only",
+            ai_flow: {
+              card_copy: publicFlowState(copyFlow, copyFlow.primaryAdapterId, ""),
+              card_image: publicFlowState(imageFlow, "", providerFailure)
+            },
+            provider_call_events: publicProviderCallEvents(providerCallEvents),
+            ai_cost_gate: publicCostGateSummary(providerCallEvents),
+            live_provider_calls_enabled: hasLiveProviderEvent(providerCallEvents),
+            fallback_queued: false,
+            external_network_calls: hasExternalNetworkEvent(providerCallEvents)
+          }
+        };
       }
 
       const imagePromptPlan = buildImagePromptPlan(draftInput, cardCopy);
@@ -734,6 +744,150 @@ async function executeImageProvider({ flow, env, fetchImpl, panelId, prompt, neg
   }
 
   throw new Error(`Image adapter ${flow.primaryAdapterId} is configured but not executable in this runtime yet.`);
+}
+
+function buildCloudflareImageRequestBody({ flow, panelId, prompt, negativePrompt }) {
+  const providerPrompt = buildCloudflareImagePrompt({ panelId, prompt });
+  const providerNegativePrompt = buildCloudflareNegativePrompt({ negativePrompt, prompt });
+  if (isCloudflareFluxModel(flow.model)) {
+    return {
+      prompt: truncate(providerPrompt, 1600),
+      steps: 8
+    };
+  }
+  return {
+    prompt: providerPrompt,
+    negative_prompt: providerNegativePrompt,
+    width: 1464,
+    height: 2048,
+    guidance: 3.5,
+    num_steps: 8,
+    metadata: {
+      customcard: {
+        prompt_contract: "folded-card-four-panel-v1",
+        generation_strategy: "one-provider-request-per-panel",
+        panel_id: panelId,
+        target_width: 1500,
+        target_height: 2100,
+        target_dpi: 300
+      }
+    }
+  };
+}
+
+function buildCloudflareImagePrompt({ panelId, prompt }) {
+  if (!isQuietCarePrompt(prompt)) return prompt;
+  const role = panelId === "front" ? "front cover" : panelId === "back" ? "back cover" : `${panelId} interior`;
+  const shared =
+    "Premium flat 2D vertical 5x7 greeting-card panel artwork, print-ready editorial paper-cut illustration, vector-poster flatness, no camera, no physical paper mockup, no tabletop scene, no open book, no page seam, no real room, no floor, no wall, no people, no hands, no faces, no readable text, no letters, no tiny glyphs, no labels, no logos, no watermark.";
+  if (panelId === "front") {
+    return [
+      shared,
+      `${role}: deep moss field, warm title-safe glow in upper middle, lower-third practical-care vignette made from paper-cut shapes: sealed meal container, folded cloth, blank note card, and muted phone silhouette with blank screen, all as one quiet support cluster; sophisticated negative space, no door, no table, no room, no waves, no road, no landscape.`
+    ].join(" ");
+  }
+  if (panelId === "back") {
+    return [
+      shared,
+      `${role}: mostly deep moss negative space, small lower-corner echo of the care vignette as simple ivory/taupe paper-cut sealed container and blank note shapes, subtle paper grain, premium stationery finish, open center with no decoration, no door, no table, no room, no waves or landscape.`
+    ].join(" ");
+  }
+  return [
+    shared,
+    `${role}: warm ivory interior, huge plain central negative space for later typography, small low-contrast practical-care vignette only along lower outside edge, sealed meal container, folded cloth, blank note card, quiet path curve for rides, muted moss line accents, soft taupe paper layers, generous margins, calm paired interior spread, no open book, no page seam, no waves or landscape.`
+  ].join(" ");
+}
+
+function buildCloudflareNegativePrompt({ negativePrompt, prompt }) {
+  const base = isQuietCarePrompt(prompt)
+    ? "readable text, fake text, letters, words, handwriting, calligraphy, signature, label, logo, watermark, tiny glyphs, small symbols, people, face, portrait, hands, body, folded card mockup, physical card mockup, open book, book, paper fold, crease line, page seam, wall floor corner, room, wall, floor, door, window, envelope, tabletop scene, table, desk, product photo, frame, QR code, busy background, car, vehicle, road, highway, lane line, landscape, horizon, hills, mountains, river, ocean, waves, sunset, cup, pot, key, visible food, fruit, cans, jars, package labels, screen text, phone app interface, hospital, religious symbols"
+    : negativePrompt;
+  return truncate(base || negativePrompt || "", 700);
+}
+
+function isQuietCarePrompt(prompt) {
+  return /\b(sympathy|condolence|grieving|grief|quiet[- ]support|quiet care|father'?s loss|losing (?:a|his|her|their) father|threshold-light|care-package)\b/i.test(
+    String(prompt || "")
+  );
+}
+
+function isCloudflareFluxModel(model) {
+  return String(model || "").includes("/flux-1-schnell");
+}
+
+function buildHuggingFaceImageRequestBody({ flow, env, panelId, prompt, negativePrompt }) {
+  const provider = String(env.CUSTOMCARD_HUGGINGFACE_IMAGE_PROVIDER || "fal-ai").trim() || "fal-ai";
+  const route = huggingFaceImageRoute(flow.model, provider);
+  const seed = numericSeed(`${flow.model}:${panelId}:${prompt}`) % 2147483647;
+  if (route.payloadFormat === "hf-inference") {
+    return {
+      url: route.url,
+      body: {
+        inputs: truncate(prompt, 2048),
+        parameters: {
+          negative_prompt: truncate(negativePrompt, 700),
+          width: 1024,
+          height: 1536,
+          num_inference_steps: 8,
+          seed
+        }
+      }
+    };
+  }
+  return {
+    url: route.url,
+    body: {
+      prompt: truncate(prompt, 2048),
+      negative_prompt: truncate(negativePrompt, 700),
+      image_size: {
+        width: 1024,
+        height: 1536
+      },
+      num_inference_steps: 8,
+      seed
+    }
+  };
+}
+
+function huggingFaceImageRoute(model, provider) {
+  if (provider === "hf-inference") {
+    return {
+      url: `https://router.huggingface.co/hf-inference/models/${String(model || "").trim()}`,
+      payloadFormat: "hf-inference"
+    };
+  }
+  const providerModel = huggingFaceImageProviderModel(model, provider);
+  return {
+    url: `https://router.huggingface.co/${provider}/${providerModel}`,
+    payloadFormat: provider
+  };
+}
+
+function huggingFaceImageProviderModel(model, provider) {
+  const modelId = String(model || "").trim();
+  const mappings = {
+    "fal-ai": {
+      "black-forest-labs/FLUX.1-schnell": "fal-ai/flux/schnell",
+      "Qwen/Qwen-Image": "fal-ai/qwen-image",
+      "Qwen/Qwen-Image-2512": "fal-ai/qwen-image-2512",
+      "Tongyi-MAI/Z-Image-Turbo": "fal-ai/z-image/turbo"
+    },
+    replicate: {
+      "black-forest-labs/FLUX.1-schnell": "black-forest-labs/flux-schnell",
+      "Qwen/Qwen-Image": "qwen/qwen-image",
+      "Tongyi-MAI/Z-Image-Turbo": "prunaai/z-image-turbo"
+    }
+  };
+  return mappings[provider]?.[modelId] ?? modelId;
+}
+
+function numericSeed(value) {
+  let hash = 2166136261;
+  for (const char of String(value)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function buildDeepAiTextPrompt({ prompt, negativePrompt }) {
