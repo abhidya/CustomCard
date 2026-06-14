@@ -55,9 +55,15 @@ export interface AiGenerationImageCompression {
   status?: "compressed" | "skipped";
   algorithm?: string;
   reason?: string;
+  detail?: string;
+  originalMimeType?: string;
+  storedMimeType?: string;
   originalByteLength?: number;
   storedByteLength?: number;
   savedBytes?: number;
+  width?: number;
+  height?: number;
+  quality?: number;
 }
 
 export interface AiGenerationApiResult {

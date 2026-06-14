@@ -17,6 +17,24 @@ const objectStoreEnv = {
   ARTIFACT_SIGNED_URL_TTL_MINUTES: "15"
 };
 
+async function buildCompressiblePngDataUrl() {
+  const sharp = (await import("sharp")).default;
+  const buffer = await sharp({
+    create: {
+      width: 256,
+      height: 256,
+      channels: 4,
+      background: "#f4d35e"
+    }
+  })
+    .png({ compressionLevel: 0 })
+    .toBuffer();
+  return {
+    buffer,
+    dataUrl: `data:image/png;base64,${buffer.toString("base64")}`
+  };
+}
+
 describe("object store runtime", () => {
   it("blocks non-HTTPS object store endpoints in production", () => {
     const runtime = createObjectStoreRuntime({
@@ -168,12 +186,12 @@ describe("object store runtime", () => {
     expect(JSON.stringify(bucket.payload)).not.toContain("read-secret");
   });
 
-  it("persists generated image data URLs as signed artifacts instead of inline response bytes", async () => {
+  it("compresses generated raster data URLs into signed artifacts instead of inline response bytes", async () => {
     const runtime = createApiRuntime({
       env: objectStoreEnv,
       routes: apiRouteContracts
     });
-    const pngDataUrl = "data:image/png;base64,AAAA";
+    const { buffer: pngBuffer, dataUrl: pngDataUrl } = await buildCompressiblePngDataUrl();
     const payload = {
       draft_id: "ai-draft-storage",
       card_copy: { panels: [] },
@@ -206,36 +224,38 @@ describe("object store runtime", () => {
       artifactCount: 2,
       storedArtifactCount: 1,
       deduplicatedArtifactCount: 1,
-      deduplicatedBytes: 3,
       inlineImageBytesPersisted: false,
       compression: {
         attemptedArtifactCount: 2,
-        compressedArtifactCount: 0,
-        skippedArtifactCount: 2,
-        originalBytes: 6,
-        storedBytes: 6,
-        savedBytes: 0,
-        algorithms: []
+        compressedArtifactCount: 2,
+        skippedArtifactCount: 0,
+        originalBytes: pngBuffer.length * 2,
+        algorithms: ["sharp-webp-v1"]
       }
     });
+    expect(persisted?.payload.generated_image_persistence.deduplicatedBytes).toBeGreaterThan(0);
+    expect(persisted?.payload.generated_image_persistence.compression.storedBytes).toBeLessThan(pngBuffer.length * 2);
+    expect(persisted?.payload.generated_image_persistence.compression.savedBytes).toBeGreaterThan(0);
     expect(persisted?.payload.images.every((image: { image_url: string }) => !image.image_url.startsWith("data:"))).toBe(true);
     expect(persisted?.payload.images[0]).toMatchObject({
       image_storage_provider: "s3-compatible",
       image_inline_bytes_persisted: false,
       image_compression: {
-        status: "skipped",
-        algorithm: "none",
-        reason: "raster-compression-requires-codec",
-        originalByteLength: 3,
-        storedByteLength: 3,
-        savedBytes: 0
+        status: "compressed",
+        algorithm: "sharp-webp-v1",
+        originalMimeType: "image/png",
+        storedMimeType: "image/webp",
+        originalByteLength: pngBuffer.length,
+        quality: 82
       },
-      image_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.png",
-      image_byte_length: 3
+      image_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.webp"
     });
+    expect(persisted?.payload.images[0].image_byte_length).toBeLessThan(pngBuffer.length);
+    expect(persisted?.payload.images[0].image_compression.storedByteLength).toBe(persisted?.payload.images[0].image_byte_length);
+    expect(persisted?.payload.images[0].image_compression.savedBytes).toBeGreaterThan(0);
     expect(persisted?.payload.images[1]).toMatchObject({
-      duplicate_of_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.png",
-      duplicate_of_file_name: "provider-01-front.png"
+      duplicate_of_object_key: "projects/ai-user-images/render-packets/ai-draft-storage/provider-01-front.webp",
+      duplicate_of_file_name: "provider-01-front.webp"
     });
     expect(JSON.stringify(persisted?.payload)).not.toContain(pngDataUrl);
 
@@ -247,8 +267,9 @@ describe("object store runtime", () => {
     });
 
     expect(downloaded.statusCode).toBe(200);
-    expect(downloaded.contentType).toBe("image/png");
-    expect(downloaded.body.equals(Buffer.from("AAAA", "base64"))).toBe(true);
+    expect(downloaded.contentType).toBe("image/webp");
+    expect(downloaded.body.length).toBe(persisted?.payload.images[0].image_byte_length);
+    expect(downloaded.body.equals(pngBuffer)).toBe(false);
   });
 
   it("losslessly compresses generated SVG images before object storage", async () => {
@@ -297,6 +318,8 @@ describe("object store runtime", () => {
       image_compression: {
         status: "compressed",
         algorithm: "svg-minify-v1",
+        originalMimeType: "image/svg+xml",
+        storedMimeType: "image/svg+xml",
         originalByteLength: Buffer.byteLength(svg, "utf8")
       }
     });

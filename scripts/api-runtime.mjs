@@ -16,6 +16,11 @@ import {
 export { postgresPoolConfig } from "./postgres-runtime.mjs";
 
 const authSessionSecretMessage = "Postgres API runtime requires AUTH_SESSION_SECRET to be at least 32 characters.";
+const generatedImageWebpQuality = 82;
+const generatedImageWebpEffort = 4;
+const generatedImageMaxEdgePixels = 2100;
+const generatedImageRasterMimeTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+let sharpCodecPromise;
 
 export function createApiRuntime({ env = process.env, routes = [], postgresPoolFactory } = {}) {
   const configuredMode = String(env.CUSTOMCARD_API_RUNTIME ?? "").trim();
@@ -2802,9 +2807,9 @@ function buildRenderPacketRepositoryPayload(record, runtimeMode, artifactPersist
 async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext, payload }) {
   const objectStoreDescription = objectStoreRuntime?.describe?.();
   const images = Array.isArray(payload?.images) ? payload.images : [];
-  const artifacts = images
-    .map((image, index) => normalizeGeneratedImageArtifact(image, index))
-    .filter(Boolean);
+  const artifacts = (
+    await Promise.all(images.map((image, index) => normalizeGeneratedImageArtifact(image, index)))
+  ).filter(Boolean);
   if (artifacts.length === 0) return undefined;
   if (!objectStoreDescription?.configured) {
     const blockers = objectStoreDescription?.blockers ?? [];
@@ -2931,21 +2936,21 @@ async function persistGeneratedImageArtifacts({ objectStoreRuntime, authContext,
   };
 }
 
-function normalizeGeneratedImageArtifact(image, index) {
+async function normalizeGeneratedImageArtifact(image, index) {
   if (!image || typeof image !== "object") return undefined;
   const dataUrl = String(image.image_url ?? image.imageUrl ?? "");
   const parsed = parseImageDataUrl(dataUrl);
   if (!parsed) return undefined;
   const panelId = safeGeneratedImagePanelId(image.panel_id ?? image.panelId, index);
   const fileIndex = String(index + 1).padStart(2, "0");
-  const compressed = compressGeneratedImageDataUrl(parsed);
+  const compressed = await compressGeneratedImageDataUrl(parsed);
   return {
     kind: "generated-image",
-    fileName: `provider-${fileIndex}-${panelId}.${parsed.extension}`,
-    mimeType: parsed.mimeType,
+    fileName: `provider-${fileIndex}-${panelId}.${compressed.extension}`,
+    mimeType: compressed.mimeType,
     panelId,
     compression: compressed.compression,
-    ...(compressed.text ? { text: compressed.text } : { dataUrl })
+    ...(compressed.text ? { text: compressed.text } : { base64: compressed.buffer.toString("base64") })
   };
 }
 
@@ -2962,28 +2967,21 @@ function parseImageDataUrl(value) {
   };
 }
 
-function compressGeneratedImageDataUrl(parsed) {
-  if (parsed.mimeType !== "image/svg+xml") {
-    return {
-      compression: {
-        status: "skipped",
-        algorithm: "none",
-        reason: "raster-compression-requires-codec",
-        originalByteLength: parsed.buffer.length,
-        storedByteLength: parsed.buffer.length,
-        savedBytes: 0
-      }
-    };
-  }
-
+async function compressGeneratedImageDataUrl(parsed) {
+  if (parsed.mimeType !== "image/svg+xml") return await compressRasterImageData(parsed);
   const minified = minifySvgText(parsed.buffer.toString("utf8"));
   const minifiedBytes = Buffer.byteLength(minified, "utf8");
   if (!minified || minifiedBytes >= parsed.buffer.length) {
     return {
+      buffer: parsed.buffer,
+      mimeType: parsed.mimeType,
+      extension: parsed.extension,
       compression: {
         status: "skipped",
         algorithm: "svg-minify-v1",
         reason: "not-smaller",
+        originalMimeType: parsed.mimeType,
+        storedMimeType: parsed.mimeType,
         originalByteLength: parsed.buffer.length,
         storedByteLength: parsed.buffer.length,
         savedBytes: 0
@@ -2993,14 +2991,109 @@ function compressGeneratedImageDataUrl(parsed) {
 
   return {
     text: minified,
+    mimeType: parsed.mimeType,
+    extension: parsed.extension,
     compression: {
       status: "compressed",
       algorithm: "svg-minify-v1",
+      originalMimeType: parsed.mimeType,
+      storedMimeType: parsed.mimeType,
       originalByteLength: parsed.buffer.length,
       storedByteLength: minifiedBytes,
       savedBytes: parsed.buffer.length - minifiedBytes
     }
   };
+}
+
+async function compressRasterImageData(parsed) {
+  if (!generatedImageRasterMimeTypes.has(parsed.mimeType)) {
+    return uncompressedGeneratedImage(parsed, {
+      algorithm: "none",
+      reason: "unsupported-image-mime-type"
+    });
+  }
+
+  try {
+    const sharp = await loadSharpCodec();
+    const result = await sharp(parsed.buffer, {
+      failOn: "none",
+      limitInputPixels: generatedImageMaxEdgePixels * generatedImageMaxEdgePixels * 2
+    })
+      .rotate()
+      .resize({
+        width: generatedImageMaxEdgePixels,
+        height: generatedImageMaxEdgePixels,
+        fit: "inside",
+        withoutEnlargement: true
+      })
+      .webp({
+        quality: generatedImageWebpQuality,
+        effort: generatedImageWebpEffort,
+        smartSubsample: true
+      })
+      .toBuffer({ resolveWithObject: true });
+
+    if (!result?.data || result.data.length <= 0) {
+      return uncompressedGeneratedImage(parsed, {
+        algorithm: "sharp-webp-v1",
+        reason: "empty-compressed-output"
+      });
+    }
+    if (result.data.length >= parsed.buffer.length) {
+      return uncompressedGeneratedImage(parsed, {
+        algorithm: "sharp-webp-v1",
+        reason: "not-smaller"
+      });
+    }
+
+    return {
+      buffer: result.data,
+      mimeType: "image/webp",
+      extension: "webp",
+      compression: {
+        status: "compressed",
+        algorithm: "sharp-webp-v1",
+        originalMimeType: parsed.mimeType,
+        storedMimeType: "image/webp",
+        originalByteLength: parsed.buffer.length,
+        storedByteLength: result.data.length,
+        savedBytes: parsed.buffer.length - result.data.length,
+        width: result.info?.width,
+        height: result.info?.height,
+        quality: generatedImageWebpQuality
+      }
+    };
+  } catch (error) {
+    return uncompressedGeneratedImage(parsed, {
+      algorithm: "sharp-webp-v1",
+      reason: "raster-compression-failed",
+      detail: safeText(error?.message, "Image compression failed.").slice(0, 160)
+    });
+  }
+}
+
+function uncompressedGeneratedImage(parsed, { algorithm, reason, detail } = {}) {
+  return {
+    buffer: parsed.buffer,
+    mimeType: parsed.mimeType,
+    extension: parsed.extension,
+    compression: {
+      status: "skipped",
+      algorithm: algorithm ?? "none",
+      reason,
+      ...(detail ? { detail } : {}),
+      originalMimeType: parsed.mimeType,
+      storedMimeType: parsed.mimeType,
+      originalByteLength: parsed.buffer.length,
+      storedByteLength: parsed.buffer.length,
+      savedBytes: 0
+    }
+  };
+}
+
+async function loadSharpCodec() {
+  if (!sharpCodecPromise) sharpCodecPromise = import("sharp").then((module) => module.default ?? module);
+  return sharpCodecPromise;
 }
 
 function minifySvgText(value) {
@@ -3042,7 +3135,7 @@ function safeGeneratedImagePanelId(value, index) {
 
 function generatedImageHashInput(artifacts) {
   return artifacts
-    .map((artifact) => `${artifact.fileName}:${artifact.mimeType}:${artifact.text ?? artifact.dataUrl ?? ""}`)
+    .map((artifact) => `${artifact.fileName}:${artifact.mimeType}:${artifact.text ?? artifact.base64 ?? artifact.dataUrl ?? ""}`)
     .join("\n");
 }
 
